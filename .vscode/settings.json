@@ -1,0 +1,9 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/Users/wanglei/Documents/blender_autocomplete-master/4.0"
+    ],
+    "python.linting.pylintArgs": [
+        "--init-hook",
+        "import sys; sys.path.append('/Users/wanglei/Documents/blender_autocomplete-master/4.0')"
+    ],
+}

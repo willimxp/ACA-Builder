@@ -11,7 +11,7 @@ class ACA_PT_basic(bpy.types.Panel):
     # 常规属性
     bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
     bl_region_type = 'UI'           # UI代表sidebar形式
-    bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
+    bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示 
     
     # 自定义属性
     bl_category = "古建营造"             # 标签页名称

@@ -166,20 +166,20 @@ class ACA_OT_build_piller(bpy.types.Operator, AddObjectHelper):
         # 从data中读取用户通过Panel输入的值
         dataset : data.ACA_data_scene = context.scene.ACA_data  
 
-        # 0、设置目录
+        # 0、柱网计算
+        set_pillers_date(context)
+        # 0.1、根据开间变化，刷新台基
+        bpy.ops.aca.build_platform()
+
+        # 1、设置目录
         root_coll = utils.setCollection(context, "ACA.柱网")
 
-        # 1、创建根对象（empty）===========================================================
+        # 2、创建根对象（empty）===========================================================
         bpy.ops.object.empty_add(type='PLAIN_AXES')
         root_obj = context.object
         root_obj.name = "柱网.root"
         root_z = dataset.platform_height
         root_obj.location = (0,0,root_z)
-
-        # 2、柱网计算
-        set_pillers_date(context)
-        # 2.1、根据开间变化，刷新台基
-        bpy.ops.aca.build_platform()
 
         # 3、创建柱网
         # 3.1、默认创建简单柱子

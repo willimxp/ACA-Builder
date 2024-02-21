@@ -57,6 +57,65 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0.01, 
             update=operators.update_platform    # 绑定回调
         ) # type: ignore
+    
+    # 柱网对象属性
+    x_rooms : bpy.props.IntProperty(
+            name="面阔间数",
+            default=con.ROOM_X, 
+            min=1, max=11,step=2,
+            update=operators.update_pillers
+        )# type: ignore
+    x_1 : bpy.props.FloatProperty(
+            name="明间宽度",
+            default=con.ROOM_X1,
+            min=0, 
+            update=operators.update_pillers
+        )# type: ignore
+    x_2 : bpy.props.FloatProperty(
+            name="次间宽度",
+            default=con.ROOM_X2,
+            min=0, 
+            update=operators.update_pillers
+        )# type: ignore
+    x_3 : bpy.props.FloatProperty(
+            name="梢间宽度",
+            default=con.ROOM_X3, 
+            min=0, 
+            update=operators.update_pillers
+        )# type: ignore
+    x_4 : bpy.props.FloatProperty(
+            name="尽间宽度",
+            default=con.ROOM_X4, 
+            min=0, 
+            update=operators.update_pillers
+        )# type: ignore
+    y_rooms : bpy.props.IntProperty(
+            name="进深间数",
+            default=con.ROOM_Y, 
+            min=1, 
+            update=operators.update_pillers
+        )# type: ignore
+    y_1 : bpy.props.FloatProperty(
+            name="明间深度",
+            default=con.ROOM_Y1, 
+            min=0, 
+            update=operators.update_pillers
+        )# type: ignore
+    y_2 : bpy.props.FloatProperty(
+            name="次间深度",
+            default=con.ROOM_Y2, 
+            min=0, 
+            update=operators.update_pillers
+        )# type: ignore
+    y_3 : bpy.props.FloatProperty(
+            name="梢间深度",
+            default=con.ROOM_Y3, 
+            min=0, 
+            update=operators.update_pillers
+        )# type: ignore
+    piller_net : bpy.props.StringProperty(
+            name="保存的柱网列表"
+        )# type: ignore
 
 # 场景范围的数据
 # 可绑定面板参数属性
@@ -80,3 +139,9 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             ],
             options={"ANIMATABLE"}
         ) # type: ignore
+    x_total : bpy.props.FloatProperty(
+            name="通面阔"
+        )# type: ignore
+    y_total : bpy.props.FloatProperty(
+            name="通进深"
+        )# type: ignore

@@ -81,8 +81,8 @@ def addCylinder(radius,depth,name,root_obj,
                     )
     cylinderObj = bpy.context.object
     cylinderObj.name = name
-    cylinderObj.aca_obj = True
     cylinderObj.parent = root_obj
+    cylinderObj.ACA_data.aca_obj = True
     return cylinderObj
 
 # 复制对象（仅复制instance，包括modifier）
@@ -137,3 +137,11 @@ def setAcaProps(aca_obj:bpy.types.Object,
     aca_obj.lock_location = (True,True,True)
     aca_obj.lock_rotation = (True,True,True)
     aca_obj.lock_scale = (True,True,True)
+
+# 查找当前对象的兄弟节点
+# 如，根据台基对象，找到对应的柱网对象
+def getAcaSibling(object:bpy.types.Object,sibling_type:str):
+    siblings = object.parent.children
+    for obj in siblings:
+        if obj.ACA_data.aca_type == sibling_type:
+            return obj

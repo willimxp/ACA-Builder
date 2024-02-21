@@ -5,6 +5,7 @@
 
 import bpy
 from . import data
+from . import const
 
 # 营造向导面板
 class ACA_PT_basic(bpy.types.Panel):
@@ -53,6 +54,8 @@ class ACA_PT_props(bpy.types.Panel):
     bl_label = "构件属性"            # 面板名称，显示为可折叠的箭头后
 
     def draw(self, context):
+        # 载入常量列表
+        con = const.ACA_Consts
         # 从当前场景中载入数据集
         scnData : data.ACA_data_scene = context.scene.ACA_data
         # 从当前场景中载入数据集
@@ -77,8 +80,29 @@ class ACA_PT_props(bpy.types.Panel):
             row.prop(context.object,"name",text="分段")
 
             # 台基属性
-            if objData.aca_type == 'platform' :
+            if objData.aca_type == con.ACA_TYPE_PLATFORM :
                 row = box.row()
                 row.prop(objData, "platform_height")
                 row = box.row()
                 row.prop(objData, "platform_extend")
+
+            # 柱网属性
+            if objData.aca_type == con.ACA_TYPE_PILLERNET :
+                # 输入整体尺寸，绑定data中的自定义property
+                row = box.column(align=True)
+                row.prop(objData, "x_rooms")    # 面阔间数
+                row.prop(objData, "x_1")        # 明间宽度
+                if objData.x_rooms >= 3:
+                    row.prop(objData, "x_2")    # 次间宽度
+                if objData.x_rooms >= 5:
+                    row.prop(objData, "x_3")    # 梢间宽度
+                if objData.x_rooms >= 7:
+                    row.prop(objData, "x_4")    # 尽间宽度
+
+                row = box.column(align=True)
+                row.prop(objData, "y_rooms")    # 进深间数
+                row.prop(objData, "y_1")        # 明间深度
+                if objData.y_rooms >= 3:
+                    row.prop(objData, "y_2")    # 次间深度
+                if objData.y_rooms >= 5:
+                    row.prop(objData, "y_3")    # 梢间深度

@@ -10,10 +10,22 @@ class ACA_Consts(object):
     BUILDING_NAME = '古建'  # 建筑名称
     PLATFORM_NAME = '台基'      # 台基名称
     ACA_TYPE_PLATFORM = 'platform'  # ACA类型：台基
+    ACA_TYPE_PILLERNET = 'piller_net'   # ACA类型：柱网
     
     # 基本模板参数
     PLATFORM_HEIGHT = 1 # 默认台基高度
     PLATFORM_EXTEND = 1 # 默认台基下出
+    ROOM_X = 3  # 面阔间数
+    ROOM_X1 = 3 # 明间宽度
+    ROOM_X2 = 2 # 次间宽度
+    ROOM_X3 = 2 # 梢间宽度
+    ROOM_X4 = 2 # 尽间宽度
+    ROOM_Y = 3  # 进深间数
+    ROOM_Y1 = 2 # 明间进深
+    ROOM_Y2 = 2 # 次间进深
+    ROOM_Y3 = 2 # 梢间进深
+    PILLER_HEIGHT = 2 # 柱高
+    PILLER_D = 0.5      # 柱径
     
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

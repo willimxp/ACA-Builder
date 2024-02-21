@@ -25,18 +25,18 @@ class ACA_PT_basic(bpy.types.Panel):
             objData : data.ACA_data_obj = context.object.ACA_data
         
         layout = self.layout
-        # 模板生成
         box = layout.box()
-        row = box.row()
-        row.label(text="按模板生成：")
-        # 模板选择列表
-        row = box.row()
-        row.prop(scnData, "template_list")
+        # # 模板生成  
+        # row = box.row()      
+        # row.label(text="按模板生成：")
+        # # 模板选择列表
+        # row = box.row()
+        # row.prop(scnData, "template_list")
         # 按钮，生成新建筑
         row = box.row()
         row.operator("aca.add_newbuilding",icon='FILE_3D')
         # 选择框，是否实时重绘
-        row = layout.row()
+        row = box.row()
         row.prop(scnData, "is_auto_redraw")
 
 # “构件属性”面板

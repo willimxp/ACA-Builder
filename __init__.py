@@ -32,8 +32,7 @@ classes = (
     panel.ACA_PT_props,  
     
     # 操作逻辑类    
-    operators.ACA_OT_add_newbuilding,
-    operators.ACA_OT_build_platform,
+    operators.ACA_OT_add_building,
     operators.ACA_OT_build_piller,
 )
 

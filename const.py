@@ -6,12 +6,12 @@
 
 class ACA_Consts(object):
     # 系统参数
-    ROOT_COLL_NAME = 'ACA古建筑生成' # 根目录名称
-    BUILDING_NAME = '古建筑'  # 建筑名称
+    ROOT_COLL_NAME = 'ACA古建营造' # 根目录名称
+    BUILDING_NAME = '古建'  # 建筑名称
     PLATFORM_NAME = '台基'      # 台基名称
     ACA_TYPE_PLATFORM = 'platform'  # ACA类型：台基
     
-    # 基本参数
+    # 基本模板参数
     PLATFORM_HEIGHT = 1 # 默认台基高度
     PLATFORM_EXTEND = 1 # 默认台基下出
     

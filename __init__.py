@@ -24,13 +24,15 @@ bl_info = {
 # 定义一个注入类列表，在register和unregister时自动批量处理
 classes = (
     # 全局数据类
-    data.ACA_data_scene,        
+    data.ACA_data_scene,    
+    data.ACA_data_obj,    
     
     # 基本面板类
     panel.ACA_PT_basic,
     panel.ACA_PT_props,  
     
     # 操作逻辑类    
+    operators.ACA_OT_add_newbuilding,
     operators.ACA_OT_build_platform,
     operators.ACA_OT_build_piller,
 )

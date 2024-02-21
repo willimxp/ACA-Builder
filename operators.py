@@ -14,10 +14,44 @@ from . import data
 from .const import *
 import numpy as np
 from . import utils
+from . import const
 
 # 柱网坐标，在全局共用
 net_x=[]
 net_y=[]
+
+# 生成新建筑
+# 所有自动生成的建筑统一放置在项目的“ACA”collection中
+# 每个建筑用一个empty做为parent，进行树状结构的管理
+# 各个建筑之间的设置参数数据隔离，互不影响
+#（后续可以提供批量修改的功能）
+# 用户在场景中选择时，可自动回溯到该建筑
+class ACA_OT_add_newbuilding(bpy.types.Operator):
+    bl_idname="aca.add_newbuilding"
+    bl_label = "生成新建筑"
+
+    def execute(self, context):
+        # 常数列表
+        con = const.ACA_Consts
+        # 从data中读取用户通过Panel输入的值
+        scnData : data.ACA_data_scene = context.scene.ACA_data  
+        
+        # 1.定位到“ACA”根collection，如果没有则新建
+        root_coll_name = con.ROOT_COLL_NAME
+        root_coll = utils.setCollection(context, root_coll_name)
+
+        # 2.添加建筑empty，默认为ACA01，用户可以自行修改
+        bpy.ops.object.empty_add(type='PLAIN_AXES')
+        root_obj = context.object
+        root_obj.location = (0,0,0)
+        root_obj.name = con.BUILDING_NAME   # 系统遇到重名会自动添加00x的后缀       
+        root_obj.ACA_data.aca_obj = True
+        root_obj.ACA_data.aca_type = 'building'
+
+        # 3.根据模板，自动创建建筑
+        # 3.1 生成台基
+        bpy.ops.aca.build_platform()
+        return {'FINISHED'}
 
 # 添加台基
 class ACA_OT_build_platform(bpy.types.Operator):
@@ -25,23 +59,28 @@ class ACA_OT_build_platform(bpy.types.Operator):
     bl_label = "生成台基"
 
     def execute(self, context): 
-        # 从data中读取用户通过Panel输入的值
-        dataset : data.ACA_data_scene = context.scene.ACA_data  
+        # 0、数据初始化（常量、场景参数、对象参数）
+        # 0.1、载入常量列表
+        con = const.ACA_Consts
+        # 0.2、从当前场景中载入数据集
+        scnData : data.ACA_data_scene = context.scene.ACA_data
 
-        # 0、设置目录
-        root_coll = utils.setCollection(context, "ACA.台基")
+        # 绑定根节点“古建筑.00x”
+        parent_obj = context.object
 
-        # 1、创建根对象（empty）===========================================================
-        bpy.ops.object.empty_add(type='PLAIN_AXES')
-        root_obj = context.object
-        root_obj.name = "台基.root"
-        root_obj.location = (0,0,0)
+        # 0、确定在结构树上的操作节点
+        # 0.1、添加或选择目录
+        root_coll_name = con.ROOT_COLL_NAME
+        root_coll = utils.setCollection(context, root_coll_name)
 
         # 3、创建地基===========================================================
-        print("ACA: Build platform")
-        height = dataset.platform_height
-        width = dataset.platform_extend * 2 + dataset.x_total
-        length = dataset.platform_extend * 2 + dataset.y_total
+        # 载入模板配置
+        platform_height = con.PLATFORM_HEIGHT
+        platform_extend = con.PLATFORM_EXTEND
+        # 构造cube三维
+        height = platform_height
+        width = platform_extend * 2 + scnData.x_total
+        length = platform_extend * 2 + scnData.y_total
         bpy.ops.mesh.primitive_cube_add(
                     size=1.0, 
                     calc_uvs=True, 
@@ -49,12 +88,20 @@ class ACA_OT_build_platform(bpy.types.Operator):
                     align='WORLD', 
                     location = (0,0,height/2), 
                     scale=(width,length,height))
-        platform = bpy.context.object
-        platform.parent = root_obj
-        platform.name = "台基"
-        platform.aca_obj = True
-        platform.aca_type = 'platform'        
-
+        aca_obj = bpy.context.object
+        # 填入通用属性
+        utils.setAcaProps(
+            aca_obj = aca_obj,
+            aca_parent = parent_obj,
+            aca_name = con.PLATFORM_NAME,
+            aca_type = con.ACA_TYPE_PLATFORM
+        )
+        # 填入扩展属性
+        objData : data.ACA_data_obj = aca_obj.ACA_data
+        objData.platform_height = con.PLATFORM_HEIGHT
+        objData.platform_extend = con.PLATFORM_EXTEND
+        
+        print("ACA: Platform added")
         return {'FINISHED'}
     
 def set_pillers_date(context):

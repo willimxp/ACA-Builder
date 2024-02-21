@@ -25,7 +25,7 @@ def recurLayerCollection(layerColl, collName):
 
 # 新建或聚焦当前场景下的目录
 # 所有对象建立在插件目录下，以免与用户自建的内容冲突
-def setCollection(context:bpy.types.Context, name:str):
+def setCollection(context:bpy.types.Context, name:str, IsClear=False):
     coll_name = name  # 在大纲中的目录名称
     coll_found = False
     coll = bpy.types.Collection
@@ -38,23 +38,25 @@ def setCollection(context:bpy.types.Context, name:str):
 
     if not coll_found:    
         # 新建collection，不与其他用户自建的模型打架
-        print("PP: Add new collection " + coll_name)
+        print("ACA: Add new collection " + coll_name)
         coll = bpy.data.collections.new(coll_name)
         context.scene.collection.children.link(coll)
         # 聚焦到新目录上
         context.view_layer.active_layer_collection = \
             context.view_layer.layer_collection.children[-1]
     else:
-        # 清空collection，每次重绘
-        for obj in coll.objects: 
-            bpy.data.objects.remove(obj)
-        # 强制关闭目录隐藏属性，防止失焦
-        coll.hide_viewport = False
-        context.view_layer.layer_collection.children[coll_name].hide_viewport = False
-        # 选中目录，防止用户手工选择其他目录而导致的失焦
-        layer_collection = bpy.context.view_layer.layer_collection
-        layerColl = recurLayerCollection(layer_collection, coll_name)
-        bpy.context.view_layer.active_layer_collection = layerColl
+        # 根据IsClear入参，决定是否要清空目录
+        if IsClear:
+            # 清空collection，每次重绘
+            for obj in coll.objects: 
+                bpy.data.objects.remove(obj)
+            # 强制关闭目录隐藏属性，防止失焦
+            coll.hide_viewport = False
+            context.view_layer.layer_collection.children[coll_name].hide_viewport = False
+            # 选中目录，防止用户手工选择其他目录而导致的失焦
+            layer_collection = bpy.context.view_layer.layer_collection
+            layerColl = recurLayerCollection(layer_collection, coll_name)
+            bpy.context.view_layer.active_layer_collection = layerColl
     
     # 返回china_arch目录的对象
     return coll
@@ -116,3 +118,22 @@ def ObjectCopy(sourceObj:bpy.types.Object, name,
     sourceObj.hide_render = IsHideRender
     
     return newObj
+
+# 创建一个基本圆柱体，可用于柱等直立构件
+def setAcaProps(aca_obj:bpy.types.Object,
+                aca_parent:bpy.types.Object,
+                aca_name:str,
+                aca_type:str):   
+     # 父节点绑定到建筑根节点上  
+    aca_obj.parent = aca_parent
+    # 对象名称
+    aca_obj.name = aca_name
+    # 标识为aca对象
+    aca_obj.ACA_data.aca_obj = True
+    # 标识aca对象类型，如，platform，piller，roof等
+    aca_obj.ACA_data.aca_type = aca_type
+
+    # 默认锁定对象的位置、旋转、缩放（用户可自行解锁）
+    aca_obj.lock_location = (True,True,True)
+    aca_obj.lock_rotation = (True,True,True)
+    aca_obj.lock_scale = (True,True,True)

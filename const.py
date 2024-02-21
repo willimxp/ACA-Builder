@@ -1,7 +1,23 @@
 # 作者：willimxp
 # 所属插件：ACA Builder
 # 功能概述：
-#   常数定义
+# 常数定义
+# 请务必注意，只读取该属性，不要修改属性
+
+class ACA_Consts(object):
+    # 系统参数
+    ROOT_COLL_NAME = 'ACA古建筑生成' # 根目录名称
+    BUILDING_NAME = '古建筑'  # 建筑名称
+    PLATFORM_NAME = '台基'      # 台基名称
+    ACA_TYPE_PLATFORM = 'platform'  # ACA类型：台基
+    
+    # 基本参数
+    PLATFORM_HEIGHT = 1 # 默认台基高度
+    PLATFORM_EXTEND = 1 # 默认台基下出
+    
+    def __setattr__(self, name, value):
+        raise AttributeError("Can't modify constant values")
+
 
 # 通则类
 EAVE_EX = 21 # 带斗拱的建筑，上檐出21斗口

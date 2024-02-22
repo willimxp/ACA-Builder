@@ -36,7 +36,8 @@ def add_building_root(self, context:bpy.types.Context):
 
 # 根据固定模板，创建新的台基
 # 被ACA_OT_add_newbuilding类调用
-def add_platform(self, context:bpy.types.Context,parent:bpy.types.Object):
+def add_platform(self, context:bpy.types.Context,
+                 buildingNode:bpy.types.Object):
     # 0、数据初始化（常量、场景参数、对象参数）
     # 0.1、载入常量列表
     con = const.ACA_Consts
@@ -62,7 +63,7 @@ def add_platform(self, context:bpy.types.Context,parent:bpy.types.Object):
     # 填入通用属性
     utils.setAcaProps(
         aca_obj = aca_obj,
-        aca_parent = parent,
+        aca_parent = buildingNode,
         aca_name = con.PLATFORM_NAME,
         aca_type = con.ACA_TYPE_PLATFORM
     )
@@ -113,54 +114,55 @@ def update_platform(self, context:bpy.types.Context):
 # 准备柱网数据
 # 将panel中设置的面宽、进深，组合成柱网数组
 # 返回net_x[],net_y[]数组
-def get_pillers_date(self,context:bpy.types.Context,parent:bpy.types.Object):
+def get_pillers_date(self,context:bpy.types.Context,
+                     pillernetNode:bpy.types.Object):
     # 0、数据初始化（常量、场景参数、对象参数）
     # 0.1、载入常量列表
     con = const.ACA_Consts
     # 0.2、从当前场景中载入数据集
     scnData : data.ACA_data_scene = context.scene.ACA_data
     # 0.3、从当前场景中载入数据集
-    objData : data.ACA_data_obj = parent.ACA_data
+    pillernetData : data.ACA_data_obj = pillernetNode.ACA_data
 
     # 构造柱网X坐标序列，罗列了1，3，5，7，9，11间的情况，未能抽象成通用公式
-    x_rooms = objData.x_rooms   # 面阔几间
-    y_rooms = objData.y_rooms   # 进深几间
+    x_rooms = pillernetData.x_rooms   # 面阔几间
+    y_rooms = pillernetData.y_rooms   # 进深几间
 
     net_x = []  # 重新计算
     if x_rooms >=1:     # 明间
-        offset = objData.x_1 / 2
+        offset = pillernetData.x_1 / 2
         net_x.append(offset)
         net_x.insert(0, -offset)
     if x_rooms >=3:     # 次间
-        offset = objData.x_1 / 2 + objData.x_2
+        offset = pillernetData.x_1 / 2 + pillernetData.x_2
         net_x.append(offset)
         net_x.insert(0, -offset)  
     if x_rooms >=5:     # 梢间
-        offset = objData.x_1 / 2 + objData.x_2 \
-                + objData.x_3
+        offset = pillernetData.x_1 / 2 + pillernetData.x_2 \
+                + pillernetData.x_3
         net_x.append(offset)
         net_x.insert(0, -offset)  
     if x_rooms >=7:     # 尽间
-        offset = objData.x_1 / 2 + objData.x_2 \
-            + objData.x_3 + objData.x_4
+        offset = pillernetData.x_1 / 2 + pillernetData.x_2 \
+            + pillernetData.x_3 + pillernetData.x_4
         net_x.append(offset)
         net_x.insert(0, -offset)  
     if x_rooms >=9:     #更多梢间
-        offset = objData.x_1 / 2 + objData.x_2 \
-            + objData.x_3 * 2
+        offset = pillernetData.x_1 / 2 + pillernetData.x_2 \
+            + pillernetData.x_3 * 2
         net_x[-1] = offset
         net_x[0]= -offset  
-        offset = objData.x_1 / 2 + objData.x_2 \
-            + objData.x_3 *2 + objData.x_4
+        offset = pillernetData.x_1 / 2 + pillernetData.x_2 \
+            + pillernetData.x_3 *2 + pillernetData.x_4
         net_x.append(offset)
         net_x.insert(0, -offset) 
     if x_rooms >=11:     #更多梢间
-        offset = objData.x_1 / 2 + objData.x_2 \
-            + objData.x_3 * 3
+        offset = pillernetData.x_1 / 2 + pillernetData.x_2 \
+            + pillernetData.x_3 * 3
         net_x[-1] = offset
         net_x[0]= -offset  
-        offset = objData.x_1 / 2 + objData.x_2 \
-            + objData.x_3 *3 + objData.x_4
+        offset = pillernetData.x_1 / 2 + pillernetData.x_2 \
+            + pillernetData.x_3 *3 + pillernetData.x_4
         net_x.append(offset)
         net_x.insert(0, -offset) 
 
@@ -168,26 +170,26 @@ def get_pillers_date(self,context:bpy.types.Context,parent:bpy.types.Object):
     net_y=[]    # 重新计算
     if y_rooms%2 == 1: # 奇数间
         if y_rooms >= 1:     # 明间
-            offset = objData.y_1 / 2
+            offset = pillernetData.y_1 / 2
             net_y.append(offset)
             net_y.insert(0, -offset)
         if y_rooms >= 3:     # 次间
-            offset = objData.y_1 / 2 + objData.y_2
+            offset = pillernetData.y_1 / 2 + pillernetData.y_2
             net_y.append(offset)
             net_y.insert(0, -offset)  
         if y_rooms >= 5:     # 梢间
-            offset = objData.y_1 / 2 + objData.y_2 \
-                    + objData.y_3
+            offset = pillernetData.y_1 / 2 + pillernetData.y_2 \
+                    + pillernetData.y_3
             net_y.append(offset)
             net_y.insert(0, -offset) 
     else:   #偶数间
         if y_rooms >= 2:
             net_y.append(0)
-            offset = objData.y_1
+            offset = pillernetData.y_1
             net_y.append(offset)
             net_y.insert(0,-offset)
         if y_rooms >= 4:
-            offset = objData.y_1 + objData.y_2
+            offset = pillernetData.y_1 + pillernetData.y_2
             net_y.append(offset)
             net_y.insert(0,-offset)
     
@@ -199,30 +201,44 @@ def get_pillers_date(self,context:bpy.types.Context,parent:bpy.types.Object):
     return net_x,net_y
 
 # 根据柱网数组，排布柱子
-def add_pillers(self,context:bpy.types.Context,parent:bpy.types.Object):
+# 1. 第一次按照模板生成，柱网下没有柱，一切从0开始；
+# 2. 用户调整柱网的开间、进深，需要保持柱子的高、径、样式
+# 传入柱网节点，柱子样板节点（最后会被删除）
+def add_pillers(self,context:bpy.types.Context,
+                pillernetNode:bpy.types.Object):
     # 0、数据初始化（常量、场景参数、对象参数）
     # 0.1、载入常量列表
     con = const.ACA_Consts
     # 0.2、从当前场景中载入数据集
     scnData : data.ACA_data_scene = context.scene.ACA_data
     # 0.3、从当前场景中载入数据集
-    if context.object != None:
-        objData : data.ACA_data_obj = context.object.ACA_data
-
-    # 1、默认创建简单柱子
-    piller_name = "基本立柱"
-    piller_height = con.PILLER_HEIGHT      # 柱高
-    piller_R = con.PILLER_D/2       # 柱径
-    piller_basemesh = utils.addCylinder(radius=piller_R,
+    pillernetData : data.ACA_data_obj = pillernetNode.ACA_data
+    piller_source = ''
+    piller_height = 0
+    piller_R = 0
+  
+    # 1、可能柱网下还未生成柱子，按照const模板生成默认柱子
+    if len(pillernetNode.children) == 0:
+        piller_name = "基本立柱"
+        piller_height = con.PILLER_HEIGHT      # 柱高
+        piller_R = con.PILLER_D/2       # 柱径
+        # 默认创建简单柱子
+        piller_basemesh = utils.addCylinder(radius=piller_R,
                 depth=piller_height,
                 location=(0, 0, piller_height/2),
                 name=piller_name,
-                root_obj=parent
-    )
+                root_obj=pillernetNode  # 挂接在柱网节点下
+            )
+    # 2、也可能柱网下已经生成柱子，保持原有柱子的高、径、样式
+    else:
+        # 任取一个柱网下的柱子做为模板
+        piller_basemesh = pillernetNode.children[0]
+        piller_basemesh.parent = None
+    
     # 2、循环生成
-    x_rooms = objData.x_rooms   # 面阔几间
-    y_rooms = objData.y_rooms   # 进深几间
-    net_x,net_y = get_pillers_date(self,context,parent)
+    x_rooms = pillernetData.x_rooms   # 面阔几间
+    y_rooms = pillernetData.y_rooms   # 进深几间
+    net_x,net_y = get_pillers_date(self,context,pillernetNode)
     for y in range(y_rooms + 1):
         for x in range(x_rooms + 1):
             # 统一命名为“柱.x/y”，以免更换不同柱时，柱网中的名称无法匹配
@@ -230,8 +246,8 @@ def add_pillers(self,context:bpy.types.Context,parent:bpy.types.Object):
                 '.' + str(x) + '/' + str(y)
             
             # 验证是否已被用户手工减柱
-            piller_list_str = objData.piller_net
-            if piller_copy_name not in objData.piller_net \
+            piller_list_str = pillernetData.piller_net
+            if piller_copy_name not in pillernetData.piller_net \
                     and piller_list_str != "" :
                 # print("PP: piller skiped " + piller_copy_name)
                 continue
@@ -242,16 +258,90 @@ def add_pillers(self,context:bpy.types.Context,parent:bpy.types.Object):
                 sourceObj = piller_basemesh,
                 name = piller_copy_name,
                 location=piller_loc,
-                parentObj = parent
+                parentObj = pillernetNode
             )
+            piller_copy.ACA_data.aca_obj = True
+            piller_copy.ACA_data.aca_type = con.ACA_TYPE_PILLER
+            # 通过访问数组，可以避免触发update回调
+    
+    # 清理临时柱子
     bpy.data.objects.remove(piller_basemesh)
 
     # 调整柱网指示框尺寸
-    parent.empty_display_size = (net_x[-1]-net_x[0]+1)/2
+    pillernetNode.empty_display_size = (net_x[-1]-net_x[0]+1)/2
 
+    print("ACA: Pillers added")
+
+# 根据用户在插件面板修改的柱高、柱径，缩放柱子外观
+# 绑定于data.py中objdata属性中触发的回调
+def update_pillers_size(self,context:bpy.types.Context):
+    # 根据的修改，批量调整柱对象的尺寸
+    pillerObj = context.object
+    # 垂直缩放
+    piller_h_scale = (
+            pillerObj.ACA_data.piller_height 
+            / pillerObj.dimensions.z
+        )
+    # 垂直位移
+    piller_z_offset = (
+            pillerObj.ACA_data.piller_height 
+            - pillerObj.dimensions.z
+        )/2
+    # 平面缩放
+    piller_d_scale = (
+            pillerObj.ACA_data.piller_diameter
+            / pillerObj.dimensions.x
+        )
+    
+    # 所有柱子为同一个mesh，只需要在edit mode中修改，即可全部生效
+    bpy.ops.object.mode_set(mode = 'EDIT')
+    bpy.ops.mesh.select_all(action = 'SELECT')
+    bpy.ops.transform.resize(value=(piller_d_scale, piller_d_scale, piller_h_scale))
+    bpy.ops.transform.translate(value=(0,0,piller_z_offset))
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+    # 同步更新每根柱子的属性值
+    pillernet = pillerObj.parent
+    for piller in pillernet.children:
+        piller.ACA_data['piller_height'] = pillerObj.ACA_data.piller_height
+        piller.ACA_data['piller_diameter'] = pillerObj.ACA_data.piller_diameter
+
+    print("ACA: Piller size updated")
+
+# 更换柱样式
+# 用户在panel上存在绑定一个对应的对象
+def update_pillers_style(self,context:bpy.types.Context):
+    # 获取用户选择的柱模板名称
+    piller_obj = context.object
+    piller_source = piller_obj.ACA_data.piller_source
+    
+    # 清除柱网下的所有柱子
+    pillernetObj = context.object.parent
+    for obj in pillernetObj.children:
+        bpy.data.objects.remove(obj)
+    
+    if piller_source != '':
+        # 在柱网下，绑定一个柱模板的副本
+        pillerTemplate = bpy.data.objects.get(piller_source)
+        pillerNode = utils.ObjectCopy(
+            sourceObj=pillerTemplate,
+            name='柱模板',
+            parentObj=pillernetObj
+        )
+        pillerNode.ACA_data['piller_source'] = piller_source
+        pillerNode.ACA_data['piller_height'] = pillerNode.dimensions.z
+        pillerNode.ACA_data['piller_diameter'] = pillerNode.dimensions.x
+    
+    # 重新排布所有柱子
+    add_pillers(self,context,
+                pillernetNode=pillernetObj)
+    
+    print("ACA: Piller style updated")
+    
 # 根据固定模板，创建柱网
 # 被ACA_OT_add_newbuilding类调用
-def add_pillernet(self,context:bpy.types.Context,parent:bpy.types.Object):
+def add_pillernet(self,context:bpy.types.Context,
+                  buildingNode:bpy.types.Object):
     # 0、数据初始化（常量、场景参数、对象参数）
     # 0.1、载入常量列表
     con = const.ACA_Consts
@@ -263,43 +353,53 @@ def add_pillernet(self,context:bpy.types.Context,parent:bpy.types.Object):
 
     # 1、创建根对象（empty）===========================================================
     bpy.ops.object.empty_add(type='PLAIN_AXES')
-    root_obj = context.object
-    root_obj.name = "柱网"
-    root_obj.parent = parent
+    pillernet_obj = context.object
+    pillernet_obj.empty_display_type = 'CUBE'
+    pillernet_obj.name = "柱网"
+    pillernet_obj.parent = buildingNode  # 挂接在对应建筑节点下
     #与台基顶面对齐
     root_z = con.PLATFORM_HEIGHT    # 柱网从台基顶部开始
-    root_obj.location = (0,0,root_z)
-    root_obj.ACA_data.aca_obj = True
-    root_obj.ACA_data.aca_type = con.ACA_TYPE_PILLERNET
+    pillernet_obj.location = (0,0,root_z)
+    pillernet_obj.ACA_data.aca_obj = True
+    pillernet_obj.ACA_data.aca_type = con.ACA_TYPE_PILLERNET
     
     # 排列柱网
-    add_pillers(self,context,root_obj)
+    add_pillers(self,context,pillernet_obj)
 
-    print("ACA: Pillers added")
+    print("ACA: Piller-Net added")
 
 # 根据用户在插件面板调整的柱网参数，更新柱网外观
 # 绑定于data.py中objdata属性中触发的回调
-def update_pillers(self,context:bpy.types.Context):
+def update_pillernet(self,context:bpy.types.Context):
     # 0.1、载入常量列表
     con = const.ACA_Consts
+    
+    # 1、数据准备
+    # 获取层次节点
+    # 调用更新柱子有两个来源，一个是柱网参数的调整，一个是柱子属性的调整
+    # 以上两个情况的context会不同，需要区分
+    context_type = context.object.ACA_data.aca_type
+    pillernetObj = context.object
 
-    pillernet_obj = context.object
-    # 删除所有柱子
-    for obj in context.object.children:
-        bpy.data.objects.remove(obj)
+    # 2、重布柱子
+    # 删除柱子，仅保留第一根做为后续的参考
+    for i in range(1,len(pillernetObj.children)):
+        bpy.data.objects.remove(pillernetObj.children[-1])
     # 重新排布所有柱子
-    add_pillers(self,context,context.object)
-    # 更新台基
-    pf_obj = utils.getAcaSibling(pillernet_obj,con.ACA_TYPE_PLATFORM)
+    add_pillers(self,context,
+                pillernetNode=pillernetObj)
+    
+    # 3、更新台基
+    pf_obj = utils.getAcaSibling(pillernetObj,con.ACA_TYPE_PLATFORM)
     bpy.context.view_layer.objects.active = pf_obj
     update_platform(self,context)
     
-    # 重新聚焦于柱网
+    # 4、如果原始选择的是柱网节点，重新聚焦回柱网
     bpy.ops.object.select_all(action='DESELECT')
-    bpy.context.view_layer.objects.active = pillernet_obj
-    pillernet_obj.select_set(True)
+    bpy.context.view_layer.objects.active = pillernetObj
+    pillernetObj.select_set(True)
 
-    print("ACA: Pillers updated")
+    print("ACA: Piller-Net updated")
 
 # 生成新建筑
 # 所有自动生成的建筑统一放置在项目的“ACA”collection中
@@ -323,9 +423,9 @@ class ACA_OT_add_building(bpy.types.Operator):
 
         # 3.根据模板，自动创建建筑
         # 3.2 生成柱网
-        add_pillernet(self,context,parent=building_root)
+        add_pillernet(self,context,buildingNode=building_root)
 
         # 3.1 生成台基
-        add_platform(self,context,parent=building_root)        
+        add_platform(self,context,buildingNode=building_root)        
 
         return {'FINISHED'}

@@ -11,6 +11,7 @@ class ACA_Consts(object):
     PLATFORM_NAME = '台基'      # 台基名称
     ACA_TYPE_PLATFORM = 'platform'  # ACA类型：台基
     ACA_TYPE_PILLERNET = 'piller_net'   # ACA类型：柱网
+    ACA_TYPE_PILLER = 'piller'  # ACA属性：柱子
     
     # 基本模板参数
     PLATFORM_HEIGHT = 1 # 默认台基高度

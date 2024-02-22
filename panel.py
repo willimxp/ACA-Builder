@@ -61,6 +61,7 @@ class ACA_PT_props(bpy.types.Panel):
         # 从当前场景中载入数据集
         if context.object != None:
             objData : data.ACA_data_obj = context.object.ACA_data
+            parentData : data.ACA_data_obj = context.object.parent.ACA_data
 
         # 仅在选中构件时显示
         selected_obj_count = len(bpy.context.selected_objects)
@@ -106,3 +107,12 @@ class ACA_PT_props(bpy.types.Panel):
                     row.prop(objData, "y_2")    # 次间深度
                 if objData.y_rooms >= 5:
                     row.prop(objData, "y_3")    # 梢间深度
+
+            #柱子属性
+            if objData.aca_type == con.ACA_TYPE_PILLER:
+                row = box.row()
+                row.prop_search(objData,"piller_source",bpy.data,"objects")
+                row = box.row()
+                row.prop(objData, "piller_height")
+                row = box.row()
+                row.prop(objData, "piller_diameter")

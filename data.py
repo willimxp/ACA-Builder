@@ -26,6 +26,10 @@ def delprop():
     del bpy.types.Scene.ACA_data
     del bpy.types.Object.ACA_data
 
+# 筛选资产目录
+def p_filter(self, object:bpy.types.Object):
+    return object.users_collection[0].name == 'Assets'
+
 # 对象范围的数据
 # 可绑定面板参数属性
 # 属性声明的格式在vscode有告警，但blender表示为了保持兼容性，无需更改
@@ -38,7 +42,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     # 通用对象属性
     aca_obj : bpy.props.BoolProperty(
             name='是ACA对象',
-            default=True
+            default=False
         ) # type: ignore
     aca_type : bpy.props.StringProperty(
             name='对象类型',
@@ -59,69 +63,82 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         ) # type: ignore
     
     # 柱网对象属性
+    x_total : bpy.props.FloatProperty(
+            name="通面阔"
+        )# type: ignore
+    y_total : bpy.props.FloatProperty(
+            name="通进深"
+        )# type: ignore
     x_rooms : bpy.props.IntProperty(
             name="面阔间数",
             default=con.ROOM_X, 
             min=1, max=11,step=2,
-            update=operators.update_pillernet
+            update=operators.update_floor
         )# type: ignore
     x_1 : bpy.props.FloatProperty(
             name="明间宽度",
             default=con.ROOM_X1,
             min=0, 
-            update=operators.update_pillernet
+            update=operators.update_floor
         )# type: ignore
     x_2 : bpy.props.FloatProperty(
             name="次间宽度",
             default=con.ROOM_X2,
             min=0, 
-            update=operators.update_pillernet
+            update=operators.update_floor
         )# type: ignore
     x_3 : bpy.props.FloatProperty(
             name="梢间宽度",
             default=con.ROOM_X3, 
             min=0, 
-            update=operators.update_pillernet
+            update=operators.update_floor
         )# type: ignore
     x_4 : bpy.props.FloatProperty(
             name="尽间宽度",
             default=con.ROOM_X4, 
             min=0, 
-            update=operators.update_pillernet
+            update=operators.update_floor
         )# type: ignore
     y_rooms : bpy.props.IntProperty(
             name="进深间数",
             default=con.ROOM_Y, 
             min=1, 
-            update=operators.update_pillernet
+            update=operators.update_floor
         )# type: ignore
     y_1 : bpy.props.FloatProperty(
             name="明间深度",
             default=con.ROOM_Y1, 
             min=0, 
-            update=operators.update_pillernet
+            update=operators.update_floor
         )# type: ignore
     y_2 : bpy.props.FloatProperty(
             name="次间深度",
             default=con.ROOM_Y2, 
             min=0, 
-            update=operators.update_pillernet
+            update=operators.update_floor
         )# type: ignore
     y_3 : bpy.props.FloatProperty(
             name="梢间深度",
             default=con.ROOM_Y3, 
             min=0, 
-            update=operators.update_pillernet
+            update=operators.update_floor
         )# type: ignore
     piller_net : bpy.props.StringProperty(
             name="保存的柱网列表"
         )# type: ignore
     
     # 柱子属性
-    piller_source : bpy.props.StringProperty(
+    piller_source : bpy.props.PointerProperty(
             name="柱样式",
-            default="", 
+            type=bpy.types.Object,
+            poll=p_filter,
             update=operators.update_pillers_style
+        )# type: ignore
+    piller_base_source : bpy.props.PointerProperty(
+            name="柱础",
+            type=bpy.types.Object,
+            poll=p_filter,
+            update=operators.update_piller_base_style
         )# type: ignore
     piller_height : bpy.props.FloatProperty(
             name="柱高",
@@ -158,9 +175,3 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             ],
             options={"ANIMATABLE"}
         ) # type: ignore
-    x_total : bpy.props.FloatProperty(
-            name="通面阔"
-        )# type: ignore
-    y_total : bpy.props.FloatProperty(
-            name="通进深"
-        )# type: ignore

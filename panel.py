@@ -60,8 +60,12 @@ class ACA_PT_props(bpy.types.Panel):
         scnData : data.ACA_data_scene = context.scene.ACA_data
         # 从当前场景中载入数据集
         if context.object != None:
+            # 二级构件，如，floor，直接存取
             objData : data.ACA_data_obj = context.object.ACA_data
-            parentData : data.ACA_data_obj = context.object.parent.ACA_data
+            # 三级构件，如，柱等，绑定到上一级floor对象中管理
+            if context.object.parent != None:
+                parentData : data.ACA_data_obj = context.object.parent.ACA_data
+            if objData.aca_type == '': return
 
         # 仅在选中构件时显示
         selected_obj_count = len(bpy.context.selected_objects)
@@ -78,7 +82,7 @@ class ACA_PT_props(bpy.types.Panel):
 
             # 名称
             row = box.row()
-            row.prop(context.object,"name",text="分段")
+            row.prop(context.object,"name",text="构件")
 
             # 台基属性
             if objData.aca_type == con.ACA_TYPE_PLATFORM :
@@ -88,7 +92,7 @@ class ACA_PT_props(bpy.types.Panel):
                 row.prop(objData, "platform_extend")
 
             # 柱网属性
-            if objData.aca_type == con.ACA_TYPE_PILLERNET :
+            if objData.aca_type == con.ACA_TYPE_FLOOR :
                 # 输入整体尺寸，绑定data中的自定义property
                 row = box.column(align=True)
                 row.prop(objData, "x_rooms")    # 面阔间数
@@ -111,8 +115,10 @@ class ACA_PT_props(bpy.types.Panel):
             #柱子属性
             if objData.aca_type == con.ACA_TYPE_PILLER:
                 row = box.row()
-                row.prop_search(objData,"piller_source",bpy.data,"objects")
+                row.prop(parentData, "piller_height") # 柱高
                 row = box.row()
-                row.prop(objData, "piller_height")
+                row.prop(parentData, "piller_diameter") # 柱径
                 row = box.row()
-                row.prop(objData, "piller_diameter")
+                row.prop(parentData, "piller_source") # 柱样式
+                row = box.row() 
+                row.prop(parentData, "piller_base_source") # 柱础样式

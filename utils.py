@@ -50,13 +50,13 @@ def setCollection(context:bpy.types.Context, name:str, IsClear=False):
             # 清空collection，每次重绘
             for obj in coll.objects: 
                 bpy.data.objects.remove(obj)
-            # 强制关闭目录隐藏属性，防止失焦
-            coll.hide_viewport = False
-            context.view_layer.layer_collection.children[coll_name].hide_viewport = False
-            # 选中目录，防止用户手工选择其他目录而导致的失焦
-            layer_collection = bpy.context.view_layer.layer_collection
-            layerColl = recurLayerCollection(layer_collection, coll_name)
-            bpy.context.view_layer.active_layer_collection = layerColl
+        # 强制关闭目录隐藏属性，防止失焦
+        coll.hide_viewport = False
+        context.view_layer.layer_collection.children[coll_name].hide_viewport = False
+        # 选中目录，防止用户手工选择其他目录而导致的失焦
+        layer_collection = bpy.context.view_layer.layer_collection
+        layerColl = recurLayerCollection(layer_collection, coll_name)
+        bpy.context.view_layer.active_layer_collection = layerColl
     
     # 返回china_arch目录的对象
     return coll
@@ -65,7 +65,8 @@ def setCollection(context:bpy.types.Context, name:str, IsClear=False):
 def addCylinder(radius,depth,name,root_obj,
                 location=(0,0,0),
                 rotation=(0,0,0),
-                edge_num = 16):
+                edge_num = 16,
+                origin_at_bottom = False):
     # 定义圆柱体圆周面上的面数，不宜太高造成面数负担，也不宜太低影响美观
     bpy.ops.mesh.primitive_cylinder_add(
                         vertices = edge_num, 
@@ -83,6 +84,14 @@ def addCylinder(radius,depth,name,root_obj,
     cylinderObj.name = name
     cylinderObj.parent = root_obj
     cylinderObj.ACA_data.aca_obj = True
+
+    # 将Origin置于底部
+    if origin_at_bottom :
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_all(action = 'SELECT')
+        bpy.ops.transform.translate(value=(0,0,depth/2))
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+
     return cylinderObj
 
 # 复制对象（仅复制instance，包括modifier）
@@ -140,8 +149,20 @@ def setAcaProps(aca_obj:bpy.types.Object,
 
 # 查找当前对象的兄弟节点
 # 如，根据台基对象，找到对应的柱网对象
-def getAcaSibling(object:bpy.types.Object,sibling_type:str):
+def getAcaSibling(object:bpy.types.Object,
+                  sibling_type:str) -> bpy.types.Object:
     siblings = object.parent.children
     for obj in siblings:
         if obj.ACA_data.aca_type == sibling_type:
             return obj
+
+# 应用缩放(有时ops.object会乱跑，这里确保针对台基对象)      
+def ApplyScale(object:bpy.types.Object):
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.context.view_layer.objects.active = object
+    object.select_set(True)
+    bpy.ops.object.transform_apply(
+        scale=True,
+        rotation=False,
+        location=False,
+        isolate_users=True) # apply多用户对象时可能失败，所以要加上这个强制单用户

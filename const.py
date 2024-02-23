@@ -9,9 +9,11 @@ class ACA_Consts(object):
     ROOT_COLL_NAME = 'ACA古建营造' # 根目录名称
     BUILDING_NAME = '古建'  # 建筑名称
     PLATFORM_NAME = '台基'      # 台基名称
+    ACA_TYPE_BUILDING = 'building'  # ACA类型：台基
     ACA_TYPE_PLATFORM = 'platform'  # ACA类型：台基
-    ACA_TYPE_PILLERNET = 'piller_net'   # ACA类型：柱网
-    ACA_TYPE_PILLER = 'piller'  # ACA属性：柱子
+    ACA_TYPE_FLOOR = 'floor'   # ACA类型：柱网
+    ACA_TYPE_PILLER = 'piller'  # ACA类型：柱子
+    ACA_TYPE_PILLERBASE = 'piller_base' # ACA类型：柱础
     
     # 基本模板参数
     PLATFORM_HEIGHT = 1 # 默认台基高度

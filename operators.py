@@ -16,7 +16,7 @@ from . import utils
 from . import const
 
 # 将模版参数填充入根节点的设计参数中
-def fill_template(buildingObj:bpy.types.Object,
+def setTemplateData(buildingObj:bpy.types.Object,
                     template:const.ACA_template):
     # 映射template对象到ACA_data中
     buildingData = buildingObj.ACA_data
@@ -39,7 +39,7 @@ def fill_template(buildingObj:bpy.types.Object,
     buildingData['piller_diameter'] = template.PILLER_D 
 
 # 根据panel中DK的改变，更新整体设计参数
-def resetTemplatebyDK(self, context:bpy.types.Context,
+def setTemplateByDK(self, context:bpy.types.Context,
                     dk,
                     buildingObj:bpy.types.Object):
     # 载入模版
@@ -48,13 +48,13 @@ def resetTemplatebyDK(self, context:bpy.types.Context,
     template = const.ACA_template(template_name,dk)
 
     # 在根节点绑定模版数据
-    fill_template(buildingObj,template)
+    setTemplateData(buildingObj,template)
     
 
 # 添加建筑empty根节点，并绑定设计模版
 # 返回建筑empty根节点对象
 # 被ACA_OT_add_newbuilding类调用
-def add_building_root(self, context:bpy.types.Context):
+def addBuildingRoot(self, context:bpy.types.Context):
     # 获取panel上选择的模版
     template_name = context.scene.ACA_data.template
     
@@ -67,13 +67,13 @@ def add_building_root(self, context:bpy.types.Context):
 
     # 在根节点绑定模版数据
     template = const.ACA_template(template_name)
-    fill_template(buildingObj,template)
+    setTemplateData(buildingObj,template)
     
     print("ACA: Building Root added")
     return buildingObj
 
 # 根据固定模板，创建新的台基
-def build_platform(self, context:bpy.types.Context,
+def buildPlatform(self, context:bpy.types.Context,
                  buildingObj:bpy.types.Object):
     buildingData : data.ACA_data_obj = buildingObj.ACA_data
 
@@ -114,7 +114,7 @@ def build_platform(self, context:bpy.types.Context,
 
 # 根据插件面板的台基高度、下出等参数变化，更新台基外观
 # 绑定于data.py中update_platform回调
-def resize_platform(self, context:bpy.types.Context,
+def resizePlatform(self, context:bpy.types.Context,
                     buildingObj:bpy.types.Object):
 
     # 载入根节点中的设计参数
@@ -152,7 +152,7 @@ def resize_platform(self, context:bpy.types.Context,
 # 准备柱网数据
 # 将panel中设置的面宽、进深，组合成柱网数组
 # 返回net_x[],net_y[]数组
-def get_floor_date(self,context:bpy.types.Context,
+def getFloorDate(self,context:bpy.types.Context,
                      buildingObj:bpy.types.Object):
     # 载入设计参数
     buildingData : data.ACA_data_obj = buildingObj.ACA_data
@@ -238,7 +238,7 @@ def get_floor_date(self,context:bpy.types.Context,
 # 2. 用户调整柱网的开间、进深，需要保持柱子的高、径、样式
 # 3. 修改柱样式时，也会重排柱子
 # 建筑根节点（内带设计参数集）
-def build_floor(self,context:bpy.types.Context,
+def buildFloor(self,context:bpy.types.Context,
                 buildingObj:bpy.types.Object):
     # 从当前场景中载入数据集
     buildingData : data.ACA_data_obj = buildingObj.ACA_data
@@ -275,7 +275,7 @@ def build_floor(self,context:bpy.types.Context,
             )
     else:
         # 已设置柱样式，根据设计参数实例化
-        piller_basemesh:bpy.types.Object = utils.ObjectCopy(
+        piller_basemesh:bpy.types.Object = utils.copyObject(
             sourceObj=piller_source,
             name=piller_source.name,
             parentObj=floorObj,
@@ -285,7 +285,7 @@ def build_floor(self,context:bpy.types.Context,
             buildingData.piller_diameter,
             buildingData.piller_height
         )
-        utils.ApplyScale(piller_basemesh)
+        utils.ApplyScale(piller_basemesh) # 此时mesh已经与source piller解绑，生成了新的mesh
     # 柱子属性
     piller_basemesh.ACA_data['aca_obj'] = True
     piller_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
@@ -293,7 +293,15 @@ def build_floor(self,context:bpy.types.Context,
     # 3、根据地盘数据，循环排布每根柱子
     x_rooms = buildingData.x_rooms   # 面阔几间
     y_rooms = buildingData.y_rooms   # 进深几间
-    net_x,net_y = get_floor_date(self,context,buildingObj)
+    net_x,net_y = getFloorDate(self,context,buildingObj)
+    # 复制柱础
+    pillerbaseObj = buildingData.piller_base_source
+    if pillerbaseObj != None:
+        pillerbase_basemesh =utils.copyObject(
+            sourceObj = pillerbaseObj,
+            name = '柱础base',
+            singleUser=True
+        )
     for y in range(y_rooms + 1):
         for x in range(x_rooms + 1):
             # 统一命名为“柱.x/y”，以免更换不同柱形时，减柱设置失效
@@ -309,31 +317,35 @@ def build_floor(self,context:bpy.types.Context,
             
             # 复制柱子，仅instance，包含modifier
             piller_loc = (net_x[x],net_y[y],piller_basemesh.location.z)
-            piller_copy = utils.ObjectCopy(
+            piller_copy = utils.copyObject(
                 sourceObj = piller_basemesh,
                 name = piller_copy_name,
                 location=piller_loc,
                 parentObj = floorObj
             )
             
-            # 复制柱础
-            pillerbaseObj = buildingData.piller_base_source
+            # 添加柱础
             if pillerbaseObj != None:
-                pillerbase_copy = utils.ObjectCopy(
-                    sourceObj = pillerbaseObj,
+                pillerbaseCopy = utils.copyObject(
+                    sourceObj = pillerbase_basemesh,
                     name = '柱础',
                     parentObj = piller_copy
                 )
+                pillerbaseCopy.ACA_data['aca_obj'] = True
+                pillerbaseCopy.ACA_data['aca_type'] = con.ACA_TYPE_PILLERBASE
                 # 设置为不可选中
                 # pillerbase_copy.hide_select = True     
 
     # 清理临时柱子
     bpy.data.objects.remove(piller_basemesh)
+    # 清理临时柱础
+    if pillerbaseObj != None:
+        bpy.data.objects.remove(pillerbase_basemesh)
     print("ACA: Pillers rebuilt")
 
 # 根据用户在插件面板修改的柱高、柱径，缩放柱子外观
 # 绑定于data.py中objdata属性中触发的回调
-def update_pillers_size(self,context:bpy.types.Context,
+def resizePiller(self,context:bpy.types.Context,
                         buildingObj:bpy.types.Object):
     # 获取一个现有的柱子实例，做为缩放的依据
     floorObj = utils.getAcaChild(buildingObj,const.ACA_Consts.ACA_TYPE_FLOOR)
@@ -367,7 +379,8 @@ def update_pillers_size(self,context:bpy.types.Context,
     utils.focusObj(buildingObj)
     print("ACA: Piller updated")
 
-def update_piller_base(self,context:bpy.types.Context,
+# 柱础的添加、修改、删除
+def setPillerBase(self,context:bpy.types.Context,
                        buildingObj:bpy.types.Object):
     # 获取设计参数
     buildingData = buildingObj.ACA_data
@@ -375,24 +388,37 @@ def update_piller_base(self,context:bpy.types.Context,
     # 测试过程中，出现过目录失焦，导致柱础对象绑定到了根目录下
     utils.setCollection(context, con.ROOT_COLL_NAME)
     
-    # 循环柱网下的每根柱子对象，绑定柱础子对象
+    # 获取地盘节点
     floorObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR)
+    # 删除地盘的柱子下的老柱础
     for piller in floorObj.children:
-        # 删除老的柱础
         for obj in piller.children:
             bpy.data.objects.remove(obj)
-        # 绑定新的柱础
-        pillerbase_sourceObj =  buildingData.piller_base_source
-        if pillerbase_sourceObj != None:
-            pillerbaseCopy = utils.ObjectCopy(
-                sourceObj=pillerbase_sourceObj,
+    
+    # 添加新柱础
+    # 循环柱网下的每根柱子对象，绑定柱础子对象
+    pillerbase_sourceObj = buildingData.piller_base_source
+    if pillerbase_sourceObj != None:
+        # 复制柱础 
+        pillerbaseObj = utils.copyObject(
+                    sourceObj=pillerbase_sourceObj,
+                    name='柱础',
+                    singleUser=True # 独立对象
+                )
+        for piller in floorObj.children:
+            # 绑定新的柱础
+            pillerbaseCopy = utils.copyObject(
+                sourceObj=pillerbaseObj,
                 name='柱础',
                 parentObj=piller,
             )
             pillerbaseCopy.ACA_data['aca_obj'] = True
             pillerbaseCopy.ACA_data['aca_type'] = con.ACA_TYPE_PILLERBASE
             # 设置为不可选中
-            pillerbaseCopy.hide_select = True
+            #pillerbaseCopy.hide_select = True
+
+        # 清理临时柱础
+        bpy.data.objects.remove(pillerbaseObj)
 
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
@@ -400,14 +426,20 @@ def update_piller_base(self,context:bpy.types.Context,
 
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
-def build_all(self, context:bpy.types.Context,
+def buildAll(self, context:bpy.types.Context,
              buildingObj:bpy.types.Object):
+    # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
+    if buildingObj.ACA_data.x_rooms % 2 == 0:
+        # 不处理偶数面阔间数
+        utils.ShowMessageBox("面阔间数不能为偶数","ERROR")
+        return
+    
     # 清除建筑根节点下所有对象
     utils.delete_hierarchy(buildingObj)
     # 生成柱网
-    build_floor(self,context,buildingObj)
+    buildFloor(self,context,buildingObj)
     # 生成台基
-    build_platform(self,context,buildingObj)
+    buildPlatform(self,context,buildingObj)
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
 
@@ -427,10 +459,10 @@ class ACA_OT_add_building(bpy.types.Operator):
 
         # 2.添加建筑empty
         # 其中绑定了模版数据
-        buildingObj = add_building_root(self,context)
+        buildingObj = addBuildingRoot(self,context)
 
         # 3.调用营造序列
-        build_all(self,context,buildingObj)     
+        buildAll(self,context,buildingObj)     
 
         # 聚焦到建筑根节点
         utils.focusObj(buildingObj)

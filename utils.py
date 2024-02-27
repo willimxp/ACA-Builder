@@ -95,8 +95,8 @@ def addCylinder(radius,depth,name,root_obj,
     return cylinderObj
 
 # 复制对象（仅复制instance，包括modifier）
-def ObjectCopy(sourceObj:bpy.types.Object, name, 
-         parentObj:bpy.types.Object, 
+def copyObject(sourceObj:bpy.types.Object, name, 
+         parentObj:bpy.types.Object = None, 
          location=(0,0,0),
          singleUser=False):
     # 强制原对象不能隐藏

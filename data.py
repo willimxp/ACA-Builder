@@ -54,10 +54,10 @@ def get_template(self):
 # 重建整体建筑
 def update_building(self, context:bpy.types.Context):
     # 确认选中为building节点
-    buildingObj = context.object
+    buildingObj = context.object 
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 调用营造序列
-        operators.build_all(self,context,buildingObj)
+        operators.buildAll(self,context,buildingObj)
     else:
         print("ACA: updated building failed, context.object should be buildingObj")
         return
@@ -69,8 +69,8 @@ def update_dk(self, context:bpy.types.Context):
     dk = buildingObj.ACA_data.DK
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 更新DK值
-        operators.resetTemplatebyDK(self,context,dk,buildingObj)
-        operators.build_all(self,context,buildingObj)
+        operators.setTemplateByDK(self,context,dk,buildingObj)
+        operators.buildAll(self,context,buildingObj)
     else:
         print("ACA: updated building failed, context.object should be buildingObj")
         return
@@ -80,7 +80,7 @@ def update_platform(self, context:bpy.types.Context):
     buildingObj = context.object
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 调用台基缩放
-        operators.resize_platform(self,context,buildingObj)
+        operators.resizePlatform(self,context,buildingObj)
     else:
         print("ACA: updated platform failed, context.object should be buildingObj")
         return
@@ -90,7 +90,7 @@ def update_piller(self, context:bpy.types.Context):
     buildingObj = context.object
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 缩放柱形
-        operators.update_pillers_size(self,context,buildingObj)
+        operators.resizePiller(self,context,buildingObj)
     else:
         print("ACA: updated platform failed, context.object should be buildingObj")
         return
@@ -99,8 +99,8 @@ def update_pillerBase(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj = context.object
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
-        # 缩放柱形
-        operators.update_piller_base(self,context,buildingObj)
+        # 柱础的添加、修改、删除
+        operators.setPillerBase(self,context,buildingObj)
     else:
         print("ACA: updated platform failed, context.object should be buildingObj")
         return

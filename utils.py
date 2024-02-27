@@ -128,33 +128,29 @@ def ObjectCopy(sourceObj:bpy.types.Object, name,
     
     return newObj
 
-# 创建一个基本圆柱体，可用于柱等直立构件
-def setAcaProps(aca_obj:bpy.types.Object,
-                aca_parent:bpy.types.Object,
-                aca_name:str,
-                aca_type:str):   
-     # 父节点绑定到建筑根节点上  
-    aca_obj.parent = aca_parent
-    # 对象名称
-    aca_obj.name = aca_name
-    # 标识为aca对象
-    aca_obj.ACA_data.aca_obj = True
-    # 标识aca对象类型，如，platform，piller，roof等
-    aca_obj.ACA_data.aca_type = aca_type
-
-    # 默认锁定对象的位置、旋转、缩放（用户可自行解锁）
-    aca_obj.lock_location = (True,True,True)
-    aca_obj.lock_rotation = (True,True,True)
-    aca_obj.lock_scale = (True,True,True)
-
 # 查找当前对象的兄弟节点
 # 如，根据台基对象，找到对应的柱网对象
 def getAcaSibling(object:bpy.types.Object,
-                  sibling_type:str) -> bpy.types.Object:
+                  acaObj_type:str) -> bpy.types.Object:
     siblings = object.parent.children
+    sibling = None
     for obj in siblings:
-        if obj.ACA_data.aca_type == sibling_type:
-            return obj
+        if obj.ACA_data.aca_type == acaObj_type:
+            sibling = obj
+    return sibling
+        
+# 查找当前对象的子节点
+# 只返回最后一个对象，为了偷懒，没有返回所有
+# 如，根据台基对象，找到对应的柱网对象
+def getAcaChild(object:bpy.types.Object,
+                  acaObj_type:str) -> bpy.types.Object:
+    children = object.children
+    child = None
+    for obj in children:
+        if obj.ACA_data.aca_type == acaObj_type:
+            child = obj
+            break
+    return child
 
 # 应用缩放(有时ops.object会乱跑，这里确保针对台基对象)      
 def ApplyScale(object:bpy.types.Object):
@@ -166,3 +162,40 @@ def ApplyScale(object:bpy.types.Object):
         rotation=False,
         location=False,
         isolate_users=True) # apply多用户对象时可能失败，所以要加上这个强制单用户
+
+# 强制聚焦到对象
+def focusObj(object:bpy.types.Object):
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.context.view_layer.objects.active = object
+    object.select_set(True)
+
+# 删除树状层次下的所有对象
+def delete_hierarchy(parent_obj:bpy.types.Object,with_parent=False):
+    bpy.ops.object.select_all(action='DESELECT')
+    obj = bpy.data.objects[parent_obj.name]
+    obj.animation_data_clear()
+    names = set()
+    # Go over all the objects in the hierarchy like @zeffi suggested:
+    def get_child_names(obj):
+        for child in obj.children:
+            names.add(child.name)
+            if child.children:
+                get_child_names(child)
+
+    get_child_names(obj)
+    
+    # 是否删除根节点？
+    if with_parent:
+        names.add(parent_obj.name)
+    # print(names)
+    objects = bpy.data.objects
+    
+    # Remove the animation from the all the child objects
+    if names:
+        for child_name in names:
+            bpy.data.objects[child_name].animation_data_clear()
+            objects[child_name].select_set(state=True)
+            bpy.data.objects.remove(objects[child_name])
+        # print ("Successfully deleted object")
+    else:
+        print ("Could not delete object")

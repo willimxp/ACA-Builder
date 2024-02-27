@@ -5,7 +5,7 @@
 
 import bpy
 from . import data
-from . import const
+from .const import ACA_Consts as con
 
 # 营造向导面板
 class ACA_PT_basic(bpy.types.Panel):
@@ -48,8 +48,6 @@ class ACA_PT_props(bpy.types.Panel):
     bl_label = "建筑参数"            # 面板名称，显示为可折叠的箭头后
 
     def draw(self, context):
-        # 载入常量列表
-        con = const.ACA_Consts
         # 从当前场景中载入数据集
         if context.object != None:
             objData :data.ACA_data_obj = context.object.ACA_data

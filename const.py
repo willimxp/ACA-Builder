@@ -1,10 +1,11 @@
+#!/usr/bin/python3
+# Filename: const.py
+
 # 作者：willimxp
 # 所属插件：ACA Builder
 # 功能概述：
 # 常数定义
 # 请务必注意，只读取该属性，不要修改属性
-import bpy
-from . import data
 import os
 import xml.etree.ElementTree as ET
 

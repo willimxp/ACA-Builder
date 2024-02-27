@@ -6,10 +6,10 @@
 #   触发控件数据更新
 
 import bpy
-from . import const
 from . import operators
 import xml.etree.ElementTree as ET
 import os
+from .const import ACA_Consts as con
 
 # 初始化自定义属性
 def initprop():
@@ -55,7 +55,7 @@ def get_template(self):
 def update_building(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj = context.object
-    if buildingObj.ACA_data.aca_type == const.ACA_Consts.ACA_TYPE_BUILDING:
+    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 调用营造序列
         operators.build_all(self,context,buildingObj)
     else:
@@ -67,9 +67,9 @@ def update_dk(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj = context.object
     dk = buildingObj.ACA_data.DK
-    if buildingObj.ACA_data.aca_type == const.ACA_Consts.ACA_TYPE_BUILDING:
+    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 更新DK值
-        operators.set_template_dk(self,context,dk,buildingObj)
+        operators.resetTemplatebyDK(self,context,dk,buildingObj)
         operators.build_all(self,context,buildingObj)
     else:
         print("ACA: updated building failed, context.object should be buildingObj")
@@ -78,7 +78,7 @@ def update_dk(self, context:bpy.types.Context):
 def update_platform(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj = context.object
-    if buildingObj.ACA_data.aca_type == const.ACA_Consts.ACA_TYPE_BUILDING:
+    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 调用台基缩放
         operators.resize_platform(self,context,buildingObj)
     else:
@@ -88,7 +88,7 @@ def update_platform(self, context:bpy.types.Context):
 def update_piller(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj = context.object
-    if buildingObj.ACA_data.aca_type == const.ACA_Consts.ACA_TYPE_BUILDING:
+    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 缩放柱形
         operators.update_pillers_size(self,context,buildingObj)
     else:
@@ -98,7 +98,7 @@ def update_piller(self, context:bpy.types.Context):
 def update_pillerBase(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj = context.object
-    if buildingObj.ACA_data.aca_type == const.ACA_Consts.ACA_TYPE_BUILDING:
+    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 缩放柱形
         operators.update_piller_base(self,context,buildingObj)
     else:
@@ -111,9 +111,6 @@ def update_pillerBase(self, context:bpy.types.Context):
 # 直接添加“# type:ignore”
 # https://blender.stackexchange.com/questions/311578/how-do-you-correctly-add-ui-elements-to-adhere-to-the-typing-spec
 class ACA_data_obj(bpy.types.PropertyGroup):
-    # 模板常数
-    con = const.ACA_Consts
-
     # 通用对象属性
     aca_obj : bpy.props.BoolProperty(
             name = '是ACA对象',

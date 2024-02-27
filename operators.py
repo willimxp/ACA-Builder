@@ -11,15 +11,13 @@ from bpy_extras.object_utils import AddObjectHelper
 from mathutils import Vector,Matrix,geometry,Euler
 
 from . import data
-from . import const
+from .const import ACA_Consts as con
 from . import utils
 from . import const
 
 # 将模版参数填充入根节点的设计参数中
 def fill_template(buildingObj:bpy.types.Object,
                     template:const.ACA_template):
-    # 载入常数
-    con = const.ACA_Consts
     # 映射template对象到ACA_data中
     buildingData = buildingObj.ACA_data
     buildingData['aca_obj'] = True
@@ -41,7 +39,7 @@ def fill_template(buildingObj:bpy.types.Object,
     buildingData['piller_diameter'] = template.PILLER_D 
 
 # 根据panel中DK的改变，更新整体设计参数
-def set_template_dk(self, context:bpy.types.Context,
+def resetTemplatebyDK(self, context:bpy.types.Context,
                     dk,
                     buildingObj:bpy.types.Object):
     # 载入模版
@@ -57,11 +55,8 @@ def set_template_dk(self, context:bpy.types.Context,
 # 返回建筑empty根节点对象
 # 被ACA_OT_add_newbuilding类调用
 def add_building_root(self, context:bpy.types.Context):
-    # 载入常量列表
-    con = const.ACA_Consts
-    # 载入模版
+    # 获取panel上选择的模版
     template_name = context.scene.ACA_data.template
-    template = const.ACA_template(template_name)
     
     # 创建根节点empty
     bpy.ops.object.empty_add(type='PLAIN_AXES')
@@ -71,6 +66,7 @@ def add_building_root(self, context:bpy.types.Context):
     buildingObj.empty_display_type = 'SPHERE'
 
     # 在根节点绑定模版数据
+    template = const.ACA_template(template_name)
     fill_template(buildingObj,template)
     
     print("ACA: Building Root added")
@@ -79,8 +75,6 @@ def add_building_root(self, context:bpy.types.Context):
 # 根据固定模板，创建新的台基
 def build_platform(self, context:bpy.types.Context,
                  buildingObj:bpy.types.Object):
-    # 载入常量列表
-    con = const.ACA_Consts
     buildingData : data.ACA_data_obj = buildingObj.ACA_data
 
     # 1、创建地基===========================================================
@@ -122,8 +116,6 @@ def build_platform(self, context:bpy.types.Context,
 # 绑定于data.py中update_platform回调
 def resize_platform(self, context:bpy.types.Context,
                     buildingObj:bpy.types.Object):
-    # 载入常量列表
-    con = const.ACA_Consts
 
     # 载入根节点中的设计参数
     buildingData : data.ACA_data_obj = buildingObj.ACA_data
@@ -248,8 +240,6 @@ def get_floor_date(self,context:bpy.types.Context,
 # 建筑根节点（内带设计参数集）
 def build_floor(self,context:bpy.types.Context,
                 buildingObj:bpy.types.Object):
-    # 载入常量列表
-    con = const.ACA_Consts
     # 从当前场景中载入数据集
     buildingData : data.ACA_data_obj = buildingObj.ACA_data
     piller_source = buildingData.piller_source
@@ -379,8 +369,6 @@ def update_pillers_size(self,context:bpy.types.Context,
 
 def update_piller_base(self,context:bpy.types.Context,
                        buildingObj:bpy.types.Object):
-    # 载入常数
-    con= const.ACA_Consts
     # 获取设计参数
     buildingData = buildingObj.ACA_data
     # 定位到“ACA”根collection
@@ -433,10 +421,7 @@ class ACA_OT_add_building(bpy.types.Operator):
     bl_idname="aca.add_newbuilding"
     bl_label = "添加新建筑"
 
-    def execute(self, context):
-        # 常数列表
-        con = const.ACA_Consts
-        
+    def execute(self, context):      
         # 1.定位到“ACA”根collection，如果没有则新建
         utils.setCollection(context, con.ROOT_COLL_NAME)
 

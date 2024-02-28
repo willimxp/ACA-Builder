@@ -294,14 +294,6 @@ def buildFloor(self,context:bpy.types.Context,
     x_rooms = buildingData.x_rooms   # 面阔几间
     y_rooms = buildingData.y_rooms   # 进深几间
     net_x,net_y = getFloorDate(self,context,buildingObj)
-    # 复制柱础
-    pillerbaseObj = buildingData.piller_base_source
-    if pillerbaseObj != None:
-        pillerbase_basemesh =utils.copyObject(
-            sourceObj = pillerbaseObj,
-            name = '柱础base',
-            singleUser=True
-        )
     for y in range(y_rooms + 1):
         for x in range(x_rooms + 1):
             # 统一命名为“柱.x/y”，以免更换不同柱形时，减柱设置失效
@@ -322,25 +314,14 @@ def buildFloor(self,context:bpy.types.Context,
                 name = piller_copy_name,
                 location=piller_loc,
                 parentObj = floorObj
-            )
-            
-            # 添加柱础
-            if pillerbaseObj != None:
-                pillerbaseCopy = utils.copyObject(
-                    sourceObj = pillerbase_basemesh,
-                    name = '柱础',
-                    parentObj = piller_copy
-                )
-                pillerbaseCopy.ACA_data['aca_obj'] = True
-                pillerbaseCopy.ACA_data['aca_type'] = con.ACA_TYPE_PILLERBASE
-                # 设置为不可选中
-                # pillerbase_copy.hide_select = True     
+            )   
 
     # 清理临时柱子
     bpy.data.objects.remove(piller_basemesh)
-    # 清理临时柱础
-    if pillerbaseObj != None:
-        bpy.data.objects.remove(pillerbase_basemesh)
+
+    # 重建柱础
+    setPillerBase(self,context,buildingObj)
+
     print("ACA: Pillers rebuilt")
 
 # 根据用户在插件面板修改的柱高、柱径，缩放柱子外观

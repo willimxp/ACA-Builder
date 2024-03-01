@@ -106,13 +106,26 @@ def copyObject(sourceObj:bpy.types.Object, name,
     sourceObj.hide_render = False
     
     # 复制基本信息
-    newObj:bpy.types.Object = sourceObj.copy()
+    newObj = bpy.types.Object
     if singleUser :
         newObj.data = sourceObj.data.copy()
+    else:
+        newObj = sourceObj.copy()
     newObj.name = name
     newObj.location = location
     newObj.parent = parentObj
     bpy.context.collection.objects.link(newObj) 
+    # 复制子对象
+    if len(sourceObj.children) > 0 :
+        for child in sourceObj.children:
+            newChild = bpy.types.Object
+            if singleUser :
+                newChild.data = child.data.copy()
+            else:
+                newChild = child.copy()
+            newChild.parent = newObj
+            bpy.context.collection.objects.link(newChild) 
+    
 
     # 复制modifier
     bpy.ops.object.select_all(action='DESELECT')

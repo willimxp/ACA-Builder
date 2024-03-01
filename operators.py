@@ -242,19 +242,20 @@ def buildFloor(self,context:bpy.types.Context,
                 buildingObj:bpy.types.Object):
     # 1、查找或新建地盘根节点
     floorObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR)
-    # 清空地盘下所有的柱子、柱础，重建
-    if floorObj != None:
-        utils.delete_hierarchy(floorObj,True)
-    # 创建根对象（empty）===========================================================
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
-    floorObj = context.object
-    floorObj.name = "地盘"
-    floorObj.parent = buildingObj  # 挂接在对应建筑节点下
-    floorObj.ACA_data['aca_obj'] = True
-    floorObj.ACA_data['aca_type'] = con.ACA_TYPE_FLOOR
-    #与台基顶面对齐
-    floor_z = buildingObj.ACA_data.platform_height
-    floorObj.location = (0,0,floor_z)
+    if floorObj == None:        
+        # 创建新地盘对象（empty）===========================================================
+        bpy.ops.object.empty_add(type='PLAIN_AXES')
+        floorObj = context.object
+        floorObj.name = "地盘"
+        floorObj.parent = buildingObj  # 挂接在对应建筑节点下
+        floorObj.ACA_data['aca_obj'] = True
+        floorObj.ACA_data['aca_type'] = con.ACA_TYPE_FLOOR
+        #与台基顶面对齐
+        floor_z = buildingObj.ACA_data.platform_height
+        floorObj.location = (0,0,floor_z)
+    else:
+        # 清空地盘下所有的柱子、柱础
+        utils.delete_hierarchy(floorObj)
 
     # 2、生成一个柱子实例piller_basemesh
     # 从当前场景中载入数据集
@@ -263,12 +264,11 @@ def buildFloor(self,context:bpy.types.Context,
     piller_height = buildingData.piller_height
     piller_R = buildingData.piller_diameter /2
     if piller_source == None:
-        piller_name = "基本立柱"
         # 默认创建简单柱子
         piller_basemesh = utils.addCylinder(radius=piller_R,
                 depth=piller_height,
                 location=(0, 0, 0),
-                name=piller_name,
+                name="基本立柱",
                 root_obj=floorObj,  # 挂接在柱网节点下
                 origin_at_bottom = True,    # 将origin放在底部
             )
@@ -284,7 +284,7 @@ def buildFloor(self,context:bpy.types.Context,
             buildingData.piller_diameter,
             buildingData.piller_height
         )
-        utils.ApplyScale(piller_basemesh) # 此时mesh已经与source piller解绑，生成了新的mesh
+        #utils.ApplyScale(piller_basemesh) # 此时mesh已经与source piller解绑，生成了新的mesh
     # 柱子属性
     piller_basemesh.ACA_data['aca_obj'] = True
     piller_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
@@ -316,10 +316,7 @@ def buildFloor(self,context:bpy.types.Context,
             )   
 
     # 清理临时柱子
-    bpy.data.objects.remove(piller_basemesh)
-
-    # 重建柱础
-    setPillerBase(self,context,buildingObj)
+    utils.delete_hierarchy(piller_basemesh)
 
     print("ACA: Pillers rebuilt")
 
@@ -331,111 +328,38 @@ def resizePiller(self,context:bpy.types.Context,
     pillerObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PILLER)
     
     buildingData = buildingObj.ACA_data
-    # 垂直缩放
-    piller_h_scale = (
-            buildingData.piller_height 
-            / pillerObj.dimensions.z
-        )
-    # 垂直位移
-    piller_z_offset = (
-            buildingData.piller_height 
-            - pillerObj.dimensions.z
-        )/2
     # 平面缩放
     piller_d_scale = (
             buildingData.piller_diameter
             / pillerObj.dimensions.x
         )
+    # 垂直缩放
+    piller_h_scale = (
+            buildingData.piller_height 
+            / pillerObj.dimensions.z
+        )
     
-    # 所有柱子为同一个mesh，只需要在edit mode中修改，即可全部生效
-    # bug: 未指定变形中心，导致异常
-    utils.focusObj(pillerObj)
-    bpy.ops.object.mode_set(mode = 'EDIT')
-    bpy.ops.mesh.select_all(action = 'SELECT')
-    bpy.ops.transform.resize(
-        value=(piller_d_scale, piller_d_scale, piller_h_scale))
-    bpy.ops.transform.translate(value=(0,0,piller_z_offset))
-    bpy.ops.object.mode_set(mode = 'OBJECT')
+    floorObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR)
+    if len(floorObj.children) >0 :
+        for piller in floorObj.children:
+            piller.scale = piller.scale * \
+                Vector((piller_d_scale,
+                        piller_d_scale,
+                        piller_h_scale))
 
-    # 缩放柱础
-    pillerbaseObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PILLERBASE)
-    if pillerbaseObj != None:
-        pillerbase_z_offset = pillerbaseObj.dimensions.z * (piller_d_scale-1) / 2
-        utils.focusObj(pillerbaseObj)
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_all(action = 'SELECT')
-        bpy.ops.transform.resize(
-            value=(piller_d_scale, piller_d_scale, piller_d_scale))
-        bpy.ops.transform.translate(value=(0,0,pillerbase_z_offset))
-        bpy.ops.object.mode_set(mode = 'OBJECT')
+    # # 所有柱子为同一个mesh，只需要在edit mode中修改，即可全部生效
+    # # bug: 未指定变形中心，导致异常
+    # utils.focusObj(pillerObj)
+    # bpy.ops.object.mode_set(mode = 'EDIT')
+    # bpy.ops.mesh.select_all(action = 'SELECT')
+    # bpy.ops.transform.resize(
+    #     value=(piller_d_scale, piller_d_scale, piller_h_scale))
+    # bpy.ops.transform.translate(value=(0,0,piller_z_offset))
+    # bpy.ops.object.mode_set(mode = 'OBJECT')
 
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
     print("ACA: Piller updated")
-
-# 柱础的添加、修改、删除
-def setPillerBase(self,context:bpy.types.Context,
-                       buildingObj:bpy.types.Object):
-    # 获取设计参数
-    buildingData:data.ACA_data_obj = buildingObj.ACA_data
-    # 定位到“ACA”根collection
-    # 测试过程中，出现过目录失焦，导致柱础对象绑定到了根目录下
-    utils.setCollection(context, con.ROOT_COLL_NAME)
-    
-    # 获取地盘节点
-    floorObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR)
-    # 声明柱础模版
-    # 删除地盘的柱子下的老柱础
-    for piller in floorObj.children:
-        for obj in piller.children:
-            bpy.data.objects.remove(obj)
-    
-    # 添加新柱础
-    # 循环柱网下的每根柱子对象，绑定柱础子对象
-    pillerbase_sourceObj = buildingData.piller_base_source
-    if pillerbase_sourceObj != None:
-        # 复制柱础 
-        pillerbaseObj = utils.copyObject(
-                    sourceObj=pillerbase_sourceObj,
-                    name='柱础',
-                    singleUser=True # 独立对象
-                )
-        
-        # 根据柱径的缩放，自动缩放柱础
-        pillerOrigin:bpy.types.Object = buildingData.piller_source
-        pillerScale = 1
-        if pillerOrigin != None:
-            piller = floorObj.children[0]        
-            pillerScale = piller.dimensions.x / pillerOrigin.dimensions.x
-            pillerbaseObj.dimensions = pillerbaseObj.dimensions * pillerScale
-        # bug: 未设柱形时，柱础就不会缩放了
-        # 为了解决这个问题硬是写死了以下代码，非常难看
-        else:
-            # 设置一个默认值
-            s = 1.6
-            pillerbaseObj.dimensions = (
-                piller.dimensions.x * s,
-                piller.dimensions.y * s,
-                pillerbaseObj.dimensions.z * piller.dimensions.x * s /pillerbaseObj.dimensions.x)
-
-        for piller in floorObj.children:
-            # 绑定新的柱础
-            pillerbaseCopy = utils.copyObject(
-                sourceObj=pillerbaseObj,
-                name='柱础',
-                parentObj=piller,
-            )
-            pillerbaseCopy.ACA_data['aca_obj'] = True
-            pillerbaseCopy.ACA_data['aca_type'] = con.ACA_TYPE_PILLERBASE
-            # 设置为不可选中
-            #pillerbaseCopy.hide_select = True
-
-        # 清理临时柱础
-        bpy.data.objects.remove(pillerbaseObj)
-
-    # 重新聚焦建筑根节点
-    utils.focusObj(buildingObj)
-    print("ACA: Piller-base added")
 
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点

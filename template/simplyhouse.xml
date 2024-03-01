@@ -3,6 +3,26 @@
     <template>
         <name>基本模板</name>
         <dk>0.08</dk>
+    </template>
+    <template>
+        <name>大型宫殿</name>
+        <dk>0.1</dk>
+        <platform>
+            <height>3.3</height>
+            <extend>2.4</extend>
+        </platform>
+    </template>
+    <template>
+        <name>多层阁楼</name>
+        <dk>0.05</dk>
+    </template>
+    <template>
+        <name>小型民居</name>
+        <dk>0.03</dk>
+    </template>
+    <template>
+        <name>test</name>
+        <dk>0.08</dk>
         <!--柱-->
         <piller>
             <dimeter>6</dimeter>
@@ -29,21 +49,5 @@
                 <y4>22</y4>
             </y_rooms>
         </floor>
-    </template>
-    <template>
-        <name>大型宫殿</name>
-        <dk>0.1</dk>
-        <platform>
-            <height>3.3</height>
-            <extend>2.4</extend>
-        </platform>
-    </template>
-    <template>
-        <name>多层阁楼</name>
-        <dk>0.05</dk>
-    </template>
-    <template>
-        <name>小型民居</name>
-        <dk>0.03</dk>
     </template>
 </templates>

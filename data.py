@@ -95,16 +95,6 @@ def update_piller(self, context:bpy.types.Context):
         print("ACA: updated platform failed, context.object should be buildingObj")
         return
 
-def update_pillerBase(self, context:bpy.types.Context):
-    # 确认选中为building节点
-    buildingObj = context.object
-    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
-        # 柱础的添加、修改、删除
-        operators.setPillerBase(self,context,buildingObj)
-    else:
-        print("ACA: updated platform failed, context.object should be buildingObj")
-        return
-
 # 对象范围的数据
 # 可绑定面板参数属性
 # 属性声明的格式在vscode有告警，但blender表示为了保持兼容性，无需更改
@@ -207,12 +197,6 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             type = bpy.types.Object,
             poll = p_filter,
             update = update_building
-        )# type: ignore
-    piller_base_source : bpy.props.PointerProperty(
-            name = "柱础",
-            type = bpy.types.Object,
-            poll = p_filter,
-            update = update_pillerBase
         )# type: ignore
     piller_height : bpy.props.FloatProperty(
             name = "柱高",

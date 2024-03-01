@@ -316,7 +316,7 @@ def buildFloor(self,context:bpy.types.Context,
             )   
 
     # 清理临时柱子
-    utils.delete_hierarchy(piller_basemesh)
+    utils.delete_hierarchy(piller_basemesh,True)
 
     print("ACA: Pillers rebuilt")
 

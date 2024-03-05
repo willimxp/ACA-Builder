@@ -20,7 +20,33 @@ class ACA_Consts(object):
     ACA_TYPE_PLATFORM = 'platform'  # ACA类型：台基
     ACA_TYPE_FLOOR = 'floor'   # ACA类型：柱网
     ACA_TYPE_PILLER = 'piller'  # ACA类型：柱子
-    ACA_TYPE_PILLERBASE = 'piller_base' # ACA类型：柱础
+    ACA_TYPE_WALL_ROOT = 'wall_root' # ACA类型：墙体布局，墙体的父节点
+    ACA_TYPE_WALL = 'wall' # ACA类型：墙体
+
+    # 柱子
+    PILLER_D_EAVE = 6   # 檐柱直接径6斗口
+    PILLER_H_EAVE = 57  # 檐柱高约57斗口（到挑檐桁下皮共70斗口）
+    PILLER_D_JIN = 6.6  # 金柱直径6.6斗口
+
+    # 门窗（马炳坚数据）
+    KAN_DOWN_HEIGHT = 0.8   # 下槛高度，单位D
+    KAN_DOWN_DEEPTH = 0.3   # 下槛深度，单位D，梁思成实际使用的为0.4
+    KAN_MID_HEIGHT = 0.66   # 中槛高度，单位D(汤崇平书p20中定为0.64)
+    KAN_MID_DEEPTH = 0.3    # 中槛深度，单位D
+    KAN_UP_HEIGHT = 0.5     # 上槛高度，单位D
+    KAN_UP_DEEPTH = 0.3     # 上槛深度，单位D
+    KAN_WIND_HEIGHT = 0.5   # 风槛高度
+    KAN_WIND_DEEPTH = 0.4   # 风槛深度
+    BAOKUANG_WIDTH = 0.66   # 抱框宽度，单位D
+    BAOKUANG_DEEPTH = 0.3   # 抱框深度，单位D
+    BORDER_WIDTH = 0.2    # 边梃、抹头宽
+    BORDER_DEEPTH = BAOKUANG_DEEPTH     # 边梃、抹头厚
+    ZIBIAN_WIDTH = BORDER_WIDTH*0.5     # 仔边宽
+    ZIBIAN_DEEPTH = BORDER_WIDTH*0.5    # 仔边厚
+    TABAN_DEEPTH = 1.5       # 榻板宽，单位D
+    TABAN_HEIGHT = 3/8      # 榻板高，单位D
+    TABAN_EX = 0.1          # 榻板金边，单位unit（米）
+    GESHAN_GAP = 0.01        # 隔扇的间距，门缝，单位为unit（米）
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

@@ -4,6 +4,11 @@
 #   公共的工具方法
 
 import bpy
+import bmesh
+import math
+from mathutils import Vector,Matrix,geometry,Euler
+import numpy as np
+from . import data
 
 # 弹出提示框
 def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
@@ -170,6 +175,16 @@ def getAcaChild(object:bpy.types.Object,
             
     return child
 
+# 递归查找父节点，输入对象类型
+def getAcaParent(object:bpy.types.Object,
+                    acaObj_type:str) -> bpy.types.Object:
+    parent = object.parent
+    parentData : data.ACA_data_obj = parent.ACA_data
+    if parentData.aca_type != acaObj_type :
+        parent = getAcaParent(parent,acaObj_type)
+    
+    return parent
+
 # 应用缩放(有时ops.object会乱跑，这里确保针对台基对象)      
 def ApplyScale(object:bpy.types.Object):
     bpy.ops.object.select_all(action='DESELECT')
@@ -217,3 +232,154 @@ def delete_hierarchy(parent_obj:bpy.types.Object,with_parent=False):
         # print ("Successfully deleted object")
     else:
         print ("Could not delete object")
+
+# 计算两个点之间距离
+# 使用blender提供的mathutils库中的Vector类
+# https://sinestesia.co/blog/tutorials/calculating-distances-in-blender-with-python/
+def getVectorDistance(point1: Vector, point2: Vector) -> float:
+    """Calculate distance between two points.""" 
+    return (point2 - point1).length
+
+# 把对象旋转与向量对齐
+# 对象要求水平放置，长边指向+X方向
+# 向量为原点到坐标点，两点需要先相减
+# 返回四元向量
+def alignToVector(vector) -> Vector:
+    quaternion = vector.to_track_quat('X','Z')
+    euler = quaternion.to_euler('XYZ')
+    return euler
+
+# 根据起始点，创建连接的矩形
+# 长度在X轴方向
+def addCubeBy2Points(start_point:Vector,
+                     end_point:Vector,
+                     deepth:float,
+                     height:float,
+                     name:str,
+                     root_obj:bpy.types.Object,
+                     origin_at_bottom = False):
+    length = getVectorDistance(start_point,end_point)
+    origin_point = (start_point+end_point)/2
+    rotation = alignToVector(start_point - end_point)
+    rotation.x = 0 # 避免x轴翻转
+    bpy.ops.mesh.primitive_cube_add(
+                size=1.0, 
+                calc_uvs=True, 
+                enter_editmode=False, 
+                align='WORLD', 
+                location = origin_point, 
+                rotation = rotation, 
+                scale=(length, deepth,height))
+    cube = bpy.context.object
+    cube.name = name
+    cube.parent = root_obj
+
+    # 将Origin置于底部
+    if origin_at_bottom :
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_all(action = 'SELECT')
+        bpy.ops.transform.translate(value=(0,0,height/2))
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+
+    return cube
+
+# 获取对象的原始尺寸
+# 排除modifier的影响
+# 参考 https://blender.stackexchange.com/questions/238109/how-to-set-the-dimensions-of-an-object-without-its-modifiers
+def getMeshDims(object):
+    me = object.data
+    if object.type == "CURVE":
+        me = bpy.data.meshes.new_from_object(object)
+
+    coords = np.empty(3 * len(me.vertices))
+    me.vertices.foreach_get("co", coords)
+
+    x, y, z = coords.reshape((-1, 3)).T
+
+    return Vector((
+            x.max() - x.min(),
+            y.max() - y.min(),
+            z.max() - z.min()
+            ))
+
+# 绘制六边形，用于窗台、槛墙等
+def drawHexagon(dimensions,location):
+    # 创建bmesh
+    bm = bmesh.new()
+    # 各个点的集合
+    vectors = []
+
+    # 六边形位移距离
+    offset = dimensions.y/math.tan(math.radians(60))
+    # 左顶点
+    v1=Vector((-dimensions.x/2,
+               0,
+               -dimensions.z/2))
+    vectors.append(v1)
+    # 左上点
+    v2=Vector((
+        -dimensions.x/2+offset,
+        dimensions.y/2,
+        -dimensions.z/2))
+    vectors.append(v2)
+    # 右上点
+    v3=Vector((
+        dimensions.x/2-offset,
+        dimensions.y/2,
+        -dimensions.z/2))
+    vectors.append(v3)
+    # 右顶点
+    v4=Vector((dimensions.x/2,
+               0,
+               -dimensions.z/2))
+    vectors.append(v4)
+    # 右下点
+    v5=Vector((
+        dimensions.x/2-offset,
+        -dimensions.y/2,
+        -dimensions.z/2))
+    vectors.append(v5)
+    # 左下点
+    v6=Vector((
+        -dimensions.x/2+offset,
+        -dimensions.y/2,
+        -dimensions.z/2))
+    vectors.append(v6)
+
+    # 摆放点
+    vertices=[]
+    for n in range(len(vectors)):
+        if n==0:
+            vert = bm.verts.new(vectors[n])
+        else:
+            # 挤出
+            return_geo = bmesh.ops.extrude_vert_indiv(bm, verts=[vert])
+            vertex_new = return_geo['verts'][0]
+            del return_geo
+            # 给挤出的点赋值
+            vertex_new.co = vectors[n]
+            # 交换vertex给下一次循环
+            vert = vertex_new
+        vertices.append(vert)
+    
+    # 创建面
+    bm.faces.new((vertices[0],vertices[1],vertices[2],vertices[3],vertices[4],vertices[5]))
+
+    # 挤出厚度
+    return_geo = bmesh.ops.extrude_face_region(bm, geom=bm.faces)
+    verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
+    bmesh.ops.translate(bm, verts=verts, vec=(0, 0,dimensions.z))
+
+
+    # 确保face normal朝向
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+
+    # 移动3d cursor，做为bmesh的origin，一般也是起点
+    bpy.context.scene.cursor.location = location
+    # 任意添加一个对象，具体几何数据在bmesh中建立
+    bpy.ops.mesh.primitive_cube_add()
+    obj = bpy.context.object
+    bm.to_mesh(obj.data)
+    obj.data.update()
+    bm.free()
+    return obj

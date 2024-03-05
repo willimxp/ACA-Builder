@@ -50,11 +50,11 @@ class ACA_PT_props(bpy.types.Panel):
     def draw(self, context):
         # 从当前场景中载入数据集
         if context.object != None:
-            objData :data.ACA_data_obj = context.object.ACA_data
+            layout = self.layout
+            objData :data.ACA_data_obj = context.object.ACA_data             
 
             # 仅在选中建筑根节点时显示
-            if objData.aca_type == con.ACA_TYPE_BUILDING:            
-                layout = self.layout
+            if objData.aca_type == con.ACA_TYPE_BUILDING:
                 box = layout.box()
 
                 # 名称
@@ -98,5 +98,36 @@ class ACA_PT_props(bpy.types.Panel):
                 row.prop(objData, "piller_diameter") # 柱径
                 row = box.row()
                 row.prop(objData, "piller_source") # 柱样式
+                
+                # 墙属性
+                box = layout.box()
+                row = box.row()
+                row.prop(objData, "wall_layout") # 墙布局
                 row = box.row() 
-                row.prop(objData, "piller_base_source") # 柱础样式
+                row.prop(objData, "wall_source") # 墙样式
+
+            if objData.aca_type == con.ACA_TYPE_WALL: 
+                # 当前选中的为墙外框，反查建筑设计参数
+                # todo：这样的话，意味着隔扇样式统一，有些过小的开间，无法单独设置2面隔扇
+                wallObj = context.object
+                buildingObj = wallObj.parent.parent
+                bdata = buildingObj.ACA_data
+
+                # 隔扇工具
+                box = layout.box()
+                row = box.row()
+                row.label(text="请确选择一个墙体线框对象")
+                row = box.row()
+                row.prop(bdata, "door_height")  # 中槛高度
+                row = box.row()
+                row.prop(bdata, "door_num")     # 隔扇数量
+                row = box.row()
+                row.prop(bdata, "gap_num")      # 抹头数量
+                row = box.row() 
+                row.prop(bdata, "lingxin_source")   # 棂心样式
+                row = box.row()
+                row.prop(bdata, "is_with_wall") # 是否有槛墙                
+                
+                # 按钮：生成门窗
+                row = box.row()
+                row.operator("aca.build_door",icon='HOME')

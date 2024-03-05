@@ -78,6 +78,11 @@ def buildPlatform(self, context:bpy.types.Context,
     buildingData : data.ACA_data_obj = buildingObj.ACA_data
 
     # 1、创建地基===========================================================
+    # 如果已有，先删除
+    pfObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PLATFORM)
+    if pfObj != None:
+        utils.delete_hierarchy(pfObj,with_parent=True)
+
     # 载入模板配置
     platform_height = buildingObj.ACA_data.platform_height
     platform_extend = buildingObj.ACA_data.platform_extend
@@ -240,6 +245,12 @@ def getFloorDate(self,context:bpy.types.Context,
 # 建筑根节点（内带设计参数集）
 def buildFloor(self,context:bpy.types.Context,
                 buildingObj:bpy.types.Object):
+    # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
+    if buildingObj.ACA_data.x_rooms % 2 == 0:
+        # 不处理偶数面阔间数
+        utils.ShowMessageBox("面阔间数不能为偶数","ERROR")
+        return
+    
     # 1、查找或新建地盘根节点
     floorObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR)
     if floorObj == None:        
@@ -361,24 +372,129 @@ def resizePiller(self,context:bpy.types.Context,
     utils.focusObj(buildingObj)
     print("ACA: Piller updated")
 
+# 构建墙体布局
+def buildWallLayout(self, context:bpy.types.Context,
+             buildingObj:bpy.types.Object
+    ):
+    # 载入配置
+    buildingData : data.ACA_data_obj = buildingObj.ACA_data
+
+    # 构造墙体根节点
+    wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
+    if wallrootObj == None:        
+        # 创建新地盘对象（empty）===========================================================
+        bpy.ops.object.empty_add(type='PLAIN_AXES')
+        wallrootObj = context.object
+        wallrootObj.name = "墙体布局"
+        wallrootObj.parent = buildingObj  # 挂接在对应建筑节点下
+        wallrootObj.ACA_data['aca_obj'] = True
+        wallrootObj.ACA_data['aca_type'] = con.ACA_TYPE_WALL_ROOT
+        #与台基顶面对齐
+        wall_z = buildingObj.ACA_data.platform_height
+        wallrootObj.location = (0,0,wall_z)
+    else:
+        # 清空所有墙体
+        utils.delete_hierarchy(wallrootObj)
+
+    # 获取柱网
+    net_x,net_y = getFloorDate(self,context,buildingObj)
+    # 根据墙体布局类型（无廊、周围廊、前廊等），分别处理
+    wallLayout = int(buildingData.wall_layout)
+    row=[]
+    col=[]
+    if wallLayout == 1: # 默认无廊
+        row = [0,len(net_x)-1]   # 左右两列
+        rowRange = range(0,len(net_x)-1)
+        col = [0,len(net_y)-1]   # 前后两排
+        colRange = range(0,len(net_y)-1)
+    if wallLayout == 2: # 周围廊
+        row = [1,len(net_x)-2]   # 左右两列
+        rowRange = range(1,len(net_x)-2)
+        col = [1,len(net_y)-2]   # 前后两排
+        colRange = range(1,len(net_y)-2)
+    if wallLayout == 3: # 前廊
+        row = [1,len(net_x)-1]   # 左右两列
+        rowRange = range(1,len(net_x)-1)
+        col = [0,len(net_y)-1]   # 前后两排
+        colRange = range(0,len(net_y)-1)
+    if wallLayout == 4: # 斗底槽
+        row = [0,1,len(net_x)-2,len(net_x)-1]   # 左右两列
+        rowRange = range(0,len(net_x)-1)
+        col = [0,1,len(net_y)-2,len(net_y)-1]   # 前后两排
+        colRange = range(0,len(net_y)-1)
+    
+    # 墙线框尺寸
+    wall_deepth = 1
+    pillerObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PILLER)
+    wall_height = pillerObj.dimensions.z
+    
+    # 生成横向墙体
+    for r in row: 
+        for c in colRange:
+            pStart = Vector((net_x[c],net_y[r],0))
+            pEnd = Vector((net_x[c+1],net_y[r],0))
+            wallObj = utils.addCubeBy2Points(
+                        start_point = pStart,
+                        end_point = pEnd,
+                        deepth = wall_deepth,
+                        height = wall_height,
+                        name = "墙体proxy",
+                        root_obj = wallrootObj,
+                        origin_at_bottom = True
+                    )
+            if r < len(net_y)/2:
+                wallObj.rotation_euler.z +=  math.radians(-180)
+
+    # 生成纵向墙体
+    for c in col: 
+        for r in rowRange:
+            pStart = Vector((net_x[c],net_y[r],0))
+            pEnd = Vector((net_x[c],net_y[r+1],0))
+            wallObj = utils.addCubeBy2Points(
+                        start_point = pStart,
+                        end_point = pEnd,
+                        deepth = wall_deepth,
+                        height = wall_height,
+                        name = "墙体proxy",
+                        root_obj = wallrootObj,
+                        origin_at_bottom = True
+                    )
+            if c >= len(net_x)/2:
+                wallObj.rotation_euler.z +=  math.radians(180)
+            
+    # 设置墙体属性
+    for wallObj in wallrootObj.children:
+        wallObj.ACA_data['aca_obj'] = True
+        wallObj.ACA_data['aca_type'] = con.ACA_TYPE_WALL
+        wallObj.display_type = 'WIRE'
+        wallObj.hide_render = True
+
+        # 绑定墙体样式
+        if buildingData.wall_source != None:
+            wallChildObj = utils.copyObject(
+                sourceObj=buildingData.wall_source,
+                name='墙体',
+                parentObj=wallObj
+            )
+            wallChildObj.dimensions = (wallObj.dimensions.x,
+                                       wallChildObj.dimensions.y,
+                                       wallObj.dimensions.z)
+
+    # 重新聚焦建筑根节点
+    utils.focusObj(buildingObj)
+
+    print("ACA: Wall added")
+
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
 def buildAll(self, context:bpy.types.Context,
              buildingObj:bpy.types.Object):
-    # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
-    if buildingObj.ACA_data.x_rooms % 2 == 0:
-        # 不处理偶数面阔间数
-        utils.ShowMessageBox("面阔间数不能为偶数","ERROR")
-        return
-    
-    # 清除建筑根节点下所有对象
-    utils.delete_hierarchy(buildingObj)
     # 生成柱网
     buildFloor(self,context,buildingObj)
     # 生成台基
     buildPlatform(self,context,buildingObj)
-    # 重新聚焦建筑根节点
-    utils.focusObj(buildingObj)
+    # 生成墙体框线
+    buildWallLayout(self,context,buildingObj) 
 
 # 生成新建筑
 # 所有自动生成的建筑统一放置在项目的“ACA”collection中
@@ -399,8 +515,660 @@ class ACA_OT_add_building(bpy.types.Operator):
         buildingObj = addBuildingRoot(self,context)
 
         # 3.调用营造序列
-        buildAll(self,context,buildingObj)     
+        buildAll(self,context,buildingObj) 
 
         # 聚焦到建筑根节点
         utils.focusObj(buildingObj)
+        return {'FINISHED'}
+    
+# 生成柱间隔扇
+class ACA_OT_build_door(bpy.types.Operator):
+    bl_idname="aca.build_door"
+    bl_label = "隔扇营造"
+
+    # 构建扇心
+    # 包括在槛框中嵌入的横披窗扇心
+    # 也包括在隔扇中嵌入的隔扇扇心
+    def buildShanxin(self,context,wallproxy,scale:Vector,location:Vector):
+        # 载入数据
+        buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
+        bdata:data.ACA_data_obj = buildingObj.ACA_data
+        # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
+        # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
+        dk = bdata.DK
+        pd = con.PILLER_D_EAVE * dk
+
+        # 仔边环绕
+        # 创建一个平面，转换为curve，设置curve的横截面
+        bpy.ops.mesh.primitive_plane_add(size=1,location=location)
+        zibianObj = bpy.context.object
+        zibianObj.name = '仔边'
+        zibianObj.parent = wallproxy
+        # 三维的scale转为plane二维的scale
+        zibianObj.rotation_euler.x = math.radians(90)
+        zibianObj.scale = (
+            scale.x - con.ZIBIAN_WIDTH*pd,
+            scale.z - con.ZIBIAN_WIDTH*pd, # 旋转90度，原Zscale给Yscale
+            0)
+        # apply scale
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+        # 转换为Curve
+        bpy.ops.object.convert(target='CURVE')
+        # 旋转所有的点45度，形成四边形
+        bpy.ops.object.editmode_toggle()
+        bpy.ops.curve.select_all(action='SELECT')
+        bpy.ops.transform.tilt(value=math.radians(45))
+        bpy.ops.object.editmode_toggle()
+        # 设置Bevel
+        zibianObj.data.bevel_mode = 'PROFILE'        
+        zibianObj.data.bevel_depth = con.ZIBIAN_WIDTH/2  # 仔边宽度
+
+        # 填充棂心
+        lingxinObj = bdata.lingxin_source
+        if lingxinObj == None: return
+        # 定位：从左下角排布array
+        loc = (location.x-scale.x/2+con.ZIBIAN_WIDTH*pd,
+               location.y,
+               location.z-scale.z/2+con.ZIBIAN_WIDTH*pd)
+        lingxin = utils.copyObject(
+            sourceObj=lingxinObj,
+            name='棂心',
+            parentObj=wallproxy,
+            location=loc)
+        # 计算平铺的行列数
+        unitWidth,unitDeepth,unitHeight = utils.getMeshDims(lingxin)
+        lingxingWidth = scale.x- con.ZIBIAN_WIDTH*2*pd
+        linxingHeight = scale.z- con.ZIBIAN_WIDTH*2*pd
+        rows = math.ceil(linxingHeight/unitHeight)+1 #加一，尽量让棂心紧凑，避免出现割裂
+        row_span = linxingHeight/rows
+        mod_rows = lingxin.modifiers.get('Rows')
+        mod_rows.count = rows
+        mod_rows.constant_offset_displace[2] = row_span
+
+        cols = math.ceil(lingxingWidth/unitWidth)+1#加一，尽量让棂心紧凑，避免出现割裂
+        col_span = lingxingWidth/cols
+        mod_cols = lingxin.modifiers.get('Columns')
+        mod_cols.count = cols
+        mod_cols.constant_offset_displace[0] = col_span
+
+    # 构建槛框
+    # 基于输入的槛框线框对象
+    def buildKanKuang(self,context,wallproxy):
+        # 载入数据
+        buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
+        bdata:data.ACA_data_obj = buildingObj.ACA_data
+        # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
+        # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
+        dk = bdata.DK
+        pd = con.PILLER_D_EAVE * dk
+        is_with_wall = bdata.is_with_wall
+        pillerD = bdata.piller_diameter
+        # 分解槛框的长、宽、高
+        frame_width,frame_deepth,frame_height = wallproxy.dimensions
+
+        # region 1、下槛 ---------------------
+        KanDownScale = Vector((frame_width, # 长度随面宽
+                    con.KAN_DOWN_DEEPTH * pd, # 厚0.3D
+                    con.KAN_DOWN_HEIGHT * pd, # 高0.8D
+                    ))
+        KanDownLoc = Vector((0,0,con.KAN_DOWN_HEIGHT*pd/2))
+        bpy.ops.mesh.primitive_cube_add(
+                            size=1.0, 
+                            location = KanDownLoc, 
+                            scale= KanDownScale)
+        KanDownObj = context.object
+        KanDownObj.name = '下槛'
+        KanDownObj.parent = wallproxy
+        if is_with_wall:
+            KanDownObj.hide_set(True) 
+        # endregion 1、下槛 ---------------------
+
+        # region 2、上槛 ---------------------
+        KanUpScale = Vector((frame_width, # 长度随面宽
+                    con.KAN_UP_DEEPTH * pd, # 厚0.3D
+                    con.KAN_UP_HEIGHT * pd, # 高0.8D
+                    ))
+        KanUpLoc = Vector((0,0,
+                frame_height - con.KAN_UP_HEIGHT*pd/2))
+        bpy.ops.mesh.primitive_cube_add(
+                            size=1.0, 
+                            location = KanUpLoc, 
+                            scale= KanUpScale)
+        context.object.name = '上槛'
+        context.object.parent = wallproxy
+        # endregion 2、上槛 ---------------------
+
+        # region 3、中槛 ---------------------
+        KanMidScale = Vector((frame_width, # 长度随面宽
+                    con.KAN_MID_DEEPTH * pd, # 厚0.3D
+                    con.KAN_MID_HEIGHT * pd, # 高0.8D
+                    ))
+        KanMidLoc = Vector((0,0,
+                bdata.door_height + con.KAN_MID_HEIGHT*pd/2))
+        bpy.ops.mesh.primitive_cube_add(
+                            size=1.0, 
+                            location = KanMidLoc, 
+                            scale= KanMidScale)
+        context.object.name = '中槛'
+        context.object.parent = wallproxy
+        # endregion 3、中槛 ---------------------
+
+        # region 4、下抱框 ---------------------
+        # 高度：从下槛上皮到中槛下皮
+        BaoKuangDownHeight = (KanMidLoc.z - KanMidScale.z/2) \
+            - (KanDownLoc.z + KanDownScale.z/2)
+        BaoKuangDownScale = Vector((
+                    con.BAOKUANG_WIDTH * pd, # 宽0.66D
+                    con.BAOKUANG_DEEPTH * pd, # 厚0.3D
+                    BaoKuangDownHeight, 
+                    ))
+        # 位置Z：从下槛+一半高度
+        BaoKuangDown_z = (KanDownLoc.z + KanDownScale.z/2) \
+                            + BaoKuangDownHeight/2
+        # 位置X：半柱间距 - 半柱径 - 半抱框宽度
+        BaoKuangDown_x = frame_width/2 - pillerD/2 - con.BAOKUANG_WIDTH*pd/2
+        BaoKuangDownLoc = Vector((BaoKuangDown_x,0,BaoKuangDown_z))
+        bpy.ops.mesh.primitive_cube_add(
+                            size=1.0, 
+                            location = BaoKuangDownLoc, 
+                            scale= BaoKuangDownScale)
+        BaoKuangDownObj = context.object
+        BaoKuangDownObj.name = '下抱框'
+        BaoKuangDownObj.parent = wallproxy
+        # 添加mirror
+        mod = BaoKuangDownObj.modifiers.new(name='mirror', type='MIRROR')
+        mod.use_axis[0] = True
+        mod.use_axis[1] = False
+        mod.mirror_object = wallproxy
+        # endregion 4、下抱框 ---------------------
+
+        # region 5、上抱框 ---------------------
+        # 高度：从上槛下皮到中槛上皮
+        BaoKuangUpHeight = (KanUpLoc.z - KanUpScale.z/2) \
+            - (KanMidLoc.z + KanMidScale.z/2)
+        BaoKuangUpScale = Vector((
+                    con.BAOKUANG_WIDTH * pd, # 宽0.66D
+                    con.BAOKUANG_DEEPTH * pd, # 厚0.3D
+                    BaoKuangUpHeight, 
+                    ))
+        # 位置Z：从上槛下皮，减一半高度
+        BaoKuangUp_z = (KanUpLoc.z - KanUpScale.z/2) \
+                            - BaoKuangUpHeight/2
+        # 位置X：半柱间距 - 半柱径 - 半抱框宽度
+        BaoKuangUp_x = frame_width/2 - pillerD/2 - con.BAOKUANG_WIDTH*pd/2
+        BaoKuangUpLoc = Vector((BaoKuangUp_x,0,BaoKuangUp_z))
+        bpy.ops.mesh.primitive_cube_add(
+                            size=1.0, 
+                            location = BaoKuangUpLoc, 
+                            scale= BaoKuangUpScale)
+        BaoKuangUpObj  = context.object
+        BaoKuangUpObj.name = '上抱框'
+        BaoKuangUpObj.parent = wallproxy
+        # 添加mirror
+        mod = BaoKuangUpObj.modifiers.new(name='mirror', type='MIRROR')
+        mod.use_axis[0] = True
+        mod.use_axis[1] = False
+        mod.mirror_object = wallproxy
+        # endregion 5、上抱框 ---------------------
+
+        # region 6、横披窗 ---------------------
+        # 横披窗数量：比隔扇少一扇
+        window_top_num = bdata.door_num - 1
+        # 横披窗宽度:(柱间距-柱径-4抱框)/3
+        window_top_width =  \
+            (frame_width - pillerD - con.BAOKUANG_WIDTH*4*pd)/window_top_num
+        # 循环生成每一扇横披窗
+        for n in range(1,window_top_num):
+            # 横披间框：右抱框中心 - n*横披窗间隔 - n*横披窗宽度
+            windowTopKuang_x = BaoKuangUp_x - con.BAOKUANG_WIDTH*pd*n \
+                - window_top_width * n
+            windowTopKuangLoc = Vector((windowTopKuang_x,0,BaoKuangUp_z))
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = windowTopKuangLoc, 
+                                scale= BaoKuangUpScale)
+            context.object.name = '横披间框'
+            context.object.parent = wallproxy
+
+        # 横披窗尺寸
+        WindowTopScale = Vector((window_top_width, # 宽度取横披窗宽度
+                 con.ZIBIAN_DEEPTH,
+                BaoKuangUpHeight # 高度与上抱框相同
+        ))
+        # 填充棂心
+        for n in range(0,window_top_num):
+            windowTop_x = BaoKuangUp_x - \
+                (con.BAOKUANG_WIDTH*pd + window_top_width)*(n+0.5)
+            WindowTopLoc =  Vector((windowTop_x,0,BaoKuangUp_z))
+            self.buildShanxin(context,wallproxy,WindowTopScale,WindowTopLoc)
+
+        # endregion 6、横披窗 ---------------------
+
+    # 构建隔扇
+    # 采用故宫王璞子书的做法，马炳坚的做法不够协调
+    def buildGeshan(self,name,context,wallproxy,scale,location):
+        # 载入数据
+        buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
+        bdata:data.ACA_data_obj = buildingObj.ACA_data
+        # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
+        # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
+        dk = bdata.DK
+        pd = con.PILLER_D_EAVE * dk
+        is_with_wall = bdata.is_with_wall
+
+        # 1.隔扇根对象
+        bpy.ops.object.empty_add(type='PLAIN_AXES')
+        geshan_root:bpy.types.Object = context.object
+        geshan_root.name = name
+        geshan_root.location = location
+        geshan_width,geshan_deepth,geshan_height = scale
+        geshan_root.parent = wallproxy  # 绑定到外框父对象    
+
+        # 2.边梃/抹头宽（看面）: 1/10隔扇宽（或1/5D）
+        # border_width = geshan_width / 10
+        border_width = con.BORDER_WIDTH * pd
+        # 边梃/抹头厚(进深)：1.5倍宽或0.3D，这里直接取了抱框厚度
+        # border_deepth = BAOKUANG_DEEPTH * pd
+        border_deepth = con.BORDER_DEEPTH * pd
+        # 边梃
+        loc = (geshan_width/2-border_width/2,0,0)
+        scale = (border_width,border_deepth,geshan_height)
+        bpy.ops.mesh.primitive_cube_add(
+                            size=1.0, 
+                            location = loc, 
+                            scale= scale)
+        context.object.name = '边梃'
+        context.object.parent = geshan_root
+        # 添加mirror
+        mod = context.object.modifiers.new(name='mirror', type='MIRROR')
+        mod.use_axis[0] = True
+        mod.mirror_object = geshan_root
+
+        # 3.构件抹头
+        # 抹头上下
+        loc = (0,0,geshan_height/2-border_width/2)
+        motou_width = geshan_width-border_width*2
+        scale = (motou_width,border_deepth,border_width)
+        bpy.ops.mesh.primitive_cube_add(
+                            size=1.0, 
+                            location = loc, 
+                            scale= scale)
+        context.object.name = '抹头.上下'
+        context.object.parent = geshan_root
+        if not is_with_wall:
+            # 添加mirror
+            mod = context.object.modifiers.new(name='mirror', type='MIRROR')
+            mod.use_axis[0] = False
+            mod.use_axis[2] = True
+            mod.mirror_object = geshan_root
+
+        # 4. 分割棂心、裙板、绦环板
+        gap_num = bdata.gap_num   # 门缝，与槛框留出一些距离
+        windowsill_height = 0       # 窗台高度，在需要做槛墙的槛框中定位
+        if gap_num == 2:
+            # 满铺扇心
+            heartHeight = geshan_height - border_width *2
+            # 扇心：抹二上推半扇心
+            loc1 = Vector((0,0,0))
+            scale = Vector((motou_width,border_deepth,heartHeight))
+            self.buildShanxin(context,geshan_root,scale,loc1)
+        if gap_num == 3:
+            # 三抹：扇心、裙板按6:4分
+            # 隔扇心高度
+            heartHeight = (geshan_height - border_width *3)*0.6
+            loc2 = Vector((0,0,
+                geshan_height/2-heartHeight-border_width*1.5))
+            scale = Vector((motou_width,border_deepth,border_width))
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc2, 
+                                scale= scale)
+            context.object.name = '抹头.二'
+            context.object.parent = geshan_root
+            # 扇心：抹二上推半扇心
+            loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
+            scale = Vector((motou_width,border_deepth,heartHeight))
+            self.buildShanxin(context,geshan_root,scale,loc8)
+            if is_with_wall:
+                 # 计算窗台高度:抹二下皮
+                windowsill_height = loc2.z - border_width/2
+            else:
+                # 裙板，抹二下方
+                loc3 = loc2-Vector((0,0,heartHeight*2/6+border_width/2))
+                scale = Vector((motou_width,border_deepth/3,heartHeight*4/6))
+                bpy.ops.mesh.primitive_cube_add(
+                                    size=1.0, 
+                                    location = loc3, 
+                                    scale= scale)
+                context.object.name = '裙板'
+                context.object.parent = geshan_root           
+        if gap_num == 4:
+            # 四抹：一块绦环板
+            # 减去4根抹头厚+绦环板(2抹高)，扇心裙板6/4分
+            heartHeight = (geshan_height - border_width*6)*0.6
+            # 抹二
+            loc2 = Vector((0,0,
+                geshan_height/2-heartHeight-border_width*1.5))
+            scale = (motou_width,border_deepth,border_width)
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc2, 
+                                scale= scale)
+            context.object.name = '抹头.二'
+            context.object.parent = geshan_root
+            # 抹三
+            loc3 = loc2 - Vector((0,0,border_width*3))
+            scale = (motou_width,border_deepth,border_width)
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc3, 
+                                scale= scale)
+            context.object.name = '抹头.三'
+            context.object.parent = geshan_root
+            # 绦环板
+            loc4 = (loc2+loc3)/2
+            scale = (motou_width,border_deepth/3,border_width*2)
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc4, 
+                                scale= scale)
+            context.object.name = '绦环板'
+            context.object.parent = geshan_root
+            # 扇心：抹二上推半扇心
+            loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
+            scale = Vector((motou_width,border_deepth,heartHeight))
+            self.buildShanxin(context,geshan_root,scale,loc8)
+            if is_with_wall:
+                # 计算窗台高度:抹三下皮
+                windowsill_height = loc3.z - border_width/2
+            else:
+                # 裙板，抹三下方
+                loc5 = loc3-Vector((0,0,heartHeight*2/6+border_width/2))
+                scale = (motou_width,border_deepth/3,heartHeight*4/6)
+                bpy.ops.mesh.primitive_cube_add(
+                                    size=1.0, 
+                                    location = loc5, 
+                                    scale= scale)
+                context.object.name = '裙板'
+                context.object.parent = geshan_root            
+        if gap_num == 5:
+            # 五抹：减去5根抹头厚+2绦环板(4抹高)，扇心裙板6/4分
+            heartHeight = (geshan_height - border_width*9)*0.6
+            # 抹二
+            loc2 = Vector((0,0,
+                geshan_height/2-heartHeight-border_width*1.5))
+            scale = (motou_width,border_deepth,border_width)
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc2, 
+                                scale= scale)
+            context.object.name = '抹头.二'
+            context.object.parent = geshan_root
+            # 抹三，抹二向下一块绦环板
+            loc3 = loc2 - Vector((0,0,border_width*3))
+            scale = (motou_width,border_deepth,border_width)
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc3, 
+                                scale= scale)
+            context.object.name = '抹头.三'
+            context.object.parent = geshan_root
+            # 绦环板一
+            loc5 = (loc2+loc3)/2
+            scale = (motou_width,border_deepth/3,border_width*2)
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc5, 
+                                scale= scale)
+            context.object.name = '绦环板一'
+            context.object.parent = geshan_root
+            # 扇心：抹二上推半扇心
+            loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
+            scale = Vector((motou_width,border_deepth,heartHeight))
+            self.buildShanxin(context,geshan_root,scale,loc8)
+            if is_with_wall:
+                # 计算窗台高度:抹三下皮
+                windowsill_height = loc3.z - border_width/2
+            else:
+                # 抹四，底边向上一块绦环板
+                loc4 = Vector((0,0,
+                    -geshan_height/2+border_width*3.5))
+                scale = (motou_width,border_deepth,border_width)
+                bpy.ops.mesh.primitive_cube_add(
+                                    size=1.0, 
+                                    location = loc4, 
+                                    scale= scale)
+                context.object.name = '抹头.四'
+                context.object.parent = geshan_root
+                # 绦环板二
+                loc6 = loc4 - Vector((0,0,border_width*1.5))
+                scale = (motou_width,border_deepth/3,border_width*2)
+                bpy.ops.mesh.primitive_cube_add(
+                                    size=1.0, 
+                                    location = loc6, 
+                                    scale= scale)
+                context.object.name = '绦环板二'
+                context.object.parent = geshan_root
+                # 裙板
+                loc7 = (loc3+loc4)/2
+                scale = (motou_width,border_deepth/3,heartHeight*4/6)
+                bpy.ops.mesh.primitive_cube_add(
+                                    size=1.0, 
+                                    location = loc7, 
+                                    scale= scale)
+                context.object.name = '裙板'
+                context.object.parent = geshan_root
+        if gap_num == 6:
+            # 六抹：减去6根抹头厚+3绦环板(6抹高)，扇心裙板6/4分
+            heartHeight = (geshan_height-border_width*12)*0.6
+            # 抹二，固定向下1.5抹+绦环板（2抹）
+            loc2 = Vector((0,0,
+                geshan_height/2-border_width*3.5))
+            scale = (motou_width,border_deepth,border_width)
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc2, 
+                                scale= scale)
+            context.object.name = '抹头.二'
+            context.object.parent = geshan_root
+            # 抹三, 向下一个扇心+抹头
+            loc3 = loc2 - Vector((0,0,heartHeight+border_width))
+            scale = (motou_width,border_deepth,border_width)
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc3, 
+                                scale= scale)
+            context.object.name = '抹头.三'
+            context.object.parent = geshan_root
+            # 抹四，向下一块绦环板
+            loc4 = loc3 - Vector((0,0,border_width*3))
+            scale = (motou_width,border_deepth,border_width)
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc4, 
+                                scale= scale)
+            context.object.name = '抹头.四'
+            context.object.parent = geshan_root
+            # 抹五，底边反推一绦环板
+            loc5 = Vector((
+                0,0,-geshan_height/2+border_width*3.5
+            ))
+            scale = (motou_width,border_deepth,border_width)
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc5, 
+                                scale= scale)
+            context.object.name = '抹头.五'
+            context.object.parent = geshan_root
+            # 绦环板一，抹二反推
+            loc6 = loc2+Vector((0,0,border_width*1.5))
+            scale = (motou_width,border_deepth/3,border_width*2)
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc6, 
+                                scale= scale)
+            context.object.name = '绦环板一'
+            context.object.parent = geshan_root
+            # 绦环板二，抹三抹四之间
+            loc7 = (loc3+loc4)/2
+            scale = (motou_width,border_deepth/3,border_width*2)
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = loc7, 
+                                scale= scale)
+            context.object.name = '绦环板二'
+            context.object.parent = geshan_root
+            
+            # 扇心：抹二和抹三之间
+            loc8 = (loc2+loc3)/2
+            scale = Vector((motou_width,border_deepth,heartHeight))
+            self.buildShanxin(context,geshan_root,scale,loc8)
+            if is_with_wall:
+                # 计算窗台高度:抹四下皮
+                windowsill_height = loc4.z - border_width/2
+            else:
+                # 裙板，抹四抹五之间
+                loc8 = (loc4+loc5)/2
+                scale = (motou_width,border_deepth/3,heartHeight*4/6)
+                bpy.ops.mesh.primitive_cube_add(
+                                    size=1.0, 
+                                    location = loc8, 
+                                    scale= scale)
+                context.object.name = '裙板'
+                context.object.parent = geshan_root
+                # 绦环板三，底边反推
+                loc9 = Vector((0,0,-geshan_height/2+border_width*2))
+                scale = (motou_width,border_deepth/3,border_width*2)
+                bpy.ops.mesh.primitive_cube_add(
+                                    size=1.0, 
+                                    location = loc9, 
+                                    scale= scale)
+                context.object.name = '绦环板三'
+                context.object.parent = geshan_root        
+        return windowsill_height
+        
+    # 构建槛墙
+    # 槛墙定位要与隔扇裙板上抹对齐，所以要根据隔扇的尺寸进行定位
+    def buildKanqiang(self,context,
+                      wallproxy:bpy.types.Object
+                      ,dimension):
+        # 载入数据
+        buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
+        bdata:data.ACA_data_obj = buildingObj.ACA_data
+        # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
+        # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
+        dk = bdata.DK
+        pd = con.PILLER_D_EAVE * dk
+        is_with_wall = bdata.is_with_wall
+
+        # 风槛
+        scl1 = Vector((
+            dimension.x,
+            con.KAN_WIND_DEEPTH*pd,
+            con.KAN_WIND_HEIGHT*pd
+        ))
+        loc1 = Vector((
+            0,0,dimension.z-scl1.z/2
+        ))
+        bpy.ops.mesh.primitive_cube_add(
+            size=1,
+            location=loc1,
+            scale=scl1
+        )
+        kanWindObj = bpy.context.object
+        kanWindObj.name = '风槛'
+        kanWindObj.parent = wallproxy
+        # 榻板
+        scl2 = Vector((
+            dimension.x+con.TABAN_EX,
+            con.TABAN_DEEPTH*pd+con.TABAN_EX,
+            con.TABAN_HEIGHT*pd
+        ))
+        loc2 = Vector((
+            0,0,dimension.z-scl1.z-scl2.z/2
+        ))
+        kanWindObj:bpy.types.Object = utils.drawHexagon(scl2,loc2)
+        kanWindObj = bpy.context.object
+        kanWindObj.name = '榻板'
+        kanWindObj.parent = wallproxy
+        # 槛墙
+        scl3 = Vector((
+            dimension.x,
+            con.TABAN_DEEPTH*pd,
+            dimension.z-scl1.z-scl2.z
+        ))
+        loc3 = Vector((
+            0,0,scl3.z/2
+        ))
+        kanqiangObj:bpy.types.Object = utils.drawHexagon(scl3,loc3)
+        kanqiangObj.name = '槛墙'
+        kanqiangObj.parent = wallproxy
+        return
+        
+    def execute(self, context): 
+        # 确认选择的对象必须是墙体线框
+        wallproxy = context.object
+        if wallproxy.ACA_data.aca_type != con.ACA_TYPE_WALL:
+            utils.ShowMessageBox("请选择一个隔扇线框","ERROR")
+            return
+        
+        # 载入设计数据
+        buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
+        bdata:data.ACA_data_obj = buildingObj.ACA_data
+        if bdata == None:
+            utils.ShowMessageBox("无法读取设计数据","ERROR")
+            return {'FINISHED'}
+        elif bdata.aca_type != con.ACA_TYPE_BUILDING:
+            utils.ShowMessageBox("未找到建筑根节点","ERROR")
+            return {'FINISHED'}
+        dk = bdata.DK
+        pd = con.PILLER_D_EAVE * dk
+        pillerD = bdata.piller_diameter
+        # 分解槛框的长、宽、高
+        frame_width,frame_deepth,frame_height = wallproxy.dimensions
+
+        # 清理之前的子对象
+        utils.delete_hierarchy(wallproxy)
+        # 聚焦在当前collection中
+        utils.setCollection(context, con.ROOT_COLL_NAME)
+        
+        # 2、构建槛框    
+        self.buildKanKuang(context,wallproxy)
+
+        # 3、构建槛框内的每一扇隔扇
+        # 隔扇数量
+        geshan_num = bdata.door_num
+        geshan_total_width = frame_width - pillerD - con.BAOKUANG_WIDTH*pd*2
+        # 每个隔扇宽度：抱框位置 / 隔扇数量
+        geshan_width = geshan_total_width/geshan_num
+        # 与下抱框等高
+        BaoKuangDownObj:bpy.types.Object = context.scene.objects.get('下抱框')
+        geshan_height = BaoKuangDownObj.dimensions.z
+        scale = Vector((geshan_width-con.GESHAN_GAP,
+                 con.BAOKUANG_DEEPTH * pd,
+                 geshan_height-con.GESHAN_GAP))
+        for n in range(geshan_num):
+            # 位置
+            location = Vector((geshan_width*(geshan_num/2-n-0.5),   #向右半扇
+                        0,
+                        BaoKuangDownObj.location.z    #与抱框平齐
+                        ))
+            windowsill_height = self.buildGeshan(
+                '隔扇',context,wallproxy,scale,location)
+
+        # 4、添加槛墙
+        is_with_wall = bdata.is_with_wall
+        if is_with_wall :
+            # 窗台高度
+            windowsill_z = windowsill_height + BaoKuangDownObj.location.z
+            scale = Vector((
+                wallproxy.dimensions.x,
+                wallproxy.dimensions.y,
+                windowsill_z
+            ))
+            # 添加槛墙
+            self.buildKanqiang(context,wallproxy,scale)
+
+        utils.focusObj(wallproxy)
+
         return {'FINISHED'}

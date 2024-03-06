@@ -10,6 +10,7 @@ from . import operators
 import xml.etree.ElementTree as ET
 import os
 from .const import ACA_Consts as con
+from . import buildwall
 
 # 初始化自定义属性
 def initprop():
@@ -49,9 +50,6 @@ def getTemplateList():
     print("ACA: Get template list")
     return template_list
 
-def get_template(self):
-    return self['template']
-
 # 重建整体建筑
 # todo:和update_building有些重复，后续看是否删除
 def update_floor(self, context:bpy.types.Context):
@@ -61,7 +59,8 @@ def update_floor(self, context:bpy.types.Context):
         # 调用营造序列
         operators.buildFloor(self,context,buildingObj)
         operators.resizePlatform(self,context,buildingObj)
-        operators.buildWallLayout(self,context,buildingObj)
+        wallBuilder = buildwall.wallBuilder()
+        wallBuilder.buildWallLayout(buildingObj)
     else:
         print("ACA: updated building failed, context.object should be buildingObj")
         return
@@ -106,7 +105,9 @@ def update_piller(self, context:bpy.types.Context):
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 缩放柱形
         operators.resizePiller(self,context,buildingObj)
-        operators.buildWallLayout(self,context,buildingObj)
+        # 重新生成墙体
+        wallBuilder = buildwall.wallBuilder()
+        wallBuilder.buildWallLayout(buildingObj)
     else:
         print("ACA: updated platform failed, context.object should be buildingObj")
         return
@@ -115,8 +116,9 @@ def update_wall(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj = context.object
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
-        # 缩放柱形
-        operators.buildWallLayout(self,context,buildingObj)
+        # 重新生成墙体
+        wallBuilder = buildwall.wallBuilder()
+        wallBuilder.buildWallLayout(buildingObj)
     else:
         print("ACA: updated platform failed, context.object should be buildingObj")
         return
@@ -136,11 +138,6 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = '对象类型',
         ) # type: ignore
     
-    # 建筑对象属性
-    template : bpy.props.StringProperty(
-            name = "模板",
-            get = get_template
-        ) # type: ignore
     DK: bpy.props.FloatProperty(
             name = "斗口",
             min=0.01,
@@ -250,6 +247,15 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             ],
             update = update_wall,
             options = {"ANIMATABLE"}
+        ) # type: ignore
+    wall_style : bpy.props.EnumProperty(
+            name = "墙类型",
+            items = [
+                ("","",""),
+                ("1","槛墙",""),
+                ("2","隔扇",""),
+                ("3","槛窗",""),
+            ],
         ) # type: ignore
     wall_source : bpy.props.PointerProperty(
             name = "墙样式",

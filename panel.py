@@ -6,6 +6,7 @@
 import bpy
 from . import data
 from .const import ACA_Consts as con
+from . import utils
 
 # 营造向导面板
 class ACA_PT_basic(bpy.types.Panel):
@@ -104,30 +105,44 @@ class ACA_PT_props(bpy.types.Panel):
                 row = box.row()
                 row.prop(objData, "wall_layout") # 墙布局
                 row = box.row() 
-                row.prop(objData, "wall_source") # 墙样式
+                row.prop(objData, "wall_style") # 墙样式
+                # 批量设置全局的墙样式
+                if objData.wall_style == "1": # 槛墙
+                    row = box.row() 
+                    row.prop(objData, "wall_source") # 墙样式
+                if objData.wall_style in ("2","3"): # 2-隔扇，3-槛窗
+                    row = box.row()
+                    row.prop(objData, "door_height")  # 中槛高度
+                    row = box.row()
+                    row.prop(objData, "door_num")     # 隔扇数量
+                    row = box.row()
+                    row.prop(objData, "gap_num")      # 抹头数量
+                    row = box.row() 
+                    row.prop(objData, "lingxin_source")   # 棂心样式
+                row = box.row()
+                row.operator("aca.build_wall_layout",icon='HOME')# 按钮：生成门窗
 
+            # 选择wallproxy时，可以设置墙体的独立样式
             if objData.aca_type == con.ACA_TYPE_WALL: 
-                # 当前选中的为墙外框，反查建筑设计参数
-                # todo：这样的话，意味着隔扇样式统一，有些过小的开间，无法单独设置2面隔扇
-                wallObj = context.object
-                buildingObj = wallObj.parent.parent
-                bdata = buildingObj.ACA_data
-
-                # 隔扇工具
                 box = layout.box()
-                row = box.row()
-                row.label(text="请确选择一个墙体线框对象")
-                row = box.row()
-                row.prop(bdata, "door_height")  # 中槛高度
-                row = box.row()
-                row.prop(bdata, "door_num")     # 隔扇数量
-                row = box.row()
-                row.prop(bdata, "gap_num")      # 抹头数量
                 row = box.row() 
-                row.prop(bdata, "lingxin_source")   # 棂心样式
+                row.prop(objData, "wall_style") # 墙样式
+                if objData.wall_style == "1": # 槛墙
+                    row = box.row() 
+                    row.prop(objData, "wall_source") # 墙样式
+                if objData.wall_style in ("2","3"): # 2-隔扇，3-槛窗
+                    # 隔扇工具
+                    row = box.row()
+                    row.label(text="请确选择一个墙体线框对象")
+                    row = box.row()
+                    row.prop(objData, "door_height")  # 中槛高度
+                    row = box.row()
+                    row.prop(objData, "door_num")     # 隔扇数量
+                    row = box.row()
+                    row.prop(objData, "gap_num")      # 抹头数量
+                    row = box.row() 
+                    row.prop(objData, "lingxin_source")   # 棂心样式
+                    row = box.row()
+                    row.prop(objData, "is_with_wall") # 是否有槛墙                
                 row = box.row()
-                row.prop(bdata, "is_with_wall") # 是否有槛墙                
-                
-                # 按钮：生成门窗
-                row = box.row()
-                row.operator("aca.build_door",icon='HOME')
+                row.operator("aca.build_wall_single",icon='HOME')# 按钮：生成门窗

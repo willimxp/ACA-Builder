@@ -230,8 +230,8 @@ def delete_hierarchy(parent_obj:bpy.types.Object,with_parent=False):
             objects[child_name].select_set(state=True)
             bpy.data.objects.remove(objects[child_name])
         # print ("Successfully deleted object")
-    else:
-        print ("Could not delete object")
+    # else:
+    #     print ("Could not delete object")
 
 # 计算两个点之间距离
 # 使用blender提供的mathutils库中的Vector类

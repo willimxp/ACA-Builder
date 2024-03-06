@@ -14,6 +14,7 @@ from . import data
 from .const import ACA_Consts as con
 from . import utils
 from . import const
+from . import buildwall
 
 # 将模版参数填充入根节点的设计参数中
 def setTemplateData(buildingObj:bpy.types.Object,
@@ -372,119 +373,6 @@ def resizePiller(self,context:bpy.types.Context,
     utils.focusObj(buildingObj)
     print("ACA: Piller updated")
 
-# 构建墙体布局
-def buildWallLayout(self, context:bpy.types.Context,
-             buildingObj:bpy.types.Object
-    ):
-    # 载入配置
-    buildingData : data.ACA_data_obj = buildingObj.ACA_data
-
-    # 构造墙体根节点
-    wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
-    if wallrootObj == None:        
-        # 创建新地盘对象（empty）===========================================================
-        bpy.ops.object.empty_add(type='PLAIN_AXES')
-        wallrootObj = context.object
-        wallrootObj.name = "墙体布局"
-        wallrootObj.parent = buildingObj  # 挂接在对应建筑节点下
-        wallrootObj.ACA_data['aca_obj'] = True
-        wallrootObj.ACA_data['aca_type'] = con.ACA_TYPE_WALL_ROOT
-        #与台基顶面对齐
-        wall_z = buildingObj.ACA_data.platform_height
-        wallrootObj.location = (0,0,wall_z)
-    else:
-        # 清空所有墙体
-        utils.delete_hierarchy(wallrootObj)
-
-    # 获取柱网
-    net_x,net_y = getFloorDate(self,context,buildingObj)
-    # 根据墙体布局类型（无廊、周围廊、前廊等），分别处理
-    wallLayout = int(buildingData.wall_layout)
-    row=[]
-    col=[]
-    if wallLayout == 1: # 默认无廊
-        row = [0,len(net_x)-1]   # 左右两列
-        rowRange = range(0,len(net_x)-1)
-        col = [0,len(net_y)-1]   # 前后两排
-        colRange = range(0,len(net_y)-1)
-    if wallLayout == 2: # 周围廊
-        row = [1,len(net_x)-2]   # 左右两列
-        rowRange = range(1,len(net_x)-2)
-        col = [1,len(net_y)-2]   # 前后两排
-        colRange = range(1,len(net_y)-2)
-    if wallLayout == 3: # 前廊
-        row = [1,len(net_x)-1]   # 左右两列
-        rowRange = range(1,len(net_x)-1)
-        col = [0,len(net_y)-1]   # 前后两排
-        colRange = range(0,len(net_y)-1)
-    if wallLayout == 4: # 斗底槽
-        row = [0,1,len(net_x)-2,len(net_x)-1]   # 左右两列
-        rowRange = range(0,len(net_x)-1)
-        col = [0,1,len(net_y)-2,len(net_y)-1]   # 前后两排
-        colRange = range(0,len(net_y)-1)
-    
-    # 墙线框尺寸
-    wall_deepth = 1
-    pillerObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PILLER)
-    wall_height = pillerObj.dimensions.z
-    
-    # 生成横向墙体
-    for r in row: 
-        for c in colRange:
-            pStart = Vector((net_x[c],net_y[r],0))
-            pEnd = Vector((net_x[c+1],net_y[r],0))
-            wallObj = utils.addCubeBy2Points(
-                        start_point = pStart,
-                        end_point = pEnd,
-                        deepth = wall_deepth,
-                        height = wall_height,
-                        name = "墙体proxy",
-                        root_obj = wallrootObj,
-                        origin_at_bottom = True
-                    )
-            if r < len(net_y)/2:
-                wallObj.rotation_euler.z +=  math.radians(-180)
-
-    # 生成纵向墙体
-    for c in col: 
-        for r in rowRange:
-            pStart = Vector((net_x[c],net_y[r],0))
-            pEnd = Vector((net_x[c],net_y[r+1],0))
-            wallObj = utils.addCubeBy2Points(
-                        start_point = pStart,
-                        end_point = pEnd,
-                        deepth = wall_deepth,
-                        height = wall_height,
-                        name = "墙体proxy",
-                        root_obj = wallrootObj,
-                        origin_at_bottom = True
-                    )
-            if c >= len(net_x)/2:
-                wallObj.rotation_euler.z +=  math.radians(180)
-            
-    # 设置墙体属性
-    for wallObj in wallrootObj.children:
-        wallObj.ACA_data['aca_obj'] = True
-        wallObj.ACA_data['aca_type'] = con.ACA_TYPE_WALL
-        wallObj.display_type = 'WIRE'
-        wallObj.hide_render = True
-
-        # 绑定墙体样式
-        if buildingData.wall_source != None:
-            wallChildObj = utils.copyObject(
-                sourceObj=buildingData.wall_source,
-                name='墙体',
-                parentObj=wallObj
-            )
-            wallChildObj.dimensions = (wallObj.dimensions.x,
-                                       wallChildObj.dimensions.y,
-                                       wallObj.dimensions.z)
-
-    # 重新聚焦建筑根节点
-    utils.focusObj(buildingObj)
-
-    print("ACA: Wall added")
-
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
 def buildAll(self, context:bpy.types.Context,
@@ -494,7 +382,8 @@ def buildAll(self, context:bpy.types.Context,
     # 生成台基
     buildPlatform(self,context,buildingObj)
     # 生成墙体框线
-    buildWallLayout(self,context,buildingObj) 
+    wallbuilder = buildwall.wallBuilder()
+    wallbuilder.buildWallLayout(buildingObj)
 
 # 生成新建筑
 # 所有自动生成的建筑统一放置在项目的“ACA”collection中
@@ -520,22 +409,57 @@ class ACA_OT_add_building(bpy.types.Operator):
         # 聚焦到建筑根节点
         utils.focusObj(buildingObj)
         return {'FINISHED'}
+
+# 批量生成墙体布局，及所有墙体
+class ACA_OT_build_wall_layout(bpy.types.Operator):
+    bl_idname="aca.build_wall_layout"
+    bl_label = "墙体营造"
+
+    def execute(self, context):  
+        buildingObj = context.object
+        bData:data.ACA_data_obj = buildingObj.ACA_data
+        if bData.aca_type != con.ACA_TYPE_BUILDING:
+            utils.ShowMessageBox("ERROR: 找不到建筑")
+        else:
+            # 生成墙体框线
+            wallbuilder = buildwall.wallBuilder()
+            wallbuilder.buildWallLayout(buildingObj)
+        return {'FINISHED'}
+
+# 单独生成一个墙体
+class ACA_OT_build_wall_single(bpy.types.Operator):
+    bl_idname="aca.build_wall_single"
+    bl_label = "墙体营造"
+
+    def execute(self, context):  
+        wallproxy = context.object
+        wData:data.ACA_data_obj = wallproxy.ACA_data
+        if wData.aca_type != con.ACA_TYPE_WALL:
+            utils.ShowMessageBox("ERROR: 找不到建筑")
+        else:
+            # 生成墙体框线
+            wallbuilder = buildwall.wallBuilder()
+            wallbuilder.buildSingleWall(wallproxy)
+        return {'FINISHED'}
     
 # 生成柱间隔扇
 class ACA_OT_build_door(bpy.types.Operator):
     bl_idname="aca.build_door"
-    bl_label = "隔扇营造"
+    bl_label = "墙体营造"
 
     # 构建扇心
     # 包括在槛框中嵌入的横披窗扇心
     # 也包括在隔扇中嵌入的隔扇扇心
-    def buildShanxin(self,context,wallproxy,scale:Vector,location:Vector):
+    def buildShanxin(self,context,parent,scale:Vector,location:Vector):
+        # parent在横披窗中传入的wallproxy，但在隔扇中传入的geshanroot，所以需要重新定位
         # 载入数据
-        buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
-        bdata:data.ACA_data_obj = buildingObj.ACA_data
+        buildingObj = utils.getAcaParent(parent,con.ACA_TYPE_BUILDING)
+        wallproxy = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL)
+        bData:data.ACA_data_obj = buildingObj.ACA_data
+        wData:data.ACA_data_obj = wallproxy.ACA_data
         # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
         # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
-        dk = bdata.DK
+        dk = bData.DK
         pd = con.PILLER_D_EAVE * dk
 
         # 仔边环绕
@@ -543,7 +467,7 @@ class ACA_OT_build_door(bpy.types.Operator):
         bpy.ops.mesh.primitive_plane_add(size=1,location=location)
         zibianObj = bpy.context.object
         zibianObj.name = '仔边'
-        zibianObj.parent = wallproxy
+        zibianObj.parent = parent
         # 三维的scale转为plane二维的scale
         zibianObj.rotation_euler.x = math.radians(90)
         zibianObj.scale = (
@@ -564,7 +488,7 @@ class ACA_OT_build_door(bpy.types.Operator):
         zibianObj.data.bevel_depth = con.ZIBIAN_WIDTH/2  # 仔边宽度
 
         # 填充棂心
-        lingxinObj = bdata.lingxin_source
+        lingxinObj = wData.lingxin_source
         if lingxinObj == None: return
         # 定位：从左下角排布array
         loc = (location.x-scale.x/2+con.ZIBIAN_WIDTH*pd,
@@ -573,7 +497,7 @@ class ACA_OT_build_door(bpy.types.Operator):
         lingxin = utils.copyObject(
             sourceObj=lingxinObj,
             name='棂心',
-            parentObj=wallproxy,
+            parentObj=parent,
             location=loc)
         # 计算平铺的行列数
         unitWidth,unitDeepth,unitHeight = utils.getMeshDims(lingxin)
@@ -596,13 +520,14 @@ class ACA_OT_build_door(bpy.types.Operator):
     def buildKanKuang(self,context,wallproxy):
         # 载入数据
         buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
-        bdata:data.ACA_data_obj = buildingObj.ACA_data
+        bData:data.ACA_data_obj = buildingObj.ACA_data
+        wData:data.ACA_data_obj = wallproxy.ACA_data
         # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
         # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
-        dk = bdata.DK
+        dk = bData.DK
         pd = con.PILLER_D_EAVE * dk
-        is_with_wall = bdata.is_with_wall
-        pillerD = bdata.piller_diameter
+        is_with_wall = wData.is_with_wall
+        pillerD = bData.piller_diameter
         # 分解槛框的长、宽、高
         frame_width,frame_deepth,frame_height = wallproxy.dimensions
 
@@ -644,7 +569,7 @@ class ACA_OT_build_door(bpy.types.Operator):
                     con.KAN_MID_HEIGHT * pd, # 高0.8D
                     ))
         KanMidLoc = Vector((0,0,
-                bdata.door_height + con.KAN_MID_HEIGHT*pd/2))
+                wData.door_height + con.KAN_MID_HEIGHT*pd/2))
         bpy.ops.mesh.primitive_cube_add(
                             size=1.0, 
                             location = KanMidLoc, 
@@ -713,7 +638,7 @@ class ACA_OT_build_door(bpy.types.Operator):
 
         # region 6、横披窗 ---------------------
         # 横披窗数量：比隔扇少一扇
-        window_top_num = bdata.door_num - 1
+        window_top_num = wData.door_num - 1
         # 横披窗宽度:(柱间距-柱径-4抱框)/3
         window_top_width =  \
             (frame_width - pillerD - con.BAOKUANG_WIDTH*4*pd)/window_top_num
@@ -743,18 +668,22 @@ class ACA_OT_build_door(bpy.types.Operator):
             self.buildShanxin(context,wallproxy,WindowTopScale,WindowTopLoc)
 
         # endregion 6、横披窗 ---------------------
+        
+        # 输出下抱框，做为隔扇生成的参考
+        return BaoKuangDownObj
 
     # 构建隔扇
     # 采用故宫王璞子书的做法，马炳坚的做法不够协调
     def buildGeshan(self,name,context,wallproxy,scale,location):
         # 载入数据
         buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
-        bdata:data.ACA_data_obj = buildingObj.ACA_data
+        bData:data.ACA_data_obj = buildingObj.ACA_data
+        wData:data.ACA_data_obj = wallproxy.ACA_data
         # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
         # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
-        dk = bdata.DK
+        dk = bData.DK
         pd = con.PILLER_D_EAVE * dk
-        is_with_wall = bdata.is_with_wall
+        is_with_wall = wData.is_with_wall
 
         # 1.隔扇根对象
         bpy.ops.object.empty_add(type='PLAIN_AXES')
@@ -803,7 +732,7 @@ class ACA_OT_build_door(bpy.types.Operator):
             mod.mirror_object = geshan_root
 
         # 4. 分割棂心、裙板、绦环板
-        gap_num = bdata.gap_num   # 门缝，与槛框留出一些距离
+        gap_num = wData.gap_num   # 门缝，与槛框留出一些距离
         windowsill_height = 0       # 窗台高度，在需要做槛墙的槛框中定位
         if gap_num == 2:
             # 满铺扇心
@@ -1054,12 +983,13 @@ class ACA_OT_build_door(bpy.types.Operator):
                       ,dimension):
         # 载入数据
         buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
-        bdata:data.ACA_data_obj = buildingObj.ACA_data
+        bData:data.ACA_data_obj = buildingObj.ACA_data
+        wData:data.ACA_data_obj = wallproxy.ACA_data
         # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
         # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
-        dk = bdata.DK
+        dk = bData.DK
         pd = con.PILLER_D_EAVE * dk
-        is_with_wall = bdata.is_with_wall
+        is_with_wall = wData.is_with_wall
 
         # 风槛
         scl1 = Vector((
@@ -1104,17 +1034,13 @@ class ACA_OT_build_door(bpy.types.Operator):
         kanqiangObj.name = '槛墙'
         kanqiangObj.parent = wallproxy
         return
-        
-    def execute(self, context): 
-        # 确认选择的对象必须是墙体线框
-        wallproxy = context.object
-        if wallproxy.ACA_data.aca_type != con.ACA_TYPE_WALL:
-            utils.ShowMessageBox("请选择一个隔扇线框","ERROR")
-            return
-        
+    
+    # 构建完整的隔扇
+    def buildDoor(self,context,wallproxy):       
         # 载入设计数据
         buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
         bdata:data.ACA_data_obj = buildingObj.ACA_data
+        wData:data.ACA_data_obj = wallproxy.ACA_data
         if bdata == None:
             utils.ShowMessageBox("无法读取设计数据","ERROR")
             return {'FINISHED'}
@@ -1132,17 +1058,16 @@ class ACA_OT_build_door(bpy.types.Operator):
         # 聚焦在当前collection中
         utils.setCollection(context, con.ROOT_COLL_NAME)
         
-        # 2、构建槛框    
-        self.buildKanKuang(context,wallproxy)
+        # 2、构建槛框，返回下抱框，做为隔扇生成的参考  
+        BaoKuangDownObj = self.buildKanKuang(context,wallproxy)
 
         # 3、构建槛框内的每一扇隔扇
         # 隔扇数量
-        geshan_num = bdata.door_num
+        geshan_num = wData.door_num
         geshan_total_width = frame_width - pillerD - con.BAOKUANG_WIDTH*pd*2
         # 每个隔扇宽度：抱框位置 / 隔扇数量
         geshan_width = geshan_total_width/geshan_num
-        # 与下抱框等高
-        BaoKuangDownObj:bpy.types.Object = context.scene.objects.get('下抱框')
+        # 与下抱框等高，参考buildKankuang函数的返回对象
         geshan_height = BaoKuangDownObj.dimensions.z
         scale = Vector((geshan_width-con.GESHAN_GAP,
                  con.BAOKUANG_DEEPTH * pd,
@@ -1157,7 +1082,7 @@ class ACA_OT_build_door(bpy.types.Operator):
                 '隔扇',context,wallproxy,scale,location)
 
         # 4、添加槛墙
-        is_with_wall = bdata.is_with_wall
+        is_with_wall = wData.is_with_wall
         if is_with_wall :
             # 窗台高度
             windowsill_z = windowsill_height + BaoKuangDownObj.location.z
@@ -1171,4 +1096,15 @@ class ACA_OT_build_door(bpy.types.Operator):
 
         utils.focusObj(wallproxy)
 
+    def execute(self, context): 
+        wallproxy = context.object
+
+        # 确认选择的对象必须是墙体线框
+        if wallproxy.ACA_data.aca_type != con.ACA_TYPE_WALL:
+            utils.ShowMessageBox("请选择一个隔扇线框","ERROR")
+            return
+        
+        self.buildDoor(context,wallproxy)
+
         return {'FINISHED'}
+

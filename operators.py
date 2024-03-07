@@ -15,6 +15,7 @@ from .const import ACA_Consts as con
 from . import utils
 from . import const
 from . import buildwall
+from functools import partial
 
 # 将模版参数填充入根节点的设计参数中
 def setTemplateData(buildingObj:bpy.types.Object,
@@ -40,11 +41,9 @@ def setTemplateData(buildingObj:bpy.types.Object,
     buildingData['piller_diameter'] = template.PILLER_D 
 
 # 根据panel中DK的改变，更新整体设计参数
-def setTemplateByDK(self, context:bpy.types.Context,
-                    dk,
-                    buildingObj:bpy.types.Object):
+def setTemplateByDK(dk,buildingObj:bpy.types.Object):
     # 载入模版
-    template_name = context.scene.ACA_data.template
+    template_name = bpy.context.scene.ACA_data.template
     # 根据DK数据，重新计算模版参数
     template = const.ACA_template(template_name,dk)
 
@@ -55,14 +54,14 @@ def setTemplateByDK(self, context:bpy.types.Context,
 # 添加建筑empty根节点，并绑定设计模版
 # 返回建筑empty根节点对象
 # 被ACA_OT_add_newbuilding类调用
-def addBuildingRoot(self, context:bpy.types.Context):
+def addBuildingRoot():
     # 获取panel上选择的模版
-    template_name = context.scene.ACA_data.template
+    template_name = bpy.context.scene.ACA_data.template
     
     # 创建根节点empty
     bpy.ops.object.empty_add(type='PLAIN_AXES')
-    buildingObj = context.object
-    buildingObj.location = context.scene.cursor.location   # 原点摆放在3D Cursor位置
+    buildingObj = bpy.context.object
+    buildingObj.location = bpy.context.scene.cursor.location   # 原点摆放在3D Cursor位置
     buildingObj.name = template_name   # 系统遇到重名会自动添加00x的后缀       
     buildingObj.empty_display_type = 'SPHERE'
 
@@ -74,8 +73,7 @@ def addBuildingRoot(self, context:bpy.types.Context):
     return buildingObj
 
 # 根据固定模板，创建新的台基
-def buildPlatform(self, context:bpy.types.Context,
-                 buildingObj:bpy.types.Object):
+def buildPlatform(buildingObj:bpy.types.Object):
     buildingData : data.ACA_data_obj = buildingObj.ACA_data
 
     # 1、创建地基===========================================================
@@ -120,9 +118,7 @@ def buildPlatform(self, context:bpy.types.Context,
 
 # 根据插件面板的台基高度、下出等参数变化，更新台基外观
 # 绑定于data.py中update_platform回调
-def resizePlatform(self, context:bpy.types.Context,
-                    buildingObj:bpy.types.Object):
-
+def resizePlatform(buildingObj:bpy.types.Object):
     # 载入根节点中的设计参数
     buildingData : data.ACA_data_obj = buildingObj.ACA_data
     
@@ -158,8 +154,7 @@ def resizePlatform(self, context:bpy.types.Context,
 # 准备柱网数据
 # 将panel中设置的面宽、进深，组合成柱网数组
 # 返回net_x[],net_y[]数组
-def getFloorDate(self,context:bpy.types.Context,
-                     buildingObj:bpy.types.Object):
+def getFloorDate(buildingObj:bpy.types.Object):
     # 载入设计参数
     buildingData : data.ACA_data_obj = buildingObj.ACA_data
 
@@ -244,8 +239,7 @@ def getFloorDate(self,context:bpy.types.Context,
 # 2. 用户调整柱网的开间、进深，需要保持柱子的高、径、样式
 # 3. 修改柱样式时，也会重排柱子
 # 建筑根节点（内带设计参数集）
-def buildFloor(self,context:bpy.types.Context,
-                buildingObj:bpy.types.Object):
+def buildFloor(buildingObj:bpy.types.Object):
     # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
     if buildingObj.ACA_data.x_rooms % 2 == 0:
         # 不处理偶数面阔间数
@@ -304,7 +298,7 @@ def buildFloor(self,context:bpy.types.Context,
     # 3、根据地盘数据，循环排布每根柱子
     x_rooms = buildingData.x_rooms   # 面阔几间
     y_rooms = buildingData.y_rooms   # 进深几间
-    net_x,net_y = getFloorDate(self,context,buildingObj)
+    net_x,net_y = getFloorDate(buildingObj)
     for y in range(y_rooms + 1):
         for x in range(x_rooms + 1):
             # 统一命名为“柱.x/y”，以免更换不同柱形时，减柱设置失效
@@ -334,8 +328,7 @@ def buildFloor(self,context:bpy.types.Context,
 
 # 根据用户在插件面板修改的柱高、柱径，缩放柱子外观
 # 绑定于data.py中objdata属性中触发的回调
-def resizePiller(self,context:bpy.types.Context,
-                        buildingObj:bpy.types.Object):
+def resizePiller(buildingObj:bpy.types.Object):
     # 获取一个现有的柱子实例，做为缩放的依据
     pillerObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PILLER)
     
@@ -375,15 +368,29 @@ def resizePiller(self,context:bpy.types.Context,
 
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
-def buildAll(self, context:bpy.types.Context,
-             buildingObj:bpy.types.Object):
+# 采用了偏函数和fastrun，极大加速了性能
+def buildAll(buildingObj:bpy.types.Object):
+    # # 普通调用模式=============
+    # # 生成柱网
+    # buildFloor(buildingObj)
+    # # 生成台基
+    # buildPlatform(buildingObj)
+    # # 生成墙体框线
+    # wallBuilder = buildwall.wallBuilder()
+    # wallBuilder.buildWallLayout(buildingObj)
+
+    # 提高性能模式============
+    # https://blender.stackexchange.com/questions/7358/python-performance-with-blender-operators
     # 生成柱网
-    buildFloor(self,context,buildingObj)
+    funproxy = partial(buildFloor,buildingObj=buildingObj)
+    utils.fastRun(funproxy)
     # 生成台基
-    buildPlatform(self,context,buildingObj)
-    # 生成墙体框线
-    wallbuilder = buildwall.wallBuilder()
-    wallbuilder.buildWallLayout(buildingObj)
+    funproxy = partial(buildPlatform,buildingObj=buildingObj)
+    utils.fastRun(funproxy)
+    # 生成墙体
+    wallBuilder = buildwall.wallBuilder()
+    funproxy = partial(wallBuilder.buildWallLayout,buildingObj=buildingObj)
+    utils.fastRun(funproxy)
 
 # 生成新建筑
 # 所有自动生成的建筑统一放置在项目的“ACA”collection中
@@ -401,7 +408,7 @@ class ACA_OT_add_building(bpy.types.Operator):
 
         # 2.添加建筑empty
         # 其中绑定了模版数据
-        buildingObj = addBuildingRoot(self,context)
+        buildingObj = addBuildingRoot()
 
         # 3.调用营造序列
         buildAll(self,context,buildingObj) 
@@ -547,7 +554,7 @@ class ACA_OT_build_door(bpy.types.Operator):
         if is_with_wall:
             KanDownObj.hide_set(True) 
         # endregion 1、下槛 ---------------------
-
+            
         # region 2、上槛 ---------------------
         KanUpScale = Vector((frame_width, # 长度随面宽
                     con.KAN_UP_DEEPTH * pd, # 厚0.3D
@@ -1054,7 +1061,7 @@ class ACA_OT_build_door(bpy.types.Operator):
         frame_width,frame_deepth,frame_height = wallproxy.dimensions
 
         # 清理之前的子对象
-        utils.delete_hierarchy(wallproxy)
+        # utils.delete_hierarchy(wallproxy)
         # 聚焦在当前collection中
         utils.setCollection(context, con.ROOT_COLL_NAME)
         

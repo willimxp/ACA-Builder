@@ -28,6 +28,16 @@ class ACA_Consts(object):
     PILLER_H_EAVE = 57  # 檐柱高约57斗口（到挑檐桁下皮共70斗口）
     PILLER_D_JIN = 6.6  # 金柱直径6.6斗口
 
+    # 枋类
+    EFANG_LARGE_H = 6/6   # 大额枋高
+    EFANG_LARGE_Y = 4.8/6 # 大额枋厚
+    EFANG_SMALL_H = 4/6   # 小额枋高
+    EFANG_SMALL_Y = 3.2/6 # 小额枋厚
+    PINGBAN_H = 2/6       # 平板枋高
+    PINGBAN_Y = 3.5/6     # 平板枋厚
+    BOARD_YOUE_H = 2/6    # 由额垫板高
+    BOARD_YOUE_Y = 1/6    # 由额垫板厚
+
     # 门窗（马炳坚数据）
     KAN_DOWN_HEIGHT = 0.8   # 下槛高度，单位D
     KAN_DOWN_DEEPTH = 0.3   # 下槛深度，单位D，梁思成实际使用的为0.4

@@ -11,6 +11,8 @@ import xml.etree.ElementTree as ET
 import os
 from .const import ACA_Consts as con
 from . import buildwall
+from functools import partial
+from . import utils
 
 # 初始化自定义属性
 def initprop():
@@ -57,10 +59,7 @@ def update_floor(self, context:bpy.types.Context):
     buildingObj = context.object 
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 调用营造序列
-        operators.buildFloor(self,context,buildingObj)
-        operators.resizePlatform(self,context,buildingObj)
-        wallBuilder = buildwall.wallBuilder()
-        wallBuilder.buildWallLayout(buildingObj)
+        operators.buildAll(buildingObj)
     else:
         print("ACA: updated building failed, context.object should be buildingObj")
         return
@@ -71,7 +70,7 @@ def update_building(self, context:bpy.types.Context):
     buildingObj = context.object 
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 调用营造序列
-        operators.buildAll(self,context,buildingObj)
+        operators.buildAll(buildingObj)
     else:
         print("ACA: updated building failed, context.object should be buildingObj")
         return
@@ -83,8 +82,8 @@ def update_dk(self, context:bpy.types.Context):
     dk = buildingObj.ACA_data.DK
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 更新DK值
-        operators.setTemplateByDK(self,context,dk,buildingObj)
-        operators.buildAll(self,context,buildingObj)
+        operators.setTemplateByDK(dk,buildingObj)
+        operators.buildAll(buildingObj)
     else:
         print("ACA: updated building failed, context.object should be buildingObj")
         return
@@ -94,7 +93,7 @@ def update_platform(self, context:bpy.types.Context):
     buildingObj = context.object
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 调用台基缩放
-        operators.resizePlatform(self,context,buildingObj)
+        operators.resizePlatform(buildingObj)
     else:
         print("ACA: updated platform failed, context.object should be buildingObj")
         return
@@ -104,10 +103,12 @@ def update_piller(self, context:bpy.types.Context):
     buildingObj = context.object
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 缩放柱形
-        operators.resizePiller(self,context,buildingObj)
+        operators.resizePiller(buildingObj)
         # 重新生成墙体
         wallBuilder = buildwall.wallBuilder()
-        wallBuilder.buildWallLayout(buildingObj)
+        # wallBuilder.buildWallLayout(buildingObj)
+        funproxy = partial(wallBuilder.buildWallLayout,buildingObj=buildingObj)
+        utils.fastRun(funproxy)
     else:
         print("ACA: updated platform failed, context.object should be buildingObj")
         return
@@ -118,7 +119,9 @@ def update_wall(self, context:bpy.types.Context):
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 重新生成墙体
         wallBuilder = buildwall.wallBuilder()
-        wallBuilder.buildWallLayout(buildingObj)
+        #wallBuilder.buildWallLayout(buildingObj)
+        funproxy = partial(wallBuilder.buildWallLayout,buildingObj=buildingObj)
+        utils.fastRun(funproxy)
     else:
         print("ACA: updated platform failed, context.object should be buildingObj")
         return

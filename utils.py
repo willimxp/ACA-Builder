@@ -383,3 +383,15 @@ def drawHexagon(dimensions,location):
     obj.data.update()
     bm.free()
     return obj
+
+# 快速执行bpy.ops执行
+def fastRun(func):
+    from bpy.ops import _BPyOpsSubModOp
+    view_layer_update = _BPyOpsSubModOp._view_layer_update
+    def dummy_view_layer_update(context):
+        pass
+    try:
+        _BPyOpsSubModOp._view_layer_update = dummy_view_layer_update
+        func()
+    finally:
+        _BPyOpsSubModOp._view_layer_update = view_layer_update

@@ -8,6 +8,7 @@ from . import data
 from . import utils
 from .const import ACA_Consts as con
 from mathutils import Vector,Matrix,geometry,Euler
+from functools import partial
 
 class wallBuilder(object):
     # 准备柱网数据
@@ -117,31 +118,31 @@ class wallBuilder(object):
         rowRange=()
         colRange=()
         if wallLayout == 1: # 默认无廊
-            row = [0,len(net_x)-1]   # 左右两列
-            rowRange = range(0,len(net_x)-1)
-            col = [0,len(net_y)-1]   # 前后两排
-            colRange = range(0,len(net_y)-1)
+            row = [0,len(net_y)-1]   # 左右两列
+            rowRange = range(0,len(net_y)-1)
+            col = [0,len(net_x)-1]   # 前后两排
+            colRange = range(0,len(net_x)-1)
         if wallLayout == 2: # 周围廊
-            row = [1,len(net_x)-2]   # 左右两列
-            rowRange = range(1,len(net_x)-2)
-            col = [1,len(net_y)-2]   # 前后两排
-            colRange = range(1,len(net_y)-2)
+            row = [1,len(net_y)-2]   # 左右两列
+            rowRange = range(1,len(net_y)-2)
+            col = [1,len(net_x)-2]   # 前后两排
+            colRange = range(1,len(net_x)-2)
         if wallLayout == 3: # 前廊
-            row = [1,len(net_x)-1]   # 左右两列
-            rowRange = range(1,len(net_x)-1)
-            col = [0,len(net_y)-1]   # 前后两排
-            colRange = range(0,len(net_y)-1)
+            row = [1,len(net_y)-1]   # 左右两列
+            rowRange = range(1,len(net_y)-1)
+            col = [0,len(net_x)-1]   # 前后两排
+            colRange = range(0,len(net_x)-1)
         if wallLayout == 4: # 斗底槽
-            row = [0,1,len(net_x)-2,len(net_x)-1]   # 左右两列
-            rowRange = range(0,len(net_x)-1)
-            col = [0,1,len(net_y)-2,len(net_y)-1]   # 前后两排
-            colRange = range(0,len(net_y)-1)
+            row = [0,1,len(net_y)-2,len(net_y)-1]   # 左右两列
+            rowRange = range(0,len(net_y)-1)
+            col = [0,1,len(net_x)-2,len(net_x)-1]   # 前后两排
+            colRange = range(0,len(net_x)-1)
         return row,col,rowRange,colRange
 
     # 更新墙布局
     # 墙体数量不变，仅更新墙体尺寸、样式等
     # 可以保持用户的个性化设置不丢失
-    def updateWallLayout(self,buildingObj:bpy.types.Object):
+    def __updateWallLayout(self,buildingObj:bpy.types.Object):
         # 获取墙布局根节点，并清空
         wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
 
@@ -208,7 +209,7 @@ class wallBuilder(object):
     # 用户的个性化设置丢失
     # 按照默认设计参数生成
     # todo：后续可以按照模版中的设置生成（包含预设的个性化设置）
-    def resetWallLayout(self,buildingObj:bpy.types.Object):
+    def __resetWallLayout(self,buildingObj:bpy.types.Object):
         # 获取墙布局根节点，并清空
         wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
         utils.delete_hierarchy(wallrootObj)
@@ -274,6 +275,8 @@ class wallBuilder(object):
             wData['is_with_wall'] = bData.is_with_wall
             wData['lingxin_source'] = bData.lingxin_source
 
+        print("ACA: wall layout reset.")
+
         # 三、批量绑定墙体构件
         for wallproxy in wallrootObj.children:
             self.buildSingleWall(wallproxy)
@@ -309,18 +312,98 @@ class wallBuilder(object):
         if wallcount_new == wallcount_old :
             # 墙数量没变，仅改变墙的尺寸、外观
             # 保留墙的个性化设置
-            self.updateWallLayout(buildingObj)
+            self.__updateWallLayout(buildingObj)
         else:
             # 墙数量变了，丢弃所有墙体数据，重建
             # 无法保留墙体的个性化设置
-            self.resetWallLayout(buildingObj)
-            
+            self.__resetWallLayout(buildingObj)
+    
+    # 在wallproxy的顶部插入大额枋、由额垫板、小额枋
+    def __addFang(self,wallproxy:bpy.types.Object):
+        # 载入数据
+        buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
+        bData:data.ACA_data_obj = buildingObj.ACA_data
+        wData:data.ACA_data_obj = wallproxy.ACA_data
+        dk = bData.DK
+        pd = con.PILLER_D_EAVE * dk
+
+        # 恢复wallproxy于柱等高，便于重新排布额枋
+        wallproxy.dimensions.z = bData.piller_height
+        utils.ApplyScale(wallproxy)
+        # 分解槛框的长、宽、高
+        frame_width,frame_deepth,frame_height = wallproxy.dimensions
+
+        # 大额枋
+        bigFangScale = Vector(
+                            (frame_width, # 长度随面宽
+                            con.EFANG_LARGE_Y * pd,
+                            con.EFANG_LARGE_H * pd
+                            )
+                        )
+        bigFangLoc = Vector((0,0,
+                frame_height - con.EFANG_LARGE_H*pd/2))
+        bigFangObj = utils.drawHexagon(bigFangScale,bigFangLoc)
+        bigFangObj.name =  "大额枋"
+
+        # 垫板
+        dianbanScale = Vector(
+                            (frame_width, # 长度随面宽
+                            con.BOARD_YOUE_Y * pd,
+                            con.BOARD_YOUE_H * pd
+                            )
+                        )
+        dianbanLoc = Vector((0,0,
+                bigFangLoc.z \
+                - con.EFANG_LARGE_H*pd/2 \
+                - con.BOARD_YOUE_H*pd/2))
+        bpy.ops.mesh.primitive_cube_add(
+                            size=1.0, 
+                            location = dianbanLoc, 
+                            scale= dianbanScale)
+        dianbanObj = bpy.context.object
+        dianbanObj.name =  "由额垫板"
+        
+        # 小额枋
+        smallFangScale = Vector(
+                            (frame_width, # 长度随面宽
+                            con.EFANG_SMALL_Y * pd,
+                            con.EFANG_SMALL_H * pd
+                            )
+                        )
+        smallFangLoc = Vector((0,0,
+                dianbanLoc.z \
+                - con.BOARD_YOUE_H*pd/2 \
+                - con.EFANG_SMALL_H*pd/2))
+        smallFangObj = utils.drawHexagon(smallFangScale,smallFangLoc)
+        smallFangObj.name =  "小额枋"
+
+        # 将额枋放在wallproxy的线框之外
+        wallproxy.dimensions.z -= con.EFANG_LARGE_H*pd \
+                                + con.BOARD_YOUE_H*pd \
+                                + con.EFANG_SMALL_H*pd
+        utils.ApplyScale(wallproxy)
+        # 绑定额枋到wallproxy
+        bigFangObj.parent = wallproxy
+        dianbanObj.parent = wallproxy
+        smallFangObj.parent = wallproxy
 
     # 个性化设置一个墙体
     # 传入wallproxy
     def buildSingleWall(self,wallproxy:bpy.types.Object):
-        wData:data.ACA_data_obj = wallproxy.ACA_data
+        # 清空框线
         utils.delete_hierarchy(wallproxy)
+       
+        # 载入数据
+        buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
+        bData:data.ACA_data_obj = buildingObj.ACA_data
+        wData:data.ACA_data_obj = wallproxy.ACA_data
+        dk = bData.DK
+        pd = con.PILLER_D_EAVE * dk
+
+        # 在wallproxy顶部插入大额枋、由额垫板、小额枋
+        # 插入后，wallproxy的高度将自动更新为柱头减去枋的高度
+        self.__addFang(wallproxy)
+        
         if wData.wall_style == "1":   #槛墙
             if wData.wall_source != None:
                 wallChildObj = utils.copyObject(
@@ -334,6 +417,9 @@ class wallBuilder(object):
         if wData.wall_style in ("2","3"): # 2-隔扇，3-槛墙
             utils.focusObj(wallproxy)
             bpy.ops.aca.build_door()
-        
+            #utils.fastRun(bpy.ops.aca.build_door)
+
         # 重新聚焦建筑根节点
         utils.focusObj(wallproxy)
+
+        print("ACA: wallproxy filled " + wallproxy.name)

@@ -210,12 +210,14 @@ def updateWallLayout(buildingObj:bpy.types.Object):
 # 按照默认设计参数生成
 # todo：后续可以按照模版中的设置生成（包含预设的个性化设置）
 def resetWallLayout(buildingObj:bpy.types.Object):
-    # 获取墙布局根节点，并清空
+    # 查找墙体布局节点
     wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
-    utils.delete_hierarchy(wallrootObj)
-    # funproxy = partial(utils.delete_hierarchy,parent_obj=wallrootObj)
-    # utils.fastRun(funproxy)
-    # 这个方法对这个函数并没有效果
+    # 如果找不到“墙体布局”根节点，重新创建
+    if wallrootObj == None:        
+        wallrootObj = __addWallrootNode(buildingObj)
+    else:
+        # 清空根节点
+        utils.delete_hierarchy(wallrootObj)
 
     # 一、批量生成wallproxy
     # a、默认尺寸

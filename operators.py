@@ -56,7 +56,7 @@ class ACA_OT_add_building(bpy.types.Operator):
         buildingObj = addBuildingRoot()
 
         # 3.调用营造序列
-        buildFloor.buildFloor(buildingObj) 
+        buildFloor.addFloor(buildingObj) 
 
         # 聚焦到建筑根节点
         utils.focusObj(buildingObj)

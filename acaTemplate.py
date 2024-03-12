@@ -31,6 +31,8 @@ class templateData:
     ROOM_Y1 = 44*DK             # 明间进深
     ROOM_Y2 = 44*DK             # 次间进深
     ROOM_Y3 = 22*DK             # 梢间进深
+    WALL_LAYOUT = 1             # 墙体布局，1-默认无廊
+    DOOR_HEIGHT = 0.6*PILLER_HEIGHT          # 中槛高度，即门上沿高度，未找到理论值，这里我粗估了一个值
 
 # 解析XML，获取模版列表
 def getTemplateList():
@@ -80,11 +82,28 @@ def getTemplate(name,doukou=0)->templateData:
             if piller != None:
                 pillerD = piller.find('dimeter')
                 if pillerD != None:
-                    tData.PILLER_D = float(pillerD.text)
+                    tData.PD = float(pillerD.text)
+            
+            # 根据DK，PD，刷新各个默认值
+            tData.PILLER_HEIGHT = 70*tData.DK         # 柱高
+            tData.PLATFORM_HEIGHT = 2*tData.PD        # 默认台基高度
+            tData.PLATFORM_EXTEND = 2.4*tData.PD      # 默认台基下出
+            tData.ROOM_X1 = 77*tData.DK             # 明间宽度
+            tData.ROOM_X2 = 66*tData.DK             # 次间宽度
+            tData.ROOM_X3 = 66*tData.DK             # 梢间宽度
+            tData.ROOM_X4 = 22*tData.DK             # 尽间宽度
+            tData.ROOM_Y1 = 44*tData.DK             # 明间进深
+            tData.ROOM_Y2 = 44*tData.DK             # 次间进深
+            tData.ROOM_Y3 = 22*tData.DK             # 梢间进深
+            tData.DOOR_HEIGHT = 0.6*tData.PILLER_HEIGHT
+
+            # 柱子
+            piller = template.find('piller')
+            if piller != None:
                 pillerHeight = piller.find('height')
                 if pillerHeight != None:
                     tData.PILLER_HEIGHT = float(pillerHeight.text)
-            
+
             # 台基
             platform = template.find('platform')
             if platform != None:
@@ -130,6 +149,13 @@ def getTemplate(name,doukou=0)->templateData:
                     y3 = y_rooms.find('y3')
                     if y3 != None:
                         tData.ROOM_Y3 = float(y3.text)
+
+            # 墙体
+            wall = template.find('wall')
+            if wall != None:
+                layout = wall.find('layout')
+                if layout != None:
+                    tData.WALL_LAYOUT = int(layout.text)     
     
     return tData    
 
@@ -155,6 +181,8 @@ def fillTemplate(buildingObj:bpy.types.Object,
     buildingData['y_3'] = template.ROOM_Y3
     buildingData['piller_height'] = template.PILLER_HEIGHT
     buildingData['piller_diameter'] = template.PD 
+    buildingData['wall_layout'] = template.WALL_LAYOUT
+    buildingData['door_height'] = template.DOOR_HEIGHT
 
 # 根据panel中DK的改变，更新整体设计参数
 def updateTemplateByDK(dk,buildingObj:bpy.types.Object):

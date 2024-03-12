@@ -207,6 +207,9 @@ def focusObj(object:bpy.types.Object):
 # 删除树状层次下的所有对象
 def delete_hierarchy(parent_obj:bpy.types.Object,with_parent=False):
     #utils.outputMsg("deleting...")
+    if parent_obj == None:
+        # 没有可删除的对象
+        return
     bpy.ops.object.select_all(action='DESELECT')
     obj = bpy.data.objects[parent_obj.name]
     obj.animation_data_clear()
@@ -377,6 +380,7 @@ def drawHexagon(dimensions,location):
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
 
     # 移动3d cursor，做为bmesh的origin，一般也是起点
+    old_loc = bpy.context.scene.cursor.location.copy()  # 注意要加copy()，否则传递的是引用
     bpy.context.scene.cursor.location = location
     # 任意添加一个对象，具体几何数据在bmesh中建立
     bpy.ops.mesh.primitive_cube_add()
@@ -384,6 +388,7 @@ def drawHexagon(dimensions,location):
     bm.to_mesh(obj.data)
     obj.data.update()
     bm.free()
+    bpy.context.scene.cursor.location = old_loc
     return obj
 
 # 快速执行bpy.ops执行

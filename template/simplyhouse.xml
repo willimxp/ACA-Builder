@@ -3,6 +3,15 @@
     <template>
         <name>基本模板</name>
         <dk>0.08</dk>
+        <!--柱-->
+        <piller>
+            <dimeter>0.5</dimeter>
+            <height>5.6</height>
+        </piller>
+        <!--墙体设置-->
+        <wall>
+            <layout>1</layout>
+        </wall>
     </template>
     <template>
         <name>大型宫殿</name>
@@ -25,14 +34,18 @@
         <dk>0.08</dk>
         <!--柱-->
         <piller>
-            <dimeter>6</dimeter>
-            <height>70</height>
+            <dimeter>0.5</dimeter>
+            <height>5.6</height>
         </piller>
         <!--台基-->
         <platform>
-            <height>5</height>
+            <height>2</height>
             <extend>2.4</extend>
         </platform>
+        <!--墙体设置-->
+        <wall>
+            <layout>1</layout>
+        </wall>
         <!--开间-->
         <floor>
             <x_rooms>

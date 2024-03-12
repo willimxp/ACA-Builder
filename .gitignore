@@ -29,3 +29,7 @@ __pycache__/panel.cpython-310.pyc
 __pycache__/operators.cpython-310.pyc
 __pycache__/data.cpython-310.pyc
 __pycache__/const.cpython-310.pyc
+*.pyc
+__pycache__/._acaTemplate.cpython-310.pyc
+__pycache__/._buildFloor.cpython-310.pyc
+/__pycache__

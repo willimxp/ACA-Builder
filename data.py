@@ -208,7 +208,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     piller_source : bpy.props.PointerProperty(
             name = "柱样式",
             type = bpy.types.Object,
-            #poll = p_filter,
+            poll = p_filter,
             update = update_PillerStyle,
         )# type: ignore
     piller_height : bpy.props.FloatProperty(

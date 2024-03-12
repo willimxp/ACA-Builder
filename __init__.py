@@ -33,9 +33,8 @@ classes = (
     
     # 操作逻辑类    
     operators.ACA_OT_add_building,
+    operators.ACA_OT_reset_wall_layout,
     operators.ACA_OT_build_door,
-    operators.ACA_OT_build_wall_layout,
-    operators.ACA_OT_build_wall_single,
 )
 
 def register():   

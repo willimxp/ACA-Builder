@@ -6,8 +6,10 @@
 import bpy
 import bmesh
 import math
-from mathutils import Vector,Matrix,geometry,Euler
+from mathutils import Vector
 import numpy as np
+import time
+
 from . import data
 
 # 弹出提示框
@@ -43,7 +45,7 @@ def setCollection(context:bpy.types.Context, name:str, IsClear=False):
 
     if not coll_found:    
         # 新建collection，不与其他用户自建的模型打架
-        print("ACA: Add new collection " + coll_name)
+        outputMsg("Add new collection " + coll_name)
         coll = bpy.data.collections.new(coll_name)
         context.scene.collection.children.link(coll)
         # 聚焦到新目录上
@@ -204,6 +206,7 @@ def focusObj(object:bpy.types.Object):
 
 # 删除树状层次下的所有对象
 def delete_hierarchy(parent_obj:bpy.types.Object,with_parent=False):
+    #utils.outputMsg("deleting...")
     bpy.ops.object.select_all(action='DESELECT')
     obj = bpy.data.objects[parent_obj.name]
     obj.animation_data_clear()
@@ -220,18 +223,17 @@ def delete_hierarchy(parent_obj:bpy.types.Object,with_parent=False):
     # 是否删除根节点？
     if with_parent:
         names.add(parent_obj.name)
-    # print(names)
     objects = bpy.data.objects
-    
     # Remove the animation from the all the child objects
     if names:
         for child_name in names:
-            bpy.data.objects[child_name].animation_data_clear()
-            objects[child_name].select_set(state=True)
+            # bpy.data.objects[child_name].animation_data_clear()
+            # objects[child_name].select_set(state=True)
+            # utils.outputMsg("remove child： " +child_name)
             bpy.data.objects.remove(objects[child_name])
-        # print ("Successfully deleted object")
+        # utils.outputMsg ("Successfully deleted object")
     # else:
-    #     print ("Could not delete object")
+    #     utils.outputMsg ("Could not delete object")
 
 # 计算两个点之间距离
 # 使用blender提供的mathutils库中的Vector类
@@ -385,6 +387,11 @@ def drawHexagon(dimensions,location):
     return obj
 
 # 快速执行bpy.ops执行
+# 原理上，是禁用了bpy.ops操作时反复更新scene，效果有5倍的提升
+# 注意：传入的参数为函数指针
+# 如果函数不需要参数可不带括号直接传入
+# 如果函数带参数，需要用偏函数或闭包进行封装后传入
+# https://blender.stackexchange.com/questions/7358/python-performance-with-blender-operators
 def fastRun(func):
     from bpy.ops import _BPyOpsSubModOp
     view_layer_update = _BPyOpsSubModOp._view_layer_update
@@ -395,3 +402,10 @@ def fastRun(func):
         func()
     finally:
         _BPyOpsSubModOp._view_layer_update = view_layer_update
+
+# 格式化输出内容
+def outputMsg(msg:str):
+    stime = time.strftime("%H:%M:%S", time.localtime())
+    strout = "ACA[" + stime + "]: " + msg
+    print(strout)
+     

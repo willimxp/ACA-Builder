@@ -6,13 +6,11 @@
 #   触发控件数据更新
 
 import bpy
-from . import operators
-import xml.etree.ElementTree as ET
-import os
-from .const import ACA_Consts as con
-from . import buildwall
 from functools import partial
+
+from .const import ACA_Consts as con
 from . import utils
+
 
 # 初始化自定义属性
 def initprop():
@@ -33,36 +31,11 @@ def delprop():
 
 # 筛选资产目录
 def p_filter(self, object:bpy.types.Object):
-    #print("filter:" + object.name + "/" + str(len(object.users_collection)))
+    # 仅返回Assets collection中的对象
     return object.users_collection[0].name == 'Assets'
 
-# 解析XML，获取模版列表
-def getTemplateList():
-    # 载入XML
-    path = os.path.join('template', 'simplyhouse.xml')
-    tree = ET.parse(path)
-    root = tree.getroot()
-    templates = root.findall('template')
-
-    template_list = []
-    for template in templates:
-        template_name = template.find('name').text
-        template_list.append((template_name,template_name,''))
-    
-    print("ACA: Get template list")
-    return template_list
-
-# 重建整体建筑
-# todo:和update_building有些重复，后续看是否删除
-def update_floor(self, context:bpy.types.Context):
-    # 确认选中为building节点
-    buildingObj = context.object 
-    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
-        # 调用营造序列
-        operators.buildAll(buildingObj)
-    else:
-        print("ACA: updated building failed, context.object should be buildingObj")
-        return
+def update_test(self, context:bpy.types.Context):
+    utils.outputMsg("update triggered")
 
 # 重建整体建筑
 def update_building(self, context:bpy.types.Context):
@@ -70,9 +43,10 @@ def update_building(self, context:bpy.types.Context):
     buildingObj = context.object 
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 调用营造序列
-        operators.buildAll(buildingObj)
+        from . import buildFloor
+        buildFloor.buildFloor(buildingObj)
     else:
-        print("ACA: updated building failed, context.object should be buildingObj")
+        utils.outputMsg("updated building failed, context.object should be buildingObj")
         return
 
 # 调整建筑斗口
@@ -82,10 +56,12 @@ def update_dk(self, context:bpy.types.Context):
     dk = buildingObj.ACA_data.DK
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 更新DK值
-        operators.setTemplateByDK(dk,buildingObj)
-        operators.buildAll(buildingObj)
+        from . import acaTemplate
+        acaTemplate.updateTemplateByDK(dk,buildingObj)
+        from . import buildFloor
+        buildFloor.buildFloor(buildingObj)
     else:
-        print("ACA: updated building failed, context.object should be buildingObj")
+        utils.outputMsg("updated building failed, context.object should be buildingObj")
         return
 
 def update_platform(self, context:bpy.types.Context):
@@ -93,37 +69,47 @@ def update_platform(self, context:bpy.types.Context):
     buildingObj = context.object
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 调用台基缩放
-        operators.resizePlatform(buildingObj)
+        from . import buildPlatform
+        buildPlatform.resizePlatform(buildingObj)
     else:
-        print("ACA: updated platform failed, context.object should be buildingObj")
+        utils.outputMsg("updated platform failed, context should be buildingObj")
         return
-    
+
+# 仅更新柱体样式，不触发其他重建
+def update_PillerStyle(self, context:bpy.types.Context):
+    # 确认选中为building节点
+    buildingObj = context.object 
+    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+        # 调用营造序列
+        from . import buildFloor
+        buildFloor.buildPillers(buildingObj)
+        pass
+    else:
+        utils.outputMsg("updated building failed, context.object should be buildingObj")
+        return
+
+# 更新柱体尺寸，会自动触发墙体重建
 def update_piller(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj = context.object
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         # 缩放柱形
-        operators.resizePiller(buildingObj)
-        # 重新生成墙体
-        wallBuilder = buildwall.wallBuilder()
-        # wallBuilder.buildWallLayout(buildingObj)
-        funproxy = partial(wallBuilder.buildWallLayout,buildingObj=buildingObj)
-        utils.fastRun(funproxy)
+        from . import buildFloor
+        buildFloor.resizePiller(buildingObj)
     else:
-        print("ACA: updated platform failed, context.object should be buildingObj")
+        utils.outputMsg("updated piller failed, context should be pillerObj")
         return
 
 def update_wall(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj = context.object
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+        from . import buildWall
         # 重新生成墙体
-        wallBuilder = buildwall.wallBuilder()
-        #wallBuilder.buildWallLayout(buildingObj)
-        funproxy = partial(wallBuilder.buildWallLayout,buildingObj=buildingObj)
+        funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
-        print("ACA: updated platform failed, context.object should be buildingObj")
+        utils.outputMsg("updated platform failed, context.object should be buildingObj")
         return
 
 # 对象范围的数据
@@ -140,14 +126,15 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     aca_type : bpy.props.StringProperty(
             name = '对象类型',
         ) # type: ignore
-    
+    template_name : bpy.props.StringProperty(
+            name = '模版名称'
+        ) #type: ignore
     DK: bpy.props.FloatProperty(
             name = "斗口",
             min=0.01,
             update = update_dk
         ) # type: ignore
-
-
+    
     # 台基对象属性
     platform_height : bpy.props.FloatProperty(
             name = "台基高度",
@@ -170,48 +157,48 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     x_rooms : bpy.props.IntProperty(
             name = "面阔间数",
             min = 1, max = 11,step = 2,
-            update= update_floor
+            update= update_building
         )# type: ignore
     x_1 : bpy.props.FloatProperty(
             name = "明间宽度",
             min = 0, 
-            update = update_floor
+            update = update_building
         )# type: ignore
     x_2 : bpy.props.FloatProperty(
             name = "次间宽度",
             min = 0, 
-            update = update_floor
+            update = update_building
         )# type: ignore
     x_3 : bpy.props.FloatProperty(
             name = "梢间宽度",
             min = 0, 
-            update = update_floor
+            update = update_building
         )# type: ignore
     x_4 : bpy.props.FloatProperty(
             name = "尽间宽度",
             min = 0, 
-            update = update_floor
+            update = update_building
         )# type: ignore
     y_rooms : bpy.props.IntProperty(
             name = "进深间数",
             max = 5,
             min = 1, 
-            update = update_floor
+            update = update_building
         )# type: ignore
     y_1 : bpy.props.FloatProperty(
             name = "明间深度",
             min = 0, 
-            update = update_floor
+            update = update_building
         )# type: ignore
     y_2 : bpy.props.FloatProperty(
             name = "次间深度",
             min = 0, 
-            update = update_floor
+            update = update_building
         )# type: ignore
     y_3 : bpy.props.FloatProperty(
             name = "梢间深度",
             min = 0, 
-            update = update_floor
+            update = update_building
         )# type: ignore
     piller_net : bpy.props.StringProperty(
             name = "保存的柱网列表"
@@ -221,14 +208,14 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     piller_source : bpy.props.PointerProperty(
             name = "柱样式",
             type = bpy.types.Object,
-            poll = p_filter,
-            update = update_floor
+            #poll = p_filter,
+            update = update_PillerStyle,
         )# type: ignore
     piller_height : bpy.props.FloatProperty(
             name = "柱高",
             default = 0,
             min = 0.01, 
-            update = update_piller
+            update = update_piller,
         )# type: ignore
     piller_diameter : bpy.props.FloatProperty(
             name = "柱径",
@@ -296,6 +283,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
 # 直接添加“# type:ignore”
 # https://blender.stackexchange.com/questions/311578/how-do-you-correctly-add-ui-elements-to-adhere-to-the-typing-spec
 class ACA_data_scene(bpy.types.PropertyGroup):
+    from . import acaTemplate
     is_auto_redraw : bpy.props.BoolProperty(
             default = True,
             name = "是否实时重绘"
@@ -303,6 +291,6 @@ class ACA_data_scene(bpy.types.PropertyGroup):
     template : bpy.props.EnumProperty(
             name = "模版样式",
             description = "模板样式",
-            items = getTemplateList(),
+            items = acaTemplate.getTemplateList(),
             options = {"ANIMATABLE"}
         ) # type: ignore

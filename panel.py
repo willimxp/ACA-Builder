@@ -120,7 +120,7 @@ class ACA_PT_props(bpy.types.Panel):
                     row = box.row() 
                     row.prop(objData, "lingxin_source")   # 棂心样式
                 row = box.row()
-                row.operator("aca.build_wall_layout",icon='HOME')# 按钮：生成门窗
+                row.operator("aca.reset_wall_layout",icon='HOME')# 按钮：墙体营造
 
             # 选择wallproxy时，可以设置墙体的独立样式
             if objData.aca_type == con.ACA_TYPE_WALL: 
@@ -145,4 +145,4 @@ class ACA_PT_props(bpy.types.Panel):
                     row = box.row()
                     row.prop(objData, "is_with_wall") # 是否有槛墙                
                 row = box.row()
-                row.operator("aca.build_wall_single",icon='HOME')# 按钮：生成门窗
+                row.operator("aca.build_door",icon='HOME')# 按钮：生成门窗

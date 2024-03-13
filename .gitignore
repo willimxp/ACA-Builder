@@ -33,3 +33,11 @@ __pycache__/const.cpython-310.pyc
 __pycache__/._acaTemplate.cpython-310.pyc
 __pycache__/._buildFloor.cpython-310.pyc
 /__pycache__
+/__pycache__
+/__pycache__
+/__pycache__
+*.pyc
+__pycache__/._buildWall.cpython-310.pyc
+__pycache__/._buildFloor.cpython-310.pyc
+__pycache__/._buildDoor.cpython-310.pyc
+__pycache__/._acaTemplate.cpython-310.pyc

@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from . import utils
+from . import acaLibrary
 
 # 外部定义的建筑模板数据
 class templateData:
@@ -20,6 +21,7 @@ class templateData:
     DK = 0.08                   # 斗口
     PD = con.PILLER_D_EAVE * DK   # 柱径
     PILLER_HEIGHT = 70*DK         # 柱高
+    PILLER_STYLE  = ""          # 柱样式
     PLATFORM_HEIGHT = 2*PD        # 默认台基高度
     PLATFORM_EXTEND = 2.4*PD      # 默认台基下出
     ROOM_X = 3                  # 面阔间数
@@ -32,7 +34,13 @@ class templateData:
     ROOM_Y2 = 44*DK             # 次间进深
     ROOM_Y3 = 22*DK             # 梢间进深
     WALL_LAYOUT = 1             # 墙体布局，1-默认无廊
+    WALL_STYLE = 1              # 墙体类型，1-槛墙，2-隔扇
+    WALL_SOURCE = ''            # 墙体外链对象
     DOOR_HEIGHT = 0.6*PILLER_HEIGHT          # 中槛高度，即门上沿高度，未找到理论值，这里我粗估了一个值
+    LINGXIN_SOURCE = ''         # 隔扇棂心外链对象
+    DG_PILLER_SOURCE = ''       # 柱头斗栱
+    DG_FILLGAP_SOURCE = ''      # 补间斗栱
+    DG_CORNER_SOURCE = ''       # 转角斗栱
 
 # 解析XML，获取模版列表
 def getTemplateList():
@@ -82,7 +90,7 @@ def getTemplate(name,doukou=0)->templateData:
             if piller != None:
                 pillerD = piller.find('dimeter')
                 if pillerD != None:
-                    tData.PD = float(pillerD.text)
+                    tData.PD = float(pillerD.text)        
             
             # 根据DK，PD，刷新各个默认值
             tData.PILLER_HEIGHT = 70*tData.DK         # 柱高
@@ -103,6 +111,9 @@ def getTemplate(name,doukou=0)->templateData:
                 pillerHeight = piller.find('height')
                 if pillerHeight != None:
                     tData.PILLER_HEIGHT = float(pillerHeight.text)
+                pillerStyle = piller.find('style')
+                if pillerStyle != None:
+                    tData.PILLER_STYLE = pillerStyle.text
 
             # 台基
             platform = template.find('platform')
@@ -155,7 +166,30 @@ def getTemplate(name,doukou=0)->templateData:
             if wall != None:
                 layout = wall.find('layout')
                 if layout != None:
-                    tData.WALL_LAYOUT = int(layout.text)     
+                    tData.WALL_LAYOUT = int(layout.text)
+                style = wall.find('style')
+                if style != None:
+                    tData.WALL_STYLE = int(style.text)
+                wall_source = wall.find('wall_source')
+                if wall_source != None:
+                    tData.WALL_SOURCE = wall_source.text
+                lingxin_source = wall.find('lingxin_source')
+                if lingxin_source != None:
+                    tData.LINGXIN_SOURCE = lingxin_source.text
+            
+            # 斗栱
+            dg = template.find('dougong')
+            if dg != None:
+                piller_source = dg.find('piller_source')
+                if piller_source != None:
+                    tData.DG_PILLER_SOURCE = piller_source.text
+                fillgap_source = dg.find('fillgap_source')
+                if fillgap_source != None:
+                    tData.DG_FILLGAP_SOURCE = fillgap_source.text
+                corner_source = dg.find('corner_source')
+                if corner_source != None:
+                    tData.DG_CORNER_SOURCE = corner_source.text
+                
     
     return tData    
 
@@ -182,7 +216,43 @@ def fillTemplate(buildingObj:bpy.types.Object,
     buildingData['piller_height'] = template.PILLER_HEIGHT
     buildingData['piller_diameter'] = template.PD 
     buildingData['wall_layout'] = template.WALL_LAYOUT
+    buildingData['wall_style'] = template.WALL_STYLE
     buildingData['door_height'] = template.DOOR_HEIGHT
+
+    # 绑定资产
+    bpy.ops.object.empty_add(type='PLAIN_AXES')
+    assetsObj = bpy.context.object
+    assetsObj.location = buildingObj.location   # 原点摆放在3D Cursor位置
+    assetsObj.parent = buildingObj
+    assetsObj.name = 'assets'   # 系统遇到重名会自动添加00x的后缀
+    # 柱形样式
+    if template.PILLER_STYLE != "":
+        piller_base:bpy.types.Object = \
+            acaLibrary.loadAssets(template.PILLER_STYLE,assetsObj)
+        buildingData['piller_source'] = piller_base
+    # 墙体样式
+    if template.WALL_SOURCE != "":
+        wall_base:bpy.types.Object = \
+            acaLibrary.loadAssets(template.WALL_SOURCE,assetsObj)
+        buildingData['wall_source'] = wall_base
+    # 隔扇棂心样式
+    if template.LINGXIN_SOURCE != "" :
+        lingxin_base:bpy.types.Object = \
+            acaLibrary.loadAssets(template.LINGXIN_SOURCE,assetsObj)
+        buildingData['lingxin_source'] = lingxin_base
+    # 柱头斗栱样式
+    if template.DG_PILLER_SOURCE != "" :
+        dg_piller_base:bpy.types.Object = \
+            acaLibrary.loadAssets(template.DG_PILLER_SOURCE,assetsObj)
+        buildingData['dg_piller_source'] = dg_piller_base
+    if template.DG_FILLGAP_SOURCE != "" :
+        dg_fillgap_base:bpy.types.Object = \
+            acaLibrary.loadAssets(template.DG_FILLGAP_SOURCE,assetsObj)
+        buildingData['dg_fillgap_source'] = dg_fillgap_base
+    if template.DG_CORNER_SOURCE != "" :
+        dg_corner_base:bpy.types.Object = \
+            acaLibrary.loadAssets(template.DG_CORNER_SOURCE,assetsObj)
+        buildingData['dg_corner_source'] = dg_corner_base
 
 # 根据panel中DK的改变，更新整体设计参数
 def updateTemplateByDK(dk,buildingObj:bpy.types.Object):

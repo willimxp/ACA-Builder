@@ -34,6 +34,10 @@ class ACA_PT_basic(bpy.types.Panel):
         # 选择框，是否实时重绘
         row = box.row()
         row.prop(scnData, "is_auto_redraw")
+        
+        # 测试按钮
+        row = layout.row()
+        row.operator("aca.test",icon='HOME')# 按钮：生成门窗
 
 # “构件属性”面板
 # 根据当前选择的对象，显示对象的名称、类型
@@ -121,6 +125,17 @@ class ACA_PT_props(bpy.types.Panel):
                     row.prop(objData, "lingxin_source")   # 棂心样式
                 row = box.row()
                 row.operator("aca.reset_wall_layout",icon='HOME')# 按钮：墙体营造
+
+                # 斗栱属性
+                box = layout.box()
+                row = box.row()
+                row.prop(objData, "dg_piller_source") # 柱头斗栱
+                row = box.row()
+                row.prop(objData, "dg_fillgap_source") # 补间斗栱
+                row = box.row()
+                row.prop(objData, "dg_corner_source") # 转角斗栱
+                row = box.row()
+                row.operator("aca.build_dougong",icon='HOME')# 按钮：生成斗栱
 
             # 选择wallproxy时，可以设置墙体的独立样式
             if objData.aca_type == con.ACA_TYPE_WALL: 

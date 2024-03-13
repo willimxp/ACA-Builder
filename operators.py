@@ -15,6 +15,8 @@ from . import utils
 from . import buildWall
 from . import buildFloor
 from . import buildDoor
+from . import buildDougong
+from . import acaLibrary
     
 # 添加建筑empty根节点，并绑定设计模版
 # 返回建筑empty根节点对象
@@ -49,7 +51,7 @@ class ACA_OT_add_building(bpy.types.Operator):
 
     def execute(self, context):      
         # 1.定位到“ACA”根collection，如果没有则新建
-        utils.setCollection(context, con.ROOT_COLL_NAME)
+        utils.setCollection(con.ROOT_COLL_NAME)
 
         # 2.添加建筑empty
         # 其中绑定了模版数据
@@ -97,3 +99,31 @@ class ACA_OT_build_door(bpy.types.Operator):
 
         return {'FINISHED'}
 
+# 批量重新生成墙体布局，及所有墙体
+# 绑定在建筑面板的“墙体营造按钮上”
+class ACA_OT_build_dougong(bpy.types.Operator):
+    bl_idname="aca.build_dougong"
+    bl_label = "斗栱营造"
+
+    def execute(self, context):  
+        buildingObj = context.object
+        bData:data.ACA_data_obj = buildingObj.ACA_data
+        if bData.aca_type != con.ACA_TYPE_BUILDING:
+            utils.ShowMessageBox("ERROR: 找不到建筑")
+        else:
+            # 生成斗栱
+            funproxy = partial(buildDougong.buildDougong,buildingObj=buildingObj)
+            utils.fastRun(funproxy)
+
+        return {'FINISHED'}
+    
+# 批量重新生成墙体布局，及所有墙体
+# 绑定在建筑面板的“墙体营造按钮上”
+class ACA_OT_test(bpy.types.Operator):
+    bl_idname="aca.test"
+    bl_label = "测试"
+
+    def execute(self, context):  
+        acaLibrary.loadAssets("墙体")
+
+        return {'FINISHED'}

@@ -32,9 +32,11 @@ classes = (
     panel.ACA_PT_props,  
     
     # 操作逻辑类    
+    operators.ACA_OT_test,
     operators.ACA_OT_add_building,
     operators.ACA_OT_reset_wall_layout,
     operators.ACA_OT_build_door,
+    operators.ACA_OT_build_dougong,
 )
 
 def register():   

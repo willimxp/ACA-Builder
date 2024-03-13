@@ -7,11 +7,21 @@
         <piller>
             <dimeter>0.5</dimeter>
             <height>5.6</height>
+            <style>梭柱</style>
         </piller>
         <!--墙体设置-->
         <wall>
             <layout>1</layout>
+            <style>2</style>
+            <wall_source>墙体</wall_source>
+            <lingxin_source>棂心.正搭斜交</lingxin_source>
         </wall>
+        <!--斗栱设置-->
+        <dougong>
+            <piller_source>四铺作插昂柱头</piller_source>
+            <fillgap_source>四铺作插昂柱头</fillgap_source>
+            <corner_source>四铺作插昂转角</corner_source>
+        </dougong>
     </template>
     <template>
         <name>大型宫殿</name>

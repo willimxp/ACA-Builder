@@ -11,6 +11,7 @@ from .data import ACA_data_obj as acaData
 from . import utils
 from . import buildWall
 from . import buildPlatform
+from . import buildDougong
 
 # 准备柱网数据
 # 将panel中设置的面宽、进深，组合成柱网数组
@@ -253,4 +254,7 @@ def addFloor(buildingObj:bpy.types.Object):
     utils.fastRun(funproxy)
     # 生成墙体
     funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
+    utils.fastRun(funproxy)
+    # 生成斗栱
+    funproxy = partial(buildDougong.buildDougong,buildingObj=buildingObj)
     utils.fastRun(funproxy)

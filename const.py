@@ -18,6 +18,7 @@ class ACA_Consts(object):
     ACA_TYPE_PILLER = 'piller'  # ACA类型：柱子
     ACA_TYPE_WALL_ROOT = 'wall_root' # ACA类型：墙体布局，墙体的父节点
     ACA_TYPE_WALL = 'wall' # ACA类型：墙体
+    ACA_TYPE_DG_ROOT ='dg_root' # ACA类型：斗栱根节点
 
     # 柱子
     PILLER_D_EAVE = 6   # 檐柱直接径6斗口
@@ -53,6 +54,7 @@ class ACA_Consts(object):
     TABAN_HEIGHT = 3/8      # 榻板高，单位D
     TABAN_EX = 0.1          # 榻板金边，单位unit（米）
     GESHAN_GAP = 0.01        # 隔扇的间距，门缝，单位为unit（米）
+    DOUGONG_SPAN = 11   # 斗栱攒距，通常取11斗口
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

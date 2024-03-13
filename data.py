@@ -244,7 +244,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("","",""),
                 ("1","槛墙",""),
                 ("2","隔扇",""),
-                ("3","槛窗",""),
+                #("3","槛窗",""),
             ],
         ) # type: ignore
     wall_source : bpy.props.PointerProperty(
@@ -272,6 +272,23 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     lingxin_source:bpy.props.PointerProperty(
             name = "棂心",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    
+    # 斗栱属性
+    dg_piller_source:bpy.props.PointerProperty(
+            name = "柱头斗栱",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    dg_fillgap_source:bpy.props.PointerProperty(
+            name = "补间斗栱",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    dg_corner_source:bpy.props.PointerProperty(
+            name = "转角斗栱",
             type = bpy.types.Object,
             poll = p_filter
         )# type: ignore 

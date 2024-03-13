@@ -32,11 +32,11 @@ def recurLayerCollection(layerColl, collName):
 
 # 新建或聚焦当前场景下的目录
 # 所有对象建立在插件目录下，以免与用户自建的内容冲突
-def setCollection(context:bpy.types.Context, name:str, IsClear=False):
+def setCollection(name:str, IsClear=False):
     coll_name = name  # 在大纲中的目录名称
     coll_found = False
     coll = bpy.types.Collection
-    for coll in context.scene.collection.children:
+    for coll in bpy.context.scene.collection.children:
         # 在有多个scene时，名称可能是“china_arch.001”
         if str.find(coll.name,coll_name) >= 0:
             coll_found = True
@@ -47,10 +47,10 @@ def setCollection(context:bpy.types.Context, name:str, IsClear=False):
         # 新建collection，不与其他用户自建的模型打架
         outputMsg("Add new collection " + coll_name)
         coll = bpy.data.collections.new(coll_name)
-        context.scene.collection.children.link(coll)
+        bpy.context.scene.collection.children.link(coll)
         # 聚焦到新目录上
-        context.view_layer.active_layer_collection = \
-            context.view_layer.layer_collection.children[-1]
+        bpy.context.view_layer.active_layer_collection = \
+            bpy.context.view_layer.layer_collection.children[-1]
     else:
         # 根据IsClear入参，决定是否要清空目录
         if IsClear:
@@ -59,7 +59,7 @@ def setCollection(context:bpy.types.Context, name:str, IsClear=False):
                 bpy.data.objects.remove(obj)
         # 强制关闭目录隐藏属性，防止失焦
         coll.hide_viewport = False
-        context.view_layer.layer_collection.children[coll_name].hide_viewport = False
+        bpy.context.view_layer.layer_collection.children[coll_name].hide_viewport = False
         # 选中目录，防止用户手工选择其他目录而导致的失焦
         layer_collection = bpy.context.view_layer.layer_collection
         layerColl = recurLayerCollection(layer_collection, coll_name)
@@ -125,15 +125,12 @@ def copyObject(sourceObj:bpy.types.Object, name,
     # 复制子对象
     if len(sourceObj.children) > 0 :
         for child in sourceObj.children:
-            newChild = bpy.types.Object
-            if singleUser :
-                newChild.data = child.data.copy()
-            else:
-                newChild = child.copy()
-            newChild.parent = newObj
-            bpy.context.collection.objects.link(newChild) 
+            copyObject(child, 
+                       child.name, 
+                        newObj, 
+                        child.location,
+                        singleUser) 
     
-
     # 复制modifier
     bpy.ops.object.select_all(action='DESELECT')
     sourceObj.select_set(True)
@@ -413,4 +410,9 @@ def outputMsg(msg:str):
     stime = time.strftime("%H:%M:%S", time.localtime())
     strout = "ACA[" + stime + "]: " + msg
     print(strout)
-     
+
+# 隐藏对象，包括viewport和render渲染
+def hideObj(object:bpy.types.Object) : 
+    object.hide_set(True)          # 隐藏“眼睛”，暂时隐藏
+    object.hide_viewport = True    # 隐藏“屏幕”，不含在viewport中
+    object.hide_render = True      # 隐藏“相机”，不渲染

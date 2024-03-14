@@ -12,6 +12,7 @@ from . import utils
 from . import buildWall
 from . import buildPlatform
 from . import buildDougong
+from . import buildPurlin
 
 # 准备柱网数据
 # 将panel中设置的面宽、进深，组合成柱网数组
@@ -239,6 +240,12 @@ def buildFloor(buildingObj:bpy.types.Object):
     # 生成墙体
     funproxy = partial(buildWall.buildWallLayout,buildingObj=buildingObj)
     utils.fastRun(funproxy)
+    # 生成斗栱
+    funproxy = partial(buildDougong.buildDougong,buildingObj=buildingObj)
+    utils.fastRun(funproxy)
+    # 生成桁檩
+    funproxy = partial(buildPurlin.buildRoof,buildingObj=buildingObj)
+    utils.fastRun(funproxy)
 
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
@@ -257,4 +264,7 @@ def addFloor(buildingObj:bpy.types.Object):
     utils.fastRun(funproxy)
     # 生成斗栱
     funproxy = partial(buildDougong.buildDougong,buildingObj=buildingObj)
+    utils.fastRun(funproxy)
+    # 生成桁檩
+    funproxy = partial(buildPurlin.buildRoof,buildingObj=buildingObj)
     utils.fastRun(funproxy)

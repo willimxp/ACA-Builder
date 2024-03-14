@@ -292,6 +292,23 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             type = bpy.types.Object,
             poll = p_filter
         )# type: ignore 
+    dg_extend : bpy.props.FloatProperty(
+            name="斗栱挑檐",    # 令拱出跳距离
+            default=0.45,
+            min=0.0,
+        )# type: ignore 
+    dg_height : bpy.props.FloatProperty(
+            name="斗栱高度",    # 取挑檐桁下皮高度
+            default=0.99,
+            min=0.0,
+        )# type: ignore 
+    
+    # 屋顶属性
+    rafter_step : bpy.props.IntProperty(
+            name="椽架数量",
+            default=8,
+            min=0,max=10
+        )# type: ignore 
 
 # 场景范围的数据
 # 可绑定面板参数属性

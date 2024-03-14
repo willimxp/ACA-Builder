@@ -19,6 +19,7 @@ class ACA_Consts(object):
     ACA_TYPE_WALL_ROOT = 'wall_root' # ACA类型：墙体布局，墙体的父节点
     ACA_TYPE_WALL = 'wall' # ACA类型：墙体
     ACA_TYPE_DG_ROOT ='dg_root' # ACA类型：斗栱根节点
+    ACA_TYPE_ROOF_ROOT ='roof_root' # ACA类型：斗栱根节点
 
     # 柱子
     PILLER_D_EAVE = 6   # 檐柱直接径6斗口
@@ -55,6 +56,16 @@ class ACA_Consts(object):
     TABAN_EX = 0.1          # 榻板金边，单位unit（米）
     GESHAN_GAP = 0.01        # 隔扇的间距，门缝，单位为unit（米）
     DOUGONG_SPAN = 11   # 斗栱攒距，通常取11斗口
+
+    HENG_TIAOYAN_D = 3.2    # 挑檐桁直径，单位DK，梁思成数据
+    HENG_COMMON_D = 4       # 正心桁直径，单位DK，梁思成数据
+    FUJIMU_D = 4            # 伏脊木
+
+    BEAM_HEIGHT = 1.4       # 梁高，单位D
+    BEAM_DEEPTH = 1.1       # 梁厚，单位D
+
+    #LIFT_RATIO = [0.5,0.65,0.75,0.9]    # 清工程做法则例的推荐系数
+    LIFT_RATIO = [0.5,0.7,0.8,0.9]       # 梁思成图纸中采用的系数，可以进行比较
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

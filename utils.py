@@ -416,3 +416,24 @@ def hideObj(object:bpy.types.Object) :
     object.hide_set(True)          # 隐藏“眼睛”，暂时隐藏
     object.hide_viewport = True    # 隐藏“屏幕”，不含在viewport中
     object.hide_render = True      # 隐藏“相机”，不渲染
+
+# 创建一个水平放置的圆柱体，可用于桁、椽等构件
+def addCylinderHorizontal(radius,depth,name,root_obj,
+                location=(0,0,0),
+                rotation=(0,0,0),
+                edge_num=16):
+    # 圆柱旋转到横向摆放（默认为相对World垂直摆放）
+    rotation_default = (0,math.radians(90),0)
+    cylinder = addCylinder(radius=radius,
+        depth=depth,
+        location=location,
+        rotation=rotation_default,
+        name=name,
+        root_obj=root_obj,
+        edge_num=edge_num
+    )
+    # apply rotation
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+    # 旋转到实际角度
+    cylinder.rotation_euler = rotation
+    return cylinder

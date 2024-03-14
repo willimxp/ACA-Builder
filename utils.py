@@ -455,6 +455,8 @@ def addCylinderBy2Points(radius,start_point,end_point,name,root_obj):
     )
     # 设置origin到椽头，便于后续向外檐出
     focusObj(cylinder)
+    old_loc = bpy.context.scene.cursor.location.copy()  # 注意要加copy()，否则传递的是引用
     bpy.context.scene.cursor.location = start_point + root_obj.location
     bpy.ops.object.origin_set(type='ORIGIN_CURSOR')  
+    bpy.context.scene.cursor.location = old_loc
     return cylinder

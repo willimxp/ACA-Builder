@@ -14,7 +14,7 @@ def buildDougong(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     if bData.aca_type != con.ACA_TYPE_BUILDING:
-        utils.ShowMessageBox("错误，输入的不是建筑根节点")
+        utils.showMessageBox("错误，输入的不是建筑根节点")
         return
     dk = bData.DK
 
@@ -36,7 +36,7 @@ def buildDougong(buildingObj:bpy.types.Object):
         dgrootObj.parent = buildingObj
     else:
         # 清空根节点
-        utils.delete_hierarchy(dgrootObj)
+        utils.deleteHierarchy(dgrootObj)
 
     # todo：建造平板枋
 

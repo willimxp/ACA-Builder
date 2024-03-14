@@ -107,7 +107,7 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
     if buildingObj.ACA_data.x_rooms % 2 == 0:
         # 不处理偶数面阔间数
-        utils.ShowMessageBox("面阔间数不能为偶数","ERROR")
+        utils.showMessageBox("面阔间数不能为偶数","ERROR")
         return
     
     # 1、查找或新建地盘根节点
@@ -125,7 +125,7 @@ def buildPillers(buildingObj:bpy.types.Object):
         floorObj.location = (0,0,floor_z)
     else:
         # 清空地盘下所有的柱子、柱础
-        utils.delete_hierarchy(floorObj)
+        utils.deleteHierarchy(floorObj)
 
     # 2、生成一个柱子实例piller_basemesh
     # 从当前场景中载入数据集
@@ -154,7 +154,7 @@ def buildPillers(buildingObj:bpy.types.Object):
             buildingData.piller_diameter,
             buildingData.piller_height
         )
-        #utils.ApplyScale(piller_basemesh) # 此时mesh已经与source piller解绑，生成了新的mesh
+        #utils.applyScale(piller_basemesh) # 此时mesh已经与source piller解绑，生成了新的mesh
     # 柱子属性
     piller_basemesh.ACA_data['aca_obj'] = True
     piller_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
@@ -186,7 +186,7 @@ def buildPillers(buildingObj:bpy.types.Object):
             )   
 
     # 清理临时柱子
-    utils.delete_hierarchy(piller_basemesh,True)
+    utils.deleteHierarchy(piller_basemesh,True)
     utils.outputMsg("Pillers rebuilt")
 
 # 根据用户在插件面板修改的柱高、柱径，缩放柱子外观

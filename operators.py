@@ -74,7 +74,7 @@ class ACA_OT_reset_wall_layout(bpy.types.Operator):
         buildingObj = context.object
         bData:data.ACA_data_obj = buildingObj.ACA_data
         if bData.aca_type != con.ACA_TYPE_BUILDING:
-            utils.ShowMessageBox("ERROR: 找不到建筑")
+            utils.showMessageBox("ERROR: 找不到建筑")
         else:
             # # 生成墙体框线
             funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
@@ -91,7 +91,7 @@ class ACA_OT_build_door(bpy.types.Operator):
         wallproxy = context.object
         wData:data.ACA_data_obj = wallproxy.ACA_data
         if wData.aca_type != con.ACA_TYPE_WALL:
-            utils.ShowMessageBox("ERROR: 找不到建筑")
+            utils.showMessageBox("ERROR: 找不到建筑")
         else:
             # 生成墙体框线
             funproxy = partial(buildDoor.buildSingleWall,wallproxy=wallproxy)
@@ -109,7 +109,7 @@ class ACA_OT_build_dougong(bpy.types.Operator):
         buildingObj = context.object
         bData:data.ACA_data_obj = buildingObj.ACA_data
         if bData.aca_type != con.ACA_TYPE_BUILDING:
-            utils.ShowMessageBox("ERROR: 找不到建筑")
+            utils.showMessageBox("ERROR: 找不到建筑")
         else:
             # 生成斗栱
             funproxy = partial(buildDougong.buildDougong,buildingObj=buildingObj)
@@ -127,7 +127,7 @@ class ACA_OT_test(bpy.types.Operator):
         buildingObj = context.object
         bData:data.ACA_data_obj = buildingObj.ACA_data
         if bData.aca_type != con.ACA_TYPE_BUILDING:
-            utils.ShowMessageBox("ERROR: 找不到建筑")
+            utils.showMessageBox("ERROR: 找不到建筑")
         else:
             # buildPurlin.buildRoof(buildingObj)
             funproxy = partial(buildPurlin.buildRoof,buildingObj=buildingObj)

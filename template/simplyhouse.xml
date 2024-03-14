@@ -6,7 +6,7 @@
         <!--柱-->
         <piller>
             <dimeter>0.5</dimeter>
-            <height>5.6</height>
+            <height>4.6</height>
             <style>梭柱</style>
         </piller>
         <!--墙体设置-->
@@ -14,6 +14,7 @@
             <layout>1</layout>
             <style>2</style>
             <wall_source>墙体</wall_source>
+            <door_height></door_height>
             <lingxin_source>棂心.正搭斜交</lingxin_source>
         </wall>
         <!--斗栱设置-->

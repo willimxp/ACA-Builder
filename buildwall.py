@@ -85,7 +85,7 @@ def updateWallLayout(buildingObj:bpy.types.Object):
             wallobj = wallrootObj.children[wallcounter]
             wallobj.dimensions.x = length
             wallobj.location = origin_point
-            utils.ApplyScale(wallobj)
+            utils.applyScale(wallobj)
             wallcounter += 1
     # d、缩放纵向墙体
     for c in col: 
@@ -97,7 +97,7 @@ def updateWallLayout(buildingObj:bpy.types.Object):
             wallobj = wallrootObj.children[wallcounter]
             wallobj.dimensions.x = length
             wallobj.location = origin_point
-            utils.ApplyScale(wallobj)
+            utils.applyScale(wallobj)
             wallcounter += 1
 
     # 二、检查wallproxy属性是否未初始化
@@ -138,7 +138,7 @@ def resetWallLayout(buildingObj:bpy.types.Object):
         wallrootObj = __addWallrootNode(buildingObj)
     else:
         # 清空根节点
-        utils.delete_hierarchy(wallrootObj)
+        utils.deleteHierarchy(wallrootObj)
 
     # 一、批量生成wallproxy
     # a、默认尺寸
@@ -218,7 +218,7 @@ def buildWallLayout(buildingObj:bpy.types.Object) :
     # 校验输入对象
     bData : acaData = buildingObj.ACA_data
     if bData.aca_type != con.ACA_TYPE_BUILDING:
-        utils.ShowMessageBox("错误，输入的不是建筑根节点")
+        utils.showMessageBox("错误，输入的不是建筑根节点")
         return
 
     # 查找墙体布局节点

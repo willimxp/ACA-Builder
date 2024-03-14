@@ -309,6 +309,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=8,
             min=0,max=10
         )# type: ignore 
+    rafter_fb_gap : bpy.props.FloatProperty(
+            name="前后檐椽当"
+        )# type: ignore 
 
 # 场景范围的数据
 # 可绑定面板参数属性

@@ -57,15 +57,42 @@ class ACA_Consts(object):
     GESHAN_GAP = 0.01        # 隔扇的间距，门缝，单位为unit（米）
     DOUGONG_SPAN = 11   # 斗栱攒距，通常取11斗口
 
+    # 桁檩
     HENG_TIAOYAN_D = 3.2    # 挑檐桁直径，单位DK，梁思成数据
     HENG_COMMON_D = 4       # 正心桁直径，单位DK，梁思成数据
     FUJIMU_D = 4            # 伏脊木
+    #LIFT_RATIO = [0.5,0.65,0.75,0.9]    # 清工程做法则例的推荐系数
+    LIFT_RATIO = [0.5,0.7,0.8,0.9]       # 梁思成图纸中采用的系数，可以进行比较
 
+    # 梁架
     BEAM_HEIGHT = 1.4       # 梁高，单位D
     BEAM_DEEPTH = 1.1       # 梁厚，单位D
 
-    #LIFT_RATIO = [0.5,0.65,0.75,0.9]    # 清工程做法则例的推荐系数
-    LIFT_RATIO = [0.5,0.7,0.8,0.9]       # 梁思成图纸中采用的系数，可以进行比较
+    # 椽飞类
+    YANCHUAN_EX = 14    # 檐椽平出14斗口
+    YUANCHUAN_D = 1.5   # 圆椽直径
+    FEICHUAN_H = 1.5    # 飞椽、方椽高
+    FEICHUAN_Y = 1.5    # 飞椽、方椽厚
+    WANGBAN_H = 0.5     # 望板厚
+    LIKOUMU_H =  FEICHUAN_H + WANGBAN_H     # 里口木高度，一飞椽+一望板
+    LIKOUMU_Y = FEICHUAN_H     # 里口木厚度
+    XIAOLIANYAN_H = WANGBAN_H * 1.5         # 小连檐厚度(暂未使用，都用了里口木尺寸)
+    ZADANGBAN_H = FEICHUAN_H    # 闸挡板高(暂未使用，都用了里口木尺寸)
+    ZADANGBAN_Y = WANGBAN_H     # 闸挡板厚(暂未使用，都用了里口木尺寸)
+    DALIANYAN_H = YUANCHUAN_D   # 大连檐，高同椽径
+    DALIANYAN_Y = YUANCHUAN_D   # 大连檐，宽1.1-1.2椽径
+    FEICHUAN_HEAD_TILE_RATIO = 1/2.5        # 飞椽头身比，默认一飞二尾五
+    QUETAI = YUANCHUAN_D*0.2    # 雀台长度(通常1/5~1/3椽径)
+
+    # 角梁
+    JIAOLIANG_H = 4.5   # 角梁高（老角梁和子角梁）
+    JIAOLIANG_Y = 3     # 角梁厚（老角梁和子角梁）
+    JIAOLIANG_WEI_KOUJIN = 0.2      # 角梁尾的扣金系数，则例没有明说，这个值越小，约陡峭
+    JIAOLIANG_HEAD_YAJIN = 0.5      # 角梁头的压金系数，则例没有明说，这个值越小，约陡峭
+    YOUQIANG_YAJIN = 1-JIAOLIANG_WEI_KOUJIN           #由戗压金系数
+
+    # 其他
+    OFFSET_ORIENTATION = 'LOCAL' # 'GLOBAL'  'LOCAL' #上下层叠构件的错开方式，一般绘图是垂直位移，但其实相对方向的位移更好看
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

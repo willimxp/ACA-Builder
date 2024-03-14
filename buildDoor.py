@@ -604,10 +604,10 @@ def __buildDoor(wallproxy):
     bdata:acaData = buildingObj.ACA_data
     wData:acaData = wallproxy.ACA_data
     if bdata == None:
-        utils.ShowMessageBox("无法读取设计数据","ERROR")
+        utils.showMessageBox("无法读取设计数据","ERROR")
         return {'FINISHED'}
     elif bdata.aca_type != con.ACA_TYPE_BUILDING:
-        utils.ShowMessageBox("未找到建筑根节点","ERROR")
+        utils.showMessageBox("未找到建筑根节点","ERROR")
         return {'FINISHED'}
     dk = bdata.DK
     pd = con.PILLER_D_EAVE * dk
@@ -616,7 +616,7 @@ def __buildDoor(wallproxy):
     frame_width,frame_deepth,frame_height = wallproxy.dimensions
 
     # 清理之前的子对象
-    # utils.delete_hierarchy(wallproxy)
+    # utils.deleteHierarchy(wallproxy)
     # 聚焦在当前collection中
     utils.setCollection(con.ROOT_COLL_NAME)
     
@@ -720,7 +720,7 @@ def __addFang(wallproxy:bpy.types.Object):
     wallproxy.dimensions.z = frame_height - con.EFANG_LARGE_H*pd \
                             - con.BOARD_YOUE_H*pd \
                             - con.EFANG_SMALL_H*pd
-    utils.ApplyScale(wallproxy)
+    utils.applyScale(wallproxy)
     # 绑定额枋到wallproxy
     bigFangObj.parent = wallproxy
     dianbanObj.parent = wallproxy
@@ -732,7 +732,7 @@ def __addFang(wallproxy:bpy.types.Object):
 # 传入wallproxy
 def buildSingleWall(wallproxy:bpy.types.Object):
         # 清空框线
-        utils.delete_hierarchy(wallproxy)
+        utils.deleteHierarchy(wallproxy)
        
         # 载入数据
         buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)

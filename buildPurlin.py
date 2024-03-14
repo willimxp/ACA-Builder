@@ -4,7 +4,7 @@
 #   椽架的营造
 import bpy
 import math
-from mathutils import Vector
+from mathutils import Vector,Euler
 
 from . import utils
 from . import buildFloor
@@ -30,7 +30,7 @@ def __setRoofRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
                     + bData.dg_height
         roofRootObj.location = (0,0,roof_base)
     else:
-        utils.delete_hierarchy(roofRootObj)
+        utils.deleteHierarchy(roofRootObj)
     return roofRootObj
 
 # 计算桁檩定位数据
@@ -40,9 +40,6 @@ def __setRoofRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
 def __getPurlinPos(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
-    if bData.aca_type != con.ACA_TYPE_BUILDING:
-        utils.ShowMessageBox("错误，输入的不是建筑根节点")
-        return
     dk = bData.DK
     
     # 计算屋顶基本参数 ===================
@@ -99,9 +96,6 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
 def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
-    if bData.aca_type != con.ACA_TYPE_BUILDING:
-        utils.ShowMessageBox("错误，输入的不是建筑根节点")
-        return
     dk = bData.DK
 
     roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
@@ -245,6 +239,181 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     
     # 删除基本构件
     bpy.data.objects.remove(beamObj)
+    return
+
+# 营造椽子
+def __buildRafter(buildingObj:bpy.types.Object,purlin_pos):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    
+    # 计算檐面椽当（注意，前后檐与两山的椽当可能不一样）
+    # 正身椽平铺到金桁(计算半幅，然后镜像)
+    rafter_tile_x = purlin_pos[2].x  # 金桁X
+    # 根据椽当=1椽径估算，取整
+    rafter_count_x = math.floor(rafter_tile_x / (con.YUANCHUAN_D*dk*2))
+    # 最终椽当宽度
+    rafter_gap_x = rafter_tile_x / rafter_count_x
+    # 存入数据集，后续做翼角等会复用
+    bData.rafter_fb_gap = rafter_gap_x
+
+    # 计算山面椽当
+    rafter_tile_y = purlin_pos[2].y   # 金桁Y    
+    rafter_count_y = math.floor(rafter_tile_y / (con.YUANCHUAN_D*dk*2))    
+    rafter_gap_y = rafter_tile_y / rafter_count_y
+
+    # 根据桁数组循环计算各层椽架
+    # 忽略数组中的挑檐桁，只连接正心桁、下金桁、上金桁、脊桁等
+    # 最后将第一层檐椽按“檐总平出”延长
+    for n in range(1,len(purlin_pos)-1):
+        # 定位前后椽
+        rafter_end = Vector((rafter_gap_x/2,    # 椽当坐中，所以第一根在半椽当位置           
+                            purlin_pos[n].y,
+                            purlin_pos[n].z))
+        rafter_start = Vector((rafter_gap_x/2,
+                            purlin_pos[n+1].y,
+                            purlin_pos[n+1].z))
+        fbRafterObj = utils.addCylinderBy2Points(
+            radius = con.YUANCHUAN_D/2*dk,
+            start_point = rafter_start,
+            end_point = rafter_end,
+            name="檐椽.前后",
+            root_obj = roofRootObj
+        )
+        # 上移，与桁檩上皮相切
+        bpy.ops.transform.translate(
+            value = (0,0,(con.HENG_COMMON_D+con.YUANCHUAN_D)*dk/2),
+            orient_type = con.OFFSET_ORIENTATION # GLOBAL/LOCAL ?
+        )
+
+        # 定位两山椽
+        rafter_end = Vector((purlin_pos[n].x,   # 下层桁
+                            rafter_gap_y/2,                   # Y偏移半椽当
+                            purlin_pos[n].z))
+        rafter_start = Vector((purlin_pos[n+1].x,   # 上层桁           
+                            rafter_gap_y/2,                   # Y偏移半椽当
+                            purlin_pos[n+1].z))   # 金桁Z
+        lrRafterObj = utils.addCylinderBy2Points(
+            radius = con.YUANCHUAN_D/2*dk,
+            start_point = rafter_start,
+            end_point = rafter_end,
+            name="檐椽.两山",
+            root_obj = roofRootObj
+        )
+        # 上移，与桁檩上皮相切
+        bpy.ops.transform.translate(
+            value = (0,0,(con.HENG_COMMON_D+con.YUANCHUAN_D)*dk/2),
+            orient_type = con.OFFSET_ORIENTATION # GLOBAL/LOCAL ?
+        )   
+        
+        # 檐面和山面的檐椽延长，按檐总平出加斜计算
+        if n==1:
+            # 檐椽斜率（圆柱体默认转90度）
+            yan_rafter_angle = math.cos(fbRafterObj.rotation_euler.y)
+            # 檐总平出=斗栱平出+14斗口檐椽平出（暂不考虑7斗口的飞椽平出）
+            yan_rafter_ex = (bData.dg_extend + con.YANCHUAN_EX)* dk
+            # 檐椽加斜长度
+            fbRafterObj.dimensions.x += yan_rafter_ex / yan_rafter_angle
+            lrRafterObj.dimensions.x += yan_rafter_ex / yan_rafter_angle
+            utils.applyScale(fbRafterObj) # 便于后续做望板时获取真实长度
+
+        # 脑椽延长，达到伏脊木的位置
+        if n== len(purlin_pos)-2 :
+            naochuan_adj = con.HENG_COMMON_D/2*dk   # 手工设定了一个调节值，瞎估的
+            fbRafterObj.dimensions.x += naochuan_adj
+            utils.applyScale(fbRafterObj)
+            bpy.ops.transform.translate(
+                value = (-naochuan_adj,0,0),
+                orient_type = con.OFFSET_ORIENTATION 
+            ) 
+        
+        # # 暂存几何中心，避免后续裁剪后的偏移
+        # bpy.ops.view3d.snap_cursor_to_active()
+        # bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+        # yanchuan_center = yanRafterObj.location * Vector((0,1,1))  #获得几何中心
+        # # 暂存椽长，避免后续裁剪后无法准确获得
+        # yanchuan_length = yanRafterObj.dimensions.x
+        # bpy.ops.object.origin_set(type='ORIGIN_CURSOR') #恢复origin到原椽头
+
+        # 平铺Array
+        # 根据椽当=1椽径估算，取整
+        if n==1:
+            # 檐椽平铺到上层桁交点
+            rafter_tile_x = purlin_pos[n+1].x  
+        else:
+            # 其他椽架平铺到下层桁交点，然后切割
+            rafter_tile_x = purlin_pos[n].x
+        Xarray:bpy.types.ArrayModifier = \
+            fbRafterObj.modifiers.new(name='array', type='ARRAY')
+        Xarray.count = math.floor(rafter_tile_x /rafter_gap_x)
+        Xarray.use_relative_offset = False
+        Xarray.use_constant_offset = True
+        Xarray.constant_offset_displace = (0,-rafter_gap_x,0)
+        # 两山
+        if n==1:
+            # 檐椽平铺到上层桁交点 
+            rafter_tile_y = purlin_pos[n+1].y  
+        else:
+            # 其他椽架平铺到下层桁交点，然后切割
+            rafter_tile_y = purlin_pos[n].y
+        Yarray:bpy.types.ArrayModifier = \
+            lrRafterObj.modifiers.new(name='array', type='ARRAY')
+        Yarray.count = math.floor(rafter_tile_y /rafter_gap_y)
+        Yarray.use_relative_offset = False
+        Yarray.use_constant_offset = True
+        Yarray.constant_offset_displace = (0,rafter_gap_y,0)
+        
+        # 裁剪，檐椽不做裁剪（所以，檐椽的array modifier没有被apply）
+        if n!=1:
+            # 计算剪切平面，先将由戗投影到XY平面，再旋转90度
+            pstart_project = Vector((purlin_pos[n].x,purlin_pos[n].y,0))
+            pend_project = Vector((purlin_pos[n+1].x,purlin_pos[n+1].y,0))
+            bisect_normal = Vector(pend_project-pstart_project)
+            bisect_normal.rotate(Euler((0,0,math.radians(90)),'XYZ'))
+            bisect_normal = Vector(bisect_normal).normalized() # normal必须normalized,注意不是normalize
+
+            utils.focusObj(fbRafterObj)
+            bpy.ops.object.modifier_apply(modifier='array')     # 应用modifier
+            bpy.ops.object.editmode_toggle()
+            bpy.ops.mesh.select_all(action='SELECT')
+            # 计算剪切面定位点，从由戗头向外偏移半个由戗，以免穿模
+            pCut = purlin_pos[n]-Vector((con.JIAOLIANG_Y*dk/2,0,0))
+            bpy.ops.mesh.bisect(
+                plane_co=pCut,                # 切割面过下层桁交点
+                plane_no=bisect_normal,       # 切割方向
+                clear_outer=True,             # 前后檐clean outer
+                use_fill=True
+            )
+            bpy.ops.object.editmode_toggle()    
+
+            utils.focusObj(lrRafterObj)
+            bpy.ops.object.modifier_apply(modifier='array')     # 应用modifier
+            bpy.ops.object.editmode_toggle()
+            bpy.ops.mesh.select_all(action='SELECT')
+            # 计算剪切面定位点，从由戗头向外偏移半个由戗，以免穿模
+            pCut = purlin_pos[n]+Vector((con.JIAOLIANG_Y*dk/2,0,0))
+            bpy.ops.mesh.bisect(
+                plane_co=pCut,                # 切割面过下层桁交点
+                plane_no=bisect_normal,       # 切割方向
+                clear_inner=True,             # 两山clean inner
+                use_fill=True
+            )
+            bpy.ops.object.editmode_toggle()  
+        
+        # 镜像
+        mod:bpy.types.MirrorModifier = \
+            fbRafterObj.modifiers.new(name='mirror', type='MIRROR')
+        mod.mirror_object = roofRootObj
+        mod.use_axis[0] = True
+        mod.use_axis[1] = True
+        mod:bpy.types.MirrorModifier = \
+            lrRafterObj.modifiers.new(name='mirror', type='MIRROR')
+        mod.mirror_object = roofRootObj
+        mod.use_axis[0] = True
+        mod.use_axis[1] = True
+    
+    return
 
 # 营造整个房顶
 def buildRoof(buildingObj:bpy.types.Object):
@@ -262,6 +431,9 @@ def buildRoof(buildingObj:bpy.types.Object):
 
     # 摆放梁架
     __buildBeam(buildingObj,purlin_pos)
+
+    # 摆放椽架
+    __buildRafter(buildingObj,purlin_pos)
     
     # 重新聚焦根节点
     utils.focusObj(buildingObj)

@@ -17,7 +17,7 @@ def buildPlatform(buildingObj:bpy.types.Object):
     # 如果已有，先删除
     pfObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PLATFORM)
     if pfObj != None:
-        utils.delete_hierarchy(pfObj,with_parent=True)
+        utils.deleteHierarchy(pfObj,with_parent=True)
 
     # 载入模板配置
     platform_height = buildingObj.ACA_data.platform_height
@@ -70,7 +70,7 @@ def resizePlatform(buildingObj:bpy.types.Object):
         buildingData.platform_height
     )
     # 应用缩放(有时ops.object会乱跑，这里确保针对台基对象)
-    utils.ApplyScale(pfObj)
+    utils.applyScale(pfObj)
     # 平移，保持台基下沿在地平线高度
     pfObj.location.z = buildingData.platform_height /2
 

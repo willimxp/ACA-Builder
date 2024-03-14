@@ -13,7 +13,7 @@ import time
 from . import data
 
 # 弹出提示框
-def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
+def showMessageBox(message = "", title = "Message Box", icon = 'INFO'):
     def draw(self, context):
         self.layout.label(text=message)
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
@@ -185,7 +185,7 @@ def getAcaParent(object:bpy.types.Object,
     return parent
 
 # 应用缩放(有时ops.object会乱跑，这里确保针对台基对象)      
-def ApplyScale(object:bpy.types.Object):
+def applyScale(object:bpy.types.Object):
     bpy.ops.object.select_all(action='DESELECT')
     bpy.context.view_layer.objects.active = object
     object.select_set(True)
@@ -202,7 +202,7 @@ def focusObj(object:bpy.types.Object):
     object.select_set(True)
 
 # 删除树状层次下的所有对象
-def delete_hierarchy(parent_obj:bpy.types.Object,with_parent=False):
+def deleteHierarchy(parent_obj:bpy.types.Object,with_parent=False):
     #utils.outputMsg("deleting...")
     if parent_obj == None:
         # 没有可删除的对象
@@ -436,4 +436,25 @@ def addCylinderHorizontal(radius,depth,name,root_obj,
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
     # 旋转到实际角度
     cylinder.rotation_euler = rotation
+    return cylinder
+
+# 根据起始点，创建连接的圆柱体
+# 注意，该圆柱体已经经过翻转，长度指向+X轴
+def addCylinderBy2Points(radius,start_point,end_point,name,root_obj):
+    depth = getVectorDistance(start_point,end_point)
+    location = (start_point+end_point)/2
+    rotation = alignToVector(end_point-start_point)
+    rotation.x = 0 # 避免x轴翻转
+    cylinder = addCylinderHorizontal(
+        radius=radius,
+        depth=depth,
+        location=location,
+        rotation=rotation,
+        name=name,
+        root_obj=root_obj
+    )
+    # 设置origin到椽头，便于后续向外檐出
+    focusObj(cylinder)
+    bpy.context.scene.cursor.location = start_point + root_obj.location
+    bpy.ops.object.origin_set(type='ORIGIN_CURSOR')  
     return cylinder

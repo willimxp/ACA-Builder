@@ -41,6 +41,7 @@ class templateData:
     DG_PILLER_SOURCE = ''       # 柱头斗栱
     DG_FILLGAP_SOURCE = ''      # 补间斗栱
     DG_CORNER_SOURCE = ''       # 转角斗栱
+    RAFTER_COUNT = 6            # 椽架数
 
 # 解析XML，获取模版列表
 def getTemplateList():
@@ -189,6 +190,13 @@ def getTemplate(name,doukou=0)->templateData:
                 corner_source = dg.find('corner_source')
                 if corner_source != None:
                     tData.DG_CORNER_SOURCE = corner_source.text
+            
+            # 屋顶
+            roof = template.find('roof')
+            if roof != None:
+                rafter_count = roof.find('rafter_count')
+                if rafter_count != None:
+                    tData.RAFTER_COUNT = int(rafter_count.text)
                 
     
     return tData    
@@ -218,6 +226,7 @@ def fillTemplate(buildingObj:bpy.types.Object,
     buildingData['wall_layout'] = template.WALL_LAYOUT
     buildingData['wall_style'] = template.WALL_STYLE
     buildingData['door_height'] = template.DOOR_HEIGHT
+    buildingData['rafter_count'] = template.RAFTER_COUNT
 
     # 绑定资产
     bpy.ops.object.empty_add(type='PLAIN_AXES')

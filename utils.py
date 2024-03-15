@@ -6,7 +6,7 @@
 import bpy
 import bmesh
 import math
-from mathutils import Vector
+from mathutils import Vector,Euler
 import numpy as np
 import time
 
@@ -460,3 +460,56 @@ def addCylinderBy2Points(radius,start_point,end_point,name,root_obj):
     bpy.ops.object.origin_set(type='ORIGIN_CURSOR')  
     bpy.context.scene.cursor.location = old_loc
     return cylinder
+
+# 添加阵列修改器
+def addModifierArray(object:bpy.types.Object,
+                     count:int,
+                     offset:float,
+                     name='Array',
+                     use_relative_offset=False,
+                     use_constant_offset=True,
+                     ):
+    Xarray:bpy.types.ArrayModifier = \
+            object.modifiers.new(name,'ARRAY')
+    Xarray.count = count
+    Xarray.use_relative_offset = use_relative_offset
+    Xarray.use_constant_offset = use_constant_offset
+    Xarray.constant_offset_displace = offset
+
+# 添加镜像修改器
+def addModifierMirror(object:bpy.types.Object,
+                      mirrorObj:bpy.types.Object,
+                      use_axis,
+                      name='Mirror',):
+    mod:bpy.types.MirrorModifier = \
+            object.modifiers.new(name,'MIRROR')
+    mod.mirror_object = mirrorObj
+    mod.use_axis = use_axis
+
+# 基于面的裁切
+def addBisect(object:bpy.types.Object,
+              pStart:Vector,
+              pEnd:Vector,
+              pCut:Vector,
+              clear_outer=False,
+              clear_inner=False,)    :
+    # 1、计算剪切平面，先将由戗投影到XY平面，再旋转90度
+    pstart_project = Vector((pStart.x,pStart.y,0))
+    pend_project = Vector((pEnd.x,pEnd.y,0))
+    bisect_normal = Vector(pend_project-pstart_project)
+    bisect_normal.rotate(Euler((0,0,math.radians(90)),'XYZ'))
+    bisect_normal = Vector(bisect_normal).normalized() # normal必须normalized,注意不是normalize
+
+    # 2、选中并裁切
+    focusObj(object)  
+    bpy.ops.object.convert(target='MESH')   # 应用modifier
+    bpy.ops.object.editmode_toggle()
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.bisect(
+        plane_co=pCut, 
+        plane_no=bisect_normal, 
+        clear_outer=clear_outer,
+        clear_inner=clear_inner,
+        use_fill=True
+    )
+    bpy.ops.object.editmode_toggle()  

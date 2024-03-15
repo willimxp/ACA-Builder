@@ -23,6 +23,10 @@
             <fillgap_source>四铺作插昂柱头</fillgap_source>
             <corner_source>四铺作插昂转角</corner_source>
         </dougong>
+        <!--屋顶设置-->
+        <roof>
+            <rafter_count>6</rafter_count>
+        </roof>
     </template>
     <template>
         <name>大型宫殿</name>

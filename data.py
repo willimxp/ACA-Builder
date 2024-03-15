@@ -111,6 +111,18 @@ def update_wall(self, context:bpy.types.Context):
     else:
         utils.outputMsg("updated platform failed, context.object should be buildingObj")
         return
+    
+def update_roof(self, context:bpy.types.Context):
+    # 确认选中为building节点
+    buildingObj = context.object
+    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+        from . import buildRoof
+        # 重新生成墙体
+        funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
+        utils.fastRun(funproxy)
+    else:
+        utils.outputMsg("updated platform failed, context.object should be buildingObj")
+        return
 
 # 对象范围的数据
 # 可绑定面板参数属性
@@ -304,10 +316,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     
     # 屋顶属性
-    rafter_step : bpy.props.IntProperty(
+    rafter_count : bpy.props.IntProperty(
             name="椽架数量",
             default=8,
-            min=0,max=10
+            min=0,max=10,
+            update = update_roof,
         )# type: ignore 
     rafter_fb_gap : bpy.props.FloatProperty(
             name="前后檐椽当"

@@ -16,7 +16,7 @@ from . import buildWall
 from . import buildFloor
 from . import buildDoor
 from . import buildDougong
-from . import buildPurlin
+from . import buildRoof
     
 # 添加建筑empty根节点，并绑定设计模版
 # 返回建筑empty根节点对象
@@ -130,7 +130,7 @@ class ACA_OT_test(bpy.types.Operator):
             utils.showMessageBox("ERROR: 找不到建筑")
         else:
             # buildPurlin.buildRoof(buildingObj)
-            funproxy = partial(buildPurlin.buildRoof,buildingObj=buildingObj)
+            funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
             utils.fastRun(funproxy)
 
         return {'FINISHED'}

@@ -137,6 +137,11 @@ class ACA_PT_props(bpy.types.Panel):
                 row = box.row()
                 row.operator("aca.build_dougong",icon='HOME')# 按钮：生成斗栱
 
+                # 屋顶属性
+                box = layout.box()
+                row = box.row()
+                row.prop(objData, "rafter_count") # 椽架数量
+
             # 选择wallproxy时，可以设置墙体的独立样式
             if objData.aca_type == con.ACA_TYPE_WALL: 
                 box = layout.box()

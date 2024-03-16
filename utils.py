@@ -157,7 +157,7 @@ def getAcaSibling(object:bpy.types.Object,
     return sibling
         
 # 递归查找当前对象的子节点
-# 只返回最后一个对象，为了偷懒，没有返回所有
+# 只返回第一个对象，为了偷懒，没有返回所有
 # 如，根据台基对象，找到对应的柱网对象
 def getAcaChild(object:bpy.types.Object,
                   acaObj_type:str) -> bpy.types.Object:

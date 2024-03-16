@@ -121,6 +121,7 @@ def updateWallLayout(buildingObj:bpy.types.Object):
     # 三、批量绑定墙体构件
     for wallproxy in wallrootObj.children:
         buildDoor.buildSingleWall(wallproxy)
+        utils.redrawViewport()
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
@@ -206,6 +207,7 @@ def resetWallLayout(buildingObj:bpy.types.Object):
     # 三、批量绑定墙体构件
     for wallproxy in wallrootObj.children:
         buildDoor.buildSingleWall(wallproxy)
+        utils.redrawViewport()
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

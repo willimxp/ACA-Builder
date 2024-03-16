@@ -659,3 +659,48 @@ def updateScene():
     # 按照文章的说法，这个消耗更低
     dg = bpy.context.evaluated_depsgraph_get() 
     dg.update()
+
+# 刷新viewport，避免长时间卡死，并可见到建造过程
+def redrawViewport():
+    do = bpy.context.scene.ACA_data.is_auto_redraw
+    if do:
+        bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+    return 
+
+# 删除所有无用数据，以免拖累性能
+def delOrphan():
+    bpy.data.orphans_purge()
+    
+    for block in bpy.data.collections:
+        if block.users == 0:
+            bpy.data.collections.remove(block)
+
+    for block in bpy.data.objects:
+        if block.users == 0:
+            bpy.data.objects.remove(block)
+    
+    for block in bpy.data.meshes:
+        if block.users == 0:
+            bpy.data.meshes.remove(block)
+    
+    for block in bpy.data.curves:
+        if block.users == 0:
+            bpy.data.curves.remove(block)
+
+    for block in bpy.data.materials:
+        if block.users == 0:
+            bpy.data.materials.remove(block)
+
+    for block in bpy.data.textures:
+        if block.users == 0:
+            bpy.data.textures.remove(block)
+
+    for block in bpy.data.images:
+        if block.users == 0:
+            bpy.data.images.remove(block)
+    
+    for block in bpy.data.node_groups:
+        if block.users == 0:
+            bpy.data.node_groups.remove(block)
+    
+    

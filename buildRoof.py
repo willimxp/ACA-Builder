@@ -134,7 +134,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     radius = purlin_r, 
                     depth = purlin_length_y,
                     location = (pCross.x,0,pCross.z), 
-                    rotation=(0, 0, math.radians(90)), 
+                    rotation=Vector((0, 0, math.radians(90))), 
                     name = "桁-两山",
                     root_obj = roofRootObj
                 )
@@ -631,6 +631,8 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
 
 # 营造整个房顶
 def buildRoof(buildingObj:bpy.types.Object):
+    utils.delOrphan()
+    
     # 聚焦根目录
     utils.setCollection(con.ROOT_COLL_NAME)
     # 暂存cursor位置，注意要加copy()，否则传递的是引用
@@ -645,19 +647,25 @@ def buildRoof(buildingObj:bpy.types.Object):
     # 摆放桁檩
     __buildPurlin(buildingObj,purlin_pos)
     utils.outputMsg("Purlin added")
+    utils.redrawViewport()
 
     # 摆放梁架
     __buildBeam(buildingObj,purlin_pos)
     utils.outputMsg("Beam added")
+    utils.redrawViewport()
 
     # 摆放椽架
     __buildFBRafter(buildingObj,purlin_pos)
     utils.outputMsg("FBRafter added")
+    utils.redrawViewport()
     __buildLRRafter(buildingObj,purlin_pos)
     utils.outputMsg("LRRafter added")
+    utils.redrawViewport()
 
     # 摆放角梁
     __buildCornerBeam(buildingObj,purlin_pos)
+    utils.outputMsg("CornerBeam added")
+    utils.redrawViewport()
     
     # 重新聚焦根节点
     bpy.context.scene.cursor.location = old_loc # 恢复cursor位置

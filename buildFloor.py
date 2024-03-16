@@ -229,42 +229,58 @@ def resizePiller(buildingObj:bpy.types.Object):
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
 # 采用了偏函数和fastrun，极大加速了性能
 def buildFloor(buildingObj:bpy.types.Object):
+    # 清理数据
+    utils.delOrphan()
+
     # 提高性能模式============
     # https://blender.stackexchange.com/questions/7358/python-performance-with-blender-operators
     # 生成柱网
     funproxy = partial(buildPillers,buildingObj=buildingObj)
     utils.fastRun(funproxy)
+    utils.redrawViewport()
     # 生成台基
     funproxy = partial(buildPlatform.buildPlatform,buildingObj=buildingObj)
     utils.fastRun(funproxy)
+    utils.redrawViewport()
     # 生成墙体
     funproxy = partial(buildWall.buildWallLayout,buildingObj=buildingObj)
     utils.fastRun(funproxy)
+    utils.redrawViewport()
     # 生成斗栱
     funproxy = partial(buildDougong.buildDougong,buildingObj=buildingObj)
     utils.fastRun(funproxy)
+    utils.redrawViewport()
     # 生成桁檩
     funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
     utils.fastRun(funproxy)
+    utils.redrawViewport()
 
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
 # 采用了偏函数和fastrun，极大加速了性能
 def addFloor(buildingObj:bpy.types.Object):
+    # 清理数据
+    utils.delOrphan()
+
     # 提高性能模式============
     # https://blender.stackexchange.com/questions/7358/python-performance-with-blender-operators
     # 生成柱网
     funproxy = partial(buildPillers,buildingObj=buildingObj)
     utils.fastRun(funproxy)
+    utils.redrawViewport()
     # 生成台基
     funproxy = partial(buildPlatform.buildPlatform,buildingObj=buildingObj)
     utils.fastRun(funproxy)
+    utils.redrawViewport()
     # 生成墙体
     funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
     utils.fastRun(funproxy)
+    utils.redrawViewport()
     # 生成斗栱
     funproxy = partial(buildDougong.buildDougong,buildingObj=buildingObj)
     utils.fastRun(funproxy)
+    utils.redrawViewport()
     # 生成桁檩
     funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
     utils.fastRun(funproxy)
+    utils.redrawViewport()

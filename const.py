@@ -20,6 +20,7 @@ class ACA_Consts(object):
     ACA_TYPE_WALL = 'wall' # ACA类型：墙体
     ACA_TYPE_DG_ROOT ='dg_root' # ACA类型：斗栱根节点
     ACA_TYPE_ROOF_ROOT ='roof_root' # ACA类型：斗栱根节点
+    ACA_TYPE_RAFTER = 'rafter'      # ACA类型：椽
 
     # 柱子
     PILLER_D_EAVE = 6   # 檐柱直接径6斗口
@@ -70,6 +71,7 @@ class ACA_Consts(object):
 
     # 椽飞类
     YANCHUAN_EX = 14    # 檐椽平出14斗口
+    FEICHUAN_EX = 7     # 飞椽平出7斗口
     YUANCHUAN_D = 1.5   # 圆椽直径
     FEICHUAN_H = 1.5    # 飞椽、方椽高
     FEICHUAN_Y = 1.5    # 飞椽、方椽厚

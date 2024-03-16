@@ -3,6 +3,7 @@
 # 功能概述：
 #   椽架的营造
 import bpy
+import bmesh
 import math
 from mathutils import Vector,Euler
 
@@ -287,6 +288,8 @@ def __buildFBRafter(buildingObj:bpy.types.Object,purlin_pos):
             name="檐椽.前后",
             root_obj = roofRootObj
         )
+        fbRafterObj.ACA_data['aca_obj'] = True
+        fbRafterObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER
         # 上移，与桁檩上皮相切
         bpy.ops.transform.translate(
             value = (0,0,(con.HENG_COMMON_D+con.YUANCHUAN_D)*dk/2),
@@ -301,14 +304,14 @@ def __buildFBRafter(buildingObj:bpy.types.Object,purlin_pos):
             yan_rafter_ex = (bData.dg_extend + con.YANCHUAN_EX)* dk
             # 檐椽加斜长度
             fbRafterObj.dimensions.x += yan_rafter_ex / yan_rafter_angle
-            utils.applyScale(fbRafterObj) # 便于后续做望板时获取真实长度
+            utils.applyTransfrom(fbRafterObj,use_scale=True) # 便于后续做望板时获取真实长度
 
         # 【手工修正】：没有理论依据，纯粹为了好看
         # 脑椽延长，达到伏脊木的位置
         if n== len(purlin_pos)-2 :
             naochuan_adj = con.HENG_COMMON_D/2*dk   # 手工设定了一个调节值，瞎估的
             fbRafterObj.dimensions.x += naochuan_adj
-            utils.applyScale(fbRafterObj)
+            utils.applyTransfrom(fbRafterObj,use_scale=True)
             bpy.ops.transform.translate(
                 value = (-naochuan_adj,0,0),
                 orient_type = con.OFFSET_ORIENTATION 
@@ -332,9 +335,9 @@ def __buildFBRafter(buildingObj:bpy.types.Object,purlin_pos):
         if n!=1:
             utils.addBisect(
                     object=fbRafterObj,
-                    pStart=purlin_pos[n],
-                    pEnd=purlin_pos[n+1],
-                    pCut=purlin_pos[n] - \
+                    pStart=buildingObj.matrix_world @ purlin_pos[n],
+                    pEnd=buildingObj.matrix_world @ purlin_pos[n+1],
+                    pCut=buildingObj.matrix_world @ purlin_pos[n] - \
                         Vector((con.JIAOLIANG_Y*dk/2,0,0)),
                     clear_outer=True
             ) 
@@ -392,7 +395,7 @@ def __buildLRRafter(buildingObj:bpy.types.Object,purlin_pos):
             yan_rafter_ex = (bData.dg_extend + con.YANCHUAN_EX)* dk
             # 檐椽加斜长度
             lrRafterObj.dimensions.x += yan_rafter_ex / yan_rafter_angle
-            utils.applyScale(lrRafterObj) # 便于后续做望板时获取真实长度
+            utils.applyTransfrom(lrRafterObj,use_scale=True) # 便于后续做望板时获取真实长度
 
         # 平铺Array
         # 两山
@@ -412,9 +415,9 @@ def __buildLRRafter(buildingObj:bpy.types.Object,purlin_pos):
         if n!=1:
             utils.addBisect(
                     object=lrRafterObj,
-                    pStart=purlin_pos[n],
-                    pEnd=purlin_pos[n+1],
-                    pCut=purlin_pos[n] + \
+                    pStart=buildingObj.matrix_world @ purlin_pos[n],
+                    pEnd=buildingObj.matrix_world @ purlin_pos[n+1],
+                    pCut=buildingObj.matrix_world @ purlin_pos[n] + \
                         Vector((con.JIAOLIANG_Y*dk/2,0,0)),
                     clear_inner=True
             ) 
@@ -428,10 +431,210 @@ def __buildLRRafter(buildingObj:bpy.types.Object,purlin_pos):
     
     return
 
+# 根据老角梁，绘制对应子角梁
+# 基于“冲三翘四”的原则计算
+def __drawSmallCornerBeam(cornerBeamObj:bpy.types.Object,
+                          name,
+                          buildingObj:bpy.types.Object):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    
+    # 计算老角梁头
+    cornerBeam_head_co = utils.getObjectHeadPoint(
+                            cornerBeamObj,
+                            eval=True,
+                            is_symmetry=(True,True,False)
+                        )
+    # 将cursor放置在檐椽头，做为bmesh的origin
+    bpy.context.scene.cursor.location = cornerBeam_head_co
+    
+    # 任意添加一个对象，具体几何数据在bmesh中建立
+    bpy.ops.mesh.primitive_cube_add()
+    smallCornerBeamObj = bpy.context.object
+    smallCornerBeamObj.name = name
+    smallCornerBeamObj.parent = roofRootObj
+    smallCornerBeamObj.rotation_euler = cornerBeamObj.rotation_euler # 将飞椽与檐椽对齐旋转角度
+    # 向上位移半角梁高度，达到老角梁上皮
+    bpy.ops.transform.translate(
+            value = (0,0,con.JIAOLIANG_H/2*dk),
+            orient_type = 'LOCAL' # GLOBAL/LOCAL ?
+    )   
+
+    # 创建bmesh
+    bm = bmesh.new()
+    # 各个点的集合
+    vectors = []
+
+    # 第1点在子角梁腰，对齐了老角梁头，分割子角梁头、子角梁尾的转折点
+    v1 = Vector((0,0,0))
+    vectors.append(v1)
+
+    # 第2点在子角梁尾
+    # 与老角梁同长
+    cornerBeam_length = utils.getMeshDims(cornerBeamObj).x
+    v2 = Vector((-cornerBeam_length,0,0))
+    vectors.append(v2)
+
+    # 第3点在子角梁尾向上一角梁高
+    # 与老角梁同长
+    v3 = Vector((-cornerBeam_length ,0,con.JIAOLIANG_H*dk))
+    vectors.append(v3)
+
+    # 第4点在子角梁腰向上一角梁高
+    # 与老角梁同长
+    v4 = Vector((0,0,con.JIAOLIANG_H*dk))
+    vectors.append(v4)
+
+    # 第5点，定位子角梁的梁头
+    # 在local坐标系中计算子角梁头的绝对位置
+    # 计算冲出后的X、Y坐标，由飞椽平出+冲1椽（老角梁已经冲了2椽）+雀台
+    scb_ex_length = (con.FEICHUAN_EX + con.YUANCHUAN_D +con.QUETAI) * dk
+    scb_abs_x = cornerBeam_head_co.x + scb_ex_length
+    scb_abs_y = cornerBeam_head_co.y + scb_ex_length
+    # 计算翘四后的Z坐标
+    # 取檐椽头高度
+    feiRafterObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER)
+    feiRafter_head_co = utils.getObjectHeadPoint(
+                            feiRafterObj,
+                            eval=True,
+                            is_symmetry=(True,True,False)
+                        )
+    #showVector(bpy.context,root_obj,feiRafter_head_co)
+    # 翘四: 从飞椽头上皮，到子角梁上皮，其中要补偿0.75斗口，即半椽，合计调整一椽（见汤书p171）
+    scb_abs_z = feiRafter_head_co.z + con.YUANCHUAN_D*dk \
+            + bData.qiqiao*con.YUANCHUAN_D*dk # 默认起翘4椽
+    scb_abs_co = Vector((scb_abs_x,scb_abs_y,scb_abs_z))
+    # 将该起翘点存入dataset，后续翼角可供参考（相对于root_obj）
+    bData.roof_qiao_point = scb_abs_co
+    # 将坐标转换到子角梁坐标系中
+    v5 = smallCornerBeamObj.matrix_local.inverted() @ scb_abs_co
+    vectors.append(v5)
+    
+    # 第6点，定位子角梁的梁头
+    v6:Vector = (v4-v5).normalized()
+    v6.rotate(Euler((0,-math.radians(90),0),'XYZ'))
+    v6 = v6 * con.JIAOLIANG_H*dk + v5
+    vectors.append(v6)
+
+    # 摆放点
+    vertices=[]
+    for n in range(len(vectors)):
+        if n==0:
+            vert = bm.verts.new(vectors[n])
+        else:
+            # 挤出
+            return_geo = bmesh.ops.extrude_vert_indiv(bm, verts=[vert])
+            vertex_new = return_geo['verts'][0]
+            del return_geo
+            # 给挤出的点赋值
+            vertex_new.co = vectors[n]
+            # 交换vertex给下一次循环
+            vert = vertex_new
+        vertices.append(vert)
+    
+    # 创建面
+    wei_face = bm.faces.new((vertices[0],vertices[1],vertices[2],vertices[3])) # 子角梁尾
+    head_face =bm.faces.new((vertices[0],vertices[3],vertices[4],vertices[5])) # 子角梁头
+
+    # 挤出厚度
+    return_geo = bmesh.ops.extrude_face_region(bm, geom=[wei_face,head_face])
+    verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
+    bmesh.ops.translate(bm, verts=verts, vec=(0, con.JIAOLIANG_Y*dk, 0))
+
+    # 移动所有点，居中
+    for v in bm.verts:
+        v.co.y -= con.JIAOLIANG_Y*dk/2
+
+    # 确保face normal朝向
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(smallCornerBeamObj.data)
+    smallCornerBeamObj.data.update()
+    bm.free()
+
+    # 把原点放在子角梁尾，方便后续计算椽头坐标
+    new_origin = (v2+v3)/2
+    origin_world = smallCornerBeamObj.matrix_world @ new_origin
+    utils.setOrigin(smallCornerBeamObj,origin_world)
+
+    return smallCornerBeamObj
+
+# 营造角梁（包括老角梁、子角梁、由戗）
+def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    
+    # 计算角梁数据，忽略第一个挑檐桁交点，直接从正心桁到脊桁分段生成
+    cb_collection = []
+    for n in range(1,len(purlin_pos)-1) :
+        if n == 1:  #翼角角梁
+            # 老角梁，大式带斗拱的建筑采用扣金做法
+            # 老角梁尾压在金桁下
+            pEnd = Vector(purlin_pos[n+1]) \
+                - Vector((0,0,con.JIAOLIANG_H*dk*con.JIAOLIANG_WEI_KOUJIN))
+            # 计算老角梁头先放在正心桁交点上，后续根据檐出、冲出延长
+            pStart = Vector(purlin_pos[n]) \
+                + Vector((0,0,con.JIAOLIANG_H*dk*con.JIAOLIANG_HEAD_YAJIN))
+            cb_collection.append((pStart,pEnd,'老角梁'))
+        else:
+            # 其他角梁为压金做法，都压在桁之上
+            pStart = Vector(purlin_pos[n]) \
+                + Vector((0,0,con.JIAOLIANG_H*dk*con.YOUQIANG_YAJIN))
+            pEnd = Vector(purlin_pos[n+1]) \
+                + Vector((0,0,con.JIAOLIANG_H*dk*con.YOUQIANG_YAJIN))
+            cb_collection.append((pStart,pEnd,'由戗'))
+    
+    # 根据cb集合，放置角梁对象
+    for n in range(len(cb_collection)):
+        pStart = cb_collection[n][0]
+        pEnd = cb_collection[n][1]
+        CornerBeamName = cb_collection[n][2]
+        CornerBeamObj = utils.addCubeBy2Points(
+            start_point=pStart,
+            end_point=pEnd,
+            deepth=con.JIAOLIANG_Y*dk,
+            height=con.JIAOLIANG_H*dk,
+            name=CornerBeamName,
+            root_obj=roofRootObj,
+            origin_at_end=True
+        )
+        if n==0:    # 老角梁
+            # 延长老角梁，（斗栱平出+檐椽平出+出冲+雀台）*加斜
+            ex_length = bData.dg_extend \
+                + con.YANCHUAN_EX*dk \
+                + (bData.chong-1)*con.YUANCHUAN_D*dk \
+                + con.QUETAI*dk
+            # 水平面加斜45度
+            ex_length = ex_length * math.sqrt(2)
+            # 立面加斜老角梁扣金角度   
+            ex_length = ex_length / math.cos(CornerBeamObj.rotation_euler.y)
+            CornerBeamObj.dimensions.x += ex_length
+            utils.applyTransfrom(CornerBeamObj,use_scale=True)
+            
+            if bData.with_feichuan:
+                # 绘制子角梁
+                smallCornerBeamObj = __drawSmallCornerBeam(CornerBeamObj,'仔角梁',buildingObj)
+                utils.addModifierMirror(object=smallCornerBeamObj,
+                            mirrorObj=roofRootObj,
+                            use_axis=(True,True,False))
+
+        # 添加镜像
+        utils.addModifierMirror(object=CornerBeamObj,
+                            mirrorObj=roofRootObj,
+                            use_axis=(True,True,False))
+    
+    return
+
 # 营造整个房顶
 def buildRoof(buildingObj:bpy.types.Object):
     # 聚焦根目录
     utils.setCollection(con.ROOT_COLL_NAME)
+    # 暂存cursor位置，注意要加copy()，否则传递的是引用
+    old_loc = bpy.context.scene.cursor.location.copy()
 
     # 设定“屋顶层”根节点
     roofRootObj = __setRoofRoot(buildingObj)
@@ -452,7 +655,11 @@ def buildRoof(buildingObj:bpy.types.Object):
     utils.outputMsg("FBRafter added")
     __buildLRRafter(buildingObj,purlin_pos)
     utils.outputMsg("LRRafter added")
+
+    # 摆放角梁
+    __buildCornerBeam(buildingObj,purlin_pos)
     
     # 重新聚焦根节点
+    bpy.context.scene.cursor.location = old_loc # 恢复cursor位置
     utils.focusObj(buildingObj)
     return

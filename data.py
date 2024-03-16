@@ -325,6 +325,30 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     rafter_fb_gap : bpy.props.FloatProperty(
             name="前后檐椽当"
         )# type: ignore 
+    with_feichuan :  bpy.props.BoolProperty(
+            default=True,
+            name="添加飞椽"
+        )# type: ignore 
+    qiqiao: bpy.props.IntProperty(
+            name="起翘(椽径倍数)",
+            default=4, 
+            update=update_roof
+        )# type: ignore 
+    chong: bpy.props.IntProperty(
+            name="出冲(椽径倍数)",
+            default=3, 
+            update=update_roof
+        )# type: ignore 
+    shengqi: bpy.props.IntProperty(
+            name="生起(椽径倍数)",
+            default=1, 
+            update=update_roof
+        )# type: ignore 
+    roof_qiao_point : bpy.props.FloatVectorProperty(
+        name="翼角起翘参考点",
+        subtype='XYZ',
+        unit='LENGTH',
+        )# type: ignore 
 
 # 场景范围的数据
 # 可绑定面板参数属性

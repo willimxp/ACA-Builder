@@ -6,7 +6,7 @@
 import bpy
 import bmesh
 import math
-from mathutils import Vector,Euler
+from mathutils import Vector,Euler,Matrix
 import numpy as np
 import time
 
@@ -195,6 +195,40 @@ def applyScale(object:bpy.types.Object):
         location=False,
         isolate_users=True) # apply多用户对象时可能失败，所以要加上这个强制单用户
 
+def applyTransfrom(ob, 
+                    use_location=False, 
+                    use_rotation=False, 
+                    use_scale=False):
+    mb = ob.matrix_basis
+    I = Matrix()
+    loc, rot, scale = mb.decompose()
+
+    # rotation
+    T = Matrix.Translation(loc)
+    R = mb.to_3x3().normalized().to_4x4()
+    S = Matrix.Diagonal(scale).to_4x4()
+
+    transform = [I, I, I]
+    basis = [T, R, S]
+
+    def swap(i):
+        transform[i], basis[i] = basis[i], transform[i]
+
+    if use_location:
+        swap(0)
+    if use_rotation:
+        swap(1)
+    if use_scale:
+        swap(2)
+        
+    M = transform[0] @ transform[1] @ transform[2]
+    if hasattr(ob.data, "transform"):
+        ob.data.transform(M)
+    for c in ob.children:
+        c.matrix_local = M @ c.matrix_local
+        
+    ob.matrix_basis = basis[0] @ basis[1] @ basis[2]
+
 # 强制聚焦到对象
 def focusObj(object:bpy.types.Object):
     bpy.ops.object.select_all(action='DESELECT')
@@ -259,9 +293,13 @@ def addCubeBy2Points(start_point:Vector,
                      height:float,
                      name:str,
                      root_obj:bpy.types.Object,
-                     origin_at_bottom = False):
+                     origin_at_bottom = False,
+                     origin_at_end = False):
     length = getVectorDistance(start_point,end_point)
-    origin_point = (start_point+end_point)/2
+    if origin_at_end:
+        origin_point = end_point
+    else:
+        origin_point = (start_point+end_point)/2
     rotation = alignToVector(start_point - end_point)
     rotation.x = 0 # 避免x轴翻转
     bpy.ops.mesh.primitive_cube_add(
@@ -281,6 +319,11 @@ def addCubeBy2Points(start_point:Vector,
         bpy.ops.object.mode_set(mode = 'EDIT')
         bpy.ops.mesh.select_all(action = 'SELECT')
         bpy.ops.transform.translate(value=(0,0,height/2))
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+    if origin_at_end :
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_all(action = 'SELECT')
+        bpy.ops.transform.translate(value=(length/2,0,0),orient_type='LOCAL')
         bpy.ops.object.mode_set(mode = 'OBJECT')
 
     return cube
@@ -377,7 +420,6 @@ def drawHexagon(dimensions,location):
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
 
     # 移动3d cursor，做为bmesh的origin，一般也是起点
-    old_loc = bpy.context.scene.cursor.location.copy()  # 注意要加copy()，否则传递的是引用
     bpy.context.scene.cursor.location = location
     # 任意添加一个对象，具体几何数据在bmesh中建立
     bpy.ops.mesh.primitive_cube_add()
@@ -385,7 +427,6 @@ def drawHexagon(dimensions,location):
     bm.to_mesh(obj.data)
     obj.data.update()
     bm.free()
-    bpy.context.scene.cursor.location = old_loc
     return obj
 
 # 快速执行bpy.ops执行
@@ -404,6 +445,11 @@ def fastRun(func):
         func()
     finally:
         _BPyOpsSubModOp._view_layer_update = view_layer_update
+
+# 刷新viewport，避免长时间卡死，并可见到建造过程
+def redrawViewport():
+    bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+    return 
 
 # 格式化输出内容
 def outputMsg(msg:str):
@@ -440,7 +486,11 @@ def addCylinderHorizontal(radius,depth,name,root_obj,
 
 # 根据起始点，创建连接的圆柱体
 # 注意，该圆柱体已经经过翻转，长度指向+X轴
-def addCylinderBy2Points(radius,start_point,end_point,name,root_obj):
+def addCylinderBy2Points(radius:float,
+                         start_point:Vector,
+                         end_point:Vector,
+                         name:str,
+                         root_obj:bpy.types.Object):
     depth = getVectorDistance(start_point,end_point)
     location = (start_point+end_point)/2
     rotation = alignToVector(end_point-start_point)
@@ -454,11 +504,11 @@ def addCylinderBy2Points(radius,start_point,end_point,name,root_obj):
         root_obj=root_obj
     )
     # 设置origin到椽头，便于后续向外檐出
-    focusObj(cylinder)
-    old_loc = bpy.context.scene.cursor.location.copy()  # 注意要加copy()，否则传递的是引用
-    bpy.context.scene.cursor.location = start_point + root_obj.location
-    bpy.ops.object.origin_set(type='ORIGIN_CURSOR')  
-    bpy.context.scene.cursor.location = old_loc
+    # focusObj(cylinder)
+    # bpy.context.scene.cursor.location = start_point + root_obj.location
+    # bpy.ops.object.origin_set(type='ORIGIN_CURSOR') 
+    origin = root_obj.matrix_world @ start_point
+    setOrigin(cylinder,origin)
     return cylinder
 
 # 添加阵列修改器
@@ -513,3 +563,99 @@ def addBisect(object:bpy.types.Object,
         use_fill=True
     )
     bpy.ops.object.editmode_toggle()  
+
+# 寻找对象最外侧（远离原点）的面的中心点
+# 注意，返回的坐标基于root_obj为parent的local坐标系
+def getObjectHeadPoint(object:bpy.types.Object,
+                       eval:bool=False,
+                       is_symmetry=[False,False,False])-> Vector:
+    if eval:
+        # 获取应用modifier后的整体对象，包括镜像、阵列等
+        # 参考 https://docs.blender.org/api/current/bpy.types.Depsgraph.html
+        # 参考 https://blender.stackexchange.com/questions/7196/how-to-get-a-new-mesh-with-modifiers-applied-using-blender-python-api
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        obj_eval = object.evaluated_get(depsgraph)
+    else:
+        obj_eval = object
+
+    # 将对象的几何数据载入bmesh
+    bm = bmesh.new()
+    bm.from_mesh(obj_eval.data)
+
+    # 轮询面集合，查找最大值
+    headPoint = Vector((0,0,0))
+    for face in bm.faces:
+        # 面的几何中心点
+        faceCenter = face.calc_center_median()
+        if faceCenter > headPoint:
+            headPoint = faceCenter      
+    # 基于origin点进行转换，转换到局部坐标（以root_obj为参考）
+    objMatrix  = object.matrix_local
+    headPoint= objMatrix @ headPoint
+    
+    # 如果对称，取正值
+    for n in range(len(is_symmetry)):
+        if is_symmetry[n]:
+            headPoint[n]=abs(headPoint[n])
+
+    bm.free()
+    return headPoint
+
+# 复制对象的所有modifier
+def copyModifiers(from_0bj,to_obj):
+    # 先取消所有选中，以免进入本函数前有其他选择项的干扰
+    bpy.ops.object.select_all(action='DESELECT')
+    # 分别选中from，to
+    from_0bj.select_set(True)
+    bpy.context.view_layer.objects.active = from_0bj
+    to_obj.select_set(True)
+    # 复制modifiers
+    bpy.ops.object.make_links_data(type='MODIFIERS')
+    # 取消选中
+    bpy.ops.object.select_all(action='DESELECT')
+
+# 在坐标点上摆放一个cube，以便直观看到
+def showVector(point: Vector,parentObj,name="定位点") -> object :
+    bpy.ops.mesh.primitive_cube_add(size=0.3,location=point)
+    cube = bpy.context.active_object
+    cube.parent = parentObj
+    cube.name = name
+    return cube
+
+# 设置origin到cursor
+# 输入的origin必须为全局坐标系
+def setOrigin(object:bpy.types.Object,origin:Vector):
+    # 方法一：调用bpy.ops方法
+    # bpy.context.scene.cursor.location = origin
+    # focusObj(object)
+    # bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+
+    # 方法二：Low Level，其实没有觉得有明显性能区别
+    # https://blender.stackexchange.com/questions/16107/is-there-a-low-level-alternative-for-bpy-ops-object-origin-set
+    # 强制刷新，以便正确获得object的matrix信息
+    updateScene()
+    # 转换到相对于object的本地坐标
+    origin_local = object.matrix_world.inverted() @ origin
+    # 反向移动原点
+    mat = Matrix.Translation(-origin_local)
+    me = object.data
+    if me.is_editmode:
+        bm = bmesh.from_edit_mesh(me)
+        bm.transform(mat)
+        bmesh.update_edit_mesh(me, False, False)
+    else:
+        me.transform(mat)
+    me.update()
+    # 再次正向移动，回归到原来位置
+    object.matrix_world.translation = origin
+
+# 场景数据刷新
+# 特别在fastrun阻塞过程中，bpy.ops等操作的数据无法及时更新，导致执行的错误
+# 这时可以手工刷新一次
+# 老中医，药到病除的办法
+def updateScene():
+    #bpy.context.view_layer.update() 
+
+    # 按照文章的说法，这个消耗更低
+    dg = bpy.context.evaluated_depsgraph_get() 
+    dg.update()

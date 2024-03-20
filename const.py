@@ -27,6 +27,7 @@ class ACA_Consts(object):
     PILLER_D_EAVE = 6   # 檐柱直接径6斗口
     PILLER_H_EAVE = 57  # 檐柱高约57斗口（到挑檐桁下皮共70斗口）
     PILLER_D_JIN = 6.6  # 金柱直径6.6斗口
+    PILLER_CHILD = 5.2  # 蜀柱
 
     # 枋类
     EFANG_LARGE_H = 6/6   # 大额枋高，单位D
@@ -60,8 +61,9 @@ class ACA_Consts(object):
     DOUGONG_SPAN = 11   # 斗栱攒距，通常取11斗口
 
     # 桁檩
-    HENG_TIAOYAN_D = 3.2    # 挑檐桁直径，单位DK，梁思成数据
+    HENG_TIAOYAN_D = 4    # 挑檐桁直径，单位DK，梁思成数据
     HENG_COMMON_D = 4       # 正心桁直径，单位DK，梁思成数据
+    HENG_EXTEND = HENG_COMMON_D * 2 # 桁檩出梢
     FUJIMU_D = 4            # 伏脊木
     #LIFT_RATIO = [0.5,0.65,0.75,0.9]    # 清工程做法则例的推荐系数
     LIFT_RATIO = [0.5,0.7,0.8,0.9]       # 梁思成图纸中采用的系数，可以进行比较

@@ -294,10 +294,13 @@ def addCubeBy2Points(start_point:Vector,
                      name:str,
                      root_obj:bpy.types.Object,
                      origin_at_bottom = False,
-                     origin_at_end = False):
+                     origin_at_end = False,
+                     origin_at_start=False):
     length = getVectorDistance(start_point,end_point)
     if origin_at_end:
         origin_point = end_point
+    elif origin_at_start:
+        origin_point = start_point
     else:
         origin_point = (start_point+end_point)/2
     rotation = alignToVector(start_point - end_point)
@@ -324,6 +327,11 @@ def addCubeBy2Points(start_point:Vector,
         bpy.ops.object.mode_set(mode = 'EDIT')
         bpy.ops.mesh.select_all(action = 'SELECT')
         bpy.ops.transform.translate(value=(length/2,0,0),orient_type='LOCAL')
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+    if origin_at_start :
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_all(action = 'SELECT')
+        bpy.ops.transform.translate(value=(-length/2,0,0),orient_type='LOCAL')
         bpy.ops.object.mode_set(mode = 'OBJECT')
 
     return cube
@@ -578,6 +586,10 @@ def getObjectHeadPoint(object:bpy.types.Object,
     else:
         obj_eval = object
 
+    # 发现有的时候获取端点还是会有异常，只能刷一把状态了
+    # 比如，歇山山面飞椽的定位就会异常
+    updateScene()
+
     # 将对象的几何数据载入bmesh
     bm = bmesh.new()
     bm.from_mesh(obj_eval.data)
@@ -702,5 +714,42 @@ def delOrphan():
     for block in bpy.data.node_groups:
         if block.users == 0:
             bpy.data.node_groups.remove(block)
-    
-    
+
+# 获取对象的几何中心
+# 已经在代码中使用评估对象，可以抗阻塞 
+# https://blender.stackexchange.com/questions/129473/typeerror-element-wise-multiplication-not-supported-between-matrix-and-vect 
+def getMeshCenter(object:bpy.types.Object):
+    # 准确获取对象状态，避免脚本阻塞产生
+    obj_eval = getEvalObj(object)
+    local_bbox_center = 0.125 * sum((Vector(b) for b in obj_eval.bound_box), Vector())
+    global_bbox_center = obj_eval.matrix_local @ local_bbox_center
+    return global_bbox_center
+
+# 重新设置对象的旋转角，而不改变对象的原来的旋转
+def changeOriginRotation(RotationChange,Object:bpy.types.Object):
+    # 先预存原旋转角度
+    # 当心，原来直接使用返回值出现了bug，中间会变化
+    old_rot_x,old_rot_y,old_rot_z = Object.rotation_euler
+    # 以飞椽上皮角度做为调节角度
+    change_rot_x,change_rot_y,change_rot_z = alignToVector(RotationChange)
+    # 先矫枉
+    Object.rotation_euler = Euler((
+        -change_rot_x,
+        -change_rot_y,
+        -change_rot_z),'XYZ')
+    # Apply
+    applyTransfrom(ob=Object,use_rotation=True)
+    Object.rotation_euler = Euler(
+        (old_rot_x+change_rot_x,
+         old_rot_y+change_rot_y,
+         old_rot_z+change_rot_z),'XYZ'
+    )
+
+# 返回评估对象
+# 在代码阻塞过程中，可以及时的计算对象当前的状态，刷新实际的尺寸、旋转和坐标
+# 如果在fastrun中出现问题，多试试这个方法
+# https://docs.blender.org/api/current/bpy.types.Depsgraph.html
+def getEvalObj(object:bpy.types.Object)->bpy.types.Object:
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    obj_eval = object.evaluated_get(depsgraph)
+    return obj_eval

@@ -119,6 +119,24 @@ class ACA_OT_build_dougong(bpy.types.Operator):
     
 # 批量重新生成墙体布局，及所有墙体
 # 绑定在建筑面板的“墙体营造按钮上”
+class ACA_OT_build_roof(bpy.types.Operator):
+    bl_idname="aca.build_roof"
+    bl_label = "屋顶营造"
+
+    def execute(self, context):  
+        buildingObj = context.object
+        bData:data.ACA_data_obj = buildingObj.ACA_data
+        if bData.aca_type != con.ACA_TYPE_BUILDING:
+            utils.showMessageBox("ERROR: 找不到建筑")
+        else:
+            #buildRoof.buildRoof(buildingObj)
+            funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
+            utils.fastRun(funproxy)
+
+        return {'FINISHED'}
+    
+# 批量重新生成墙体布局，及所有墙体
+# 绑定在建筑面板的“墙体营造按钮上”
 class ACA_OT_test(bpy.types.Operator):
     bl_idname="aca.test"
     bl_label = "测试"

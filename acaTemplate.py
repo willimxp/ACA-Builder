@@ -38,10 +38,12 @@ class templateData:
     WALL_SOURCE = ''            # 墙体外链对象
     DOOR_HEIGHT = 0.6*PILLER_HEIGHT          # 中槛高度，即门上沿高度，未找到理论值，这里我粗估了一个值
     LINGXIN_SOURCE = ''         # 隔扇棂心外链对象
+    USE_DG = False              # 是否用斗栱
     DG_PILLER_SOURCE = ''       # 柱头斗栱
     DG_FILLGAP_SOURCE = ''      # 补间斗栱
     DG_CORNER_SOURCE = ''       # 转角斗栱
     RAFTER_COUNT = 6            # 椽架数
+    ROOF_STYLE = 1              # 屋顶样式
 
 # 解析XML，获取模版列表
 def getTemplateList():
@@ -181,6 +183,7 @@ def getTemplate(name,doukou=0)->templateData:
             # 斗栱
             dg = template.find('dougong')
             if dg != None:
+                tData.USE_DG = True    # 使用斗栱
                 piller_source = dg.find('piller_source')
                 if piller_source != None:
                     tData.DG_PILLER_SOURCE = piller_source.text
@@ -190,10 +193,15 @@ def getTemplate(name,doukou=0)->templateData:
                 corner_source = dg.find('corner_source')
                 if corner_source != None:
                     tData.DG_CORNER_SOURCE = corner_source.text
+            else:
+                tData.USE_DG = False    # 不用斗栱
             
             # 屋顶
             roof = template.find('roof')
             if roof != None:
+                rafter_style = roof.find('roof_style')
+                if rafter_style != None:
+                    tData.ROOF_STYLE = int(rafter_style.text)
                 rafter_count = roof.find('rafter_count')
                 if rafter_count != None:
                     tData.RAFTER_COUNT = int(rafter_count.text)
@@ -227,6 +235,7 @@ def fillTemplate(buildingObj:bpy.types.Object,
     buildingData['wall_style'] = template.WALL_STYLE
     buildingData['door_height'] = template.DOOR_HEIGHT
     buildingData['rafter_count'] = template.RAFTER_COUNT
+    buildingData['roof_style'] = template.ROOF_STYLE
 
     # 绑定资产
     bpy.ops.object.empty_add(type='PLAIN_AXES')
@@ -249,19 +258,23 @@ def fillTemplate(buildingObj:bpy.types.Object,
         lingxin_base:bpy.types.Object = \
             acaLibrary.loadAssets(template.LINGXIN_SOURCE,assetsObj)
         buildingData['lingxin_source'] = lingxin_base
-    # 柱头斗栱样式
-    if template.DG_PILLER_SOURCE != "" :
-        dg_piller_base:bpy.types.Object = \
-            acaLibrary.loadAssets(template.DG_PILLER_SOURCE,assetsObj)
-        buildingData['dg_piller_source'] = dg_piller_base
-    if template.DG_FILLGAP_SOURCE != "" :
-        dg_fillgap_base:bpy.types.Object = \
-            acaLibrary.loadAssets(template.DG_FILLGAP_SOURCE,assetsObj)
-        buildingData['dg_fillgap_source'] = dg_fillgap_base
-    if template.DG_CORNER_SOURCE != "" :
-        dg_corner_base:bpy.types.Object = \
-            acaLibrary.loadAssets(template.DG_CORNER_SOURCE,assetsObj)
-        buildingData['dg_corner_source'] = dg_corner_base
+    # 斗栱样式
+    if template.USE_DG:
+        buildingData['use_dg'] = True
+        if template.DG_PILLER_SOURCE != "" :
+            dg_piller_base:bpy.types.Object = \
+                acaLibrary.loadAssets(template.DG_PILLER_SOURCE,assetsObj)
+            buildingData['dg_piller_source'] = dg_piller_base
+        if template.DG_FILLGAP_SOURCE != "" :
+            dg_fillgap_base:bpy.types.Object = \
+                acaLibrary.loadAssets(template.DG_FILLGAP_SOURCE,assetsObj)
+            buildingData['dg_fillgap_source'] = dg_fillgap_base
+        if template.DG_CORNER_SOURCE != "" :
+            dg_corner_base:bpy.types.Object = \
+                acaLibrary.loadAssets(template.DG_CORNER_SOURCE,assetsObj)
+            buildingData['dg_corner_source'] = dg_corner_base
+    else:
+        buildingData['use_dg'] = False
 
 # 根据panel中DK的改变，更新整体设计参数
 def updateTemplateByDK(dk,buildingObj:bpy.types.Object):

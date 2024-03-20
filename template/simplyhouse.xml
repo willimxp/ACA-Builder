@@ -1,6 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates>
     <template>
+        <name>小式硬山</name>
+        <dk>0.08</dk>
+        <!--墙体设置-->
+        <wall>
+            <layout>1</layout>
+            <style>2</style>
+            <wall_source>墙体</wall_source>
+            <door_height></door_height>
+            <lingxin_source>棂心.正搭斜交</lingxin_source>
+        </wall>
+        <!--斗栱设置-->
+        <dougong>
+            <piller_source>四铺作插昂柱头</piller_source>
+            <fillgap_source>四铺作插昂柱头</fillgap_source>
+            <corner_source>四铺作插昂转角</corner_source>
+        </dougong>
+        <!--屋顶设置-->
+        <roof>
+            <roof_style>4</roof_style>
+            <rafter_count>6</rafter_count>
+        </roof>
+    </template>
+    <template>
         <name>基本模板</name>
         <dk>0.08</dk>
         <!--柱-->
@@ -25,6 +48,7 @@
         </dougong>
         <!--屋顶设置-->
         <roof>
+            <roof_style>1</roof_style>
             <rafter_count>6</rafter_count>
         </roof>
     </template>

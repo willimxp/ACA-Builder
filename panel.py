@@ -129,18 +129,35 @@ class ACA_PT_props(bpy.types.Panel):
                 # 斗栱属性
                 box = layout.box()
                 row = box.row()
-                row.prop(objData, "dg_piller_source") # 柱头斗栱
+                row.prop(objData, "use_dg") # 柱头斗栱
+                if objData.use_dg:
+                    row = box.row()
+                    row.prop(objData, "dg_extend") # 斗栱出跳
+                    row = box.row()
+                    row.prop(objData, "dg_height") # 斗栱高度
+                    row = box.row()
+                    row.prop(objData, "dg_piller_source") # 柱头斗栱
+                    row = box.row()
+                    row.prop(objData, "dg_fillgap_source") # 补间斗栱
+                    row = box.row()
+                    row.prop(objData, "dg_corner_source") # 转角斗栱
                 row = box.row()
-                row.prop(objData, "dg_fillgap_source") # 补间斗栱
-                row = box.row()
-                row.prop(objData, "dg_corner_source") # 转角斗栱
-                row = box.row()
-                row.operator("aca.build_dougong",icon='HOME')# 按钮：生成斗栱
+                row.operator("aca.build_dougong",icon='HOME',)# 按钮：生成斗栱
+                if objData.use_dg:
+                    row.enabled = True
+                else:
+                    row.enabled = False
 
                 # 屋顶属性
                 box = layout.box()
                 row = box.row()
+                row.prop(objData, "roof_style") # 屋顶样式
+                row = box.row()
                 row.prop(objData, "rafter_count") # 椽架数量
+                row = box.row()
+                row.prop(objData, "with_feichuan") # 椽架数量
+                row = box.row()
+                row.operator("aca.build_roof",icon='HOME',)# 按钮：生成屋顶
 
             # 选择wallproxy时，可以设置墙体的独立样式
             if objData.aca_type == con.ACA_TYPE_WALL: 

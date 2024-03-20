@@ -289,6 +289,10 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     
     # 斗栱属性
+    use_dg :  bpy.props.BoolProperty(
+            default=False,
+            name="使用斗栱"
+        )# type: ignore 
     dg_piller_source:bpy.props.PointerProperty(
             name = "柱头斗栱",
             type = bpy.types.Object,
@@ -316,18 +320,27 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     
     # 屋顶属性
+    roof_style : bpy.props.EnumProperty(
+            name = "屋顶类型",
+            items = [
+                ("","",""),
+                ("1","庑殿顶",""),
+                ("2","歇山顶",""),
+                ("3","悬山顶",""),
+                ("4","硬山顶",""),
+            ],
+            update = update_roof,
+        ) # type: ignore
     rafter_count : bpy.props.IntProperty(
             name="椽架数量",
             default=8,
             min=0,max=10,
             update = update_roof,
         )# type: ignore 
-    rafter_fb_gap : bpy.props.FloatProperty(
-            name="前后檐椽当"
-        )# type: ignore 
     with_feichuan :  bpy.props.BoolProperty(
             default=True,
-            name="添加飞椽"
+            name="添加飞椽",
+            update = update_roof,
         )# type: ignore 
     qiqiao: bpy.props.IntProperty(
             name="起翘(椽径倍数)",

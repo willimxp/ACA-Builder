@@ -512,8 +512,9 @@ def addCylinderBy2Points(radius:float,
         root_obj=root_obj
     )
     # 设置origin到椽头，便于后续向外檐出
-    origin2 = root_obj.matrix_world @ start_point
-    setOrigin1(cylinder,origin2)
+    origin = locationTrans(start_point,root_obj,cylinder)
+    setOrigin(cylinder,origin)
+
 
     return cylinder
 
@@ -633,28 +634,6 @@ def showVector(point: Vector,parentObj,name="定位点") -> object :
     return cube
 
 # 设置origin到cursor
-# 输入的origin必须为全局坐标系
-def setOrigin1(object:bpy.types.Object,origin:Vector):
-    # Low Level，其实没有觉得有明显性能区别
-    # https://blender.stackexchange.com/questions/16107/is-there-a-low-level-alternative-for-bpy-ops-object-origin-set
-    # 强制刷新，以便正确获得object的matrix信息
-    updateScene()
-    # 转换到相对于object的本地坐标
-    origin_local = object.matrix_world.inverted() @ origin
-    # 反向移动原点
-    mat = Matrix.Translation(-origin_local)
-    me = object.data
-    if me.is_editmode:
-        bm = bmesh.from_edit_mesh(me)
-        bm.transform(mat)
-        bmesh.update_edit_mesh(me, False, False)
-    else:
-        me.transform(mat)
-    me.update()
-    # 再次正向移动，回归到原来位置
-    object.matrix_world.translation = origin
-
-# 设置origin到cursor
 # 输入的origin必须为相对于object的局域坐标
 def setOrigin(object:bpy.types.Object,origin:Vector):
     # Low Level，其实没有觉得有明显性能区别
@@ -769,3 +748,15 @@ def getEvalObj(object:bpy.types.Object)->bpy.types.Object:
     depsgraph = bpy.context.evaluated_depsgraph_get()
     obj_eval = object.evaluated_get(depsgraph)
     return obj_eval
+
+# 将A对象的相对坐标，转换到B坐标系中
+def locationTrans(loc:Vector,
+                  fromObj:bpy.types.Object,
+                  toObj:bpy.types.Object):
+    # 刷新获得准确的矩阵
+    updateScene()
+    # 转换到全局坐标
+    loc_world = fromObj.matrix_world @ loc
+    # 转换到B坐标系
+    loc_local = toObj.matrix_world.inverted() @ loc_world
+    return loc_local

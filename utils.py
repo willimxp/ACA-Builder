@@ -512,11 +512,9 @@ def addCylinderBy2Points(radius:float,
         root_obj=root_obj
     )
     # 设置origin到椽头，便于后续向外檐出
-    # focusObj(cylinder)
-    # bpy.context.scene.cursor.location = start_point + root_obj.location
-    # bpy.ops.object.origin_set(type='ORIGIN_CURSOR') 
-    origin = root_obj.matrix_world @ start_point
-    setOrigin(cylinder,origin)
+    origin2 = root_obj.matrix_world @ start_point
+    setOrigin1(cylinder,origin2)
+
     return cylinder
 
 # 添加阵列修改器
@@ -636,13 +634,8 @@ def showVector(point: Vector,parentObj,name="定位点") -> object :
 
 # 设置origin到cursor
 # 输入的origin必须为全局坐标系
-def setOrigin(object:bpy.types.Object,origin:Vector):
-    # 方法一：调用bpy.ops方法
-    # bpy.context.scene.cursor.location = origin
-    # focusObj(object)
-    # bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-
-    # 方法二：Low Level，其实没有觉得有明显性能区别
+def setOrigin1(object:bpy.types.Object,origin:Vector):
+    # Low Level，其实没有觉得有明显性能区别
     # https://blender.stackexchange.com/questions/16107/is-there-a-low-level-alternative-for-bpy-ops-object-origin-set
     # 强制刷新，以便正确获得object的matrix信息
     updateScene()
@@ -660,6 +653,29 @@ def setOrigin(object:bpy.types.Object,origin:Vector):
     me.update()
     # 再次正向移动，回归到原来位置
     object.matrix_world.translation = origin
+
+# 设置origin到cursor
+# 输入的origin必须为相对于object的局域坐标
+def setOrigin(object:bpy.types.Object,origin:Vector):
+    # Low Level，其实没有觉得有明显性能区别
+    # https://blender.stackexchange.com/questions/16107/is-there-a-low-level-alternative-for-bpy-ops-object-origin-set
+    # 强制刷新，以便正确获得object的matrix信息
+    updateScene()
+    # 转换到相对于object的本地坐标
+    origin_world = object.matrix_world @ origin
+    origin_local = object.matrix_world.inverted() @ origin_world
+    # 反向移动原点
+    mat = Matrix.Translation(-origin_local)
+    me = object.data
+    if me.is_editmode:
+        bm = bmesh.from_edit_mesh(me)
+        bm.transform(mat)
+        bmesh.update_edit_mesh(me, False, False)
+    else:
+        me.transform(mat)
+    me.update()
+    # 再次正向移动，回归到原来位置
+    object.matrix_world.translation = origin_world
 
 # 场景数据刷新
 # 特别在fastrun阻塞过程中，bpy.ops等操作的数据无法及时更新，导致执行的错误

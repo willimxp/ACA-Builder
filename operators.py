@@ -147,7 +147,7 @@ class ACA_OT_test(bpy.types.Operator):
         if bData.aca_type != con.ACA_TYPE_BUILDING:
             utils.showMessageBox("ERROR: 找不到建筑")
         else:
-            #buildRoof.buildRoof(buildingObj)
+            # buildRoof.buildRoof(buildingObj)
             funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
             utils.fastRun(funproxy)
 

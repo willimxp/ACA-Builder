@@ -550,27 +550,41 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlinPos):
 
 # 根据檐椽，绘制对应飞椽
 # 基于“一飞二尾五”的原则计算
-def __drawFeiChuan(yanRafterObj,name,root_obj):
+def __drawFeiChuan(buildingObj:bpy.types.Object,direction):
     # 载入数据
-    buildingObj = utils.getAcaParent(yanRafterObj,con.ACA_TYPE_BUILDING)
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
+    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+
+    # 判断前后檐，还是两山
+    if direction == 'X':    # 前后檐
+        feiName = '飞椽.前后'
+        rafterType = con.ACA_TYPE_RAFTER_FB
+        feiType = con.ACA_TYPE_RAFTERFEI_FB
+    else:
+        feiName = '飞椽.两山'
+        rafterType = con.ACA_TYPE_RAFTER_LR
+        feiType = con.ACA_TYPE_RAFTERFEI_LR
+    yanRafterObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,rafterType)
     
     # 计算椽头坐标
+    utils.updateScene()
     yanchuan_head_co = utils.getObjectHeadPoint(yanRafterObj,
             eval=False,
             is_symmetry=(True,True,False))
-    utils.showVector(yanchuan_head_co,root_obj)
     # 将cursor放置在檐椽头，做为bmesh的origin
     bpy.context.scene.cursor.location = yanchuan_head_co
 
     # 任意添加一个对象，具体几何数据在bmesh中建立
     bpy.ops.mesh.primitive_cube_add()
     feiChuanObj = bpy.context.object
-    feiChuanObj.name = name
-    feiChuanObj.parent = root_obj
+    feiChuanObj.name = feiName
+    feiChuanObj.parent = roofRootObj
     # 将飞椽与檐椽对齐旋转角度
     feiChuanObj.rotation_euler = yanRafterObj.rotation_euler 
+    feiChuanObj.ACA_data['aca_obj'] = True
+    feiChuanObj.ACA_data['aca_type'] = feiType
 
     # 创建bmesh
     bm = bmesh.new()
@@ -637,9 +651,12 @@ def __drawFeiChuan(yanRafterObj,name,root_obj):
     verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
     bmesh.ops.translate(bm, verts=verts, vec=(0, con.FEICHUAN_H*dk, 0))
 
-    # 移动所有点，居中
+    offset = Vector((0,0,(con.YUANCHUAN_D/2+con.WANGBAN_H)*dk))
     for v in bm.verts:
+        # 移动所有点，居中
         v.co.y -= con.FEICHUAN_H*dk/2
+        # 向上位移半檐椽+一望板
+        v.co += Vector((0,0,(con.YUANCHUAN_D/2+con.WANGBAN_H)*dk))
     
     # 确保face normal朝向
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
@@ -647,139 +664,100 @@ def __drawFeiChuan(yanRafterObj,name,root_obj):
     feiChuanObj.data.update()
     bm.free()
 
-    # 向上位移半檐椽+一望板
-    bpy.ops.transform.translate(
-            value = (0,0,(con.YUANCHUAN_D/2+con.WANGBAN_H)*dk),
-            orient_type = 'GLOBAL' # GLOBAL/LOCAL ?
-    )
-
-    # 优化飞椽的matrix
     # 把原点放在椽尾，方便后续计算椽头坐标
-    # 把飞椽腰的v2点转换到global坐标系，并制定给3d cursor
-    # bpy.context.scene.cursor.location = feiChuanObj.matrix_world @ v2
-    # bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-    origin = feiChuanObj.matrix_world @ v2
-    utils.setOrigin(feiChuanObj,origin)
+    vo = v2 + offset
+    utils.setOrigin(feiChuanObj,vo)
 
     # 把旋转角度与上皮对齐，方便后续摆放压椽尾望板
     change_rot = v4-v3
-    # 已封装了一个方法
     utils.changeOriginRotation(change_rot,feiChuanObj)
-    return feiChuanObj
 
-# 营造前后檐-飞椽（以及里口木等附属构件)
-# 小式建筑中，可以不使用飞椽
-def __buildRafterFei_FB(buildingObj:bpy.types.Object,purlinPos):
-    # 载入数据
-    bData : acaData = buildingObj.ACA_data
-    dk = bData.DK
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
-    
-    # 一、构造飞椽
-    # 以檐椽对象为参考基准
-    yanRafterObj:bpy.types.Object = \
-        utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
-    feiChuanObj:bpy.types.Object = \
-            __drawFeiChuan(yanRafterObj,
-                        name='飞椽.前后',
-                        root_obj=roofRootObj)  
     # 复制檐椽的modifier到飞椽上，相同的array，相同的mirror
     utils.copyModifiers(from_0bj=yanRafterObj,to_obj=feiChuanObj)  
 
-    # 二、构造里口木
+    return feiChuanObj
+
+# 通用的建造里口木方法
+# 可根据参数，决定前后檐还是两山
+def __buildLKM(buildingObj:bpy.types.Object,
+               purlinPos,
+               direction):
+     # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
     # 如果有斗栱，剔除挑檐桁的干扰
     purlin_pos = purlinPos.copy()
     if bData.use_dg:
         del purlin_pos[0]
     # 获取金桁位置，做为里口木的宽度
     jinhengPos = purlin_pos[1]
+
+    # 判断前后檐，还是两山
+    if direction == 'X':    # 前后檐
+        LKM_name = "里口木.前后"
+        rafterType = con.ACA_TYPE_RAFTER_FB
+        LKM_width = jinhengPos.x * 2
+        mirrorAxis = (False,True,False) # Y轴镜像
+    else:
+        LKM_name = "里口木.两山"
+        rafterType = con.ACA_TYPE_RAFTER_LR
+        LKM_width = jinhengPos.y * 2
+        mirrorAxis = (True,False,False) # X轴镜像
+
+    # 获取檐椽对象
+    yanRafterObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,rafterType)
+    # 计算檐椽头坐标
     yanchuan_head_co = utils.getObjectHeadPoint(yanRafterObj,
-            eval=True,
+            eval=False,
             is_symmetry=(True,True,False))
     # 里口木相对于檐口的位移，与檐椽上皮相切，并内收一个雀台，
-    offset = Vector((-(con.QUETAI+con.LIKOUMU_Y/2)*dk, # 内收一个雀台
-                    0,
-                    (con.YUANCHUAN_D/2+con.LIKOUMU_H/2)*dk)) # 从椽中上移
+    offset = Vector(
+        (-(con.QUETAI+con.LIKOUMU_Y/2)*dk, # 内收一个雀台
+        0,
+        (con.YUANCHUAN_D/2+con.LIKOUMU_H/2)*dk)) # 从椽中上移
+    # 转换到檐椽坐标系
     offset.rotate(yanRafterObj.rotation_euler)
-    lkm_pos:Vector = (yanchuan_head_co + offset)*Vector((0,1,1))
-    lkm_scale = (jinhengPos.x * 2,  # 连接左右两个闸挡板
-                    con.LIKOUMU_Y*dk,
-                    con.LIKOUMU_H*dk
-                    )
+    if direction == 'X': 
+        lkm_rotate = (-yanRafterObj.rotation_euler.y,0,0)
+        lkm_pos:Vector = (yanchuan_head_co + offset)*Vector((0,1,1))
+    else:
+        lkm_rotate = (
+                    yanRafterObj.rotation_euler.y,
+                    0,math.radians(90))
+        lkm_pos:Vector = (yanchuan_head_co + offset)*Vector((1,0,1))
+    # 里口木尺寸
+    lkm_scale = (LKM_width,con.LIKOUMU_Y*dk,con.LIKOUMU_H*dk)
+    # 里口木生成
     bpy.ops.mesh.primitive_cube_add(size=1,
             location = lkm_pos,
-            rotation = (-yanRafterObj.rotation_euler.y,0,0),
+            rotation = lkm_rotate,
             scale = lkm_scale
             )
     LKMObj = bpy.context.object
-    LKMObj.name = "里口木.檐面"
+    LKMObj.name = LKM_name
     LKMObj.parent = roofRootObj
     utils.addModifierMirror(
         object=LKMObj,
         mirrorObj=roofRootObj,
-        use_axis=(False,True,False)
+        use_axis=mirrorAxis
     )
     return
 
-# 营造两山飞椽(及里口木等附件)
+# 营造飞椽（以及里口木等附属构件)
 # 小式建筑中，可以不使用飞椽
-# 硬山、悬山，不涉及两山飞椽
-def __buildRafterFei_LR(buildingObj:bpy.types.Object,purlinPos):
-    # 载入数据
-    bData : acaData = buildingObj.ACA_data
-    dk = bData.DK
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
-    
+def __buildRafterFei(buildingObj:bpy.types.Object,purlinPos,direction):    
     # 一、构造飞椽
-    # 获取檐椽对象
-    yanRafterObj:bpy.types.Object = \
-        utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_LR)
-    feiChuanObj:bpy.types.Object = \
-            __drawFeiChuan(yanRafterObj,
-                        name='飞椽.两山',
-                        root_obj=roofRootObj)  
-    # 复制檐椽的modifier到飞椽上，相同的array，相同的mirror
-    utils.copyModifiers(from_0bj=yanRafterObj,to_obj=feiChuanObj)  
-
+    __drawFeiChuan(buildingObj,direction)  
     # 二、构造里口木
-    # 如果有斗栱，剔除挑檐桁的干扰
-    purlin_pos = purlinPos.copy()
-    if bData.use_dg:
-        del purlin_pos[0]
-    # 获取金桁位置，做为里口木的长度
-    jinhengPos = purlin_pos[1]
-    yanchuan_head_co = utils.getObjectHeadPoint(yanRafterObj,
-            eval=True,
-            is_symmetry=(True,True,False))
-    # 里口木相对于檐口的位移，与檐椽上皮相切，并内收一个雀台，
-    offset = Vector((-(con.QUETAI+con.LIKOUMU_Y/2)*dk, # 内收一个雀台
-                    0,
-                    (con.YUANCHUAN_D/2+con.LIKOUMU_H/2)*dk)) # 从椽中上移
-    offset.rotate(yanRafterObj.rotation_euler)
-    lkm_pos:Vector = (yanchuan_head_co + offset)*Vector((1,0,1))
-    lkm_scale = (jinhengPos.y * 2,  # 连接左右两个闸挡板
-                    con.LIKOUMU_H*dk,
-                    con.LIKOUMU_Y*dk)
-    bpy.ops.mesh.primitive_cube_add(size=1,
-            location = lkm_pos,
-            rotation = (
-                yanRafterObj.rotation_euler.y+math.radians(90),
-                0,math.radians(90)),
-            scale = lkm_scale
-            )
-    LKMObj = bpy.context.object
-    LKMObj.name = "里口木.山面"
-    LKMObj.parent = roofRootObj
-    utils.addModifierMirror(
-        object=LKMObj,
-        mirrorObj=roofRootObj,
-        use_axis=(True,False,False)
-    )
-    return 
+    __buildLKM(buildingObj,purlinPos,direction)
+    return
 
 # 营造前后檐望板
 # 与椽架代码解耦，降低复杂度
-def __buildWangban_FB(buildingObj:bpy.types.Object,purlinPos):
+def __buildWangban_FB(buildingObj:bpy.types.Object,
+                      purlinPos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -826,11 +804,12 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,purlinPos):
                 extend += bData.dg_extend* dk
             # 檐出加斜
             extend_hyp = extend/math.cos(angle)
-            # 里口木避让（无需加斜）
-            offset = (con.QUETAI            # 雀台避让
-                    + con.LIKOUMU_Y)* dk    # 里口木避让
+            if bData.with_feichuan:
+                # 里口木避让（无需加斜）
+                extend_hyp -= (con.QUETAI            # 雀台避让
+                        + con.LIKOUMU_Y)* dk    # 里口木避让
             # 加斜计算
-            wangbanObj.dimensions.x += (extend_hyp - offset)
+            wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True)
 
         # 所有望板上移，与椽架上皮相切（从桁檩中心偏：半桁檩+1椽径+半望板）
@@ -858,6 +837,38 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,purlinPos):
             use_axis=(True,True,False)
         )    
 
+    if bData.with_feichuan:
+        # 生成前后檐压飞尾望板
+        # 以飞椽为参考基准
+        feiChuanObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTERFEI_FB)
+        # 宽度取金桁交点
+        fwb_width = purlin_pos[1].x*2
+        # 长度取飞椽长度，闪躲大连檐
+        fwb_deepth = utils.getMeshDims(feiChuanObj).x \
+                -(con.QUETAI+con.DALIANYAN_Y)*dk
+        # 从飞椽尾，平移半飞椽长，向上半望板高
+        offset = Vector((fwb_deepth/2,0,con.WANGBAN_H/2*dk))
+        offset.rotate(feiChuanObj.rotation_euler)
+        feiweiban_co = (feiChuanObj.location+offset) * Vector((0,1,1)) # 飞椽尾
+        # 生成压飞望板
+        bpy.ops.mesh.primitive_cube_add(
+                size=1.0, 
+                location=feiweiban_co,
+                rotation=feiChuanObj.rotation_euler, 
+                scale=(fwb_deepth,fwb_width,con.WANGBAN_H*dk)
+            )
+        fwbObj = bpy.context.object
+        fwbObj.name = "压飞尾望板.前后"
+        fwbObj.parent = roofRootObj
+        # 镜像
+        utils.addModifierMirror(
+            object=fwbObj,
+            mirrorObj=roofRootObj,
+            use_axis=(False,True,False)
+        )
+
+    return  # EOF：__buildWangban_FB
+
 # 营造两山望板
 # 与椽架代码解耦，降低复杂度
 def __buildWangban_LR(buildingObj:bpy.types.Object,purlinPos):
@@ -880,7 +891,6 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlinPos):
             width = purlin_pos[n+1].y
         else: # 其他椽架平铺到下层桁交点，然后切割
             width = purlin_pos[n].y
-        utils.outputMsg("wangban_width = " + str(width))
         # 起点在上层桁檩
         pstart = purlin_pos[n+1].copy()
         pstart.y = width/2
@@ -907,11 +917,12 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlinPos):
                 extend += bData.dg_extend* dk
             # 檐出加斜
             extend_hyp = extend/math.cos(angle)
-            # 里口木避让（无需加斜）
-            offset = (con.QUETAI            # 雀台避让
-                    + con.LIKOUMU_Y)* dk    # 里口木避让
+            if bData.with_feichuan:
+                # 里口木避让（无需加斜）
+                extend_hyp -= (con.QUETAI            # 雀台避让
+                        + con.LIKOUMU_Y)* dk    # 里口木避让
             # 加斜计算
-            wangbanObj.dimensions.x += (extend_hyp - offset)
+            wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True)
 
         # 所有望板上移，与椽架上皮相切（从桁檩中心偏：半桁檩+1椽径+半望板）
@@ -937,7 +948,39 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlinPos):
             object=wangbanObj,
             mirrorObj=roofRootObj,
             use_axis=(True,True,False)
-        )    
+        )  
+
+    if bData.with_feichuan:
+        # 生成两山压飞尾望板
+        # 以飞椽为参考基准
+        feiChuanObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTERFEI_LR)
+        # 宽度取金桁交点
+        fwb_width = purlin_pos[1].y*2
+        # 长度取飞椽长度，闪躲大连檐
+        fwb_deepth = utils.getMeshDims(feiChuanObj).x \
+                -(con.QUETAI+con.DALIANYAN_Y)*dk
+        # 从飞椽尾，平移半飞椽长，向上半望板高
+        offset = Vector((fwb_deepth/2,0,con.WANGBAN_H/2*dk))
+        offset.rotate(feiChuanObj.rotation_euler)
+        feiweiban_co = (feiChuanObj.location+offset) * Vector((1,0,1)) # 飞椽尾
+        # 生成压飞望板
+        bpy.ops.mesh.primitive_cube_add(
+                size=1.0, 
+                location=feiweiban_co,
+                rotation=feiChuanObj.rotation_euler, 
+                scale=(fwb_deepth,fwb_width,con.WANGBAN_H*dk)
+            )
+        fwbObj = bpy.context.object
+        fwbObj.name = "压飞尾望板.两山"
+        fwbObj.parent = roofRootObj
+        # 镜像
+        utils.addModifierMirror(
+            object=fwbObj,
+            mirrorObj=roofRootObj,
+            use_axis=(True,False,False)
+        ) 
+
+    return # EOF：
 
 # 营造椽架
 # 根据屋顶样式，自动判断
@@ -947,21 +990,19 @@ def __buildRafter(buildingObj:bpy.types.Object,purlin_pos,
                   useWangban=False):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
-    dk = bData.DK
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
     roofStyle = bData.roof_style
     useFei = bData.with_feichuan
 
     __buildRafter_FB(buildingObj,purlin_pos)    # 前后檐椽
     if useFei:
-        __buildRafterFei_FB(buildingObj,purlin_pos) # 前后飞椽
+        __buildRafterFei(buildingObj,purlin_pos,'X') # 前后飞椽
     if useWangban:
         __buildWangban_FB(buildingObj,purlin_pos)   # 前后望板
     
     if roofStyle in ('1','2'):
         __buildRafter_LR(buildingObj,purlin_pos)    # 两山檐椽
         if useFei:
-            __buildRafterFei_LR(buildingObj,purlin_pos) # 两山飞椽
+            __buildRafterFei(buildingObj,purlin_pos,'Y') # 两山飞椽
         if useWangban:
             __buildWangban_LR(buildingObj,purlin_pos)   # 两山望板
         
@@ -1095,7 +1136,7 @@ def __drawSmallCornerBeam(cornerBeamObj:bpy.types.Object,
     # 把原点放在子角梁尾，方便后续计算椽头坐标
     new_origin = (v2+v3)/2
     origin_world = smallCornerBeamObj.matrix_world @ new_origin
-    utils.setOrigin(smallCornerBeamObj,origin_world)
+    utils.setOrigin(smallCornerBeamObj,new_origin)
 
     return smallCornerBeamObj
 

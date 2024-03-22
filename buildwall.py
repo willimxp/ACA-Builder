@@ -115,7 +115,7 @@ def updateWallLayout(buildingObj:bpy.types.Object):
             wData['door_height'] = bData.door_height
             wData['door_num'] = bData.door_num
             wData['gap_num'] = bData.gap_num
-            wData['is_with_wall'] = bData.is_with_wall
+            wData['use_KanWall'] = bData.use_KanWall
             wData['lingxin_source'] = bData.lingxin_source
 
     # 三、批量绑定墙体构件
@@ -199,7 +199,7 @@ def resetWallLayout(buildingObj:bpy.types.Object):
         wData['door_height'] = bData.door_height
         wData['door_num'] = bData.door_num
         wData['gap_num'] = bData.gap_num
-        wData['is_with_wall'] = bData.is_with_wall
+        wData['use_KanWall'] = bData.use_KanWall
         wData['lingxin_source'] = bData.lingxin_source
 
     utils.outputMsg("wall layout reset.")

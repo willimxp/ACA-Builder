@@ -155,7 +155,9 @@ class ACA_PT_props(bpy.types.Panel):
                 row = box.row()
                 row.prop(objData, "rafter_count") # 椽架数量
                 row = box.row()
-                row.prop(objData, "with_feichuan") # 椽架数量
+                row.prop(objData, "use_feichuan") # 添加飞椽
+                row = box.row()
+                row.prop(objData, "use_wangban") # 添加飞椽
                 row = box.row()
                 row.operator("aca.build_roof",icon='HOME',)# 按钮：生成屋顶
 
@@ -180,6 +182,6 @@ class ACA_PT_props(bpy.types.Panel):
                     row = box.row() 
                     row.prop(objData, "lingxin_source")   # 棂心样式
                     row = box.row()
-                    row.prop(objData, "is_with_wall") # 是否有槛墙                
+                    row.prop(objData, "use_KanWall") # 是否有槛墙                
                 row = box.row()
                 row.operator("aca.build_door",icon='HOME')# 按钮：生成门窗

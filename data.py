@@ -278,7 +278,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name="抹头数量",
             default=5,min=2,max=6
         )# type: ignore 
-    is_with_wall: bpy.props.BoolProperty(
+    use_KanWall: bpy.props.BoolProperty(
             default=False,
             name="添加槛墙"
         )# type: ignore 
@@ -337,9 +337,14 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0,max=10,
             update = update_roof,
         )# type: ignore 
-    with_feichuan :  bpy.props.BoolProperty(
+    use_feichuan :  bpy.props.BoolProperty(
             default=True,
             name="添加飞椽",
+            update = update_roof,
+        )# type: ignore 
+    use_wangban :  bpy.props.BoolProperty(
+            default=True,
+            name="添加望板",
             update = update_roof,
         )# type: ignore 
     qiqiao: bpy.props.IntProperty(

@@ -236,7 +236,7 @@ def focusObj(object:bpy.types.Object):
     object.select_set(True)
 
 # 删除树状层次下的所有对象
-def deleteHierarchy(parent_obj:bpy.types.Object,with_parent=False):
+def deleteHierarchy(parent_obj:bpy.types.Object,del_parent=False):
     #utils.outputMsg("deleting...")
     if parent_obj == None:
         # 没有可删除的对象
@@ -255,7 +255,7 @@ def deleteHierarchy(parent_obj:bpy.types.Object,with_parent=False):
     get_child_names(obj)
     
     # 是否删除根节点？
-    if with_parent:
+    if del_parent:
         names.add(parent_obj.name)
     objects = bpy.data.objects
     # Remove the animation from the all the child objects

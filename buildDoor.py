@@ -89,7 +89,7 @@ def __buildKanKuang(wallproxy):
     # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
-    is_with_wall = wData.is_with_wall
+    use_KanWall = wData.use_KanWall
     pillerD = bData.piller_diameter
     # 分解槛框的长、宽、高
     frame_width,frame_deepth,frame_height = wallproxy.dimensions
@@ -107,7 +107,7 @@ def __buildKanKuang(wallproxy):
     KanDownObj = bpy.context.object
     KanDownObj.name = '下槛'
     KanDownObj.parent = wallproxy
-    if is_with_wall:
+    if use_KanWall:
         KanDownObj.hide_set(True) 
     # endregion 1、下槛 ---------------------
         
@@ -246,7 +246,7 @@ def __buildGeshan(name,wallproxy,scale,location):
     # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
-    is_with_wall = wData.is_with_wall
+    use_KanWall = wData.use_KanWall
 
     # 1.隔扇根对象
     bpy.ops.object.empty_add(type='PLAIN_AXES')
@@ -287,7 +287,7 @@ def __buildGeshan(name,wallproxy,scale,location):
                         scale= scale)
     bpy.context.object.name = '抹头.上下'
     bpy.context.object.parent = geshan_root
-    if not is_with_wall:
+    if not use_KanWall:
         # 添加mirror
         mod = bpy.context.object.modifiers.new(name='mirror', type='MIRROR')
         mod.use_axis[0] = False
@@ -321,7 +321,7 @@ def __buildGeshan(name,wallproxy,scale,location):
         loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
         scale = Vector((motou_width,border_deepth,heartHeight))
         __buildShanxin(geshan_root,scale,loc8)
-        if is_with_wall:
+        if use_KanWall:
                 # 计算窗台高度:抹二下皮
             windowsill_height = loc2.z - border_width/2
         else:
@@ -370,7 +370,7 @@ def __buildGeshan(name,wallproxy,scale,location):
         loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
         scale = Vector((motou_width,border_deepth,heartHeight))
         __buildShanxin(geshan_root,scale,loc8)
-        if is_with_wall:
+        if use_KanWall:
             # 计算窗台高度:抹三下皮
             windowsill_height = loc3.z - border_width/2
         else:
@@ -418,7 +418,7 @@ def __buildGeshan(name,wallproxy,scale,location):
         loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
         scale = Vector((motou_width,border_deepth,heartHeight))
         __buildShanxin(geshan_root,scale,loc8)
-        if is_with_wall:
+        if use_KanWall:
             # 计算窗台高度:抹三下皮
             windowsill_height = loc3.z - border_width/2
         else:
@@ -515,7 +515,7 @@ def __buildGeshan(name,wallproxy,scale,location):
         loc8 = (loc2+loc3)/2
         scale = Vector((motou_width,border_deepth,heartHeight))
         __buildShanxin(geshan_root,scale,loc8)
-        if is_with_wall:
+        if use_KanWall:
             # 计算窗台高度:抹四下皮
             windowsill_height = loc4.z - border_width/2
         else:
@@ -551,7 +551,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
-    is_with_wall = wData.is_with_wall
+    use_KanWall = wData.use_KanWall
 
     # 风槛
     scl1 = Vector((
@@ -644,8 +644,8 @@ def __buildDoor(wallproxy):
             '隔扇',wallproxy,scale,location)
 
     # 4、添加槛墙
-    is_with_wall = wData.is_with_wall
-    if is_with_wall :
+    use_KanWall = wData.use_KanWall
+    if use_KanWall :
         # 窗台高度
         windowsill_z = windowsill_height + BaoKuangDownObj.location.z
         scale = Vector((

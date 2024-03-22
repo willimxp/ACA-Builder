@@ -17,7 +17,7 @@ def buildPlatform(buildingObj:bpy.types.Object):
     # 如果已有，先删除
     pfObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PLATFORM)
     if pfObj != None:
-        utils.deleteHierarchy(pfObj,with_parent=True)
+        utils.deleteHierarchy(pfObj,del_parent=True)
 
     # 载入模板配置
     platform_height = buildingObj.ACA_data.platform_height

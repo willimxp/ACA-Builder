@@ -24,6 +24,13 @@ class ACA_Consts(object):
     ACA_TYPE_RAFTER_LR = 'rafter_lr'      # ACA类型：两山檐椽
     ACA_TYPE_RAFTERFEI_FB = 'rafterfei_fb'  # 前后檐飞椽
     ACA_TYPE_RAFTERFEI_LR = 'rafterfei_lr'  # 两山飞椽
+    ACA_TYPE_RAFTER_LKM_FB  = 'rafter_lkm_fb'      # 里口木-前后檐
+    ACA_TYPE_RAFTER_LKM_LR  = 'rafter_lkm_lr'      # 里口木-两山
+    ACA_TYPE_RAFTER_DLY_FB = 'rafter_dly_fb'        # 大连檐-前后
+    ACA_TYPE_RAFTER_DLY_LR = 'rafter_dly_lr'        # 大连檐-两山
+    ACA_TYPE_CORNER_BEAM = 'corner_beam'    # 大角梁
+    ACA_TYPE_CORNER_BEAM_CHILD = 'corner_beam_child'    # 大角梁
+    ACA_TYPE_CORNER_RAFTER_CURVE = 'corner_rafter_curve'          # 翼角椽定位线
 
     # 柱子
     PILLER_D_EAVE = 6   # 檐柱直接径6斗口
@@ -90,7 +97,7 @@ class ACA_Consts(object):
     DALIANYAN_Y = YUANCHUAN_D   # 大连檐，宽1.1-1.2椽径
     FEICHUAN_HEAD_TILE_RATIO = 1/2.5        # 飞椽头身比，默认一飞二尾五
     QUETAI = YUANCHUAN_D*0.2    # 雀台长度(通常1/5~1/3椽径)
-
+    
     # 角梁
     JIAOLIANG_H = 4.5   # 角梁高（老角梁和子角梁）
     JIAOLIANG_Y = 3     # 角梁厚（老角梁和子角梁）
@@ -100,6 +107,8 @@ class ACA_Consts(object):
 
     # 其他
     OFFSET_ORIENTATION = 'LOCAL' # 'GLOBAL'  'LOCAL' #上下层叠构件的错开方式，一般绘图是垂直位移，但其实相对方向的位移更好看
+    YIJIAOCHUAN_OFFSET = JIAOLIANG_Y/4 # 为了防止翼角椽与角梁打架，而做了一定的让渡
+    CURVE_RESOLUTION = 500  # 曲线的精细度，在细分翼角椽坐标时提高精确度
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

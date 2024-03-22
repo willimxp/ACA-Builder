@@ -760,3 +760,99 @@ def locationTrans(loc:Vector,
     # 转换到B坐标系
     loc_local = toObj.matrix_world.inverted() @ loc_world
     return loc_local
+
+# 根据3点，创建一根弧线
+def addCurveByPoints(CurvePoints,
+                     name,
+                     root_obj,
+                     tilt=0,
+                     tilt_head=None,
+                     height=0,
+                     width=0,
+                     resolution=4,
+                     order_u = 3
+                     ):
+    # 创建曲线data集
+    curveData = bpy.data.curves.new(name, type='CURVE')
+    curveData.dimensions = '3D'
+    curveData.resolution_u = resolution
+    curveData.fill_mode = 'FULL'
+    curveData.use_fill_caps = True
+
+    # 创建曲线spline
+    polyline = curveData.splines.new('NURBS')
+    polyline.points.add(len(CurvePoints)-1)
+    for i, coord in enumerate(CurvePoints):
+        x,y,z = coord
+        polyline.points[i].co = (x, y, z, 1)
+        if tilt_head != None:
+            # 第一个点有不同的斜率
+            if i==0:
+                polyline.points[i].tilt = tilt_head
+            else:
+                polyline.points[i].tilt = tilt
+        else:
+            polyline.points[i].tilt = tilt
+    polyline.order_u = order_u # nurbs的平滑度
+    polyline.use_endpoint_u = True
+    
+    # 定义曲线横截面
+    if width!=0 and height!=0:
+        bpy.ops.mesh.primitive_plane_add(size=1,location=(0,0,0))
+        bevel_object = bpy.context.object
+        bevel_object.scale = (width,height,0)
+        bevel_object.name = name + '.bevel'
+        bevel_object.parent = root_obj
+        # 将Plane Mesh转换为Curve，才能绑定到curve上
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        bpy.ops.object.convert(target='CURVE')
+        # 翻转curve，否则会导致连檐的face朝向不对
+        bpy.ops.object.editmode_toggle()
+        bpy.ops.curve.switch_direction()
+        bpy.ops.object.editmode_toggle()
+
+        curveData.bevel_mode = 'OBJECT'
+        curveData.bevel_object = bevel_object
+        polyline.use_smooth = False
+
+    # 曲线对象加入场景
+    curveOBJ = bpy.data.objects.new(name, curveData)
+    bpy.context.collection.objects.link(curveOBJ)
+    bpy.context.view_layer.objects.active = curveOBJ
+    curveOBJ.parent = root_obj  
+    
+    return curveOBJ
+
+# 提取Nurbs曲线上的等分点
+# 精度依赖于curve的resolution_u
+def getNurbsSegment(nurbsObj:bpy.types.Object,count,
+                    withCurveEnd=False):
+    nurbs_points= nurbsObj.data.splines[0].points
+    # X方向等分间距
+    span = (nurbs_points[2].co.x - nurbs_points[0].co.x) /(count+1)
+
+    # create a temporary mesh
+    obj_data = nurbsObj.to_mesh()
+    verts_on_curve = [v.co for v in obj_data.vertices]
+    
+    # 轮询逼近等分点
+    segments = []
+    for n in range(count):
+        # 等分点的X坐标
+        pX = nurbs_points[0].co.x + span * (n+1)
+        # 在插值点中查找最接近的插值点
+        near1 = 99999 # 一个超大的值
+        for vert in verts_on_curve:
+            near = math.fabs(vert.x - pX)
+            if near < near1 :
+                nearPoint = vert
+                near1 = near
+        segments.append(nearPoint)
+    # 是否在结果中包括曲线两头的端点？
+    # 在通过檐口线计算椽头定位点时，不需要包括曲线端点
+    # 在通过檐口线计算望板时，应该包括曲线端点
+    if withCurveEnd:
+        segments.insert(0, nurbs_points[0].co.to_3d())
+        segments.append(nurbs_points[2].co.to_3d())
+
+    return segments

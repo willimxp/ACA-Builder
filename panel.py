@@ -157,7 +157,14 @@ class ACA_PT_props(bpy.types.Panel):
                 row = box.row()
                 row.prop(objData, "use_feichuan") # 添加飞椽
                 row = box.row()
-                row.prop(objData, "use_wangban") # 添加飞椽
+                row.prop(objData, "use_wangban") # 添加望板
+                if objData.roof_style in ('1','2'):
+                    row = box.row()
+                    row.prop(objData, "chong") # 出冲
+                    row = box.row()
+                    row.prop(objData, "qiqiao") # 起翘
+                    row = box.row()
+                    row.prop(objData, "shengqi") # 生起
                 row = box.row()
                 row.operator("aca.build_roof",icon='HOME',)# 按钮：生成屋顶
 

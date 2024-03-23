@@ -787,10 +787,10 @@ def addCurveByPoints(CurvePoints,
         polyline.points[i].co = (x, y, z, 1)
         if tilt_head != None:
             # 第一个点有不同的斜率
-            if i==0:
-                polyline.points[i].tilt = tilt_head
-            else:
+            if i==len(CurvePoints)-1:
                 polyline.points[i].tilt = tilt
+            else:
+                polyline.points[i].tilt = tilt_head
         else:
             polyline.points[i].tilt = tilt
     polyline.order_u = order_u # nurbs的平滑度

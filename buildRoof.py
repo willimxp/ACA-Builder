@@ -654,7 +654,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
                 extend += bData.dg_extend
             # 檐出加斜
             extend_hyp = extend/math.cos(angle)
-            if bData.use_feichuan:
+            if bData.use_flyrafter:
                 # 里口木避让（无需加斜）
                 extend_hyp -= (con.QUETAI            # 雀台避让
                         + con.LIKOUMU_Y)* dk    # 里口木避让
@@ -733,7 +733,7 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
                 extend += bData.dg_extend
             # 檐出加斜
             extend_hyp = extend/math.cos(angle)
-            if bData.use_feichuan:
+            if bData.use_flyrafter:
                 # 里口木避让（无需加斜）
                 extend_hyp -= (con.QUETAI            # 雀台避让
                         + con.LIKOUMU_Y)* dk    # 里口木避让
@@ -770,7 +770,7 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
 
 # 根据檐椽，绘制对应飞椽
 # 基于“一飞二尾五”的原则计算
-def __drawFeiMesh(yanRafterObj:bpy.types.Object)->bpy.types.Object:
+def __drawflyRafterMesh(yanRafterObj:bpy.types.Object)->bpy.types.Object:
     # 载入数据
     buildingObj = utils.getAcaParent(yanRafterObj,con.ACA_TYPE_BUILDING)
     bData : acaData = buildingObj.ACA_data
@@ -787,33 +787,33 @@ def __drawFeiMesh(yanRafterObj:bpy.types.Object)->bpy.types.Object:
 
     # 第2点在飞椽尾
     # 飞尾平出：7斗口*2.5=17.5斗口
-    feiwei_pingchu = con.FEICHUAN_EX / con.FEICHUAN_HEAD_TILE_RATIO * dk
+    flyrafterEnd_pingchu = con.flyrafter_EX / con.flyrafter_HEAD_TILE_RATIO * dk
     # 飞尾在檐椽方向加斜
     yanChuan_angle = yanRafterObj.rotation_euler.y   # 檐椽斜角
-    feiwei_loc = feiwei_pingchu / math.cos(yanChuan_angle)    
-    v2 = Vector((-feiwei_loc,0,0)) # 飞椽尾的坐标
+    flyrafterEnd_loc = flyrafterEnd_pingchu / math.cos(yanChuan_angle)    
+    v2 = Vector((-flyrafterEnd_loc,0,0)) # 飞椽尾的坐标
     vectors.append(v2)
 
     # 第3点在飞椽腰的上沿
-    v3 = Vector((0,0,con.FEICHUAN_H*dk))
+    v3 = Vector((0,0,con.flyrafter_H*dk))
     # 飞椽仰角（基于飞尾楔形的对边为飞椽高）
-    feichuan_angle_change = -math.asin(con.FEICHUAN_H*dk / feiwei_loc)
+    flyrafter_angle_change = -math.asin(con.flyrafter_H*dk / flyrafterEnd_loc)
     # 随椽头昂起
-    v3.rotate(Euler((0,feichuan_angle_change,0),'XYZ'))
+    v3.rotate(Euler((0,flyrafter_angle_change,0),'XYZ'))
     vectors.append(v3)
 
     # 第4点在飞椽头上沿
-    feiwei_length = feiwei_loc * math.cos(feichuan_angle_change)
-    feihead_length = feiwei_length * con.FEICHUAN_HEAD_TILE_RATIO
-    v4 = Vector((feihead_length,0,con.FEICHUAN_H*dk))
+    flyrafterEnd_length = flyrafterEnd_loc * math.cos(flyrafter_angle_change)
+    flyrafterHead_length = flyrafterEnd_length * con.flyrafter_HEAD_TILE_RATIO
+    v4 = Vector((flyrafterHead_length,0,con.flyrafter_H*dk))
     # 随椽头昂起
-    v4.rotate(Euler((0,feichuan_angle_change,0),'XYZ'))
+    v4.rotate(Euler((0,flyrafter_angle_change,0),'XYZ'))
     vectors.append(v4)
 
     # 第5点在飞椽头下檐
-    v5 = Vector((feihead_length,0,0))
+    v5 = Vector((flyrafterHead_length,0,0))
     # 随椽头昂起
-    v5.rotate(Euler((0,feichuan_angle_change,0),'XYZ'))
+    v5.rotate(Euler((0,flyrafter_angle_change,0),'XYZ'))
     vectors.append(v5)
 
     # 摆放点
@@ -833,18 +833,18 @@ def __drawFeiMesh(yanRafterObj:bpy.types.Object)->bpy.types.Object:
         vertices.append(vert)
 
     # 创建面
-    feiwei_face = bm.faces.new((vertices[0],vertices[1],vertices[2])) # 飞尾
-    feihead_face =bm.faces.new((vertices[0],vertices[2],vertices[3],vertices[4])) # 飞头
+    flyrafterEnd_face = bm.faces.new((vertices[0],vertices[1],vertices[2])) # 飞尾
+    flyrafterHead_face =bm.faces.new((vertices[0],vertices[2],vertices[3],vertices[4])) # 飞头
 
     # 挤出厚度
-    return_geo = bmesh.ops.extrude_face_region(bm, geom=[feiwei_face,feihead_face])
+    return_geo = bmesh.ops.extrude_face_region(bm, geom=[flyrafterEnd_face,flyrafterHead_face])
     verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
-    bmesh.ops.translate(bm, verts=verts, vec=(0, con.FEICHUAN_H*dk, 0))
+    bmesh.ops.translate(bm, verts=verts, vec=(0, con.flyrafter_H*dk, 0))
 
     offset = Vector((0,0,(con.YUANCHUAN_D/2+con.WANGBAN_H)*dk))
     for v in bm.verts:
         # 移动所有点，居中
-        v.co.y -= con.FEICHUAN_H*dk/2
+        v.co.y -= con.flyrafter_H*dk/2
         # 向上位移半檐椽+一望板
         v.co += Vector((0,0,(con.YUANCHUAN_D/2+con.WANGBAN_H)*dk))
     
@@ -860,53 +860,53 @@ def __drawFeiMesh(yanRafterObj:bpy.types.Object)->bpy.types.Object:
     bpy.ops.mesh.primitive_cube_add(
         location=yanchuan_head_co
     )
-    feiChuanObj = bpy.context.object
+    flyrafterObj = bpy.context.object
     # 对齐檐椽角度
-    feiChuanObj.rotation_euler = yanRafterObj.rotation_euler 
+    flyrafterObj.rotation_euler = yanRafterObj.rotation_euler 
     # 填充bmesh数据
-    bm.to_mesh(feiChuanObj.data)
-    feiChuanObj.data.update()
+    bm.to_mesh(flyrafterObj.data)
+    flyrafterObj.data.update()
     bm.free()
 
     # 重设Origin：把原点放在椽尾，方便后续计算椽头坐标
     vo = v2 + offset
-    utils.setOrigin(feiChuanObj,vo)
+    utils.setOrigin(flyrafterObj,vo)
 
     # 重设旋转数据：把旋转角度与上皮对齐，方便后续摆放压椽尾望板
     change_rot = v4-v3
-    utils.changeOriginRotation(change_rot,feiChuanObj)
+    utils.changeOriginRotation(change_rot,flyrafterObj)
 
-    return feiChuanObj
+    return flyrafterObj
 
 # 营造檐椽
 # 通过direction='X'或'Y'决定山面和檐面
-def __buildFeiChuan(buildingObj,direction):
+def __buildflyrafter(buildingObj,direction):
     roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
 
     # 判断前后檐，还是两山
     if direction == 'X':    # 前后檐
-        feiName = '飞椽.前后'
+        flyrafterName = '飞椽.前后'
         rafterType = con.ACA_TYPE_RAFTER_FB
-        feiType = con.ACA_TYPE_RAFTERFEI_FB
+        flyrafterType = con.ACA_TYPE_FLYRAFTER_FB
     else:
-        feiName = '飞椽.两山'
+        flyrafterName = '飞椽.两山'
         rafterType = con.ACA_TYPE_RAFTER_LR
-        feiType = con.ACA_TYPE_RAFTERFEI_LR
+        flyrafterType = con.ACA_TYPE_FLYRAFTER_LR
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,rafterType)
 
-    feiChuanObj = __drawFeiMesh(yanRafterObj)
-    feiChuanObj.name = feiName
-    feiChuanObj.parent = roofRootObj
-    feiChuanObj.ACA_data['aca_obj'] = True
-    feiChuanObj.ACA_data['aca_type'] = feiType
+    flyrafterObj = __drawflyRafterMesh(yanRafterObj)
+    flyrafterObj.name = flyrafterName
+    flyrafterObj.parent = roofRootObj
+    flyrafterObj.ACA_data['aca_obj'] = True
+    flyrafterObj.ACA_data['aca_type'] = flyrafterType
 
     # 复制檐椽的modifier到飞椽上，相同的array，相同的mirror
-    utils.copyModifiers(from_0bj=yanRafterObj,to_obj=feiChuanObj)
+    utils.copyModifiers(from_0bj=yanRafterObj,to_obj=flyrafterObj)
 
 # 营造压飞尾望板
 # 通过direction='X'或'Y'决定山面和檐面
-def __buildFeiWangban(buildingObj,purlin_pos,direction):
+def __buildFlyrafterWangban(buildingObj,purlin_pos,direction):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -919,31 +919,31 @@ def __buildFeiWangban(buildingObj,purlin_pos,direction):
         FWB_name = "压飞尾望板.前后"
         FWB_width = jinhengPos.x * 2    # 宽度取金桁交点
         mirrorAxis = (False,True,False) # Y轴镜像
-        feirafterType = con.ACA_TYPE_RAFTERFEI_FB
+        flyrafterType = con.ACA_TYPE_FLYRAFTER_FB
     else:
         FWB_name = "压飞尾望板.两山"
         FWB_width = jinhengPos.y * 2    # 宽度取金桁交点
         mirrorAxis = (True,False,False) # X轴镜像
-        feirafterType = con.ACA_TYPE_RAFTERFEI_LR
+        flyrafterType = con.ACA_TYPE_FLYRAFTER_LR
     
     # 生成前后檐压飞尾望板
     # 以飞椽为参考基准
-    feiChuanObj = utils.getAcaChild(buildingObj,feirafterType)
+    flyrafterObj = utils.getAcaChild(buildingObj,flyrafterType)
     # 长度取飞椽长度，闪躲大连檐
-    fwb_deepth = utils.getMeshDims(feiChuanObj).x \
+    fwb_deepth = utils.getMeshDims(flyrafterObj).x \
             -(con.QUETAI+con.DALIANYAN_Y)*dk
     # 从飞椽尾，平移半飞椽长，向上半望板高
     offset = Vector((fwb_deepth/2,0,con.WANGBAN_H/2*dk))
-    offset.rotate(feiChuanObj.rotation_euler)
+    offset.rotate(flyrafterObj.rotation_euler)
     if direction == 'X':
-        feiweiban_co = (feiChuanObj.location+offset) * Vector((0,1,1)) # 飞椽尾
+        flyrafterEndban_co = (flyrafterObj.location+offset) * Vector((0,1,1)) # 飞椽尾
     else:
-        feiweiban_co = (feiChuanObj.location+offset) * Vector((1,0,1)) # 飞椽尾
+        flyrafterEndban_co = (flyrafterObj.location+offset) * Vector((1,0,1)) # 飞椽尾
     # 生成压飞望板
     bpy.ops.mesh.primitive_cube_add(
             size=1.0, 
-            location=feiweiban_co,
-            rotation=feiChuanObj.rotation_euler, 
+            location=flyrafterEndban_co,
+            rotation=flyrafterObj.rotation_euler, 
             scale=(fwb_deepth,FWB_width,con.WANGBAN_H*dk)
         )
     fwbObj = bpy.context.object
@@ -968,25 +968,25 @@ def __buildDLY(buildingObj,purlin_pos,direction):
 
     # 以飞椽为参考基准
     if direction == 'X':    # 前后檐
-        feirafterType = con.ACA_TYPE_RAFTERFEI_FB
+        flyrafterType = con.ACA_TYPE_FLYRAFTER_FB
     else:
-        feirafterType = con.ACA_TYPE_RAFTERFEI_LR
-    feiRafterObj = utils.getAcaChild(buildingObj,feirafterType)
+        flyrafterType = con.ACA_TYPE_FLYRAFTER_LR
+    flyrafterObj = utils.getAcaChild(buildingObj,flyrafterType)
 
     # 重新获取前后檐的檐椽的端头点坐标
-    feichuan_head_co = utils.getObjectHeadPoint(feiRafterObj,
+    flyrafter_head_co = utils.getObjectHeadPoint(flyrafterObj,
             is_symmetry=(True,True,False))
     # 大连檐相对于檐口的位移，与檐椽上皮相切，并内收一个雀台，
     offset = Vector((-(con.QUETAI+con.LIKOUMU_Y/2)*dk, # 内收一个雀台
                     0,
-                    (con.FEICHUAN_H/2+con.DALIANYAN_H/2)*dk)) # 从飞椽中上移
-    offset.rotate(feiRafterObj.rotation_euler)
+                    (con.flyrafter_H/2+con.DALIANYAN_H/2)*dk)) # 从飞椽中上移
+    offset.rotate(flyrafterObj.rotation_euler)
     
     # 前后檐、两山的location，rotation不同
     if direction == 'X': 
         DLY_name = "大连檐.前后"
-        DLY_rotate = (math.radians(90)-feiRafterObj.rotation_euler.y,0,0)
-        DLY_loc:Vector = (feichuan_head_co + offset)*Vector((0,1,1))
+        DLY_rotate = (math.radians(90)-flyrafterObj.rotation_euler.y,0,0)
+        DLY_loc:Vector = (flyrafter_head_co + offset)*Vector((0,1,1))
         DLY_scale = (jinhengPos.x * 2,  
             con.DALIANYAN_H*dk,
             con.DALIANYAN_Y*dk)
@@ -994,9 +994,9 @@ def __buildDLY(buildingObj,purlin_pos,direction):
         DLY_type = con.ACA_TYPE_RAFTER_DLY_FB
     else:
         DLY_name = "大连檐.两山"
-        DLY_rotate = (feiRafterObj.rotation_euler.y+math.radians(90),
+        DLY_rotate = (flyrafterObj.rotation_euler.y+math.radians(90),
                       0,math.radians(90))
-        DLY_loc:Vector = (feichuan_head_co + offset)*Vector((1,0,1))
+        DLY_loc:Vector = (flyrafter_head_co + offset)*Vector((1,0,1))
         DLY_scale = (jinhengPos.y * 2,  
             con.DALIANYAN_H*dk,
             con.DALIANYAN_Y*dk)
@@ -1024,19 +1024,19 @@ def __buildDLY(buildingObj,purlin_pos,direction):
 
 # 营造飞椽（以及里口木、压飞望板、大连檐等附属构件)
 # 小式建筑中，可以不使用飞椽
-def __buildRafterFei(buildingObj:bpy.types.Object,purlinPos,direction):    
+def __buildFlyRafter(buildingObj:bpy.types.Object,purlinPos,direction):    
     # 载入数据
     bData : acaData = buildingObj.ACA_data
-    useFei = bData.use_feichuan
+    useFlyrafter = bData.use_flyrafter
     useWangban = bData.use_wangban
 
-    if useFei:  # 用户可选择不使用飞椽
+    if useFlyrafter:  # 用户可选择不使用飞椽
         # 构造飞椽
-        __buildFeiChuan(buildingObj,direction)  
+        __buildflyrafter(buildingObj,direction)  
 
         # 压飞望板
         if useWangban:  # 用户可选择暂时不生成望板（更便于观察椽架形态）
-            __buildFeiWangban(buildingObj,purlinPos,direction)     
+            __buildFlyrafterWangban(buildingObj,purlinPos,direction)     
 
         # 大连檐
         __buildDLY(buildingObj,purlinPos,direction)
@@ -1099,20 +1099,20 @@ def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object):
     # 第5点，定位子角梁的梁头上沿
     # 在local坐标系中计算子角梁头的绝对位置
     # 计算冲出后的X、Y坐标，由飞椽平出+冲1椽（老角梁已经冲了2椽）+雀台
-    scb_ex_length = (con.FEICHUAN_EX + con.YUANCHUAN_D +con.QUETAI) * dk
+    scb_ex_length = (con.flyrafter_EX + con.YUANCHUAN_D +con.QUETAI) * dk
     scb_abs_x = cornerBeam_head_co.x + scb_ex_length
     scb_abs_y = cornerBeam_head_co.y + scb_ex_length
     # 计算翘四后的Z坐标
     # 取檐椽头高度
-    feiRafterObj:bpy.types.Object = \
+    flyrafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
-    feiRafter_head_co = utils.getObjectHeadPoint(
-                            feiRafterObj,
+    flyrafter_head_co = utils.getObjectHeadPoint(
+                            flyrafterObj,
                             is_symmetry=(True,True,False)
                         )
-    #showVector(bpy.context,root_obj,feiRafter_head_co)
+    #showVector(bpy.context,root_obj,flyrafter_head_co)
     # 翘四: 从飞椽头上皮，到子角梁上皮，其中要补偿0.75斗口，即半椽，合计调整一椽（见汤书p171）
-    scb_abs_z = feiRafter_head_co.z + con.YUANCHUAN_D*dk \
+    scb_abs_z = flyrafter_head_co.z + con.YUANCHUAN_D*dk \
             + bData.qiqiao*con.YUANCHUAN_D*dk # 默认起翘4椽
     scb_abs_co = Vector((scb_abs_x,scb_abs_y,scb_abs_z))
     # 将该起翘点存入dataset，后续翼角可供参考（相对于root_obj）
@@ -1180,7 +1180,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1) :
         if n == 0:  #翼角角梁
-            if bData.use_feichuan:
+            if bData.use_flyrafter:
                 # 老角梁用压金做法，压在槫子之下，以便与子角梁相扣
                 pEnd = Vector(purlin_pos[n+1]) \
                     - Vector((0,0,con.JIAOLIANG_H*dk*con.JIAOLIANG_WEI_KOUJIN))
@@ -1237,7 +1237,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             CornerBeamObj.dimensions.x += ex_length
             utils.applyTransfrom(CornerBeamObj,use_scale=True)
             
-            if bData.use_feichuan:
+            if bData.use_flyrafter:
                 # 绘制子角梁
                 cbcObj:bpy.types.Object = \
                     __drawCornerBeamChild(CornerBeamObj)
@@ -1288,7 +1288,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
             is_symmetry=(True,True,False))            
     # 定位小连檐终点（靠近角梁的一侧）
     # 小连檐中点与老角梁上皮平
-    if bData.use_feichuan:
+    if bData.use_flyrafter:
         # 下皮平，从中心+半角梁高+半个里口木高
         offset = Vector((-con.LIKOUMU_Y/2*dk-con.QUETAI*dk,
             con.JIAOLIANG_Y/4*dk, # 退让1/4角梁,
@@ -1309,7 +1309,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
     if bData.use_dg:
         rafterExtend += bData.dg_extend
     # 翼角冲出
-    if bData.use_feichuan and bData.chong>0:
+    if bData.use_flyrafter and bData.chong>0:
         # 有飞椽时，翘飞椽冲一份，其他在檐椽冲出
         rafterExtend += (bData.chong-1)*con.YUANCHUAN_D*dk
     else:
@@ -1399,7 +1399,7 @@ def __buildCornerRafterCurve(buildingObj:bpy.types.Object):
     if bData.use_dg:
         rafterExtend += bData.dg_extend
     # 翼角冲出
-    if bData.use_feichuan and bData.chong>0:
+    if bData.use_flyrafter and bData.chong>0:
         # 有飞椽时，翘飞椽冲一份，其他在檐椽冲出
         rafterExtend += (bData.chong-1)*con.YUANCHUAN_D*dk
     else:
@@ -1435,7 +1435,7 @@ def __buildCornerRafterCurve(buildingObj:bpy.types.Object):
     return rafterCurve_obj
 
 # 营造翼角大连檐实体（连接翘飞椽）
-def __buildCornerFeiEave(buildingObj:bpy.types.Object):
+def __buildCornerflyrafterEave(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -1471,7 +1471,7 @@ def __buildCornerFeiEave(buildingObj:bpy.types.Object):
     dlyEnd_x = (bData.x_total/2
                 +bData.dg_extend
                 +con.YANCHUAN_EX*dk
-                +con.FEICHUAN_EX*dk
+                +con.flyrafter_EX*dk
                 +chongLength)
     dlyEnd_y = dlyObj.location.y + chongLength
     dlyEnd_z = dlyObj.location.z + qiqiao
@@ -1486,7 +1486,7 @@ def __buildCornerFeiEave(buildingObj:bpy.types.Object):
     CurvePoints = [dlyStart,dlyMiddle,dlyEnd]
     # 与正身大连檐的旋转角度相同
     CurveTilt = dlyObj.rotation_euler.x - math.radians(90)
-    feiEaveObj = utils.addCurveByPoints(
+    flyrafterEaveObj = utils.addCurveByPoints(
                         CurvePoints=CurvePoints,
                         tilt=CurveTilt,
                         name='大连檐',
@@ -1497,19 +1497,19 @@ def __buildCornerFeiEave(buildingObj:bpy.types.Object):
     
     # 相对角梁做45度对称
     utils.addModifierMirror(
-        object=feiEaveObj,
+        object=flyrafterEaveObj,
         mirrorObj=cornerBeamObj,
         use_axis=(False,True,False)
     )
     # 四面对称
     utils.addModifierMirror(
-        object=feiEaveObj,
+        object=flyrafterEaveObj,
         mirrorObj=roofRootObj,
         use_axis=(True,True,False)
     )
 
 # 营造翘飞椽定位线
-def __buildCornerFeiCurve(buildingObj:bpy.types.Object):
+def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -1517,44 +1517,44 @@ def __buildCornerFeiCurve(buildingObj:bpy.types.Object):
     roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
     
     # 1.曲线起点：对齐最后一根正身飞椽的椽头
-    feiRafterObj:bpy.types.Object = \
-        utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTERFEI_FB)
-    feiHeader_co = utils.getObjectHeadPoint(feiRafterObj,
+    flyrafterObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_FB)
+    flyrafterHeader_co = utils.getObjectHeadPoint(flyrafterObj,
             eval=True,
             is_symmetry=(True,True,False))
-    feiCurve_start = feiHeader_co
+    flyrafterCurve_start = flyrafterHeader_co
     
     # 2.曲线终点     
     #（不依赖角梁，避免难以补偿的累计误差）
     # 有飞椽时，全部体现在翘飞椽上
     # （没有飞椽时，压根不进入本函数）
     chongLength = bData.chong*con.YUANCHUAN_D*dk
-    feiCurve_end_x = (bData.x_total/2
+    flyrafterCurve_end_x = (bData.x_total/2
          +bData.dg_extend
          +con.YANCHUAN_EX*dk
-         +con.FEICHUAN_EX*dk
+         +con.flyrafter_EX*dk
          +chongLength)
-    feiCurve_end_y = feiHeader_co.y + chongLength
+    flyrafterCurve_end_y = flyrafterHeader_co.y + chongLength
     qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
-    feiCurve_end_z = feiHeader_co.z + qiqiao
-    feiCurve_end = Vector((feiCurve_end_x,feiCurve_end_y,feiCurve_end_z))
+    flyrafterCurve_end_z = flyrafterHeader_co.z + qiqiao
+    flyrafterCurve_end = Vector((flyrafterCurve_end_x,flyrafterCurve_end_y,flyrafterCurve_end_z))
 
     # 3.曲线中点：曲率控制
-    feiCurve_middle = Vector((
-        (feiCurve_start.x+feiCurve_end.x)/2,   # 水平线上取中点
-        feiCurve_start.y,   # 与起点水平
-        feiCurve_start.z))  # 与起点水平
+    flyrafterCurve_middle = Vector((
+        (flyrafterCurve_start.x+flyrafterCurve_end.x)/2,   # 水平线上取中点
+        flyrafterCurve_start.y,   # 与起点水平
+        flyrafterCurve_start.z))  # 与起点水平
     # 4.绘制翘飞椽定位线
-    CurvePoints = [feiCurve_start,
-                    feiCurve_middle,
-                    feiCurve_end]
-    feiCurve_obj = utils.addCurveByPoints(
+    CurvePoints = [flyrafterCurve_start,
+                    flyrafterCurve_middle,
+                    flyrafterCurve_end]
+    flyrafterCurve_obj = utils.addCurveByPoints(
             CurvePoints=CurvePoints,
             name='翘飞椽定位线',
             resolution = con.CURVE_RESOLUTION,
             root_obj=roofRootObj
         ) 
-    return feiCurve_obj
+    return flyrafterCurve_obj
 
 # 营造翼角椽(Corner Rafter,缩写CR)
 def __buildCornerRafter(buildingObj:bpy.types.Object,purlin_pos):
@@ -1575,8 +1575,8 @@ def __buildCornerRafter(buildingObj:bpy.types.Object,purlin_pos):
     # 檐平出=14斗口的檐椽平出+7斗口的飞椽平出
     yanExtend += con.YANCHUAN_EX * dk
     # 飞椽平出
-    if bData.use_feichuan:
-        yanExtend += con.FEICHUAN_EX * dk
+    if bData.use_flyrafter:
+        yanExtend += con.flyrafter_EX * dk
     # 1.2 计算椽当（用前后檐椽当计算，以便在正视图中协调，注意这个数据已经是一椽+一当）
     jinhengPos = purlin_pos[1]  # 金桁是数组中的第二个（已排除挑檐桁）
     rafter_gap = __getRafterGap(buildingObj,
@@ -1639,7 +1639,7 @@ def __buildCornerRafter(buildingObj:bpy.types.Object,purlin_pos):
 # 椽头定位：基于每一根翼角椽，指向翘飞椽檐口线对应的定位点
 # 椽尾楔形构造：使用bmesh逐点定位、绘制
 # 特殊处理：椽头撇度处理、椽腰扭度处理
-def __drawQiaoFeiChuan(yjcObj:bpy.types.Object,
+def __drawQiaoflyrafter(yjcObj:bpy.types.Object,
                      qfc_head_point,
                      name,
                      head_shear:Vector,
@@ -1681,7 +1681,7 @@ def __drawQiaoFeiChuan(yjcObj:bpy.types.Object,
     # 2.到翘飞椽头下皮，从檐口定位线下移0.5半椽径
     # 获取翘飞椽坐标系中的椽头坐标
     qfc_head_point_local =  qfcObj.matrix_local.inverted() @ qfc_head_point
-    qfc_mid_point_local = Vector((0,0,con.FEICHUAN_H/2*dk))
+    qfc_mid_point_local = Vector((0,0,con.flyrafter_H/2*dk))
     # 计算飞椽头角度, 从定位线上的翼角椽头点start_point，到腰线向上半椽中点
     qfc_head_vector:Vector = qfc_head_point_local - qfc_mid_point_local
     qfc_head_rotation = utils.alignToVector(qfc_head_vector)
@@ -1690,25 +1690,25 @@ def __drawQiaoFeiChuan(yjcObj:bpy.types.Object,
     shear_rot = utils.alignToVector(head_shear) # 檐口线夹角
     tilt_rot = qfcObj.rotation_euler.z - shear_rot.z 
     offset = Vector((
-        con.FEICHUAN_H/2*dk / math.tan(tilt_rot),  # 椽头沿檐口线的补偿
-        0,-con.FEICHUAN_H*0.5*dk # 下移半椽
+        con.flyrafter_H/2*dk / math.tan(tilt_rot),  # 椽头沿檐口线的补偿
+        0,-con.flyrafter_H*0.5*dk # 下移半椽
         ))
     offset.rotate(qfc_head_rotation)
     v2 = qfc_head_point_local + offset
     vectors.append(v2)
     # 3.到翘飞椽头上皮，上移一椽径
-    offset = Vector((0,0,con.FEICHUAN_H*dk))
+    offset = Vector((0,0,con.flyrafter_H*dk))
     offset.rotate(qfc_head_rotation)
     v3 = v2 + offset
     vectors.append(v3)
     # 4.到翘飞椽腰点上皮，上移一椽径，注意坐标系已经旋转到檐椽角度
-    v4 = Vector((0,0,con.FEICHUAN_H*dk))
+    v4 = Vector((0,0,con.flyrafter_H*dk))
     vectors.append(v4)
     # 5.到翘飞椽尾，椽头长度的2.5倍 
-    qfc_wei_length = qfc_head_vector.length / con.FEICHUAN_HEAD_TILE_RATIO
+    qfc_wei_length = qfc_head_vector.length / con.flyrafter_HEAD_TILE_RATIO
     # todo: 应该用三角函数更精确的计算椽尾，这里略有出入，但影响不大
     qfc_wei_length_tilt = math.sqrt(math.pow(qfc_wei_length,2) \
-                    + math.pow(con.FEICHUAN_H*dk,2))
+                    + math.pow(con.flyrafter_H*dk,2))
     v5 = Vector((-qfc_wei_length_tilt,0,0))
     vectors.append(v5) 
 
@@ -1729,16 +1729,16 @@ def __drawQiaoFeiChuan(yjcObj:bpy.types.Object,
         vertices.append(vert)
 
     # 创建面
-    feiwei_face =bm.faces.new((vertices[0],vertices[3],vertices[4])) # 飞尾
-    feihead_face = bm.faces.new((vertices[0],vertices[1],vertices[2],vertices[3])) # 飞头
+    flyrafterEnd_face =bm.faces.new((vertices[0],vertices[3],vertices[4])) # 飞尾
+    flyrafterHead_face = bm.faces.new((vertices[0],vertices[1],vertices[2],vertices[3])) # 飞头
 
     # 挤出厚度
-    return_geo = bmesh.ops.extrude_face_region(bm, geom=[feiwei_face,feihead_face])
+    return_geo = bmesh.ops.extrude_face_region(bm, geom=[flyrafterEnd_face,flyrafterHead_face])
     verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
-    bmesh.ops.translate(bm, verts=verts, vec=(0, -con.FEICHUAN_H*dk, 0))
+    bmesh.ops.translate(bm, verts=verts, vec=(0, -con.flyrafter_H*dk, 0))
     # 移动所有点，居中
     for v in bm.verts:
-        v.co.y += con.FEICHUAN_H*dk/2
+        v.co.y += con.flyrafter_H*dk/2
 
     # 椽头撇向处理
     # 翘飞椽檐口线的角度
@@ -1790,7 +1790,7 @@ def __drawQiaoFeiChuan(yjcObj:bpy.types.Object,
     return qfcObj
 
 # 营造翼角翘飞椽
-def __buildCornerFei(buildingObj:bpy.types.Object,cornerRafterColl):
+def __buildCornerFlyrafter(buildingObj:bpy.types.Object,cornerRafterColl):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -1806,7 +1806,7 @@ def __buildCornerFei(buildingObj:bpy.types.Object,cornerRafterColl):
     yjc_verts = utils.getNurbsSegment(rafterCurveObj,cr_count)
 
     # 提取檐口线
-    qfc_curve = __buildCornerFeiCurve(buildingObj)
+    qfc_curve = __buildCornerFlyrafterCurve(buildingObj)
     # 根据椽子根数，计算曲线上的水平平分点
     qfc_verts = utils.getNurbsSegment(qfc_curve,cr_count)
     # 摆放翘飞椽
@@ -1823,7 +1823,7 @@ def __buildCornerFei(buildingObj:bpy.types.Object,cornerRafterColl):
         # 用于下一个循环迭代
         last_chuan_head_point = qfc_verts[n]
         last_chuan_mid_point = yjc_verts[n]
-        qfc_Obj = __drawQiaoFeiChuan(
+        qfc_Obj = __drawQiaoflyrafter(
             yjcObj = cornerRafterColl[n], # 对应的翼角椽对象
             qfc_head_point = qfc_verts[n], # 头在翘飞椽定位线上
             head_shear = head_shear_direction, # 椽头撇向
@@ -1847,15 +1847,15 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     roofStyle = bData.roof_style
-    useFei = bData.use_feichuan
+    useFlyrafter = bData.use_flyrafter
     useWangban = bData.use_wangban
 
     # 各种屋顶都有前后檐
     __buildRafter_FB(buildingObj,purlin_pos)    # 前后檐椽
     utils.outputMsg("Rafter body added")
-    if useFei:  # 用户可选择不使用飞椽
-        __buildRafterFei(buildingObj,purlin_pos,'X') # 前后飞椽
-        utils.outputMsg("Fei body added")
+    if useFlyrafter:  # 用户可选择不使用飞椽
+        __buildFlyRafter(buildingObj,purlin_pos,'X') # 前后飞椽
+        utils.outputMsg("Flyrafter body added")
     if useWangban:  # 用户可选择暂时不生成望板（更便于观察椽架形态）
         __buildWangban_FB(buildingObj,purlin_pos)   # 前后望板
         utils.outputMsg("Wangban added")
@@ -1869,10 +1869,10 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         # 两山檐椽
         __buildRafter_LR(buildingObj,purlin_pos)    
         utils.outputMsg("Rafter body LR added")
-        if useFei:
+        if useFlyrafter:
             # 两山飞椽
-            __buildRafterFei(buildingObj,purlin_pos,'Y') 
-            utils.outputMsg("Fei body LR added")
+            __buildFlyRafter(buildingObj,purlin_pos,'Y') 
+            utils.outputMsg("Flyrafter body LR added")
         if useWangban:
             # 两山望板
             __buildWangban_LR(buildingObj,purlin_pos)   
@@ -1885,13 +1885,13 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         # 营造翼角椽
         cornerRafterColl = __buildCornerRafter(buildingObj,purlin_pos)
         utils.outputMsg("Corner Rafter added")
-        if useFei:
+        if useFlyrafter:
             # 大连檐
-            __buildCornerFeiEave(buildingObj)
-            utils.outputMsg("Corner Fei Eave added")
+            __buildCornerflyrafterEave(buildingObj)
+            utils.outputMsg("Corner Flyrafter Eave added")
             # 翘飞椽，以翼角椽为基准
-            __buildCornerFei(buildingObj,cornerRafterColl)
-            utils.outputMsg("Corner Fei added")
+            __buildCornerFlyrafter(buildingObj,cornerRafterColl)
+            utils.outputMsg("Corner Flyrafter added")
     
     return
 

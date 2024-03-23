@@ -337,7 +337,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0,max=10,
             update = update_roof,
         )# type: ignore 
-    use_feichuan :  bpy.props.BoolProperty(
+    use_flyrafter :  bpy.props.BoolProperty(
             default=True,
             name="添加飞椽",
             update = update_roof,

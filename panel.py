@@ -155,7 +155,7 @@ class ACA_PT_props(bpy.types.Panel):
                 row = box.row()
                 row.prop(objData, "rafter_count") # 椽架数量
                 row = box.row()
-                row.prop(objData, "use_feichuan") # 添加飞椽
+                row.prop(objData, "use_flyrafter") # 添加飞椽
                 row = box.row()
                 row.prop(objData, "use_wangban") # 添加望板
                 if objData.roof_style in ('1','2'):

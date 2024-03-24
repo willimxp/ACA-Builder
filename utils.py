@@ -297,12 +297,8 @@ def addCubeBy2Points(start_point:Vector,
                      origin_at_end = False,
                      origin_at_start=False):
     length = getVectorDistance(start_point,end_point)
-    if origin_at_end:
-        origin_point = end_point
-    elif origin_at_start:
-        origin_point = start_point
-    else:
-        origin_point = (start_point+end_point)/2
+    # 默认origin在几何中心
+    origin_point = (start_point+end_point)/2
     rotation = alignToVector(start_point - end_point)
     rotation.x = 0 # 避免x轴翻转
     bpy.ops.mesh.primitive_cube_add(
@@ -319,20 +315,14 @@ def addCubeBy2Points(start_point:Vector,
 
     # 将Origin置于底部
     if origin_at_bottom :
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_all(action = 'SELECT')
-        bpy.ops.transform.translate(value=(0,0,height/2))
-        bpy.ops.object.mode_set(mode = 'OBJECT')
+        origin = Vector((0,0,-height/2))
+        setOrigin(cube,origin)
     if origin_at_end :
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_all(action = 'SELECT')
-        bpy.ops.transform.translate(value=(length/2,0,0),orient_type='LOCAL')
-        bpy.ops.object.mode_set(mode = 'OBJECT')
+        origin = Vector((-length/2,0,0))
+        setOrigin(cube,origin)
     if origin_at_start :
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_all(action = 'SELECT')
-        bpy.ops.transform.translate(value=(-length/2,0,0),orient_type='LOCAL')
-        bpy.ops.object.mode_set(mode = 'OBJECT')
+        origin = Vector((length/2,0,0))
+        setOrigin(cube,origin)
 
     return cube
 

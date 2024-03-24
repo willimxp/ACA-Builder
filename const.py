@@ -83,19 +83,19 @@ class ACA_Consts(object):
 
     # 椽飞类
     YANCHUAN_EX = 14    # 檐椽平出14斗口
-    flyrafter_EX = 7     # 飞椽平出7斗口
+    FLYRAFTER_EX = 7     # 飞椽平出7斗口
     YUANCHUAN_D = 1.5   # 圆椽直径
-    flyrafter_H = 1.5    # 飞椽、方椽高
-    flyrafter_Y = 1.5    # 飞椽、方椽厚
+    FLYRAFTER_H = 1.5    # 飞椽、方椽高
+    FLYRAFTER_Y = 1.5    # 飞椽、方椽厚
     WANGBAN_H = 0.5     # 望板厚
-    LIKOUMU_H =  flyrafter_H + WANGBAN_H     # 里口木高度，一飞椽+一望板
-    LIKOUMU_Y = flyrafter_H     # 里口木厚度
+    LIKOUMU_H =  FLYRAFTER_H + WANGBAN_H     # 里口木高度，一飞椽+一望板
+    LIKOUMU_Y = FLYRAFTER_H     # 里口木厚度
     XIAOLIANYAN_H = WANGBAN_H * 1.5         # 小连檐厚度(暂未使用，都用了里口木尺寸)
-    ZADANGBAN_H = flyrafter_H    # 闸挡板高(暂未使用，都用了里口木尺寸)
+    ZADANGBAN_H = FLYRAFTER_H    # 闸挡板高(暂未使用，都用了里口木尺寸)
     ZADANGBAN_Y = WANGBAN_H     # 闸挡板厚(暂未使用，都用了里口木尺寸)
     DALIANYAN_H = YUANCHUAN_D   # 大连檐，高同椽径
     DALIANYAN_Y = YUANCHUAN_D   # 大连檐，宽1.1-1.2椽径
-    flyrafter_HEAD_TILE_RATIO = 1/2.5        # 飞椽头身比，默认一飞二尾五
+    FLYRAFTER_HEAD_TILE_RATIO = 1/2.5        # 飞椽头身比，默认一飞二尾五
     QUETAI = YUANCHUAN_D*0.2    # 雀台长度(通常1/5~1/3椽径)
     
     # 角梁
@@ -106,7 +106,7 @@ class ACA_Consts(object):
     YOUQIANG_YAJIN = 1-JIAOLIANG_WEI_KOUJIN           #由戗压金系数
 
     # 其他
-    OFFSET_ORIENTATION = 'LOCAL' # 'GLOBAL'  'LOCAL' #上下层叠构件的错开方式，一般绘图是垂直位移，但其实相对方向的位移更好看
+    OFFSET_ORIENTATION = 'GLOBAL' # 'GLOBAL'  'LOCAL' #上下层叠构件的错开方式，一般绘图是垂直位移，但其实相对方向的位移更好看
     YIJIAOCHUAN_OFFSET = JIAOLIANG_Y/4 # 为了防止翼角椽与角梁打架，而做了一定的让渡
     CURVE_RESOLUTION = 500  # 曲线的精细度，在细分翼角椽坐标时提高精确度
     CORNER_RAFTER_START_SPREAD = 2    #翼角椽尾散开的宽度，单位斗口
@@ -117,7 +117,7 @@ class ACA_Consts(object):
 # 通则类
 EAVE_EX = 21 # 带斗拱的建筑，上檐出21斗口
 YANCHUAN_EX = 14    # 檐椽平出14斗口
-flyrafter_EX = 7     # 飞椽平出7斗口
+FLYRAFTER_EX = 7     # 飞椽平出7斗口
 DOUGONG_SPAN = 11   # 斗栱攒距，通常取11斗口
 #LIFT_RATIO = [0.5,0.65,0.75,0.9]    # 清工程做法则例的推荐系数
 LIFT_RATIO = [0.5,0.7,0.8,0.9]       # 梁思成图纸中采用的系数，可以进行比较
@@ -152,17 +152,17 @@ FUJIMU_D = 4            # 伏脊木
 
 # 椽飞类
 YUANCHUAN_D = 1.5   # 圆椽直径
-flyrafter_H = 1.5    # 飞椽、方椽高
-flyrafter_Y = 1.5    # 飞椽、方椽厚
+FLYRAFTER_H = 1.5    # 飞椽、方椽高
+FLYRAFTER_Y = 1.5    # 飞椽、方椽厚
 WANGBAN_H = 0.5     # 望板厚
-LIKOUMU_H =  flyrafter_H + WANGBAN_H     # 里口木高度，一飞椽+一望板
-LIKOUMU_Y = flyrafter_H     # 里口木厚度
+LIKOUMU_H =  FLYRAFTER_H + WANGBAN_H     # 里口木高度，一飞椽+一望板
+LIKOUMU_Y = FLYRAFTER_H     # 里口木厚度
 XIAOLIANYAN_H = WANGBAN_H * 1.5         # 小连檐厚度(暂未使用，都用了里口木尺寸)
-ZADANGBAN_H = flyrafter_H    # 闸挡板高(暂未使用，都用了里口木尺寸)
+ZADANGBAN_H = FLYRAFTER_H    # 闸挡板高(暂未使用，都用了里口木尺寸)
 ZADANGBAN_Y = WANGBAN_H     # 闸挡板厚(暂未使用，都用了里口木尺寸)
 DALIANYAN_H = YUANCHUAN_D   # 大连檐，高同椽径
 DALIANYAN_Y = YUANCHUAN_D   # 大连檐，宽1.1-1.2椽径
-flyrafter_HEAD_TILE_RATIO = 1/2.5        # 飞椽头身比，默认一飞二尾五
+FLYRAFTER_HEAD_TILE_RATIO = 1/2.5        # 飞椽头身比，默认一飞二尾五
 QUETAI = YUANCHUAN_D*0.2    # 雀台长度(通常1/5~1/3椽径)
 
 # 角梁

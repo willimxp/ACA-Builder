@@ -153,8 +153,8 @@ def resetWallLayout(buildingObj:bpy.types.Object):
     # c、生成横向墙体
     for r in row: 
         for c in colRange:
-            pStart = Vector((net_x[c],net_y[r],0))
-            pEnd = Vector((net_x[c+1],net_y[r],0))
+            pStart = Vector((net_x[c],net_y[r],wall_height/2))
+            pEnd = Vector((net_x[c+1],net_y[r],wall_height/2))
             wallObj = utils.addCubeBy2Points(
                         start_point = pStart,
                         end_point = pEnd,
@@ -169,8 +169,8 @@ def resetWallLayout(buildingObj:bpy.types.Object):
     # d、生成纵向墙体
     for c in col: 
         for r in rowRange:
-            pStart = Vector((net_x[c],net_y[r],0))
-            pEnd = Vector((net_x[c],net_y[r+1],0))
+            pStart = Vector((net_x[c],net_y[r],wall_height/2))
+            pEnd = Vector((net_x[c],net_y[r+1],wall_height/2))
             wallObj = utils.addCubeBy2Points(
                         start_point = pStart,
                         end_point = pEnd,

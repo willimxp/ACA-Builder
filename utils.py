@@ -444,11 +444,6 @@ def fastRun(func):
     finally:
         _BPyOpsSubModOp._view_layer_update = view_layer_update
 
-# 刷新viewport，避免长时间卡死，并可见到建造过程
-def redrawViewport():
-    bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
-    return 
-
 # 格式化输出内容
 def outputMsg(msg:str):
     stime = time.strftime("%H:%M:%S", time.localtime())

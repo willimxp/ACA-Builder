@@ -644,10 +644,9 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
                 extend += bData.dg_extend
             # 檐出加斜
             extend_hyp = extend/math.cos(angle)
-            if bData.use_flyrafter:
-                # 里口木避让（无需加斜）
-                extend_hyp -= (con.QUETAI            # 雀台避让
-                        + con.LIKOUMU_Y)* dk    # 里口木避让
+            # 里口木避让（无需加斜）
+            extend_hyp -= (con.QUETAI            # 雀台避让
+                    + con.LIKOUMU_Y)* dk    # 里口木避让
             # 加斜计算
             wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True)
@@ -772,7 +771,7 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
 
 # 根据檐椽，绘制对应飞椽
 # 基于“一飞二尾五”的原则计算
-def __drawFlyrafterMesh(yanRafterObj:bpy.types.Object)->bpy.types.Object:
+def __drawFlyrafter(yanRafterObj:bpy.types.Object)->bpy.types.Object:
     # 载入数据
     buildingObj = utils.getAcaParent(yanRafterObj,con.ACA_TYPE_BUILDING)
     bData : acaData = buildingObj.ACA_data
@@ -787,9 +786,7 @@ def __drawFlyrafterMesh(yanRafterObj:bpy.types.Object)->bpy.types.Object:
     flyrafterEnd_length = flyrafterEnd_pingchu / math.cos(yanChuan_angle) 
     # 飞椽仰角（基于飞尾楔形的对边为飞椽高）
     flyrafter_angle_change = math.asin(con.FLYRAFTER_H*dk/flyrafterEnd_length)
-    # 飞尾局部坐标
-    flyrafterEnd_loc = flyrafterEnd_length * math.cos(flyrafter_angle_change)
-    
+
     # 2、计算椽头坐标
     # 飞椽的全局仰角
     flyrafter_angle = yanChuan_angle - flyrafter_angle_change
@@ -810,7 +807,7 @@ def __drawFlyrafterMesh(yanRafterObj:bpy.types.Object)->bpy.types.Object:
 
     # 第2点在飞椽尾
     # 飞尾在檐椽方向加斜
-    v2 = Vector((-flyrafterEnd_loc,0,0)) # 飞椽尾的坐标
+    v2 = Vector((-flyrafterEnd_length,0,0)) # 飞椽尾的坐标
     vectors.append(v2)
 
     # 第3点在飞椽腰的上沿
@@ -909,7 +906,7 @@ def __buildFlyrafter(buildingObj,direction):
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,rafterType)
 
-    flyrafterObj = __drawFlyrafterMesh(yanRafterObj)
+    flyrafterObj = __drawFlyrafter(yanRafterObj)
     flyrafterObj.name = flyrafterName
     flyrafterObj.parent = roofRootObj
     flyrafterObj.ACA_data['aca_obj'] = True
@@ -1097,16 +1094,18 @@ def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object):
     # 第2点在子角梁尾
     # 与老角梁同长
     cornerBeam_length = utils.getMeshDims(cornerBeamObj).x
-    v2 = Vector((-cornerBeam_length,0,0))
+    # 后尾补偿，确保子角梁后尾的origin与老角梁的origin相同
+    # 避免子角梁与由戗之间有太大间隙
+    offset = con.JIAOLIANG_H/4*dk/math.cos(cornerBeamObj.rotation_euler.y)
+    v2 = Vector((-cornerBeam_length-offset,0,0))
     vectors.append(v2)
 
     # 第3点在子角梁尾向上一角梁高
     # 与老角梁同长
-    v3 = Vector((-cornerBeam_length ,0,con.JIAOLIANG_H*dk))
+    v3 = Vector((-cornerBeam_length-offset ,0,con.JIAOLIANG_H*dk))
     vectors.append(v3)
 
     # 第4点在子角梁腰向上一角梁高
-    # 与老角梁同长
     v4 = Vector((0,0,con.JIAOLIANG_H*dk))
     vectors.append(v4)
 
@@ -1539,6 +1538,169 @@ def __buildCornerRafter(buildingObj:bpy.types.Object,purlin_pos):
     
     return cornerRafterColl
 
+# 绘制翼角椽望板
+# 分别连接金桁交点、各个翼角椽头上皮
+def __drawCrWangban(
+        origin,
+        crEnds,
+        crCollection,
+        root_obj,
+        ):
+    # 载入数据
+    buildingObj = utils.getAcaParent(
+        root_obj,con.ACA_TYPE_BUILDING)
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    
+    # 任意添加一个对象，具体几何数据在bmesh中建立
+    bpy.ops.mesh.primitive_cube_add(
+        location=origin
+    )
+    crWangbanObj = bpy.context.object
+    crWangbanObj.parent = root_obj    
+
+    # 创建bmesh
+    bm = bmesh.new()
+    # 各个点的集合
+    vectors = []
+
+    # 循环插入翼角椽尾
+    for n in range(len(crEnds)):
+        crEnd_loc = crWangbanObj.matrix_world.inverted() @ crEnds[n]
+        # 第一个檐口点在正身椽头，纠正到金桁X位置，以免和正身望板打架
+        if n==0:
+            crEnd_loc.x = 0
+        # 避让里口木和雀台
+        # 翼角椽椽数组比檐口点数组少两个，只能特殊处理一下
+        if n == 0:
+            m = 0
+        elif n == len(crEnds) -1 :
+            m = n-2
+        else:
+            m = n-1
+        crObj:bpy.types.Object = crCollection[m]
+        offset = Vector(((con.QUETAI)* dk,0,0))
+        offset.rotate(crObj.rotation_euler)
+        crEnd_loc -= offset
+        vectors.insert(0,crEnd_loc)
+    
+    # 循环插入翼角椽头
+    for n in range(len(crCollection)):
+        # 翘飞椽头坐标,插入队列尾
+        cfrObj:bpy.types.Object = crCollection[n]
+        crHead_loc = crWangbanObj.matrix_world.inverted() @ cfrObj.location
+        # 在第一根椽之前，手工添加金交点一侧的后点
+        if n==0:
+            vectors.append((
+                0,crHead_loc.y,crHead_loc.z
+            ))
+        # 循环依次添加椽头
+        vectors.append(crHead_loc)
+        # 在最后一根椽后，再手工追加角梁侧的后点
+        if n==len(crCollection)-1:
+            vectors.append(crHead_loc)
+
+    # 摆放点
+    vertices=[]
+    for n in range(len(vectors)):
+        if n==0:
+            vert = bm.verts.new(vectors[n])
+        else:
+            # 挤出
+            return_geo = bmesh.ops.extrude_vert_indiv(bm, verts=[vert])
+            vertex_new = return_geo['verts'][0]
+            del return_geo
+            # 给挤出的点赋值
+            vertex_new.co = vectors[n]
+            # 交换vertex给下一次循环
+            vert = vertex_new
+        vertices.append(vert)
+
+    # 创建面
+    for n in range(len(vertices)//2-1): #注意‘/’可能是float除,用'//'进行整除
+        bm.faces.new((
+            vertices[n],vertices[n+1], # 两根椽头
+            vertices[-n-2],vertices[-n-1] # 两根椽尾
+        ))
+
+    # 挤出厚度
+    return_geo = bmesh.ops.extrude_face_region(bm, geom=bm.faces)
+    verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
+    bmesh.ops.translate(bm, verts=verts, vec=(0, 0,con.WANGBAN_H*dk))
+    # ps，这个挤出略有遗憾，没有按照每个面的normal进行extrude
+
+    # 上移半个椽径
+    rafterObj:bpy.types.Object = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_FB
+    )
+    offset = con.YUANCHUAN_D/2*dk / math.cos(rafterObj.rotation_euler.y)
+    for v in bm.verts:
+        v.co.z += offset
+
+    # 确保face normal朝向
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(crWangbanObj.data)
+    crWangbanObj.data.update()
+    bm.free()
+
+    return crWangbanObj
+
+# 营造翼角椽望板
+def __buildCrWangban(buildingObj:bpy.types.Object
+                     ,purlin_pos,
+                     cornerRafterColl):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    # 屋顶根节点
+    roofRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    # 老角梁
+    cornerBeamObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_CORNER_BEAM)
+    # 翼角椽定位线
+    CrCurve = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_CORNER_RAFTER_CURVE)
+    
+    # 获取翼角椽尾坐标集合
+    crCount = len(cornerRafterColl)
+    CrEnds = utils.getNurbsSegment(
+        CrCurve,
+        crCount,
+        withCurveEnd = True)
+    
+    # 绘制翼角椽望板
+    origin = purlin_pos[1] + Vector((
+        0,0,(con.HENG_COMMON_D+con.YUANCHUAN_D)/2*dk))
+    crWangban = __drawCrWangban(
+        origin = origin,
+        crEnds = CrEnds,
+        crCollection = cornerRafterColl,
+        root_obj = roofRootObj,
+    )
+    crWangban.name = '翼角椽望板'
+    # 裁剪，沿角梁裁剪，以免穿模
+    utils.addBisect(
+            object=crWangban,
+            pStart=buildingObj.matrix_world @ purlin_pos[0],
+            pEnd=buildingObj.matrix_world @ purlin_pos[1],
+            pCut=buildingObj.matrix_world @ purlin_pos[0] - \
+                Vector((con.JIAOLIANG_Y*dk/2*math.sqrt(2),0,0)),
+            clear_outer=True
+    ) 
+    # 相对角梁做45度对称
+    utils.addModifierMirror(
+        object=crWangban,
+        mirrorObj=cornerBeamObj,
+        use_axis=(False,True,False)
+    )
+    # 四面对称
+    utils.addModifierMirror(
+        object=crWangban,
+        mirrorObj=roofRootObj,
+        use_axis=(True,True,False)
+    )
+
 # 营造翼角大连檐实体（连接翘飞椽）
 def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
     # 载入数据
@@ -1663,13 +1825,15 @@ def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
             resolution = con.CURVE_RESOLUTION,
             root_obj=roofRootObj
         ) 
+    flyrafterCurve_obj.ACA_data['aca_obj'] = True
+    flyrafterCurve_obj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_FLYRAFTER_CURVE
     return flyrafterCurve_obj
 
 # 绘制一根翘飞椽
 # 椽头定位：基于每一根翼角椽，指向翘飞椽檐口线对应的定位点
 # 椽尾楔形构造：使用bmesh逐点定位、绘制
 # 特殊处理：椽头撇度处理、椽腰扭度处理
-def __drawFlyrafter(
+def __drawCornerFlyrafter(
         cornerRafterObj:bpy.types.Object,
         cornerFlyrafterEnd,
         name,
@@ -1689,6 +1853,7 @@ def __drawFlyrafter(
     # 移动到上皮+望板
     offset = Vector((0,0,(con.YUANCHUAN_D /2+con.WANGBAN_H)*dk))
     offset.rotate(cornerRafterObj.rotation_euler)
+    offset = offset * Vector((0,0,1))
     origin_point = cr_head_co + offset
 
     # 2、任意添加一个对象，具体几何数据在bmesh中建立
@@ -1700,7 +1865,7 @@ def __drawFlyrafter(
     cfrObj.parent = root_obj    
     # 翘飞椽与翼角椽对齐旋转角度
     cfrObj.rotation_euler = cornerRafterObj.rotation_euler
-    bpy.context.view_layer.update() # 需要刷新，才能正确获取到该对象的matrix_local
+    utils.updateScene() # 需要刷新，才能正确获取到该对象的matrix_local
 
     # 3、创建bmesh
     bm = bmesh.new()
@@ -1745,12 +1910,14 @@ def __drawFlyrafter(
     v4 = Vector((0,0,con.FLYRAFTER_H*dk))
     vectors.append(v4)
 
-    # 5.到翘飞椽尾，椽头长度的2.5倍 
-    cfr_wei_length = cfr_head_vector.length / con.FLYRAFTER_HEAD_TILE_RATIO
-    # todo: 应该用三角函数更精确的计算椽尾，这里略有出入，但影响不大
-    cfr_wei_length_tilt = math.sqrt(math.pow(cfr_wei_length,2) \
-                    + math.pow(con.FLYRAFTER_H*dk,2))
-    v5 = Vector((-cfr_wei_length_tilt,0,0))
+    # 5.到翘飞椽尾，采用与正身飞椽相同的椽尾长度，以简化计算
+    # 并没有按照实际翘飞椽头长度的2.5倍计算
+    # 飞尾平出：7斗口*2.5=17.5斗口
+    cfr_pingchu = con.FLYRAFTER_EX/con.FLYRAFTER_HEAD_TILE_RATIO*dk
+    # 飞尾长斜边的长度，平出转到檐椽角度
+    cfrEnd_length = cfr_pingchu / math.cos(cornerRafterObj.rotation_euler.y) 
+
+    v5 = Vector((-cfrEnd_length,0,0))
     vectors.append(v5) 
 
     # 摆放点
@@ -1862,7 +2029,6 @@ def __buildCornerFlyrafter(
     # 收集翘飞椽对象，输出绘制翘飞椽望板
     cfrCollection = []
     for n in range(len(cfrEnds)):
-
         # 计算相邻椽头间的撇向
         head_shear_direction = Vector((0,0,0))
         mid_shear_direction = Vector((0,0,0))
@@ -1870,7 +2036,7 @@ def __buildCornerFlyrafter(
             head_shear_direction = cfrEnds[n] - cfrEnds[n-1]
             mid_shear_direction = crEnds[n] - crEnds[n-1]
 
-        cfr_Obj = __drawFlyrafter(
+        cfr_Obj = __drawCornerFlyrafter(
             cornerRafterObj = cornerRafterColl[n], # 对应的翼角椽对象
             cornerFlyrafterEnd = cfrEnds[n], # 头在翘飞椽定位线上
             head_shear = head_shear_direction, # 椽头撇向
@@ -1887,6 +2053,175 @@ def __buildCornerFlyrafter(
         mod.mirror_object = roofRootObj
         mod.use_axis[0] = True
         mod.use_axis[1] = True
+
+    return cfrCollection
+
+# 绘制翘飞椽望板
+# 连接各个翘飞椽尾，到翘飞椽头
+def __drawCfrWangban(
+        origin_point,
+        cfrEnds,
+        cfrCollection,
+        root_obj,
+        name = '翘飞椽望板'):
+    # 载入数据
+    buildingObj = utils.getAcaParent(root_obj,con.ACA_TYPE_BUILDING)
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+
+    # 任意添加一个对象，具体几何数据在bmesh中建立
+    bpy.ops.mesh.primitive_cube_add(
+        location=origin_point
+    )
+    cfrWangbanObj = bpy.context.object
+    cfrWangbanObj.name = name
+    cfrWangbanObj.parent = root_obj
+
+    # 创建bmesh
+    bm = bmesh.new()
+    # 各个点的集合
+    vectors = []
+
+    # 插入望板前侧的檐口线点
+    # 不从翘飞椽本身取椽头坐标，因为已经根据檐口线做了角度补偿，会导致望板穿模
+    # 所以还是从檐口线上取
+    # 计算从檐口线上移的距离，统一按正身檐椽计算，没有取每一根翼角椽计算，不然太复杂了
+    flyrafterObj:bpy.types.Object = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_FLYRAFTER_FB)
+    offset = con.FLYRAFTER_H/2*dk / math.cos(flyrafterObj.rotation_euler.y)
+    # 循环插入翘飞椽尾坐标
+    for n in range(len(cfrEnds)):
+        # 翘飞椽头坐标, 插入队列头
+        cfrEnd_loc = cfrWangbanObj.matrix_world.inverted() @ cfrEnds[n]
+        # 偏移量，垂直半飞椽+半望板，水平1雀台+1里口木
+        # 翘飞椽数组比檐口点数组少两个，只能特殊处理一下
+        if n == 0:
+            m = 0
+        elif n == len(cfrEnds) -1 :
+            m = n-2
+        else:
+            m = n-1
+        cfrObj:bpy.types.Object = cfrCollection[m]
+        offset = Vector((
+            -con.QUETAI*dk-con.LIKOUMU_Y*dk,0,
+            con.FLYRAFTER_H/2*dk+con.WANGBAN_H/2*dk))
+        offset.rotate(cfrObj.rotation_euler)
+        cfrEnd_loc += offset
+        if n == 0:
+            # 矫正起点，檐口线起点在最后一根正身椽头，调整到金交点
+            cfrEnd_loc.x = 0
+        vectors.insert(0,cfrEnd_loc)
+    # 循环插入翘飞椽头坐标
+    for n in range(len(cfrCollection)):
+        # 翘飞椽头坐标,插入队列尾
+        cfrObj:bpy.types.Object = cfrCollection[n]
+        cfrHead_loc = cfrWangbanObj.matrix_world.inverted() @ cfrObj.location
+        # 上移半望板高度        
+        offset = Vector((0,0,con.WANGBAN_H/2*dk))
+        offset.rotate(cfrObj.rotation_euler)
+        cfrHead_loc += offset
+        # 在第一根椽之前，手工添加金交点一侧的后点
+        if n==0:
+            vectors.append((
+                0,cfrHead_loc.y,cfrHead_loc.z
+            ))
+        # 循环依次添加椽头
+        vectors.append(cfrHead_loc)
+        # 在最后一根椽后，再手工追加角梁侧的后点
+        if n==len(cfrCollection)-1:
+            vectors.append(cfrHead_loc)
+
+    # 摆放点
+    vertices=[]
+    for n in range(len(vectors)):
+        if n==0:
+            vert = bm.verts.new(vectors[n])
+        else:
+            # 挤出
+            return_geo = bmesh.ops.extrude_vert_indiv(bm, verts=[vert])
+            vertex_new = return_geo['verts'][0]
+            del return_geo
+            # 给挤出的点赋值
+            vertex_new.co = vectors[n]
+            # 交换vertex给下一次循环
+            vert = vertex_new
+        vertices.append(vert)
+
+    # 创建面
+    for n in range(len(vertices)//2-1): #注意‘/’可能是float除,用'//'进行整除
+        bm.faces.new((
+            vertices[n],vertices[n+1], # 两根椽头
+            vertices[-n-2],vertices[-n-1] # 两根椽尾
+        ))
+
+    # 挤出厚度
+    return_geo = bmesh.ops.extrude_face_region(bm, geom=bm.faces)
+    verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
+    bmesh.ops.translate(bm, verts=verts, vec=(0, 0,con.WANGBAN_H*dk))
+    #ps，这个挤出略有遗憾，没有按照每个面的normal进行extrude
+
+    # 确保face normal朝向
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(cfrWangbanObj.data)
+    cfrWangbanObj.data.update()
+    bm.free()
+
+    return cfrWangbanObj
+
+# 营造翘飞椽望板
+def __buildCfrWangban(
+        buildingObj:bpy.types.Object,
+        purlin_pos,
+        cfrCollection
+        ):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    # 屋顶根节点
+    roofRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    # 老角梁
+    cornerBeamObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_CORNER_BEAM)
+    # 翘飞椽檐口定位线
+    cfrCurve = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_CORNER_FLYRAFTER_CURVE)
+    # 翘飞椽根数
+    cr_count = len(cfrCollection)
+    # 获取翘飞椽头坐标集合
+    cfrEnds = utils.getNurbsSegment(
+        cfrCurve,cr_count,withCurveEnd=True)
+    
+    # 绘制翘飞椽望板
+    cfrWangban = __drawCfrWangban(
+        origin_point = purlin_pos[1],#金桁交点
+        cfrEnds = cfrEnds,
+        cfrCollection = cfrCollection,
+        root_obj = roofRootObj,
+        name = '翘飞椽望板'
+    )
+    # 裁剪，沿角梁裁剪，以免穿模
+    utils.addBisect(
+            object=cfrWangban,
+            pStart=buildingObj.matrix_world @ purlin_pos[0],
+            pEnd=buildingObj.matrix_world @ purlin_pos[1],
+            pCut=buildingObj.matrix_world @ purlin_pos[0] - \
+                Vector((con.JIAOLIANG_Y*dk/2*math.sqrt(2),0,0)),
+            clear_outer=True
+    ) 
+    # 相对角梁做45度对称
+    utils.addModifierMirror(
+        object=cfrWangban,
+        mirrorObj=cornerBeamObj,
+        use_axis=(False,True,False)
+    )
+    # 四面对称
+    utils.addModifierMirror(
+        object=cfrWangban,
+        mirrorObj=roofRootObj,
+        use_axis=(True,True,False)
+    )
+    return
 
 # 营造椽架（包括檐椽、飞椽、望板等）
 # 根据屋顶样式，自动判断
@@ -1932,13 +2267,23 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         # 营造翼角椽
         cornerRafterColl = __buildCornerRafter(buildingObj,purlin_pos)
         utils.outputMsg("Corner Rafter added")
+        if useWangban:
+            # 翼角椽望板
+            __buildCrWangban(buildingObj,purlin_pos,cornerRafterColl)
+            utils.outputMsg("Corner Rafter Wangban added")
+
+        # 是否做二层飞椽
         if useFlyrafter:
             # 大连檐
             __buildCornerFlyrafterEave(buildingObj)
             utils.outputMsg("Corner Flyrafter Eave added")
             # 翘飞椽，以翼角椽为基准
-            __buildCornerFlyrafter(buildingObj,cornerRafterColl)
+            cfrCollection = __buildCornerFlyrafter(buildingObj,cornerRafterColl)
             utils.outputMsg("Corner Flyrafter added")
+            if useWangban:
+                # 翘飞椽望板
+                __buildCfrWangban(buildingObj,purlin_pos,cfrCollection)
+                utils.outputMsg("Corner Flyrafter Wangban added")
     
     return
 

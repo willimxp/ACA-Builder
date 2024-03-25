@@ -31,6 +31,7 @@ class ACA_Consts(object):
     ACA_TYPE_CORNER_BEAM = 'corner_beam'    # 大角梁
     ACA_TYPE_CORNER_BEAM_CHILD = 'corner_beam_child'    # 大角梁
     ACA_TYPE_CORNER_RAFTER_CURVE = 'corner_rafter_curve'          # 翼角椽定位线
+    ACA_TYPE_CORNER_FLYRAFTER_CURVE = 'corner_flyfater_curve'      # 翘飞椽定位线
 
     # 柱子
     PILLER_D_EAVE = 6   # 檐柱直接径6斗口

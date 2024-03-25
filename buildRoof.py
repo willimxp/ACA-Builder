@@ -477,6 +477,35 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             fbRafterObj.dimensions.x += yan_rafter_ex / yan_rafter_angle
             utils.applyTransfrom(fbRafterObj,use_scale=True) # 便于后续做望板时获取真实长度
 
+        # 4、歇山顶在山花处再加一层檐椽
+        if bData.roof_style == '2' and n==0:
+            # 复制檐椽
+            tympanumRafter:bpy.types.Object = fbRafterObj.copy()
+            tympanumRafter.data = fbRafterObj.data.copy()
+            bpy.context.collection.objects.link(tympanumRafter)
+            tympanumRafter.ACA_data['aca_type'] = ''
+            # 重设檐椽平铺宽度
+            rafter_tile_x = purlin_pos[-1].x 
+            utils.addModifierArray(
+                object=tympanumRafter,
+                count=int(rafter_tile_x /rafter_gap_x),
+                offset=(0,-rafter_gap_x,0)
+            )
+            # 裁剪椽架，檐椽不做裁剪
+            utils.addBisect(
+                    object=tympanumRafter,
+                    pStart=buildingObj.matrix_world @ purlin_pos[n],
+                    pEnd=buildingObj.matrix_world @ purlin_pos[n+1],
+                    pCut=buildingObj.matrix_world @ purlin_pos[n] + \
+                        Vector((con.JIAOLIANG_Y*dk/2,0,0)),
+                    clear_inner=True
+            ) 
+            utils.addModifierMirror(
+                object=tympanumRafter,
+                mirrorObj=roofRootObj,
+                use_axis=(True,True,False)
+            )
+
         # 5. 各层椽子平铺
         if bData.roof_style == '1' and n != 0:
             # 庑殿的椽架需要延伸到下层宽度，以便后续做45度裁剪
@@ -501,6 +530,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                         Vector((con.JIAOLIANG_Y*dk/2,0,0)),
                     clear_outer=True
             ) 
+        
 
         # 五、镜像必须放在裁剪之后，才能做上下对称     
         utils.addModifierMirror(
@@ -649,7 +679,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
                     + con.LIKOUMU_Y)* dk    # 里口木避让
             # 加斜计算
             wangbanObj.dimensions.x += extend_hyp
-            utils.applyTransfrom(wangbanObj,use_scale=True)
+            utils.applyTransfrom(wangbanObj,use_scale=True) 
 
         # 所有望板上移
         # 1. 上移到椽头，采用global坐标，半檩+半椽
@@ -664,6 +694,30 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             value = (0,0,offset),
             orient_type = 'LOCAL'
         )
+
+        # 歇山顶的山花处，再补一小块望板
+        if bData.roof_style == '2' and n ==0:
+            tympanumWangban:bpy.types.Object = wangbanObj.copy()
+            tympanumWangban.data = wangbanObj.data.copy()
+            bpy.context.collection.objects.link(tympanumWangban)
+            tympanumWangban.ACA_data['aca_type'] = ''
+            tympanumWangban.dimensions.y = purlin_pos[-1].x
+            tympanumWangban.location.x += (purlin_pos[-1].x - purlin_pos[1].x)/2
+            # 裁剪
+            utils.addBisect(
+                    object=tympanumWangban,
+                    pStart=buildingObj.matrix_world @ purlin_pos[n],
+                    pEnd=buildingObj.matrix_world @ purlin_pos[n+1],
+                    pCut=buildingObj.matrix_world @ purlin_pos[n] + \
+                        Vector((con.JIAOLIANG_Y*dk/2,0,0)),
+                    clear_inner=True
+            )
+            # 望板镜像
+            utils.addModifierMirror(
+                object=tympanumWangban,
+                mirrorObj=roofRootObj,
+                use_axis=(True,True,False)
+            )
 
         if bData.roof_style =='1':
             # 仅庑殿需要裁剪望板

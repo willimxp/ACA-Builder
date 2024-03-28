@@ -873,3 +873,15 @@ def getNurbsSegment(nurbsObj:bpy.types.Object,count,
         segments.append(nurbs_points[2].co.to_3d())
 
     return segments
+
+# 设置几何节点修改器的输入参数
+def setGN_Input(mod:bpy.types.NodesModifier,
+                inputName:str,
+                value):
+    # V4.0前用以下方法
+    # id = mod.node_group.inputs[inputName].identifier
+
+    # V4.0以后用这个方法    
+    id = mod.node_group.interface.items_tree[inputName].identifier
+
+    mod[id] = value

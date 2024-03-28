@@ -228,88 +228,79 @@ def __drawTileGrid(buildingObj,rafter_pos):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    
-    
-    
-    # 绘制正身瓦垄线
-    TileCurve = __drawTileCurve(buildingObj,rafter_pos)
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT
+    )
+
+    # 瓦垄宽度
+    tileWidth = 0.4
+    # 瓦片长度
+    tileLength = 0.5
+    # 载入瓦片资源
+    flatTile:bpy.types.Object = acaLibrary.loadAssets(
+        "板瓦",tileRootObj,hide=False)
+    circularTile:bpy.types.Object = acaLibrary.loadAssets(
+        "筒瓦",tileRootObj,hide=False)
+    eaveTile:bpy.types.Object = acaLibrary.loadAssets(
+        "瓦当",tileRootObj,hide=False)
+    dripTile:bpy.types.Object = acaLibrary.loadAssets(
+        "滴水",tileRootObj)
+
+    # 0、生成三条辅助线，这是后续所有计算的基础
+    # 绘制正身坡线
+    TileCurve:bpy.types.Curve = __drawTileCurve(buildingObj,rafter_pos)
     # 绘制檐口线
     EaveCurve = __drawEaveCurve(buildingObj,rafter_pos)
     # 绘制翼角瓦垄线
     CornerCurve = __drawCornerCurve(buildingObj,rafter_pos)
-    
-    # 瓦垄宽度
-    tileWidth = 0.1
-    # 瓦片长度
-    tileLength = 0.1
 
-    # 生成瓦面网格
+    # 1、计算瓦垄的数量
+    # 半侧通面阔 + 檐出
+    roofWidth = bData.x_total/2+ con.YANCHUAN_EX*dk
+    # 斗栱出跳
+    if bData.use_dg:
+        roofWidth += bData.dg_extend
+    # 飞椽出
+    if bData.use_flyrafter:
+        roofWidth += con.FLYRAFTER_EX*dk
+    # 翼角冲出
+    roofWidth += bData.chong * con.YUANCHUAN_D * dk
+    # 瓦垄数
+    tileCols = math.ceil(roofWidth / tileWidth)
+    # 坡面长度
+    # 似乎是2.8版本中新增的方法
+    # https://docs.blender.org/api/current/bpy.types.Spline.html#bpy.types.Spline.calc_length
+    roofLength = TileCurve.data.splines[0].calc_length()
+    # 瓦层数
+    tileRows = math.ceil(roofLength /tileLength)+1
+
+    # 2、生成瓦面网格
     # 这里采用几何节点实现，利用了resample curve节点，可以生成均匀分布的网格
     # 而python中暂未找到在curve上均匀分配的API
     # 连接资产blender文件中的瓦面对象，直接放到“瓦作层”节点下
-    tileRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_TILE_ROOT
-    )
     tileGrid:bpy.types.Object = acaLibrary.loadAssets(
         "瓦面",tileRootObj,hide=False)
-    # 瓦片绑定到asset节点下
-    assetRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_ASSET_ROOT
-    )
-    # 板瓦
-    flatTile:bpy.types.Object = acaLibrary.loadAssets(
-        "板瓦",tileRootObj,hide=False)
-    # 筒瓦
-    circularTile:bpy.types.Object = acaLibrary.loadAssets(
-        "筒瓦",tileRootObj,hide=False)
-    # 瓦当
-    eaveTile:bpy.types.Object = acaLibrary.loadAssets(
-        "瓦当",tileRootObj,hide=False)
-    # 滴水
-    dripTile:bpy.types.Object = acaLibrary.loadAssets(
-        "滴水",tileRootObj)
-
+    # 瓦面要与辅助线重合
     tileGrid.location = TileCurve.location
+    # 输入修改器参数
     gnMod:bpy.types.NodesModifier = \
         tileGrid.modifiers.get('GeometryNodes')
-    # todo：这里的赋值感觉论坛上也没有什么好办法
-    gnMod["Socket_0"] = TileCurve
-    gnMod["Socket_2"] = EaveCurve
-    gnMod["Socket_3"] = CornerCurve
-    
-    # 平铺瓦片对象
+    # 几何节点修改器的传参比较特殊，封装了一个方法
+    utils.setGN_Input(gnMod,"正身瓦线",TileCurve)
+    utils.setGN_Input(gnMod,"檐口线",EaveCurve)
+    utils.setGN_Input(gnMod,"翼角瓦线",CornerCurve)
+    utils.setGN_Input(gnMod,"瓦片列数",tileCols)
+    utils.setGN_Input(gnMod,"瓦片行数",tileRows)    
+
+    # 3、平铺瓦片对象
     # 应用modifier
     utils.applyAllModifer(tileGrid)
-    # Get a BMesh representation
+    # 在瓦面网格中布瓦
     bm = bmesh.new()   # create an empty BMesh
     bm.from_mesh(tileGrid.data)   # fill it in from a Mesh
     for f in bm.faces:
-        flatTileCopy = utils.copySimplyObject(
-            sourceObj=flatTile,
-            name='板瓦',
-            parentObj=tileGrid,
-            location=f.calc_center_median(),
-        )
-        utils.addModifierMirror(
-            object=flatTileCopy,
-            mirrorObj=tileRootObj,
-            use_axis=(True,True,False),
-            use_bisect=(False,True,False)
-        )
-        circularTileCopy = utils.copySimplyObject(
-            sourceObj=circularTile,
-            name='筒瓦',
-            parentObj=tileGrid,
-            location=f.calc_center_median(),
-        )
-        utils.addModifierMirror(
-            object=circularTileCopy,
-            mirrorObj=tileRootObj,
-            use_axis=(True,True,False),
-            use_bisect=(False,True,False)
-        )
-        
-        # # 做法一：
+              
+        # # 做法一：基于face的normal，并强制矫正
         # # https://blender.stackexchange.com/questions/46566/aligning-plane-normal-vector-side-to-face-a-point-python
         # # 固定Z轴向上，追踪Y轴在法线上的转动
         # # 获取面的normal
@@ -319,38 +310,57 @@ def __drawTileGrid(buildingObj,rafter_pos):
         # tile_rotation = (normal_eular.x,0,math.radians(180))
         # tileObj.rotation_euler = tile_rotation
         # # 缺陷：翼角瓦没有沿檐口线斜切
-        
+                
         # 做法二：效果完美，尽管没有完全理解原理
+        # 基于edge，构造Matrix变换矩阵，用于瓦片的定位
         # https://blender.stackexchange.com/questions/177218/make-bone-roll-match-a-face-vertex-normal/177331#177331
+        # 取面上第一条边（沿着坡面）
         e = f.edges[0]
-        v = e.verts[1].co - e.verts[0].co
-        y = v.normalized()
+        # 边的向量(归一化)，做为Y轴
+        y = (e.verts[1].co - e.verts[0].co).normalized()
+        # 平均相邻面的法线，做为边的法线，做为Z轴
         z = sum((f.normal for f in e.link_faces), Vector()).normalized()
+        # Y/Z轴做叉积，得到与之垂直的X轴
         x = y.cross(z)
+        # 坐标系转置（行列互换，以复合blender的坐标系要求）
         M = Matrix((x, y, z)).transposed().to_4x4()
-        M.translation = f.calc_center_median() - Vector((0.2,0,0))
+
+        # 排布板瓦
+        flatTileCopy = utils.copySimplyObject(
+            sourceObj=flatTile,
+            name='板瓦',
+            parentObj=tileGrid,
+        )
+        # 排布筒瓦
+        circularTileCopy = utils.copySimplyObject(
+            sourceObj=circularTile,
+            name='筒瓦',
+            parentObj=tileGrid,
+        )  
+        
+        # 板瓦定位，从网格面中心偏移半个瓦垄（实际落在网格线上，也保证了瓦垄居中）
+        M.translation = f.calc_center_median() - Vector((tileWidth/2,0,0))
         flatTileCopy.matrix_local = M
+        # 筒瓦定位，在网格面中心点
         M.translation = f.calc_center_median()
         circularTileCopy.matrix_local = M
-    
-    # for v in bm.verts:
-    #     normal_eular=v.normal.to_track_quat('Z','Y').to_euler()
-    #     utils.copySimplyObject(
-    #         sourceObj=tileobj,
-    #         name='瓦',
-    #         parentObj=tileGrid,
-    #         location=v.co,
-    #         rotation=normal_eular
-    #     )
         
+        # 四向对称
+        utils.addModifierMirror(
+            object=flatTileCopy,
+            mirrorObj=tileRootObj,
+            use_axis=(True,True,False),
+            use_bisect=(False,True,False)
+        )    
+        utils.addModifierMirror(
+            object=circularTileCopy,
+            mirrorObj=tileRootObj,
+            use_axis=(True,True,False),
+            use_bisect=(False,True,False)
+        )
 
-
-    # utils.addModifierMirror(
-    #     object=tileGrid,
-    #     mirrorObj=tileRootObj,
-    #     use_axis=(True,True,False)
-    # )
-
+    # 隐藏辅助对象
+    utils.hideObj(tileGrid)
     utils.hideObj(flatTile)
     utils.hideObj(circularTile)
     utils.hideObj(eaveTile)
@@ -361,14 +371,15 @@ def __drawTileGrid(buildingObj,rafter_pos):
 # 对外的统一调用接口
 # 一次性重建所有的瓦做
 def buildTile(buildingObj: bpy.types.Object):
-    # 清理垃圾数据
-    utils.delOrphan()  
+    utils.outputMsg("buildTile starting...")
     # 确认聚焦在根目录中
     utils.setCollection(con.ROOT_COLL_NAME)
     # 暂存cursor位置，注意要加copy()，否则传递的是引用
     old_loc = bpy.context.scene.cursor.location.copy()
     # 添加或清空根节点
     __setTileRoot(buildingObj)
+    # 清理垃圾数据
+    utils.delOrphan()
     utils.outputMsg("Rafter Tile root added")
     utils.redrawViewport()
 
@@ -385,6 +396,7 @@ def buildTile(buildingObj: bpy.types.Object):
 
     # 绘制瓦面网格
     __drawTileGrid(buildingObj,rafter_pos)
+    utils.outputMsg("Tile Grid added")
 
     # 恢复cursor位置
     bpy.context.scene.cursor.location = old_loc 

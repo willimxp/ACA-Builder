@@ -101,6 +101,22 @@ def addCylinder(radius,depth,name,root_obj,
 
     return cylinderObj
 
+# 复制简单对象（仅复制instance）
+def copySimplyObject(
+        sourceObj:bpy.types.Object, 
+        name, 
+        parentObj:bpy.types.Object = None, 
+        location=(0,0,0),
+        rotation=(0,0,0)):
+    # 复制基本信息
+    newObj:bpy.types.Object = sourceObj.copy()
+    newObj.name = name
+    newObj.location = location
+    newObj.rotation_euler = rotation
+    newObj.parent = parentObj
+    bpy.context.collection.objects.link(newObj)     
+    return newObj
+
 # 复制对象（仅复制instance，包括modifier）
 def copyObject(sourceObj:bpy.types.Object, name, 
          parentObj:bpy.types.Object = None, 
@@ -456,6 +472,12 @@ def hideObj(object:bpy.types.Object) :
     object.hide_viewport = True    # 隐藏“屏幕”，不含在viewport中
     object.hide_render = True      # 隐藏“相机”，不渲染
 
+# 强制显示对象
+def showObj(object:bpy.types.Object) : 
+    object.hide_set(False)          # “眼睛”
+    object.hide_viewport = False    # “屏幕”，含在viewport中
+    object.hide_render = False      # “相机”，渲染
+
 # 创建一个水平放置的圆柱体，可用于桁、椽等构件
 def addCylinderHorizontal(radius,depth,name,root_obj,
                 location=(0,0,0),
@@ -521,12 +543,20 @@ def addModifierArray(object:bpy.types.Object,
 # 添加镜像修改器
 def addModifierMirror(object:bpy.types.Object,
                       mirrorObj:bpy.types.Object,
-                      use_axis,
+                      use_axis=(False,False,False),
+                      use_bisect=(False,False,False),
                       name='Mirror',):
     mod:bpy.types.MirrorModifier = \
             object.modifiers.new(name,'MIRROR')
     mod.mirror_object = mirrorObj
     mod.use_axis = use_axis
+    mod.use_bisect_axis = use_bisect
+
+# 应用所有修改器
+def applyAllModifer(object:bpy.types.Object):
+    focusObj(object)  
+    bpy.ops.object.convert(target='MESH')
+
 
 # 基于面的裁切
 def addBisect(object:bpy.types.Object,
@@ -543,8 +573,7 @@ def addBisect(object:bpy.types.Object,
     bisect_normal = Vector(bisect_normal).normalized() # normal必须normalized,注意不是normalize
 
     # 2、选中并裁切
-    focusObj(object)  
-    bpy.ops.object.convert(target='MESH')   # 应用modifier
+    applyAllModifer(object)
     bpy.ops.object.editmode_toggle()
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(
@@ -637,7 +666,10 @@ def setOrigin(object:bpy.types.Object,origin:Vector):
         bmesh.update_edit_mesh(me, False, False)
     else:
         me.transform(mat)
-    me.update()
+    if object.type == "CURVE":
+        updateScene()
+    else:
+        me.update()
     # 再次正向移动，回归到原来位置
     object.matrix_world.translation = origin_world
 

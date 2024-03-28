@@ -32,6 +32,8 @@ class ACA_Consts(object):
     ACA_TYPE_CORNER_BEAM_CHILD = 'corner_beam_child'    # 大角梁
     ACA_TYPE_CORNER_RAFTER_CURVE = 'corner_rafter_curve'          # 翼角椽定位线
     ACA_TYPE_CORNER_FLYRAFTER_CURVE = 'corner_flyfater_curve'      # 翘飞椽定位线
+    ACA_TYPE_TILE_ROOT = 'tile_root' # ACA类型：屋瓦层
+    ACA_TYPE_ASSET_ROOT ='asset_root' # ACA类型：斗栱根节点
 
     # 柱子
     PILLER_D_EAVE = 6   # 檐柱直接径6斗口
@@ -111,6 +113,12 @@ class ACA_Consts(object):
     YIJIAOCHUAN_OFFSET = JIAOLIANG_Y/4 # 为了防止翼角椽与角梁打架，而做了一定的让渡
     CURVE_RESOLUTION = 500  # 曲线的精细度，在细分翼角椽坐标时提高精确度
     CORNER_RAFTER_START_SPREAD = 2    #翼角椽尾散开的宽度，单位斗口
+
+    # 瓦作类
+    # 屋瓦灰背层高度，用于计算铺瓦的高度
+    # 一般20cm，北方官式建筑可以达到30cm
+    # 其实也考虑了算法中从桁中线垂直向上找点，没有顺着坡面加斜，从而导致的误差
+    ROOFMUD_H = 4
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

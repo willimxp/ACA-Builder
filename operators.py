@@ -17,6 +17,7 @@ from . import buildFloor
 from . import buildDoor
 from . import buildDougong
 from . import buildRoof
+from . import buildRooftile
     
 # 添加建筑empty根节点，并绑定设计模版
 # 返回建筑empty根节点对象
@@ -147,8 +148,8 @@ class ACA_OT_test(bpy.types.Operator):
         if bData.aca_type != con.ACA_TYPE_BUILDING:
             utils.showMessageBox("ERROR: 找不到建筑")
         else:
-            # buildRoof.buildRoof(buildingObj)
-            funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
-            utils.fastRun(funproxy)
+            buildRooftile.buildTile(buildingObj)
+            # funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
+            # utils.fastRun(funproxy)
 
         return {'FINISHED'}

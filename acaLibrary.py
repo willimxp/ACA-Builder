@@ -11,7 +11,7 @@ from .const import ACA_Consts as con
 # 载入Blender中的资产
 # 参考教程：https://b3d.interplanety.org/en/appending-all-objects-from-the-external-blend-file-to-the-scene-with-blender-python-api/
 # 参考文档：https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html
-def loadAssets(assetName : str,parent:bpy.types.Object):
+def loadAssets(assetName : str,parent:bpy.types.Object,hide=True):
     # 打开资产文件
     filepath = os.path.join('template', 'acaAssets.blend')
 
@@ -39,7 +39,10 @@ def loadAssets(assetName : str,parent:bpy.types.Object):
     coll = utils.setCollection(con.ROOT_COLL_NAME)
     for a in assets:
         coll.objects.link(a)
-        utils.hideObj(a)
+        if hide:
+            utils.hideObj(a)
+        else:
+            utils.showObj(a)
     
     return(asset)
 

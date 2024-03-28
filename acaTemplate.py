@@ -243,6 +243,9 @@ def fillTemplate(buildingObj:bpy.types.Object,
     assetsObj.location = buildingObj.location   # 原点摆放在3D Cursor位置
     assetsObj.parent = buildingObj
     assetsObj.name = 'assets'   # 系统遇到重名会自动添加00x的后缀
+    assetsObj.ACA_data['aca_obj'] = True
+    assetsObj.ACA_data['aca_type'] = con.ACA_TYPE_ASSET_ROOT
+
     # 柱形样式
     if template.PILLER_STYLE != "":
         piller_base:bpy.types.Object = \

@@ -224,38 +224,14 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
 
     return eaveCurve
 
-# 绘制瓦面网格
-def __drawTileGrid(buildingObj,rafter_pos):
+# 计算瓦垄的数量
+def __getTileCols(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    tileRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_TILE_ROOT
-    )
-
     # 瓦垄宽度
     tileWidth = bData.tile_width
-    # 瓦片长度
-    tileLength = bData.tile_length
-    # 载入瓦片资源
-    flatTile:bpy.types.Object = bData.flatTile_source
-    circularTile:bpy.types.Object = bData.circularTile_source
-    eaveTile:bpy.types.Object = bData.eaveTile_source
-    dripTile:bpy.types.Object = bData.dripTile_source
-    utils.showObj(flatTile)
-    utils.showObj(circularTile)
-    utils.showObj(eaveTile)
-    utils.showObj(dripTile)
 
-    # 0、生成三条辅助线，这是后续所有计算的基础
-    # 绘制正身坡线
-    TileCurve:bpy.types.Curve = __drawTileCurve(buildingObj,rafter_pos)
-    # 绘制檐口线
-    EaveCurve = __drawEaveCurve(buildingObj,rafter_pos)
-    # 绘制翼角瓦垄线
-    CornerCurve = __drawCornerCurve(buildingObj,rafter_pos)
-
-    # 1、计算瓦垄的数量
     # 半侧通面阔 + 檐出
     roofWidth = bData.x_total/2+ con.YANCHUAN_EX*dk
     # 斗栱出跳
@@ -268,6 +244,33 @@ def __drawTileGrid(buildingObj,rafter_pos):
     roofWidth += bData.chong * con.YUANCHUAN_D * dk
     # 瓦垄数
     tileCols = math.ceil(roofWidth / tileWidth)
+    return tileCols
+
+# 绘制前后檐瓦面网格
+def __drawTileGrid_FB(buildingObj:bpy.types.Object,
+                   rafter_pos):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT
+    )
+    # 瓦垄宽度
+    tileWidth = bData.tile_width
+    # 瓦片长度
+    tileLength = bData.tile_length
+    # 计算瓦垄的数量
+    tileCols = __getTileCols(buildingObj)
+    
+
+    # 1、生成三条辅助线，这是后续所有计算的基础
+    # 绘制正身坡线
+    TileCurve:bpy.types.Curve = __drawTileCurve(buildingObj,rafter_pos)
+    # 绘制檐口线
+    EaveCurve = __drawEaveCurve(buildingObj,rafter_pos)
+    # 绘制翼角瓦垄线
+    CornerCurve = __drawCornerCurve(buildingObj,rafter_pos)
+
     # 坡面长度
     # 似乎是2.8版本中新增的方法
     # https://docs.blender.org/api/current/bpy.types.Spline.html#bpy.types.Spline.calc_length
@@ -293,10 +296,150 @@ def __drawTileGrid(buildingObj,rafter_pos):
     utils.setGN_Input(gnMod,"瓦片列数",tileCols)
     utils.setGN_Input(gnMod,"瓦片行数",tileRows)  
     # 应用modifier
-    utils.applyAllModifer(tileGrid)  
+    utils.applyAllModifer(tileGrid)      
 
-    # 3、平铺瓦片对象
-    # 在瓦面网格中布瓦
+    return tileGrid
+
+
+# 绘制瓦面的斜切boolean对象
+# 不适合像椽架那样做三个bisect面的切割
+# 因为推山导致的由戗角度交叉，使得三个bisect面也有交叉，导致上下被裁剪的过多
+def __drawTileBool(
+        buildingObj:bpy.types.Object,
+        purlin_cross_points,
+        name='tile.bool'):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT
+    )
+
+    # 任意添加一个对象，具体几何数据在bmesh中建立
+    bpy.ops.mesh.primitive_cube_add(
+        location=(0,0,0)
+    )
+    tileboolObj = bpy.context.object
+    tileboolObj.name = name
+    tileboolObj.parent = tileRootObj
+
+    # 创建bmesh
+    bm = bmesh.new()
+    # 各个点的集合
+    vectors = []
+    z0 = - dk * 10 # 出檐后的檐口低于root_obj,所以要进行补偿
+    # 从子角梁头算起
+    ex = 6*dk # 向外延伸，确保包裹住瓦片
+    roof_qiao_point = bData.roof_qiao_point + Vector((ex,ex,0))
+
+    vectors.insert(0,(roof_qiao_point.x,roof_qiao_point.y,z0))
+    vectors.append((roof_qiao_point.x,-roof_qiao_point.y,z0))
+
+    # 循环添加由戗节点
+    for n in range(len(purlin_cross_points)):
+        cutPoint = purlin_cross_points[n]
+        vectors.insert(0,(cutPoint.x,cutPoint.y,z0))
+        vectors.append((cutPoint.x,-cutPoint.y,z0))
+    
+    # 摆放点
+    vertices=[]
+    for n in range(len(vectors)):
+        if n==0:
+            vert = bm.verts.new(vectors[n])
+        else:
+            # 挤出
+            return_geo = bmesh.ops.extrude_vert_indiv(bm, verts=[vert])
+            vertex_new = return_geo['verts'][0]
+            del return_geo
+            # 给挤出的点赋值
+            vertex_new.co = vectors[n]
+            # 交换vertex给下一次循环
+            vert = vertex_new
+        vertices.append(vert)
+
+    # 创建面
+    for n in range(len(vertices)//2-1): #注意‘/’可能是float除,用'//'进行整除
+        bm.faces.new((
+            vertices[n],vertices[n+1], # 两根椽头
+            vertices[-n-2],vertices[-n-1] # 两根椽尾
+        ))
+
+    # 挤出厚度
+    height = purlin_cross_points[-1].z + 30*dk 
+    return_geo = bmesh.ops.extrude_face_region(bm, geom=bm.faces)
+    verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
+    bmesh.ops.translate(bm, verts=verts, vec=(0, 0,height))
+    #ps，这个挤出略有遗憾，没有按照每个面的normal进行extrude
+
+    # 确保face normal朝向
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(tileboolObj.data)
+    tileboolObj.data.update()
+    bm.free()
+
+    # 添加镜像
+    mod = tileboolObj.modifiers.new(name='mirror', type='MIRROR')
+    mod.use_axis[0] = True
+    mod.use_axis[1] = False
+    mod.mirror_object = tileRootObj
+
+    return tileboolObj
+
+# 在face上放置瓦片
+def __setTile(
+        sourceObj,name,Matrix,
+        offset,parent,mirrorObj,boolObj
+):
+    TileCopy = utils.copySimplyObject(
+        sourceObj=sourceObj,
+        name=name,
+        parentObj=parent,
+    )  
+    # 滴水定位，从网格面中心偏移半个瓦垄（实际落在网格线上，也保证了瓦垄居中）
+    TileCopy.matrix_local = Matrix
+    offset.rotate(TileCopy.rotation_euler)
+    TileCopy.location += offset
+    utils.addModifierMirror(
+        object=TileCopy,
+        mirrorObj=mirrorObj,
+        use_axis=(True,True,False),
+        use_bisect=(False,True,False)
+    ) 
+    # 添加boolean modifier
+    mod = TileCopy.modifiers.new("由戗裁剪","BOOLEAN")
+    mod.object = boolObj
+    mod.solver = 'FAST'
+    mod.operation = 'DIFFERENCE'
+
+
+    return TileCopy   
+
+# 在网格上平铺瓦片
+def __arrayTileGrid(buildingObj:bpy.types.Object,
+                  tileGrid:bpy.types.Object,
+                  tile_bool_obj:bpy.types.Object):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT
+    )
+    # 瓦垄宽度
+    tileWidth = bData.tile_width
+    # 瓦片长度
+    tileLength = bData.tile_length
+    # 计算瓦垄的数量
+    tileCols = __getTileCols(buildingObj)
+
+    # 载入瓦片资源
+    flatTile:bpy.types.Object = bData.flatTile_source
+    circularTile:bpy.types.Object = bData.circularTile_source
+    eaveTile:bpy.types.Object = bData.eaveTile_source
+    dripTile:bpy.types.Object = bData.dripTile_source
+    utils.showObj(flatTile)
+    utils.showObj(circularTile)
+    utils.showObj(eaveTile)
+    utils.showObj(dripTile)
+
     bm = bmesh.new()   # create an empty BMesh
     bm.from_mesh(tileGrid.data)   # fill it in from a Mesh
     for f in bm.faces:
@@ -310,6 +453,7 @@ def __drawTileGrid(buildingObj,rafter_pos):
         # tile_rotation = (normal_eular.x,0,math.radians(180))
         # tileObj.rotation_euler = tile_rotation
         # # 缺陷：翼角瓦没有沿檐口线斜切
+
                 
         # 做法二：效果完美，尽管没有完全理解原理
         # 基于edge，构造Matrix变换矩阵，用于瓦片的定位
@@ -324,138 +468,83 @@ def __drawTileGrid(buildingObj,rafter_pos):
         x = y.cross(z)
         # 坐标系转置（行列互换，以复合blender的坐标系要求）
         M = Matrix((x, y, z)).transposed().to_4x4()
+        M.translation = f.calc_center_median()
         
         # 排布板瓦
-        flatTileCopy = utils.copySimplyObject(
+        __setTile(
             sourceObj=flatTile,
             name='板瓦',
-            parentObj=tileGrid,
+            Matrix=M,
+            offset=Vector((tileWidth/2,tileLength/2,0)),
+            parent=tileGrid,
+            mirrorObj=tileRootObj,
+            boolObj=tile_bool_obj
         )
+
         # 排布筒瓦
-        circularTileCopy = utils.copySimplyObject(
+        __setTile(
             sourceObj=circularTile,
             name='筒瓦',
-            parentObj=tileGrid,
-        )  
-        
-        # 板瓦定位，从网格面中心偏移半个瓦垄（实际落在网格线上，也保证了瓦垄居中）
-        M.translation = f.calc_center_median()
-        flatTileCopy.matrix_local = M
-        offset = Vector((tileWidth/2,tileLength/2,0))
-        offset.rotate(flatTileCopy.rotation_euler)
-        flatTileCopy.location += offset
-
-        # 筒瓦定位，在网格面中心点
-        M.translation = f.calc_center_median()
-        circularTileCopy.matrix_local = M
-        offset = Vector((0,tileLength/2,0))
-        offset.rotate(circularTileCopy.rotation_euler)
-        circularTileCopy.location += offset
-        
-        # 四向对称
-        utils.addModifierMirror(
-            object=flatTileCopy,
+            Matrix=M,
+            offset=Vector((0,tileLength/2,0)),
+            parent=tileGrid,
             mirrorObj=tileRootObj,
-            use_axis=(True,True,False),
-            use_bisect=(False,True,False)
-        )    
-        utils.addModifierMirror(
-            object=circularTileCopy,
-            mirrorObj=tileRootObj,
-            use_axis=(True,True,False),
-            use_bisect=(False,True,False)
+            boolObj=tile_bool_obj
         )
 
         # 排布檐口瓦
         if f.index < tileCols-1:# 第一行
             # 排布瓦当
-            eaveTileCopy = utils.copySimplyObject(
+            __setTile(
                 sourceObj=eaveTile,
                 name='瓦当',
-                parentObj=tileGrid,
+                Matrix=M,
+                offset=Vector((0,tileLength/2,0)),
+                parent=tileGrid,
+                mirrorObj=tileRootObj,
+                boolObj=tile_bool_obj
             )
+
             # 排布滴水
-            dripTileCopy = utils.copySimplyObject(
+            __setTile(
                 sourceObj=dripTile,
                 name='滴水',
-                parentObj=tileGrid,
-            )  
-            # 滴水定位，从网格面中心偏移半个瓦垄（实际落在网格线上，也保证了瓦垄居中）
-            M.translation = f.calc_center_median()
-            dripTileCopy.matrix_local = M
-            offset = Vector((tileWidth/2,tileLength/2,0))
-            offset.rotate(dripTileCopy.rotation_euler)
-            dripTileCopy.location += offset
-
-            # 瓦当定位，在网格面中心点
-            M.translation = f.calc_center_median()
-            eaveTileCopy.matrix_local = M
-            offset = Vector((0,tileLength/2,0))
-            offset.rotate(eaveTileCopy.rotation_euler)
-            eaveTileCopy.location += offset
-
-            utils.addModifierMirror(
-                object=dripTileCopy,
+                Matrix=M,
+                offset=Vector((tileWidth/2,tileLength/2,0)),
+                parent=tileGrid,
                 mirrorObj=tileRootObj,
-                use_axis=(True,True,False),
-                use_bisect=(False,True,False)
-            )    
-            utils.addModifierMirror(
-                object=eaveTileCopy,
-                mirrorObj=tileRootObj,
-                use_axis=(True,True,False),
-                use_bisect=(False,True,False)
-            )
+                boolObj=tile_bool_obj
+            ) 
 
         # 最后再加一列板瓦收口
         if f.index % (tileCols-1) ==tileCols-2: # 最后一列
             # 排布板瓦
-            flatTileCopy = utils.copySimplyObject(
+            __setTile(
                 sourceObj=flatTile,
                 name='板瓦',
-                parentObj=tileGrid,
-            )
-            # 板瓦定位，从网格面中心偏移半个瓦垄（实际落在网格线上，也保证了瓦垄居中）
-            M.translation = f.calc_center_median()
-            flatTileCopy.matrix_local = M
-            offset = Vector((-tileWidth/2,tileLength/2,0))
-            offset.rotate(flatTileCopy.rotation_euler)
-            flatTileCopy.location += offset
-            # 四向对称
-            utils.addModifierMirror(
-                object=flatTileCopy,
+                Matrix=M,
+                offset=Vector((-tileWidth/2,tileLength/2,0)),
+                parent=tileGrid,
                 mirrorObj=tileRootObj,
-                use_axis=(True,True,False),
-                use_bisect=(False,True,False)
-            )
+                boolObj=tile_bool_obj
+            ) 
             # 排布滴水
-            dripTileCopy = utils.copySimplyObject(
+            __setTile(
                 sourceObj=dripTile,
                 name='滴水',
-                parentObj=tileGrid,
-            )  
-            # 滴水定位，从网格面中心偏移半个瓦垄（实际落在网格线上，也保证了瓦垄居中）
-            M.translation = f.calc_center_median()
-            dripTileCopy.matrix_local = M
-            offset = Vector((-tileWidth/2,tileLength/2,0))
-            offset.rotate(dripTileCopy.rotation_euler)
-            dripTileCopy.location += offset
-            utils.addModifierMirror(
-                object=dripTileCopy,
+                Matrix=M,
+                offset=Vector((-tileWidth/2,tileLength/2,0)),
+                parent=tileGrid,
                 mirrorObj=tileRootObj,
-                use_axis=(True,True,False),
-                use_bisect=(False,True,False)
-            )  
+                boolObj=tile_bool_obj
+            ) 
         
-
     # 隐藏辅助对象
     utils.hideObj(tileGrid)
     utils.hideObj(flatTile)
     utils.hideObj(circularTile)
     utils.hideObj(eaveTile)
     utils.hideObj(dripTile)
-
-    return 
 
 # 对外的统一调用接口
 # 一次性重建所有的瓦做
@@ -483,9 +572,18 @@ def buildTile(buildingObj: bpy.types.Object):
     if bData.use_dg:
         del rafter_pos[0]
 
-    # 绘制瓦面网格
-    __drawTileGrid(buildingObj,rafter_pos)
-    utils.outputMsg("Tile Grid added")
+    # 构造一个裁剪对象，做boolean
+    # 瓦面不适合像椽架那样做三个bisect面的切割
+    # 因为推山导致的由戗角度交叉，使得三个bisect面也有交叉，导致上下被裁剪的过多
+    tile_bool_obj = __drawTileBool(buildingObj,rafter_pos)
+    utils.hideObj(tile_bool_obj)
+
+    # 绘制前后坡瓦面网格
+    tileGrid = __drawTileGrid_FB(buildingObj,rafter_pos)
+
+    # 在网格上铺瓦
+    __arrayTileGrid(buildingObj,tileGrid,tile_bool_obj)
+    utils.outputMsg("Tile Array added")
 
     # 恢复cursor位置
     bpy.context.scene.cursor.location = old_loc 

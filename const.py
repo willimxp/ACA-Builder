@@ -118,7 +118,8 @@ class ACA_Consts(object):
     # 屋瓦灰背层高度，用于计算铺瓦的高度
     # 一般20cm，北方官式建筑可以达到30cm
     # 其实也考虑了算法中从桁中线垂直向上找点，没有顺着坡面加斜，从而导致的误差
-    ROOFMUD_H = 4
+    ROOFMUD_H = 4   # 单位斗口
+    EAVETILE_EX = 2 # 瓦当、滴水出檐长度，单位斗口
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

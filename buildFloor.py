@@ -13,6 +13,7 @@ from . import buildWall
 from . import buildPlatform
 from . import buildDougong
 from . import buildRoof
+from . import buildRooftile
 
 # 准备柱网数据
 # 将panel中设置的面宽、进深，组合成柱网数组
@@ -254,6 +255,10 @@ def buildFloor(buildingObj:bpy.types.Object):
     funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
     utils.fastRun(funproxy)
     utils.redrawViewport()
+    # 生成屋瓦
+    funproxy = partial(buildRooftile.buildTile,buildingObj=buildingObj)
+    utils.fastRun(funproxy)
+    utils.redrawViewport()
 
     # 重新聚焦根节点
     bpy.context.scene.cursor.location = old_loc # 恢复cursor位置
@@ -287,6 +292,10 @@ def addFloor(buildingObj:bpy.types.Object):
     utils.redrawViewport()
     # 生成屋顶
     funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
+    utils.fastRun(funproxy)
+    utils.redrawViewport()
+    # 生成屋瓦
+    funproxy = partial(buildRooftile.buildTile,buildingObj=buildingObj)
     utils.fastRun(funproxy)
     utils.redrawViewport()
 

@@ -168,6 +168,22 @@ class ACA_PT_props(bpy.types.Panel):
                 row = box.row()
                 row.operator("aca.build_roof",icon='HOME',)# 按钮：生成屋顶
 
+                # 瓦作属性
+                box = layout.box()
+                row = box.row()
+                row.prop(objData, "tile_width") # 瓦垄宽度
+                row = box.row()
+                row.prop(objData, "tile_length") # 瓦片长度
+                row = box.row()
+                row.prop(objData, "flatTile_source") # 板瓦
+                row = box.row()
+                row.prop(objData, "circularTile_source") # 筒瓦
+                row = box.row()
+                row.prop(objData, "eaveTile_source") # 瓦当
+                row = box.row()
+                row.prop(objData, "dripTile_source") # 滴水
+
+
             # 选择wallproxy时，可以设置墙体的独立样式
             if objData.aca_type == con.ACA_TYPE_WALL: 
                 box = layout.box()

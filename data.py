@@ -367,6 +367,39 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         subtype='XYZ',
         unit='LENGTH',
         )# type: ignore 
+    
+    # 瓦作属性
+    tile_width : bpy.props.FloatProperty(
+            name="瓦垄宽度", 
+            default=0.4,
+            min=0.0,
+        )# type: ignore
+    tile_length : bpy.props.FloatProperty(
+            name="瓦片长度", 
+            default=0.4,
+            min=0.0,
+        )# type: ignore
+    flatTile_source:bpy.props.PointerProperty(
+            name = "板瓦",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    circularTile_source:bpy.props.PointerProperty(
+            name = "筒瓦",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    eaveTile_source:bpy.props.PointerProperty(
+            name = "瓦当",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    dripTile_source:bpy.props.PointerProperty(
+            name = "滴水",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+
 
 # 场景范围的数据
 # 可绑定面板参数属性

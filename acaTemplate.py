@@ -44,6 +44,12 @@ class templateData:
     DG_CORNER_SOURCE = ''       # 转角斗栱
     RAFTER_COUNT = 6            # 椽架数
     ROOF_STYLE = 1              # 屋顶样式
+    TILE_WIDTH = 0.4            # 瓦垄宽度
+    TILE_LENGTH = 0.5           # 瓦片长度
+    FLATTILE_SOURCE = ''        # 板瓦
+    CIRCULARTILE_SOURCE = ''    # 筒瓦
+    EAVETILE_SOURCE = ''        # 瓦当
+    DRIPTILE_SOURCE = ''        # 滴水
 
 # 解析XML，获取模版列表
 def getTemplateList():
@@ -205,8 +211,25 @@ def getTemplate(name,doukou=0)->templateData:
                 rafter_count = roof.find('rafter_count')
                 if rafter_count != None:
                     tData.RAFTER_COUNT = int(rafter_count.text)
+                tile_width = roof.find('tile_width')
+                if tile_width != None:
+                    tData.TILE_WIDTH = float(tile_width.text)
+                tile_length = roof.find('tile_length')
+                if tile_length != None:
+                    tData.TILE_LENGTH = float(tile_length.text)
+                flatTile_source = roof.find('flatTile_source')
+                if flatTile_source != None:
+                    tData.FLATTILE_SOURCE = flatTile_source.text
+                circularTile_source = roof.find('circularTile_source')
+                if circularTile_source != None:
+                    tData.CIRCULARTILE_SOURCE = circularTile_source.text
+                eaveTile_source = roof.find('eaveTile_source')
+                if eaveTile_source != None:
+                    tData.EAVETILE_SOURCE = eaveTile_source.text
+                dripTile_source = roof.find('dripTile_source')
+                if dripTile_source != None:
+                    tData.DRIPTILE_SOURCE = dripTile_source.text
                 
-    
     return tData    
 
 # 将模版参数填充入buildingObj节点中
@@ -236,6 +259,8 @@ def fillTemplate(buildingObj:bpy.types.Object,
     buildingData['door_height'] = template.DOOR_HEIGHT
     buildingData['rafter_count'] = template.RAFTER_COUNT
     buildingData['roof_style'] = template.ROOF_STYLE
+    buildingData['tile_width'] = template.TILE_WIDTH
+    buildingData['tile_length'] = template.TILE_LENGTH
 
     # 绑定资产
     bpy.ops.object.empty_add(type='PLAIN_AXES')
@@ -278,6 +303,23 @@ def fillTemplate(buildingObj:bpy.types.Object,
             buildingData['dg_corner_source'] = dg_corner_base
     else:
         buildingData['use_dg'] = False
+    # 瓦片样式
+    if template.FLATTILE_SOURCE != "" :
+        flatTile_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.FLATTILE_SOURCE,assetsObj)
+        buildingData['flatTile_source'] = flatTile_source
+    if template.CIRCULARTILE_SOURCE != "" :
+        circularTile_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.CIRCULARTILE_SOURCE,assetsObj)
+        buildingData['circularTile_source'] = circularTile_source
+    if template.EAVETILE_SOURCE != "" :
+        eaveTile_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.EAVETILE_SOURCE,assetsObj)
+        buildingData['eaveTile_source'] = eaveTile_source
+    if template.DRIPTILE_SOURCE != "" :
+        dripTile_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.DRIPTILE_SOURCE,assetsObj)
+        buildingData['dripTile_source'] = dripTile_source
 
 # 根据panel中DK的改变，更新整体设计参数
 def updateTemplateByDK(dk,buildingObj:bpy.types.Object):

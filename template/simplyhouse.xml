@@ -21,6 +21,12 @@
         <roof>
             <roof_style>4</roof_style>
             <rafter_count>6</rafter_count>
+            <tile_width>0.4</tile_width>
+            <tile_length>0.5</tile_length>
+            <flatTile_source>板瓦</flatTile_source>
+            <circularTile_source>筒瓦</circularTile_source>
+            <eaveTile_source>瓦当</eaveTile_source>
+            <dripTile_source>滴水</dripTile_source>
         </roof>
     </template>
     <template>

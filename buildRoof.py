@@ -1303,8 +1303,6 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                 ex_length += (bData.chong-1)*con.YUANCHUAN_D*dk
             else:
                 ex_length += bData.chong*con.YUANCHUAN_D*dk
-            # 调整,一雀台+半里口木
-            ex_length += con.QUETAI*dk 
             # 水平面加斜45度
             ex_length = ex_length * math.sqrt(2)
             # 立面加斜老角梁扣金角度   

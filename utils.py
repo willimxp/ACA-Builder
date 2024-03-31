@@ -557,6 +557,18 @@ def applyAllModifer(object:bpy.types.Object):
     focusObj(object)  
     bpy.ops.object.convert(target='MESH')
 
+# 翻转对象的normal
+def flipNormal(object:bpy.types.Object):
+    bm = bmesh.new()
+    me = object.data    
+    bm.from_mesh(me) # load bmesh
+    for f in bm.faces:
+        f.normal_flip()
+    bm.normal_update() # not sure if req'd
+    bm.to_mesh(me)
+    me.update()
+    bm.clear() #.. clear before load next
+    return object
 
 # 基于面的裁切
 def addBisect(object:bpy.types.Object,

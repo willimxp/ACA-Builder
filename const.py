@@ -113,6 +113,7 @@ class ACA_Consts(object):
     YIJIAOCHUAN_OFFSET = JIAOLIANG_Y/4 # 为了防止翼角椽与角梁打架，而做了一定的让渡
     CURVE_RESOLUTION = 500  # 曲线的精细度，在细分翼角椽坐标时提高精确度
     CORNER_RAFTER_START_SPREAD = 2    #翼角椽尾散开的宽度，单位斗口
+    BOOLEAN_TYPE = 'FAST'       # boolean.solver类型：FAST/EXACT
 
     # 瓦作类
     # 屋瓦灰背层高度，用于计算铺瓦的高度

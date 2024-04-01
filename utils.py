@@ -6,7 +6,7 @@
 import bpy
 import bmesh
 import math
-from mathutils import Vector,Euler,Matrix
+from mathutils import Vector,Euler,Matrix,geometry
 import numpy as np
 import time
 
@@ -789,6 +789,135 @@ def locationTrans(loc:Vector,
     # 转换到B坐标系
     loc_local = toObj.matrix_world.inverted() @ loc_world
     return loc_local
+
+def transBezierPoint(pfrom:bpy.types.BezierSplinePoint,
+                     pto:bpy.types.BezierSplinePoint):
+    pto.co = pfrom.co
+    pto.handle_left = pfrom.handle_left
+    pto.handle_right = pfrom.handle_right
+    pto.handle_left_type = pfrom.handle_left_type
+    pto.handle_right_type = pfrom.handle_right_type
+
+def setEaveCurvePoint(pStart,pEnd,direction='X'):
+    if direction == 'X':
+        pStart_handle_right = (
+            pStart.x,
+            pStart.y,
+            pStart.z)
+        pEnd_handle_left = (
+            (pStart.x + pEnd.x)/2,
+            pStart.y,
+            pStart.z)
+    else:
+        pStart_handle_right = (
+            pStart.x,
+            pStart.y,
+            pStart.z)
+        pEnd_handle_left = (
+            pStart.x,
+            (pStart.y + pEnd.y)/2,
+            pStart.z)
+    CurvePoints = [pStart,pStart_handle_right,pEnd_handle_left,pEnd]
+    return CurvePoints
+
+# 创建贝塞尔曲线
+def addBezierByPoints(
+        CurvePoints,
+        name,
+        root_obj,
+        tilt=0,
+        height=0,
+        width=0,
+        resolution=64,
+        order_u = 3
+        ):
+    # 创建曲线data集
+    curveData = bpy.data.curves.new(name, type='CURVE')
+    curveData.dimensions = '3D'
+    curveData.resolution_u = resolution
+    curveData.fill_mode = 'FULL'
+    curveData.use_fill_caps = True
+
+    # 创建曲线spline
+    polyline = curveData.splines.new('BEZIER')
+    polyline.bezier_points.add(1)
+    polyline.bezier_points[0].co = CurvePoints[0]
+    polyline.bezier_points[0].handle_left = CurvePoints[0]
+    polyline.bezier_points[0].handle_right = CurvePoints[1]
+    polyline.bezier_points[1].handle_left = CurvePoints[2]
+    polyline.bezier_points[1].handle_right = CurvePoints[3]
+    polyline.bezier_points[1].co = CurvePoints[3]
+    polyline.bezier_points[0].tilt = tilt
+    polyline.bezier_points[1].tilt = tilt
+    
+    polyline.order_u = order_u # nurbs的平滑度
+    polyline.use_endpoint_u = True
+
+    # 定义曲线横截面
+    if width!=0 and height!=0:
+        bpy.ops.mesh.primitive_plane_add(size=1,location=(0,0,0))
+        bevel_object = bpy.context.object
+        bevel_object.scale = (width,height,0)
+        bevel_object.name = name + '.bevel'
+        bevel_object.parent = root_obj
+        # 将Plane Mesh转换为Curve，才能绑定到curve上
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        bpy.ops.object.convert(target='CURVE')
+        # 翻转curve，否则会导致连檐的face朝向不对
+        bpy.ops.object.editmode_toggle()
+        bpy.ops.curve.switch_direction()
+        bpy.ops.object.editmode_toggle()
+
+        curveData.bevel_mode = 'OBJECT'
+        curveData.bevel_object = bevel_object
+        polyline.use_smooth = False
+
+    # 曲线对象加入场景
+    curveOBJ = bpy.data.objects.new(name, curveData)
+    bpy.context.collection.objects.link(curveOBJ)
+    bpy.context.view_layer.objects.active = curveOBJ
+    curveOBJ.parent = root_obj  
+    
+    return curveOBJ
+
+# 提取bezier曲线上X方向等分的坐标点
+# 局限性，1，仅可判断两点定义的曲线，2，取值为近似值
+def getBezierSegment(curveObj,count,
+                     withCurveEnd=False):
+    accuracy = 1000   # 拟合精度，倍数越高越精确
+    
+    bez_points:bpy.types.SplinePoints = \
+        curveObj.data.splines[0].bezier_points
+    # 以精度的倍数，在曲线上创建插值
+    tile_on_curveF = geometry.interpolate_bezier(
+        bez_points[0].co,
+        bez_points[0].handle_right,
+        bez_points[1].handle_left,
+        bez_points[1].co,
+        count * accuracy)
+    
+    segments = []
+    # X方向等分间距
+    span = (bez_points[0].co[0] - bez_points[1].co[0]) /(count+1)
+    for n in range(count):
+        # 等分点的X坐标
+        pX = bez_points[0].co[0] - span * (n+1)
+        # 在插值点中查找最接近的插值点
+        near1 = 99999 # 一个超大的值
+        for point in tile_on_curveF:
+            near = math.fabs(point[0] - pX)
+            if near < near1 :
+                nearPoint = point
+                near1 = near
+        segments.append(nearPoint)
+    
+    # 是否在结果中包括曲线两头的端点？
+    # 在通过檐口线计算椽头定位点时，不需要包括曲线端点
+    # 在通过檐口线计算望板时，应该包括曲线端点
+    if withCurveEnd:
+        segments.insert(0, bez_points[0].co)
+        segments.append(bez_points[1].co)
+    return segments
 
 # 根据3点，创建一根弧线
 def addCurveByPoints(CurvePoints,

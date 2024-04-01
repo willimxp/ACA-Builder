@@ -59,11 +59,11 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
 
     if direction == 'X':
         tileCurve_name = "前后正身坡线"
-        flyrafter_type = con.ACA_TYPE_FLYRAFTER_FB
+        dly_type = con.ACA_TYPE_RAFTER_DLY_FB
         proj_v = Vector((0,1,1))
     else:
         tileCurve_name = "两山正身坡线"
-        flyrafter_type = con.ACA_TYPE_FLYRAFTER_LR
+        dly_type = con.ACA_TYPE_RAFTER_DLY_LR
         proj_v = Vector((1,0,1))
 
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
@@ -71,24 +71,18 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
     tileCurveVerts = []
 
     # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
-    # 获取飞椽对象
-    flyrafterObj: bpy.types.Object = utils.getAcaChild(
-        buildingObj,flyrafter_type
-    )
-    # 获取飞椽头坐标
-    flyrafterHead_co = utils.getObjectHeadPoint(
-                            flyrafterObj,
-                            eval=False,
-                            is_symmetry=(True,True,False)
-                        )
-    # 向上位移：半飞椽+大连檐，并且加斜到飞椽方向
-    offset_z = (con.FLYRAFTER_H/2 + con.DALIANYAN_H)*dk
-    # 瓦当滴水向外延伸
-    offset_x = con.EAVETILE_EX*dk
-    offset = Vector((offset_x,0,offset_z))
-    offset.rotate(flyrafterObj.rotation_euler)
-    # 添加第1点
-    curve_p1 = flyrafterHead_co * proj_v # 投影到X/Y平面
+    # 大连檐中心
+    dlyObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,dly_type)
+    curve_p1 = Vector(dlyObj.location)
+    # 位移到大连檐外沿，瓦当滴水向外延伸
+    if direction == 'X':
+        offset = Vector((0,con.DALIANYAN_H*dk/2,
+            -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
+    else:
+        offset = Vector((0,con.DALIANYAN_H*dk/2,
+            con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
+    offset.rotate(dlyObj.rotation_euler)
     curve_p1 += offset
     tileCurveVerts.append(curve_p1)
 
@@ -130,11 +124,15 @@ def __drawCornerCurve(buildingObj:bpy.types.Object,
         dly_type = con.ACA_TYPE_RAFTER_DLY_FB
         proj_v = Vector((0,1,1))
         proj_v2 = Vector((1,0,1))
+        # 闪避1/4角梁
+        shift = Vector((-con.JIAOLIANG_Y/4*dk * math.sqrt(2),0,0))
     else:
         cornerCurve_name = "两山翼角坡线"
         dly_type = con.ACA_TYPE_RAFTER_DLY_LR
         proj_v = Vector((1,0,1))
         proj_v2 = Vector((0,1,1))
+        # 闪避1/4角梁
+        shift = Vector((0,-con.JIAOLIANG_Y/4*dk * math.sqrt(2),0))
 
     cornerCurveVerts = []
     
@@ -143,7 +141,6 @@ def __drawCornerCurve(buildingObj:bpy.types.Object,
     dlyObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,dly_type)
     p0 = Vector(dlyObj.location)
-
     # 上檐出（檐椽平出+飞椽平出）
     ex = con.YANCHUAN_EX*dk + con.FLYRAFTER_EX*dk
     # 斗栱平出
@@ -151,34 +148,32 @@ def __drawCornerCurve(buildingObj:bpy.types.Object,
         ex += bData.dg_extend
     # 冲出，大连檐仅冲1椽
     ex += bData.chong * con.YUANCHUAN_D * dk
-    # 闪避半角梁
-    ex -= con.JIAOLIANG_Y/2*dk * math.sqrt(2)
-    # 延伸一瓦当头
-    ex += con.EAVETILE_EX*dk
     x = bData.x_total/2 + ex
     y = bData.y_total/2 + ex
     qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
     z = dlyObj.location.z + qiqiao
-    p1 = Vector((x,y,z))
-    # 相对大连檐位移，额外添加瓦当、滴水出头
+    p1 = Vector((x,y,z)) + shift
+
+    # 相对大连檐位移，瓦当滴水向外延伸
     if direction == 'X':
         offset = Vector((0,
             con.DALIANYAN_H*dk/2,
-            -con.DALIANYAN_Y*dk/2-con.QUETAI*dk-con.EAVETILE_EX*dk))
+            -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
     else:
         offset = Vector((0,
             con.DALIANYAN_H*dk/2,
-            con.DALIANYAN_Y*dk/2+con.QUETAI*dk+con.EAVETILE_EX*dk))
+            con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
     offset.rotate(dlyObj.rotation_euler)
     p1 += offset
     cornerCurveVerts.append(p1)
 
     # 第3-5点，从举架定位点做偏移
     for n in range(len(purlin_pos)):
-        # 向上位移:半桁径+椽径+望板高+灰泥层高
+        # 向上位移:半桁径+椽径+望板高+灰泥层高+起翘
+        qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
         offset2 = Vector((0,0,
                 (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
-                + con.WANGBAN_H + con.ROOFMUD_H)*dk))
+                + con.WANGBAN_H + con.ROOFMUD_H)*dk+qiqiao))
         point = purlin_pos[n]*proj_v + offset2
         # 叠加起翘影响，X坐标对齐p1点
         point += Vector((x,y,qiqiao)) * proj_v2
@@ -210,10 +205,14 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
         eaveCurve_name = "前后檐口瓦线"
         dly_type = con.ACA_TYPE_RAFTER_DLY_FB
         proj_v1 = Vector((1,0,0))
+        # 闪避1/4角梁
+        shift = Vector((-con.JIAOLIANG_Y/4*dk * math.sqrt(2),0,0))
     else:
         eaveCurve_name = "两山檐口瓦线"
         dly_type = con.ACA_TYPE_RAFTER_DLY_LR
         proj_v1 = Vector((0,1,0))
+        # 闪避1/4角梁
+        shift = Vector((0,-con.JIAOLIANG_Y/4*dk * math.sqrt(2),0))
 
     eaveCurveVerts = []
 
@@ -228,7 +227,7 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     p2 = p1 + purlin_pos[1] * proj_v1
     eaveCurveVerts.append(p2)
 
-    # 第4点：檐口线终点，按照冲三翘四的理论值计算（与子角梁解耦）
+    # 第3点：檐口线终点，按照冲三翘四的理论值计算（与子角梁解耦）
     # 上檐出（檐椽平出+飞椽平出）
     ex = con.YANCHUAN_EX*dk + con.FLYRAFTER_EX*dk
     # 斗栱平出
@@ -236,47 +235,39 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
         ex += bData.dg_extend
     # 冲出，大连檐仅冲1椽
     ex += bData.chong * con.YUANCHUAN_D * dk
-    # 闪避半角梁
-    ex -= con.JIAOLIANG_Y/2*dk * math.sqrt(2)
-    # 延伸一瓦当头
-    ex += con.EAVETILE_EX*dk
     x = bData.x_total/2 + ex
     y = bData.y_total/2 + ex
     qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
     z = p2.z + qiqiao
-    p4 = Vector((x,y,z))
-    
-    # 第3点：檐口线中点
-    if direction == 'X':
-        p3 = Vector((
-            (p2.x+p4.x)/2,   # 水平线上取中点
-            p2.y,   # 与起点水平
-            (p2.z+p4.z)/8)) # 略做了手工调整
-    else:
-        p3 = Vector((
-            p2.x,   # 水平线上取中点
-            (p2.y+p4.y)/2,   # 与起点水平
-            (p2.z+p4.z)/8)) # 略做了手工调整
-    eaveCurveVerts.append(p3)
-    eaveCurveVerts.append(p4)
+    p3 = Vector((x,y,z)) + shift
 
     # 绘制檐口线
-    eaveCurve = utils.addCurveByPoints(
-            CurvePoints=eaveCurveVerts,
+    CurvePoints = utils.setEaveCurvePoint(p2,p3,direction)
+    eaveCurve = utils.addBezierByPoints(
+            CurvePoints=CurvePoints,
             name=eaveCurve_name,
             resolution = con.CURVE_RESOLUTION,
             root_obj=tileRootObj
         )
+    
+    # 延长到P1点
+    eaveCurveData:bpy.types.Curve = eaveCurve.data
+    bpoints = eaveCurveData.splines[0].bezier_points
+    bpoints.add(1)
+    utils.transBezierPoint(bpoints[1],bpoints[2])
+    utils.transBezierPoint(bpoints[0],bpoints[1])
+    bpoints[0].co = p1
+
     # 设置origin
     utils.setOrigin(eaveCurve,p1)
     
-    # 位移到大连檐外沿，再延伸瓦当、滴水延长
+    # 位移到大连檐外沿，瓦当滴水向外延伸
     if direction == 'X':
         offset = Vector((0,con.DALIANYAN_H*dk/2,
-                        -con.DALIANYAN_Y*dk/2-con.QUETAI*dk-con.EAVETILE_EX*dk))
+            -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
     else:
         offset = Vector((0,con.DALIANYAN_H*dk/2,
-                        con.DALIANYAN_Y*dk/2+con.QUETAI*dk+con.EAVETILE_EX*dk))
+            con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
     offset.rotate(dlyObj.rotation_euler)
     eaveCurve.location += offset
 
@@ -437,7 +428,7 @@ def __drawTileBool(
         ))
 
     # 挤出厚度
-    height = purlin_cross_points[-1].z + 30*dk 
+    height = purlin_cross_points[-1].z + 100*dk 
     return_geo = bmesh.ops.extrude_face_region(bm, geom=bm.faces)
     verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
     bmesh.ops.translate(bm, verts=verts, vec=(0, 0,height))

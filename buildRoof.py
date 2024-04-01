@@ -918,7 +918,7 @@ def __drawFlyrafter(yanRafterObj:bpy.types.Object)->bpy.types.Object:
     # 对齐檐椽位置
     yanchuan_head_co = utils.getObjectHeadPoint(yanRafterObj,
             is_symmetry=(True,True,False))
-    # 向上位移半檐椽+一望板
+    # 向上位移半檐椽+一望板（基于水平投影的垂直移动)
     offset_z = (con.YUANCHUAN_D/2+con.WANGBAN_H)*dk
     offset_z = offset_z / math.cos(yanRafterObj.rotation_euler.y)
     loc = yanchuan_head_co + Vector((0,0,offset_z))
@@ -1341,15 +1341,13 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
     # 前后檐椽
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
-    # 老角梁
-    cornerBeamObj:bpy.types.Object = \
-        utils.getAcaChild(buildingObj,con.ACA_TYPE_CORNER_BEAM)
+    
+    # 1.小连檐起点：对接前后檐正身里口木位置
     # 里口木
     lkmObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_LKM_FB)
-
-    # 1.小连檐起点：对接前后檐正身里口木位置
-    xly_curve_start = Vector((
+    # 对接前后檐正身里口木位置
+    pStart = Vector((
         utils.getMeshDims(lkmObj).x / 2,    # 大连檐右端顶点，长度/2
         lkmObj.location.y,
         lkmObj.location.z
@@ -1357,6 +1355,9 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
 
     # 2.小连檐终点
     # 2.1 立面高度，基于老角梁头坐标（小连檐受到老角梁的限制）
+    # 老角梁
+    cornerBeamObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,con.ACA_TYPE_CORNER_BEAM)
     cornerBeamHead_co = utils.getObjectHeadPoint(cornerBeamObj,
             is_symmetry=(True,True,False))            
     # 定位小连檐终点（靠近角梁的一侧）
@@ -1372,7 +1373,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
             con.JIAOLIANG_Y/4*dk, # 退让1/4角梁,
             con.JIAOLIANG_H/2*dk - con.LIKOUMU_H/2*dk))
     offset.rotate(cornerBeamObj.rotation_euler)
-    xly_curve_end_z = cornerBeamHead_co + offset
+    pEnd_z = cornerBeamHead_co + offset
 
     # 2.2 平面X/Y坐标，从里口木按出冲系数进行计算
     #（不依赖角梁，避免难以补偿的累计误差）
@@ -1391,25 +1392,18 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
     # 避让老角梁，见汤崇平书籍的p196
     shift = con.JIAOLIANG_Y/4*dk * math.sqrt(2)
     # 定位小连檐结束点
-    xly_curve_end = Vector((
+    pEnd = Vector((
         bData.x_total/2 + rafterExtend - shift,
         bData.y_total/2 + rafterExtend - con.QUETAI*dk,
-        xly_curve_end_z.z
+        pEnd_z.z
     ))
-
-    # 3.小连檐中点：定位小连檐曲率控制点
-    xly_curve_middle = Vector(((xly_curve_start.x+xly_curve_end.x)/2,   # 水平线上取中点
-                            xly_curve_start.y,   # 与起点水平
-                            xly_curve_start.z))  # 与起点水平
     
     # 4.绘制小连檐对象
-    CurvePoints = [xly_curve_start,xly_curve_middle,xly_curve_end]
-    tiltHead = - yanRafterObj.rotation_euler.y
-    tiltEnd = - cornerBeamObj.rotation_euler.y
-    xly_curve_obj = utils.addCurveByPoints(
+    CurvePoints = utils.setEaveCurvePoint(pStart,pEnd)
+    tilt = - yanRafterObj.rotation_euler.y
+    xly_curve_obj = utils.addBezierByPoints(
                         CurvePoints=CurvePoints,
-                        tilt=tiltEnd,
-                        tilt_head=tiltHead,
+                        tilt=tilt,
                         name='小连檐',
                         root_obj=roofRootObj,
                         width = con.LIKOUMU_Y*dk,
@@ -1428,81 +1422,80 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
         use_axis=(True,True,False)
     )
 
-# 营造翼角椽定位线
+# 营造翼角椽参考线，后续为翼角椽椽头的定位
+# 起点=定为正身檐椽的最后一根椽头坐标
+# 终点的Z坐标=与老角梁平，与起翘参数无关
+# 终点的X、Y坐标=以上檐平出（斗栱平出）+出冲数据进行计算
+# 添加bezier控制点，做出曲线
 def __buildCornerRafterCurve(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     # 屋顶根节点
     roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+   
+    # 1.曲线起点：对齐最后一根正身檐椽的椽头
     # 前后檐椽
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
-    # 老角梁
-    cornerBeamObj:bpy.types.Object = \
-        utils.getAcaChild(buildingObj,con.ACA_TYPE_CORNER_BEAM)
-    
-    # 1.曲线起点：对齐最后一根正身檐椽的椽头
+    # 椽头坐标
     yanRafterHead_co = utils.getObjectHeadPoint(yanRafterObj,
             eval=True,  # eval=True可以取到应用了array后的结果
             is_symmetry=(True,True,False))
-    rafterCurve_start = yanRafterHead_co
+    # 曲线起点
+    pStart = yanRafterHead_co
     
     # 2.曲线终点
-    # 2.1 立面Z坐标，基于老角梁头坐标计算
+    # 2.1 立面Z坐标，基于老角梁头坐标计算，与起翘参数无关
+    # 老角梁
+    cornerBeamObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,con.ACA_TYPE_CORNER_BEAM)
+    # 老角梁头坐标（顶面几何中心）
     cornerBeamHead_co = utils.getObjectHeadPoint(cornerBeamObj,
             is_symmetry=(True,True,False))
-    # 偏移调整：内收雀台，避开老角梁穿模，上移到上皮
+    # 偏移调整：避开老角梁穿模
     if bData.use_flyrafter:
-        # 下皮平，从中心+半角梁高-半个里口木-半椽
+        # 使用飞椽时，小连檐与角梁做下皮平
+        # 檐椽位移：半角梁高-半椽
         offset_z = con.JIAOLIANG_H/2*dk - con.YUANCHUAN_D/2*dk
     else : 
-        # 上皮平，从中心+半角梁高-半个里口木-半椽
+        # 不使用飞椽时，小连檐与角梁做上皮平
+        # 檐椽位移：半角梁-里口木-半椽
         offset_z = con.JIAOLIANG_H/2*dk - con.LIKOUMU_H*dk - con.YUANCHUAN_D/2*dk
-    offset = Vector((
-        -con.QUETAI*dk, # 内收1雀台
-        con.JIAOLIANG_Y/4*dk, # 退让1/4角梁
-        offset_z 
-        ))
+    # 参考汤崇平的书，退让1/4
+    offset_y = con.JIAOLIANG_Y/4*dk # 退让1/4角梁
+    offset = Vector((0,offset_y,offset_z))
     offset.rotate(cornerBeamObj.rotation_euler)
     cornerBeamHead_co += offset
-    rafterCurve_end_z = cornerBeamHead_co.z
+    pEnd_z = cornerBeamHead_co.z
 
     # 2.2 平面X/Y坐标，从椽头按出冲系数进行计算
     #（不依赖角梁，避免难以补偿的累计误差）
     # 上檐平出
-    rafterExtend = con.YANCHUAN_EX*dk
+    ex = con.YANCHUAN_EX*dk
     # 斗栱平出
     if bData.use_dg:
-        rafterExtend += bData.dg_extend
-    # 翼角冲出
+        ex += bData.dg_extend
+    # 冲出
     if bData.use_flyrafter and bData.chong>0:
         # 有飞椽时，翘飞椽冲一份，其他在檐椽冲出
-        rafterExtend += (bData.chong-1)*con.YUANCHUAN_D*dk
+        ex += (bData.chong-1)*con.YUANCHUAN_D*dk
     else:
         # 没有飞椽时，全部通过檐椽冲出
-        rafterExtend += bData.chong*con.YUANCHUAN_D*dk
+        ex += bData.chong*con.YUANCHUAN_D*dk
     # 避让老角梁，见汤崇平书籍的p196
     shift = con.JIAOLIANG_Y/4*dk * math.sqrt(2)
-    rafterCurve_end = Vector((
-        bData.x_total/2 + rafterExtend - shift,
-        bData.y_total/2 + rafterExtend,
-        rafterCurve_end_z))
-
-    # 3.曲线中点，曲率控制
-    rafterCurve_middle = Vector((
-        (rafterCurve_start.x+rafterCurve_end.x)/2,   # 水平线上取中点
-        rafterCurve_start.y,   # 与起点水平
-        rafterCurve_start.z))  # 与起点水平
+    pEnd = Vector((
+        bData.x_total/2 + ex - shift,
+        bData.y_total/2 + ex,
+        pEnd_z))
     
     # 4.绘制翼角椽定位线
-    CurvePoints = [rafterCurve_start,
-                    rafterCurve_middle,
-                    rafterCurve_end]
+    CurvePoints = utils.setEaveCurvePoint(pStart,pEnd)
     # resolution决定了后续细分的精度
     # 我尝试了64，150,300,500几个值，150能看出明显的误差，300和500几乎没有太大区别
-    rafterCurve_obj = utils.addCurveByPoints(
-            CurvePoints=CurvePoints,
+    rafterCurve_obj = utils.addBezierByPoints(
+            CurvePoints,
             name='翼角椽定位线',
             resolution = con.CURVE_RESOLUTION,
             root_obj=roofRootObj
@@ -1545,7 +1538,7 @@ def __buildCornerRafter(buildingObj:bpy.types.Object,purlin_pos):
     # 绘制檐口参考线
     crCurve = __buildCornerRafterCurve(buildingObj)
     # 计算每根翼角椽的椽头坐标
-    crEndPoints = utils.getNurbsSegment(crCurve,crCount)
+    crEndPoints = utils.getBezierSegment(crCurve,crCount)
     # 第一根翼角椽尾与正身椽尾同高
     crStart_0 = jinhengPos + Vector((0,0,(con.HENG_COMMON_D+con.YUANCHUAN_D)/2*dk))
     # 翼角椽尾展开的合计宽度
@@ -1680,18 +1673,13 @@ def __drawCrWangban(
         ))
 
     # 挤出厚度
+    rafterObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
+    offset=Vector((0, 0,con.WANGBAN_H*dk))
+    offset.rotate(rafterObj.rotation_euler)
     return_geo = bmesh.ops.extrude_face_region(bm, geom=bm.faces)
     verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
-    bmesh.ops.translate(bm, verts=verts, vec=(0, 0,con.WANGBAN_H*dk))
+    bmesh.ops.translate(bm, verts=verts, vec=offset)
     # ps，这个挤出略有遗憾，没有按照每个面的normal进行extrude
-
-    # 上移半个椽径
-    # rafterObj:bpy.types.Object = utils.getAcaChild(
-    #     buildingObj,con.ACA_TYPE_RAFTER_FB
-    # )
-    # offset = con.YUANCHUAN_D/2*dk / math.cos(rafterObj.rotation_euler.y)
-    # for v in bm.verts:
-    #     v.co.z += offset
 
     # 确保face normal朝向
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
@@ -1720,7 +1708,7 @@ def __buildCrWangban(buildingObj:bpy.types.Object
     
     # 获取翼角椽尾坐标集合
     crCount = len(cornerRafterColl)
-    CrEnds = utils.getNurbsSegment(
+    CrEnds = utils.getBezierSegment(
         CrCurve,
         crCount,
         withCurveEnd = True)
@@ -1779,11 +1767,12 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
     
     # 绘制大连檐
     # 1.大连檐起点：对接正身大连檐
-    dlyStart = Vector((
+    pStart = Vector((
         utils.getMeshDims(dlyObj).x / 2,    # 大连檐右端顶点，长度/2
         dlyObj.location.y,
         dlyObj.location.z
     ))
+
     # 2.大连檐终点
     # 完全采用理论值计算，与子角梁解耦
     # 上檐出（檐椽平出+飞椽平出）
@@ -1795,22 +1784,17 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
     ex += bData.chong * con.YUANCHUAN_D * dk
     # 避让角梁，向内1/4角梁，见汤崇平书籍的p196
     shift = con.JIAOLIANG_Y/4*dk * math.sqrt(2)
-    dlyEnd_x = bData.x_total/2 + ex - shift
-    dlyEnd_y = bData.y_total/2 + ex - con.QUETAI*dk
+    pEnd_x = bData.x_total/2 + ex - shift
+    pEnd_y = bData.y_total/2 + ex
     qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
-    dlyEnd_z = dlyObj.location.z + qiqiao
-    dlyEnd = Vector((dlyEnd_x,dlyEnd_y,dlyEnd_z))
+    pEnd_z = dlyObj.location.z + qiqiao
+    pEnd = Vector((pEnd_x,pEnd_y,pEnd_z))
 
-    # 3.大连檐中点：曲率控制
-    dlyMiddle = Vector((
-        (dlyStart.x+dlyEnd.x)/2,   # 水平线上取中点
-        dlyStart.y,   # 与起点水平
-        dlyStart.z))  # 与起点水平
     # 4.绘制大连檐对象
-    CurvePoints = [dlyStart,dlyMiddle,dlyEnd]
+    CurvePoints = utils.setEaveCurvePoint(pStart,pEnd)
     # 与正身大连檐的旋转角度相同
     CurveTilt = dlyObj.rotation_euler.x - math.radians(90)
-    flyrafterEaveObj = utils.addCurveByPoints(
+    flyrafterEaveObj = utils.addBezierByPoints(
                         CurvePoints=CurvePoints,
                         tilt=CurveTilt,
                         name='大连檐',
@@ -1846,7 +1830,7 @@ def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
     flyrafterHeader_co = utils.getObjectHeadPoint(flyrafterObj,
             eval=True,
             is_symmetry=(True,True,False))
-    flyrafterCurve_start = flyrafterHeader_co
+    pStart = flyrafterHeader_co
     
     # 2.曲线终点     
     # 不依赖角梁，避免难以补偿的累计误差
@@ -1855,27 +1839,19 @@ def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
     # 斗栱平出
     if bData.use_dg:
         ex += bData.dg_extend
-    # 冲出，大连檐仅冲1椽
+    # 冲出，直接按用户输入的最终冲出总量计算
     ex += bData.chong * con.YUANCHUAN_D * dk
     # 避让角梁，向内1/4角梁，见汤崇平书籍的p196
     shift = con.JIAOLIANG_Y/4*dk * math.sqrt(2)
-
-    flyrafterCurve_end_x = bData.x_total/2 + ex - shift
-    flyrafterCurve_end_y = bData.y_total/2 + ex
+    pEnd_x = bData.x_total/2 + ex - shift
+    pEnd_y = bData.y_total/2 + ex
     qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
-    flyrafterCurve_end_z = flyrafterHeader_co.z + qiqiao
-    flyrafterCurve_end = Vector((flyrafterCurve_end_x,flyrafterCurve_end_y,flyrafterCurve_end_z))
+    pEnd_z = flyrafterHeader_co.z + qiqiao
+    pEnd = Vector((pEnd_x,pEnd_y,pEnd_z))
 
-    # 3.曲线中点：曲率控制
-    flyrafterCurve_middle = Vector((
-        (flyrafterCurve_start.x+flyrafterCurve_end.x)/2,   # 水平线上取中点
-        flyrafterCurve_start.y,   # 与起点水平
-        flyrafterCurve_start.z))  # 与起点水平
     # 4.绘制翘飞椽定位线
-    CurvePoints = [flyrafterCurve_start,
-                    flyrafterCurve_middle,
-                    flyrafterCurve_end]
-    flyrafterCurve_obj = utils.addCurveByPoints(
+    CurvePoints = utils.setEaveCurvePoint(pStart,pEnd)
+    flyrafterCurve_obj = utils.addBezierByPoints(
             CurvePoints=CurvePoints,
             name='翘飞椽定位线',
             resolution = con.CURVE_RESOLUTION,
@@ -1898,6 +1874,7 @@ def __drawCornerFlyrafter(
         root_obj):
     # 载入数据
     buildingObj = utils.getAcaParent(cornerRafterObj,con.ACA_TYPE_BUILDING)
+    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
 
@@ -1906,11 +1883,10 @@ def __drawCornerFlyrafter(
     cr_head_co = utils.getObjectHeadPoint(cornerRafterObj,
             eval=False,
             is_symmetry=(True,True,False))
-    # 移动到上皮+望板
-    offset = Vector((0,0,(con.YUANCHUAN_D /2+con.WANGBAN_H)*dk))
-    offset.rotate(cornerRafterObj.rotation_euler)
-    offset = offset * Vector((0,0,1))
-    origin_point = cr_head_co + offset
+    # 移动到上皮+望板(做法与正身一致，基于水平投影的垂直移动)
+    offset_z = (con.YUANCHUAN_D/2+con.WANGBAN_H)*dk
+    offset_z = offset_z / math.cos(cornerRafterObj.rotation_euler.y)
+    origin_point = cr_head_co + Vector((0,0,offset_z))
 
     # 2、任意添加一个对象，具体几何数据在bmesh中建立
     bpy.ops.mesh.primitive_cube_add(
@@ -2051,10 +2027,10 @@ def __drawCornerFlyrafter(
     bpy.context.scene.cursor.location = cfrObj.matrix_world @ v5
     bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
 
+    # 以下有bug，导致翘飞椽有异常位移，后续找机会修正
     # 重设旋转数据：把旋转角度与翘飞椽头对齐，方便计算翘飞椽望板
-    change_rot = cfr_head_vector
-    utils.changeOriginRotation(change_rot,cfrObj)
-
+    # change_rot = cfr_head_vector
+    # utils.changeOriginRotation(change_rot,cfrObj)
     return cfrObj
 
 # 营造翼角翘飞椽（Corner Flyrafter,缩写CFR）
@@ -2078,12 +2054,12 @@ def __buildCornerFlyrafter(
         con.ACA_TYPE_CORNER_RAFTER_CURVE)
     # 翼角椽的椽尾坐标集合
     crCount = len(cornerRafterColl)
-    crEnds = utils.getNurbsSegment(rafterCurveObj,crCount)
+    crEnds = utils.getBezierSegment(rafterCurveObj,crCount)
 
     # 绘制翘飞椽定位线
     cfrCurve = __buildCornerFlyrafterCurve(buildingObj)
     # 翘飞椽的椽尾坐标集合
-    cfrEnds = utils.getNurbsSegment(cfrCurve,crCount)
+    cfrEnds = utils.getBezierSegment(cfrCurve,crCount)
 
     # 摆放翘飞椽
     # 收集翘飞椽对象，输出绘制翘飞椽望板
@@ -2250,7 +2226,7 @@ def __buildCfrWangban(
     # 翘飞椽根数
     cr_count = len(cfrCollection)
     # 获取翘飞椽头坐标集合
-    cfrEnds = utils.getNurbsSegment(
+    cfrEnds = utils.getBezierSegment(
         cfrCurve,cr_count,withCurveEnd=True)
     
     # 绘制翘飞椽望板

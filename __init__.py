@@ -6,6 +6,7 @@ import bpy
 from . import panel
 from . import operators
 from . import data
+from . import progress
 
 # Blender配置元数据，用户安装插件时的设置项
 # https://developer.blender.org/docs/handbook/addons/addon_meta_info/
@@ -38,6 +39,8 @@ classes = (
     operators.ACA_OT_build_door,
     operators.ACA_OT_build_dougong,
     operators.ACA_OT_build_roof,
+
+    # progress.ModalTimerOperator,
 )
 
 def register():   

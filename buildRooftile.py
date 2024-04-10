@@ -17,30 +17,32 @@ from . import acaLibrary
 # 如果已存在根节点，则一概清空重建
 # 暂无增量式更新，或局部更新
 def __setTileRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
+    # 屋顶层根节点
+    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
     # 新建或清空根节点
     tileRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_TILE_ROOT)
     if tileRootObj != None:
         utils.deleteHierarchy(tileRootObj,del_parent=True)
     # 创建屋顶根对象
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
+    bpy.ops.object.empty_add(type='PLAIN_AXES',location=(0,0,0))
     tileRootObj = bpy.context.object
     tileRootObj.name = "瓦作层"
-    tileRootObj.parent = buildingObj
+    tileRootObj.parent = roofRootObj
     tileRootObj.ACA_data['aca_obj'] = True
     tileRootObj.ACA_data['aca_type'] = con.ACA_TYPE_TILE_ROOT
-    # 以挑檐桁下皮为起始点
-    bData : acaData = buildingObj.ACA_data # 载入数据
-    dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
-    tile_base = bData.platform_height \
-                + bData.piller_height
-    # 如果有斗栱，抬高斗栱高度
-    if bData.use_dg:
-        tile_base += bData.dg_height
-    else:
-        # 以大梁抬升
-        tile_base += con.BEAM_HEIGHT*pd
-    tileRootObj.location = (0,0,tile_base)
+    # # 以挑檐桁下皮为起始点
+    # bData : acaData = buildingObj.ACA_data # 载入数据
+    # dk = bData.DK
+    # pd = con.PILLER_D_EAVE * dk
+    # tile_base = bData.platform_height \
+    #             + bData.piller_height
+    # # 如果有斗栱，抬高斗栱高度
+    # if bData.use_dg:
+    #     tile_base += bData.dg_height
+    # else:
+    #     # 以大梁抬升
+    #     tile_base += con.BEAM_HEIGHT*pd
+    # tileRootObj.location = (0,0,tile_base)
         
     return tileRootObj
 
@@ -118,7 +120,7 @@ def __drawCornerCurve(buildingObj:bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
-
+    
     if direction == 'X':
         cornerCurve_name = "前后翼角坡线"
         dly_type = con.ACA_TYPE_RAFTER_DLY_FB
@@ -136,25 +138,12 @@ def __drawCornerCurve(buildingObj:bpy.types.Object,
 
     cornerCurveVerts = []
     
-    # 第1点：檐口线终点，按照冲三翘四的理论值计算（与子角梁解耦）
+    # 第1点：檐口线终点
     # 大连檐
     dlyObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,dly_type)
     p0 = Vector(dlyObj.location)
-    # 上檐出（檐椽平出+飞椽平出）
-    ex = con.YANCHUAN_EX*dk + con.FLYRAFTER_EX*dk
-    # 斗栱平出
-    if bData.use_dg:
-        ex += bData.dg_extend
-    # 冲出，大连檐仅冲1椽
-    ex += bData.chong * con.YUANCHUAN_D * dk
-    x = bData.x_total/2 + ex
-    y = bData.y_total/2 + ex
-    qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
-    z = dlyObj.location.z + qiqiao
-    p1 = Vector((x,y,z)) + shift
-
-    # 相对大连檐位移，瓦当滴水向外延伸
+    # 瓦当滴水向外延伸（相对大连檐位移）
     if direction == 'X':
         offset = Vector((0,
             con.DALIANYAN_H*dk/2,
@@ -164,13 +153,36 @@ def __drawCornerCurve(buildingObj:bpy.types.Object,
             con.DALIANYAN_H*dk/2,
             con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
     offset.rotate(dlyObj.rotation_euler)
-    p1 += offset
-    cornerCurveVerts.append(p1)
+
+    # 硬山悬山
+    if bData.roof_style in ('3','4'):       
+        x = utils.getMeshDims(dlyObj).x / 2
+        y = dlyObj.location.y
+        z = dlyObj.location.z
+        qiqiao = 0
+        p1 = Vector((x,y,z))+offset
+        cornerCurveVerts.append(p1)
+
+    # 庑殿、歇山按照冲三翘四的理论值计算（与子角梁解耦）
+    if bData.roof_style in ('1','2'):
+        # 上檐出（檐椽平出+飞椽平出）
+        ex = con.YANCHUAN_EX*dk + con.FLYRAFTER_EX*dk
+        # 斗栱平出
+        if bData.use_dg:
+            ex += bData.dg_extend
+        # 冲出，大连檐仅冲1椽
+        ex += bData.chong * con.YUANCHUAN_D * dk
+        x = bData.x_total/2 + ex
+        y = bData.y_total/2 + ex
+        qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
+        z = dlyObj.location.z + qiqiao
+        p1 = Vector((x,y,z)) + shift
+        p1 += offset
+        cornerCurveVerts.append(p1)
 
     # 第3-5点，从举架定位点做偏移
     for n in range(len(purlin_pos)):
         # 向上位移:半桁径+椽径+望板高+灰泥层高+起翘
-        qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
         offset2 = Vector((0,0,
                 (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
                 + con.WANGBAN_H + con.ROOFMUD_H)*dk+qiqiao))
@@ -227,36 +239,48 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     p2 = p1 + purlin_pos[1] * proj_v1
     eaveCurveVerts.append(p2)
 
-    # 第3点：檐口线终点，按照冲三翘四的理论值计算（与子角梁解耦）
-    # 上檐出（檐椽平出+飞椽平出）
-    ex = con.YANCHUAN_EX*dk + con.FLYRAFTER_EX*dk
-    # 斗栱平出
-    if bData.use_dg:
-        ex += bData.dg_extend
-    # 冲出，大连檐仅冲1椽
-    ex += bData.chong * con.YUANCHUAN_D * dk
-    x = bData.x_total/2 + ex
-    y = bData.y_total/2 + ex
-    qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
-    z = p2.z + qiqiao
-    p3 = Vector((x,y,z)) + shift
+    if bData.roof_style in ('3','4'):
+        # 绘制檐口线
+        CurvePoints = utils.setEaveCurvePoint(p1,p2,direction)
+        eaveCurve = utils.addBezierByPoints(
+                CurvePoints=CurvePoints,
+                name=eaveCurve_name,
+                resolution = con.CURVE_RESOLUTION,
+                root_obj=tileRootObj
+            )
 
-    # 绘制檐口线
-    CurvePoints = utils.setEaveCurvePoint(p2,p3,direction)
-    eaveCurve = utils.addBezierByPoints(
-            CurvePoints=CurvePoints,
-            name=eaveCurve_name,
-            resolution = con.CURVE_RESOLUTION,
-            root_obj=tileRootObj
-        )
-    
-    # 延长到P1点
-    eaveCurveData:bpy.types.Curve = eaveCurve.data
-    bpoints = eaveCurveData.splines[0].bezier_points
-    bpoints.add(1)
-    utils.transBezierPoint(bpoints[1],bpoints[2])
-    utils.transBezierPoint(bpoints[0],bpoints[1])
-    bpoints[0].co = p1
+    # 庑殿、歇山按照冲三翘四的理论值计算
+    if bData.roof_style in ('1','2'):
+        # 第3点：檐口线终点，按照冲三翘四的理论值计算（与子角梁解耦）
+        # 上檐出（檐椽平出+飞椽平出）
+        ex = con.YANCHUAN_EX*dk + con.FLYRAFTER_EX*dk
+        # 斗栱平出
+        if bData.use_dg:
+            ex += bData.dg_extend
+        # 冲出，大连檐仅冲1椽
+        ex += bData.chong * con.YUANCHUAN_D * dk
+        x = bData.x_total/2 + ex
+        y = bData.y_total/2 + ex
+        qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
+        z = p2.z + qiqiao
+        p3 = Vector((x,y,z)) + shift
+
+        # 绘制檐口线
+        CurvePoints = utils.setEaveCurvePoint(p2,p3,direction)
+        eaveCurve = utils.addBezierByPoints(
+                CurvePoints=CurvePoints,
+                name=eaveCurve_name,
+                resolution = con.CURVE_RESOLUTION,
+                root_obj=tileRootObj
+            )
+        
+        # 延长到P1点
+        eaveCurveData:bpy.types.Curve = eaveCurve.data
+        bpoints = eaveCurveData.splines[0].bezier_points
+        bpoints.add(1)
+        utils.transBezierPoint(bpoints[1],bpoints[2])
+        utils.transBezierPoint(bpoints[0],bpoints[1])
+        bpoints[0].co = p1
 
     # 设置origin
     utils.setOrigin(eaveCurve,p1)
@@ -451,8 +475,10 @@ def __drawTileBool(
 # 在face上放置瓦片
 def __setTile(
         sourceObj,name,Matrix,
-        offset,parent,mirrorObj,boolObj,
-        isBoolInside = False
+        offset,parent,mirrorObj,
+        isNeedBool=False,
+        boolObj=None,
+        isBoolInside=False
 ):
     TileCopy = utils.copySimplyObject(
         sourceObj=sourceObj,
@@ -469,14 +495,16 @@ def __setTile(
         use_axis=(True,True,False),
         use_bisect=(False,True,False)
     ) 
-    # 添加boolean modifier
-    mod:bpy.types.BooleanModifier = TileCopy.modifiers.new("由戗裁剪","BOOLEAN")
-    mod.object = boolObj
-    mod.solver = con.BOOLEAN_TYPE # FAST / EXACT
-    if isBoolInside:
-        mod.operation = 'INTERSECT'
-    else:
-        mod.operation = 'DIFFERENCE'
+
+    if isNeedBool:
+        # 添加boolean modifier
+        mod:bpy.types.BooleanModifier = TileCopy.modifiers.new("由戗裁剪","BOOLEAN")
+        mod.object = boolObj
+        mod.solver = con.BOOLEAN_TYPE # FAST / EXACT
+        if isBoolInside:
+            mod.operation = 'INTERSECT'
+        else:
+            mod.operation = 'DIFFERENCE'
 
     return TileCopy   
 
@@ -527,6 +555,10 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         dir_index = 1
         offset_aside = Vector((-tileWidth/2,tileLength/2,0))
 
+    # 庑殿、歇山做裁剪
+    isNeedBool = False
+    if bData.roof_style in ('1','2'):
+        isNeedBool = True
 
     bm = bmesh.new()   # create an empty BMesh
     bm.from_mesh(tileGrid.data)   # fill it in from a Mesh
@@ -566,6 +598,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
             offset=offset_aside.copy(),
             parent=tileGrid,
             mirrorObj=tileRootObj,
+            isNeedBool=isNeedBool,
             boolObj=tile_bool_obj,
             isBoolInside=isBoolInside
         )
@@ -578,6 +611,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
             offset=Vector((0,tileLength/2,0)),
             parent=tileGrid,
             mirrorObj=tileRootObj,
+            isNeedBool=isNeedBool,
             boolObj=tile_bool_obj,
             isBoolInside=isBoolInside
         )
@@ -592,6 +626,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 offset=Vector((0,tileLength/2,0)),
                 parent=tileGrid,
                 mirrorObj=tileRootObj,
+                isNeedBool=isNeedBool,
                 boolObj=tile_bool_obj,
                 isBoolInside=isBoolInside
             )
@@ -604,34 +639,38 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 offset=offset_aside.copy(),
                 parent=tileGrid,
                 mirrorObj=tileRootObj,
+                isNeedBool=isNeedBool,
                 boolObj=tile_bool_obj,
                 isBoolInside=isBoolInside
             ) 
 
         # 最后再加一列板瓦收口
         if f.index % (tileCols-1) ==tileCols-2: # 最后一列
-            # # 排布板瓦
-            # __setTile(
-            #     sourceObj=flatTile,
-            #     name='板瓦',
-            #     Matrix=M,
-            #     offset=offset_aside.copy() * Vector((-1,1,1)),
-            #     parent=tileGrid,
-            #     mirrorObj=tileRootObj,
-            #     boolObj=tile_bool_obj,
-            #     isBoolInside=isBoolInside
-            # ) 
-            # 排布滴水
+            # 排布板瓦
             __setTile(
-                sourceObj=dripTile,
-                name='滴水',
+                sourceObj=flatTile,
+                name='板瓦',
                 Matrix=M,
                 offset=offset_aside.copy() * Vector((-1,1,1)),
                 parent=tileGrid,
                 mirrorObj=tileRootObj,
+                isNeedBool=isNeedBool,
                 boolObj=tile_bool_obj,
                 isBoolInside=isBoolInside
             ) 
+            if f.index < tileCols-1:# 第一行
+                # 排布滴水
+                __setTile(
+                    sourceObj=dripTile,
+                    name='滴水',
+                    Matrix=M,
+                    offset=offset_aside.copy() * Vector((-1,1,1)),
+                    parent=tileGrid,
+                    mirrorObj=tileRootObj,
+                    isNeedBool=isNeedBool,
+                    boolObj=tile_bool_obj,
+                    isBoolInside=isBoolInside
+                ) 
         
     # 隐藏辅助对象
     utils.hideObj(tile_bool_obj)
@@ -644,7 +683,6 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
 # 对外的统一调用接口
 # 一次性重建所有的瓦做
 def buildTile(buildingObj: bpy.types.Object):
-    utils.outputMsg("buildTile starting...")
     # 确认聚焦在根目录中
     utils.setCollection(con.ROOT_COLL_NAME)
     # 暂存cursor位置，注意要加copy()，否则传递的是引用
@@ -653,8 +691,6 @@ def buildTile(buildingObj: bpy.types.Object):
     __setTileRoot(buildingObj)
     # 清理垃圾数据
     utils.delOrphan()
-    utils.outputMsg("Rafter Tile root added")
-    utils.redrawViewport()
 
     # 载入数据
     bData : acaData = buildingObj.ACA_data
@@ -678,20 +714,22 @@ def buildTile(buildingObj: bpy.types.Object):
         rafter_pos,
         tileGrid,
         direction='X')
-    utils.outputMsg("Tile Array Front-back added")
+    utils.outputMsg("前后檐面布瓦...")
 
-    # 绘制两山瓦面网格
-    tileGrid = __drawTileGrid(
-        buildingObj,
-        rafter_pos,
-        direction='Y')
-    # 在网格上铺瓦
-    __arrayTileGrid(
-        buildingObj,
-        rafter_pos,
-        tileGrid,
-        direction='Y')
-    utils.outputMsg("Tile Array Left-right added")
+    # 仅庑殿、歇山做两山的瓦面
+    if bData.roof_style in ('1','2'):
+        # 绘制两山瓦面网格
+        tileGrid = __drawTileGrid(
+            buildingObj,
+            rafter_pos,
+            direction='Y')
+        # 在网格上铺瓦
+        __arrayTileGrid(
+            buildingObj,
+            rafter_pos,
+            tileGrid,
+            direction='Y')
+        utils.outputMsg("两山坡面布瓦...")
 
     # 恢复cursor位置
     bpy.context.scene.cursor.location = old_loc 

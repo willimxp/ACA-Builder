@@ -53,7 +53,6 @@ def buildPlatform(buildingObj:bpy.types.Object):
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
-    utils.outputMsg("Platform added")
 
 # 根据插件面板的台基高度、下出等参数变化，更新台基外观
 # 绑定于data.py中update_platform回调

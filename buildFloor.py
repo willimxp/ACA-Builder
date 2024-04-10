@@ -188,7 +188,6 @@ def buildPillers(buildingObj:bpy.types.Object):
 
     # 清理临时柱子
     utils.deleteHierarchy(piller_basemesh,True)
-    utils.outputMsg("Pillers rebuilt")
 
 # 根据用户在插件面板修改的柱高、柱径，缩放柱子外观
 # 会自动触发墙体的重建，速度很慢
@@ -231,6 +230,7 @@ def resizePiller(buildingObj:bpy.types.Object):
 # 采用了偏函数和fastrun，极大加速了性能
 def buildFloor(buildingObj:bpy.types.Object):
     # 清理数据
+    utils.outputMsg("资源准备中...")
     utils.delOrphan()
     # 聚焦根目录
     utils.setCollection(con.ROOT_COLL_NAME)
@@ -240,64 +240,24 @@ def buildFloor(buildingObj:bpy.types.Object):
     # 提高性能模式============
     # https://blender.stackexchange.com/questions/7358/python-performance-with-blender-operators
     # 生成柱网
+    utils.outputMsg("生成柱网...")
     funproxy = partial(buildPillers,buildingObj=buildingObj)
     utils.fastRun(funproxy)
-    utils.redrawViewport()
+    
     # 生成台基
+    utils.outputMsg("生成台基...")
     funproxy = partial(buildPlatform.buildPlatform,buildingObj=buildingObj)
     utils.fastRun(funproxy)
-    utils.redrawViewport()
+    
     # 生成墙体
-    funproxy = partial(buildWall.buildWallLayout,buildingObj=buildingObj)
-    utils.fastRun(funproxy)
-    utils.redrawViewport()
-    # 生成屋顶
-    funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
-    utils.fastRun(funproxy)
-    utils.redrawViewport()
-    # 生成屋瓦
-    funproxy = partial(buildRooftile.buildTile,buildingObj=buildingObj)
-    utils.fastRun(funproxy)
-    utils.redrawViewport()
-
-    # 重新聚焦根节点
-    bpy.context.scene.cursor.location = old_loc # 恢复cursor位置
-    utils.focusObj(buildingObj)
-    return
-
-# 执行营造整体过程
-# 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
-# 采用了偏函数和fastrun，极大加速了性能
-def addFloor(buildingObj:bpy.types.Object):
-    # 清理数据
-    utils.delOrphan()
-    # 聚焦根目录
-    utils.setCollection(con.ROOT_COLL_NAME)
-    # 暂存cursor位置，注意要加copy()，否则传递的是引用
-    old_loc = bpy.context.scene.cursor.location.copy()
-
-    # 提高性能模式============
-    # https://blender.stackexchange.com/questions/7358/python-performance-with-blender-operators
-    # 生成柱网
-    funproxy = partial(buildPillers,buildingObj=buildingObj)
-    utils.fastRun(funproxy)
-    utils.redrawViewport()
-    # 生成台基
-    funproxy = partial(buildPlatform.buildPlatform,buildingObj=buildingObj)
-    utils.fastRun(funproxy)
-    utils.redrawViewport()
-    # 生成墙体
+    utils.outputMsg("生成墙体...")
     funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
     utils.fastRun(funproxy)
-    utils.redrawViewport()
+    
     # 生成屋顶
+    utils.outputMsg("生成屋顶...")
     funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
     utils.fastRun(funproxy)
-    utils.redrawViewport()
-    # 生成屋瓦
-    funproxy = partial(buildRooftile.buildTile,buildingObj=buildingObj)
-    utils.fastRun(funproxy)
-    utils.redrawViewport()
 
     # 重新聚焦根节点
     bpy.context.scene.cursor.location = old_loc # 恢复cursor位置

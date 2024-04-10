@@ -762,4 +762,4 @@ def buildSingleWall(wallproxy:bpy.types.Object):
         # 重新聚焦建筑根节点
         utils.focusObj(wallproxy)
 
-        utils.outputMsg("wallproxy filled " + wallproxy.name)
+        utils.outputMsg("墙体构造：" + wallproxy.name)

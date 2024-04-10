@@ -7,11 +7,12 @@ import bmesh
 import math
 from mathutils import Vector,Euler
 
+from .const import ACA_Consts as con
+from .data import ACA_data_obj as acaData
 from . import utils
 from . import buildFloor
 from . import buildDougong
-from .const import ACA_Consts as con
-from .data import ACA_data_obj as acaData
+from . import buildRooftile
 
 # 设置“屋顶层”根节点
 def __setRoofRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
@@ -2271,56 +2272,56 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
 
     # 各种屋顶都有前后檐
     __buildRafter_FB(buildingObj,purlin_pos)    # 前后檐椽
-    utils.outputMsg("Rafter body added")
+    utils.outputMsg("正身檐椽营造...")
     if useFlyrafter:  # 用户可选择不使用飞椽
         __buildFlyrafterAll(buildingObj,purlin_pos,'X') # 前后飞椽
-        utils.outputMsg("Flyrafter body added")
+        utils.outputMsg("正身飞椽营造...")
     if useWangban:  # 用户可选择暂时不生成望板（更便于观察椽架形态）
         __buildWangban_FB(buildingObj,purlin_pos)   # 前后望板
-        utils.outputMsg("Wangban added")
+        utils.outputMsg("望板营造...")
     
     # 庑殿、歇山的处理（硬山、悬山不涉及）
     if roofStyle in ('1','2'):
         # 营造角梁
         __buildCornerBeam(buildingObj,purlin_pos)
-        utils.outputMsg("Corner Beam added")
+        utils.outputMsg("角梁营造...")
         
         # 两山檐椽
         __buildRafter_LR(buildingObj,purlin_pos)    
-        utils.outputMsg("Rafter body LR added")
+        utils.outputMsg("两山檐椽营造...")
         if useFlyrafter:
             # 两山飞椽
             __buildFlyrafterAll(buildingObj,purlin_pos,'Y') 
-            utils.outputMsg("Flyrafter body LR added")
+            utils.outputMsg("两山飞椽营造...")
         if useWangban:
             # 两山望板
             __buildWangban_LR(buildingObj,purlin_pos)   
-            utils.outputMsg("Wangban LR added")
+            utils.outputMsg("两山望板营造...")
         
         # 翼角部分
         # 营造小连檐
         __buildCornerRafterEave(buildingObj)
-        utils.outputMsg("Rafter Eave added")
+        utils.outputMsg("小连檐营造...")
         # 营造翼角椽
         cornerRafterColl = __buildCornerRafter(buildingObj,purlin_pos)
-        utils.outputMsg("Corner Rafter added")
+        utils.outputMsg("翼角椽营造...")
         if useWangban:
             # 翼角椽望板
             __buildCrWangban(buildingObj,purlin_pos,cornerRafterColl)
-            utils.outputMsg("Corner Rafter Wangban added")
+            utils.outputMsg("翼角椽望板营造...")
 
         # 是否做二层飞椽
         if useFlyrafter:
             # 大连檐
             __buildCornerFlyrafterEave(buildingObj)
-            utils.outputMsg("Corner Flyrafter Eave added")
+            utils.outputMsg("大连檐营造...")
             # 翘飞椽，以翼角椽为基准
             cfrCollection = __buildCornerFlyrafter(buildingObj,cornerRafterColl)
-            utils.outputMsg("Corner Flyrafter added")
+            utils.outputMsg("翘飞椽营造...")
             if useWangban:
                 # 翘飞椽望板
                 __buildCfrWangban(buildingObj,purlin_pos,cfrCollection)
-                utils.outputMsg("Corner Flyrafter Wangban added")
+                utils.outputMsg("翘飞椽望板营造...")
     
     return
 
@@ -2346,8 +2347,7 @@ def buildRoof(buildingObj:bpy.types.Object):
     
     # 摆放桁檩
     __buildPurlin(buildingObj,purlin_pos)
-    utils.outputMsg("Purlin added")
-    utils.redrawViewport()
+    utils.outputMsg("桁檩营造...")
 
     # 如果有斗栱，剔除挑檐桁
     # 在梁架、椽架、角梁的计算中不考虑挑檐桁
@@ -2357,13 +2357,16 @@ def buildRoof(buildingObj:bpy.types.Object):
 
     # 摆放梁架
     __buildBeam(buildingObj,rafter_pos)
-    utils.outputMsg("Beam added")
-    utils.redrawViewport()
+    utils.outputMsg("梁架营造...")
 
     # 摆放椽架（包括角梁、檐椽、望板、飞椽、里口木、大连檐等）
     __buildRafterForAll(buildingObj,rafter_pos)
-    utils.outputMsg("Rafter added")
-    utils.redrawViewport()
+    utils.outputMsg("椽架营造...")
+
+    # 摆放瓦作
+    if bData.use_tile:
+        utils.outputMsg("生成屋瓦...")
+        buildRooftile.buildTile(buildingObj)
     
     # 重新聚焦根节点
     bpy.context.scene.cursor.location = old_loc # 恢复cursor位置

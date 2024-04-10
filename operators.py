@@ -18,17 +18,18 @@ from . import buildDoor
 from . import buildDougong
 from . import buildRoof
 from . import buildRooftile
+from . import progress
     
 # 添加建筑empty根节点，并绑定设计模版
 # 返回建筑empty根节点对象
 # 被ACA_OT_add_newbuilding类调用
-def addBuildingRoot():
+def addBuildingRoot(context:bpy.types.Context):
     # 获取panel上选择的模版
     templateName = bpy.context.scene.ACA_data.template
     
     # 创建buildObj根节点
     bpy.ops.object.empty_add(type='PLAIN_AXES')
-    buildingObj = bpy.context.object
+    buildingObj = context.object
     buildingObj.location = bpy.context.scene.cursor.location   # 原点摆放在3D Cursor位置
     buildingObj.name = templateName   # 系统遇到重名会自动添加00x的后缀       
     buildingObj.empty_display_type = 'SPHERE'
@@ -37,7 +38,7 @@ def addBuildingRoot():
     templateData = acaTemplate.getTemplate(templateName)
     acaTemplate.fillTemplate(buildingObj,templateData)
     
-    utils.outputMsg("Building Root added")
+    utils.outputMsg("初始化根节点...")
     return buildingObj
 
 # 生成新建筑
@@ -51,15 +52,16 @@ class ACA_OT_add_building(bpy.types.Operator):
     bl_label = "添加新建筑"
 
     def execute(self, context):      
+        utils.console_clear()
         # 1.定位到“ACA”根collection，如果没有则新建
         utils.setCollection(con.ROOT_COLL_NAME)
 
         # 2.添加建筑empty
         # 其中绑定了模版数据
-        buildingObj = addBuildingRoot()
+        buildingObj = addBuildingRoot(context)
 
         # 3.调用营造序列
-        buildFloor.addFloor(buildingObj) 
+        buildFloor.buildFloor(buildingObj) 
 
         # 聚焦到建筑根节点
         utils.focusObj(buildingObj)
@@ -130,7 +132,8 @@ class ACA_OT_build_roof(bpy.types.Operator):
         if bData.aca_type != con.ACA_TYPE_BUILDING:
             utils.showMessageBox("ERROR: 找不到建筑")
         else:
-            #buildRoof.buildRoof(buildingObj)
+            # 生成屋顶
+            utils.outputMsg("生成屋顶...")
             funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
             utils.fastRun(funproxy)
 
@@ -148,7 +151,6 @@ class ACA_OT_test(bpy.types.Operator):
         if bData.aca_type != con.ACA_TYPE_BUILDING:
             utils.showMessageBox("ERROR: 找不到建筑")
         else:
-            #buildRooftile.buildTile(buildingObj)
             funproxy = partial(buildRooftile.buildTile,buildingObj=buildingObj)
             utils.fastRun(funproxy)
 

@@ -12,6 +12,48 @@ import time
 
 from . import data
 
+# 获取console窗口的context
+# 以便在console_print中override
+def console_get():
+    for area in bpy.context.screen.areas:
+        if area.type == 'CONSOLE':
+            for space in area.spaces:
+                if space.type == 'CONSOLE':
+                    for region in area.regions:
+                        if region.type == 'WINDOW':
+                            return area, space, region
+    return None, None, None
+
+# 在blender内部的console窗口中输出调试信息
+def console_print(*args, clear=False):
+    s = " ".join([str(arg) for arg in args])
+    area, space, region = console_get()
+
+    if space is None:
+        return
+    context_override = bpy.context.copy()
+    context_override.update({
+        "space": space,
+        "area": area,
+        "region": region,
+    })
+    with bpy.context.temp_override(**context_override):
+        for line in s.split("\n"):
+            bpy.ops.console.scrollback_append(text=line, type='OUTPUT')
+
+def console_clear():
+    area, space, region = console_get()
+    if space is None:
+        return
+    context_override = bpy.context.copy()
+    context_override.update({
+        "space": space,
+        "area": area,
+        "region": region,
+    })
+    with bpy.context.temp_override(**context_override):
+        bpy.ops.console.clear()
+
 # 弹出提示框
 def showMessageBox(message = "", title = "Message Box", icon = 'INFO'):
     def draw(self, context):
@@ -45,7 +87,7 @@ def setCollection(name:str, IsClear=False):
 
     if not coll_found:    
         # 新建collection，不与其他用户自建的模型打架
-        outputMsg("Add new collection " + coll_name)
+        outputMsg("创建子目录：" + coll_name)
         coll = bpy.data.collections.new(coll_name)
         bpy.context.scene.collection.children.link(coll)
         # 聚焦到新目录上
@@ -465,6 +507,13 @@ def outputMsg(msg:str):
     stime = time.strftime("%H:%M:%S", time.localtime())
     strout = "ACA[" + stime + "]: " + msg
     print(strout)
+    
+    # 界面刷新
+    try:
+        console_print(strout)
+        redrawViewport()
+    except Exception:
+        return
 
 # 隐藏对象，包括viewport和render渲染
 def hideObj(object:bpy.types.Object) : 

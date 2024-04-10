@@ -117,7 +117,7 @@ def update_roof(self, context:bpy.types.Context):
     buildingObj = context.object
     if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
         from . import buildRoof
-        # 重新生成墙体
+        # 重新生成屋顶
         funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
@@ -369,6 +369,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     
     # 瓦作属性
+    use_tile :  bpy.props.BoolProperty(
+            default=True,
+            name="添加瓦作",
+            update = update_roof,
+        )# type: ignore 
     tile_width : bpy.props.FloatProperty(
             name="瓦垄宽度", 
             default=0.4,

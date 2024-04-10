@@ -158,6 +158,8 @@ class ACA_PT_props(bpy.types.Panel):
                 row.prop(objData, "use_flyrafter") # 添加飞椽
                 row = box.row()
                 row.prop(objData, "use_wangban") # 添加望板
+                row = box.row()
+                row.prop(objData, "use_tile") # 添加瓦作
                 if objData.roof_style in ('1','2'):
                     row = box.row()
                     row.prop(objData, "chong") # 出冲
@@ -169,20 +171,20 @@ class ACA_PT_props(bpy.types.Panel):
                 row.operator("aca.build_roof",icon='HOME',)# 按钮：生成屋顶
 
                 # 瓦作属性
-                box = layout.box()
-                row = box.row()
-                row.prop(objData, "tile_width") # 瓦垄宽度
-                row = box.row()
-                row.prop(objData, "tile_length") # 瓦片长度
-                row = box.row()
-                row.prop(objData, "flatTile_source") # 板瓦
-                row = box.row()
-                row.prop(objData, "circularTile_source") # 筒瓦
-                row = box.row()
-                row.prop(objData, "eaveTile_source") # 瓦当
-                row = box.row()
-                row.prop(objData, "dripTile_source") # 滴水
-
+                if objData.use_tile:
+                    box = layout.box()
+                    row = box.row()
+                    row.prop(objData, "tile_width") # 瓦垄宽度
+                    row = box.row()
+                    row.prop(objData, "tile_length") # 瓦片长度
+                    row = box.row()
+                    row.prop(objData, "flatTile_source") # 板瓦
+                    row = box.row()
+                    row.prop(objData, "circularTile_source") # 筒瓦
+                    row = box.row()
+                    row.prop(objData, "eaveTile_source") # 瓦当
+                    row = box.row()
+                    row.prop(objData, "dripTile_source") # 滴水
 
             # 选择wallproxy时，可以设置墙体的独立样式
             if objData.aca_type == con.ACA_TYPE_WALL: 

@@ -90,6 +90,10 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
 
     # 第3-5点，从举架定位点做偏移
     for n in range(len(purlin_pos)):
+        # 歇山的山面只做到金桁高度（踏脚木位置）
+        if bData.roof_style == '2' \
+            and direction == 'Y' \
+            and n>1: continue
         # 向上位移:半桁径+椽径+望板高+灰泥层高
         offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
                   + con.WANGBAN_H + con.ROOFMUD_H)*dk
@@ -108,10 +112,10 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
     utils.setOrigin(tileCurve,curve_p1)
     return tileCurve
 
-# 绘制翼角瓦垄线
+# 绘制侧边瓦垄线
 # 前后檐direction=‘X'
 # 两山direction=’Y‘
-def __drawCornerCurve(buildingObj:bpy.types.Object,
+def __drawSideCurve(buildingObj:bpy.types.Object,
                 purlin_pos,
                 direction='X'):
     # 载入数据
@@ -122,21 +126,21 @@ def __drawCornerCurve(buildingObj:bpy.types.Object,
     )
     
     if direction == 'X':
-        cornerCurve_name = "前后翼角坡线"
+        sideCurve_name = "前后翼角坡线"
         dly_type = con.ACA_TYPE_RAFTER_DLY_FB
         proj_v = Vector((0,1,1))
         proj_v2 = Vector((1,0,1))
         # 闪避1/4角梁
         shift = Vector((-con.JIAOLIANG_Y/4*dk * math.sqrt(2),0,0))
     else:
-        cornerCurve_name = "两山翼角坡线"
+        sideCurve_name = "两山翼角坡线"
         dly_type = con.ACA_TYPE_RAFTER_DLY_LR
         proj_v = Vector((1,0,1))
         proj_v2 = Vector((0,1,1))
         # 闪避1/4角梁
         shift = Vector((0,-con.JIAOLIANG_Y/4*dk * math.sqrt(2),0))
 
-    cornerCurveVerts = []
+    sideCurveVerts = []
     
     # 第1点：檐口线终点
     # 大连檐
@@ -161,7 +165,7 @@ def __drawCornerCurve(buildingObj:bpy.types.Object,
         z = dlyObj.location.z
         qiqiao = 0
         p1 = Vector((x,y,z))+offset
-        cornerCurveVerts.append(p1)
+        sideCurveVerts.append(p1)
 
     # 庑殿、歇山按照冲三翘四的理论值计算（与子角梁解耦）
     if bData.roof_style in ('1','2'):
@@ -178,10 +182,14 @@ def __drawCornerCurve(buildingObj:bpy.types.Object,
         z = dlyObj.location.z + qiqiao
         p1 = Vector((x,y,z)) + shift
         p1 += offset
-        cornerCurveVerts.append(p1)
+        sideCurveVerts.append(p1)
 
     # 第3-5点，从举架定位点做偏移
     for n in range(len(purlin_pos)):
+        # 歇山的山面只做到金桁高度（踏脚木位置）
+        if bData.roof_style == '2' \
+            and direction == 'Y' \
+            and n>1: continue
         # 向上位移:半桁径+椽径+望板高+灰泥层高+起翘
         offset2 = Vector((0,0,
                 (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
@@ -189,18 +197,18 @@ def __drawCornerCurve(buildingObj:bpy.types.Object,
         point = purlin_pos[n]*proj_v + offset2
         # 叠加起翘影响，X坐标对齐p1点
         point += Vector((x,y,qiqiao)) * proj_v2
-        cornerCurveVerts.append(point)
+        sideCurveVerts.append(point)
 
     # 绘制翼角瓦垄线
-    cornerCurve = utils.addCurveByPoints(
-            CurvePoints=cornerCurveVerts,
-            name=cornerCurve_name,
+    sideCurve = utils.addCurveByPoints(
+            CurvePoints=sideCurveVerts,
+            name=sideCurve_name,
             resolution = con.CURVE_RESOLUTION,
             root_obj=tileRootObj
         )
     # 设置origin
-    utils.setOrigin(cornerCurve,p0+offset)
-    return cornerCurve
+    utils.setOrigin(sideCurve,p0+offset)
+    return sideCurve
 
 # 绘制檐口线（直达子角梁中心），做为翼角瓦檐口终点
 def __drawEaveCurve(buildingObj:bpy.types.Object,
@@ -325,7 +333,7 @@ def __getTileCols(buildingObj:bpy.types.Object,direction='X'):
     tileCols = math.ceil(roofWidth / tileWidth)
     return tileCols
 
-# 绘制瓦面网格
+# 绘制瓦面网格，依赖于三条曲线的控制
 def __drawTileGrid(
             buildingObj:bpy.types.Object,
             rafter_pos,
@@ -354,8 +362,8 @@ def __drawTileGrid(
     # 绘制檐口线
     EaveCurve = __drawEaveCurve(buildingObj,
         rafter_pos,direction)
-    # 绘制翼角瓦垄线
-    CornerCurve = __drawCornerCurve(buildingObj,
+    # 绘制侧边瓦垄线
+    SideCurve = __drawSideCurve(buildingObj,
         rafter_pos,direction)
 
     # 坡面长度
@@ -380,7 +388,7 @@ def __drawTileGrid(
     # 几何节点修改器的传参比较特殊，封装了一个方法
     utils.setGN_Input(gnMod,"正身瓦线",TileCurve)
     utils.setGN_Input(gnMod,"檐口线",EaveCurve)
-    utils.setGN_Input(gnMod,"翼角瓦线",CornerCurve)
+    utils.setGN_Input(gnMod,"翼角瓦线",SideCurve)
     utils.setGN_Input(gnMod,"瓦片列数",tileCols)
     utils.setGN_Input(gnMod,"瓦片行数",tileRows)  
     # 应用modifier
@@ -389,12 +397,14 @@ def __drawTileGrid(
     return tileGrid
 
 # 绘制瓦面的斜切boolean对象
-# 不适合像椽架那样做三个bisect面的切割
-# 因为推山导致的由戗角度交叉，使得三个bisect面也有交叉，导致上下被裁剪的过多
+# 分别可以适应庑殿与歇山屋瓦的裁剪（悬山、硬山不涉及）
+# 庑殿沿着角梁、由戗裁剪，其中包含了推山的因素
+# 歇山基于桁架形状裁剪，其中的歇山转折点做了特殊计算
 def __drawTileBool(
         buildingObj:bpy.types.Object,
         purlin_cross_points,
-        name='tile.bool'):
+        name='tile.bool',
+        direction='X'):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -424,7 +434,20 @@ def __drawTileBool(
 
     # 循环添加由戗节点
     for n in range(len(purlin_cross_points)):
-        cutPoint = purlin_cross_points[n]
+        # 这里不加copy，原始值就会被异常修改，python传值还是传指针太麻烦
+        cutPoint = purlin_cross_points[n].copy()
+        # 歇山转折点特殊处理
+        if bData.roof_style == '2':
+            if n==1:
+                if direction == 'X':
+                    cutPoint.x = purlin_cross_points[-1].x
+                    # 保持45度斜切，简单的从翼角做X/Y相同的位移
+                    cutPoint.y = roof_qiao_point.y \
+                        - (roof_qiao_point.x-cutPoint.x)
+                else:
+                    cutPoint.x = purlin_cross_points[1].x
+            if n > 1:
+                continue
         vectors.insert(0,(cutPoint.x,cutPoint.y,z0))
         vectors.append((cutPoint.x,-cutPoint.y,z0))
     
@@ -538,7 +561,8 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     # 构造一个裁剪对象，做boolean
     # 瓦面不适合像椽架那样做三个bisect面的切割
     # 因为推山导致的由戗角度交叉，使得三个bisect面也有交叉，导致上下被裁剪的过多
-    tile_bool_obj = __drawTileBool(buildingObj,rafter_pos)
+    tile_bool_obj = __drawTileBool(
+        buildingObj,rafter_pos,direction=direction)
 
     # 檐面与山面的差异
     if direction=='X':

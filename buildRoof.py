@@ -747,7 +747,7 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
     dk = bData.DK
     roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
 
-    # 添板只做1象限半幅，然后镜像
+    # 望板只做1象限半幅，然后镜像
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
         # 歇山的山面只做一层望板

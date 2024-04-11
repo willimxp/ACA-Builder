@@ -2330,25 +2330,28 @@ def buildRoof(buildingObj:bpy.types.Object):
     # 清理垃圾数据
     utils.delOrphan()    
     # 聚焦根目录
-    utils.setCollection(con.ROOT_COLL_NAME)
+    # utils.setCollection(con.ROOT_COLL_NAME)
     # 暂存cursor位置，注意要加copy()，否则传递的是引用
     old_loc = bpy.context.scene.cursor.location.copy()
     # 载入数据
     bData : acaData = buildingObj.ACA_data
 
     # 生成斗栱
+    utils.outputMsg("斗栱营造...")
     buildDougong.buildDougong(buildingObj)
 
     # 设定“屋顶层”根节点
+    utils.outputMsg("根节点...")
     roofRootObj = __setRoofRoot(buildingObj)
 
     # 计算桁檩定位点
+    utils.outputMsg("桁檩定位...")
     purlin_pos = __getPurlinPos(buildingObj)
     
     # 摆放桁檩
-    __buildPurlin(buildingObj,purlin_pos)
     utils.outputMsg("桁檩营造...")
-
+    __buildPurlin(buildingObj,purlin_pos)
+    
     # 如果有斗栱，剔除挑檐桁
     # 在梁架、椽架、角梁的计算中不考虑挑檐桁
     rafter_pos = purlin_pos.copy()
@@ -2356,12 +2359,12 @@ def buildRoof(buildingObj:bpy.types.Object):
         del rafter_pos[0]
 
     # 摆放梁架
-    __buildBeam(buildingObj,rafter_pos)
     utils.outputMsg("梁架营造...")
+    __buildBeam(buildingObj,rafter_pos)
 
     # 摆放椽架（包括角梁、檐椽、望板、飞椽、里口木、大连檐等）
-    __buildRafterForAll(buildingObj,rafter_pos)
     utils.outputMsg("椽架营造...")
+    __buildRafterForAll(buildingObj,rafter_pos)
 
     # 摆放瓦作
     if bData.use_tile:

@@ -74,7 +74,8 @@ def recurLayerCollection(layerColl, collName):
 
 # 新建或聚焦当前场景下的目录
 # 所有对象建立在插件目录下，以免与用户自建的内容冲突
-def setCollection(name:str, IsClear=False):
+def setCollection(name:str, IsClear=False,isRoot=False,
+                  parentColl:bpy.types.Collection=None):
     coll_name = name  # 在大纲中的目录名称
     coll_found = False
     coll = bpy.types.Collection
@@ -89,10 +90,19 @@ def setCollection(name:str, IsClear=False):
         # 新建collection，不与其他用户自建的模型打架
         outputMsg("创建子目录：" + coll_name)
         coll = bpy.data.collections.new(coll_name)
-        bpy.context.scene.collection.children.link(coll)
+        if isRoot:
+            bpy.context.scene.collection.children.link(coll)
+        else:
+            if parentColl==None:
+                bpy.context.collection.children.link(coll)
+            else:
+                parentColl.children.link(coll)
         # 聚焦到新目录上
-        bpy.context.view_layer.active_layer_collection = \
-            bpy.context.view_layer.layer_collection.children[-1]
+        # bpy.context.view_layer.active_layer_collection = \
+        #     bpy.context.view_layer.layer_collection.children[-1]
+        layer_collection = bpy.context.view_layer.layer_collection
+        layerColl = recurLayerCollection(layer_collection, coll_name)
+        bpy.context.view_layer.active_layer_collection = layerColl
     else:
         # 根据IsClear入参，决定是否要清空目录
         if IsClear:
@@ -107,7 +117,7 @@ def setCollection(name:str, IsClear=False):
         layerColl = recurLayerCollection(layer_collection, coll_name)
         bpy.context.view_layer.active_layer_collection = layerColl
     
-    # 返回china_arch目录的对象
+    # 返回目录的对象
     return coll
 
 # 创建一个基本圆柱体，可用于柱等直立构件
@@ -318,11 +328,13 @@ def deleteHierarchy(parent_obj:bpy.types.Object,del_parent=False):
     objects = bpy.data.objects
     # Remove the animation from the all the child objects
     if names:
+        outputMsg("object removing...")
         for child_name in names:
             # bpy.data.objects[child_name].animation_data_clear()
             # objects[child_name].select_set(state=True)
             # utils.outputMsg("remove child： " +child_name)
             bpy.data.objects.remove(objects[child_name])
+        outputMsg("object removed")
         # utils.outputMsg ("Successfully deleted object")
     # else:
     #     utils.outputMsg ("Could not delete object")
@@ -754,8 +766,9 @@ def redrawViewport():
 
 # 删除所有无用数据，以免拖累性能
 def delOrphan():
+    outputMsg("start delorphan")
     bpy.data.orphans_purge()
-    
+    outputMsg("start delorphan2...")
     for block in bpy.data.collections:
         if block.users == 0:
             bpy.data.collections.remove(block)
@@ -787,6 +800,7 @@ def delOrphan():
     for block in bpy.data.node_groups:
         if block.users == 0:
             bpy.data.node_groups.remove(block)
+    outputMsg("End delorphan!")
 
 # 获取对象的几何中心
 # 已经在代码中使用评估对象，可以抗阻塞 

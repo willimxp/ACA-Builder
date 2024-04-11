@@ -26,7 +26,7 @@ from . import progress
 def addBuildingRoot(context:bpy.types.Context):
     # 获取panel上选择的模版
     templateName = bpy.context.scene.ACA_data.template
-    
+    utils.setCollection(templateName)
     # 创建buildObj根节点
     bpy.ops.object.empty_add(type='PLAIN_AXES')
     buildingObj = context.object
@@ -38,7 +38,6 @@ def addBuildingRoot(context:bpy.types.Context):
     templateData = acaTemplate.getTemplate(templateName)
     acaTemplate.fillTemplate(buildingObj,templateData)
     
-    utils.outputMsg("初始化根节点...")
     return buildingObj
 
 # 生成新建筑
@@ -54,7 +53,7 @@ class ACA_OT_add_building(bpy.types.Operator):
     def execute(self, context):      
         utils.console_clear()
         # 1.定位到“ACA”根collection，如果没有则新建
-        utils.setCollection(con.ROOT_COLL_NAME)
+        utils.setCollection(con.ROOT_COLL_NAME,isRoot=True)
 
         # 2.添加建筑empty
         # 其中绑定了模版数据

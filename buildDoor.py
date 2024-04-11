@@ -618,7 +618,7 @@ def __buildDoor(wallproxy):
     # 清理之前的子对象
     # utils.deleteHierarchy(wallproxy)
     # 聚焦在当前collection中
-    utils.setCollection(con.ROOT_COLL_NAME)
+    # utils.setCollection(con.ROOT_COLL_NAME)
     
     # 2、构建槛框，返回下抱框，做为隔扇生成的参考  
     BaoKuangDownObj = __buildKanKuang(wallproxy)

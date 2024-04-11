@@ -708,7 +708,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
 # 一次性重建所有的瓦做
 def buildTile(buildingObj: bpy.types.Object):
     # 确认聚焦在根目录中
-    utils.setCollection(con.ROOT_COLL_NAME)
+    # utils.setCollection(con.ROOT_COLL_NAME)
     # 暂存cursor位置，注意要加copy()，否则传递的是引用
     old_loc = bpy.context.scene.cursor.location.copy()
     # 添加或清空根节点

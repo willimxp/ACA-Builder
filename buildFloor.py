@@ -233,29 +233,34 @@ def buildFloor(buildingObj:bpy.types.Object):
     utils.outputMsg("资源准备中...")
     utils.delOrphan()
     # 聚焦根目录
-    utils.setCollection(con.ROOT_COLL_NAME)
+    # utils.setCollection(con.ROOT_COLL_NAME)
     # 暂存cursor位置，注意要加copy()，否则传递的是引用
     old_loc = bpy.context.scene.cursor.location.copy()
+    buildingColl = bpy.context.collection
 
     # 提高性能模式============
     # https://blender.stackexchange.com/questions/7358/python-performance-with-blender-operators
     # 生成柱网
     utils.outputMsg("生成柱网...")
+    utils.setCollection('柱网',parentColl=buildingColl)
     funproxy = partial(buildPillers,buildingObj=buildingObj)
     utils.fastRun(funproxy)
     
     # 生成台基
     utils.outputMsg("生成台基...")
+    utils.setCollection('台基',parentColl=buildingColl)
     funproxy = partial(buildPlatform.buildPlatform,buildingObj=buildingObj)
     utils.fastRun(funproxy)
     
     # 生成墙体
     utils.outputMsg("生成墙体...")
+    utils.setCollection('墙体',parentColl=buildingColl)
     funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
     utils.fastRun(funproxy)
     
     # 生成屋顶
     utils.outputMsg("生成屋顶...")
+    utils.setCollection('屋顶',parentColl=buildingColl)
     funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
     utils.fastRun(funproxy)
 

@@ -19,7 +19,7 @@ def buildDougong(buildingObj:bpy.types.Object):
     dk = bData.DK
 
     # 聚焦在根目录下
-    utils.setCollection(con.ROOT_COLL_NAME)
+    # utils.setCollection(con.ROOT_COLL_NAME)
     # 新建或清空根节点
     dgrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_DG_ROOT)
     if dgrootObj == None:

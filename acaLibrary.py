@@ -36,7 +36,8 @@ def loadAssets(assetName : str,parent:bpy.types.Object,hide=True):
     asset.parent = parent
 
     # 将父子对象全部绑定到场景中
-    coll = utils.setCollection(con.ROOT_COLL_NAME)
+    # coll = utils.setCollection(con.ROOT_COLL_NAME)
+    coll = bpy.context.collection
     for a in assets:
         coll.objects.link(a)
         if hide:

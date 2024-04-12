@@ -30,7 +30,12 @@ classes = (
     
     # 基本面板类
     panel.ACA_PT_basic,
-    panel.ACA_PT_props,  
+    panel.ACA_PT_props, 
+    panel.ACA_PT_platform, 
+    panel.ACA_PT_pillers,
+    panel.ACA_PT_wall,
+    panel.ACA_PT_dougong,
+    panel.ACA_PT_roof,
     
     # 操作逻辑类    
     operators.ACA_OT_test,

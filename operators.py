@@ -70,7 +70,7 @@ class ACA_OT_add_building(bpy.types.Operator):
 # 绑定在建筑面板的“墙体营造按钮上”
 class ACA_OT_reset_wall_layout(bpy.types.Operator):
     bl_idname="aca.reset_wall_layout"
-    bl_label = "墙体营造"
+    bl_label = "应用所有墙体"
 
     def execute(self, context):  
         buildingObj = context.object
@@ -87,7 +87,7 @@ class ACA_OT_reset_wall_layout(bpy.types.Operator):
 # 单独生成一个墙体
 class ACA_OT_build_door(bpy.types.Operator):
     bl_idname="aca.build_door"
-    bl_label = "墙体营造"
+    bl_label = "仅应用该墙体"
 
     def execute(self, context):  
         wallproxy = context.object

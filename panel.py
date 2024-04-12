@@ -58,17 +58,34 @@ class ACA_PT_props(bpy.types.Panel):
             layout = self.layout
             objData :data.ACA_data_obj = context.object.ACA_data             
 
+            box = layout.box()
+            # 名称
+            row = box.row()
+            row.prop(context.object,"name",text="建筑名称")
+
+# “台基属性”子面板
+# 根据当前选择的对象，显示对象的名称、类型
+# 同时，根据对象类型，显示对应的可设置参数
+class ACA_PT_platform(bpy.types.Panel):
+    # 常规属性
+    bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
+    bl_region_type = 'UI'           # UI代表sidebar形式
+    bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
+    
+    # 自定义属性
+    bl_category = "古建营造"             # 标签页名称
+    bl_label = "台基属性"            # 面板名称，显示为可折叠的箭头后
+    bl_parent_id = "ACA_PT_props"   # 父面板
+    bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
+
+    def draw(self, context):
+        # 从当前场景中载入数据集
+        if context.object != None:
+            layout = self.layout
+            objData :data.ACA_data_obj = context.object.ACA_data 
+
             # 仅在选中建筑根节点时显示
             if objData.aca_type == con.ACA_TYPE_BUILDING:
-                box = layout.box()
-
-                # 名称
-                row = box.row()
-                row.prop(context.object,"name",text="建筑名称")
-                # 建筑属性
-                row = box.row()
-                row.prop(objData,"DK")  # 斗口
-
                 # 台基属性
                 box = layout.box()
                 row = box.row()
@@ -76,6 +93,27 @@ class ACA_PT_props(bpy.types.Panel):
                 row = box.row()
                 row.prop(objData, "platform_extend")
 
+# “柱网属性”子面板
+class ACA_PT_pillers(bpy.types.Panel):
+    # 常规属性
+    bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
+    bl_region_type = 'UI'           # UI代表sidebar形式
+    bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
+    
+    # 自定义属性
+    bl_category = "古建营造"             # 标签页名称
+    bl_label = "柱网属性"            # 面板名称，显示为可折叠的箭头后
+    bl_parent_id = "ACA_PT_props"   # 父面板
+    bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
+
+    def draw(self, context):
+        # 从当前场景中载入数据集
+        if context.object != None:
+            layout = self.layout
+            objData :data.ACA_data_obj = context.object.ACA_data 
+
+            # 仅在选中建筑根节点时显示
+            if objData.aca_type == con.ACA_TYPE_BUILDING:
                 # 柱网属性
                 box = layout.box()
                 row = box.column(align=True)
@@ -103,11 +141,34 @@ class ACA_PT_props(bpy.types.Panel):
                 row.prop(objData, "piller_diameter") # 柱径
                 row = box.row()
                 row.prop(objData, "piller_source") # 柱样式
-                
-                # 墙属性
-                box = layout.box()
+
+# “墙属性”子面板
+class ACA_PT_wall(bpy.types.Panel):
+    # 常规属性
+    bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
+    bl_region_type = 'UI'           # UI代表sidebar形式
+    bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
+    
+    # 自定义属性
+    bl_category = "古建营造"             # 标签页名称
+    bl_label = "墙体属性"            # 面板名称，显示为可折叠的箭头后
+    bl_parent_id = "ACA_PT_props"   # 父面板
+    bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
+
+    def draw(self, context):
+        # 从当前场景中载入数据集
+        if context.object != None:
+            layout = self.layout
+            objData :data.ACA_data_obj = context.object.ACA_data 
+
+            box = layout.box()
+
+            if objData.aca_type==con.ACA_TYPE_BUILDING:
                 row = box.row()
                 row.prop(objData, "wall_layout") # 墙布局
+
+            # 仅在选中建筑根节点时显示
+            if objData.aca_type in (con.ACA_TYPE_BUILDING,con.ACA_TYPE_WALL):
                 row = box.row() 
                 row.prop(objData, "wall_style") # 墙样式
                 # 批量设置全局的墙样式
@@ -124,8 +185,35 @@ class ACA_PT_props(bpy.types.Panel):
                     row = box.row() 
                     row.prop(objData, "lingxin_source")   # 棂心样式
                 row = box.row()
-                row.operator("aca.reset_wall_layout",icon='HOME')# 按钮：墙体营造
 
+            if objData.aca_type == con.ACA_TYPE_BUILDING:
+                row.operator("aca.reset_wall_layout",icon='HOME')# 按钮：墙体营造
+                
+            # 选择wallproxy时，可以设置墙体的独立样式
+            if objData.aca_type == con.ACA_TYPE_WALL: 
+                row.operator("aca.build_door",icon='HOME')# 按钮：生成单一门窗
+
+# “斗栱属性”子面板
+class ACA_PT_dougong(bpy.types.Panel):
+    # 常规属性
+    bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
+    bl_region_type = 'UI'           # UI代表sidebar形式
+    bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
+    
+    # 自定义属性
+    bl_category = "古建营造"             # 标签页名称
+    bl_label = "斗栱属性"                # 面板名称，显示为可折叠的箭头后
+    bl_parent_id = "ACA_PT_props"       # 父面板
+    bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
+
+    def draw(self, context):
+        # 从当前场景中载入数据集
+        if context.object != None:
+            layout = self.layout
+            objData :data.ACA_data_obj = context.object.ACA_data 
+
+            # 仅在选中建筑根节点时显示
+            if objData.aca_type == con.ACA_TYPE_BUILDING:
                 # 斗栱属性
                 box = layout.box()
                 row = box.row()
@@ -148,6 +236,27 @@ class ACA_PT_props(bpy.types.Panel):
                 else:
                     row.enabled = False
 
+# “屋顶属性”子面板
+class ACA_PT_roof(bpy.types.Panel):
+    # 常规属性
+    bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
+    bl_region_type = 'UI'           # UI代表sidebar形式
+    bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
+    
+    # 自定义属性
+    bl_category = "古建营造"             # 标签页名称
+    bl_label = "屋顶属性"                # 面板名称，显示为可折叠的箭头后
+    bl_parent_id = "ACA_PT_props"       # 父面板
+    bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
+
+    def draw(self, context):
+        # 从当前场景中载入数据集
+        if context.object != None:
+            layout = self.layout
+            objData :data.ACA_data_obj = context.object.ACA_data 
+
+            # 仅在选中建筑根节点时显示
+            if objData.aca_type == con.ACA_TYPE_BUILDING:
                 # 屋顶属性
                 box = layout.box()
                 row = box.row()
@@ -185,28 +294,3 @@ class ACA_PT_props(bpy.types.Panel):
                     row.prop(objData, "eaveTile_source") # 瓦当
                     row = box.row()
                     row.prop(objData, "dripTile_source") # 滴水
-
-            # 选择wallproxy时，可以设置墙体的独立样式
-            if objData.aca_type == con.ACA_TYPE_WALL: 
-                box = layout.box()
-                row = box.row() 
-                row.prop(objData, "wall_style") # 墙样式
-                if objData.wall_style == "1": # 槛墙
-                    row = box.row() 
-                    row.prop(objData, "wall_source") # 墙样式
-                if objData.wall_style in ("2","3"): # 2-隔扇，3-槛窗
-                    # 隔扇工具
-                    row = box.row()
-                    row.label(text="请确选择一个墙体线框对象")
-                    row = box.row()
-                    row.prop(objData, "door_height")  # 中槛高度
-                    row = box.row()
-                    row.prop(objData, "door_num")     # 隔扇数量
-                    row = box.row()
-                    row.prop(objData, "gap_num")      # 抹头数量
-                    row = box.row() 
-                    row.prop(objData, "lingxin_source")   # 棂心样式
-                    row = box.row()
-                    row.prop(objData, "use_KanWall") # 是否有槛墙                
-                row = box.row()
-                row.operator("aca.build_door",icon='HOME')# 按钮：生成门窗

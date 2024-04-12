@@ -328,13 +328,13 @@ def deleteHierarchy(parent_obj:bpy.types.Object,del_parent=False):
     objects = bpy.data.objects
     # Remove the animation from the all the child objects
     if names:
-        outputMsg("object removing...")
+        #outputMsg("object removing...")
         for child_name in names:
             # bpy.data.objects[child_name].animation_data_clear()
             # objects[child_name].select_set(state=True)
             # utils.outputMsg("remove child： " +child_name)
             bpy.data.objects.remove(objects[child_name])
-        outputMsg("object removed")
+        #outputMsg("object removed")
         # utils.outputMsg ("Successfully deleted object")
     # else:
     #     utils.outputMsg ("Could not delete object")
@@ -487,10 +487,9 @@ def drawHexagon(dimensions,location):
     # 确保face normal朝向
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
 
-    # 移动3d cursor，做为bmesh的origin，一般也是起点
-    bpy.context.scene.cursor.location = location
     # 任意添加一个对象，具体几何数据在bmesh中建立
-    bpy.ops.mesh.primitive_cube_add()
+    bpy.ops.mesh.primitive_cube_add(
+        location=location)
     obj = bpy.context.object
     bm.to_mesh(obj.data)
     obj.data.update()
@@ -766,9 +765,9 @@ def redrawViewport():
 
 # 删除所有无用数据，以免拖累性能
 def delOrphan():
-    outputMsg("start delorphan")
+    #outputMsg("start delorphan")
     bpy.data.orphans_purge()
-    outputMsg("start delorphan2...")
+    #outputMsg("start delorphan2...")
     for block in bpy.data.collections:
         if block.users == 0:
             bpy.data.collections.remove(block)
@@ -800,7 +799,7 @@ def delOrphan():
     for block in bpy.data.node_groups:
         if block.users == 0:
             bpy.data.node_groups.remove(block)
-    outputMsg("End delorphan!")
+    #outputMsg("End delorphan!")
 
 # 获取对象的几何中心
 # 已经在代码中使用评估对象，可以抗阻塞 

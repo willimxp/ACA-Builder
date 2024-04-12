@@ -707,10 +707,6 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
 # 对外的统一调用接口
 # 一次性重建所有的瓦做
 def buildTile(buildingObj: bpy.types.Object):
-    # 确认聚焦在根目录中
-    # utils.setCollection(con.ROOT_COLL_NAME)
-    # 暂存cursor位置，注意要加copy()，否则传递的是引用
-    old_loc = bpy.context.scene.cursor.location.copy()
     # 添加或清空根节点
     __setTileRoot(buildingObj)
     # 清理垃圾数据
@@ -755,8 +751,6 @@ def buildTile(buildingObj: bpy.types.Object):
             direction='Y')
         utils.outputMsg("两山坡面布瓦...")
 
-    # 恢复cursor位置
-    bpy.context.scene.cursor.location = old_loc 
     # 重新聚焦根节点
     utils.focusObj(buildingObj)
     

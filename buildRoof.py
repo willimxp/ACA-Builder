@@ -2024,9 +2024,7 @@ def __drawCornerFlyrafter(
     bm.free()
 
     # 把原点放在椽尾，方便后续计算椽头坐标
-    # 把飞椽腰的v2点转换到global坐标系，并制定给3d cursor
-    bpy.context.scene.cursor.location = cfrObj.matrix_world @ v5
-    bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+    utils.setOrigin(cfrObj,v5)
 
     # 以下有bug，导致翘飞椽有异常位移，后续找机会修正
     # 重设旋转数据：把旋转角度与翘飞椽头对齐，方便计算翘飞椽望板
@@ -2271,57 +2269,66 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     useWangban = bData.use_wangban
 
     # 各种屋顶都有前后檐
-    __buildRafter_FB(buildingObj,purlin_pos)    # 前后檐椽
     utils.outputMsg("正身檐椽营造...")
+    __buildRafter_FB(buildingObj,purlin_pos)    # 前后檐椽
+    
     if useFlyrafter:  # 用户可选择不使用飞椽
-        __buildFlyrafterAll(buildingObj,purlin_pos,'X') # 前后飞椽
         utils.outputMsg("正身飞椽营造...")
+        __buildFlyrafterAll(buildingObj,purlin_pos,'X') # 前后飞椽
+        
     if useWangban:  # 用户可选择暂时不生成望板（更便于观察椽架形态）
-        __buildWangban_FB(buildingObj,purlin_pos)   # 前后望板
         utils.outputMsg("望板营造...")
+        __buildWangban_FB(buildingObj,purlin_pos)   # 前后望板
     
     # 庑殿、歇山的处理（硬山、悬山不涉及）
     if roofStyle in ('1','2'):
         # 营造角梁
-        __buildCornerBeam(buildingObj,purlin_pos)
         utils.outputMsg("角梁营造...")
+        __buildCornerBeam(buildingObj,purlin_pos)
         
         # 两山檐椽
-        __buildRafter_LR(buildingObj,purlin_pos)    
         utils.outputMsg("两山檐椽营造...")
+        __buildRafter_LR(buildingObj,purlin_pos)    
+        
         if useFlyrafter:
             # 两山飞椽
-            __buildFlyrafterAll(buildingObj,purlin_pos,'Y') 
             utils.outputMsg("两山飞椽营造...")
+            __buildFlyrafterAll(buildingObj,purlin_pos,'Y') 
+            
         if useWangban:
             # 两山望板
-            __buildWangban_LR(buildingObj,purlin_pos)   
             utils.outputMsg("两山望板营造...")
-        
+            __buildWangban_LR(buildingObj,purlin_pos)   
+            
         # 翼角部分
         # 营造小连檐
-        __buildCornerRafterEave(buildingObj)
         utils.outputMsg("小连檐营造...")
+        __buildCornerRafterEave(buildingObj)
+        
         # 营造翼角椽
-        cornerRafterColl = __buildCornerRafter(buildingObj,purlin_pos)
         utils.outputMsg("翼角椽营造...")
+        cornerRafterColl = __buildCornerRafter(buildingObj,purlin_pos)
+        
         if useWangban:
             # 翼角椽望板
-            __buildCrWangban(buildingObj,purlin_pos,cornerRafterColl)
             utils.outputMsg("翼角椽望板营造...")
+            __buildCrWangban(buildingObj,purlin_pos,cornerRafterColl)
+            
 
         # 是否做二层飞椽
         if useFlyrafter:
             # 大连檐
-            __buildCornerFlyrafterEave(buildingObj)
             utils.outputMsg("大连檐营造...")
+            __buildCornerFlyrafterEave(buildingObj)
+            
             # 翘飞椽，以翼角椽为基准
-            cfrCollection = __buildCornerFlyrafter(buildingObj,cornerRafterColl)
             utils.outputMsg("翘飞椽营造...")
+            cfrCollection = __buildCornerFlyrafter(buildingObj,cornerRafterColl)
+            
             if useWangban:
                 # 翘飞椽望板
-                __buildCfrWangban(buildingObj,purlin_pos,cfrCollection)
                 utils.outputMsg("翘飞椽望板营造...")
+                __buildCfrWangban(buildingObj,purlin_pos,cfrCollection)
     
     return
 
@@ -2329,10 +2336,6 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
 def buildRoof(buildingObj:bpy.types.Object):
     # 清理垃圾数据
     utils.delOrphan()    
-    # 聚焦根目录
-    # utils.setCollection(con.ROOT_COLL_NAME)
-    # 暂存cursor位置，注意要加copy()，否则传递的是引用
-    old_loc = bpy.context.scene.cursor.location.copy()
     # 载入数据
     bData : acaData = buildingObj.ACA_data
 
@@ -2371,7 +2374,5 @@ def buildRoof(buildingObj:bpy.types.Object):
         utils.outputMsg("生成屋瓦...")
         buildRooftile.buildTile(buildingObj)
     
-    # 重新聚焦根节点
-    bpy.context.scene.cursor.location = old_loc # 恢复cursor位置
     utils.focusObj(buildingObj)
     return

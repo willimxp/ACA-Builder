@@ -232,10 +232,6 @@ def buildFloor(buildingObj:bpy.types.Object):
     # 清理数据
     utils.outputMsg("资源准备中...")
     utils.delOrphan()
-    # 聚焦根目录
-    # utils.setCollection(con.ROOT_COLL_NAME)
-    # 暂存cursor位置，注意要加copy()，否则传递的是引用
-    old_loc = bpy.context.scene.cursor.location.copy()
     buildingColl = bpy.context.collection
 
     # 提高性能模式============
@@ -264,6 +260,4 @@ def buildFloor(buildingObj:bpy.types.Object):
     funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
     utils.fastRun(funproxy)
 
-    # 重新聚焦根节点
-    bpy.context.scene.cursor.location = old_loc # 恢复cursor位置
     utils.focusObj(buildingObj)

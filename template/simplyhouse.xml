@@ -27,6 +27,9 @@
             <circularTile_source>筒瓦</circularTile_source>
             <eaveTile_source>瓦当</eaveTile_source>
             <dripTile_source>滴水</dripTile_source>
+            <ridgeTop_source>正脊筒</ridgeTop_source>
+            <ridgeBack_source>垂脊兽后</ridgeBack_source>
+            <ridgeFront_source>垂脊兽前</ridgeFront_source>
         </roof>
     </template>
     <template>

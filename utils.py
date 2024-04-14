@@ -101,7 +101,7 @@ def setCollection(name:str, IsClear=False,isRoot=False,
         # bpy.context.view_layer.active_layer_collection = \
         #     bpy.context.view_layer.layer_collection.children[-1]
         layer_collection = bpy.context.view_layer.layer_collection
-        layerColl = recurLayerCollection(layer_collection, coll_name)
+        layerColl = recurLayerCollection(layer_collection, coll.name)
         bpy.context.view_layer.active_layer_collection = layerColl
     else:
         # 根据IsClear入参，决定是否要清空目录
@@ -554,7 +554,8 @@ def addCylinderHorizontal(radius,depth,name,root_obj,
         edge_num=edge_num
     )
     # apply rotation
-    bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+    #bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+    applyTransfrom(cylinder,use_rotation=True)
     # 旋转到实际角度
     cylinder.rotation_euler = rotation
     return cylinder
@@ -758,6 +759,7 @@ def updateScene():
 
 # 刷新viewport，避免长时间卡死，并可见到建造过程
 def redrawViewport():
+    updateScene()
     do = bpy.context.scene.ACA_data.is_auto_redraw
     if do:
         bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)

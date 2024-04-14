@@ -704,6 +704,10 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     utils.hideObj(eaveTile)
     utils.hideObj(dripTile)
 
+# 营造屋脊
+def __buildRidge(buildingObj: bpy.types.Object):
+    return
+
 # 对外的统一调用接口
 # 一次性重建所有的瓦做
 def buildTile(buildingObj: bpy.types.Object):
@@ -750,6 +754,9 @@ def buildTile(buildingObj: bpy.types.Object):
             tileGrid,
             direction='Y')
         utils.outputMsg("两山坡面布瓦...")
+
+    # 添加屋脊
+    __buildRidge(buildingObj)
 
     # 重新聚焦根节点
     utils.focusObj(buildingObj)

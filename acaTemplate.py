@@ -50,6 +50,9 @@ class templateData:
     CIRCULARTILE_SOURCE = ''    # 筒瓦
     EAVETILE_SOURCE = ''        # 瓦当
     DRIPTILE_SOURCE = ''        # 滴水
+    RIDGETOP_SOURCE = ''        # 正脊筒
+    RIDGEBACK_SOURCE = ''       # 垂脊兽后
+    RIDGEFRONT_SOURCE = ''      # 垂脊兽前
 
 # 解析XML，获取模版列表
 def getTemplateList():
@@ -229,6 +232,16 @@ def getTemplate(name,doukou=0)->templateData:
                 dripTile_source = roof.find('dripTile_source')
                 if dripTile_source != None:
                     tData.DRIPTILE_SOURCE = dripTile_source.text
+
+                ridgeTop_source = roof.find('ridgeTop_source')
+                if ridgeTop_source != None:
+                    tData.RIDGETOP_SOURCE = ridgeTop_source.text
+                ridgeBack_source = roof.find('ridgeBack_source')
+                if ridgeBack_source != None:
+                    tData.RIDGEBACK_SOURCE = ridgeBack_source.text
+                ridgeFront_source = roof.find('ridgeFront_source')
+                if ridgeFront_source != None:
+                    tData.RIDGEFRONT_SOURCE = ridgeFront_source.text
                 
     return tData    
 
@@ -320,6 +333,19 @@ def fillTemplate(buildingObj:bpy.types.Object,
         dripTile_source:bpy.types.Object = \
             acaLibrary.loadAssets(template.DRIPTILE_SOURCE,assetsObj)
         buildingData['dripTile_source'] = dripTile_source
+
+    if template.RIDGETOP_SOURCE != "" :
+        ridgeTop_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.RIDGETOP_SOURCE,assetsObj)
+        buildingData['ridgeTop_source'] = ridgeTop_source
+    if template.RIDGEBACK_SOURCE != "" :
+        ridgeBack_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.RIDGEBACK_SOURCE,assetsObj)
+        buildingData['ridgeBack_source'] = ridgeBack_source
+    if template.RIDGEFRONT_SOURCE != "" :
+        ridgeFront_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.RIDGEFRONT_SOURCE,assetsObj)
+        buildingData['ridgeFront_source'] = ridgeFront_source
 
 # 根据panel中DK的改变，更新整体设计参数
 def updateTemplateByDK(dk,buildingObj:bpy.types.Object):

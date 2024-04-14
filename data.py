@@ -404,6 +404,23 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             type = bpy.types.Object,
             poll = p_filter
         )# type: ignore 
+    
+    # 屋脊属性
+    ridgeTop_source:bpy.props.PointerProperty(
+            name = "正脊",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    ridgeBack_source:bpy.props.PointerProperty(
+            name = "垂脊兽后",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    ridgeFront_source:bpy.props.PointerProperty(
+            name = "垂脊兽前",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
 
 
 # 场景范围的数据

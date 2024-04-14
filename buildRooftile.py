@@ -18,7 +18,7 @@ from . import acaLibrary
 # 暂无增量式更新，或局部更新
 def __setTileRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 屋顶层根节点
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT) 
     # 新建或清空根节点
     tileRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_TILE_ROOT)
     if tileRootObj != None:
@@ -27,22 +27,22 @@ def __setTileRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     bpy.ops.object.empty_add(type='PLAIN_AXES',location=(0,0,0))
     tileRootObj = bpy.context.object
     tileRootObj.name = "瓦作层"
-    tileRootObj.parent = roofRootObj
+    tileRootObj.parent = buildingObj
     tileRootObj.ACA_data['aca_obj'] = True
     tileRootObj.ACA_data['aca_type'] = con.ACA_TYPE_TILE_ROOT
-    # # 以挑檐桁下皮为起始点
-    # bData : acaData = buildingObj.ACA_data # 载入数据
-    # dk = bData.DK
-    # pd = con.PILLER_D_EAVE * dk
-    # tile_base = bData.platform_height \
-    #             + bData.piller_height
-    # # 如果有斗栱，抬高斗栱高度
-    # if bData.use_dg:
-    #     tile_base += bData.dg_height
-    # else:
-    #     # 以大梁抬升
-    #     tile_base += con.BEAM_HEIGHT*pd
-    # tileRootObj.location = (0,0,tile_base)
+    # 以挑檐桁下皮为起始点
+    bData : acaData = buildingObj.ACA_data # 载入数据
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    tile_base = bData.platform_height \
+                + bData.piller_height
+    # 如果有斗栱，抬高斗栱高度
+    if bData.use_dg:
+        tile_base += bData.dg_height
+    else:
+        # 以大梁抬升
+        tile_base += con.BEAM_HEIGHT*pd
+    tileRootObj.location = (0,0,tile_base)
         
     return tileRootObj
 
@@ -586,6 +586,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
 
     bm = bmesh.new()   # create an empty BMesh
     bm.from_mesh(tileGrid.data)   # fill it in from a Mesh
+    tileList = []
     for f in bm.faces:
         # # 做法一：基于face的normal，并强制矫正
         # # https://blender.stackexchange.com/questions/46566/aligning-plane-normal-vector-side-to-face-a-point-python
@@ -615,7 +616,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         M.translation = f.calc_center_median()
         
         # 排布板瓦
-        __setTile(
+        tileObj = __setTile(
             sourceObj=flatTile,
             name='板瓦',
             Matrix=M,
@@ -626,9 +627,10 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
             boolObj=tile_bool_obj,
             isBoolInside=isBoolInside
         )
+        tileList.append(tileObj)
 
         # 排布筒瓦
-        __setTile(
+        tileObj = __setTile(
             sourceObj=circularTile,
             name='筒瓦',
             Matrix=M,
@@ -639,11 +641,12 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
             boolObj=tile_bool_obj,
             isBoolInside=isBoolInside
         )
+        tileList.append(tileObj)
 
         # 排布檐口瓦
         if f.index < tileCols-1:# 第一行
             # 排布瓦当
-            __setTile(
+            tileObj = __setTile(
                 sourceObj=eaveTile,
                 name='瓦当',
                 Matrix=M,
@@ -654,9 +657,10 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 boolObj=tile_bool_obj,
                 isBoolInside=isBoolInside
             )
+            tileList.append(tileObj)
 
             # 排布滴水
-            __setTile(
+            tileObj = __setTile(
                 sourceObj=dripTile,
                 name='滴水',
                 Matrix=M,
@@ -666,12 +670,13 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 isNeedBool=isNeedBool,
                 boolObj=tile_bool_obj,
                 isBoolInside=isBoolInside
-            ) 
+            )
+            tileList.append(tileObj) 
 
         # 最后再加一列板瓦收口
         if f.index % (tileCols-1) ==tileCols-2: # 最后一列
             # 排布板瓦
-            __setTile(
+            tileObj = __setTile(
                 sourceObj=flatTile,
                 name='板瓦',
                 Matrix=M,
@@ -682,9 +687,11 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 boolObj=tile_bool_obj,
                 isBoolInside=isBoolInside
             ) 
+            tileList.append(tileObj)
+
             if f.index < tileCols-1:# 第一行
                 # 排布滴水
-                __setTile(
+                tileObj = __setTile(
                     sourceObj=dripTile,
                     name='滴水',
                     Matrix=M,
@@ -694,7 +701,10 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                     isNeedBool=isNeedBool,
                     boolObj=tile_bool_obj,
                     isBoolInside=isBoolInside
-                ) 
+                )
+                tileList.append(tileObj)
+    
+    utils.joinObjects(tileList)
         
     # 隐藏辅助对象
     utils.hideObj(tile_bool_obj)
@@ -705,7 +715,41 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     utils.hideObj(dripTile)
 
 # 营造屋脊
-def __buildRidge(buildingObj: bpy.types.Object):
+def __buildRidge(buildingObj: bpy.types.Object,
+                 rafter_pos):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT
+    )
+
+    ridgeTopObj = bData.ridgeTop_source
+    # 创建正脊
+    # 向上位移:半桁径+椽径+望板高+灰泥层高
+    offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
+                + con.WANGBAN_H + con.ROOFMUD_H)*dk
+    zhengji_z = rafter_pos[-1].z + offset
+    roofRidgeObj = utils.copyObject(
+        sourceObj=ridgeTopObj,
+        name="正脊",
+        location=(0,0,zhengji_z),
+        parentObj=tileRootObj)
+    
+    # 横向平铺
+    l = roofRidgeObj.dimensions.x
+    zhengji_length = rafter_pos[-1].x + l/2
+    count = math.ceil(zhengji_length / l)
+    span = zhengji_length/count
+    mod:bpy.types.ArrayModifier = roofRidgeObj.modifiers.new('横向平铺','ARRAY')
+    mod.use_constant_offset = True
+    mod.use_relative_offset = False
+    mod.constant_offset_displace = (span,0,0)
+    mod.count = count
+
+    mod:bpy.types.MirrorModifier = roofRidgeObj.modifiers.new('X向对称','MIRROR')
+    mod.mirror_object = tileRootObj
+    mod.use_bisect_axis = (True,False,False)
     return
 
 # 对外的统一调用接口
@@ -733,13 +777,13 @@ def buildTile(buildingObj: bpy.types.Object):
         rafter_pos,
         direction='X')
     # 在网格上铺瓦
+    utils.outputMsg("前后檐面布瓦...")
     __arrayTileGrid(
         buildingObj,
         rafter_pos,
         tileGrid,
         direction='X')
-    utils.outputMsg("前后檐面布瓦...")
-
+    
     # 仅庑殿、歇山做两山的瓦面
     if bData.roof_style in ('1','2'):
         # 绘制两山瓦面网格
@@ -748,16 +792,19 @@ def buildTile(buildingObj: bpy.types.Object):
             rafter_pos,
             direction='Y')
         # 在网格上铺瓦
+        utils.outputMsg("两山坡面布瓦...")
         __arrayTileGrid(
             buildingObj,
             rafter_pos,
             tileGrid,
             direction='Y')
-        utils.outputMsg("两山坡面布瓦...")
+        
 
     # 添加屋脊
-    __buildRidge(buildingObj)
+    utils.outputMsg("添加屋脊...")
+    __buildRidge(buildingObj,rafter_pos)
 
     # 重新聚焦根节点
     utils.focusObj(buildingObj)
+    utils.outputMsg("瓦作层完成")
     

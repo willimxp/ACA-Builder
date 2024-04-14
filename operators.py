@@ -26,7 +26,7 @@ from . import progress
 def addBuildingRoot(context:bpy.types.Context):
     # 获取panel上选择的模版
     templateName = bpy.context.scene.ACA_data.template
-    utils.setCollection(templateName)
+    coll = utils.setCollection(templateName)
     # 创建buildObj根节点
     bpy.ops.object.empty_add(type='PLAIN_AXES')
     buildingObj = context.object
@@ -37,6 +37,7 @@ def addBuildingRoot(context:bpy.types.Context):
     # 在buildingObj中填充模版数据
     templateData = acaTemplate.getTemplate(templateName)
     acaTemplate.fillTemplate(buildingObj,templateData)
+    buildingObj.ACA_data['COLL'] = coll.name
     
     return buildingObj
 

@@ -36,6 +36,7 @@ def buildDougong(buildingObj:bpy.types.Object):
     else:
         # 清空根节点
         utils.deleteHierarchy(dgrootObj)
+        utils.focusCollByObj(dgrootObj)
 
     # 如果不使用斗栱，以下直接跳过
     if not bData.use_dg: return

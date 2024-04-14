@@ -72,6 +72,17 @@ def recurLayerCollection(layerColl, collName):
         if found:
             return found
 
+# 聚焦选中指定名称的目录
+def focusCollection(coll_name:str):
+    layer_collection = bpy.context.view_layer.layer_collection
+    layerColl = recurLayerCollection(layer_collection, coll_name)
+    bpy.context.view_layer.active_layer_collection = layerColl
+
+# 聚焦选中指定名称的目录
+def focusCollByObj(obj:bpy.types.Object):
+    parentColl = obj.users_collection[0].name
+    focusCollection(parentColl)
+
 # 新建或聚焦当前场景下的目录
 # 所有对象建立在插件目录下，以免与用户自建的内容冲突
 def setCollection(name:str, IsClear=False,isRoot=False,
@@ -100,9 +111,10 @@ def setCollection(name:str, IsClear=False,isRoot=False,
         # 聚焦到新目录上
         # bpy.context.view_layer.active_layer_collection = \
         #     bpy.context.view_layer.layer_collection.children[-1]
-        layer_collection = bpy.context.view_layer.layer_collection
-        layerColl = recurLayerCollection(layer_collection, coll.name)
-        bpy.context.view_layer.active_layer_collection = layerColl
+        # layer_collection = bpy.context.view_layer.layer_collection
+        # layerColl = recurLayerCollection(layer_collection, coll.name)
+        # bpy.context.view_layer.active_layer_collection = layerColl
+        focusCollection(coll.name)
     else:
         # 根据IsClear入参，决定是否要清空目录
         if IsClear:
@@ -113,9 +125,10 @@ def setCollection(name:str, IsClear=False,isRoot=False,
         coll.hide_viewport = False
         bpy.context.view_layer.layer_collection.children[coll_name].hide_viewport = False
         # 选中目录，防止用户手工选择其他目录而导致的失焦
-        layer_collection = bpy.context.view_layer.layer_collection
-        layerColl = recurLayerCollection(layer_collection, coll_name)
-        bpy.context.view_layer.active_layer_collection = layerColl
+        # layer_collection = bpy.context.view_layer.layer_collection
+        # layerColl = recurLayerCollection(layer_collection, coll_name)
+        # bpy.context.view_layer.active_layer_collection = layerColl
+        focusCollection(coll_name)
     
     # 返回目录的对象
     return coll
@@ -162,6 +175,7 @@ def copySimplyObject(
         rotation=(0,0,0)):
     # 复制基本信息
     newObj:bpy.types.Object = sourceObj.copy()
+    newObj.data = sourceObj.data.copy()
     newObj.name = name
     newObj.location = location
     newObj.rotation_euler = rotation
@@ -338,6 +352,9 @@ def deleteHierarchy(parent_obj:bpy.types.Object,del_parent=False):
         # utils.outputMsg ("Successfully deleted object")
     # else:
     #     utils.outputMsg ("Could not delete object")
+
+    # 数据清理
+    redrawViewport()
 
 # 计算两个点之间距离
 # 使用blender提供的mathutils库中的Vector类
@@ -1090,3 +1107,24 @@ def setGN_Input(mod:bpy.types.NodesModifier,
     id = mod.node_group.interface.items_tree[inputName].identifier
 
     mod[id] = value
+
+# 合并对个对象
+# https://blender.stackexchange.com/questions/13986/how-to-join-objects-with-python
+# https://docs.blender.org/api/current/bpy.ops.html#overriding-context
+def joinObjects(objList):
+    # print(time.strftime("%H:%M:%S", time.localtime()) + "join preparing...")
+    # bpy.ops.object.select_all(action='DESELECT')
+    # for ob in objList:
+    #     ob.select_set(True)
+    #     bpy.context.view_layer.objects.active = ob
+    # print(time.strftime("%H:%M:%S", time.localtime()) + "join start...")
+    # bpy.ops.object.join()
+    # print(time.strftime("%H:%M:%S", time.localtime()) + "join down!")
+
+    print(time.strftime("%H:%M:%S", time.localtime()) + "join start...")
+    ctx = bpy.context.copy()
+    ctx['active_object'] = objList[0]
+    ctx['selected_objects'] = objList
+    with bpy.context.temp_override(**ctx):
+        bpy.ops.object.join()
+    print(time.strftime("%H:%M:%S", time.localtime()) + "join down!")

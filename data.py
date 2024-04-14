@@ -146,6 +146,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0.01,
             update = update_dk
         ) # type: ignore
+    COLL:bpy.props.StringProperty(
+            name="目录名",
+    )# type: ignore
     
     # 台基对象属性
     platform_height : bpy.props.FloatProperty(
@@ -372,7 +375,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     use_tile :  bpy.props.BoolProperty(
             default=True,
             name="添加瓦作",
-            update = update_roof,
+            # update = update_roof,
         )# type: ignore 
     tile_width : bpy.props.FloatProperty(
             name="瓦垄宽度", 
@@ -407,7 +410,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     
     # 屋脊属性
     ridgeTop_source:bpy.props.PointerProperty(
-            name = "正脊",
+            name = "正脊筒",
             type = bpy.types.Object,
             poll = p_filter
         )# type: ignore 

@@ -17,9 +17,9 @@ def buildDougong(buildingObj:bpy.types.Object):
         utils.showMessageBox("错误，输入的不是建筑根节点")
         return
     dk = bData.DK
+    roofRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_ROOF_ROOT)
 
-    # 聚焦在根目录下
-    # utils.setCollection(con.ROOT_COLL_NAME)
     # 新建或清空根节点
     dgrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_DG_ROOT)
     if dgrootObj == None:
@@ -28,11 +28,13 @@ def buildDougong(buildingObj:bpy.types.Object):
         dgrootObj = bpy.context.object
         dgrootObj.name = "斗栱层"
         # 铺作起点高度在台基和柱头高度之上
-        root_z = bData.platform_height + bData.piller_height
+        # root_z = bData.platform_height + bData.piller_height
+        # 相对于屋顶层根节点
+        root_z = -bData.dg_height
         dgrootObj.location = (0,0,root_z)
         dgrootObj.ACA_data['aca_obj'] = True
         dgrootObj.ACA_data['aca_type'] = con.ACA_TYPE_DG_ROOT
-        dgrootObj.parent = buildingObj
+        dgrootObj.parent = roofRootObj
     else:
         # 清空根节点
         utils.deleteHierarchy(dgrootObj)

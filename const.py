@@ -19,7 +19,8 @@ class ACA_Consts(object):
     ACA_TYPE_WALL_ROOT = 'wall_root' # ACA类型：墙体布局，墙体的父节点
     ACA_TYPE_WALL = 'wall' # ACA类型：墙体
     ACA_TYPE_DG_ROOT ='dg_root' # ACA类型：斗栱根节点
-    ACA_TYPE_ROOF_ROOT ='roof_root' # ACA类型：斗栱根节点
+    ACA_TYPE_ROOF_ROOT ='roof_root' # ACA类型：屋顶根节点
+    ACA_TYPE_RAFTER_ROOT = 'rafter_root' # ACA类型：梁椽望根节点
     ACA_TYPE_RAFTER_FB = 'rafter_fb'      # ACA类型：前后檐椽
     ACA_TYPE_RAFTER_LR = 'rafter_lr'      # ACA类型：两山檐椽
     ACA_TYPE_FLYRAFTER_FB = 'flyrafter_fb'  # 前后檐飞椽

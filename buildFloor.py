@@ -230,33 +230,32 @@ def resizePiller(buildingObj:bpy.types.Object):
 # 采用了偏函数和fastrun，极大加速了性能
 def buildFloor(buildingObj:bpy.types.Object):
     # 清理数据
-    utils.outputMsg("资源准备中...")
+    utils.outputMsg("Preparing...")
     utils.delOrphan()
     buildingColl = bpy.context.collection
 
     # 提高性能模式============
     # https://blender.stackexchange.com/questions/7358/python-performance-with-blender-operators
     # 生成柱网
-    utils.outputMsg("生成柱网...")
+    utils.outputMsg("Building Pillers...")
     utils.setCollection('柱网',parentColl=buildingColl)
     funproxy = partial(buildPillers,buildingObj=buildingObj)
     utils.fastRun(funproxy)
     
     # 生成台基
-    utils.outputMsg("生成台基...")
+    utils.outputMsg("Building Platform...")
     utils.setCollection('台基',parentColl=buildingColl)
     funproxy = partial(buildPlatform.buildPlatform,buildingObj=buildingObj)
     utils.fastRun(funproxy)
     
     # 生成墙体
-    utils.outputMsg("生成墙体...")
+    utils.outputMsg("Building Wall...")
     utils.setCollection('墙体',parentColl=buildingColl)
     funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
     utils.fastRun(funproxy)
     
     # 生成屋顶
-    utils.outputMsg("生成屋顶...")
-    utils.setCollection('屋顶',parentColl=buildingColl)
+    utils.outputMsg("Building Roof...")
     funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
     utils.fastRun(funproxy)
 

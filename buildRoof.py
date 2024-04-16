@@ -15,33 +15,23 @@ from . import buildDougong
 from . import buildRooftile
 
 # 设置“屋顶层”根节点
-def __setRoofRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
+def __setRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
+    roofRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_ROOF_ROOT)
     # 新建或清空根节点
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
-    if roofRootObj != None:
-        utils.deleteHierarchy(roofRootObj,del_parent=True)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+    if rafterRootObj != None:
+        utils.deleteHierarchy(rafterRootObj,del_parent=True)
     # 创建屋顶根对象
     bpy.ops.object.empty_add(type='PLAIN_AXES')
-    roofRootObj = bpy.context.object
-    roofRootObj.name = "屋顶层"
-    roofRootObj.parent = buildingObj
-    roofRootObj.ACA_data['aca_obj'] = True
-    roofRootObj.ACA_data['aca_type'] = con.ACA_TYPE_ROOF_ROOT
-    # 以挑檐桁下皮为起始点
-    bData : acaData = buildingObj.ACA_data # 载入数据
-    dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
-    roof_base = bData.platform_height \
-                + bData.piller_height
-    # 如果有斗栱，抬高斗栱高度
-    if bData.use_dg:
-        roof_base += bData.dg_height
-    else:
-        # 以大梁抬升
-        roof_base += con.BEAM_HEIGHT*pd
-    roofRootObj.location = (0,0,roof_base)
+    rafterRootObj = bpy.context.object
+    rafterRootObj.name = "梁椽望"
+    rafterRootObj.parent = roofRootObj
+    rafterRootObj.ACA_data['aca_obj'] = True
+    rafterRootObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER_ROOT
         
-    return roofRootObj
+    return rafterRootObj
 
 # 举架数据计算，与屋顶样式无关
 # 按照清则例的举架算法，引入每一举的举架系数LIFT_RATIO
@@ -148,7 +138,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     dk = bData.DK
     # 屋顶样式，1-庑殿，2-歇山，3-悬山，4-硬山
     roofStyle = bData.roof_style
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     if roofStyle in ('3','4'):
         # 硬山、悬山桁不做出梢
         hengExtend = 0
@@ -177,22 +168,22 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 purlin_length_x = purlin_pos[-1].x * 2
             if not bData.use_dg and n >= 1 :
                 purlin_length_x = purlin_pos[-1].x * 2
-        
+
         # 3、创建桁对象
         hengFB = utils.addCylinderHorizontal(
                 radius = purlin_r, 
                 depth = purlin_length_x,
                 location = (0,pCross.y,pCross.z), 
                 name = "桁-前后",
-                root_obj = roofRootObj
+                root_obj = rafterRootObj
             )
-        
+
         # 4、前后镜像
         if n!=len(purlin_pos)-1:
             # 除最后一根脊桁的处理，挑檐桁、正心桁、金桁做Y镜像
             utils.addModifierMirror(
                     object=hengFB,
-                    mirrorObj=roofRootObj,
+                    mirrorObj=rafterRootObj,
                     use_axis=(False,True,False)
                 )
         else: 
@@ -205,10 +196,10 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     depth = purlin_length_x,
                     location = (0,0,loc_z), 
                     name = "伏脊木",
-                    root_obj = roofRootObj,
+                    root_obj = rafterRootObj,
                     edge_num =6
                 )
-    
+
     # 三、布置山面桁檩
     # 仅庑殿、歇山做山面桁檩，硬山、悬山不做山面桁檩
     if roofStyle in ('1','2'):
@@ -241,13 +232,13 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     location = (pCross.x,0,pCross.z), 
                     rotation=Vector((0, 0, math.radians(90))), 
                     name = "桁-两山",
-                    root_obj = roofRootObj
+                    root_obj = rafterRootObj
                 )
-            
+
             # 4、添加镜像
             utils.addModifierMirror(
                 object=hengLR,
-                mirrorObj=roofRootObj,
+                mirrorObj=rafterRootObj,
                 use_axis=(True,False,False)
             )
     return
@@ -260,7 +251,8 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     
     # 准备基本构件
     bpy.ops.mesh.primitive_cube_add(size=1.0)
@@ -304,7 +296,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                             sourceObj= beamObj,
                             name="直梁",
                             location=beam_loc,
-                            parentObj=roofRootObj
+                            parentObj=rafterRootObj
                         )
                 beamCopyObj.dimensions = Vector((
                     con.BEAM_DEEPTH*pd,
@@ -333,7 +325,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                             sourceObj= beamObj,
                             name="蜀柱",
                             location=shuzhu_loc,
-                            parentObj=roofRootObj
+                            parentObj=rafterRootObj
                         )
                 shuzhuCopyObj.dimensions = Vector((
                     con.PILLER_CHILD*dk,
@@ -343,7 +335,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 if n!=len(purlin_pos)-1:
                     #镜像
                     mod = shuzhuCopyObj.modifiers.new(name='mirror', type='MIRROR')
-                    mod.mirror_object = roofRootObj
+                    mod.mirror_object = rafterRootObj
                     mod.use_axis[0] = False
                     mod.use_axis[1] = True            
     
@@ -373,7 +365,8 @@ def __buildLKM(buildingObj:bpy.types.Object,
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     # 获取金桁位置，做为里口木的宽度
     jinhengPos = purlin_pos[1]
 
@@ -420,12 +413,12 @@ def __buildLKM(buildingObj:bpy.types.Object,
             )
     LKMObj = bpy.context.object
     LKMObj.name = LKM_name
-    LKMObj.parent = roofRootObj
+    LKMObj.parent = rafterRootObj
     LKMObj.ACA_data['aca_obj'] = True
     LKMObj.ACA_data['aca_type'] = LKM_type
     utils.addModifierMirror(
         object=LKMObj,
-        mirrorObj=roofRootObj,
+        mirrorObj=rafterRootObj,
         use_axis=LKM_mirrorAxis
     )
     return
@@ -436,7 +429,8 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     # 金桁是数组中的第二个（已排除挑檐桁）
     jinhengPos = purlin_pos[1]
     # 计算椽当
@@ -454,7 +448,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             start_point = rafter_start,
             end_point = rafter_end,
             name="檐椽.前后",
-            root_obj = roofRootObj
+            root_obj = rafterRootObj
         )
         fbRafterObj.ACA_data['aca_obj'] = True
         fbRafterObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER_FB
@@ -503,7 +497,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             ) 
             utils.addModifierMirror(
                 object=tympanumRafter,
-                mirrorObj=roofRootObj,
+                mirrorObj=rafterRootObj,
                 use_axis=(True,True,False)
             )
 
@@ -536,7 +530,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
         # 五、镜像必须放在裁剪之后，才能做上下对称     
         utils.addModifierMirror(
             object=fbRafterObj,
-            mirrorObj=roofRootObj,
+            mirrorObj=rafterRootObj,
             use_axis=(True,True,False)
         )
 
@@ -551,7 +545,8 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     # 金桁是数组中的第二个（已排除挑檐桁）
     jinhengPos = purlin_pos[1]
     # 计算山面椽当
@@ -571,7 +566,7 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
             start_point = rafter_start,
             end_point = rafter_end,
             name="檐椽.两山",
-            root_obj = roofRootObj
+            root_obj = rafterRootObj
         )
         lrRafterObj.ACA_data['aca_obj'] = True
         lrRafterObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER_LR
@@ -620,7 +615,7 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
         # 镜像
         utils.addModifierMirror(
             object=lrRafterObj,
-            mirrorObj=roofRootObj,
+            mirrorObj=rafterRootObj,
             use_axis=(True,True,False)
         )
     
@@ -636,7 +631,8 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
 
     # 添板只做1象限半幅，然后镜像
     # 根据桁数组循环计算各层椽架
@@ -662,7 +658,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             deepth=width,
             height=con.WANGBAN_H*dk,
             name="望板",
-            root_obj=roofRootObj,
+            root_obj=rafterRootObj,
             origin_at_start=True
         )
         # 望板延长，按檐总平出加斜计算
@@ -716,7 +712,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             # 望板镜像
             utils.addModifierMirror(
                 object=tympanumWangban,
-                mirrorObj=roofRootObj,
+                mirrorObj=rafterRootObj,
                 use_axis=(True,True,False)
             )
 
@@ -733,7 +729,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
         # 望板镜像
         utils.addModifierMirror(
             object=wangbanObj,
-            mirrorObj=roofRootObj,
+            mirrorObj=rafterRootObj,
             use_axis=(True,True,False)
         )
 
@@ -745,7 +741,8 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
 
     # 望板只做1象限半幅，然后镜像
     # 根据桁数组循环计算各层椽架
@@ -770,7 +767,7 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
             deepth=width,
             height=con.WANGBAN_H*dk,
             name="望板",
-            root_obj=roofRootObj,
+            root_obj=rafterRootObj,
             origin_at_start=True
         )
         # 望板延长，按檐总平出加斜计算
@@ -818,7 +815,7 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
         # 望板镜像
         utils.addModifierMirror(
             object=wangbanObj,
-            mirrorObj=roofRootObj,
+            mirrorObj=rafterRootObj,
             use_axis=(True,True,False)
         )  
 
@@ -947,7 +944,8 @@ def __drawFlyrafter(yanRafterObj:bpy.types.Object)->bpy.types.Object:
 # 营造檐椽
 # 通过direction='X'或'Y'决定山面和檐面
 def __buildFlyrafter(buildingObj,direction):
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
 
     # 判断前后檐，还是两山
     if direction == 'X':    # 前后檐
@@ -963,7 +961,7 @@ def __buildFlyrafter(buildingObj,direction):
 
     flyrafterObj = __drawFlyrafter(yanRafterObj)
     flyrafterObj.name = flyrafterName
-    flyrafterObj.parent = roofRootObj
+    flyrafterObj.parent = rafterRootObj
     flyrafterObj.ACA_data['aca_obj'] = True
     flyrafterObj.ACA_data['aca_type'] = flyrafterType
 
@@ -976,7 +974,8 @@ def __buildFlyrafterWangban(buildingObj,purlin_pos,direction):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     # 获取金桁位置，做为望板的宽度
     jinhengPos = purlin_pos[1]
 
@@ -1014,11 +1013,11 @@ def __buildFlyrafterWangban(buildingObj,purlin_pos,direction):
         )
     fwbObj = bpy.context.object
     fwbObj.name = frwName
-    fwbObj.parent = roofRootObj
+    fwbObj.parent = rafterRootObj
     # 镜像
     utils.addModifierMirror(
         object=fwbObj,
-        mirrorObj=roofRootObj,
+        mirrorObj=rafterRootObj,
         use_axis=mirrorAxis
     )
 
@@ -1028,7 +1027,8 @@ def __buildDLY(buildingObj,purlin_pos,direction):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     # 获取金桁位置，做为望板的宽度
     jinhengPos = purlin_pos[1]
 
@@ -1077,14 +1077,14 @@ def __buildDLY(buildingObj,purlin_pos,direction):
             )
     DLY_Obj = bpy.context.object
     DLY_Obj.name = DLY_name
-    DLY_Obj.parent = roofRootObj
+    DLY_Obj.parent = rafterRootObj
     DLY_Obj.ACA_data['aca_obj'] = True
     DLY_Obj.ACA_data['aca_type'] = DLY_type
 
     # 添加镜像
     utils.addModifierMirror(
         object=DLY_Obj,
-        mirrorObj=roofRootObj,
+        mirrorObj=rafterRootObj,
         use_axis=DLY_mirrorAxis
     )
 
@@ -1241,7 +1241,8 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     
     # 计算角梁数据，忽略第一个挑檐桁交点，直接从正心桁到脊桁分段生成
     cb_collection = []
@@ -1285,7 +1286,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             deepth=con.JIAOLIANG_Y*dk,
             height=con.JIAOLIANG_H*dk,
             name=CornerBeamName,
-            root_obj=roofRootObj,
+            root_obj=rafterRootObj,
             origin_at_end=True
         )
         
@@ -1316,18 +1317,18 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                 cbcObj:bpy.types.Object = \
                     __drawCornerBeamChild(CornerBeamObj)
                 cbcObj.name = '仔角梁'
-                cbcObj.parent = roofRootObj
+                cbcObj.parent = rafterRootObj
                 cbcObj.ACA_data['aca_obj'] = True
                 cbcObj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_BEAM_CHILD
                 utils.addModifierMirror(
                     object=cbcObj,
-                    mirrorObj=roofRootObj,
+                    mirrorObj=rafterRootObj,
                     use_axis=(True,True,False))
 
         # 添加镜像
         utils.addModifierMirror(
             object=CornerBeamObj,
-            mirrorObj=roofRootObj,
+            mirrorObj=rafterRootObj,
             use_axis=(True,True,False))
     
     return
@@ -1338,7 +1339,8 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     # 屋顶根节点
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     # 前后檐椽
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
@@ -1406,7 +1408,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
                         CurvePoints=CurvePoints,
                         tilt=tilt,
                         name='小连檐',
-                        root_obj=roofRootObj,
+                        root_obj=rafterRootObj,
                         width = con.LIKOUMU_Y*dk,
                         height = con.LIKOUMU_H*dk,
                     )
@@ -1419,7 +1421,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
     # 四面对称
     utils.addModifierMirror(
         object=xly_curve_obj,
-        mirrorObj=roofRootObj,
+        mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
 
@@ -1433,7 +1435,8 @@ def __buildCornerRafterCurve(buildingObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     # 屋顶根节点
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
    
     # 1.曲线起点：对齐最后一根正身檐椽的椽头
     # 前后檐椽
@@ -1499,7 +1502,7 @@ def __buildCornerRafterCurve(buildingObj:bpy.types.Object):
             CurvePoints,
             name='翼角椽定位线',
             resolution = con.CURVE_RESOLUTION,
-            root_obj=roofRootObj
+            root_obj=rafterRootObj
         ) 
     rafterCurve_obj.ACA_data['aca_obj'] = True
     rafterCurve_obj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_RAFTER_CURVE
@@ -1511,7 +1514,8 @@ def __buildCornerRafter(buildingObj:bpy.types.Object,purlin_pos):
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     # 屋顶根节点
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     cornerBeamObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_CORNER_BEAM)
     
     # 1、计算翼角椽根数---------------------------
@@ -1556,7 +1560,7 @@ def __buildCornerRafter(buildingObj:bpy.types.Object,purlin_pos):
             end_point = crEndPoints[n],   # 在曲线上定位的椽头坐标
             radius=con.YUANCHUAN_D/2*dk,
             name='翼角椽',
-            root_obj=roofRootObj
+            root_obj=rafterRootObj
         )
         # 裁剪椽架，檐椽不做裁剪
         utils.addBisect(
@@ -1576,7 +1580,7 @@ def __buildCornerRafter(buildingObj:bpy.types.Object,purlin_pos):
         # 四向对称
         utils.addModifierMirror(
             object=cornerRafterObj,
-            mirrorObj=roofRootObj,
+            mirrorObj=rafterRootObj,
             use_axis=(True,True,False)
         )
 
@@ -1698,8 +1702,8 @@ def __buildCrWangban(buildingObj:bpy.types.Object
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     # 屋顶根节点
-    roofRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     # 老角梁
     cornerBeamObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_CORNER_BEAM)
@@ -1721,7 +1725,7 @@ def __buildCrWangban(buildingObj:bpy.types.Object
         origin = origin,
         crEnds = CrEnds,
         crCollection = cornerRafterColl,
-        root_obj = roofRootObj,
+        root_obj = rafterRootObj,
     )
     crWangban.name = '翼角椽望板'
     # 裁剪，沿角梁裁剪，以免穿模
@@ -1742,7 +1746,7 @@ def __buildCrWangban(buildingObj:bpy.types.Object
     # 四面对称
     utils.addModifierMirror(
         object=crWangban,
-        mirrorObj=roofRootObj,
+        mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
 
@@ -1752,7 +1756,8 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     # 屋顶根节点
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     # 前后檐椽
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
@@ -1799,7 +1804,7 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
                         CurvePoints=CurvePoints,
                         tilt=CurveTilt,
                         name='大连檐',
-                        root_obj=roofRootObj,
+                        root_obj=rafterRootObj,
                         height = con.DALIANYAN_H*dk,
                         width = con.DALIANYAN_Y*dk
                     )
@@ -1813,7 +1818,7 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
     # 四面对称
     utils.addModifierMirror(
         object=flyrafterEaveObj,
-        mirrorObj=roofRootObj,
+        mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
 
@@ -1823,7 +1828,8 @@ def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     # 屋顶根节点
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     
     # 1.曲线起点：对齐最后一根正身飞椽的椽头
     flyrafterObj:bpy.types.Object = \
@@ -1856,7 +1862,7 @@ def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
             CurvePoints=CurvePoints,
             name='翘飞椽定位线',
             resolution = con.CURVE_RESOLUTION,
-            root_obj=roofRootObj
+            root_obj=rafterRootObj
         ) 
     flyrafterCurve_obj.ACA_data['aca_obj'] = True
     flyrafterCurve_obj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_FLYRAFTER_CURVE
@@ -1875,7 +1881,6 @@ def __drawCornerFlyrafter(
         root_obj):
     # 载入数据
     buildingObj = utils.getAcaParent(cornerRafterObj,con.ACA_TYPE_BUILDING)
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT)
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
 
@@ -2040,9 +2045,8 @@ def __buildCornerFlyrafter(
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     # 屋顶根节点
-    roofRootObj = utils.getAcaChild(
-        buildingObj,
-        con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     # 老角梁
     cornerBeamObj = utils.getAcaChild(
         buildingObj,
@@ -2077,7 +2081,7 @@ def __buildCornerFlyrafter(
             head_shear = head_shear_direction, # 椽头撇向
             mid_shear = mid_shear_direction, # 椽腰撇向
             name='翘飞椽',
-            root_obj=roofRootObj
+            root_obj=rafterRootObj
         )
         cfrCollection.append(cfr_Obj)
         mod = cfr_Obj.modifiers.new(name='角梁对称', type='MIRROR')
@@ -2085,7 +2089,7 @@ def __buildCornerFlyrafter(
         mod.use_axis[0] = False
         mod.use_axis[1] = True
         mod = cfr_Obj.modifiers.new(name='mirror', type='MIRROR')
-        mod.mirror_object = roofRootObj
+        mod.mirror_object = rafterRootObj
         mod.use_axis[0] = True
         mod.use_axis[1] = True
 
@@ -2214,8 +2218,8 @@ def __buildCfrWangban(
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     # 屋顶根节点
-    roofRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     # 老角梁
     cornerBeamObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_CORNER_BEAM)
@@ -2233,7 +2237,7 @@ def __buildCfrWangban(
         origin_point = purlin_pos[1],#金桁交点
         cfrEnds = cfrEnds,
         cfrCollection = cfrCollection,
-        root_obj = roofRootObj,
+        root_obj = rafterRootObj,
         name = '翘飞椽望板'
     )
     # 裁剪，沿角梁裁剪，以免穿模
@@ -2254,7 +2258,7 @@ def __buildCfrWangban(
     # 四面对称
     utils.addModifierMirror(
         object=cfrWangban,
-        mirrorObj=roofRootObj,
+        mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
     return
@@ -2269,68 +2273,103 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     useWangban = bData.use_wangban
 
     # 各种屋顶都有前后檐
-    utils.outputMsg("正身檐椽营造...")
+    utils.outputMsg("Building Rafter Front/Back...")
     __buildRafter_FB(buildingObj,purlin_pos)    # 前后檐椽
     
     if useFlyrafter:  # 用户可选择不使用飞椽
-        utils.outputMsg("正身飞椽营造...")
+        utils.outputMsg("Building Fly Rafter...")
         __buildFlyrafterAll(buildingObj,purlin_pos,'X') # 前后飞椽
         
     if useWangban:  # 用户可选择暂时不生成望板（更便于观察椽架形态）
-        utils.outputMsg("望板营造...")
+        utils.outputMsg("Building Wangban...")
         __buildWangban_FB(buildingObj,purlin_pos)   # 前后望板
     
     # 庑殿、歇山的处理（硬山、悬山不涉及）
     if roofStyle in ('1','2'):
         # 营造角梁
-        utils.outputMsg("角梁营造...")
+        utils.outputMsg("Building Corner Beam...")
         __buildCornerBeam(buildingObj,purlin_pos)
         
         # 两山檐椽
-        utils.outputMsg("两山檐椽营造...")
+        utils.outputMsg("Building Rafter Left/Right...")
         __buildRafter_LR(buildingObj,purlin_pos)    
         
         if useFlyrafter:
             # 两山飞椽
-            utils.outputMsg("两山飞椽营造...")
+            utils.outputMsg("Building Fly Rafter Left/Right...")
             __buildFlyrafterAll(buildingObj,purlin_pos,'Y') 
             
         if useWangban:
             # 两山望板
-            utils.outputMsg("两山望板营造...")
+            utils.outputMsg("Building Wangban Left/Right...")
             __buildWangban_LR(buildingObj,purlin_pos)   
             
         # 翼角部分
         # 营造小连檐
-        utils.outputMsg("小连檐营造...")
+        utils.outputMsg("Building Corner Rafter Eave...")
         __buildCornerRafterEave(buildingObj)
         
         # 营造翼角椽
-        utils.outputMsg("翼角椽营造...")
+        utils.outputMsg("Building Corner Rafter...")
         cornerRafterColl = __buildCornerRafter(buildingObj,purlin_pos)
         
         if useWangban:
             # 翼角椽望板
-            utils.outputMsg("翼角椽望板营造...")
+            utils.outputMsg("Building Corner Rafter Wangban...")
             __buildCrWangban(buildingObj,purlin_pos,cornerRafterColl)
             
 
         # 是否做二层飞椽
         if useFlyrafter:
             # 大连檐
-            utils.outputMsg("大连檐营造...")
+            utils.outputMsg("Building Corner Fly Rafter Eave...")
             __buildCornerFlyrafterEave(buildingObj)
             
             # 翘飞椽，以翼角椽为基准
-            utils.outputMsg("翘飞椽营造...")
+            utils.outputMsg("Building Corner Fly Rafter...")
             cfrCollection = __buildCornerFlyrafter(buildingObj,cornerRafterColl)
             
             if useWangban:
                 # 翘飞椽望板
-                utils.outputMsg("翘飞椽望板营造...")
+                utils.outputMsg("Building Corner Fly Rafter Wangban...")
                 __buildCfrWangban(buildingObj,purlin_pos,cfrCollection)
     
     return
+
+# 添加屋顶根节点
+def __addRoofRoot(buildingObj:bpy.types.Object):
+    # 设置目录
+    buildingColl = buildingObj.users_collection[0]
+    utils.setCollection('屋顶',parentColl=buildingColl)
+
+    # 设置根节点
+    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT) 
+    if roofRootObj != None:
+        utils.deleteHierarchy(roofRootObj)
+    else:
+        # 创建根节点
+        bpy.ops.object.empty_add(type='PLAIN_AXES')
+        roofRootObj = bpy.context.object
+        roofRootObj.name = '屋顶层'
+        roofRootObj.parent = buildingObj
+        roofRootObj.ACA_data['aca_obj'] = True
+        roofRootObj.ACA_data['aca_type'] = con.ACA_TYPE_ROOF_ROOT
+
+    # 以挑檐桁下皮为起始点
+    bData : acaData = buildingObj.ACA_data # 载入数据
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    tile_base = bData.platform_height \
+                + bData.piller_height
+    # 如果有斗栱，抬高斗栱高度
+    if bData.use_dg:
+        tile_base += bData.dg_height
+    else:
+        # 以大梁抬升
+        tile_base += con.BEAM_HEIGHT*pd
+    roofRootObj.location = (0,0,tile_base)       
+
+    return roofRootObj
 
 # 营造整个房顶
 def buildRoof(buildingObj:bpy.types.Object):
@@ -2339,20 +2378,21 @@ def buildRoof(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
 
+    # 添加“屋顶层”根节点
+    __addRoofRoot(buildingObj)
+
     # 生成斗栱
-    utils.outputMsg("斗栱营造...")
+    utils.outputMsg("Building Dougong...")
     buildDougong.buildDougong(buildingObj)
 
-    # 设定“屋顶层”根节点
-    utils.outputMsg("根节点...")
-    roofRootObj = __setRoofRoot(buildingObj)
+    # 设定“梁椽望”根节点
+    roofRootObj = __setRafterRoot(buildingObj)
 
     # 计算桁檩定位点
-    utils.outputMsg("桁檩定位...")
     purlin_pos = __getPurlinPos(buildingObj)
     
     # 摆放桁檩
-    utils.outputMsg("桁檩营造...")
+    utils.outputMsg("Building Purlin...")
     __buildPurlin(buildingObj,purlin_pos)
     
     # 如果有斗栱，剔除挑檐桁
@@ -2362,16 +2402,16 @@ def buildRoof(buildingObj:bpy.types.Object):
         del rafter_pos[0]
 
     # 摆放梁架
-    utils.outputMsg("梁架营造...")
+    utils.outputMsg("Building Beam...")
     __buildBeam(buildingObj,rafter_pos)
 
     # 摆放椽架（包括角梁、檐椽、望板、飞椽、里口木、大连檐等）
-    utils.outputMsg("椽架营造...")
+    utils.outputMsg("Building Rafter...")
     __buildRafterForAll(buildingObj,rafter_pos)
 
     # 摆放瓦作
     if bData.use_tile:
-        utils.outputMsg("生成屋瓦...")
+        utils.outputMsg("Building Tiles...")
         buildRooftile.buildTile(buildingObj)
     
     utils.focusObj(buildingObj)

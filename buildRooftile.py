@@ -27,22 +27,9 @@ def __setTileRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     bpy.ops.object.empty_add(type='PLAIN_AXES',location=(0,0,0))
     tileRootObj = bpy.context.object
     tileRootObj.name = "瓦作层"
-    tileRootObj.parent = buildingObj
+    tileRootObj.parent = roofRootObj
     tileRootObj.ACA_data['aca_obj'] = True
     tileRootObj.ACA_data['aca_type'] = con.ACA_TYPE_TILE_ROOT
-    # 以挑檐桁下皮为起始点
-    bData : acaData = buildingObj.ACA_data # 载入数据
-    dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
-    tile_base = bData.platform_height \
-                + bData.piller_height
-    # 如果有斗栱，抬高斗栱高度
-    if bData.use_dg:
-        tile_base += bData.dg_height
-    else:
-        # 以大梁抬升
-        tile_base += con.BEAM_HEIGHT*pd
-    tileRootObj.location = (0,0,tile_base)
         
     return tileRootObj
 
@@ -512,11 +499,15 @@ def __setTile(
     TileCopy.matrix_local = Matrix
     offset.rotate(TileCopy.rotation_euler)
     TileCopy.location += offset
+
+    # todo：瓦片也可以在join以后的整体上做镜像和裁剪
+    # 这里暂时保留用户不想join的可选余地（如，更方便做异色剪边等）
+    # 添加镜像
     utils.addModifierMirror(
         object=TileCopy,
         mirrorObj=mirrorObj,
         use_axis=(True,True,False),
-        use_bisect=(False,True,False)
+        use_bisect=(True,True,False)
     ) 
 
     if isNeedBool:
@@ -549,10 +540,18 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     tileCols = __getTileCols(buildingObj,direction)
 
     # 载入瓦片资源
-    flatTile:bpy.types.Object = bData.flatTile_source
-    circularTile:bpy.types.Object = bData.circularTile_source
-    eaveTile:bpy.types.Object = bData.eaveTile_source
-    dripTile:bpy.types.Object = bData.dripTile_source
+    flatTile:bpy.types.Object = utils.copyObject(
+        bData.flatTile_source,singleUser=True)
+    circularTile:bpy.types.Object = utils.copyObject(
+        bData.circularTile_source,singleUser=True)
+    eaveTile:bpy.types.Object = utils.copyObject(
+        bData.eaveTile_source,singleUser=True)
+    dripTile:bpy.types.Object = utils.copyObject(
+        bData.dripTile_source,singleUser=True)
+    utils.applyAllModifer(flatTile)
+    utils.applyAllModifer(circularTile)
+    utils.applyAllModifer(eaveTile)
+    utils.applyAllModifer(dripTile)
     utils.showObj(flatTile)
     utils.showObj(circularTile)
     utils.showObj(eaveTile)
@@ -709,10 +708,11 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     # 隐藏辅助对象
     utils.hideObj(tile_bool_obj)
     utils.hideObj(tileGrid)
-    utils.hideObj(flatTile)
-    utils.hideObj(circularTile)
-    utils.hideObj(eaveTile)
-    utils.hideObj(dripTile)
+
+    bpy.data.objects.remove(flatTile)
+    bpy.data.objects.remove(circularTile)
+    bpy.data.objects.remove(eaveTile)
+    bpy.data.objects.remove(dripTile)
 
 # 营造屋脊
 def __buildRidge(buildingObj: bpy.types.Object,
@@ -777,7 +777,7 @@ def buildTile(buildingObj: bpy.types.Object):
         rafter_pos,
         direction='X')
     # 在网格上铺瓦
-    utils.outputMsg("前后檐面布瓦...")
+    utils.outputMsg("Building Tiles Front/Back...")
     __arrayTileGrid(
         buildingObj,
         rafter_pos,
@@ -792,7 +792,7 @@ def buildTile(buildingObj: bpy.types.Object):
             rafter_pos,
             direction='Y')
         # 在网格上铺瓦
-        utils.outputMsg("两山坡面布瓦...")
+        utils.outputMsg("Building Tiles Left/Right...")
         __arrayTileGrid(
             buildingObj,
             rafter_pos,
@@ -801,10 +801,10 @@ def buildTile(buildingObj: bpy.types.Object):
         
 
     # 添加屋脊
-    utils.outputMsg("添加屋脊...")
+    utils.outputMsg("Building Ridge...")
     __buildRidge(buildingObj,rafter_pos)
 
     # 重新聚焦根节点
     utils.focusObj(buildingObj)
-    utils.outputMsg("瓦作层完成")
+    utils.outputMsg("Building Tiles down.")
     

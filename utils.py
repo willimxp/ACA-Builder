@@ -90,7 +90,11 @@ def setCollection(name:str, IsClear=False,isRoot=False,
     coll_name = name  # 在大纲中的目录名称
     coll_found = False
     coll = bpy.types.Collection
-    for coll in bpy.context.scene.collection.children:
+    if parentColl == None:
+        searchColl = bpy.context.scene.collection
+    else:
+        searchColl = parentColl
+    for coll in searchColl.children:
         # 在有多个scene时，名称可能是“china_arch.001”
         if str.find(coll.name,coll_name) >= 0:
             coll_found = True
@@ -99,7 +103,7 @@ def setCollection(name:str, IsClear=False,isRoot=False,
 
     if not coll_found:    
         # 新建collection，不与其他用户自建的模型打架
-        outputMsg("创建子目录：" + coll_name)
+        outputMsg("Add Collection: " + coll_name)
         coll = bpy.data.collections.new(coll_name)
         if isRoot:
             bpy.context.scene.collection.children.link(coll)
@@ -109,11 +113,6 @@ def setCollection(name:str, IsClear=False,isRoot=False,
             else:
                 parentColl.children.link(coll)
         # 聚焦到新目录上
-        # bpy.context.view_layer.active_layer_collection = \
-        #     bpy.context.view_layer.layer_collection.children[-1]
-        # layer_collection = bpy.context.view_layer.layer_collection
-        # layerColl = recurLayerCollection(layer_collection, coll.name)
-        # bpy.context.view_layer.active_layer_collection = layerColl
         focusCollection(coll.name)
     else:
         # 根据IsClear入参，决定是否要清空目录
@@ -123,11 +122,8 @@ def setCollection(name:str, IsClear=False,isRoot=False,
                 bpy.data.objects.remove(obj)
         # 强制关闭目录隐藏属性，防止失焦
         coll.hide_viewport = False
-        bpy.context.view_layer.layer_collection.children[coll_name].hide_viewport = False
+        #bpy.context.view_layer.layer_collection.children[coll_name].hide_viewport = False
         # 选中目录，防止用户手工选择其他目录而导致的失焦
-        # layer_collection = bpy.context.view_layer.layer_collection
-        # layerColl = recurLayerCollection(layer_collection, coll_name)
-        # bpy.context.view_layer.active_layer_collection = layerColl
         focusCollection(coll_name)
     
     # 返回目录的对象
@@ -169,14 +165,17 @@ def addCylinder(radius,depth,name,root_obj,
 # 复制简单对象（仅复制instance）
 def copySimplyObject(
         sourceObj:bpy.types.Object, 
-        name, 
+        name="", 
         parentObj:bpy.types.Object = None, 
         location=(0,0,0),
         rotation=(0,0,0)):
     # 复制基本信息
     newObj:bpy.types.Object = sourceObj.copy()
     newObj.data = sourceObj.data.copy()
-    newObj.name = name
+    if name=="":
+        newObj.name = sourceObj.name
+    else:
+        newObj.name = name
     newObj.location = location
     newObj.rotation_euler = rotation
     newObj.parent = parentObj
@@ -184,7 +183,8 @@ def copySimplyObject(
     return newObj
 
 # 复制对象（仅复制instance，包括modifier）
-def copyObject(sourceObj:bpy.types.Object, name, 
+def copyObject(sourceObj:bpy.types.Object, 
+               name="", 
          parentObj:bpy.types.Object = None, 
          location=(0,0,0),
          singleUser=False):
@@ -195,12 +195,13 @@ def copyObject(sourceObj:bpy.types.Object, name,
     sourceObj.hide_render = False
     
     # 复制基本信息
-    newObj = bpy.types.Object
+    newObj:bpy.types.Object = sourceObj.copy()
     if singleUser :
         newObj.data = sourceObj.data.copy()
+    if name=="":
+        newObj.name = sourceObj.name
     else:
-        newObj = sourceObj.copy()
-    newObj.name = name
+        newObj.name = name
     newObj.location = location
     newObj.parent = parentObj
     bpy.context.collection.objects.link(newObj) 
@@ -354,7 +355,7 @@ def deleteHierarchy(parent_obj:bpy.types.Object,del_parent=False):
     #     utils.outputMsg ("Could not delete object")
 
     # 数据清理
-    redrawViewport()
+    updateScene()
 
 # 计算两个点之间距离
 # 使用blender提供的mathutils库中的Vector类
@@ -784,9 +785,8 @@ def redrawViewport():
 
 # 删除所有无用数据，以免拖累性能
 def delOrphan():
-    #outputMsg("start delorphan")
     bpy.data.orphans_purge()
-    #outputMsg("start delorphan2...")
+
     for block in bpy.data.collections:
         if block.users == 0:
             bpy.data.collections.remove(block)
@@ -818,7 +818,6 @@ def delOrphan():
     for block in bpy.data.node_groups:
         if block.users == 0:
             bpy.data.node_groups.remove(block)
-    #outputMsg("End delorphan!")
 
 # 获取对象的几何中心
 # 已经在代码中使用评估对象，可以抗阻塞 
@@ -1112,19 +1111,19 @@ def setGN_Input(mod:bpy.types.NodesModifier,
 # https://blender.stackexchange.com/questions/13986/how-to-join-objects-with-python
 # https://docs.blender.org/api/current/bpy.ops.html#overriding-context
 def joinObjects(objList):
-    # print(time.strftime("%H:%M:%S", time.localtime()) + "join preparing...")
-    # bpy.ops.object.select_all(action='DESELECT')
-    # for ob in objList:
-    #     ob.select_set(True)
-    #     bpy.context.view_layer.objects.active = ob
-    # print(time.strftime("%H:%M:%S", time.localtime()) + "join start...")
-    # bpy.ops.object.join()
-    # print(time.strftime("%H:%M:%S", time.localtime()) + "join down!")
+    #print(time.strftime("%H:%M:%S", time.localtime()) + "join preparing...")
+    bpy.ops.object.select_all(action='DESELECT')
+    for ob in objList:
+        ob.select_set(True)
+        bpy.context.view_layer.objects.active = ob
+    #print(time.strftime("%H:%M:%S", time.localtime()) + "join start...")
+    bpy.ops.object.join()
+    #print(time.strftime("%H:%M:%S", time.localtime()) + "join down!")
 
-    print(time.strftime("%H:%M:%S", time.localtime()) + "join start...")
-    ctx = bpy.context.copy()
-    ctx['active_object'] = objList[0]
-    ctx['selected_objects'] = objList
-    with bpy.context.temp_override(**ctx):
-        bpy.ops.object.join()
-    print(time.strftime("%H:%M:%S", time.localtime()) + "join down!")
+    # print(time.strftime("%H:%M:%S", time.localtime()) + "join start...")
+    # ctx = bpy.context.copy()
+    # ctx['active_object'] = objList[0]
+    # ctx['selected_objects'] = objList
+    # with bpy.context.temp_override(**ctx):
+    #     bpy.ops.object.join()
+    # print(time.strftime("%H:%M:%S", time.localtime()) + "join down!")

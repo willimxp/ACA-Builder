@@ -30,6 +30,8 @@
             <ridgeTop_source>正脊筒</ridgeTop_source>
             <ridgeBack_source>垂脊兽后</ridgeBack_source>
             <ridgeFront_source>垂脊兽前</ridgeFront_source>
+            <ridgeEnd_source>端头组合</ridgeEnd_source>
+            <chiwen_source>螭吻.矫正</chiwen_source>
         </roof>
     </template>
     <template>

@@ -382,6 +382,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=0.4,
             min=0.0,
         )# type: ignore
+    tile_width_real : bpy.props.FloatProperty(
+            name="瓦垄实际宽度", 
+        )# type: ignore
     tile_length : bpy.props.FloatProperty(
             name="瓦片长度", 
             default=0.4,
@@ -421,6 +424,16 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     ridgeFront_source:bpy.props.PointerProperty(
             name = "垂脊兽前",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    ridgeEnd_source:bpy.props.PointerProperty(
+            name = "端头盘子",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    chiwen_source:bpy.props.PointerProperty(
+            name = "螭吻",
             type = bpy.types.Object,
             poll = p_filter
         )# type: ignore 

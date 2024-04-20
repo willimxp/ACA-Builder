@@ -232,7 +232,7 @@ def buildFloor(buildingObj:bpy.types.Object):
     # 清理数据
     utils.outputMsg("Preparing...")
     utils.delOrphan()
-    buildingColl = bpy.context.collection
+    buildingColl = buildingObj.users_collection[0]
 
     # 提高性能模式============
     # https://blender.stackexchange.com/questions/7358/python-performance-with-blender-operators

@@ -24,7 +24,8 @@ def __setRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     if rafterRootObj != None:
         utils.deleteHierarchy(rafterRootObj,del_parent=True)
     # 创建屋顶根对象
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
+    bpy.ops.object.empty_add(
+        type='PLAIN_AXES',location=(0,0,0))
     rafterRootObj = bpy.context.object
     rafterRootObj.name = "梁椽望"
     rafterRootObj.parent = roofRootObj

@@ -84,6 +84,8 @@ class ACA_Consts(object):
     # 梁架
     BEAM_HEIGHT = 1.4       # 梁高，单位D
     BEAM_DEEPTH = 1.1       # 梁厚，单位D
+    BOFENG_WIDTH = 1.5      # 博缝板厚，单位斗口
+    BOFENG_HEIGHT = 8       # 博缝板高，单位斗口
 
     # 椽飞类
     YANCHUAN_EX = 14    # 檐椽平出14斗口
@@ -120,7 +122,7 @@ class ACA_Consts(object):
     # 屋瓦灰背层高度，用于计算铺瓦的高度
     # 一般20cm，北方官式建筑可以达到30cm
     # 其实也考虑了算法中从桁中线垂直向上找点，没有顺着坡面加斜，从而导致的误差
-    ROOFMUD_H = 4   # 单位斗口
+    ROOFMUD_H = 3   # 单位斗口
     EAVETILE_EX = 2 # 瓦当、滴水出檐长度，单位斗口
 
     def __setattr__(self, name, value):

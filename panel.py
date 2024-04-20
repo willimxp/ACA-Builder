@@ -303,6 +303,10 @@ class ACA_PT_roof(bpy.types.Panel):
                     row.prop(objData, "ridgeBack_source") # 垂脊兽后
                     row = box.row()
                     row.prop(objData, "ridgeFront_source") # 垂脊兽前
+                    row = box.row()
+                    row.prop(objData, "ridgeEnd_source") # 端头盘子
+                    row = box.row()
+                    row.prop(objData, "chiwen_source") # 螭吻
 
                 # 屋顶营造按钮
                 row = box.row()

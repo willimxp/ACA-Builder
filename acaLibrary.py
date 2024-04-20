@@ -37,6 +37,9 @@ def loadAssets(assetName : str,parent:bpy.types.Object,hide=True):
 
     # 将父子对象全部绑定到场景中
     # coll = utils.setCollection(con.ROOT_COLL_NAME)
+    # buildingObj = utils.getAcaParent(parent,con.ACA_TYPE_BUILDING)
+    # buildingColl = buildingObj.users_collection[0]
+    # utils.setCollection('资产',parentColl=buildingColl)
     coll = bpy.context.collection
     for a in assets:
         coll.objects.link(a)

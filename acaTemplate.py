@@ -53,6 +53,8 @@ class templateData:
     RIDGETOP_SOURCE = ''        # 正脊筒
     RIDGEBACK_SOURCE = ''       # 垂脊兽后
     RIDGEFRONT_SOURCE = ''      # 垂脊兽前
+    RIDGEEND_SOURCE = ''        # 垂脊兽前
+    CHIWEN_SOURCE = ''          # 螭吻
 
 # 解析XML，获取模版列表
 def getTemplateList():
@@ -242,6 +244,13 @@ def getTemplate(name,doukou=0)->templateData:
                 ridgeFront_source = roof.find('ridgeFront_source')
                 if ridgeFront_source != None:
                     tData.RIDGEFRONT_SOURCE = ridgeFront_source.text
+                ridgeEnd_source = roof.find('ridgeEnd_source')
+                if ridgeEnd_source != None:
+                    tData.RIDGEEND_SOURCE = ridgeEnd_source.text
+
+                chiwen_source = roof.find('chiwen_source')
+                if chiwen_source != None:
+                    tData.CHIWEN_SOURCE = chiwen_source.text
                 
     return tData    
 
@@ -276,6 +285,10 @@ def fillTemplate(buildingObj:bpy.types.Object,
     buildingData['tile_length'] = template.TILE_LENGTH
 
     # 绑定资产
+    # 1. 指定资产目录
+    buildingColl = buildingObj.users_collection[0]
+    utils.setCollection('资产',parentColl=buildingColl)
+    # 2. 指定资产根节点
     bpy.ops.object.empty_add(type='PLAIN_AXES')
     assetsObj = bpy.context.object
     assetsObj.location = buildingObj.location   # 原点摆放在3D Cursor位置
@@ -346,6 +359,15 @@ def fillTemplate(buildingObj:bpy.types.Object,
         ridgeFront_source:bpy.types.Object = \
             acaLibrary.loadAssets(template.RIDGEFRONT_SOURCE,assetsObj)
         buildingData['ridgeFront_source'] = ridgeFront_source
+    if template.RIDGEEND_SOURCE != "" :
+        ridgeEnd_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.RIDGEEND_SOURCE,assetsObj)
+        buildingData['ridgeEnd_source'] = ridgeEnd_source
+
+    if template.CHIWEN_SOURCE != "" :
+        chiwen_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.CHIWEN_SOURCE,assetsObj)
+        buildingData['chiwen_source'] = chiwen_source
 
 # 根据panel中DK的改变，更新整体设计参数
 def updateTemplateByDK(dk,buildingObj:bpy.types.Object):

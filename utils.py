@@ -314,6 +314,8 @@ def applyTransfrom(ob,
 
 # 强制聚焦到对象
 def focusObj(object:bpy.types.Object):
+    # 先要保证对象可见，否则后续无法选中
+    showObj(object)
     bpy.ops.object.select_all(action='DESELECT')
     bpy.context.view_layer.objects.active = object
     object.select_set(True)
@@ -541,7 +543,8 @@ def outputMsg(msg:str):
     try:
         console_print(strout)
         redrawViewport()
-    except Exception:
+    except Exception as e:
+        print(e)
         return
 
 # 隐藏对象，包括viewport和render渲染

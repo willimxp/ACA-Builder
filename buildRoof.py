@@ -85,7 +85,15 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
         # 1、定位挑檐桁
         # 平面上延伸斗栱出檐
         dgExtend = bData.dg_extend
-        purlin_x = bData.x_total/2 + dgExtend
+        if roofStyle == '4':
+            # 硬山，在面阔上延长一柱径，略超出柱边
+            purlin_x = bData.x_total/2 + con.BEAM_DEEPTH * pd/2
+        if roofStyle == '3':
+            # 悬山，出梢一种做法是柱中出四椽四当，一种做法是柱中出上檐出
+            # 这里简单的按上檐出计算
+            purlin_x = bData.x_total/2 + con.YANCHUAN_EX* dk
+        if roofStyle in ('1','2'):
+            purlin_x = bData.x_total/2 + dgExtend
         purlin_y = bData.y_total/2 + dgExtend
         # 屋顶起点root在挑檐枋下皮，上移半桁
         purlin_z = con.HENG_TIAOYAN_D / 2 * dk
@@ -2335,6 +2343,9 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
                 utils.outputMsg("Building Corner Fly Rafter Wangban...")
                 __buildCfrWangban(buildingObj,purlin_pos,cfrCollection)
     
+    # 营造博缝板
+    __buildBofeng(buildingObj,purlin_pos)
+
     return
 
 # 添加屋顶根节点
@@ -2371,6 +2382,126 @@ def __addRoofRoot(buildingObj:bpy.types.Object):
     roofRootObj.location = (0,0,tile_base)       
 
     return roofRootObj
+
+# 绘制歇山顶的前后檐垂脊曲线
+def __drawBofengCurve(buildingObj:bpy.types.Object,
+                    purlin_pos):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+    ridgeCurveVerts = []
+    # 垂脊横坐标，向内一垄
+    ridge_x = purlin_pos[-1].x - bData.tile_width_real/2
+
+    # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
+    # 大连檐中心
+    dlyObj:bpy.types.Object = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_DLY_FB)
+    curve_p1 = Vector(dlyObj.location)
+    # 位移到大连檐外沿，瓦当滴水向外延伸
+    offset = Vector((ridge_x,con.DALIANYAN_H*dk/2,
+        -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
+    # offset = Vector((purlin_pos[-1].x ,#-bData.tile_width_real/2,
+    #                  con.DALIANYAN_H*dk/2,#这里本来只需要调整半个大连檐，考虑到瓦的高度，调整到了一个大连檐
+    #                  0))
+    offset.rotate(dlyObj.rotation_euler)
+    curve_p1 += offset
+    ridgeCurveVerts.append(curve_p1)
+
+    # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
+    # 从举架定位点做偏移
+    for n in range(len(purlin_pos)):
+        # 向上位移:半桁径+椽径+望板高+灰泥层高
+        offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
+                  + con.WANGBAN_H + con.ROOFMUD_H)*dk
+        point:Vector = purlin_pos[n]+Vector((0,0,offset))
+        point.x = ridge_x #-bData.tile_width_real/2
+        
+        # 调整曲线终点，与正脊相交
+        if n == len(purlin_pos)-1:
+            # 调整2个垂脊筒的长度，多余的会在镜像时裁剪掉
+            # 斜率近似认为45度
+            ridgeFrontObj:bpy.types.Object = bData.ridgeFront_source
+            offset = ridgeFrontObj.dimensions.x * 2
+            point.y -= offset
+            point.z += offset
+        ridgeCurveVerts.append(point)
+    
+    # 创建瓦垄曲线
+    ridgeCurve = utils.addCurveByPoints(
+            CurvePoints=ridgeCurveVerts,
+            name="歇山垂脊线",
+            root_obj=rafterRootObj,
+            order_u=4, # 取4级平滑，让坡面曲线更加流畅
+            )
+    utils.setOrigin(ridgeCurve,ridgeCurveVerts[0])
+    utils.hideObj(ridgeCurve)
+    return ridgeCurve
+
+# 营造博缝板
+def __buildBofeng(buildingObj: bpy.types.Object,
+                 rafter_pos):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+
+    # 新绘制一条垂脊曲线
+    bofengObj = __drawBofengCurve(
+        buildingObj,rafter_pos)
+    bofengObj.location.x = rafter_pos[-1].x
+    bofengObj.name = '博缝板'
+    
+    # 转成mesh
+    utils.focusObj(bofengObj)
+    bpy.ops.object.convert(target='MESH')
+
+    # 挤压成型
+    bpy.ops.object.mode_set( mode = 'EDIT' ) 
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh( bpy.context.object.data )
+
+    # 曲线向下挤出博缝板高度
+    bpy.ops.mesh.select_mode( type = 'EDGE' )
+    bpy.ops.mesh.select_all( action = 'SELECT' ) 
+    height = (con.HENG_COMMON_D + con.YUANCHUAN_D*4
+                  + con.WANGBAN_H + con.ROOFMUD_H)*dk
+    bpy.ops.mesh.extrude_edges_move(
+        TRANSFORM_OT_translate={'value': (0.0, 0.0, 
+                    -height)})
+
+    return_geo = bmesh.ops.extrude_face_region(
+            bm, geom=bm.faces)
+    verts = [elem for elem in return_geo['geom'] 
+             if type(elem) == bmesh.types.BMVert]
+    bmesh.ops.translate(bm, 
+            verts=verts, 
+            vec=(con.BOFENG_WIDTH*dk, 0, 0))
+
+    # Update & Destroy Bmesh
+    bmesh.update_edit_mesh(bpy.context.object.data) 
+    bm.free()  # free and prevent further access
+
+    # Flip normals
+    bpy.ops.mesh.select_all( action = 'SELECT' )
+    bpy.ops.mesh.flip_normals() 
+
+    # Switch back to Object at end
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+    # 应用镜像
+    utils.addModifierMirror(
+        object=bofengObj,
+        mirrorObj=rafterRootObj,
+        use_axis=(True,True,False),
+        use_bisect=(False,True,False)
+    )
+
+    # 应用裁剪
+    return
 
 # 营造整个房顶
 def buildRoof(buildingObj:bpy.types.Object):

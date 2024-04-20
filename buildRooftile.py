@@ -1016,70 +1016,6 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     )
     return
 
-# 营造博缝板
-def __buildBofeng(buildingObj: bpy.types.Object,
-                 rafter_pos):
-    # 载入数据
-    bData : acaData = buildingObj.ACA_data
-    dk = bData.DK
-    tileRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_TILE_ROOT
-    )
-
-    # 新绘制一条垂脊曲线
-    bofengObj = __drawFrontRidgeCurve(
-        buildingObj,rafter_pos)
-    bofengObj.location.x = rafter_pos[-1].x
-    bofengObj.name = '博缝板'
-    
-    # 转成mesh
-    utils.focusObj(bofengObj)
-    bpy.ops.object.convert(target='MESH')
-
-    # 挤压成型
-    bpy.ops.object.mode_set( mode = 'EDIT' ) 
-    bm = bmesh.new()
-    bm = bmesh.from_edit_mesh( bpy.context.object.data )
-
-    # 曲线向下挤出博缝板高度
-    bpy.ops.mesh.select_mode( type = 'EDGE' )
-    bpy.ops.mesh.select_all( action = 'SELECT' ) 
-    height = (con.HENG_COMMON_D + con.YUANCHUAN_D*4
-                  + con.WANGBAN_H + con.ROOFMUD_H)*dk
-    bpy.ops.mesh.extrude_edges_move(
-        TRANSFORM_OT_translate={'value': (0.0, 0.0, 
-                    -height)})
-
-    return_geo = bmesh.ops.extrude_face_region(
-            bm, geom=bm.faces)
-    verts = [elem for elem in return_geo['geom'] 
-             if type(elem) == bmesh.types.BMVert]
-    bmesh.ops.translate(bm, 
-            verts=verts, 
-            vec=(con.BOFENG_WIDTH*dk, 0, 0))
-
-    # Update & Destroy Bmesh
-    bmesh.update_edit_mesh(bpy.context.object.data) 
-    bm.free()  # free and prevent further access
-
-    # Flip normals
-    bpy.ops.mesh.select_all( action = 'SELECT' )
-    bpy.ops.mesh.flip_normals() 
-
-    # Switch back to Object at end
-    bpy.ops.object.mode_set( mode = 'OBJECT' )
-
-    # 应用镜像
-    utils.addModifierMirror(
-        object=bofengObj,
-        mirrorObj=tileRootObj,
-        use_axis=(True,True,False),
-        use_bisect=(False,True,False)
-    )
-
-    # 应用裁剪
-    return
-
 # 营造屋脊
 def __buildRidge(buildingObj: bpy.types.Object,
                  rafter_pos):
@@ -1089,13 +1025,9 @@ def __buildRidge(buildingObj: bpy.types.Object,
     # 营造前后垂脊（不涉及庑殿，自动判断硬山/悬山、歇山做法的不同）
     __buildFrontRidge(buildingObj,rafter_pos)
 
-    # 营造博缝板
-    __buildBofeng(buildingObj,rafter_pos)
-
     # 营造四角戗脊（包括庑殿的垂脊，自动判断歇山与庑殿做法的不同）
 
     # 歇山还有山花脊
-    
 
 # 对外的统一调用接口
 # 一次性重建所有的瓦做

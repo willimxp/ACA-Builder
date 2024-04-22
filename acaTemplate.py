@@ -55,6 +55,7 @@ class templateData:
     RIDGEFRONT_SOURCE = ''      # 垂脊兽前
     RIDGEEND_SOURCE = ''        # 垂脊兽前
     CHIWEN_SOURCE = ''          # 螭吻
+    BOFENG_SOURCE = ''          # 博缝板
 
 # 解析XML，获取模版列表
 def getTemplateList():
@@ -251,6 +252,10 @@ def getTemplate(name,doukou=0)->templateData:
                 chiwen_source = roof.find('chiwen_source')
                 if chiwen_source != None:
                     tData.CHIWEN_SOURCE = chiwen_source.text
+
+                bofeng_source = roof.find('bofeng_source')
+                if bofeng_source != None:
+                    tData.BOFENG_SOURCE = bofeng_source.text
                 
     return tData    
 
@@ -368,6 +373,11 @@ def fillTemplate(buildingObj:bpy.types.Object,
         chiwen_source:bpy.types.Object = \
             acaLibrary.loadAssets(template.CHIWEN_SOURCE,assetsObj)
         buildingData['chiwen_source'] = chiwen_source
+
+    if template.BOFENG_SOURCE != "" :
+        bofeng_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.BOFENG_SOURCE,assetsObj)
+        buildingData['bofeng_source'] = bofeng_source
 
 # 根据panel中DK的改变，更新整体设计参数
 def updateTemplateByDK(dk,buildingObj:bpy.types.Object):

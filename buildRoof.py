@@ -2393,16 +2393,16 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     ridgeCurveVerts = []
     # 垂脊横坐标，向内一垄
-    ridge_x = purlin_pos[-1].x - bData.tile_width_real/2
+    ridge_x = purlin_pos[-1].x
 
     # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
     # 大连檐中心
     dlyObj:bpy.types.Object = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_DLY_FB)
     curve_p1 = Vector(dlyObj.location)
-    # 位移到大连檐外沿，瓦当滴水向外延伸
+    # 位移到大连檐外沿
     offset = Vector((ridge_x,con.DALIANYAN_H*dk/2,
-        -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
+        0))
     # offset = Vector((purlin_pos[-1].x ,#-bData.tile_width_real/2,
     #                  con.DALIANYAN_H*dk/2,#这里本来只需要调整半个大连檐，考虑到瓦的高度，调整到了一个大连檐
     #                  0))
@@ -2417,7 +2417,7 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
         offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
                   + con.WANGBAN_H + con.ROOFMUD_H)*dk
         point:Vector = purlin_pos[n]+Vector((0,0,offset))
-        point.x = ridge_x #-bData.tile_width_real/2
+        point.x = ridge_x
         
         # 调整曲线终点，与正脊相交
         if n == len(purlin_pos)-1:
@@ -2432,7 +2432,7 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
     # 创建瓦垄曲线
     ridgeCurve = utils.addCurveByPoints(
             CurvePoints=ridgeCurveVerts,
-            name="歇山垂脊线",
+            name="博缝板曲线",
             root_obj=rafterRootObj,
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
             )
@@ -2441,6 +2441,68 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
     return ridgeCurve
 
 # 营造博缝板
+# def __buildBofeng(buildingObj: bpy.types.Object,
+#                  rafter_pos):
+#     # 载入数据
+#     bData : acaData = buildingObj.ACA_data
+#     dk = bData.DK
+#     rafterRootObj = utils.getAcaChild(
+#         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+
+#     # 新绘制一条垂脊曲线
+#     bofengObj = __drawBofengCurve(
+#         buildingObj,rafter_pos)
+#     bofengObj.location.x = rafter_pos[-1].x
+#     bofengObj.name = '博缝板'
+    
+#     # 转成mesh
+#     utils.focusObj(bofengObj)
+#     bpy.ops.object.convert(target='MESH')
+
+#     # 挤压成型
+#     bpy.ops.object.mode_set( mode = 'EDIT' ) 
+#     bm = bmesh.new()
+#     bm = bmesh.from_edit_mesh( bpy.context.object.data )
+
+#     # 曲线向下挤出博缝板高度
+#     bpy.ops.mesh.select_mode( type = 'EDGE' )
+#     bpy.ops.mesh.select_all( action = 'SELECT' ) 
+#     height = (con.HENG_COMMON_D + con.YUANCHUAN_D*4
+#                   + con.WANGBAN_H + con.ROOFMUD_H)*dk
+#     bpy.ops.mesh.extrude_edges_move(
+#         TRANSFORM_OT_translate={'value': (0.0, 0.0, 
+#                     -height)})
+
+#     return_geo = bmesh.ops.extrude_face_region(
+#             bm, geom=bm.faces)
+#     verts = [elem for elem in return_geo['geom'] 
+#              if type(elem) == bmesh.types.BMVert]
+#     bmesh.ops.translate(bm, 
+#             verts=verts, 
+#             vec=(con.BOFENG_WIDTH*dk, 0, 0))
+
+#     # Update & Destroy Bmesh
+#     bmesh.update_edit_mesh(bpy.context.object.data) 
+#     bm.free()  # free and prevent further access
+
+#     # Flip normals
+#     bpy.ops.mesh.select_all( action = 'SELECT' )
+#     bpy.ops.mesh.flip_normals() 
+
+#     # Switch back to Object at end
+#     bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+#     # 应用镜像
+#     utils.addModifierMirror(
+#         object=bofengObj,
+#         mirrorObj=rafterRootObj,
+#         use_axis=(True,True,False),
+#         use_bisect=(False,True,False)
+#     )
+
+#     # 应用裁剪
+#     return
+
 def __buildBofeng(buildingObj: bpy.types.Object,
                  rafter_pos):
     # 载入数据
@@ -2450,48 +2512,28 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
 
     # 新绘制一条垂脊曲线
-    bofengObj = __drawBofengCurve(
+    bofengCurve = __drawBofengCurve(
         buildingObj,rafter_pos)
-    bofengObj.location.x = rafter_pos[-1].x
-    bofengObj.name = '博缝板'
     
-    # 转成mesh
-    utils.focusObj(bofengObj)
-    bpy.ops.object.convert(target='MESH')
-
-    # 挤压成型
-    bpy.ops.object.mode_set( mode = 'EDIT' ) 
-    bm = bmesh.new()
-    bm = bmesh.from_edit_mesh( bpy.context.object.data )
-
-    # 曲线向下挤出博缝板高度
-    bpy.ops.mesh.select_mode( type = 'EDGE' )
-    bpy.ops.mesh.select_all( action = 'SELECT' ) 
+    # 复制博缝板资产
+    bofengObj = utils.copyObject(
+        sourceObj=bData.bofeng_source,
+        name="博缝板",
+        parentObj=rafterRootObj,
+        location=bofengCurve.location
+    )
     height = (con.HENG_COMMON_D + con.YUANCHUAN_D*4
-                  + con.WANGBAN_H + con.ROOFMUD_H)*dk
-    bpy.ops.mesh.extrude_edges_move(
-        TRANSFORM_OT_translate={'value': (0.0, 0.0, 
-                    -height)})
+                   + con.WANGBAN_H + con.ROOFMUD_H)*dk
+    bofengObj.dimensions = (
+        bofengObj.dimensions.x,
+        con.BOFENG_WIDTH*dk,
+        height)    
 
-    return_geo = bmesh.ops.extrude_face_region(
-            bm, geom=bm.faces)
-    verts = [elem for elem in return_geo['geom'] 
-             if type(elem) == bmesh.types.BMVert]
-    bmesh.ops.translate(bm, 
-            verts=verts, 
-            vec=(con.BOFENG_WIDTH*dk, 0, 0))
-
-    # Update & Destroy Bmesh
-    bmesh.update_edit_mesh(bpy.context.object.data) 
-    bm.free()  # free and prevent further access
-
-    # Flip normals
-    bpy.ops.mesh.select_all( action = 'SELECT' )
-    bpy.ops.mesh.flip_normals() 
-
-    # Switch back to Object at end
-    bpy.ops.object.mode_set( mode = 'OBJECT' )
-
+    # 添加curve modifier
+    modCurve : bpy.types.CurveModifier = \
+        bofengObj.modifiers.new('曲线拟合','CURVE')
+    modCurve.object = bofengCurve
+    
     # 应用镜像
     utils.addModifierMirror(
         object=bofengObj,
@@ -2502,7 +2544,6 @@ def __buildBofeng(buildingObj: bpy.types.Object,
 
     # 应用裁剪
     return
-
 # 营造整个房顶
 def buildRoof(buildingObj:bpy.types.Object):
     # 清理垃圾数据

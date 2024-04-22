@@ -371,6 +371,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         unit='LENGTH',
         )# type: ignore 
     
+    # 博缝板
+    bofeng_source : bpy.props.PointerProperty(
+            name = "博缝板",
+            type = bpy.types.Object,
+        )# type: ignore
+    
     # 瓦作属性
     use_tile :  bpy.props.BoolProperty(
             default=True,

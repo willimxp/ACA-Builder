@@ -109,6 +109,7 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
@@ -147,8 +148,12 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     offset.rotate(dlyObj.rotation_euler)
 
     # 硬山悬山
-    if bData.roof_style in ('3','4'):       
-        x = utils.getMeshDims(dlyObj).x / 2
+    if bData.roof_style in ('3','4'):    
+        # 硬山和悬山铺瓦到大连檐外侧
+        x = utils.getMeshDims(dlyObj).x / 2 
+        # 硬山额外添加一个山墙宽度（去除硬山出梢半梁宽）
+        # if bData.roof_style == '4':
+        #     x += con.SHANQIANG_WIDTH*dk - con.BEAM_DEEPTH * pd/2
         y = dlyObj.location.y
         z = dlyObj.location.z
         qiqiao = 0
@@ -735,12 +740,16 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
     ridgeCurveVerts = []
     # 垂脊横坐标，向内一垄
     ridge_x = purlin_pos[-1].x - bData.tile_width_real/2
+    # 硬山建筑，向外移动一个山墙
+    if bData.roof_style =='4':
+        ridge_x += con.SHANQIANG_WIDTH * dk - con.BEAM_DEEPTH * pd/2
 
     # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
     # 大连檐中心
@@ -989,10 +998,19 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         parentObj=tileRootObj)
     
     # 横向平铺
+    if bData.roof_style == '4':
+        # 硬山正脊做到垂脊中线，即山墙向内半垄瓦
+        zhengji_length = bData.x_total/2 \
+            + con.SHANQIANG_WIDTH*dk \
+            - bData.tile_width_real/2
+    else:
+        # 与垂脊相交，从金交点偏移半垄
+        zhengji_length = rafter_pos[-1].x \
+            - bData.tile_width_real/2
+    # 再补半个正脊筒，正脊筒坐中
     l = roofRidgeObj.dimensions.x
-    zhengji_length = rafter_pos[-1].x + l/2
-    count = math.ceil(zhengji_length / l)
-    span = zhengji_length/count
+    count = math.ceil((zhengji_length + l/2)/ l)
+    span = (zhengji_length + l/2)/count
     roofRidgeObj.dimensions.x = span
     modArray:bpy.types.ArrayModifier = roofRidgeObj.modifiers.new('横向平铺','ARRAY')
     modArray.use_relative_offset = True
@@ -1007,7 +1025,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     chiwenObj = utils.copyObject(
         sourceObj=bData.chiwen_source,
         name='螭吻',
-        location=(-rafter_pos[-1].x,0,zhengji_z),
+        location=(-zhengji_length,0,zhengji_z),
         parentObj=tileRootObj)
     utils.addModifierMirror(
         object=chiwenObj,

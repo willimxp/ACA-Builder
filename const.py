@@ -84,7 +84,7 @@ class ACA_Consts(object):
     # 梁架
     BEAM_HEIGHT = 1.4       # 梁高，单位D
     BEAM_DEEPTH = 1.1       # 梁厚，单位D
-    BOFENG_WIDTH = 1.5      # 博缝板厚，单位斗口
+    BOFENG_WIDTH = 1.2      # 博缝板厚，单位斗口
     BOFENG_HEIGHT = 8       # 博缝板高，单位斗口
 
     # 椽飞类
@@ -124,6 +124,8 @@ class ACA_Consts(object):
     # 其实也考虑了算法中从桁中线垂直向上找点，没有顺着坡面加斜，从而导致的误差
     ROOFMUD_H = 3   # 单位斗口
     EAVETILE_EX = 2 # 瓦当、滴水出檐长度，单位斗口
+    SHANQIANG_WIDTH = 9     # 山墙厚度，单位斗口，即1.5柱径
+    SHANQIANG_EX = 11       # 山墙墀头延伸，单位斗口，约1.8柱径
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

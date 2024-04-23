@@ -514,12 +514,15 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
         if bData.roof_style == '1' and n != 0:
             # 庑殿的椽架需要延伸到下层宽度，以便后续做45度裁剪
             rafter_tile_x = purlin_pos[n].x
+        if bData.roof_style == '4':
+            # 硬山的椽架只做到山柱中线，避免与山墙打架
+            rafter_tile_x = bData.x_total/2
         else:
             # 檐椽平铺到上层桁交点
             rafter_tile_x = purlin_pos[n+1].x  
         utils.addModifierArray(
             object=fbRafterObj,
-            count=int(rafter_tile_x /rafter_gap_x),
+            count=math.ceil(rafter_tile_x /rafter_gap_x),
             offset=(0,-rafter_gap_x,0)
         )
         
@@ -1065,6 +1068,11 @@ def __buildDLY(buildingObj,purlin_pos,direction):
         DLY_scale = (jinhengPos.x * 2,  
             con.DALIANYAN_H*dk,
             con.DALIANYAN_Y*dk)
+        if bData.roof_style=='4':
+            # 硬山建筑的大连檐做到山墙边
+            DLY_scale = (bData.x_total + con.SHANQIANG_WIDTH*dk*2,  
+                con.DALIANYAN_H*dk,
+                con.DALIANYAN_Y*dk)
         DLY_mirrorAxis = (False,True,False) # Y轴镜像
         DLY_type = con.ACA_TYPE_RAFTER_DLY_FB
     else:
@@ -2389,11 +2397,15 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     ridgeCurveVerts = []
-    # 垂脊横坐标，向内一垄
+    # 垂脊横坐标
     ridge_x = purlin_pos[-1].x
+    # 硬山调整一个山墙宽度
+    if bData.roof_style =='4':
+        ridge_x += con.SHANQIANG_WIDTH * dk - con.BEAM_DEEPTH * pd/2
 
     # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
     # 大连檐中心
@@ -2401,11 +2413,7 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
         buildingObj,con.ACA_TYPE_RAFTER_DLY_FB)
     curve_p1 = Vector(dlyObj.location)
     # 位移到大连檐外沿
-    offset = Vector((ridge_x,con.DALIANYAN_H*dk/2,
-        0))
-    # offset = Vector((purlin_pos[-1].x ,#-bData.tile_width_real/2,
-    #                  con.DALIANYAN_H*dk/2,#这里本来只需要调整半个大连檐，考虑到瓦的高度，调整到了一个大连檐
-    #                  0))
+    offset = Vector((ridge_x,con.DALIANYAN_H*dk/2,0))
     offset.rotate(dlyObj.rotation_euler)
     curve_p1 += offset
     ridgeCurveVerts.append(curve_p1)
@@ -2503,6 +2511,7 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
 #     # 应用裁剪
 #     return
 
+# 营造博缝板，依赖于外部资产，更便于调整
 def __buildBofeng(buildingObj: bpy.types.Object,
                  rafter_pos):
     # 载入数据
@@ -2544,6 +2553,121 @@ def __buildBofeng(buildingObj: bpy.types.Object,
 
     # 应用裁剪
     return
+
+# 营造山墙
+# todo: 后续迁移到墙体的代码文件，以及Colleciton、empty下去
+def __buildShanWall(
+        buildingObj:bpy.types.Object,
+        purlin_pos):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+    ShanWallVerts = []
+    # 山墙横坐标
+    ridge_x = bData.x_total/2
+
+    # 墀头点
+    tile_base = bData.piller_height
+    # 如果有斗栱，抬高斗栱高度
+    if bData.use_dg:
+        tile_base += bData.dg_height
+    else:
+        # 以大梁抬升
+        tile_base += con.BEAM_HEIGHT*pd
+    # 1、山墙下脚点，向外伸出檐椽平出，做到柱脚高度
+    p00: Vector = Vector((bData.x_total/2,
+        bData.y_total/2 + con.SHANQIANG_EX*dk,
+        -tile_base))
+    ShanWallVerts.insert(0,p00*Vector((1,-1,1)))
+    ShanWallVerts.append(p00)
+    # 2、垂直延伸到柱头高度
+    p01: Vector = Vector((bData.x_total/2,
+        bData.y_total/2 + con.SHANQIANG_EX*dk,
+        -tile_base+bData.piller_height))
+    ShanWallVerts.insert(0,p01*Vector((1,-1,1)))
+    ShanWallVerts.append(p01)
+
+    # 3、檐口点：从正身飞椽的中心当开始，上移半飞椽+大连檐
+    # 大连檐中心
+    dlyObj:bpy.types.Object = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_DLY_FB)
+    p1 = Vector(dlyObj.location)
+    # 位移到大连檐外沿
+    offset = Vector((ridge_x,con.DALIANYAN_H*dk/2,0))
+    offset.rotate(dlyObj.rotation_euler)
+    p1 += offset
+    ShanWallVerts.insert(0,p1*Vector((1,-1,1)))
+    ShanWallVerts.append(p1)
+
+    # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
+    # 从举架定位点做偏移
+    for n in range(len(purlin_pos)):
+        # 向上位移:半桁径+椽径+望板高+灰泥层高
+        offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
+                  + con.WANGBAN_H + con.ROOFMUD_H)*dk
+        point:Vector = purlin_pos[n]*Vector((0,1,1)) \
+                + Vector((ridge_x,0,offset))
+        ShanWallVerts.insert(0,point*Vector((1,-1,1)))
+        ShanWallVerts.append(point)
+    
+    # 创建山墙实体
+    # 任意添加一个对象，具体几何数据在bmesh中建立
+    bpy.ops.mesh.primitive_cube_add(
+        location=(0,0,0)
+    )
+    shanWallObj = bpy.context.object
+    shanWallObj.name = '山墙'
+    shanWallObj.parent = rafterRootObj
+
+    # 创建bmesh
+    bm = bmesh.new()
+    # 摆放点
+    vertices=[]
+    for n in range(len(ShanWallVerts)):
+        if n==0:
+            vert = bm.verts.new(ShanWallVerts[n])
+        else:
+            # 挤出
+            return_geo = bmesh.ops.extrude_vert_indiv(bm, verts=[vert])
+            vertex_new = return_geo['verts'][0]
+            del return_geo
+            # 给挤出的点赋值
+            vertex_new.co = ShanWallVerts[n]
+            # 交换vertex给下一次循环
+            vert = vertex_new
+        vertices.append(vert)
+    
+    # 创建面
+    for n in range(len(vertices)//2-1): #注意‘/’可能是float除,用'//'进行整除
+        bm.faces.new((
+            vertices[n],vertices[n+1], 
+            vertices[-n-2],vertices[-n-1] 
+        ))
+
+    # 挤出山墙厚度
+    offset=Vector((con.SHANQIANG_WIDTH*dk, 0,0))
+    return_geo = bmesh.ops.extrude_face_region(bm, geom=bm.faces)
+    verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
+    bmesh.ops.translate(bm, verts=verts, vec=offset)
+
+    # 确保face normal朝向
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(shanWallObj.data)
+    shanWallObj.data.update()
+    bm.free()
+
+    # 添加镜像
+    utils.addModifierMirror(
+        object=shanWallObj,
+        mirrorObj=rafterRootObj,
+        use_axis=(True,False,False)
+    )
+    
+    return
+
 # 营造整个房顶
 def buildRoof(buildingObj:bpy.types.Object):
     # 清理垃圾数据
@@ -2581,6 +2705,10 @@ def buildRoof(buildingObj:bpy.types.Object):
     # 摆放椽架（包括角梁、檐椽、望板、飞椽、里口木、大连檐等）
     utils.outputMsg("Building Rafter...")
     __buildRafterForAll(buildingObj,rafter_pos)
+
+    # 如果是硬山，摆放山墙
+    if bData.roof_style == '4':
+        __buildShanWall(buildingObj,rafter_pos)
 
     # 摆放瓦作
     if bData.use_tile:

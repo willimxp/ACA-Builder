@@ -36,6 +36,12 @@ class ACA_Consts(object):
     ACA_TYPE_TILE_ROOT = 'tile_root' # ACA类型：屋瓦层
     ACA_TYPE_ASSET_ROOT ='asset_root' # ACA类型：斗栱根节点
 
+    # 屋顶类型，与面板的下拉框的值对应
+    ROOF_WUDIAN = '1'
+    ROOF_XIESHAN = '2'
+    ROOF_XUANSHAN = '3'
+    ROOF_YINGSHAN = '4'
+
     # 柱子
     PILLER_D_EAVE = 6   # 檐柱直接径6斗口
     PILLER_H_EAVE = 57  # 檐柱高约57斗口（到挑檐桁下皮共70斗口）
@@ -86,6 +92,7 @@ class ACA_Consts(object):
     BEAM_DEEPTH = 1.1       # 梁厚，单位D
     BOFENG_WIDTH = 1.2      # 博缝板厚，单位斗口
     BOFENG_HEIGHT = 8       # 博缝板高，单位斗口
+    XYB_WIDTH = 1.2         # 象眼板厚，单位斗口
 
     # 椽飞类
     YANCHUAN_EX = 14    # 檐椽平出14斗口
@@ -126,6 +133,7 @@ class ACA_Consts(object):
     EAVETILE_EX = 2 # 瓦当、滴水出檐长度，单位斗口
     SHANQIANG_WIDTH = 9     # 山墙厚度，单位斗口，即1.5柱径
     SHANQIANG_EX = 11       # 山墙墀头延伸，单位斗口，约1.8柱径
+    TILE_HEIGHT = 0.04      # 瓦层高度，单位米，预估值
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

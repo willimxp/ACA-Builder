@@ -47,7 +47,7 @@ def buildDougong(buildingObj:bpy.types.Object):
 
     # 3、布置斗栱/铺作======================================================
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
-    if bData.roof_style in ('1','2'):
+    if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
         # 庑殿/歇山：做转角斗栱/角科
         if bData.dg_corner_source != None:
             dgCornerObj:bpy.types.Object = bData.dg_corner_source
@@ -71,7 +71,7 @@ def buildDougong(buildingObj:bpy.types.Object):
     # 柱头斗栱/柱头科
     if bData.dg_piller_source != None:
         dgPillerObj:bpy.types.Object = bData.dg_piller_source
-        if bData.roof_style in ('1','2'):
+        if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
             # 庑殿/歇山有转角斗栱，所以四角柱头不做斗栱
             dgRange = range(1,len(net_x)-1) 
         else:
@@ -96,7 +96,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                 )
             dgPillerCopy.rotation_euler.z = math.radians(180)
         
-        if bData.roof_style in ('1','2'):
+        if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
             # 仅庑殿/歇山做两山的斗栱
             # 右侧
             for n in range(len(net_y)-2) : 
@@ -148,7 +148,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                 dgFillCopy.rotation_euler.z = math.radians(0)
         
         # 两山
-        if bData.roof_style in ('1','2'):
+        if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
             for n in range(len(net_y)-1) : 
                 # 求平身科攒数
                 pStart = net_y[n]

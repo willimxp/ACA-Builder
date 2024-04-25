@@ -271,7 +271,7 @@ class ACA_PT_roof(bpy.types.Panel):
                 row.prop(objData, "use_wangban") # 添加望板
                 row = box.row()
                 row.prop(objData, "use_tile") # 添加瓦作
-                if objData.roof_style in ('1','2'):
+                if objData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
                     row = box.row()
                     row.prop(objData, "chong") # 出冲
                     row = box.row()

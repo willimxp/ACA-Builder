@@ -658,12 +658,20 @@ def addBisect(object:bpy.types.Object,
               pEnd:Vector,
               pCut:Vector,
               clear_outer=False,
-              clear_inner=False,)    :
-    # 1、计算剪切平面，先将由戗投影到XY平面，再旋转90度
-    pstart_project = Vector((pStart.x,pStart.y,0))
-    pend_project = Vector((pEnd.x,pEnd.y,0))
-    bisect_normal = Vector(pend_project-pstart_project)
-    bisect_normal.rotate(Euler((0,0,math.radians(90)),'XYZ'))
+              clear_inner=False,
+              direction  = 'Z')    :
+    if direction == 'Z':
+        # 1、计算剪切平面，先将由戗投影到XY平面，再旋转90度
+        pstart_project = Vector((pStart.x,pStart.y,0))
+        pend_project = Vector((pEnd.x,pEnd.y,0))
+        bisect_normal = Vector(pend_project-pstart_project)
+        bisect_normal.rotate(Euler((0,0,math.radians(90)),'XYZ'))
+    elif direction == 'Y':
+        # 1、计算剪切平面，先将由戗投影到XY平面，再旋转90度
+        pstart_project = Vector((0,pStart.y,pStart.z))
+        pend_project = Vector((0,pEnd.y,pEnd.z))
+        bisect_normal = Vector(pend_project-pstart_project)
+        bisect_normal.rotate(Euler((math.radians(90),0,0),'XYZ'))
     bisect_normal = Vector(bisect_normal).normalized() # normal必须normalized,注意不是normalize
 
     # 2、选中并裁切
@@ -678,6 +686,7 @@ def addBisect(object:bpy.types.Object,
         use_fill=True
     )
     bpy.ops.object.editmode_toggle()  
+    bpy.ops.object.shade_flat()
 
 # 寻找对象最外侧（远离原点）的面的中心点
 # 注意，返回的坐标基于root_obj为parent的local坐标系
@@ -851,6 +860,7 @@ def changeOriginRotation(RotationChange,Object:bpy.types.Object):
          old_rot_y+change_rot_y,
          old_rot_z+change_rot_z),'XYZ'
     )
+    
 
 # 返回评估对象
 # 在代码阻塞过程中，可以及时的计算对象当前的状态，刷新实际的尺寸、旋转和坐标

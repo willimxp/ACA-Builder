@@ -1070,6 +1070,7 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
     #utils.hideObj(ridgeCurve)
     return ridgeCurve
 
+# 营造四角的戗脊
 def __buildCornerRidge(buildingObj:bpy.types.Object,
                     rafter_pos):
     # 载入数据
@@ -1160,6 +1161,61 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     
     return
 
+# 营造歇山的博脊
+def __buildSideRidge(buildingObj:bpy.types.Object,
+                    rafter_pos):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT
+    )
+    ridgeObj:bpy.types.Object = bData.ridgeFront_source
+
+    # 绘制博脊曲线
+    sideRidgeVerts = []
+    # 横坐标从金桁交点，外移博缝板，外移半脊筒
+    x = rafter_pos[-1].x \
+        + ridgeObj.dimensions.y/2
+    # 纵坐标在金桁交点附近，找到脊筒的整数倍
+    y = math.ceil(rafter_pos[1].y 
+            /ridgeObj.dimensions.x) \
+        * ridgeObj.dimensions.x
+    z = rafter_pos[1].z - con.HENG_COMMON_D*dk/2
+    # 垂脊中点
+    p0 = Vector((x,0,z))
+    sideRidgeVerts.append(p0)
+    # 垂脊转折点
+    p1 = Vector((x,y,z))
+    sideRidgeVerts.append(p1)
+    # 垂脊终点
+    p2 = p1 + Vector((  
+        0,
+        ridgeObj.dimensions.x,
+        0))
+    sideRidgeVerts.append(p2)
+    sideRidgeCurve = utils.addCurveByPoints(
+        CurvePoints=sideRidgeVerts,
+        name='博脊线',
+        root_obj=tileRootObj,
+        resolution=64,
+        order_u=2,
+    )
+    endCurve:bpy.types.Curve = sideRidgeCurve.data
+    endCurvePoint = endCurve.splines[0].points[2]
+    endCurvePoint.radius = 0
+    utils.setOrigin(sideRidgeCurve,p0)
+
+    # 平铺脊筒
+    __arrayFrontRidge(
+        buildingObj=buildingObj,
+        sourceObj=bData.ridgeFront_source,
+        ridgeCurve=sideRidgeCurve,
+        ridgeName='博脊'
+    )
+
+    return
+
 # 营造屋脊
 def __buildRidge(buildingObj: bpy.types.Object,
                  rafter_pos):
@@ -1178,7 +1234,10 @@ def __buildRidge(buildingObj: bpy.types.Object,
         con.ROOF_WUDIAN,con.ROOF_XIESHAN):
         __buildCornerRidge(buildingObj,rafter_pos)
 
-    # 歇山还有山花脊
+    # 营造歇山的博脊
+    if bData.roof_style == con.ROOF_XIESHAN:
+        __buildSideRidge(buildingObj,rafter_pos)
+    return
 
 # 对外的统一调用接口
 # 一次性重建所有的瓦做

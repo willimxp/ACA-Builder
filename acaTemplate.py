@@ -55,6 +55,19 @@ class templateData:
     RIDGEFRONT_SOURCE = ''      # 垂脊兽前
     RIDGEEND_SOURCE = ''        # 垂脊兽前
     CHIWEN_SOURCE = ''          # 螭吻
+    CHUISHOU_SOURCE = ''        # 垂兽
+    TAOSHOU_SOURCE = ''         # 套兽
+    PAOSHOU_0_SOURCE = ''       # 跑兽-骑凤仙人
+    PAOSHOU_1_SOURCE = ''       # 跑兽-龙
+    PAOSHOU_2_SOURCE = ''       # 跑兽-凤
+    PAOSHOU_3_SOURCE = ''       # 跑兽-狮子
+    PAOSHOU_4_SOURCE = ''       # 跑兽-海马
+    PAOSHOU_5_SOURCE = ''       # 跑兽-天马
+    PAOSHOU_6_SOURCE = ''       # 跑兽-狎鱼
+    PAOSHOU_7_SOURCE = ''       # 跑兽-狻猊
+    PAOSHOU_8_SOURCE = ''       # 跑兽-獬豸
+    PAOSHOU_9_SOURCE = ''       # 跑兽-斗牛
+    PAOSHOU_10_SOURCE = ''      # 跑兽-行什
     BOFENG_SOURCE = ''          # 博缝板
 
 # 解析XML，获取模版列表
@@ -249,13 +262,55 @@ def getTemplate(name,doukou=0)->templateData:
                 if ridgeEnd_source != None:
                     tData.RIDGEEND_SOURCE = ridgeEnd_source.text
 
+                bofeng_source = roof.find('bofeng_source')
+                if bofeng_source != None:
+                    tData.BOFENG_SOURCE = bofeng_source.text
+
                 chiwen_source = roof.find('chiwen_source')
                 if chiwen_source != None:
                     tData.CHIWEN_SOURCE = chiwen_source.text
 
-                bofeng_source = roof.find('bofeng_source')
-                if bofeng_source != None:
-                    tData.BOFENG_SOURCE = bofeng_source.text
+                chuishou_source = roof.find('chuishou_source')
+                if chuishou_source != None:
+                    tData.CHUISHOU_SOURCE = chuishou_source.text
+
+                taoshou_source = roof.find('taoshou_source')
+                if taoshou_source != None:
+                    tData.TAOSHOU_SOURCE = taoshou_source.text
+
+                paoshou_0_source = roof.find('paoshou_0_source')
+                if paoshou_0_source != None:
+                    tData.PAOSHOU_0_SOURCE = paoshou_0_source.text
+                paoshou_1_source = roof.find('paoshou_1_source')
+                if paoshou_1_source != None:
+                    tData.PAOSHOU_1_SOURCE = paoshou_1_source.text
+                paoshou_2_source = roof.find('paoshou_2_source')
+                if paoshou_2_source != None:
+                    tData.PAOSHOU_2_SOURCE = paoshou_2_source.text
+                paoshou_3_source = roof.find('paoshou_3_source')
+                if paoshou_3_source != None:
+                    tData.PAOSHOU_3_SOURCE = paoshou_3_source.text
+                paoshou_4_source = roof.find('paoshou_4_source')
+                if paoshou_4_source != None:
+                    tData.PAOSHOU_4_SOURCE = paoshou_4_source.text
+                paoshou_5_source = roof.find('paoshou_5_source')
+                if paoshou_5_source != None:
+                    tData.PAOSHOU_5_SOURCE = paoshou_5_source.text
+                paoshou_6_source = roof.find('paoshou_6_source')
+                if paoshou_6_source != None:
+                    tData.PAOSHOU_6_SOURCE = paoshou_6_source.text
+                paoshou_7_source = roof.find('paoshou_7_source')
+                if paoshou_7_source != None:
+                    tData.PAOSHOU_7_SOURCE = paoshou_7_source.text
+                paoshou_8_source = roof.find('paoshou_8_source')
+                if paoshou_8_source != None:
+                    tData.PAOSHOU_8_SOURCE = paoshou_8_source.text
+                paoshou_9_source = roof.find('paoshou_9_source')
+                if paoshou_9_source != None:
+                    tData.PAOSHOU_9_SOURCE = paoshou_9_source.text
+                paoshou_10_source = roof.find('paoshou_10_source')
+                if paoshou_10_source != None:
+                    tData.PAOSHOU_10_SOURCE = paoshou_10_source.text
                 
     return tData    
 
@@ -368,16 +423,74 @@ def fillTemplate(buildingObj:bpy.types.Object,
         ridgeEnd_source:bpy.types.Object = \
             acaLibrary.loadAssets(template.RIDGEEND_SOURCE,assetsObj)
         buildingData['ridgeEnd_source'] = ridgeEnd_source
+    
+    if template.BOFENG_SOURCE != "" :
+        bofeng_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.BOFENG_SOURCE,assetsObj)
+        buildingData['bofeng_source'] = bofeng_source
 
     if template.CHIWEN_SOURCE != "" :
         chiwen_source:bpy.types.Object = \
             acaLibrary.loadAssets(template.CHIWEN_SOURCE,assetsObj)
         buildingData['chiwen_source'] = chiwen_source
+    
+    if template.CHUISHOU_SOURCE != "" :
+        chuishou_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.CHUISHOU_SOURCE,assetsObj)
+        buildingData['chuishou_source'] = chuishou_source
 
-    if template.BOFENG_SOURCE != "" :
-        bofeng_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.BOFENG_SOURCE,assetsObj)
-        buildingData['bofeng_source'] = bofeng_source
+    if template.TAOSHOU_SOURCE != "" :
+        taoshou_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.TAOSHOU_SOURCE,assetsObj)
+        buildingData['taoshou_source'] = taoshou_source
+
+    if template.PAOSHOU_0_SOURCE != "" :
+        paoshou_0_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.PAOSHOU_0_SOURCE,assetsObj)
+        buildingData['paoshou_0_source'] = paoshou_0_source
+    if template.PAOSHOU_1_SOURCE != "" :
+        paoshou_1_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.PAOSHOU_1_SOURCE,assetsObj)
+        buildingData['paoshou_1_source'] = paoshou_1_source
+    if template.PAOSHOU_2_SOURCE != "" :
+        paoshou_2_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.PAOSHOU_2_SOURCE,assetsObj)
+        buildingData['paoshou_2_source'] = paoshou_2_source
+    if template.PAOSHOU_3_SOURCE != "" :
+        paoshou_3_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.PAOSHOU_3_SOURCE,assetsObj)
+        buildingData['paoshou_3_source'] = paoshou_3_source
+    if template.PAOSHOU_4_SOURCE != "" :
+        paoshou_4_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.PAOSHOU_4_SOURCE,assetsObj)
+        buildingData['paoshou_4_source'] = paoshou_4_source
+    if template.PAOSHOU_5_SOURCE != "" :
+        paoshou_5_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.PAOSHOU_5_SOURCE,assetsObj)
+        buildingData['paoshou_5_source'] = paoshou_5_source
+    if template.PAOSHOU_6_SOURCE != "" :
+        paoshou_6_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.PAOSHOU_6_SOURCE,assetsObj)
+        buildingData['paoshou_6_source'] = paoshou_6_source
+    if template.PAOSHOU_7_SOURCE != "" :
+        paoshou_7_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.PAOSHOU_7_SOURCE,assetsObj)
+        buildingData['paoshou_7_source'] = paoshou_7_source
+    if template.PAOSHOU_8_SOURCE != "" :
+        paoshou_8_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.PAOSHOU_8_SOURCE,assetsObj)
+        buildingData['paoshou_8_source'] = paoshou_8_source
+    if template.PAOSHOU_9_SOURCE != "" :
+        paoshou_9_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.PAOSHOU_9_SOURCE,assetsObj)
+        buildingData['paoshou_9_source'] = paoshou_9_source
+    if template.PAOSHOU_10_SOURCE != "" :
+        paoshou_10_source:bpy.types.Object = \
+            acaLibrary.loadAssets(template.PAOSHOU_10_SOURCE,assetsObj)
+        buildingData['paoshou_10_source'] = paoshou_10_source
+    
+
+    
 
 # 根据panel中DK的改变，更新整体设计参数
 def updateTemplateByDK(dk,buildingObj:bpy.types.Object):

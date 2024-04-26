@@ -19,7 +19,7 @@
         </dougong>
         <!--屋顶设置-->
         <roof>
-            <roof_style>4</roof_style>
+            <roof_style>2</roof_style>
             <rafter_count>6</rafter_count>
             <tile_width>0.4</tile_width>
             <tile_length>0.5</tile_length>
@@ -31,7 +31,20 @@
             <ridgeBack_source>垂脊兽后</ridgeBack_source>
             <ridgeFront_source>垂脊兽前</ridgeFront_source>
             <ridgeEnd_source>端头组合</ridgeEnd_source>
-            <chiwen_source>螭吻.矫正</chiwen_source>
+            <chiwen_source>螭吻</chiwen_source>
+            <chuishou_source>垂兽</chuishou_source>
+            <taoshou_source>套兽</taoshou_source>
+            <paoshou_0_source>0-骑凤仙人</paoshou_0_source>
+            <paoshou_1_source>1-龙</paoshou_1_source>
+            <paoshou_2_source>2-凤</paoshou_2_source>
+            <paoshou_3_source>3-狮子</paoshou_3_source>
+            <paoshou_4_source>4-海马</paoshou_4_source>
+            <paoshou_5_source>5-天马</paoshou_5_source>
+            <paoshou_6_source>6-狎鱼</paoshou_6_source>
+            <paoshou_7_source>7-狻猊</paoshou_7_source>
+            <paoshou_8_source>8-獬豸</paoshou_8_source>
+            <paoshou_9_source>9-斗牛</paoshou_9_source>
+            <paoshou_10_source>10-行什</paoshou_10_source>
             <bofeng_source>博缝板</bofeng_source>
         </roof>
     </template>

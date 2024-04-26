@@ -443,7 +443,71 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             type = bpy.types.Object,
             poll = p_filter
         )# type: ignore 
-
+    chuishou_source:bpy.props.PointerProperty(
+            name = "垂兽",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    taoshou_source:bpy.props.PointerProperty(
+            name = "套兽",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_0_source:bpy.props.PointerProperty(
+            name = "仙人",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_1_source:bpy.props.PointerProperty(
+            name = "龙",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_2_source:bpy.props.PointerProperty(
+            name = "凤",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_3_source:bpy.props.PointerProperty(
+            name = "狮子",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_4_source:bpy.props.PointerProperty(
+            name = "海马",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_5_source:bpy.props.PointerProperty(
+            name = "天马",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_6_source:bpy.props.PointerProperty(
+            name = "狎鱼",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_7_source:bpy.props.PointerProperty(
+            name = "狻猊",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_8_source:bpy.props.PointerProperty(
+            name = "獬豸",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_9_source:bpy.props.PointerProperty(
+            name = "斗牛",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_10_source:bpy.props.PointerProperty(
+            name = "行什",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
 
 # 场景范围的数据
 # 可绑定面板参数属性

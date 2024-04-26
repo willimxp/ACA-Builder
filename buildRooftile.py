@@ -786,25 +786,20 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     # 硬山建筑，向外移动一个山墙
     if bData.roof_style ==con.ROOF_YINGSHAN:
         ridge_x += con.SHANQIANG_WIDTH * dk - con.BEAM_DEEPTH * pd/2
-    # 确保垂脊线在瓦垄坐中
-    # if bData.roof_style == con.ROOF_XIESHAN:
-    #     ridge_x = math.ceil(ridge_x/bData.tile_width_real) * bData.tile_width_real
 
-
-    # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
-    # 大连檐中心
-    dlyObj:bpy.types.Object = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_RAFTER_DLY_FB)
-    curve_p1 = Vector(dlyObj.location)
-    # 位移到大连檐外沿，瓦当滴水向外延伸
-    offset = Vector((ridge_x,con.DALIANYAN_H*dk/2,
-        -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
-    # offset = Vector((purlin_pos[-1].x ,#-bData.tile_width_real/2,
-    #                  con.DALIANYAN_H*dk/2,#这里本来只需要调整半个大连檐，考虑到瓦的高度，调整到了一个大连檐
-    #                  0))
-    offset.rotate(dlyObj.rotation_euler)
-    curve_p1 += offset
-    ridgeCurveVerts.append(curve_p1)
+    # 硬山、悬山的垂脊从檐口做起
+    if bData.roof_style in (con.ROOF_YINGSHAN,con.ROOF_XUANSHAN):
+        # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
+        # 大连檐中心
+        dlyObj:bpy.types.Object = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_RAFTER_DLY_FB)
+        curve_p1 = Vector(dlyObj.location)
+        # 位移到大连檐外沿，瓦当滴水向外延伸
+        offset = Vector((ridge_x,con.DALIANYAN_H*dk/2,
+            -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
+        offset.rotate(dlyObj.rotation_euler)
+        curve_p1 += offset
+        ridgeCurveVerts.append(curve_p1)
 
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
     # 从举架定位点做偏移
@@ -813,9 +808,9 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
         offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
                   + con.WANGBAN_H + con.ROOFMUD_H)*dk
         point:Vector = purlin_pos[n]+Vector((0,0,offset))
-        point.x = ridge_x #-bData.tile_width_real/2
+        point.x = ridge_x
         
-        # 调整曲线终点，与正脊相交
+        # 延长曲线终点，与正脊相交
         if n == len(purlin_pos)-1:
             # 调整2个垂脊筒的长度，多余的会在镜像时裁剪掉
             # 斜率近似认为45度
@@ -823,6 +818,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
             offset = ridgeFrontObj.dimensions.x * 2
             point.y -= offset
             point.z += offset
+        
         ridgeCurveVerts.append(point)
     
     # 创建瓦垄曲线
@@ -920,7 +916,60 @@ def __arraySideTile(buildingObj: bpy.types.Object,
 
     return tileObj
 
+# 摆放跑兽
+def __buildPaoshou(buildingObj: bpy.types.Object,
+                   ridgeCurve:bpy.types.Object,
+                   count):
+    # 载入数据
+    bData:acaData  = buildingObj.ACA_data
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT
+    )
+    
+    # 载入10个跑兽
+    paoshouObjs = []
+    paoshouObjs.append(bData.paoshou_0_source)
+    paoshouObjs.append(bData.paoshou_1_source)
+    paoshouObjs.append(bData.paoshou_2_source)
+    paoshouObjs.append(bData.paoshou_3_source)
+    paoshouObjs.append(bData.paoshou_4_source)
+    paoshouObjs.append(bData.paoshou_5_source)
+    paoshouObjs.append(bData.paoshou_6_source)
+    paoshouObjs.append(bData.paoshou_7_source)
+    paoshouObjs.append(bData.paoshou_8_source)
+    paoshouObjs.append(bData.paoshou_9_source)
+    paoshouObjs.append(bData.paoshou_10_source)
+
+    # 以一个脊筒长度为单位距离
+    ridgeObj:bpy.types.Object = bData.ridgeFront_source
+    ridgeLength = ridgeObj.dimensions.x
+    ridgeHeight = ridgeObj.dimensions.z
+    # 端头盘子长度
+    ridgeEnd_Length = bData.tile_width * math.sqrt(2)
+
+    for n in range(count):
+        loc = ridgeCurve.location + Vector((
+            ridgeLength*n+ridgeEnd_Length/2,
+            0,ridgeHeight))
+        shouObj = utils.copyObject(
+            sourceObj=paoshouObjs[n],
+            parentObj=tileRootObj,
+            location=loc
+        )
+        # 通过曲线变形，获得仰角
+        modCurve:bpy.types.CurveModifier = \
+             shouObj.modifiers.new('curve','CURVE')
+        modCurve.object = ridgeCurve
+        # 四向对称
+        utils.addModifierMirror(
+            object=shouObj,
+            mirrorObj=tileRootObj,
+            use_axis=(True,True,False),
+        )
+    return
+
 # 营造前后檐垂脊
+# 庑殿不涉及（不进入本函数）
 def __buildFrontRidge(buildingObj: bpy.types.Object,
                  rafter_pos):
     # 载入数据
@@ -932,15 +981,15 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     eaveTileWidth = eaveTile.dimensions.x
     eaveTileLength = eaveTile.dimensions.y
     
-    # 绘制垂脊曲线
+    # 绘制垂脊曲线，其中自动判断了垂脊起点：
     # 歇山仅做到正心桁位置
     # 硬山悬山做到檐口位置
-    # 庑殿不涉及（不进入本函数）
     frontRidgeCurve = __drawFrontRidgeCurve(
         buildingObj,rafter_pos)
 
-    # 歇山不做垂脊兽前和对应的盘子
-    if bData.roof_style != con.ROOF_XIESHAN:
+    # 硬山和悬山做端头盘子
+    if bData.roof_style in (
+        con.ROOF_YINGSHAN,con.ROOF_XUANSHAN):
         # 构造垂脊兽前
         frontRidgeBeforeObj = __arrayFrontRidge(buildingObj,
                         sourceObj=bData.ridgeFront_source,
@@ -976,10 +1025,34 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
                     sourceObj=bData.ridgeBack_source,
                     ridgeCurve=frontRidgeCurve,
                     ridgeName='垂脊兽后')
-    # 留出跑兽的空间
-    paoLength = 2
-    frontRidgeAfterObj.location.x += paoLength
-    
+    # 歇山的垂脊做垂兽
+    if bData.roof_style == con.ROOF_XIESHAN:
+        # 垂脊兽后退后一个脊筒，摆放垂兽
+        ridgeObj:bpy.types.Object = bData.ridgeBack_source
+        ridgeLength = ridgeObj.dimensions.x
+        frontRidgeAfterObj.location.x += ridgeLength
+        # 摆放垂兽
+        chuishouObj = utils.copyObject(
+            sourceObj=bData.chuishou_source,
+            name='垂兽',
+            parentObj=tileRootObj,
+            location=frontRidgeCurve.location)
+        # 通过曲线变形，获得仰角
+        modCurve:bpy.types.CurveModifier = \
+             chuishouObj.modifiers.new('curve','CURVE')
+        modCurve.object = frontRidgeCurve
+        # 四向对称
+        utils.addModifierMirror(
+            object=chuishouObj,
+            mirrorObj=tileRootObj,
+            use_axis=(True,True,False)
+        )
+    # 硬山、悬山做跑兽
+    if bData.roof_style in (
+        con.ROOF_YINGSHAN,con.ROOF_XUANSHAN):
+        # 留出跑兽的空间
+        paoLength = 2
+        frontRidgeAfterObj.location.x += paoLength
     
     # 构造排山滴水
     dripTileObj = __arraySideTile(buildingObj,
@@ -1071,6 +1144,7 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
     return ridgeCurve
 
 # 营造四角的戗脊
+# 适用于庑殿、歇山，不涉及硬山、悬山
 def __buildCornerRidge(buildingObj:bpy.types.Object,
                     rafter_pos):
     # 载入数据
@@ -1115,6 +1189,14 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     ridgeUnit_Length = ridgeUnit.dimensions.x
     cornerRidgeBeforeObj.location.x += \
         ridgeEnd_Length + ridgeUnit_Length/2
+    
+    # 放置跑兽
+    paoCount = 6
+    __buildPaoshou(
+        buildingObj=buildingObj,
+        ridgeCurve=cornerRidgeCurve,
+        count=paoCount
+    )
 
     # 构造垂脊兽后
     cornerRidgeAfterObj = __arrayFrontRidge(buildingObj,
@@ -1122,9 +1204,25 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
                     ridgeCurve=cornerRidgeCurve,
                     ridgeName='戗脊兽后')
     # 留出跑兽的空间
-    paoLength = 2
-    cornerRidgeAfterObj.location.x += paoLength
-    # 排布脊兽、跑兽、套兽等
+    paoLength = ridgeEnd_Length + ridgeUnit_Length * (paoCount+0.5)
+    cornerRidgeAfterObj.location.x += paoLength +ridgeUnit_Length
+    # 摆放垂兽
+    loc = cornerRidgeCurve.location + Vector((paoLength,0,0))
+    chuishouObj = utils.copyObject(
+        sourceObj=bData.chuishou_source,
+        name='垂兽',
+        parentObj=tileRootObj,
+        location=loc)
+    # 通过曲线变形，获得仰角
+    modCurve:bpy.types.CurveModifier = \
+            chuishouObj.modifiers.new('curve','CURVE')
+    modCurve.object = cornerRidgeCurve
+    # 四向对称
+    utils.addModifierMirror(
+        object=chuishouObj,
+        mirrorObj=tileRootObj,
+        use_axis=(True,True,False)
+    )
 
     # 歇山戗脊，沿垂脊裁剪
     if bData.roof_style == con.ROOF_XIESHAN:

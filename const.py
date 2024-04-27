@@ -106,7 +106,8 @@ class ACA_Consts(object):
     XIAOLIANYAN_H = WANGBAN_H * 1.5         # 小连檐厚度(暂未使用，都用了里口木尺寸)
     ZADANGBAN_H = FLYRAFTER_H    # 闸挡板高(暂未使用，都用了里口木尺寸)
     ZADANGBAN_Y = WANGBAN_H     # 闸挡板厚(暂未使用，都用了里口木尺寸)
-    DALIANYAN_H = YUANCHUAN_D   # 大连檐，高同椽径
+    # DALIANYAN_H = YUANCHUAN_D   # 大连檐，高同椽径
+    DALIANYAN_H = YUANCHUAN_D*2   # 大连檐，这里叠加了“瓦口”高度（瓦口定义为1/2椽径或更高，见马炳坚书p179）
     DALIANYAN_Y = YUANCHUAN_D   # 大连檐，宽1.1-1.2椽径
     FLYRAFTER_HEAD_TILE_RATIO = 1/2.5        # 飞椽头身比，默认一飞二尾五
     QUETAI = YUANCHUAN_D*0.2    # 雀台长度(通常1/5~1/3椽径)

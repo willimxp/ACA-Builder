@@ -48,6 +48,7 @@ def loadAssets(assetName : str,parent:bpy.types.Object,hide=True):
         else:
             utils.showObj(a)
     
+        print(a.name + ' is loaded ===')
     return(asset)
 
     

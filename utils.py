@@ -529,9 +529,10 @@ def fastRun(func):
         pass
     try:
         _BPyOpsSubModOp._view_layer_update = dummy_view_layer_update
-        func()
+        result = func()
     finally:
         _BPyOpsSubModOp._view_layer_update = view_layer_update
+        return result
 
 # 格式化输出内容
 def outputMsg(msg:str):

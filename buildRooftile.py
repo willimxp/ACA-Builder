@@ -727,6 +727,10 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
                 + con.WANGBAN_H + con.ROOFMUD_H)*dk
     zhengji_z = rafter_pos[-1].z + offset
+    # 庑殿正脊适当调整（垂脊相交的方式与歇山、悬山等略有不同）
+    if bData.roof_style == con.ROOF_WUDIAN:
+        # 向下调减1斗口（纯粹为了好看，没啥依据）
+        zhengji_z -= dk
     roofRidgeObj = utils.copyObject(
         sourceObj=ridgeTopObj,
         name="正脊",
@@ -734,11 +738,16 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         parentObj=tileRootObj)
     
     # 横向平铺
+    # 硬山正脊做到垂脊中线，即山墙向内半垄瓦
     if bData.roof_style == con.ROOF_YINGSHAN:
-        # 硬山正脊做到垂脊中线，即山墙向内半垄瓦
         zhengji_length = bData.x_total/2 \
             + con.SHANQIANG_WIDTH*dk \
             - bData.tile_width_real/2
+    # 庑殿正脊外皮与垂脊相交
+    elif bData.roof_style == con.ROOF_WUDIAN:
+        zhengji_length = rafter_pos[-1].x \
+            + bData.tile_width_real/2
+    # 歇山、悬山正脊内皮与垂脊相交
     else:
         # 与垂脊相交，从金交点偏移半垄
         zhengji_length = rafter_pos[-1].x \
@@ -833,10 +842,11 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     return ridgeCurve
 
 # 沿曲线排布脊筒
-def __arrayFrontRidge(buildingObj: bpy.types.Object,
+def __arrayRidgeByCurve(buildingObj: bpy.types.Object,
                     sourceObj:bpy.types.Object,
                     ridgeCurve:bpy.types.Curve,
                     ridgeName='垂脊',
+                    arrayCount=0
                  ):
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
@@ -853,8 +863,12 @@ def __arrayFrontRidge(buildingObj: bpy.types.Object,
     # 沿垂脊曲线平铺
     modArray:bpy.types.ArrayModifier = \
         frontRidgeObj.modifiers.new('曲线平铺','ARRAY')
-    modArray.fit_type = 'FIT_CURVE'
-    modArray.curve = ridgeCurve
+    if arrayCount != 0:
+        modArray.fit_type = 'FIXED_COUNT'
+        modArray.count = arrayCount
+    else:
+        modArray.fit_type = 'FIT_CURVE'
+        modArray.curve = ridgeCurve
 
     # 沿垂脊曲线变形
     modCurve: bpy.types.CurveModifier = \
@@ -916,6 +930,40 @@ def __arraySideTile(buildingObj: bpy.types.Object,
 
     return tileObj
 
+# 摆放套兽
+def __buildTaoshou(buildingObj: bpy.types.Object):
+    # 载入数据
+    bData:acaData  = buildingObj.ACA_data
+    dk = bData.DK
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT
+    )
+
+    # 获取子角梁
+    ccbObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_CORNER_BEAM_CHILD)
+    # 套兽定位与子角梁头下皮平
+    offset = Vector((0,0,con.JIAOLIANG_H*dk))
+    offset.rotate(ccbObj.rotation_euler)
+    loc = bData.roof_qiao_point - offset
+
+    taoshouObj = utils.copyObject(
+        sourceObj=bData.taoshou_source,
+        name='套兽',
+        parentObj=tileRootObj,
+        location=loc
+    )
+    # 与子角梁头做相同旋转
+    taoshouObj.rotation_euler = ccbObj.rotation_euler
+
+    # 做四面对称
+    utils.addModifierMirror(
+        object=taoshouObj,
+        mirrorObj=tileRootObj,
+        use_axis=(True,True,False)
+    )
+    return
+
 # 摆放跑兽
 def __buildPaoshou(buildingObj: bpy.types.Object,
                    ridgeCurve:bpy.types.Object,
@@ -951,6 +999,9 @@ def __buildPaoshou(buildingObj: bpy.types.Object,
         loc = ridgeCurve.location + Vector((
             ridgeLength*n+ridgeEnd_Length/2,
             0,ridgeHeight))
+        # 微调仙人的位置，仙人较大需要与后续跑兽拉开一些距离
+        if n==0:
+            loc -= Vector((ridgeEnd_Length - ridgeLength,0,0))
         shouObj = utils.copyObject(
             sourceObj=paoshouObjs[n],
             parentObj=tileRootObj,
@@ -991,7 +1042,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     if bData.roof_style in (
         con.ROOF_YINGSHAN,con.ROOF_XUANSHAN):
         # 构造垂脊兽前
-        frontRidgeBeforeObj = __arrayFrontRidge(buildingObj,
+        frontRidgeBeforeObj = __arrayRidgeByCurve(buildingObj,
                         sourceObj=bData.ridgeFront_source,
                         ridgeCurve=frontRidgeCurve,
                         ridgeName='垂脊兽前')
@@ -1021,7 +1072,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         )
     
     # 构造垂脊兽后
-    frontRidgeAfterObj = __arrayFrontRidge(buildingObj,
+    frontRidgeAfterObj = __arrayRidgeByCurve(buildingObj,
                     sourceObj=bData.ridgeBack_source,
                     ridgeCurve=frontRidgeCurve,
                     ridgeName='垂脊兽后')
@@ -1101,7 +1152,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
 
 # 营造戗脊（庑殿垂脊）曲线
 def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
-                    purlin_pos):
+                    purlin_pos,name='戗脊线'):
 # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -1111,7 +1162,6 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
     )
     ridgeCurveVerts = []
     
-
     # 第1点：子角梁头
     p0 = bData.roof_qiao_point
     ridgeCurveVerts.append(p0)
@@ -1135,7 +1185,7 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
     # 创建瓦垄曲线
     ridgeCurve = utils.addCurveByPoints(
             CurvePoints=ridgeCurveVerts,
-            name="戗脊线",
+            name=name,
             root_obj=tileRootObj,
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
             )
@@ -1152,17 +1202,24 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
+    # 跑兽数量
+    paoCount = 6
+    if bData.roof_style == con.ROOF_WUDIAN:
+        cornerRidgeName = '垂脊'
+    if bData.roof_style == con.ROOF_XIESHAN:
+        cornerRidgeName = '戗脊'
     
     # 绘制戗脊曲线
     cornerRidgeCurve = __buildCornerRidgeCurve(
-        buildingObj,rafter_pos)
+        buildingObj,rafter_pos,cornerRidgeName+'线')
 
     # 沿曲线排布脊筒
     # 构造垂脊兽前
-    cornerRidgeBeforeObj = __arrayFrontRidge(buildingObj,
+    cornerRidgeBeforeObj = __arrayRidgeByCurve(buildingObj,
                     sourceObj=bData.ridgeFront_source,
                     ridgeCurve=cornerRidgeCurve,
-                    ridgeName='戗脊兽前')
+                    ridgeName=cornerRidgeName+'兽前',
+                    arrayCount= paoCount)
     
     # 垂脊兽前摆放端头盘子
     ridgeEndObj = utils.copyObject(
@@ -1191,18 +1248,19 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
         ridgeEnd_Length + ridgeUnit_Length/2
     
     # 放置跑兽
-    paoCount = 6
     __buildPaoshou(
         buildingObj=buildingObj,
         ridgeCurve=cornerRidgeCurve,
         count=paoCount
     )
+    # 放置套兽
+    __buildTaoshou(buildingObj)
 
     # 构造垂脊兽后
-    cornerRidgeAfterObj = __arrayFrontRidge(buildingObj,
+    cornerRidgeAfterObj = __arrayRidgeByCurve(buildingObj,
                     sourceObj=bData.ridgeBack_source,
                     ridgeCurve=cornerRidgeCurve,
-                    ridgeName='戗脊兽后')
+                    ridgeName=cornerRidgeName+'兽后')
     # 留出跑兽的空间
     paoLength = ridgeEnd_Length + ridgeUnit_Length * (paoCount+0.5)
     cornerRidgeAfterObj.location.x += paoLength +ridgeUnit_Length
@@ -1305,7 +1363,7 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
     utils.setOrigin(sideRidgeCurve,p0)
 
     # 平铺脊筒
-    __arrayFrontRidge(
+    __arrayRidgeByCurve(
         buildingObj=buildingObj,
         sourceObj=bData.ridgeFront_source,
         ridgeCurve=sideRidgeCurve,
@@ -1327,7 +1385,7 @@ def __buildRidge(buildingObj: bpy.types.Object,
     if bData.roof_style != con.ROOF_WUDIAN:
         __buildFrontRidge(buildingObj,rafter_pos)
 
-    # 营造四角戗脊（包括庑殿的垂脊，自动判断歇山与庑殿做法的不同）
+    # 营造歇山戗脊、庑殿垂脊
     if bData.roof_style in (
         con.ROOF_WUDIAN,con.ROOF_XIESHAN):
         __buildCornerRidge(buildingObj,rafter_pos)

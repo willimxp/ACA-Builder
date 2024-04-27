@@ -57,7 +57,9 @@ class ACA_OT_add_building(bpy.types.Operator):
 
         # 2.添加建筑empty
         # 其中绑定了模版数据
-        buildingObj = addBuildingRoot(context)
+        # buildingObj = addBuildingRoot(context)
+        funproxy = partial(addBuildingRoot,context=context)
+        buildingObj = utils.fastRun(funproxy)
 
         # 3.调用营造序列
         buildFloor.buildFloor(buildingObj) 

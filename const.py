@@ -10,31 +10,32 @@ class ACA_Consts(object):
     # https://www.jb51.net/article/274253.htm
 
     # 系统参数
-    ROOT_COLL_NAME = 'ACA古建营造' # 根目录名称
-    PLATFORM_NAME = '台基'      # 台基名称
-    ACA_TYPE_BUILDING = 'building'  # ACA类型：台基
-    ACA_TYPE_PLATFORM = 'platform'  # ACA类型：台基
-    ACA_TYPE_FLOOR = 'floor'   # ACA类型：柱网
-    ACA_TYPE_PILLER = 'piller'  # ACA类型：柱子
-    ACA_TYPE_WALL_ROOT = 'wall_root' # ACA类型：墙体布局，墙体的父节点
-    ACA_TYPE_WALL = 'wall' # ACA类型：墙体
-    ACA_TYPE_DG_ROOT ='dg_root' # ACA类型：斗栱根节点
-    ACA_TYPE_ROOF_ROOT ='roof_root' # ACA类型：屋顶根节点
+    ROOT_COLL_NAME = 'ACA古建营造'       # 根目录名称
+    PLATFORM_NAME = '台基'              # 台基名称
+    ACA_TYPE_BUILDING = 'building'      # ACA类型：台基
+    ACA_TYPE_PLATFORM = 'platform'      # ACA类型：台基
+    ACA_TYPE_FLOOR_ROOT = 'floor'            # ACA类型：柱网
+    ACA_TYPE_PILLER = 'piller'          # ACA类型：柱子
+    ACA_TYPE_FANG = 'fang'              # ACA类型：枋
+    ACA_TYPE_WALL_ROOT = 'wall_root'    # ACA类型：墙体布局，墙体的父节点
+    ACA_TYPE_WALL = 'wall'              # ACA类型：墙体
+    ACA_TYPE_DG_ROOT ='dg_root'         # ACA类型：斗栱根节点
+    ACA_TYPE_ROOF_ROOT ='roof_root'     # ACA类型：屋顶根节点
     ACA_TYPE_RAFTER_ROOT = 'rafter_root' # ACA类型：梁椽望根节点
-    ACA_TYPE_RAFTER_FB = 'rafter_fb'      # ACA类型：前后檐椽
-    ACA_TYPE_RAFTER_LR = 'rafter_lr'      # ACA类型：两山檐椽
+    ACA_TYPE_RAFTER_FB = 'rafter_fb'     # ACA类型：前后檐椽
+    ACA_TYPE_RAFTER_LR = 'rafter_lr'     # ACA类型：两山檐椽
     ACA_TYPE_FLYRAFTER_FB = 'flyrafter_fb'  # 前后檐飞椽
     ACA_TYPE_FLYRAFTER_LR = 'flyrafter_lr'  # 两山飞椽
     ACA_TYPE_RAFTER_LKM_FB  = 'rafter_lkm_fb'      # 里口木-前后檐
     ACA_TYPE_RAFTER_LKM_LR  = 'rafter_lkm_lr'      # 里口木-两山
-    ACA_TYPE_RAFTER_DLY_FB = 'rafter_dly_fb'        # 大连檐-前后
-    ACA_TYPE_RAFTER_DLY_LR = 'rafter_dly_lr'        # 大连檐-两山
+    ACA_TYPE_RAFTER_DLY_FB = 'rafter_dly_fb'       # 大连檐-前后
+    ACA_TYPE_RAFTER_DLY_LR = 'rafter_dly_lr'       # 大连檐-两山
     ACA_TYPE_CORNER_BEAM = 'corner_beam'    # 大角梁
     ACA_TYPE_CORNER_BEAM_CHILD = 'corner_beam_child'    # 大角梁
-    ACA_TYPE_CORNER_RAFTER_CURVE = 'corner_rafter_curve'          # 翼角椽定位线
-    ACA_TYPE_CORNER_FLYRAFTER_CURVE = 'corner_flyfater_curve'      # 翘飞椽定位线
-    ACA_TYPE_TILE_ROOT = 'tile_root' # ACA类型：屋瓦层
-    ACA_TYPE_ASSET_ROOT ='asset_root' # ACA类型：斗栱根节点
+    ACA_TYPE_CORNER_RAFTER_CURVE = 'corner_rafter_curve'         # 翼角椽定位线
+    ACA_TYPE_CORNER_FLYRAFTER_CURVE = 'corner_flyfater_curve'    # 翘飞椽定位线
+    ACA_TYPE_TILE_ROOT = 'tile_root'     # ACA类型：屋瓦层
+    ACA_TYPE_ASSET_ROOT ='asset_root'    # ACA类型：斗栱根节点
 
     # 屋顶类型，与面板的下拉框的值对应
     ROOF_WUDIAN = '1'

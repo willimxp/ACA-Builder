@@ -21,7 +21,7 @@ class templateData:
     DK = 0.08                   # 斗口
     PD = con.PILLER_D_EAVE * DK   # 柱径
     PILLER_HEIGHT = 70*DK         # 柱高
-    PILLER_STYLE  = ""          # 柱样式
+    PILLER_SOURCE  = ""          # 柱样式
     PILLER_NET = ""             # 柱网实例
     FANG_NET = ""               # 枋实例
     WALL_NET = ""               # 墙体实例
@@ -142,9 +142,9 @@ def getTemplate(name,doukou=0)->templateData:
                 pillerHeight = pillers.find('height')
                 if pillerHeight != None:
                     tData.PILLER_HEIGHT = float(pillerHeight.text)
-                pillerStyle = pillers.find('style')
-                if pillerStyle != None:
-                    tData.PILLER_STYLE = pillerStyle.text
+                piller_source = pillers.find('piller_source')
+                if piller_source != None:
+                    tData.PILLER_SOURCE = piller_source.text
                 pillerItems = pillers.findall('piller')
                 if pillerItems != None:
                     tData.PILLER_NET = '' # 防止重复生成时的垃圾数据
@@ -381,9 +381,9 @@ def fillTemplate(buildingObj:bpy.types.Object,
     assetsObj.ACA_data['aca_type'] = con.ACA_TYPE_ASSET_ROOT
 
     # 柱形样式
-    if template.PILLER_STYLE != "":
+    if template.PILLER_SOURCE != "":
         piller_base:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PILLER_STYLE,assetsObj)
+            acaLibrary.loadAssets(template.PILLER_SOURCE,assetsObj)
         bData['piller_source'] = piller_base
     # 墙体样式
     if template.WALL_SOURCE != "":

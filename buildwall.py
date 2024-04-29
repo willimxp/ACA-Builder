@@ -58,6 +58,43 @@ def __getWallData(buildingObj:bpy.types.Object,net_x,net_y):
         colRange = range(0,len(net_x)-1)
     return row,col,rowRange,colRange
 
+# 个性化设置一个墙体
+# 传入wallproxy
+def buildSingleWall(wallproxy:bpy.types.Object):
+    # 清空框线
+    utils.deleteHierarchy(wallproxy)
+
+    # 载入数据
+    buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    wData:acaData = wallproxy.ACA_data
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    
+    if wData.wall_style == "1":   #槛墙
+        if wData.wall_source != None:
+            wallChildObj:bpy.types.Object = utils.copyObject(
+                sourceObj=wData.wall_source,
+                name='墙体',
+                parentObj=wallproxy,
+                singleUser=True)
+            wallChildObj.dimensions = (wallproxy.dimensions.x,
+                                    wallChildObj.dimensions.y,
+                                    wallproxy.dimensions.z)
+            utils.applyTransfrom(ob=wallChildObj,use_scale=True)
+            utils.updateScene()
+            wallChildObj.dimensions.z = wallproxy.dimensions.z
+
+    if wData.wall_style in ("2","3"): # 2-隔扇，3-槛墙
+        utils.focusObj(wallproxy)
+        buildDoor.buildDoor(wallproxy)
+
+    # 重新聚焦建筑根节点
+    utils.focusObj(wallproxy)
+    utils.outputMsg("Wallproxy: " + wallproxy.name)
+
+    return
+
 # 更新墙布局
 # 墙体数量不变，仅更新墙体尺寸、样式等
 # 可以保持用户的个性化设置不丢失
@@ -120,7 +157,7 @@ def updateWallLayout(buildingObj:bpy.types.Object):
 
     # 三、批量绑定墙体构件
     for wallproxy in wallrootObj.children:
-        buildDoor.buildSingleWall(wallproxy)
+        buildSingleWall(wallproxy)
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
@@ -203,7 +240,7 @@ def resetWallLayoutOld(buildingObj:bpy.types.Object):
 
     # 三、批量绑定墙体构件
     for wallproxy in wallrootObj.children:
-        buildDoor.buildSingleWall(wallproxy)
+        buildSingleWall(wallproxy)
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
@@ -289,7 +326,7 @@ def resetWallLayout(buildingObj:bpy.types.Object):
 
     # 三、批量绑定墙体构件
     for wallproxy in wallrootObj.children:
-        buildDoor.buildSingleWall(wallproxy)
+        buildSingleWall(wallproxy)
         utils.hideObj(wallproxy)
     
     # 重新聚焦建筑根节点

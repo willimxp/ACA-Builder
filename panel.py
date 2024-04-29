@@ -125,7 +125,9 @@ class ACA_PT_pillers(bpy.types.Panel):
     def poll(self, context):
         if context.object != None:
             objData :data.ACA_data_obj = context.object.ACA_data 
-            if objData.aca_type == con.ACA_TYPE_BUILDING:
+            if objData.aca_type == con.ACA_TYPE_BUILDING \
+                or objData.aca_type == con.ACA_TYPE_PILLER \
+                or objData.aca_type == con.ACA_TYPE_FANG:
                 return True
         return
 
@@ -135,38 +137,61 @@ class ACA_PT_pillers(bpy.types.Panel):
             layout = self.layout
             objData :data.ACA_data_obj = context.object.ACA_data 
 
-            # 柱网属性
-            box = layout.box()
-            row = box.column(align=True)
-            row.prop(objData, "x_rooms")    # 面阔间数
-            row.prop(objData, "x_1")        # 明间宽度
-            if objData.x_rooms >= 3:
-                row.prop(objData, "x_2")    # 次间宽度
-            if objData.x_rooms >= 5:
-                row.prop(objData, "x_3")    # 梢间宽度
-            if objData.x_rooms >= 7:
-                row.prop(objData, "x_4")    # 尽间宽度
-            row = box.column(align=True)
-            row.prop(objData, "y_rooms")    # 进深间数
-            row.prop(objData, "y_1")        # 明间深度
-            if objData.y_rooms >= 3:
-                row.prop(objData, "y_2")    # 次间深度
-            if objData.y_rooms >= 5:
-                row.prop(objData, "y_3")    # 梢间深度
+            # 全局属性
+            if objData.aca_type == con.ACA_TYPE_BUILDING:
+                # 柱网属性
+                box = layout.box()
+                row = box.column(align=True)
+                row.prop(objData, "x_rooms")    # 面阔间数
+                row.prop(objData, "x_1")        # 明间宽度
+                if objData.x_rooms >= 3:
+                    row.prop(objData, "x_2")    # 次间宽度
+                if objData.x_rooms >= 5:
+                    row.prop(objData, "x_3")    # 梢间宽度
+                if objData.x_rooms >= 7:
+                    row.prop(objData, "x_4")    # 尽间宽度
+                row = box.column(align=True)
+                row.prop(objData, "y_rooms")    # 进深间数
+                row.prop(objData, "y_1")        # 明间深度
+                if objData.y_rooms >= 3:
+                    row.prop(objData, "y_2")    # 次间深度
+                if objData.y_rooms >= 5:
+                    row.prop(objData, "y_3")    # 梢间深度
 
-            #柱子属性
-            box = layout.box()
-            row = box.row()
-            row.prop(objData, "piller_height") # 柱高
-            row = box.row()
-            row.prop(objData, "piller_diameter") # 柱径
-            row = box.row()
-            row.prop(objData, "piller_source") # 柱样式
-            row = box.row()
-            row.prop(objData, "use_smallfang") # 添加小额枋
+                #柱子属性
+                box = layout.box()
+                row = box.row()
+                row.prop(objData, "piller_height") # 柱高
+                row = box.row()
+                row.prop(objData, "piller_diameter") # 柱径
+                row = box.row()
+                row.prop(objData, "piller_source") # 柱样式
+                row = box.row()
+                row.prop(objData, "use_smallfang") # 添加小额枋
 
-            row = box.row()
-            row.operator("aca.reset_floor",icon='HOME',)# 按钮:更新柱网
+                row = box.row()
+                row.operator("aca.reset_floor",icon='FILE',)# 按钮:更新柱网
+                row.operator("aca.refresh_floor",icon='FILE_REFRESH',)# 按钮:更新柱网
+            
+            # 局部属性
+            if objData.aca_type == con.ACA_TYPE_PILLER:
+                box = layout.box()
+                row = box.row()
+                row.operator("aca.del_piller",icon='X',)# 按钮:减柱
+                row.operator("aca.add_fang",icon='ARROW_LEFTRIGHT',)# 按钮:连接
+            
+            if objData.aca_type == con.ACA_TYPE_FANG:
+                box = layout.box()
+                row = box.row()
+                row.prop(objData, "use_smallfang") # 添加小额枋
+                row = box.row()
+                col = row.column()
+                col.operator("aca.add_fang",icon='LINKED',)# 按钮:连接
+                col.enabled = False
+                col = row.column()
+                col.operator("aca.del_fang",icon='UNLINKED',)# 按钮:断开
+                
+
 
 # “墙属性”子面板
 class ACA_PT_wall(bpy.types.Panel):

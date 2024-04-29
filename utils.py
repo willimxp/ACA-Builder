@@ -546,7 +546,7 @@ def outputMsg(msg:str):
     
     # 界面刷新
     try:
-        console_print(strout)
+        #console_print(strout)
         redrawViewport()
     except Exception as e:
         print(e)

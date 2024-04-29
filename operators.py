@@ -49,6 +49,7 @@ def addBuildingRoot(context:bpy.types.Context):
 class ACA_OT_add_building(bpy.types.Operator):
     bl_idname="aca.add_newbuilding"
     bl_label = "添加新建筑"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
         # 清理数据
@@ -61,7 +62,6 @@ class ACA_OT_add_building(bpy.types.Operator):
 
         # 2.添加建筑empty
         # 其中绑定了模版数据
-        # buildingObj = addBuildingRoot(context)
         funproxy = partial(addBuildingRoot,context=context)
         buildingObj = utils.fastRun(funproxy)
 
@@ -75,7 +75,66 @@ class ACA_OT_add_building(bpy.types.Operator):
 # 重新生成柱网
 class ACA_OT_reset_floor(bpy.types.Operator):
     bl_idname="aca.reset_floor"
-    bl_label = "更新柱网设置"
+    bl_label = "重设柱网"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        buildingObj = context.object
+        buildFloor.resetFloor(buildingObj) 
+        # 聚焦到建筑根节点
+        utils.focusObj(buildingObj)
+        return {'FINISHED'}
+    
+# 减柱
+class ACA_OT_del_piller(bpy.types.Operator):
+    bl_idname="aca.del_piller"
+    bl_label = "减柱"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        piller = context.object
+        pillers = context.selected_objects
+        buildingObj = utils.getAcaParent(piller,con.ACA_TYPE_BUILDING)
+        buildFloor.delPiller(buildingObj,pillers) 
+        # 聚焦到建筑根节点
+        utils.focusObj(buildingObj)
+        return {'FINISHED'}
+    
+# 连接柱-柱，添加枋
+class ACA_OT_add_fang(bpy.types.Operator):
+    bl_idname="aca.add_fang"
+    bl_label = "连接"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        piller = context.object
+        pillers = context.selected_objects
+        buildingObj = utils.getAcaParent(piller,con.ACA_TYPE_BUILDING)
+        buildFloor.addFang(buildingObj,pillers) 
+        # 聚焦到建筑根节点
+        utils.focusObj(buildingObj)
+        return {'FINISHED'}
+    
+# 断开柱-柱，删除枋
+class ACA_OT_del_fang(bpy.types.Operator):
+    bl_idname="aca.del_fang"
+    bl_label = "断开"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        fang = context.object
+        fangs = context.selected_objects
+        buildingObj = utils.getAcaParent(fang,con.ACA_TYPE_BUILDING)
+        buildFloor.delFang(buildingObj,fangs) 
+        # 聚焦到建筑根节点
+        utils.focusObj(buildingObj)
+        return {'FINISHED'}
+                       
+# 重新生成柱网
+class ACA_OT_refresh_floor(bpy.types.Operator):
+    bl_idname="aca.refresh_floor"
+    bl_label = "刷新柱网"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
         # 清理数据
@@ -95,6 +154,7 @@ class ACA_OT_reset_floor(bpy.types.Operator):
 class ACA_OT_reset_wall_layout(bpy.types.Operator):
     bl_idname="aca.reset_wall_layout"
     bl_label = "应用所有墙体"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
         buildingObj = context.object
@@ -112,6 +172,7 @@ class ACA_OT_reset_wall_layout(bpy.types.Operator):
 class ACA_OT_build_door(bpy.types.Operator):
     bl_idname="aca.build_door"
     bl_label = "仅应用该墙体"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
         wallproxy = context.object
@@ -120,7 +181,7 @@ class ACA_OT_build_door(bpy.types.Operator):
             utils.showMessageBox("ERROR: 找不到建筑")
         else:
             # 生成墙体框线
-            funproxy = partial(buildDoor.buildSingleWall,wallproxy=wallproxy)
+            funproxy = partial(buildWall.buildSingleWall,wallproxy=wallproxy)
             utils.fastRun(funproxy)
 
         return {'FINISHED'}
@@ -130,6 +191,7 @@ class ACA_OT_build_door(bpy.types.Operator):
 class ACA_OT_build_dougong(bpy.types.Operator):
     bl_idname="aca.build_dougong"
     bl_label = "斗栱营造"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
         buildingObj = context.object
@@ -148,6 +210,7 @@ class ACA_OT_build_dougong(bpy.types.Operator):
 class ACA_OT_build_roof(bpy.types.Operator):
     bl_idname="aca.build_roof"
     bl_label = "屋顶营造"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
         buildingObj = context.object
@@ -167,6 +230,7 @@ class ACA_OT_build_roof(bpy.types.Operator):
 class ACA_OT_focusBuilding(bpy.types.Operator):
     bl_idname="aca.focus_building"
     bl_label = "选择建筑根节点"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
         currentObj = context.object
@@ -183,6 +247,7 @@ class ACA_OT_focusBuilding(bpy.types.Operator):
 class ACA_OT_test(bpy.types.Operator):
     bl_idname="aca.test"
     bl_label = "测试"
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
         buildingObj = context.object

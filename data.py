@@ -37,7 +37,7 @@ def p_filter(self, object:bpy.types.Object):
 def update_test(self, context:bpy.types.Context):
     utils.outputMsg("update triggered")
 
-# 重建整体建筑
+# 更新建筑，但不重设柱网
 def update_building(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj = context.object 
@@ -45,6 +45,18 @@ def update_building(self, context:bpy.types.Context):
         # 调用营造序列
         from . import buildFloor
         buildFloor.buildFloor(buildingObj)
+    else:
+        utils.outputMsg("updated building failed, context.object should be buildingObj")
+        return
+    
+# 更新建筑，但不重设柱网
+def reset_building(self, context:bpy.types.Context):
+    # 确认选中为building节点
+    buildingObj = context.object 
+    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+        # 调用营造序列
+        from . import buildFloor
+        buildFloor.resetFloor(buildingObj)
     else:
         utils.outputMsg("updated building failed, context.object should be buildingObj")
         return
@@ -172,7 +184,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     x_rooms : bpy.props.IntProperty(
             name = "面阔间数",
             min = 1, max = 11,step = 2,
-            update= update_building
+            update= reset_building
         )# type: ignore
     x_1 : bpy.props.FloatProperty(
             name = "明间宽度",
@@ -198,7 +210,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "进深间数",
             max = 5,
             min = 1, 
-            update = update_building
+            update = reset_building
         )# type: ignore
     y_1 : bpy.props.FloatProperty(
             name = "明间深度",

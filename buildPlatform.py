@@ -76,8 +76,8 @@ def resizePlatform(buildingObj:bpy.types.Object):
     pfObj.location.z = bData.platform_height /2
 
     # 对齐柱网
-    floorObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR)
-    floorObj.location.z =  bData.platform_height
+    floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
+    floorRootObj.location.z =  bData.platform_height
 
     # 更新建筑框大小
     buildingObj.empty_display_size = math.sqrt(

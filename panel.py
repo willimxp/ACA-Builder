@@ -174,22 +174,24 @@ class ACA_PT_pillers(bpy.types.Panel):
                 row.operator("aca.refresh_floor",icon='FILE_REFRESH',)# 按钮:更新柱网
             
             # 局部属性
-            if objData.aca_type == con.ACA_TYPE_PILLER:
+            if objData.aca_type == con.ACA_TYPE_PILLER \
+                or objData.aca_type == con.ACA_TYPE_FANG:
                 box = layout.box()
                 row = box.row()
                 row.operator("aca.del_piller",icon='X',)# 按钮:减柱
-                row.operator("aca.add_fang",icon='ARROW_LEFTRIGHT',)# 按钮:连接
-            
-            if objData.aca_type == con.ACA_TYPE_FANG:
-                box = layout.box()
+                if objData.aca_type == con.ACA_TYPE_FANG:row.enabled=False
+                
                 row = box.row()
-                row.prop(objData, "use_smallfang") # 添加小额枋
+                row.operator("aca.add_fang",icon='LINKED',)# 按钮:连接
+                if objData.aca_type == con.ACA_TYPE_PILLER:
+                    if len(context.selected_objects)<2:
+                        row.enabled=False
+                if objData.aca_type == con.ACA_TYPE_FANG:
+                    row.enabled=False
+
                 row = box.row()
-                col = row.column()
-                col.operator("aca.add_fang",icon='LINKED',)# 按钮:连接
-                col.enabled = False
-                col = row.column()
-                col.operator("aca.del_fang",icon='UNLINKED',)# 按钮:断开
+                row.operator("aca.del_fang",icon='UNLINKED',)# 按钮:断开
+                if objData.aca_type == con.ACA_TYPE_PILLER:row.enabled=False
                 
 
 

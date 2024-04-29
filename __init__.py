@@ -43,6 +43,8 @@ classes = (
     operators.ACA_OT_build_door,
     operators.ACA_OT_build_dougong,
     operators.ACA_OT_build_roof,
+    operators.ACA_OT_focusBuilding,
+    operators.ACA_OT_reset_floor,
 )
 
 def register():   

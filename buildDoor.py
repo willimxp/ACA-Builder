@@ -112,18 +112,19 @@ def __buildKanKuang(wallproxy):
     # endregion 1、下槛 ---------------------
         
     # region 2、上槛 ---------------------
-    KanUpScale = Vector((frame_width, # 长度随面宽
-                con.KAN_UP_DEEPTH * pd, # 厚0.3D
-                con.KAN_UP_HEIGHT * pd, # 高0.8D
-                ))
-    KanUpLoc = Vector((0,0,
-            frame_height - con.KAN_UP_HEIGHT*pd/2))
-    bpy.ops.mesh.primitive_cube_add(
-                        size=1.0, 
-                        location = KanUpLoc, 
-                        scale= KanUpScale)
-    bpy.context.object.name = '上槛'
-    bpy.context.object.parent = wallproxy
+    if bData.use_topwin:
+        KanUpScale = Vector((frame_width, # 长度随面宽
+                    con.KAN_UP_DEEPTH * pd, # 厚0.3D
+                    con.KAN_UP_HEIGHT * pd, # 高0.8D
+                    ))
+        KanUpLoc = Vector((0,0,
+                frame_height - con.KAN_UP_HEIGHT*pd/2))
+        bpy.ops.mesh.primitive_cube_add(
+                            size=1.0, 
+                            location = KanUpLoc, 
+                            scale= KanUpScale)
+        bpy.context.object.name = '上槛'
+        bpy.context.object.parent = wallproxy
     # endregion 2、上槛 ---------------------
 
     # region 3、中槛 ---------------------
@@ -131,13 +132,18 @@ def __buildKanKuang(wallproxy):
                 con.KAN_MID_DEEPTH * pd, # 厚0.3D
                 con.KAN_MID_HEIGHT * pd, # 高0.8D
                 ))
-    KanMidLoc = Vector((0,0,
-            wData.door_height + con.KAN_MID_HEIGHT*pd/2))
+    if bData.use_topwin:
+        kanmid_height = wData.door_height
+        kanmid_name = '中槛'
+    else:
+        kanmid_height = frame_height - con.KAN_MID_HEIGHT*pd/2
+        kanmid_name = '上槛'
+    KanMidLoc = Vector((0,0,kanmid_height))
     bpy.ops.mesh.primitive_cube_add(
                         size=1.0, 
                         location = KanMidLoc, 
                         scale= KanMidScale)
-    bpy.context.object.name = '中槛'
+    bpy.context.object.name = kanmid_name
     bpy.context.object.parent = wallproxy
     # endregion 3、中槛 ---------------------
 
@@ -171,66 +177,67 @@ def __buildKanKuang(wallproxy):
     # endregion 4、下抱框 ---------------------
 
     # region 5、上抱框 ---------------------
-    # 高度：从上槛下皮到中槛上皮
-    BaoKuangUpHeight = (KanUpLoc.z - KanUpScale.z/2) \
-        - (KanMidLoc.z + KanMidScale.z/2)
-    BaoKuangUpScale = Vector((
-                con.BAOKUANG_WIDTH * pd, # 宽0.66D
-                con.BAOKUANG_DEEPTH * pd, # 厚0.3D
-                BaoKuangUpHeight, 
-                ))
-    # 位置Z：从上槛下皮，减一半高度
-    BaoKuangUp_z = (KanUpLoc.z - KanUpScale.z/2) \
-                        - BaoKuangUpHeight/2
-    # 位置X：半柱间距 - 半柱径 - 半抱框宽度
-    BaoKuangUp_x = frame_width/2 - pillerD/2 - con.BAOKUANG_WIDTH*pd/2
-    BaoKuangUpLoc = Vector((BaoKuangUp_x,0,BaoKuangUp_z))
-    bpy.ops.mesh.primitive_cube_add(
-                        size=1.0, 
-                        location = BaoKuangUpLoc, 
-                        scale= BaoKuangUpScale)
-    BaoKuangUpObj  = bpy.context.object
-    BaoKuangUpObj.name = '上抱框'
-    BaoKuangUpObj.parent = wallproxy
-    # 添加mirror
-    mod = BaoKuangUpObj.modifiers.new(name='mirror', type='MIRROR')
-    mod.use_axis[0] = True
-    mod.use_axis[1] = False
-    mod.mirror_object = wallproxy
-    # endregion 5、上抱框 ---------------------
-
-    # region 6、横披窗 ---------------------
-    # 横披窗数量：比隔扇少一扇
-    window_top_num = wData.door_num - 1
-    # 横披窗宽度:(柱间距-柱径-4抱框)/3
-    window_top_width =  \
-        (frame_width - pillerD - con.BAOKUANG_WIDTH*4*pd)/window_top_num
-    # 循环生成每一扇横披窗
-    for n in range(1,window_top_num):
-        # 横披间框：右抱框中心 - n*横披窗间隔 - n*横披窗宽度
-        windowTopKuang_x = BaoKuangUp_x - con.BAOKUANG_WIDTH*pd*n \
-            - window_top_width * n
-        windowTopKuangLoc = Vector((windowTopKuang_x,0,BaoKuangUp_z))
+    if bData.use_topwin:
+        # 高度：从上槛下皮到中槛上皮
+        BaoKuangUpHeight = (KanUpLoc.z - KanUpScale.z/2) \
+            - (KanMidLoc.z + KanMidScale.z/2)
+        BaoKuangUpScale = Vector((
+                    con.BAOKUANG_WIDTH * pd, # 宽0.66D
+                    con.BAOKUANG_DEEPTH * pd, # 厚0.3D
+                    BaoKuangUpHeight, 
+                    ))
+        # 位置Z：从上槛下皮，减一半高度
+        BaoKuangUp_z = (KanUpLoc.z - KanUpScale.z/2) \
+                            - BaoKuangUpHeight/2
+        # 位置X：半柱间距 - 半柱径 - 半抱框宽度
+        BaoKuangUp_x = frame_width/2 - pillerD/2 - con.BAOKUANG_WIDTH*pd/2
+        BaoKuangUpLoc = Vector((BaoKuangUp_x,0,BaoKuangUp_z))
         bpy.ops.mesh.primitive_cube_add(
                             size=1.0, 
-                            location = windowTopKuangLoc, 
+                            location = BaoKuangUpLoc, 
                             scale= BaoKuangUpScale)
-        bpy.context.object.name = '横披间框'
-        bpy.context.object.parent = wallproxy
+        BaoKuangUpObj  = bpy.context.object
+        BaoKuangUpObj.name = '上抱框'
+        BaoKuangUpObj.parent = wallproxy
+        # 添加mirror
+        mod = BaoKuangUpObj.modifiers.new(name='mirror', type='MIRROR')
+        mod.use_axis[0] = True
+        mod.use_axis[1] = False
+        mod.mirror_object = wallproxy
+        # endregion 5、上抱框 ---------------------
 
-    # 横披窗尺寸
-    WindowTopScale = Vector((window_top_width, # 宽度取横披窗宽度
-                con.ZIBIAN_DEEPTH,
-            BaoKuangUpHeight # 高度与上抱框相同
-    ))
-    # 填充棂心
-    for n in range(0,window_top_num):
-        windowTop_x = BaoKuangUp_x - \
-            (con.BAOKUANG_WIDTH*pd + window_top_width)*(n+0.5)
-        WindowTopLoc =  Vector((windowTop_x,0,BaoKuangUp_z))
-        __buildShanxin(wallproxy,WindowTopScale,WindowTopLoc)
+        # region 6、横披窗 ---------------------
+        # 横披窗数量：比隔扇少一扇
+        window_top_num = wData.door_num - 1
+        # 横披窗宽度:(柱间距-柱径-4抱框)/3
+        window_top_width =  \
+            (frame_width - pillerD - con.BAOKUANG_WIDTH*4*pd)/window_top_num
+        # 循环生成每一扇横披窗
+        for n in range(1,window_top_num):
+            # 横披间框：右抱框中心 - n*横披窗间隔 - n*横披窗宽度
+            windowTopKuang_x = BaoKuangUp_x - con.BAOKUANG_WIDTH*pd*n \
+                - window_top_width * n
+            windowTopKuangLoc = Vector((windowTopKuang_x,0,BaoKuangUp_z))
+            bpy.ops.mesh.primitive_cube_add(
+                                size=1.0, 
+                                location = windowTopKuangLoc, 
+                                scale= BaoKuangUpScale)
+            bpy.context.object.name = '横披间框'
+            bpy.context.object.parent = wallproxy
 
-    # endregion 6、横披窗 ---------------------
+        # 横披窗尺寸
+        WindowTopScale = Vector((window_top_width, # 宽度取横披窗宽度
+                    con.ZIBIAN_DEEPTH,
+                BaoKuangUpHeight # 高度与上抱框相同
+        ))
+        # 填充棂心
+        for n in range(0,window_top_num):
+            windowTop_x = BaoKuangUp_x - \
+                (con.BAOKUANG_WIDTH*pd + window_top_width)*(n+0.5)
+            WindowTopLoc =  Vector((windowTop_x,0,BaoKuangUp_z))
+            __buildShanxin(wallproxy,WindowTopScale,WindowTopLoc)
+
+        # endregion 6、横披窗 ---------------------
     
     # 输出下抱框，做为隔扇生成的参考
     return BaoKuangDownObj
@@ -537,6 +544,9 @@ def __buildGeshan(name,wallproxy,scale,location):
                                 scale= scale)
             bpy.context.object.name = '绦环板三'
             bpy.context.object.parent = geshan_root        
+    
+    # 隐藏隔扇根节点
+    utils.hideObj(geshan_root)
     return windowsill_height
     
 # 构建槛墙
@@ -601,17 +611,17 @@ def __buildKanqiang(wallproxy:bpy.types.Object
 def __buildDoor(wallproxy):       
     # 载入设计数据
     buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
-    bdata:acaData = buildingObj.ACA_data
+    bData:acaData = buildingObj.ACA_data
     wData:acaData = wallproxy.ACA_data
-    if bdata == None:
+    if bData == None:
         utils.showMessageBox("无法读取设计数据","ERROR")
         return {'FINISHED'}
-    elif bdata.aca_type != con.ACA_TYPE_BUILDING:
+    elif bData.aca_type != con.ACA_TYPE_BUILDING:
         utils.showMessageBox("未找到建筑根节点","ERROR")
         return {'FINISHED'}
-    dk = bdata.DK
+    dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
-    pillerD = bdata.piller_diameter
+    pillerD = bData.piller_diameter
     # 分解槛框的长、宽、高
     frame_width,frame_deepth,frame_height = wallproxy.dimensions
 
@@ -743,18 +753,22 @@ def buildSingleWall(wallproxy:bpy.types.Object):
 
         # 在wallproxy顶部插入大额枋、由额垫板、小额枋
         # 插入后，wallproxy的高度将自动更新为柱头减去枋的高度
-        wallproxy = __addFang(wallproxy)
+        # wallproxy = __addFang(wallproxy)
         
         if wData.wall_style == "1":   #槛墙
             if wData.wall_source != None:
-                wallChildObj = utils.copyObject(
+                wallChildObj:bpy.types.Object = utils.copyObject(
                     sourceObj=wData.wall_source,
                     name='墙体',
-                    parentObj=wallproxy
-                )
+                    parentObj=wallproxy,
+                    singleUser=True)
                 wallChildObj.dimensions = (wallproxy.dimensions.x,
                                         wallChildObj.dimensions.y,
                                         wallproxy.dimensions.z)
+                utils.applyTransfrom(ob=wallChildObj,use_scale=True)
+                utils.updateScene()
+                wallChildObj.dimensions.z = wallproxy.dimensions.z
+
         if wData.wall_style in ("2","3"): # 2-隔扇，3-槛墙
             utils.focusObj(wallproxy)
             __buildDoor(wallproxy)

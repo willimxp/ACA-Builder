@@ -1,16 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates>
     <template>
-        <name>小式硬山</name>
+        <!--建筑名称，显示在插件下拉框中-->
+        <name>示例建筑</name>
+        <!--斗口，全局的模数因子，为了简化，无论是否有斗栱都以次为基准-->
         <dk>0.08</dk>
-        <!--墙体设置-->
-        <wall>
-            <layout>1</layout>
-            <style>2</style>
+        <!--开间，必须设置-->
+        <floor>
+            <x_rooms>
+                <total>3</total>
+                <x1>6.16</x1>
+                <x2>5.28</x2>
+            </x_rooms>
+            <y_rooms>
+                <total>3</total>
+                <y1>3.52</y1>
+                <y2>3.52</y2>
+            </y_rooms>
+        </floor>
+        <!--柱网设置，可选-->
+        <!--如果不做设定，则根据开间，满做柱体-->
+        <!--柱-->
+        <pillers>
+            <dimeter>0.45</dimeter>
+            <height>4.93</height>
+            <style>梭柱</style>
+            <piller x="0" y="0" />
+            <piller x="0" y="1" />
+            <piller x="0" y="2" />
+            <piller x="0" y="3" />
+            <piller x="1" y="0" />
+            <piller x="1" y="3" />
+            <piller x="2" y="0" />
+            <piller x="2" y="3" />
+            <piller x="3" y="0" />
+            <piller x="3" y="1" />
+            <piller x="3" y="2" />
+            <piller x="3" y="3" />
+            <fang from="0/0" to="1/0" />
+            <fang from="1/0" to="2/0" />
+            <fang from="2/0" to="3/0" />
+            <fang from="3/0" to="3/1" />
+            <fang from="3/1" to="3/2" />
+            <fang from="3/2" to="3/3" />
+            <fang from="3/3" to="2/3" />
+            <fang from="2/3" to="1/3" />
+            <fang from="1/3" to="0/3" />
+            <fang from="0/3" to="0/2" />
+            <fang from="0/2" to="0/1" />
+            <fang from="0/1" to="0/0" />
+        </pillers>
+        <!--墙体框架设置-->
+        <frame>
             <wall_source>墙体</wall_source>
-            <door_height></door_height>
             <lingxin_source>棂心.正搭斜交</lingxin_source>
-        </wall>
+            <wall type="wall" from="0/3" to="3/3" />
+            <wall type="wall" from="0/0" to="0/3" />
+            <wall type="wall" from="3/3" to="3/0" />
+            <wall type="window" from="0/0" to="1/0" />
+            <wall type="window" from="2/0" to="3/0" />
+            <wall type="door" from="1/0" to="2/0" />
+        </frame>
         <!--斗栱设置-->
         <dougong>
             <piller_source>四铺作插昂柱头</piller_source>

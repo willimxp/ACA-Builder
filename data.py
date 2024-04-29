@@ -218,6 +218,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     piller_net : bpy.props.StringProperty(
             name = "保存的柱网列表"
         )# type: ignore
+    wall_net : bpy.props.StringProperty(
+            name = "保存的墙体列表"
+        )# type: ignore
+    fang_net : bpy.props.StringProperty(
+            name = "保存的枋列表"
+        )# type: ignore
     
     # 柱子属性
     piller_source : bpy.props.PointerProperty(
@@ -238,6 +244,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min = 0.01, 
             update = update_piller
         )# type: ignore
+    use_smallfang: bpy.props.BoolProperty(
+            default=False,
+            name="添加小额枋"
+        )# type: ignore 
+    
     
     # 墙体属性
     wall_layout : bpy.props.EnumProperty(
@@ -259,7 +270,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("","",""),
                 ("1","槛墙",""),
                 ("2","隔扇",""),
-                #("3","槛窗",""),
+                ("3","槛窗",""),
             ],
         ) # type: ignore
     wall_source : bpy.props.PointerProperty(
@@ -280,6 +291,10 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     gap_num : bpy.props.IntProperty(
             name="抹头数量",
             default=5,min=2,max=6
+        )# type: ignore 
+    use_topwin: bpy.props.BoolProperty(
+            default=False,
+            name="添加横披窗"
         )# type: ignore 
     use_KanWall: bpy.props.BoolProperty(
             default=False,

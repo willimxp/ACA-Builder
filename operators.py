@@ -50,7 +50,11 @@ class ACA_OT_add_building(bpy.types.Operator):
     bl_idname="aca.add_newbuilding"
     bl_label = "添加新建筑"
 
-    def execute(self, context):      
+    def execute(self, context):  
+        # 清理数据
+        utils.outputMsg("清理数据...")
+        utils.delOrphan()
+
         utils.console_clear()
         # 1.定位到“ACA”根collection，如果没有则新建
         utils.setCollection(con.ROOT_COLL_NAME,isRoot=True)
@@ -62,6 +66,24 @@ class ACA_OT_add_building(bpy.types.Operator):
         buildingObj = utils.fastRun(funproxy)
 
         # 3.调用营造序列
+        buildFloor.buildFloor(buildingObj) 
+
+        # 聚焦到建筑根节点
+        utils.focusObj(buildingObj)
+        return {'FINISHED'}
+
+# 重新生成柱网
+class ACA_OT_reset_floor(bpy.types.Operator):
+    bl_idname="aca.reset_floor"
+    bl_label = "更新柱网设置"
+
+    def execute(self, context):  
+        # 清理数据
+        utils.outputMsg("清理数据...")
+        utils.delOrphan()
+
+        # 3.调用营造序列
+        buildingObj = context.object
         buildFloor.buildFloor(buildingObj) 
 
         # 聚焦到建筑根节点
@@ -139,7 +161,23 @@ class ACA_OT_build_roof(bpy.types.Operator):
             utils.fastRun(funproxy)
 
         return {'FINISHED'}
-    
+
+# 批量重新生成墙体布局，及所有墙体
+# 绑定在建筑面板的“墙体营造按钮上”
+class ACA_OT_focusBuilding(bpy.types.Operator):
+    bl_idname="aca.focus_building"
+    bl_label = "选择建筑根节点"
+
+    def execute(self, context):  
+        currentObj = context.object
+        buildingObj = utils.getAcaParent(
+            object=currentObj,
+            acaObj_type=con.ACA_TYPE_BUILDING
+        )
+        utils.focusObj(buildingObj)
+
+        return {'FINISHED'}
+
 # 批量重新生成墙体布局，及所有墙体
 # 绑定在建筑面板的“墙体营造按钮上”
 class ACA_OT_test(bpy.types.Operator):
@@ -156,3 +194,4 @@ class ACA_OT_test(bpy.types.Operator):
             utils.fastRun(funproxy)
 
         return {'FINISHED'}
+    

@@ -189,6 +189,8 @@ def copyObject(sourceObj:bpy.types.Object,
          location=(0,0,0),
          singleUser=False):
     # 强制原对象不能隐藏
+    IsHideEye = sourceObj.hide_get()
+    sourceObj.hide_set(False)
     IsHideViewport = sourceObj.hide_viewport
     sourceObj.hide_viewport = False
     IsHideRender = sourceObj.hide_render
@@ -214,15 +216,16 @@ def copyObject(sourceObj:bpy.types.Object,
                         child.location,
                         singleUser) 
     
-    # 复制modifier
-    bpy.ops.object.select_all(action='DESELECT')
-    sourceObj.select_set(True)
-    bpy.context.view_layer.objects.active = sourceObj
-    newObj.select_set(True)
-    bpy.ops.object.make_links_data(type='MODIFIERS') 
-    bpy.context.view_layer.objects.active = newObj
+    # # 复制modifier
+    # bpy.ops.object.select_all(action='DESELECT')
+    # sourceObj.select_set(True)
+    # bpy.context.view_layer.objects.active = sourceObj
+    # newObj.select_set(True)
+    # bpy.ops.object.make_links_data(type='MODIFIERS') 
+    # bpy.context.view_layer.objects.active = newObj
 
     # 恢复原对象的隐藏属性
+    sourceObj.hide_set(IsHideEye)
     sourceObj.hide_viewport = IsHideViewport
     sourceObj.hide_render = IsHideRender
     
@@ -532,7 +535,8 @@ def fastRun(func):
         result = func()
     finally:
         _BPyOpsSubModOp._view_layer_update = view_layer_update
-        return result
+    
+    return result
 
 # 格式化输出内容
 def outputMsg(msg:str):

@@ -130,7 +130,7 @@ def updateWallLayout(buildingObj:bpy.types.Object):
 # 用户的个性化设置丢失
 # 按照默认设计参数生成
 # todo：后续可以按照模版中的设置生成（包含预设的个性化设置）
-def resetWallLayout(buildingObj:bpy.types.Object):
+def resetWallLayoutOld(buildingObj:bpy.types.Object):
     # 查找墙体布局节点
     wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
     # 如果找不到“墙体布局”根节点，重新创建
@@ -204,6 +204,93 @@ def resetWallLayout(buildingObj:bpy.types.Object):
     # 三、批量绑定墙体构件
     for wallproxy in wallrootObj.children:
         buildDoor.buildSingleWall(wallproxy)
+    
+    # 重新聚焦建筑根节点
+    utils.focusObj(buildingObj)
+
+# 重设墙布局
+# 因为墙体数量产生了变化，重新生成所有墙体
+# 用户的个性化设置丢失
+# 按照默认设计参数生成
+# todo：后续可以按照模版中的设置生成（包含预设的个性化设置）
+def resetWallLayout(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    
+    # 查找墙体布局节点
+    wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
+    # 如果找不到“墙体布局”根节点，重新创建
+    if wallrootObj == None:        
+        wallrootObj = __addWallrootNode(buildingObj)
+    else:
+        # 清空根节点
+        utils.deleteHierarchy(wallrootObj)
+
+    # 一、批量生成wallproxy
+    # a、默认尺寸
+    wall_deepth = 1 # 墙线框尺寸
+    wall_height = bData.piller_height \
+        - con.EFANG_LARGE_H * pd 
+    if bData.use_smallfang:
+        wall_height += \
+        - con.BOARD_YOUE_H * pd \
+        - con.EFANG_SMALL_H * pd
+
+    # b、计算布局数据
+    net_x,net_y = buildFloor.getFloorDate(buildingObj)
+    # 解析模版输入的墙体设置，格式如下
+    # "wall#3/0#3/3,wall#0/0#3/0,wall#0/3#3/3,window#0/0#0/1,window#0/2#0/3,door#0/1#0/2,"
+    wallSetting = bData.wall_net
+    wallItem = wallSetting.split(',')
+    for wall in wallItem:
+        if wall == '': continue
+        setting = wall.split('#')
+        style = setting[0]
+        pFrom = setting[1].split('/')
+        pFrom_x = int(pFrom[0])
+        pFrom_y = int(pFrom[1])
+        pTo = setting[2].split('/')
+        pTo_x = int(pTo[0])
+        pTo_y = int(pTo[1])
+        pStart = Vector((net_x[pFrom_x],net_y[pFrom_y],wall_height/2))
+        pEnd = Vector((net_x[pTo_x],net_y[pTo_y],wall_height/2))
+        wallproxy = utils.addCubeBy2Points(
+                    start_point = pStart,
+                    end_point = pEnd,
+                    deepth = wall_deepth,
+                    height = wall_height,
+                    name = "墙体proxy",
+                    root_obj = wallrootObj,
+                    origin_at_bottom = True
+                )
+        
+        # 填充wallproxy的数据
+        wData : acaData = wallproxy.ACA_data
+        wData['aca_obj'] = True
+        wData['aca_type'] = con.ACA_TYPE_WALL
+        if style == 'wall':
+            wData['wall_style'] = 1
+        if style == 'door':
+            wData['wall_style'] = 2
+            wData['use_KanWall'] = False
+        if style == 'window':
+            wData['wall_style'] = 3
+            wData['use_KanWall'] = True
+        wData['wall_source'] = bData.wall_source
+        wData['door_height'] = bData.door_height
+        wData['door_num'] = bData.door_num
+        wData['gap_num'] = bData.gap_num
+        wData['lingxin_source'] = bData.lingxin_source
+
+        # wallproxy.display_type = 'WIRE' # 仅显示线框
+        # wallproxy.hide_render = True    # 不渲染输出
+
+    # 三、批量绑定墙体构件
+    for wallproxy in wallrootObj.children:
+        buildDoor.buildSingleWall(wallproxy)
+        utils.hideObj(wallproxy)
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

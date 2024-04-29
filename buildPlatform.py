@@ -11,7 +11,7 @@ from .data import ACA_data_obj as acaData
 
 # 根据固定模板，创建新的台基
 def buildPlatform(buildingObj:bpy.types.Object):
-    buildingData : acaData = buildingObj.ACA_data
+    bData : acaData = buildingObj.ACA_data
 
     # 1、创建地基===========================================================
     # 如果已有，先删除
@@ -24,8 +24,8 @@ def buildPlatform(buildingObj:bpy.types.Object):
     platform_extend = buildingObj.ACA_data.platform_extend
     # 构造cube三维
     height = platform_height
-    width = platform_extend * 2 + buildingData.x_total
-    length = platform_extend * 2 + buildingData.y_total
+    width = platform_extend * 2 + bData.x_total
+    length = platform_extend * 2 + bData.y_total
     bpy.ops.mesh.primitive_cube_add(
                 size=1.0, 
                 calc_uvs=True, 
@@ -58,26 +58,26 @@ def buildPlatform(buildingObj:bpy.types.Object):
 # 绑定于data.py中update_platform回调
 def resizePlatform(buildingObj:bpy.types.Object):
     # 载入根节点中的设计参数
-    buildingData : acaData = buildingObj.ACA_data
+    bData : acaData = buildingObj.ACA_data
     
     # 找到台基对象
     pfObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PLATFORM)
     # 重绘
-    pf_extend = buildingData.platform_extend
+    pf_extend = bData.platform_extend
     # 缩放台基尺寸
     pfObj.dimensions= (
-        pf_extend * 2 + buildingData.x_total,
-        pf_extend * 2 + buildingData.y_total,
-        buildingData.platform_height
+        pf_extend * 2 + bData.x_total,
+        pf_extend * 2 + bData.y_total,
+        bData.platform_height
     )
     # 应用缩放(有时ops.object会乱跑，这里确保针对台基对象)
     utils.applyScale(pfObj)
     # 平移，保持台基下沿在地平线高度
-    pfObj.location.z = buildingData.platform_height /2
+    pfObj.location.z = bData.platform_height /2
 
     # 对齐柱网
     floorObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR)
-    floorObj.location.z =  buildingData.platform_height
+    floorObj.location.z =  bData.platform_height
 
     # 更新建筑框大小
     buildingObj.empty_display_size = math.sqrt(

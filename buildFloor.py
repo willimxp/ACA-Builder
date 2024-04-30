@@ -11,11 +11,33 @@ from typing import List
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from . import utils
+from . import acaTemplate
 from . import buildWall
 from . import buildPlatform
 from . import buildDougong
 from . import buildRoof
 from . import buildRooftile
+
+# 添加建筑empty根节点，并绑定设计模版
+# 返回建筑empty根节点对象
+# 被ACA_OT_add_newbuilding类调用
+def __addBuildingRoot():
+    # 获取panel上选择的模版
+    templateName = bpy.context.scene.ACA_data.template
+    coll = utils.setCollection(templateName)
+    # 创建buildObj根节点
+    bpy.ops.object.empty_add(type='PLAIN_AXES')
+    buildingObj = bpy.context.object
+    buildingObj.location = bpy.context.scene.cursor.location   # 原点摆放在3D Cursor位置
+    buildingObj.name = templateName   # 系统遇到重名会自动添加00x的后缀       
+    buildingObj.empty_display_type = 'SPHERE'
+
+    # 在buildingObj中填充模版数据
+    templateData = acaTemplate.getTemplate(templateName)
+    acaTemplate.fillTemplate(buildingObj,templateData)
+    buildingObj.ACA_data['COLL'] = coll.name
+    
+    return buildingObj
 
 # 返回柱网数据
 # 非内部函数，在墙体、斗栱、屋顶制作时都有公开调用
@@ -285,7 +307,6 @@ def delFang(buildingObj:bpy.types.Object,
     print(bData.fang_net)
     return
 
-
 # 根据柱网数组，排布柱子
 # 1. 第一次按照模板生成，柱网下没有柱，一切从0开始；
 # 2. 用户调整柱网的开间、进深，需要保持柱子的高、径、样式
@@ -386,7 +407,38 @@ def buildPillers(buildingObj:bpy.types.Object):
 
     # 添加柱间的额枋
     __buildFang(buildingObj)
+
+    # 重新聚焦建筑根节点
+    utils.focusObj(buildingObj)
     
+    return
+
+# 减柱并保存
+def delPiller(buildingObj:bpy.types.Object,
+              pillers:List[bpy.types.Object]):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+
+    # 删除柱子和柱础
+    for piller in pillers:
+        # 校验用户选择的对象，可能误选了其他东西，直接忽略
+        if 'aca_type' in piller.ACA_data:
+            if piller.ACA_data['aca_type'] \
+                == con.ACA_TYPE_PILLER:
+                utils.deleteHierarchy(piller,del_parent=True)
+
+    # 重新生成柱网配置
+    floorRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_FLOOR_ROOT
+    )    
+    floorChildren:List[bpy.types.Object] = floorRootObj.children
+    bData.piller_net = ''
+    for piller in floorChildren:
+        if 'aca_type' in piller.ACA_data:
+            if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER:
+                pillerID = piller.ACA_data['pillerID']
+                bData.piller_net += pillerID + ','
+    print(bData.piller_net)
     return
 
 # 根据用户在插件面板修改的柱高、柱径，缩放柱子外观
@@ -424,34 +476,6 @@ def resetFloor(buildingObj:bpy.types.Object):
     buildFloor(buildingObj)
     return
 
-# 减柱并保存
-def delPiller(buildingObj:bpy.types.Object,
-              pillers:List[bpy.types.Object]):
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
-
-    # 删除柱子和柱础
-    for piller in pillers:
-        # 校验用户选择的对象，可能误选了其他东西，直接忽略
-        if 'aca_type' in piller.ACA_data:
-            if piller.ACA_data['aca_type'] \
-                == con.ACA_TYPE_PILLER:
-                utils.deleteHierarchy(piller,del_parent=True)
-
-    # 重新生成柱网配置
-    floorRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_FLOOR_ROOT
-    )    
-    floorChildren:List[bpy.types.Object] = floorRootObj.children
-    bData.piller_net = ''
-    for piller in floorChildren:
-        if 'aca_type' in piller.ACA_data:
-            if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER:
-                pillerID = piller.ACA_data['pillerID']
-                bData.piller_net += pillerID + ','
-    print(bData.piller_net)
-    return
-
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
 # 采用了偏函数和fastrun，极大加速了性能
@@ -459,6 +483,18 @@ def buildFloor(buildingObj:bpy.types.Object):
     # 清理数据
     utils.outputMsg("清理数据...")
     utils.delOrphan()
+
+    utils.console_clear()
+    # 定位到collection，如果没有则新建
+    utils.setCollection(con.ROOT_COLL_NAME,isRoot=True)
+
+    # 新建还是刷新？
+    if buildingObj == None:
+        # 2.添加建筑empty
+        # 其中绑定了模版数据
+        utils.outputMsg("创建新建筑...")
+        buildingObj = __addBuildingRoot()
+
     buildingColl = buildingObj.users_collection[0]
 
     # 提高性能模式============
@@ -466,20 +502,23 @@ def buildFloor(buildingObj:bpy.types.Object):
     # 生成柱网
     utils.outputMsg("Building Pillers...")
     utils.setCollection('柱网',parentColl=buildingColl)
-    funproxy = partial(buildPillers,buildingObj=buildingObj)
-    utils.fastRun(funproxy)
+    buildPillers(buildingObj)
+    # funproxy = partial(buildPillers,buildingObj=buildingObj)
+    # utils.fastRun(funproxy)
     
     # 生成台基
     utils.outputMsg("Building Platform...")
     utils.setCollection('台基',parentColl=buildingColl)
-    funproxy = partial(buildPlatform.buildPlatform,buildingObj=buildingObj)
-    utils.fastRun(funproxy)
+    buildPlatform.buildPlatform(buildingObj)
+    # funproxy = partial(buildPlatform.buildPlatform,buildingObj=buildingObj)
+    # utils.fastRun(funproxy)
     
     # 生成墙体
     utils.outputMsg("Building Wall...")
     utils.setCollection('墙体',parentColl=buildingColl)
-    funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
-    utils.fastRun(funproxy)
+    buildWall.resetWallLayout(buildingObj)
+    # funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
+    # utils.fastRun(funproxy)
     
     # # 生成屋顶
     # utils.outputMsg("Building Roof...")

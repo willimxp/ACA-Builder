@@ -7,6 +7,7 @@ import bpy
 from . import data
 from .const import ACA_Consts as con
 from . import utils
+from .data import ACA_data_obj as acaData
 
 # 营造向导面板
 class ACA_PT_basic(bpy.types.Panel):
@@ -62,10 +63,12 @@ class ACA_PT_props(bpy.types.Panel):
             box = layout.box()
             # 名称
             row = box.row()
-            row.prop(context.object,"name",text="建筑名称")
-            if objData.aca_type != con.ACA_TYPE_BUILDING:
-                row = box.row()
-                row.operator("aca.focus_building",icon='FILE_PARENT')
+            col = row.column()
+            col.prop(context.object,"name",text="")
+            col = row.column()
+            col.operator("aca.focus_building",icon='FILE_PARENT')
+            if objData.aca_type == con.ACA_TYPE_BUILDING:
+                col.enabled = False
             # row = box.row()
             # row.prop(objData,"COLL",text="目录名")
 
@@ -193,8 +196,6 @@ class ACA_PT_pillers(bpy.types.Panel):
                 row.operator("aca.del_fang",icon='UNLINKED',)# 按钮:断开
                 if objData.aca_type == con.ACA_TYPE_PILLER:row.enabled=False
                 
-
-
 # “墙属性”子面板
 class ACA_PT_wall(bpy.types.Panel):
     # 常规属性
@@ -213,7 +214,15 @@ class ACA_PT_wall(bpy.types.Panel):
     def poll(self, context):
         if context.object != None:
             objData :data.ACA_data_obj = context.object.ACA_data 
-            if objData.aca_type == con.ACA_TYPE_BUILDING:
+            if objData.aca_type in (
+                con.ACA_TYPE_PILLER,):
+                if len(bpy.context.selected_objects) >1:
+                    return True
+            if objData.aca_type in (
+                con.ACA_TYPE_BUILDING,
+                con.ACA_TYPE_WALL_CHILD,
+                con.ACA_TYPE_WALL_ROOT,
+                con.ACA_TYPE_WALL):
                 return True
         return
 
@@ -221,41 +230,57 @@ class ACA_PT_wall(bpy.types.Panel):
         # 从当前场景中载入数据集
         if context.object != None:
             layout = self.layout
-            objData :data.ACA_data_obj = context.object.ACA_data 
+            objData:acaData = context.object.ACA_data 
+            if objData.aca_type != con.ACA_TYPE_BUILDING:
+                buildingObj = utils.getAcaParent(
+                    context.object,con.ACA_TYPE_BUILDING)
+                bData:acaData = buildingObj.ACA_data
+            else:
+                bData = objData
 
             box = layout.box()
 
-            # if objData.aca_type==con.ACA_TYPE_BUILDING:
-            #     row = box.row()
-            #     row.prop(objData, "wall_layout") # 墙布局
-
-            # 仅在选中建筑根节点时显示
-            if objData.aca_type in (con.ACA_TYPE_BUILDING,con.ACA_TYPE_WALL):
-                # row = box.row() 
-                # row.prop(objData, "wall_style") # 墙样式
-
+            # 选中根节点时，可修改全局样式
+            if objData.aca_type == con.ACA_TYPE_BUILDING:
                 row = box.row() 
-                row.prop(objData, "wall_source") # 墙样式
-
+                row.prop(bData, "wall_source") # 墙样式
                 row = box.row() 
-                row.prop(objData, "lingxin_source")   # 棂心样式
+                row.prop(bData, "lingxin_source")   # 棂心样式
                 row = box.row()
-                row.prop(objData, "door_num")     # 隔扇数量
+                row.prop(bData, "door_num")     # 隔扇数量
                 row = box.row()
-                row.prop(objData, "gap_num")      # 抹头数量
+                row.prop(bData, "gap_num")      # 抹头数量
                 row = box.row()
-                row.prop(objData, "use_topwin")  # 中槛高度
+                row.prop(bData, "use_topwin")   # 添加横披窗
                 if objData.use_topwin:
                     row = box.row()
-                    row.prop(objData, "door_height")  # 中槛高度
+                    row.prop(bData, "door_height")  # 中槛高度
                 
-                
-            if objData.aca_type == con.ACA_TYPE_BUILDING:
                 row = box.row()
                 row.operator("aca.reset_wall_layout",icon='HOME')# 按钮：墙体营造
-                
-            # 选择wallproxy时，可以设置墙体的独立样式
-            if objData.aca_type == con.ACA_TYPE_WALL: 
+
+            # 选中柱子时，可新建墙门窗
+            if objData.aca_type in (
+                con.ACA_TYPE_PILLER,
+                con.ACA_TYPE_WALL_CHILD,
+                con.ACA_TYPE_WALL_ROOT,
+                con.ACA_TYPE_WALL):
+                row = box.row()
+
+                row.operator("aca.add_wall",icon='MOD_BUILD')# 按钮：生成墙
+                row.operator("aca.add_door",icon='MOD_TRIANGULATE')# 按钮：生成隔扇
+                row.operator("aca.add_window",icon='MOD_LATTICE')# 按钮：生成槛窗
+                if objData.aca_type != con.ACA_TYPE_PILLER:
+                    row.enabled = False
+
+                row = box.row()
+                row.operator("aca.del_wall",icon='TRASH')# 按钮：删除隔断
+                if objData.aca_type not in (
+                    con.ACA_TYPE_WALL_CHILD,
+                    con.ACA_TYPE_WALL):
+                    row.enabled = False
+
+                row = box.row()
                 row.operator("aca.build_door",icon='HOME')# 按钮：生成单一门窗
 
 # “斗栱属性”子面板

@@ -558,6 +558,17 @@ def hideObj(object:bpy.types.Object) :
     object.hide_viewport = True    # 隐藏“屏幕”，不含在viewport中
     object.hide_render = True      # 隐藏“相机”，不渲染
 
+# 只显示边框
+def hideObjFace(object:bpy.types.Object) : 
+    object.hide_render = True      # 隐藏“相机”，不渲染
+    object.display_type = 'WIRE' # 仅显示线框
+    object.visible_camera = False
+    object.visible_diffuse = False
+    object.visible_glossy = False
+    object.visible_transmission = False
+    object.visible_volume_scatter = False
+    object.visible_shadow = False
+
 # 强制显示对象
 def showObj(object:bpy.types.Object) : 
     object.hide_set(False)          # “眼睛”

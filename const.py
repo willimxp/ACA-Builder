@@ -18,6 +18,7 @@ class ACA_Consts(object):
     ACA_TYPE_PILLER = 'piller'          # ACA类型：柱子
     ACA_TYPE_FANG = 'fang'              # ACA类型：枋
     ACA_TYPE_WALL_ROOT = 'wall_root'    # ACA类型：墙体布局，墙体的父节点
+    ACA_TYPE_WALL_CHILD = 'wall_child'  # ACA类型：墙体成员
     ACA_TYPE_WALL = 'wall'              # ACA类型：墙体
     ACA_TYPE_DG_ROOT ='dg_root'         # ACA类型：斗栱根节点
     ACA_TYPE_ROOF_ROOT ='roof_root'     # ACA类型：屋顶根节点
@@ -36,6 +37,9 @@ class ACA_Consts(object):
     ACA_TYPE_CORNER_FLYRAFTER_CURVE = 'corner_flyfater_curve'    # 翘飞椽定位线
     ACA_TYPE_TILE_ROOT = 'tile_root'     # ACA类型：屋瓦层
     ACA_TYPE_ASSET_ROOT ='asset_root'    # ACA类型：斗栱根节点
+    ACA_WALLTYPE_WALL = 'wall'           # 隔断属性-墙
+    ACA_WALLTYPE_WINDOW = 'window'       # 隔断属性-槛窗
+    ACA_WALLTYPE_DOOR = 'door'           # 隔断属性-隔扇
 
     # 屋顶类型，与面板的下拉框的值对应
     ROOF_WUDIAN = '1'

@@ -11,6 +11,7 @@ import numpy as np
 import time
 
 from . import data
+from .const import ACA_Consts as con
 
 # 获取console窗口的context
 # 以便在console_print中override
@@ -264,9 +265,14 @@ def getAcaChild(object:bpy.types.Object,
 def getAcaParent(object:bpy.types.Object,
                     acaObj_type:str) -> bpy.types.Object:
     parent = object.parent
-    parentData : data.ACA_data_obj = parent.ACA_data
-    if parentData.aca_type != acaObj_type :
-        parent = getAcaParent(parent,acaObj_type)
+    if parent != None:
+        if hasattr(parent, 'ACA_data'):
+            parentData : data.ACA_data_obj = parent.ACA_data
+            if 'aca_type' in parentData:
+                if parentData.aca_type != acaObj_type :
+                    parent = getAcaParent(parent,acaObj_type)
+            else:
+                parent = getAcaParent(parent,acaObj_type)
     
     return parent
 
@@ -1156,3 +1162,26 @@ def joinObjects(objList):
     # with bpy.context.temp_override(**ctx):
     #     bpy.ops.object.join()
     # print(time.strftime("%H:%M:%S", time.localtime()) + "join down!")
+
+# 返回根对象
+def getRoot(object:bpy.types.Object):
+    buildingObj = None
+    bData = None
+    objData = None
+    isRoot = False
+    if hasattr(object, 'ACA_data'):
+        objData:data.ACA_data_obj = object.ACA_data
+        if 'aca_type' in object.ACA_data:
+            if objData['aca_type'] == con.ACA_TYPE_BUILDING:
+                isRoot = True
+
+        if isRoot:
+            buildingObj = object
+            bData = objData
+        else:
+            buildingObj = getAcaParent(
+                    object,con.ACA_TYPE_BUILDING)
+            if buildingObj != None:
+                bData:data.ACA_data_obj = buildingObj.ACA_data
+
+    return buildingObj,bData,objData

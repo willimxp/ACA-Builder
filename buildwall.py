@@ -142,6 +142,7 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     wData['door_height'] = bData.door_height
     wData['door_num'] = bData.door_num
     wData['gap_num'] = bData.gap_num
+    wData['use_topwin'] = bData.use_topwin    
     wData['lingxin_source'] = bData.lingxin_source
 
     return wallproxy

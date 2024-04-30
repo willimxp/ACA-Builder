@@ -23,16 +23,11 @@ class ACA_OT_focusBuilding(bpy.types.Operator):
     bl_description = '聚焦建筑根节点'
 
     def execute(self, context):  
-        currentObj = context.object
-        buildingObj = utils.getAcaParent(
-            object=currentObj,
-            acaObj_type=con.ACA_TYPE_BUILDING
-        )
-        bData:data.ACA_data_obj = buildingObj.ACA_data
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
-            utils.showMessageBox("ERROR: 找不到建筑")
-        else:
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
             utils.focusObj(buildingObj)
+        else:
+            utils.showMessageBox("ERROR: 找不到根节点")
 
         return {'FINISHED'}
 
@@ -61,15 +56,13 @@ class ACA_OT_reset_floor(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        buildingObj = context.object
-        bData:data.ACA_data_obj = buildingObj.ACA_data
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
-            utils.showMessageBox("ERROR: 找不到建筑")
-        else:
-            # buildFloor.resetFloor(buildingObj) 
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
             funproxy = partial(buildFloor.resetFloor,
                         buildingObj=buildingObj)
             utils.fastRun(funproxy)
+        else:
+            utils.showMessageBox("ERROR: 找不到根节点")
         return {'FINISHED'}
 
 # 刷新柱网的显示，应对部分属性没有直接触发实时重绘
@@ -80,15 +73,14 @@ class ACA_OT_refresh_floor(bpy.types.Operator):
 
     def execute(self, context):  
         # 调用营造序列
-        buildingObj = context.object
-        bData:data.ACA_data_obj = buildingObj.ACA_data
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
-            utils.showMessageBox("ERROR: 找不到建筑")
-        else:
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
             # buildFloor.buildFloor(buildingObj) 
             funproxy = partial(buildFloor.buildFloor,
                         buildingObj=buildingObj)
             utils.fastRun(funproxy)
+        else:
+            utils.showMessageBox("ERROR: 找不到建筑")
         
         return {'FINISHED'}
     
@@ -139,16 +131,15 @@ class ACA_OT_reset_wall_layout(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        buildingObj = context.object
-        bData:data.ACA_data_obj = buildingObj.ACA_data
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
-            utils.showMessageBox("ERROR: 找不到建筑")
-        else:
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
             # # 生成墙体框线
             funproxy = partial(
                 buildWall.resetWallLayout,
                 buildingObj=buildingObj)
             utils.fastRun(funproxy)
+        else:
+            utils.showMessageBox("ERROR: 找不到根节点")
 
         return {'FINISHED'}
 
@@ -243,16 +234,15 @@ class ACA_OT_build_dougong(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        buildingObj = context.object
-        bData:data.ACA_data_obj = buildingObj.ACA_data
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
-            utils.showMessageBox("ERROR: 找不到建筑")
-        else:
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
             # 生成斗栱
             funproxy = partial(
                 buildDougong.buildDougong,
                 buildingObj=buildingObj)
             utils.fastRun(funproxy)
+        else:
+            utils.showMessageBox("ERROR: 找不到建筑")
 
         return {'FINISHED'}
     
@@ -263,17 +253,16 @@ class ACA_OT_build_roof(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        buildingObj = context.object
-        bData:data.ACA_data_obj = buildingObj.ACA_data
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
-            utils.showMessageBox("ERROR: 找不到建筑")
-        else:
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
             # 生成屋顶
             utils.outputMsg("Building Roof...")
             funproxy = partial(
                 buildRoof.buildRoof,
                 buildingObj=buildingObj)
             utils.fastRun(funproxy)
+        else:
+            utils.showMessageBox("ERROR: 找不到建筑")
 
         return {'FINISHED'}
 
@@ -284,13 +273,12 @@ class ACA_OT_test(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        buildingObj = context.object
-        bData:data.ACA_data_obj = buildingObj.ACA_data
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
-            utils.showMessageBox("ERROR: 找不到建筑")
-        else:
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
             funproxy = partial(buildRooftile.buildTile,buildingObj=buildingObj)
             utils.fastRun(funproxy)
+        else:
+            utils.showMessageBox("ERROR: 找不到建筑")
 
         return {'FINISHED'}
     

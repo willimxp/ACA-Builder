@@ -12,6 +12,7 @@ from .const import ACA_Consts as con
 from . import utils
 
 
+
 # 初始化自定义属性
 def initprop():
     # 在scene中添加可全局访问的自定义数据集
@@ -40,33 +41,33 @@ def update_test(self, context:bpy.types.Context):
 # 更新建筑，但不重设柱网
 def update_building(self, context:bpy.types.Context):
     # 确认选中为building节点
-    buildingObj = context.object 
-    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
-        # 调用营造序列
+    buildingObj,bdata,odata = utils.getRoot(context.object)
+    if buildingObj != None:
         from . import buildFloor
         buildFloor.buildFloor(buildingObj)
     else:
         utils.outputMsg("updated building failed, context.object should be buildingObj")
-        return
+    
+    return
     
 # 更新建筑，但不重设柱网
 def reset_building(self, context:bpy.types.Context):
     # 确认选中为building节点
-    buildingObj = context.object 
-    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+    buildingObj,bdata,odata = utils.getRoot(context.object)
+    if buildingObj != None:
         # 调用营造序列
         from . import buildFloor
         buildFloor.resetFloor(buildingObj)
     else:
         utils.outputMsg("updated building failed, context.object should be buildingObj")
-        return
+    return
 
 # 调整建筑斗口
 def update_dk(self, context:bpy.types.Context):
     # 确认选中为building节点
-    buildingObj = context.object
-    dk = buildingObj.ACA_data.DK
-    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+    buildingObj,bdata,odata = utils.getRoot(context.object)
+    if buildingObj != None:
+        dk = buildingObj.ACA_data.DK
         # 更新DK值
         from . import acaTemplate
         acaTemplate.updateTemplateByDK(dk,buildingObj)
@@ -74,67 +75,74 @@ def update_dk(self, context:bpy.types.Context):
         buildFloor.buildFloor(buildingObj)
     else:
         utils.outputMsg("updated building failed, context.object should be buildingObj")
-        return
+    return
 
 def update_platform(self, context:bpy.types.Context):
     # 确认选中为building节点
-    buildingObj = context.object
-    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+    buildingObj,bdata,odata = utils.getRoot(context.object)
+    if buildingObj != None:
         # 调用台基缩放
         from . import buildPlatform
         buildPlatform.resizePlatform(buildingObj)
     else:
         utils.outputMsg("updated platform failed, context should be buildingObj")
-        return
+    return
 
 # 仅更新柱体样式，不触发其他重建
 def update_PillerStyle(self, context:bpy.types.Context):
     # 确认选中为building节点
-    buildingObj = context.object 
-    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+    buildingObj,bdata,odata = utils.getRoot(context.object)
+    if buildingObj != None:
         # 调用营造序列
         from . import buildFloor
         buildFloor.buildPillers(buildingObj)
         pass
     else:
         utils.outputMsg("updated building failed, context.object should be buildingObj")
-        return
+    return
 
 # 更新柱体尺寸，会自动触发墙体重建
 def update_piller(self, context:bpy.types.Context):
     # 确认选中为building节点
-    buildingObj = context.object
-    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+    buildingObj,bdata,odata = utils.getRoot(context.object)
+    if buildingObj != None:
         # 缩放柱形
         from . import buildFloor
         buildFloor.resizePiller(buildingObj)
     else:
         utils.outputMsg("updated piller failed, context should be pillerObj")
-        return
+    return
 
 def update_wall(self, context:bpy.types.Context):
     # 确认选中为building节点
-    buildingObj = context.object
-    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+    buildingObj,bdata,odata = utils.getRoot(context.object)
+    if buildingObj != None:
         from . import buildWall
-        # 重新生成墙体
-        funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
-        utils.fastRun(funproxy)
+        if odata.aca_type == con.ACA_TYPE_WALL:
+            # 仅重新生成当前墙体
+            funproxy = partial(buildWall.buildSingleWall,
+                               wallproxy=context.object)
+            utils.fastRun(funproxy)
+        else:
+            # 重新生成墙体
+            funproxy = partial(buildWall.resetWallLayout,
+                               buildingObj=buildingObj)
+            utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated platform failed, context.object should be buildingObj")
-        return
+    return
     
 def update_roof(self, context:bpy.types.Context):
     # 确认选中为building节点
-    buildingObj = context.object
-    if buildingObj.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+    buildingObj,bdata,odata = utils.getRoot(context.object)
+    if buildingObj != None:
         from . import buildRoof
         # 重新生成屋顶
         funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated platform failed, context.object should be buildingObj")
-        return
+    return
 
 # 对象范围的数据
 # 可绑定面板参数属性
@@ -258,7 +266,8 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore
     use_smallfang: bpy.props.BoolProperty(
             default=False,
-            name="添加小额枋"
+            name="使用小额枋",
+            update = update_building
         )# type: ignore 
     
     
@@ -295,18 +304,22 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     # 隔扇属性
     door_height : bpy.props.FloatProperty(
             name="中槛高度",
+            update = update_wall
         )# type: ignore 
     door_num : bpy.props.IntProperty(
             name="隔扇数量",
             default=4, max=4,
+            update = update_wall
         )# type: ignore 
     gap_num : bpy.props.IntProperty(
             name="抹头数量",
-            default=5,min=2,max=6
+            default=5,min=2,max=6,
+            update = update_wall
         )# type: ignore 
     use_topwin: bpy.props.BoolProperty(
             default=False,
-            name="添加横披窗"
+            name="添加横披窗",
+            update = update_wall
         )# type: ignore 
     use_KanWall: bpy.props.BoolProperty(
             default=False,
@@ -315,7 +328,8 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     lingxin_source:bpy.props.PointerProperty(
             name = "棂心",
             type = bpy.types.Object,
-            poll = p_filter
+            poll = p_filter,
+            update = update_wall
         )# type: ignore 
     
     # 斗栱属性

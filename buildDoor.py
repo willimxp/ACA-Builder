@@ -112,7 +112,7 @@ def __buildKanKuang(wallproxy):
     # endregion 1、下槛 ---------------------
         
     # region 2、上槛 ---------------------
-    if bData.use_topwin:
+    if wData.use_topwin:
         KanUpScale = Vector((frame_width, # 长度随面宽
                     con.KAN_UP_DEEPTH * pd, # 厚0.3D
                     con.KAN_UP_HEIGHT * pd, # 高0.8D
@@ -132,7 +132,7 @@ def __buildKanKuang(wallproxy):
                 con.KAN_MID_DEEPTH * pd, # 厚0.3D
                 con.KAN_MID_HEIGHT * pd, # 高0.8D
                 ))
-    if bData.use_topwin:
+    if wData.use_topwin:
         kanmid_height = wData.door_height
         kanmid_name = '中槛'
     else:
@@ -177,7 +177,7 @@ def __buildKanKuang(wallproxy):
     # endregion 4、下抱框 ---------------------
 
     # region 5、上抱框 ---------------------
-    if bData.use_topwin:
+    if wData.use_topwin:
         # 高度：从上槛下皮到中槛上皮
         BaoKuangUpHeight = (KanUpLoc.z - KanUpScale.z/2) \
             - (KanMidLoc.z + KanMidScale.z/2)

@@ -64,14 +64,41 @@ def showMessageBox(message = "", title = "Message Box", icon = 'INFO'):
 # 递归查询，并选择collection，似乎没有找到更好的办法
 # Recursivly transverse layer_collection for a particular name
 # https://blender.stackexchange.com/questions/127403/change-active-collection
-def recurLayerCollection(layerColl, collName):
+def recurLayerCollection(layerColl, collName,is_like = False):
     found = None
-    if (layerColl.name == collName):
-        return layerColl
+    if is_like:
+        # 模糊匹配
+        if (collName in layerColl.name):
+            return layerColl
+    else:
+        # 精确匹配
+        if (layerColl.name == collName):
+            return layerColl
     for layer in layerColl.children:
-        found = recurLayerCollection(layer, collName)
+        found = recurLayerCollection(layer,collName,is_like)
         if found:
             return found
+
+# 隐藏目录
+def hideCollection(coll_name:str,
+                   isShow=False,
+                   parentColl:bpy.types.Collection=None):
+    
+    if parentColl == None:
+        layer_collection = bpy.context.view_layer.layer_collection
+    else:
+        parentLayerColl = recurLayerCollection(
+            bpy.context.view_layer.layer_collection,
+            parentColl.name
+        )
+        layer_collection = parentLayerColl
+    # 模糊匹配，因为目录名可能带“.001”后缀
+    layerColl = recurLayerCollection(
+        layer_collection, coll_name,is_like=True)
+    if isShow:
+        layerColl.exclude = False
+    else:
+        layerColl.exclude = True
 
 # 聚焦选中指定名称的目录
 def focusCollection(coll_name:str):

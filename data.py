@@ -144,6 +144,24 @@ def update_roof(self, context:bpy.types.Context):
         utils.outputMsg("updated platform failed, context.object should be buildingObj")
     return
 
+def hideLayer(context,name,isShow):
+    buildingObj,bData,objData = utils.getRoot(context.object)
+    buildingColl = buildingObj.users_collection[0]
+    utils.hideCollection(name,
+        isShow=isShow,
+        parentColl=buildingColl)
+    utils.focusObj(buildingObj)
+    return 
+
+def hide_platform(self, context:bpy.types.Context):
+    hideLayer(context,'台基',self.is_showPlatform)
+
+def hide_pillers(self, context:bpy.types.Context):
+    hideLayer(context,'柱网',self.is_showPillers)
+
+def hide_walls(self, context:bpy.types.Context):
+    hideLayer(context,'墙体',self.is_showWalls)
+
 # 对象范围的数据
 # 可绑定面板参数属性
 # 属性声明的格式在vscode有告警，但blender表示为了保持兼容性，无需更改
@@ -169,6 +187,21 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     COLL:bpy.props.StringProperty(
             name="目录名",
     )# type: ignore
+    is_showPlatform: bpy.props.BoolProperty(
+            default = True,
+            name = "是否显示台基",
+            update=hide_platform
+        ) # type: ignore
+    is_showPillers: bpy.props.BoolProperty(
+            default = True,
+            name = "是否显示柱网",
+            update=hide_pillers
+        ) # type: ignore
+    is_showWalls: bpy.props.BoolProperty(
+            default = True,
+            name = "是否显示墙体",
+            update=hide_walls
+        ) # type: ignore
     
     # 台基对象属性
     platform_height : bpy.props.FloatProperty(
@@ -266,7 +299,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore
     use_smallfang: bpy.props.BoolProperty(
             default=False,
-            name="使用小额枋",
+            name="小额枋",
             update = update_building
         )# type: ignore 
     

@@ -88,6 +88,7 @@ class ACA_OT_refresh_floor(bpy.types.Operator):
 class ACA_OT_del_piller(bpy.types.Operator):
     bl_idname="aca.del_piller"
     bl_label = "减柱"
+    bl_description = "删除柱子，先选择1根以上的柱子"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -101,6 +102,7 @@ class ACA_OT_del_piller(bpy.types.Operator):
 class ACA_OT_add_fang(bpy.types.Operator):
     bl_idname="aca.add_fang"
     bl_label = "连接"
+    bl_description = "在柱间添加枋，先选择2根以上的柱子"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -113,7 +115,8 @@ class ACA_OT_add_fang(bpy.types.Operator):
 # 断开柱-柱，删除枋
 class ACA_OT_del_fang(bpy.types.Operator):
     bl_idname="aca.del_fang"
-    bl_label = "断开"
+    bl_label = "删除"
+    bl_description = "在柱间删除枋，先选择1根以上的枋"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -146,7 +149,8 @@ class ACA_OT_reset_wall_layout(bpy.types.Operator):
 # 单独生成一个墙体
 class ACA_OT_add_wall(bpy.types.Operator):
     bl_idname="aca.add_wall"
-    bl_label = "墙"
+    bl_label = "加墙"
+    bl_description = "在柱间加墙，先选择2根以上的柱子"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -164,7 +168,8 @@ class ACA_OT_add_wall(bpy.types.Operator):
 # 单独生成一个隔扇
 class ACA_OT_add_door(bpy.types.Operator):
     bl_idname="aca.add_door"
-    bl_label = "门"
+    bl_label = "加门"
+    bl_description = "在柱间加隔扇，先选择2根以上的柱子"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -182,7 +187,8 @@ class ACA_OT_add_door(bpy.types.Operator):
 # 单独生成一个槛窗
 class ACA_OT_add_window(bpy.types.Operator):
     bl_idname="aca.add_window"
-    bl_label = "窗"
+    bl_label = "加窗"
+    bl_description = "在柱间加槛窗，先选择2根以上的柱子"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -200,7 +206,8 @@ class ACA_OT_add_window(bpy.types.Operator):
 # 删除一个墙体
 class ACA_OT_del_wall(bpy.types.Operator):
     bl_idname="aca.del_wall"
-    bl_label = "删除隔断"
+    bl_label = "删除"
+    bl_description = "删除隔断"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  

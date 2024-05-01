@@ -8,6 +8,7 @@ from . import data
 from .const import ACA_Consts as con
 from . import utils
 from .data import ACA_data_obj as acaData
+from .data import ACA_data_scene as scnData
 
 # 营造向导面板
 class ACA_PT_basic(bpy.types.Panel):
@@ -55,12 +56,18 @@ class ACA_PT_props(bpy.types.Panel):
         # 从当前场景中载入数据集
         if context.object != None:
             layout = self.layout
-            currentObj = context.object
-            objData :data.ACA_data_obj = context.object.ACA_data             
+            # 追溯全局属性
+            buildingObj,bData,objData = utils.getRoot(context.object)
+            if buildingObj == None: 
+                # 如果不属于建筑构件，提示，并隐藏所有子面板
+                row = layout.row()
+                row.label(text='没有设置项',icon='INFO')
+                row = layout.row()
+                row.label(text='请先选择一个或多个建筑对象')
+                return             
 
-            box = layout.box()
             # 名称
-            row = box.row()
+            row = layout.row()
             col = row.column()
             col.prop(context.object,"name",text="")
             # 聚焦根节点
@@ -78,18 +85,23 @@ class ACA_PT_platform(bpy.types.Panel):
     
     # 自定义属性
     bl_category = "古建营造"             # 标签页名称
-    bl_label = "台基属性"            # 面板名称，显示为可折叠的箭头后
+    bl_label = ""            # 面板名称，显示为可折叠的箭头后
     bl_parent_id = "ACA_PT_props"   # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
 
     # 仅在选中建筑根节点时显示该面板
-    # @classmethod 
-    # def poll(self, context):
-    #     if context.object != None:
-    #         objData :data.ACA_data_obj = context.object.ACA_data 
-    #         if objData.aca_type == con.ACA_TYPE_BUILDING:
-    #             return True
-    #     return
+    @classmethod 
+    def poll(self, context):
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
+            return True
+        return
+
+    def draw_header(self,context):
+        layout = self.layout
+        row = layout.row()
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        row.prop(bData, "is_showPlatform",text='台基属性')
 
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -106,6 +118,11 @@ class ACA_PT_platform(bpy.types.Panel):
             row = box.row()
             row.prop(bData, "platform_extend")
 
+            # 切换显示/隐藏台基
+            if not bData.is_showPlatform:
+                layout.enabled = False
+                
+
 # “柱网属性”子面板
 class ACA_PT_pillers(bpy.types.Panel):
     # 常规属性
@@ -115,20 +132,23 @@ class ACA_PT_pillers(bpy.types.Panel):
     
     # 自定义属性
     bl_category = "古建营造"             # 标签页名称
-    bl_label = "柱网属性"            # 面板名称，显示为可折叠的箭头后
+    bl_label = ""            # 面板名称，显示为可折叠的箭头后
     bl_parent_id = "ACA_PT_props"   # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
 
-    # # 仅在选中建筑根节点时显示该面板
-    # @classmethod 
-    # def poll(self, context):
-    #     if context.object != None:
-    #         objData :data.ACA_data_obj = context.object.ACA_data 
-    #         if objData.aca_type == con.ACA_TYPE_BUILDING \
-    #             or objData.aca_type == con.ACA_TYPE_PILLER \
-    #             or objData.aca_type == con.ACA_TYPE_FANG:
-    #             return True
-    #     return
+    # 仅在选中建筑根节点时显示该面板
+    @classmethod 
+    def poll(self, context):
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
+            return True
+        return
+    
+    def draw_header(self,context):
+        layout = self.layout
+        row = layout.row()
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        row.prop(bData, "is_showPillers",text='柱网属性')
 
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -181,19 +201,25 @@ class ACA_PT_pillers(bpy.types.Panel):
             #     or objData.aca_type == con.ACA_TYPE_FANG:
             box = layout.box()
             row = box.row()
-            row.prop(objData, "use_smallfang") # 使用小额枋
+            col = row.column()
+            col.label(text='设置枋子:')
+            col = row.column()
+            col.prop(objData, "use_smallfang") # 使用小额枋
             row = box.row()
             col = row.column()
             col.operator("aca.add_fang",icon='LINKED',)# 按钮:连接
-            if objData.aca_type == con.ACA_TYPE_PILLER:
-                if len(context.selected_objects)<2:
+            if objData.aca_type != con.ACA_TYPE_PILLER \
+                or len(context.selected_objects)<2:
                     col.enabled=False
-            if objData.aca_type == con.ACA_TYPE_FANG:
-                col.enabled=False
 
             col = row.column()
             col.operator("aca.del_fang",icon='UNLINKED',)# 按钮:断开
             if objData.aca_type == con.ACA_TYPE_PILLER:col.enabled=False
+
+            # 切换显示/隐藏台基
+            if not bData.is_showPillers:
+                layout.enabled = False
+
                 
 # “墙属性”子面板
 class ACA_PT_wall(bpy.types.Panel):
@@ -204,26 +230,35 @@ class ACA_PT_wall(bpy.types.Panel):
     
     # 自定义属性
     bl_category = "古建营造"             # 标签页名称
-    bl_label = "墙体属性"            # 面板名称，显示为可折叠的箭头后
+    bl_label = ""            # 面板名称，显示为可折叠的箭头后
     bl_parent_id = "ACA_PT_props"   # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
 
-    # # 仅在选中建筑根节点时显示该面板
-    # @classmethod 
-    # def poll(self, context):
-    #     if context.object != None:
-    #         objData :data.ACA_data_obj = context.object.ACA_data 
-    #         if objData.aca_type in (
-    #             con.ACA_TYPE_PILLER,):
-    #             if len(bpy.context.selected_objects) >1:
-    #                 return True
-    #         if objData.aca_type in (
-    #             con.ACA_TYPE_BUILDING,
-    #             con.ACA_TYPE_WALL_CHILD,
-    #             con.ACA_TYPE_WALL_ROOT,
-    #             con.ACA_TYPE_WALL):
-    #             return True
-    #     return
+    # 仅在选中建筑根节点时显示该面板
+    @classmethod 
+    def poll(self, context):
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
+            return True
+        return
+
+    def draw_header(self,context):
+        layout = self.layout
+        row = layout.row()
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        row.prop(bData, "is_showWalls",text='墙体属性')
+
+    def draw_header_preset(self,context):
+        layout = self.layout
+        row = layout.row()
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj == None: return
+        if objData.aca_type == con.ACA_TYPE_WALL:
+            col = row.column()
+            col.label(text='[个体]',icon='KEYTYPE_JITTER_VEC')
+        else:
+            col = row.column()
+            col.label(text='[全局]',icon='KEYTYPE_KEYFRAME_VEC')
 
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -233,12 +268,32 @@ class ACA_PT_wall(bpy.types.Panel):
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
 
+            # 墙样式
             box = layout.box()
-
-            # 选中根节点时，可修改全局样式
+            row = box.row() 
             if objData.aca_type == con.ACA_TYPE_WALL:
-                row = box.row() 
-                row.prop(objData, "wall_source") # 墙样式
+                row.prop(objData, "wall_source") # 个体
+            else:
+                row.prop(bData, "wall_source") # 全局
+            # 工具栏
+            row = box.row()
+            col = row.column()
+            # 生成墙
+            col.operator("aca.add_wall",icon='MOD_BUILD')
+            if objData.aca_type != con.ACA_TYPE_PILLER \
+                or len(context.selected_objects) < 2:
+                col.enabled = False
+            # 删除隔断
+            col = row.column()
+            col.operator("aca.del_wall",icon='TRASH')
+            if objData.aca_type not in (
+                con.ACA_WALLTYPE_WALL,con.ACA_TYPE_WALL_CHILD):
+                col.enabled = False
+                
+            # 隔扇、槛窗
+            box = layout.box()
+            # 个体
+            if objData.aca_type == con.ACA_TYPE_WALL:
                 row = box.row() 
                 row.prop(objData, "lingxin_source")   # 棂心样式
                 row = box.row()
@@ -250,11 +305,9 @@ class ACA_PT_wall(bpy.types.Panel):
                 row = box.row()
                 row.prop(objData, "door_height")  # 中槛高度
                 if not objData.use_topwin:
-                    row.enabled = False
-                    
-            else:
-                row = box.row() 
-                row.prop(bData, "wall_source") # 墙样式
+                    row.enabled = False    
+            # 全局  
+            else: 
                 row = box.row() 
                 row.prop(bData, "lingxin_source")   # 棂心样式
                 row = box.row()
@@ -267,22 +320,12 @@ class ACA_PT_wall(bpy.types.Panel):
                 row.prop(bData, "door_height")  # 中槛高度
                 if not bData.use_topwin:
                     row.enabled = False
-                    
-            
-            # row = box.row()
-            # row.operator("aca.reset_wall_layout",icon='HOME')# 按钮：墙体营造
-
-            # 选中柱子时，可新建墙门窗
-            # if objData.aca_type in (
-            # con.ACA_TYPE_PILLER,
-            # con.ACA_TYPE_WALL_CHILD,
-            # con.ACA_TYPE_WALL_ROOT,
-            # con.ACA_TYPE_WALL):
+            # 工具栏
             row = box.row()
-            row.operator("aca.add_wall",icon='MOD_BUILD')# 按钮：生成墙
             row.operator("aca.add_door",icon='MOD_TRIANGULATE')# 按钮：生成隔扇
             row.operator("aca.add_window",icon='MOD_LATTICE')# 按钮：生成槛窗
-            if objData.aca_type != con.ACA_TYPE_PILLER:
+            if objData.aca_type != con.ACA_TYPE_PILLER \
+                or len(context.selected_objects) < 2:
                 row.enabled = False
             row = box.row()
             row.operator("aca.del_wall",icon='TRASH')# 按钮：删除隔断
@@ -290,9 +333,10 @@ class ACA_PT_wall(bpy.types.Panel):
                 con.ACA_TYPE_WALL_CHILD,
                 con.ACA_TYPE_WALL):
                 row.enabled = False
-
-            # row = box.row()
-            # row.operator("aca.build_door",icon='HOME')# 按钮：生成单一门窗
+        
+            # 切换显示/隐藏台基
+            if not bData.is_showWalls:
+                layout.enabled = False
 
 # “斗栱属性”子面板
 class ACA_PT_dougong(bpy.types.Panel):
@@ -307,14 +351,13 @@ class ACA_PT_dougong(bpy.types.Panel):
     bl_parent_id = "ACA_PT_props"       # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
 
-    # # 仅在选中建筑根节点时显示该面板
-    # @classmethod 
-    # def poll(self, context):
-    #     if context.object != None:
-    #         objData :data.ACA_data_obj = context.object.ACA_data 
-    #         if objData.aca_type == con.ACA_TYPE_BUILDING:
-    #             return True
-    #     return
+    # 仅在选中建筑根节点时显示该面板
+    @classmethod 
+    def poll(self, context):
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
+            return True
+        return
 
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -359,14 +402,13 @@ class ACA_PT_roof(bpy.types.Panel):
     bl_parent_id = "ACA_PT_props"       # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
 
-    # # 仅在选中建筑根节点时显示该面板
-    # @classmethod 
-    # def poll(self, context):
-    #     if context.object != None:
-    #         objData :data.ACA_data_obj = context.object.ACA_data 
-    #         if objData.aca_type == con.ACA_TYPE_BUILDING:
-    #             return True
-    #     return
+    # 仅在选中建筑根节点时显示该面板
+    @classmethod 
+    def poll(self, context):
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
+            return True
+        return
 
     def draw(self, context):
         # 从当前场景中载入数据集

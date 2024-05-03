@@ -61,7 +61,8 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
         sourceObj=lingxinObj,
         name='棂心',
         parentObj=parent,
-        location=loc)
+        location=loc,
+        singleUser=True)
     # 计算平铺的行列数
     unitWidth,unitDeepth,unitHeight = utils.getMeshDims(lingxin)
     lingxingWidth = scale.x- con.ZIBIAN_WIDTH*2*pd
@@ -77,6 +78,12 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     mod_cols = lingxin.modifiers.get('Columns')
     mod_cols.count = cols
     mod_cols.constant_offset_displace[0] = col_span
+
+    # 合并棂心
+    lingxinObjs = [zibianObj,lingxin]
+    linxinObj = utils.joinObjects(lingxinObjs)
+    
+    return linxinObj
 
 # 构建槛框
 # 基于输入的槛框线框对象
@@ -94,6 +101,8 @@ def __buildKanKuang(wallproxy):
     # 分解槛框的长、宽、高
     frame_width,frame_deepth,frame_height = wallproxy.dimensions
 
+    KankuangObjs = []
+
     # region 1、下槛 ---------------------
     KanDownScale = Vector((frame_width, # 长度随面宽
                 con.KAN_DOWN_DEEPTH * pd, # 厚0.3D
@@ -109,6 +118,7 @@ def __buildKanKuang(wallproxy):
     KanDownObj.parent = wallproxy
     if use_KanWall:
         KanDownObj.hide_set(True) 
+    KankuangObjs.append(KanDownObj)
     # endregion 1、下槛 ---------------------
         
     # region 2、上槛 ---------------------
@@ -123,8 +133,10 @@ def __buildKanKuang(wallproxy):
                             size=1.0, 
                             location = KanUpLoc, 
                             scale= KanUpScale)
-        bpy.context.object.name = '上槛'
-        bpy.context.object.parent = wallproxy
+        KanTopObj = bpy.context.object
+        KanTopObj.name = '上槛'
+        KanTopObj.parent = wallproxy
+        KankuangObjs.append(KanTopObj)
     # endregion 2、上槛 ---------------------
 
     # region 3、中槛 ---------------------
@@ -143,8 +155,10 @@ def __buildKanKuang(wallproxy):
                         size=1.0, 
                         location = KanMidLoc, 
                         scale= KanMidScale)
-    bpy.context.object.name = kanmid_name
-    bpy.context.object.parent = wallproxy
+    KanMidObj = bpy.context.object
+    KanMidObj.name = kanmid_name
+    KanMidObj.parent = wallproxy
+    KankuangObjs.append(KanMidObj)
     # endregion 3、中槛 ---------------------
 
     # region 4、下抱框 ---------------------
@@ -174,6 +188,7 @@ def __buildKanKuang(wallproxy):
     mod.use_axis[0] = True
     mod.use_axis[1] = False
     mod.mirror_object = wallproxy
+    KankuangObjs.append(BaoKuangDownObj)
     # endregion 4、下抱框 ---------------------
 
     # region 5、上抱框 ---------------------
@@ -204,9 +219,11 @@ def __buildKanKuang(wallproxy):
         mod.use_axis[0] = True
         mod.use_axis[1] = False
         mod.mirror_object = wallproxy
+        KankuangObjs.append(BaoKuangUpObj)
         # endregion 5、上抱框 ---------------------
 
         # region 6、横披窗 ---------------------
+        topWinObjs = []
         # 横披窗数量：比隔扇少一扇
         window_top_num = wData.door_num - 1
         # 横披窗宽度:(柱间距-柱径-4抱框)/3
@@ -222,8 +239,10 @@ def __buildKanKuang(wallproxy):
                                 size=1.0, 
                                 location = windowTopKuangLoc, 
                                 scale= BaoKuangUpScale)
-            bpy.context.object.name = '横披间框'
-            bpy.context.object.parent = wallproxy
+            hengKuangObj = bpy.context.object
+            hengKuangObj.name = '横披间框'
+            hengKuangObj.parent = wallproxy
+            KankuangObjs.append(hengKuangObj)
 
         # 横披窗尺寸
         WindowTopScale = Vector((window_top_width, # 宽度取横披窗宽度
@@ -235,10 +254,16 @@ def __buildKanKuang(wallproxy):
             windowTop_x = BaoKuangUp_x - \
                 (con.BAOKUANG_WIDTH*pd + window_top_width)*(n+0.5)
             WindowTopLoc =  Vector((windowTop_x,0,BaoKuangUp_z))
-            __buildShanxin(wallproxy,WindowTopScale,WindowTopLoc)
+            linxinObj = __buildShanxin(
+                wallproxy,WindowTopScale,WindowTopLoc)
 
         # endregion 6、横披窗 ---------------------
     
+        # 统一添加bevel
+        for obj in KankuangObjs:
+            modBevel:bpy.types.BevelModifier = \
+                obj.modifiers.new('Bevel','BEVEL')
+            modBevel.width = 0.02
     # 输出下抱框，做为隔扇生成的参考
     return BaoKuangDownObj
 
@@ -547,6 +572,19 @@ def __buildGeshan(name,wallproxy,scale,location):
     
     # 隐藏隔扇根节点
     utils.hideObj(geshan_root)
+
+    # 隔扇子对象合并
+    geshanObj = utils.joinObjects(geshan_root.children)
+    geshanObj.name='隔扇门'
+    geshanObj.parent = wallproxy
+    geshanObj.location += geshan_root.location
+    bpy.data.objects.remove(geshan_root)
+
+    # 添加整体bevel
+    modBevel:bpy.types.BevelModifier = \
+        geshanObj.modifiers.new('Bevel','BEVEL')
+    modBevel.width = 0.01
+
     return windowsill_height
     
 # 构建槛墙
@@ -562,6 +600,8 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     use_KanWall = wData.use_KanWall
+
+    kanQiangObjs = []
 
     # 风槛
     scl1 = Vector((
@@ -580,6 +620,8 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     kanWindObj = bpy.context.object
     kanWindObj.name = '风槛'
     kanWindObj.parent = wallproxy
+    kanQiangObjs.append(kanWindObj)
+
     # 榻板
     scl2 = Vector((
         dimension.x+con.TABAN_EX,
@@ -589,10 +631,11 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     loc2 = Vector((
         0,0,dimension.z-scl1.z-scl2.z/2
     ))
-    kanWindObj:bpy.types.Object = utils.drawHexagon(scl2,loc2)
-    kanWindObj = bpy.context.object
-    kanWindObj.name = '榻板'
-    kanWindObj.parent = wallproxy
+    taBanObj:bpy.types.Object = utils.drawHexagon(scl2,loc2)
+    taBanObj.name = '榻板'
+    taBanObj.parent = wallproxy
+    kanQiangObjs.append(taBanObj)
+
     # 槛墙
     scl3 = Vector((
         dimension.x,
@@ -605,6 +648,15 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     kanqiangObj:bpy.types.Object = utils.drawHexagon(scl3,loc3)
     kanqiangObj.name = '槛墙'
     kanqiangObj.parent = wallproxy
+    kanQiangObjs.append(kanqiangObj)
+
+    # 统一添加bevel
+    for obj in kanQiangObjs:
+        modBevel:bpy.types.BevelModifier = \
+            obj.modifiers.new('Bevel','BEVEL')
+        modBevel.width = 0.02
+
+
     return
 
 # 构建完整的隔扇

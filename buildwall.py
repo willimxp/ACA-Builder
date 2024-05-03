@@ -107,12 +107,18 @@ def buildWallproxy(buildingObj:bpy.types.Object,
 
     # 矫正墙体的内外
     # 因为pStart,pEnd用户选择时没有顺序，只能根据坐标强行处理
-    if (pStart.x == pEnd.x and pStart.x>0) \
-        or (pStart.y == pEnd.y and pStart.y<0):
-        pTemp = pStart
-        pStart = pEnd
-        pEnd = pTemp
-
+    # 矫正东墙
+    if (pStart.x == pEnd.x and pStart.x>0):
+        if pStart.y < pEnd.y:
+            pTemp = pStart
+            pStart = pEnd
+            pEnd = pTemp
+    # 矫正南墙
+    if (pStart.y == pEnd.y and pStart.y<0):
+        if pStart.x < pEnd.x:
+            pTemp = pStart
+            pStart = pEnd
+            pEnd = pTemp
 
     # 生成wallproxy
     wallproxy = utils.addCubeBy2Points(

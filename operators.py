@@ -280,12 +280,13 @@ class ACA_OT_test(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj != None:
-            funproxy = partial(buildRooftile.buildTile,buildingObj=buildingObj)
-            utils.fastRun(funproxy)
-        else:
-            utils.showMessageBox("ERROR: 找不到建筑")
+        # buildingObj,bData,objData = utils.getRoot(context.object)
+        # if buildingObj != None:
+        #     funproxy = partial(buildRooftile.buildTile,buildingObj=buildingObj)
+        #     utils.fastRun(funproxy)
+        # else:
+        #     utils.showMessageBox("ERROR: 找不到建筑")
+        utils.joinObjects(context.object.children)
 
         return {'FINISHED'}
     

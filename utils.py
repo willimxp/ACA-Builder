@@ -9,6 +9,7 @@ import math
 from mathutils import Vector,Euler,Matrix,geometry
 import numpy as np
 import time
+from typing import List
 
 from . import data
 from .const import ACA_Consts as con
@@ -685,6 +686,8 @@ def addModifierMirror(object:bpy.types.Object,
 
 # 应用所有修改器
 def applyAllModifer(object:bpy.types.Object):
+    if len(object.modifiers) == 0: return
+    # high level
     focusObj(object)  
     bpy.ops.object.convert(target='MESH')
 
@@ -1172,23 +1175,28 @@ def setGN_Input(mod:bpy.types.NodesModifier,
 # 合并对个对象
 # https://blender.stackexchange.com/questions/13986/how-to-join-objects-with-python
 # https://docs.blender.org/api/current/bpy.ops.html#overriding-context
-def joinObjects(objList):
-    #print(time.strftime("%H:%M:%S", time.localtime()) + "join preparing...")
+def joinObjects(objList:List[bpy.types.Object]):
+    # 预处理，防止合并丢失信息
+    for ob in objList:
+        # 将曲线等对象转为mesh，否则曲线可能不被合并
+        if ob.type != 'MESH':
+            focusObj(ob)
+            bpy.ops.object.convert(target='MESH')
+        # 应用modifier，否则合并后会丢失
+        if len(ob.modifiers)>0 :
+            applyAllModifer(ob)
+    
+    # 开始合并
+    # 与上面的循环要做分开，否则context的选择状态会打架
+    # todo：也可以用临时context来解决
     bpy.ops.object.select_all(action='DESELECT')
     for ob in objList:
         ob.select_set(True)
         bpy.context.view_layer.objects.active = ob
-    #print(time.strftime("%H:%M:%S", time.localtime()) + "join start...")
     bpy.ops.object.join()
-    #print(time.strftime("%H:%M:%S", time.localtime()) + "join down!")
+    
+    return bpy.context.object
 
-    # print(time.strftime("%H:%M:%S", time.localtime()) + "join start...")
-    # ctx = bpy.context.copy()
-    # ctx['active_object'] = objList[0]
-    # ctx['selected_objects'] = objList
-    # with bpy.context.temp_override(**ctx):
-    #     bpy.ops.object.join()
-    # print(time.strftime("%H:%M:%S", time.localtime()) + "join down!")
 
 # 返回根对象
 def getRoot(object:bpy.types.Object):

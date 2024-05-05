@@ -473,7 +473,8 @@ def getMeshDims(object):
             ))
 
 # 绘制六边形，用于窗台、槛墙等
-def drawHexagon(dimensions,location):
+def drawHexagon(dimensions:Vector,
+                location:Vector,half=False):
     # 创建bmesh
     bm = bmesh.new()
     # 各个点的集合
@@ -503,18 +504,32 @@ def drawHexagon(dimensions,location):
                0,
                -dimensions.z/2))
     vectors.append(v4)
-    # 右下点
-    v5=Vector((
-        dimensions.x/2-offset,
-        -dimensions.y/2,
-        -dimensions.z/2))
-    vectors.append(v5)
-    # 左下点
-    v6=Vector((
-        -dimensions.x/2+offset,
-        -dimensions.y/2,
-        -dimensions.z/2))
-    vectors.append(v6)
+    if not half:
+        # 右下点
+        v5=Vector((
+            dimensions.x/2-offset,
+            -dimensions.y/2,
+            -dimensions.z/2))
+        vectors.append(v5)
+        # 左下点
+        v6=Vector((
+            -dimensions.x/2+offset,
+            -dimensions.y/2,
+            -dimensions.z/2))
+        vectors.append(v6)
+    else:
+        # 右下点
+        v5=Vector((
+            dimensions.x/2-offset,
+            0,
+            -dimensions.z/2))
+        vectors.append(v5)
+        # 左下点
+        v6=Vector((
+            -dimensions.x/2+offset,
+            0,
+            -dimensions.z/2))
+        vectors.append(v6)
 
     # 摆放点
     vertices=[]
@@ -1194,7 +1209,7 @@ def joinObjects(objList:List[bpy.types.Object]):
         ob.select_set(True)
         bpy.context.view_layer.objects.active = ob
     bpy.ops.object.join()
-    
+
     return bpy.context.object
 
 

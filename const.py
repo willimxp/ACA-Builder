@@ -71,18 +71,23 @@ class ACA_Consts(object):
     KAN_UP_HEIGHT = 0.5     # 上槛高度，单位D
     KAN_UP_DEEPTH = 0.3     # 上槛深度，单位D
     KAN_WIND_HEIGHT = 0.5   # 风槛高度，单位D
-    KAN_WIND_DEEPTH = 0.4   # 风槛深度，单位D
+    KAN_WIND_DEEPTH = 0.3   # 风槛深度，单位D
     BAOKUANG_WIDTH = 0.66   # 抱框宽度，单位D
     BAOKUANG_DEEPTH = 0.3   # 抱框深度，单位D
-    BORDER_WIDTH = 0.2    # 边梃、抹头宽
+    BORDER_WIDTH = 0.2    # 边梃、抹头宽（D）
     BORDER_DEEPTH = BAOKUANG_DEEPTH     # 边梃、抹头厚
     ZIBIAN_WIDTH = BORDER_WIDTH*0.5     # 仔边宽
     ZIBIAN_DEEPTH = BORDER_WIDTH*0.5    # 仔边厚
     TABAN_DEEPTH = 1.5       # 榻板宽，单位D
     TABAN_HEIGHT = 3/8      # 榻板高，单位D
     TABAN_EX = 0.1          # 榻板金边，单位unit（米）
-    GESHAN_GAP = 0.01        # 隔扇的间距，门缝，单位为unit（米）
+    GESHAN_GAP = 0.02        # 隔扇的间距，门缝，单位为unit（米）
     DOUGONG_SPAN = 11   # 斗栱攒距，通常取11斗口
+    MENYIN_HEIGHT = 0.2     # 门楹/窗楹高(米)
+    MENYIN_DEEPTH = KAN_DOWN_DEEPTH*1.8     # 门楹/窗楹厚(D)
+    MENYIN_HEIGHT = KAN_DOWN_HEIGHT*0.5     # 门楹/窗楹高(D)
+    MENYIN_WIDTH = MENYIN_DEEPTH*2      # 门楹/窗楹宽(D)
+    MENZHOU_R = BORDER_WIDTH/2  # 门轴（D）
 
     # 桁檩
     HENG_TIAOYAN_D = 4    # 挑檐桁直径，单位DK，梁思成数据

@@ -11,8 +11,6 @@ from functools import partial
 from .const import ACA_Consts as con
 from . import utils
 
-
-
 # 初始化自定义属性
 def initprop():
     # 在scene中添加可全局访问的自定义数据集
@@ -144,23 +142,23 @@ def update_roof(self, context:bpy.types.Context):
         utils.outputMsg("updated platform failed, context.object should be buildingObj")
     return
 
-def hideLayer(context,name,isShow):
-    buildingObj,bData,objData = utils.getRoot(context.object)
-    buildingColl = buildingObj.users_collection[0]
-    utils.hideCollection(name,
-        isShow=isShow,
-        parentColl=buildingColl)
-    utils.focusObj(buildingObj)
-    return 
-
 def hide_platform(self, context:bpy.types.Context):
-    hideLayer(context,'台基',self.is_showPlatform)
+    utils.hideLayer(context,'台基',self.is_showPlatform)
 
 def hide_pillers(self, context:bpy.types.Context):
-    hideLayer(context,'柱网',self.is_showPillers)
+    utils.hideLayer(context,'柱网',self.is_showPillers)
 
 def hide_walls(self, context:bpy.types.Context):
-    hideLayer(context,'墙体',self.is_showWalls)
+    utils.hideLayer(context,'墙体',self.is_showWalls)
+
+def hide_dougong(self, context:bpy.types.Context):
+    utils.hideLayer(context,'斗栱',self.is_showDougong)
+
+def hide_BPW(self, context:bpy.types.Context):
+    utils.hideLayer(context,'梁椽望',self.is_showBPW)
+
+def hide_tiles(self, context:bpy.types.Context):
+    utils.hideLayer(context,'瓦作',self.is_showTiles)
 
 # 对象范围的数据
 # 可绑定面板参数属性
@@ -201,6 +199,21 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default = True,
             name = "是否显示墙体",
             update=hide_walls
+        ) # type: ignore
+    is_showDougong: bpy.props.BoolProperty(
+            default = True,
+            name = "是否显示斗栱",
+            update=hide_dougong
+        ) # type: ignore
+    is_showBPW: bpy.props.BoolProperty(
+            default = True,
+            name = "是否显示梁椽望",
+            update=hide_BPW
+        ) # type: ignore
+    is_showTiles: bpy.props.BoolProperty(
+            default = True,
+            name = "是否显示瓦作",
+            update=hide_tiles
         ) # type: ignore
     
     # 台基对象属性
@@ -368,7 +381,8 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     # 斗栱属性
     use_dg :  bpy.props.BoolProperty(
             default=False,
-            name="使用斗栱"
+            name="使用斗栱",
+            update=update_roof
         )# type: ignore 
     dg_piller_source:bpy.props.PointerProperty(
             name = "柱头斗栱",
@@ -452,11 +466,6 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore
     
     # 瓦作属性
-    use_tile :  bpy.props.BoolProperty(
-            default=True,
-            name="添加瓦作",
-            # update = update_roof,
-        )# type: ignore 
     tile_width : bpy.props.FloatProperty(
             name="瓦垄宽度", 
             default=0.4,

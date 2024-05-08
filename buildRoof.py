@@ -14,23 +14,30 @@ from . import buildFloor
 from . import buildDougong
 from . import buildRooftile
 
-# 设置“屋顶层”根节点
-def __setRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
-    roofRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_ROOF_ROOT)
+# 设置“梁椽望”根节点
+def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
+    # 设置目录
+    buildingColl = buildingObj.users_collection[0]
+    utils.setCollection('梁椽望',parentColl=buildingColl) 
+    
     # 新建或清空根节点
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
-    if rafterRootObj != None:
-        utils.deleteHierarchy(rafterRootObj,del_parent=True)
-    # 创建屋顶根对象
-    bpy.ops.object.empty_add(
-        type='PLAIN_AXES',location=(0,0,0))
-    rafterRootObj = bpy.context.object
-    rafterRootObj.name = "梁椽望"
-    rafterRootObj.parent = roofRootObj
-    rafterRootObj.ACA_data['aca_obj'] = True
-    rafterRootObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER_ROOT
+    if rafterRootObj == None:
+        # 创建梁椽望根对象
+        bpy.ops.object.empty_add(
+            type='PLAIN_AXES',location=(0,0,0))
+        rafterRootObj = bpy.context.object
+        rafterRootObj.name = "梁椽望"
+        rafterRootObj.ACA_data['aca_obj'] = True
+        rafterRootObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER_ROOT
+        # 绑定在屋顶根节点下
+        roofRootObj = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_ROOF_ROOT)
+        rafterRootObj.parent = roofRootObj
+    else:
+        utils.deleteHierarchy(rafterRootObj)
+        utils.focusCollByObj(rafterRootObj)
         
     return rafterRootObj
 
@@ -252,6 +259,99 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             )
     return
 
+# 绘制梁
+# 参考马炳坚p149
+def drawBeam(
+        location:Vector,
+        dimension:Vector,
+        buildingObj:bpy.types.Object,
+        name='梁',):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    bWidth = dimension.x
+    bLength = dimension.y
+    bHeight = dimension.z
+
+    # 梁头与横梁中线齐平
+    p1 = Vector((0,bLength/2,0))
+    # 梁底，从P1向下半檩径+垫板高度
+    p2 = p1 - Vector((0,0,
+        con.HENG_COMMON_D*dk/2+con.BOARD_HENG_H))
+    # 梁底，Y镜像P2
+    p3 = p2 * Vector((1,-1,1))
+    # 梁头，Y镜像坡P1
+    p4 = p1 * Vector((1,-1,1))
+    # 梁腰，从梁头退1.5桁径（出梢半桁径）
+    p5 = p4 + Vector((
+        0,1.5*con.HENG_COMMON_D*dk,0))
+    # 微调
+    p5 += Vector((0,0.05,0))
+    # 梁肩，从梁腰45度，延伸到梁顶部（梁高-垫板高-半桁）
+    offset = (bHeight
+              - con.BOARD_HENG_H 
+              - con.HENG_COMMON_D*dk/2)
+    p6 = p5 + Vector((0,offset,offset))
+    # 梁肩Y镜像
+    p7 = p6 * Vector((1,-1,1))
+    # 梁腰Y镜像
+    p8 = p5 * Vector((1,-1,1))
+
+    # 创建bmesh
+    bm = bmesh.new()
+    # 各个点的集合
+    vectors = [p1,p2,p3,p4,p5,p6,p7,p8]
+
+    # 摆放点
+    vertices=[]
+    for n in range(len(vectors)):
+        if n==0:
+            vert = bm.verts.new(vectors[n])
+        else:
+            # 挤出
+            return_geo = bmesh.ops.extrude_vert_indiv(bm, verts=[vert])
+            vertex_new = return_geo['verts'][0]
+            del return_geo
+            # 给挤出的点赋值
+            vertex_new.co = vectors[n]
+            # 交换vertex给下一次循环
+            vert = vertex_new
+        vertices.append(vert)
+
+    # 创建面
+    face = bm.faces.new((vertices[:]))
+    
+    # 挤出厚度
+    return_geo = bmesh.ops.extrude_face_region(
+        bm, geom=[face])
+    verts = [elem for elem in return_geo['geom'] 
+             if type(elem) == bmesh.types.BMVert]
+    bmesh.ops.translate(bm, 
+            verts=verts, 
+            vec=(bWidth,0, 0))
+    for v in bm.verts:
+        # 移动所有点，居中
+        v.co.x -= bWidth/2
+    
+    # 确保face normal朝向
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+
+    # 任意添加一个对象，具体几何数据在bmesh中建立
+    # 原点在对应桁檩的Z高度，X一般对应到柱头，Y一般为0
+    bpy.ops.mesh.primitive_cube_add(
+        location=location
+    )
+    beamObj = bpy.context.object
+    beamObj.name = name
+
+    # 填充bmesh数据
+    bm.to_mesh(beamObj.data)
+    beamObj.data.update()
+    bm.free()
+
+    return beamObj
+
 # 营造梁架
 # 1、只做了通檐的大梁，没有做抱头梁形式
 def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
@@ -262,10 +362,6 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
-    
-    # 准备基本构件
-    bpy.ops.mesh.primitive_cube_add(size=1.0)
-    beamObj = bpy.context.object
 
     # 横向循环每一幅梁架
     roofStyle = bData.roof_style
@@ -282,7 +378,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
             if n!=len(purlin_pos)-1: # 排除脊槫
                 # X向随槫交点依次排列
                 beam_x = net_x[x]
-                beam_z = purlin_pos[n].z - con.BEAM_HEIGHT*pd/2
+                beam_z = purlin_pos[n].z
                 beam_l = purlin_pos[n].y*2 + con.HENG_COMMON_D*dk*2
                 
                 # 歇山做特殊处理
@@ -296,22 +392,29 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     # 歇山做踩步金，向上位移到与桁下皮平
                     if n==1 and x in (0,beamRange[-1]):
                         beam_z = purlin_pos[n].z \
-                            + con.BEAM_HEIGHT*pd/2 \
+                            + con.BEAM_HEIGHT*pd \
                             - con.HENG_COMMON_D*dk/2
                         beam_l = purlin_pos[n].y*2
 
                 beam_loc = Vector((beam_x,0,beam_z))
-                beamCopyObj = utils.copyObject(
-                            sourceObj= beamObj,
-                            name="直梁",
-                            location=beam_loc,
-                            parentObj=rafterRootObj
-                        )
-                beamCopyObj.dimensions = Vector((
+                beam_dim = Vector((
                     con.BEAM_DEEPTH*pd,
                     beam_l,
                     con.BEAM_HEIGHT*pd
                 ))
+                beamCopyObj = drawBeam(
+                    location=beam_loc,
+                    dimension=beam_dim,
+                    buildingObj=buildingObj,
+                )
+                beamCopyObj.parent= rafterRootObj
+                
+                # 梁下皮与origin的距离
+                beamBottom_offset = (con.HENG_COMMON_D*dk/2 
+                             + con.BOARD_HENG_H)
+                # 梁上皮于origin的距离
+                beamTop_offset = (con.BEAM_HEIGHT*pd 
+                             - beamBottom_offset)
 
                 # 在梁上添加蜀柱
                 if roofStyle == con.ROOF_XIESHAN and n==0 and x in (0,beamRange[-1]):
@@ -319,7 +422,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     continue
                 if n == len(purlin_pos)-2:
                     # 直接支撑到脊槫
-                    shuzhu_height = purlin_pos[n+1].z - purlin_pos[n].z
+                    shuzhu_height = purlin_pos[n+1].z - purlin_pos[n].z - beamTop_offset
                 else:
                     # 支撑到上下两根梁之间
                     shuzhu_height = purlin_pos[n+1].z \
@@ -328,14 +431,13 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 shuzhu_loc = Vector((
                     beam_x,   # X向随槫交点依次排列
                     purlin_pos[n+1].y, # 对齐上一层的槫的Y位置
-                    purlin_pos[n].z + shuzhu_height/2
+                    purlin_pos[n].z + shuzhu_height/2 + beamTop_offset
                 ))
-                shuzhuCopyObj = utils.copyObject(
-                            sourceObj= beamObj,
-                            name="蜀柱",
-                            location=shuzhu_loc,
-                            parentObj=rafterRootObj
-                        )
+                bpy.ops.mesh.primitive_cube_add(
+                    location=shuzhu_loc,)
+                shuzhuCopyObj = bpy.context.object
+                shuzhuCopyObj.name = '蜀柱'
+                shuzhuCopyObj.parent = rafterRootObj
                 shuzhuCopyObj.dimensions = Vector((
                     con.PILLER_CHILD*dk,
                     con.PILLER_CHILD*dk,
@@ -347,9 +449,6 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     mod.mirror_object = rafterRootObj
                     mod.use_axis[0] = False
                     mod.use_axis[1] = True            
-    
-    # 删除基本构件
-    bpy.data.objects.remove(beamObj)
     return
 
 # 根据给定的宽度，计算最佳的椽当宽度
@@ -2361,7 +2460,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
 def __addRoofRoot(buildingObj:bpy.types.Object):
     # 设置目录
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('屋顶',parentColl=buildingColl)
+    utils.focusCollection(buildingColl.name)
 
     # 设置根节点
     roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT) 
@@ -2387,7 +2486,9 @@ def __addRoofRoot(buildingObj:bpy.types.Object):
         tile_base += bData.dg_height
     else:
         # 以大梁抬升
-        tile_base += con.BEAM_HEIGHT*pd
+        # tile_base += con.BEAM_HEIGHT*pd
+        # 实际为金桁垫板高度+半桁
+        tile_base += con.BOARD_HENG_H + con.HENG_COMMON_D*dk/2
     roofRootObj.location = (0,0,tile_base)       
 
     return roofRootObj
@@ -2771,22 +2872,17 @@ def __buildShanWall(
     
     return
 
-# 营造整个房顶
-def buildRoof(buildingObj:bpy.types.Object):
-    # 清理垃圾数据
-    utils.delOrphan()    
+# 营造梁椽望层
+def __buildBPW(buildingObj:bpy.types.Object):
+    # 设定“梁椽望”根节点
+    rafterRootObj = __addRafterRoot(buildingObj)
+
     # 载入数据
     bData : acaData = buildingObj.ACA_data
-
-    # 添加“屋顶层”根节点
-    __addRoofRoot(buildingObj)
-
-    # 生成斗栱
-    utils.outputMsg("Building Dougong...")
-    buildDougong.buildDougong(buildingObj)
-
-    # 设定“梁椽望”根节点
-    roofRootObj = __setRafterRoot(buildingObj)
+    # 屋瓦依赖于椽望，强制生成
+    if bData.is_showTiles : bData.is_showBPW=True
+    # 可以根据用户需要而不生成
+    if not bData.is_showBPW: return
 
     # 计算桁檩定位点
     purlin_pos = __getPurlinPos(buildingObj)
@@ -2820,11 +2916,31 @@ def buildRoof(buildingObj:bpy.types.Object):
     if bData.roof_style in (con.ROOF_XIESHAN,
             con.ROOF_XUANSHAN,con.ROOF_YINGSHAN):
         __buildBofeng(buildingObj,rafter_pos)
+    return
 
-    # 摆放瓦作
-    if bData.use_tile:
-        utils.outputMsg("Building Tiles...")
-        buildRooftile.buildTile(buildingObj)
+# 营造整个房顶
+def buildRoof(buildingObj:bpy.types.Object):
+    # 清理垃圾数据
+    utils.delOrphan()    
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+
+    # 添加“屋顶层”根节点
+    # 斗栱层、梁椽望、瓦作都绑定在该节点下，便于统一重新生成
+    # 这三层的结构紧密相连，无法解耦，只能一起生成，一起刷新
+    __addRoofRoot(buildingObj)
+
+    # 生成斗栱层
+    utils.outputMsg("Building Dougong...")
+    buildDougong.buildDougong(buildingObj)
+
+    # 生成梁椽望
+    utils.outputMsg("Building BPW...")
+    __buildBPW(buildingObj)
+
+    # 生成瓦作层
+    utils.outputMsg("Building Tiles...")
+    buildRooftile.buildTile(buildingObj)
     
     utils.focusObj(buildingObj)
     return

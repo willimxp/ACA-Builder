@@ -12,6 +12,7 @@ from .data import ACA_data_obj as acaData
 # 根据固定模板，创建新的台基
 def buildPlatform(buildingObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
+    bData.is_showPlatform = True
 
     # 1、创建地基===========================================================
     # 如果已有，先删除

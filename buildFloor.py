@@ -318,6 +318,7 @@ def buildPillers(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
+    bData.is_showPillers = True
 
     # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
     if bData.x_rooms % 2 == 0:
@@ -520,8 +521,9 @@ def buildFloor(buildingObj:bpy.types.Object):
     # funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
     # utils.fastRun(funproxy)
     
-    # # 生成屋顶
-    # utils.outputMsg("Building Roof...")
+    # 生成屋顶
+    utils.outputMsg("Building Roof...")
+    buildRoof.buildRoof(buildingObj)
     # funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
     # utils.fastRun(funproxy)
 

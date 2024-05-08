@@ -17,20 +17,27 @@ from . import acaLibrary
 # 如果已存在根节点，则一概清空重建
 # 暂无增量式更新，或局部更新
 def __setTileRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
-    # 屋顶层根节点
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT) 
+    # 设置目录
+    buildingColl = buildingObj.users_collection[0]
+    utils.setCollection('瓦作',parentColl=buildingColl) 
+    
     # 新建或清空根节点
     tileRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_TILE_ROOT)
-    if tileRootObj != None:
-        utils.deleteHierarchy(tileRootObj,del_parent=True)
-    # 创建屋顶根对象
-    bpy.ops.object.empty_add(
-        type='PLAIN_AXES',location=(0,0,0))
-    tileRootObj = bpy.context.object
-    tileRootObj.name = "瓦作层"
-    tileRootObj.parent = roofRootObj
-    tileRootObj.ACA_data['aca_obj'] = True
-    tileRootObj.ACA_data['aca_type'] = con.ACA_TYPE_TILE_ROOT
+    if tileRootObj == None:
+        # 创建屋顶根对象
+        bpy.ops.object.empty_add(
+            type='PLAIN_AXES',location=(0,0,0))
+        tileRootObj = bpy.context.object
+        tileRootObj.name = "瓦作层"
+        tileRootObj.ACA_data['aca_obj'] = True
+        tileRootObj.ACA_data['aca_type'] = con.ACA_TYPE_TILE_ROOT
+        # 绑定在屋顶根节点下
+        roofRootObj = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_ROOF_ROOT) 
+        tileRootObj.parent = roofRootObj
+    else:
+        utils.deleteHierarchy(tileRootObj)
+        utils.focusCollByObj(tileRootObj)
         
     return tileRootObj
 
@@ -205,9 +212,10 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
             resolution = con.CURVE_RESOLUTION,
             root_obj=tileRootObj
         )
-    utils.hideObj(sideCurve)
     # 设置origin
     utils.setOrigin(sideCurve,p0+offset)
+
+    utils.hideObj(sideCurve)
     return sideCurve
 
 # 绘制檐口线（直达子角梁中心），做为翼角瓦檐口终点
@@ -459,7 +467,9 @@ def __drawTileBool(
         if bData.roof_style == con.ROOF_XIESHAN:
             if n==1:
                 if direction == 'X':
-                    cutPoint.x = purlin_cross_points[-1].x
+                    cutPoint.x = (purlin_cross_points[-1].x 
+                        # 减半垄，以免歇山的瓦与垂脊穿模
+                        -bData.tile_width/2)
                     # 保持45度斜切，简单的从翼角做X/Y相同的位移
                     cutPoint.y = roof_qiao_point.y \
                         - (roof_qiao_point.x-cutPoint.x)
@@ -699,7 +709,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     
     # 合并所有的瓦片对象
     # 可以极大的提高重新生成时的效率（海量对象删除太慢了）
-    utils.joinObjects(tileList)
+    utils.joinObjects(tileList,fast=True)
         
     # 隐藏辅助对象
     utils.hideObj(tile_bool_obj)
@@ -1400,11 +1410,14 @@ def __buildRidge(buildingObj: bpy.types.Object,
 def buildTile(buildingObj: bpy.types.Object):
     # 添加或清空根节点
     __setTileRoot(buildingObj)
+
     # 清理垃圾数据
     utils.delOrphan()
 
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    # bData.is_showTiles = True
+    if not bData.is_showTiles: return
 
     # 计算桁檩定位点
     purlin_pos = buildRoof.__getPurlinPos(buildingObj)
@@ -1414,13 +1427,13 @@ def buildTile(buildingObj: bpy.types.Object):
     if bData.use_dg:
         del rafter_pos[0]
 
+    utils.outputMsg("Building Tiles Front/Back...")
     # 绘制前后坡瓦面网格
     tileGrid = __drawTileGrid(
         buildingObj,
         rafter_pos,
         direction='X')
     # 在网格上铺瓦
-    utils.outputMsg("Building Tiles Front/Back...")
     __arrayTileGrid(
         buildingObj,
         rafter_pos,
@@ -1429,13 +1442,13 @@ def buildTile(buildingObj: bpy.types.Object):
     
     # 仅庑殿、歇山做两山的瓦面
     if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
+        utils.outputMsg("Building Tiles Left/Right...")
         # 绘制两山瓦面网格
         tileGrid = __drawTileGrid(
             buildingObj,
             rafter_pos,
             direction='Y')
         # 在网格上铺瓦
-        utils.outputMsg("Building Tiles Left/Right...")
         __arrayTileGrid(
             buildingObj,
             rafter_pos,

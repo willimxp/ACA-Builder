@@ -4,6 +4,8 @@
 # 常数定义
 # 请务必注意，只读取该属性，不要修改属性
 
+DK = 0.08
+PD = DK * 6
 
 class ACA_Consts(object):
     # 继承object类，提供了__setattr__等方法
@@ -60,8 +62,12 @@ class ACA_Consts(object):
     EFANG_SMALL_Y = 3.2/6 # 小额枋厚，单位D
     PINGBAN_H = 2/6       # 平板枋高，单位D
     PINGBAN_Y = 3.5/6     # 平板枋厚，单位D
+
+    # 垫板
     BOARD_YOUE_H = 2/6    # 由额垫板高，单位D
     BOARD_YOUE_Y = 1/6    # 由额垫板厚，单位D
+    BOARD_HENG_H = 0.8*PD    # 金脊桁檩垫板高，D
+    BOARD_HENG_Y = 0.25*PD   # 金脊桁檩垫板厚，D
 
     # 门窗（马炳坚数据）
     KAN_DOWN_HEIGHT = 0.8   # 下槛高度，单位D
@@ -171,8 +177,10 @@ PINGBAN_H = 2       # 平板枋高
 PINGBAN_Y = 3.5     # 平板枋厚
 
 # 垫板类
-BOARD_YOUE_H = 2    # 由额垫板高
-BOARD_YOUE_Y = 1    # 由额垫板厚
+BOARD_YOUE_H = 2    # 由额垫板高，DK
+BOARD_YOUE_Y = 1    # 由额垫板厚，DK
+BOARD_HENG_H = 0.8  # 金脊桁檩垫板高，D
+BOARD_HENG_Y = 0.25 # 金脊桁檩垫板厚，D
 
 # 斗栱类
 BIG_DOU_KOU_TOP = 1.2   # 坐斗的斗口高度，也是第一根瓜栱的高度

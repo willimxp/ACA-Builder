@@ -10,38 +10,59 @@ from .data import ACA_data_obj as acaData
 from . import utils
 from . import buildFloor
 
-def buildDougong(buildingObj:bpy.types.Object): 
+# 添加斗栱根节点
+def __addDougongRoot(buildingObj:bpy.types.Object):
+    # 设置目录
+    buildingColl = buildingObj.users_collection[0]
+    utils.setCollection('斗栱',parentColl=buildingColl) 
+    
     # 载入数据
-    bData : acaData = buildingObj.ACA_data
-    if bData.aca_type != con.ACA_TYPE_BUILDING:
-        utils.showMessageBox("错误，输入的不是建筑根节点")
-        return
-    dk = bData.DK
-    roofRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    bData : acaData = buildingObj.ACA_data # 载入数据
 
     # 新建或清空根节点
-    dgrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_DG_ROOT)
+    dgrootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_DG_ROOT)
     if dgrootObj == None:
         # 创建根对象（empty）===========================================================
-        bpy.ops.object.empty_add(type='PLAIN_AXES')
-        dgrootObj = bpy.context.object
-        dgrootObj.name = "斗栱层"
         # 铺作起点高度在台基和柱头高度之上
         # root_z = bData.platform_height + bData.piller_height
         # 相对于屋顶层根节点
         root_z = -bData.dg_height
-        dgrootObj.location = (0,0,root_z)
+        bpy.ops.object.empty_add(
+            type='PLAIN_AXES',location=(0,0,root_z))
+        dgrootObj = bpy.context.object
+        dgrootObj.name = "斗栱层"
         dgrootObj.ACA_data['aca_obj'] = True
         dgrootObj.ACA_data['aca_type'] = con.ACA_TYPE_DG_ROOT
+        # 绑定在屋顶根节点下
+        roofRootObj = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_ROOF_ROOT)
         dgrootObj.parent = roofRootObj
     else:
         # 清空根节点
         utils.deleteHierarchy(dgrootObj)
         utils.focusCollByObj(dgrootObj)
 
+    return dgrootObj
+
+def buildDougong(buildingObj:bpy.types.Object): 
+    # 添加根节点以及目录
+    dgrootObj = __addDougongRoot(buildingObj)
+
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+
+    # 椽望定位依赖斗栱，强制生成
+    if bData.is_showBPW : bData.is_showDougong = True
+    # 用户可以暂时不生成斗栱
+    if not bData.is_showDougong: return
     # 如果不使用斗栱，以下直接跳过
     if not bData.use_dg: return
+    
+    if bData.aca_type != con.ACA_TYPE_BUILDING:
+        utils.showMessageBox("错误，输入的不是建筑根节点")
+        return
+    dk = bData.DK
 
     # todo：建造平板枋
 

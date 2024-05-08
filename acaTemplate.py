@@ -370,7 +370,7 @@ def fillTemplate(buildingObj:bpy.types.Object,
     # 绑定资产
     # 1. 指定资产目录
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('资产',parentColl=buildingColl)
+    coll = utils.setCollection('资产',parentColl=buildingColl)
     # 2. 指定资产根节点
     bpy.ops.object.empty_add(type='PLAIN_AXES')
     assetsObj = bpy.context.object

@@ -286,7 +286,10 @@ class ACA_OT_test(bpy.types.Operator):
         #     utils.fastRun(funproxy)
         # else:
         #     utils.showMessageBox("ERROR: 找不到建筑")
-        utils.joinObjects(context.object.children)
+        from mathutils import Vector,Euler
+        location = Vector((0,0,0))
+        dimention = Vector((0.1,2,0.1))
+        buildRoof.drawBeam(location,dimention,context.object)
 
         return {'FINISHED'}
     

@@ -84,7 +84,6 @@ def recurLayerCollection(layerColl, collName,is_like = False):
 def hideCollection(coll_name:str,
                    isShow=False,
                    parentColl:bpy.types.Collection=None):
-    
     if parentColl == None:
         layer_collection = bpy.context.view_layer.layer_collection
     else:
@@ -98,13 +97,22 @@ def hideCollection(coll_name:str,
         layer_collection, coll_name,is_like=True)
     if isShow:
         layerColl.exclude = False
+        #layerColl.hide_viewport = False
     else:
         layerColl.exclude = True
+        #layerColl.hide_viewport = True
 
 # 聚焦选中指定名称的目录
 def focusCollection(coll_name:str):
+    # 根据目录名称获取目录
     layer_collection = bpy.context.view_layer.layer_collection
     layerColl = recurLayerCollection(layer_collection, coll_name)
+    # 强制关闭目录隐藏属性，防止失焦
+    layerColl.exclude = False
+    layerColl.collection.hide_render = False
+    layerColl.collection.hide_viewport = False
+    layerColl.collection.hide_select = False
+    # 聚焦
     bpy.context.view_layer.active_layer_collection = layerColl
 
 # 聚焦选中指定名称的目录
@@ -149,9 +157,6 @@ def setCollection(name:str, IsClear=False,isRoot=False,
             # 清空collection，每次重绘
             for obj in coll.objects: 
                 bpy.data.objects.remove(obj)
-        # 强制关闭目录隐藏属性，防止失焦
-        coll.hide_viewport = False
-        #bpy.context.view_layer.layer_collection.children[coll_name].hide_viewport = False
         # 选中目录，防止用户手工选择其他目录而导致的失焦
         focusCollection(coll_name)
     
@@ -701,7 +706,7 @@ def addModifierMirror(object:bpy.types.Object,
 
 # 应用所有修改器
 def applyAllModifer(object:bpy.types.Object):
-    if len(object.modifiers) == 0: return
+    #if len(object.modifiers) == 0: return
     # high level
     focusObj(object)  
     bpy.ops.object.convert(target='MESH')
@@ -1190,16 +1195,18 @@ def setGN_Input(mod:bpy.types.NodesModifier,
 # 合并对个对象
 # https://blender.stackexchange.com/questions/13986/how-to-join-objects-with-python
 # https://docs.blender.org/api/current/bpy.ops.html#overriding-context
-def joinObjects(objList:List[bpy.types.Object]):
-    # 预处理，防止合并丢失信息
-    for ob in objList:
-        # 将曲线等对象转为mesh，否则曲线可能不被合并
-        if ob.type != 'MESH':
-            focusObj(ob)
-            bpy.ops.object.convert(target='MESH')
-        # 应用modifier，否则合并后会丢失
-        if len(ob.modifiers)>0 :
-            applyAllModifer(ob)
+def joinObjects(objList:List[bpy.types.Object],fast=False):
+    # 这个预处理在海量对象时，非常耗资源
+    if not fast:
+        # 预处理，防止合并丢失信息
+        for ob in objList:
+            # 将曲线等对象转为mesh，否则曲线可能不被合并
+            if ob.type != 'MESH':
+                focusObj(ob)
+                bpy.ops.object.convert(target='MESH')
+            # 应用modifier，否则合并后会丢失
+            if len(ob.modifiers)>0 :
+                applyAllModifer(ob)
     
     # 开始合并
     # 与上面的循环要做分开，否则context的选择状态会打架
@@ -1235,3 +1242,18 @@ def getRoot(object:bpy.types.Object):
                 bData:data.ACA_data_obj = buildingObj.ACA_data
 
     return buildingObj,bData,objData
+
+# 隐藏显示目录
+def hideLayer(context,name,isShow):
+    # 查找对应的建筑根节点，以便能区分不同建筑的组件，互不干扰
+    buildingObj,bData,objData = getRoot(context.object)
+    buildingColl = buildingObj.users_collection[0]
+    # 隐藏
+    hideCollection(name,
+        isShow=isShow,
+        parentColl=buildingColl)
+    # 恢复聚焦到根节点
+    focusObj(buildingObj)
+    # 立即刷新显示，否则可能因为需要刷新所有panel而有延迟感
+    redrawViewport()
+    return 

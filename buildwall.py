@@ -434,6 +434,7 @@ def resetWallLayout(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
+    bData.is_showWalls = True
     
     # 查找墙体布局节点
     wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)

@@ -62,6 +62,8 @@ class ACA_Consts(object):
     EFANG_SMALL_Y = 3.2/6 # 小额枋厚，单位D
     PINGBAN_H = 2/6       # 平板枋高，单位D
     PINGBAN_Y = 3.5/6     # 平板枋厚，单位D
+    HENGFANG_H = 3.6*DK   # 金脊枋高
+    HENGFANG_Y = 3*DK     # 金脊枋厚
 
     # 垫板
     BOARD_YOUE_H = 2/6    # 由额垫板高，单位D

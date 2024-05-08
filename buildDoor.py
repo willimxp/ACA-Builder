@@ -639,6 +639,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     else:
         # 槛窗与门轴对齐
         z = (geshan_height/2+windowsill_height)/2
+        
     menzhouObj = utils.addCylinder(
                 radius = con.MENZHOU_R*pd,
                 depth = menzhou_height,

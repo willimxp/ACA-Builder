@@ -186,13 +186,14 @@ def addCylinder(radius,depth,name,root_obj,
     cylinderObj.name = name
     cylinderObj.parent = root_obj
     cylinderObj.ACA_data.aca_obj = True
+    bpy.ops.object.shade_smooth_by_angle()
 
     # 将Origin置于底部
     if origin_at_bottom :
         bpy.ops.object.mode_set(mode = 'EDIT')
         bpy.ops.mesh.select_all(action = 'SELECT')
         bpy.ops.transform.translate(value=(0,0,depth/2))
-        bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.ops.object.mode_set(mode = 'OBJECT')    
 
     return cylinderObj
 

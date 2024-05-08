@@ -186,13 +186,44 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 purlin_length_x = purlin_pos[-1].x * 2
 
         # 3、创建桁对象
+        loc = (0,pCross.y,pCross.z)
         hengFB = utils.addCylinderHorizontal(
                 radius = purlin_r, 
                 depth = purlin_length_x,
-                location = (0,pCross.y,pCross.z), 
+                location = loc, 
                 name = "桁-前后",
                 root_obj = rafterRootObj
             )
+        # 桁垫板
+        loc = (0,pCross.y,
+               (pCross.z - con.HENG_COMMON_D*dk/2
+                - con.BOARD_HENG_H/2))
+        dim = (purlin_length_x,
+               con.BOARD_HENG_Y,
+               con.BOARD_HENG_H)
+        bpy.ops.mesh.primitive_cube_add(
+            location = loc
+        )
+        dianbanObj = bpy.context.object
+        dianbanObj.name = '垫板'
+        dianbanObj.dimensions = dim
+        dianbanObj.parent = rafterRootObj
+        # 桁枋
+        if n != 0:  # 正心桁下不做枋
+            loc = (0,pCross.y,
+                (pCross.z - con.HENG_COMMON_D*dk/2
+                    - con.BOARD_HENG_H
+                    - con.HENGFANG_H/2))
+            dim = (purlin_length_x,
+                con.HENGFANG_Y,
+                con.HENGFANG_H)
+            bpy.ops.mesh.primitive_cube_add(
+                location=loc
+            )
+            hengfangObj = bpy.context.object
+            hengfangObj.name = '金/脊枋'
+            hengfangObj.dimensions = dim
+            hengfangObj.parent = rafterRootObj
 
         # 4、前后镜像
         if n!=len(purlin_pos)-1:
@@ -202,6 +233,17 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     mirrorObj=rafterRootObj,
                     use_axis=(False,True,False)
                 )
+            utils.addModifierMirror(
+                    object=dianbanObj,
+                    mirrorObj=rafterRootObj,
+                    use_axis=(False,True,False)
+                )
+            if n != 0:
+                utils.addModifierMirror(
+                        object=hengfangObj,
+                        mirrorObj=rafterRootObj,
+                        use_axis=(False,True,False)
+                    )
         else: 
             # 最后一根脊桁添加伏脊木
             # 伏脊木为6变形（其实不是正六边形，上大下小，这里偷懒了）
@@ -250,18 +292,66 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     name = "桁-两山",
                     root_obj = rafterRootObj
                 )
+            utils.addModifierMirror(
+                    object=hengLR,
+                    mirrorObj=rafterRootObj,
+                    use_axis=(True,False,False)
+                )
+            # 庑殿山面做垫板和枋
+            # 歇山山面仅第一层做垫板
+            if (roofStyle == con.ROOF_WUDIAN 
+                or (roofStyle== con.ROOF_XIESHAN and n==0)):
+                # 桁垫板
+                loc = (pCross.x,0,
+                    (pCross.z - con.HENG_COMMON_D*dk/2
+                        - con.BOARD_HENG_H/2))
+                dim = (purlin_length_y,
+                    con.BOARD_HENG_Y,
+                    con.BOARD_HENG_H)
+                bpy.ops.mesh.primitive_cube_add(
+                    location = loc,
+                    rotation=Vector((0, 0, math.radians(90)))
+                )
+                dianbanObj = bpy.context.object
+                dianbanObj.name = '垫板'
+                dianbanObj.dimensions = dim
+                dianbanObj.parent = rafterRootObj
+                utils.addModifierMirror(
+                    object=dianbanObj,
+                    mirrorObj=rafterRootObj,
+                    use_axis=(True,False,False)
+                )
+                # 桁枋
+                if n != 0:  # 正心桁下不做枋
+                    loc = (pCross.x,0,
+                        (pCross.z - con.HENG_COMMON_D*dk/2
+                            - con.BOARD_HENG_H
+                            - con.HENGFANG_H/2))
+                    dim = (purlin_length_y,
+                        con.HENGFANG_Y,
+                        con.HENGFANG_H)
+                    bpy.ops.mesh.primitive_cube_add(
+                        location=loc,
+                        rotation=Vector((0, 0, math.radians(90)))
+                    )
+                    hengfangObj = bpy.context.object
+                    hengfangObj.name = '金/脊枋'
+                    hengfangObj.dimensions = dim
+                    hengfangObj.parent = rafterRootObj
+                    utils.addModifierMirror(
+                        object=hengfangObj,
+                        mirrorObj=rafterRootObj,
+                        use_axis=(True,False,False)
+                    )
 
             # 4、添加镜像
-            utils.addModifierMirror(
-                object=hengLR,
-                mirrorObj=rafterRootObj,
-                use_axis=(True,False,False)
-            )
+            
+            
     return
 
 # 绘制梁
 # 参考马炳坚p149
-def drawBeam(
+def __drawBeam(
         location:Vector,
         dimension:Vector,
         buildingObj:bpy.types.Object,
@@ -352,6 +442,71 @@ def drawBeam(
 
     return beamObj
 
+# 绘制角背
+def __drawJiaobei(shuzhuObj:bpy.types.Object):
+    # 载入数据
+    buildingObj = utils.getAcaParent(
+        shuzhuObj,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    
+    shuzhu_height = shuzhuObj.dimensions.z
+    # 仅柱高大于柱径才需要角背，否则直接返回
+    if shuzhu_height <= con.PILLER_CHILD*dk: 
+        return None
+    
+    # 计算尺寸
+    # 角背高度可以取1/2，也可以取1/3
+    if shuzhu_height/(con.PILLER_CHILD*dk) >2:
+        height = shuzhu_height/3
+    else:
+        height = shuzhu_height/2
+    # 角背长度取一个步架宽
+    rafterSpan = bData.y_total/bData.rafter_count
+    dim = Vector((
+        height/3,
+        rafterSpan,
+        height,
+    ))
+
+    # 位置
+    loc = (shuzhuObj.location.x,
+        shuzhuObj.location.y, # 对齐上一层的槫的Y位置
+        (shuzhuObj.location.z-shuzhu_height/2
+            + height/2))
+    bpy.ops.mesh.primitive_cube_add(
+        location = loc
+    )
+    jiaobeiObj = bpy.context.object
+    jiaobeiObj.name = '角背'
+    jiaobeiObj.parent = shuzhuObj.parent
+    jiaobeiObj.dimensions = dim
+    utils.applyTransfrom(jiaobeiObj,use_scale=True)
+    # 挤压两个角
+    bpy.ops.object.mode_set(mode='EDIT')
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh(bpy.context.object.data)
+    bpy.ops.mesh.select_mode(type = 'EDGE')
+    bm.edges.ensure_lookup_table()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bm.edges[5].select = True
+    bm.edges[11].select = True
+    bpy.ops.mesh.bevel(affect='EDGES',
+                offset_type='OFFSET',
+                offset=height/2,
+                segments=1,
+                )
+    bmesh.update_edit_mesh(bpy.context.object.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+    utils.copyModifiers(
+        from_0bj=shuzhuObj,
+        to_obj=jiaobeiObj)
+    
+    return jiaobeiObj
+
 # 营造梁架
 # 1、只做了通檐的大梁，没有做抱头梁形式
 def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
@@ -380,11 +535,15 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 beam_x = net_x[x]
                 beam_z = purlin_pos[n].z
                 beam_l = purlin_pos[n].y*2 + con.HENG_COMMON_D*dk*2
+                beam_name = '梁'
                 
                 # 歇山做特殊处理
                 if roofStyle == con.ROOF_XIESHAN:
-                    # 歇山的山面梁坐在金桁的X位置
+                    if n==0 and x in (0,beamRange[-1]): 
+                        # 歇山山面一层不做梁
+                        continue
                     if n>0 :
+                        # 歇山的山面梁坐在金桁的X位置
                         if x == 0:
                             beam_x = -purlin_pos[1].x
                         if x == beamRange[-1]:
@@ -395,6 +554,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                             + con.BEAM_HEIGHT*pd \
                             - con.HENG_COMMON_D*dk/2
                         beam_l = purlin_pos[n].y*2
+                        beam_name = '踩步金'
 
                 beam_loc = Vector((beam_x,0,beam_z))
                 beam_dim = Vector((
@@ -402,10 +562,11 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     beam_l,
                     con.BEAM_HEIGHT*pd
                 ))
-                beamCopyObj = drawBeam(
+                beamCopyObj = __drawBeam(
                     location=beam_loc,
                     dimension=beam_dim,
                     buildingObj=buildingObj,
+                    name = beam_name
                 )
                 beamCopyObj.parent= rafterRootObj
                 
@@ -443,12 +604,18 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     con.PILLER_CHILD*dk,
                     shuzhu_height
                 ))
+                utils.applyTransfrom(
+                    shuzhuCopyObj,use_scale=True)
                 if n!=len(purlin_pos)-1:
                     #镜像
-                    mod = shuzhuCopyObj.modifiers.new(name='mirror', type='MIRROR')
+                    mod = shuzhuCopyObj.modifiers.new(
+                        name='mirror', type='MIRROR')
                     mod.mirror_object = rafterRootObj
                     mod.use_axis[0] = False
-                    mod.use_axis[1] = True            
+                    mod.use_axis[1] = True 
+                # 蜀柱添加角背
+                __drawJiaobei(shuzhuCopyObj)
+                           
     return
 
 # 根据给定的宽度，计算最佳的椽当宽度
@@ -636,6 +803,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                         Vector((con.JIAOLIANG_Y*dk/2,0,0)),
                     clear_outer=True
             ) 
+            bpy.ops.object.shade_smooth_by_angle()
         
 
         # 五、镜像必须放在裁剪之后，才能做上下对称     
@@ -722,6 +890,7 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
                         Vector((con.JIAOLIANG_Y*dk/2,0,0)),
                     clear_inner=True
             ) 
+            bpy.ops.object.shade_smooth_by_angle()
         
         # 镜像
         utils.addModifierMirror(

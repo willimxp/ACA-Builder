@@ -14,6 +14,48 @@ from . import buildFloor
 from . import buildDougong
 from . import buildRooftile
 
+# 添加屋顶根节点
+def __addRoofRoot(buildingObj:bpy.types.Object):
+    # 设置目录
+    buildingColl = buildingObj.users_collection[0]
+    utils.focusCollection(buildingColl.name)
+
+    # 设置根节点
+    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT) 
+    if roofRootObj != None:
+        utils.deleteHierarchy(roofRootObj)
+    else:
+        # 创建根节点
+        bpy.ops.object.empty_add(type='PLAIN_AXES')
+        roofRootObj = bpy.context.object
+        roofRootObj.name = '屋顶层'
+        roofRootObj.parent = buildingObj
+        roofRootObj.ACA_data['aca_obj'] = True
+        roofRootObj.ACA_data['aca_type'] = con.ACA_TYPE_ROOF_ROOT
+
+    # 以挑檐桁下皮为起始点
+    bData : acaData = buildingObj.ACA_data # 载入数据
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    tile_base = bData.platform_height \
+                + bData.piller_height
+    # 如果有斗栱，抬高斗栱高度
+    if bData.use_dg:
+        tile_base += bData.dg_height
+        # 是否使用平板枋
+        if bData.use_pingbanfang:
+            tile_base += con.PINGBANFANG_H
+    else:
+        # 以大梁抬升
+        # tile_base += con.BEAM_HEIGHT*pd
+        # 实际为金桁垫板高度+半桁
+        tile_base += con.BOARD_HENG_H + con.HENG_COMMON_D*dk/2
+        bData['use_pingbanfang'] = False
+    
+    roofRootObj.location = (0,0,tile_base)       
+
+    return roofRootObj
+
 # 设置“梁椽望”根节点
 def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 设置目录
@@ -2648,43 +2690,6 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     
     return
 
-# 添加屋顶根节点
-def __addRoofRoot(buildingObj:bpy.types.Object):
-    # 设置目录
-    buildingColl = buildingObj.users_collection[0]
-    utils.focusCollection(buildingColl.name)
-
-    # 设置根节点
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT) 
-    if roofRootObj != None:
-        utils.deleteHierarchy(roofRootObj)
-    else:
-        # 创建根节点
-        bpy.ops.object.empty_add(type='PLAIN_AXES')
-        roofRootObj = bpy.context.object
-        roofRootObj.name = '屋顶层'
-        roofRootObj.parent = buildingObj
-        roofRootObj.ACA_data['aca_obj'] = True
-        roofRootObj.ACA_data['aca_type'] = con.ACA_TYPE_ROOF_ROOT
-
-    # 以挑檐桁下皮为起始点
-    bData : acaData = buildingObj.ACA_data # 载入数据
-    dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
-    tile_base = bData.platform_height \
-                + bData.piller_height
-    # 如果有斗栱，抬高斗栱高度
-    if bData.use_dg:
-        tile_base += bData.dg_height
-    else:
-        # 以大梁抬升
-        # tile_base += con.BEAM_HEIGHT*pd
-        # 实际为金桁垫板高度+半桁
-        tile_base += con.BOARD_HENG_H + con.HENG_COMMON_D*dk/2
-    roofRootObj.location = (0,0,tile_base)       
-
-    return roofRootObj
-
 # 营造象眼板
 def __buildXiangyanBan(buildingObj: bpy.types.Object,
                  purlin_pos):
@@ -3072,7 +3077,7 @@ def __buildBPW(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     # 屋瓦依赖于椽望，强制生成
-    if bData.is_showTiles : bData.is_showBPW=True
+    if bData.is_showTiles : bData['is_showBPW']=True
     # 可以根据用户需要而不生成
     if not bData.is_showBPW: return
 
@@ -3114,6 +3119,7 @@ def __buildBPW(buildingObj:bpy.types.Object):
 def buildRoof(buildingObj:bpy.types.Object):
     # 清理垃圾数据
     utils.delOrphan()    
+
     # 添加“屋顶层”根节点
     # 斗栱层、梁椽望、瓦作都绑定在该节点下，便于统一重新生成
     # 这三层的结构紧密相连，无法解耦，只能一起生成，一起刷新

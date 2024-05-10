@@ -425,7 +425,11 @@ class ACA_PT_dougong(bpy.types.Panel):
             if buildingObj == None: return
             row = layout.row()
             # 是否使用斗栱
-            row.prop(bData, "use_dg")
+            col = row.column()
+            col.prop(bData, "use_dg")
+            # 是否使用平板枋
+            col = row.column()
+            col.prop(bData, "use_pingbanfang")
 
             # 斗栱属性
             box = layout.box()

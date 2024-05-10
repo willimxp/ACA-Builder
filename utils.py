@@ -109,6 +109,7 @@ def focusCollection(coll_name:str):
     layerColl = recurLayerCollection(layer_collection, coll_name)
     # 强制关闭目录隐藏属性，防止失焦
     layerColl.exclude = False
+    layerColl.hide_viewport = False
     layerColl.collection.hide_render = False
     layerColl.collection.hide_viewport = False
     layerColl.collection.hide_select = False
@@ -203,10 +204,12 @@ def copySimplyObject(
         name="", 
         parentObj:bpy.types.Object = None, 
         location=(0,0,0),
-        rotation=(0,0,0)):
+        rotation=(0,0,0),
+        singleUser=False,):
     # 复制基本信息
     newObj:bpy.types.Object = sourceObj.copy()
-    newObj.data = sourceObj.data.copy()
+    if singleUser :
+        newObj.data = sourceObj.data.copy()
     if name=="":
         newObj.name = sourceObj.name
     else:
@@ -215,6 +218,7 @@ def copySimplyObject(
     newObj.rotation_euler = rotation
     newObj.parent = parentObj
     bpy.context.collection.objects.link(newObj)     
+    showObj(newObj)
     return newObj
 
 # 复制对象（仅复制instance，包括modifier）
@@ -241,6 +245,7 @@ def copyObject(sourceObj:bpy.types.Object,
         newObj.name = name
     newObj.location = location
     newObj.parent = parentObj
+    newObj.scale = sourceObj.scale
     bpy.context.collection.objects.link(newObj) 
     # 复制子对象
     if len(sourceObj.children) > 0 :
@@ -250,14 +255,6 @@ def copyObject(sourceObj:bpy.types.Object,
                         newObj, 
                         child.location,
                         singleUser) 
-    
-    # # 复制modifier
-    # bpy.ops.object.select_all(action='DESELECT')
-    # sourceObj.select_set(True)
-    # bpy.context.view_layer.objects.active = sourceObj
-    # newObj.select_set(True)
-    # bpy.ops.object.make_links_data(type='MODIFIERS') 
-    # bpy.context.view_layer.objects.active = newObj
 
     # 恢复原对象的隐藏属性
     sourceObj.hide_set(IsHideEye)

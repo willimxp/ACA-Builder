@@ -143,6 +143,19 @@ def update_dougong(self, context:bpy.types.Context):
         utils.outputMsg("updated platform failed, context.object should be buildingObj")
     return
 
+# 刷新斗栱布局
+def update_dgHeight(self, context:bpy.types.Context):
+    # 确认选中为building节点
+    buildingObj,bdata,odata = utils.getRoot(context.object)
+    if buildingObj != None:
+        from . import buildDougong
+        # 重新生成屋顶
+        funproxy = partial(buildDougong.update_dgHeight,buildingObj=buildingObj)
+        utils.fastRun(funproxy)
+    else:
+        utils.outputMsg("updated platform failed, context.object should be buildingObj")
+    return
+
 def update_roof(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
@@ -397,6 +410,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name="使用斗栱",
             update=update_roof
         )# type: ignore 
+    use_pingbanfang: bpy.props.BoolProperty(
+            default=True,
+            name="使用平板枋",
+            update=update_roof
+        )# type: ignore 
     dg_piller_source:bpy.props.PointerProperty(
             name = "柱头斗栱",
             type = bpy.types.Object,
@@ -421,6 +439,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name="斗栱高度",    # 取挑檐桁下皮高度
             default=0.99,
             min=0.01,
+            update = update_dgHeight,
+        )# type: ignore 
+    dg_scale:bpy.props.FloatVectorProperty(
+            name="斗栱缩放",    # 斗栱缩放
+            default=(1,1,1),
         )# type: ignore 
     dg_gap:bpy.props.FloatProperty(
             name="斗栱间距",    # 斗栱间距

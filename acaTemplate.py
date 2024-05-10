@@ -9,7 +9,10 @@ import xml.etree.ElementTree as ET
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from . import utils
-from . import acaLibrary
+
+templateFolder = 'template'
+xmlFileName = 'simplyhouse.xml'
+blenderFileName = 'acaAssets.blend'
 
 # 外部定义的建筑模板数据
 class templateData:
@@ -76,7 +79,7 @@ class templateData:
 # 解析XML，获取模版列表
 def getTemplateList():
     # 载入XML
-    path = os.path.join('template', 'simplyhouse.xml')
+    path = os.path.join(templateFolder, xmlFileName)
     tree = ET.parse(path)
     root = tree.getroot()
     templates = root.findall('template')
@@ -94,7 +97,7 @@ def getTemplateList():
 # name：模版名称
 def getTemplate(name,doukou=0)->templateData:
     # 解析XML配置模版
-    path = os.path.join('template', 'simplyhouse.xml')
+    path = os.path.join(templateFolder, xmlFileName)
     tree = ET.parse(path)
     root = tree.getroot()
     templates = root.findall('template')
@@ -334,6 +337,34 @@ def getTemplate(name,doukou=0)->templateData:
                 
     return tData    
 
+# 载入Blender中的资产
+# 参考教程：https://b3d.interplanety.org/en/appending-all-objects-from-the-external-blend-file-to-the-scene-with-blender-python-api/
+# 参考文档：https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html
+def loadAssets(assetName : str,parent:bpy.types.Object,hide=True):
+    #print("Loading " + assetName + '...')
+    # 打开资产文件
+    filepath = os.path.join(templateFolder, blenderFileName)
+
+    # 简化做法，效率更高，但没有关联子对象
+    with bpy.data.libraries.load(filepath) as (data_from, data_to):
+        data_to.objects = [name for name in data_from.objects if name.startswith(assetName)]
+    for obj in data_to.objects:
+        newobj = utils.copyObject(
+            sourceObj=obj,
+            parentObj=parent,
+        )
+        if hide:
+            utils.hideObj(newobj)
+        else:
+            utils.showObj(newobj)
+        for child in newobj.children:
+            if hide:
+                utils.hideObj(child)
+            else:
+                utils.showObj(child)
+
+    return newobj
+
 # 将模版参数填充入buildingObj节点中
 def fillTemplate(buildingObj:bpy.types.Object,
                     template:templateData):
@@ -383,137 +414,134 @@ def fillTemplate(buildingObj:bpy.types.Object,
     # 柱形样式
     if template.PILLER_SOURCE != "":
         piller_base:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PILLER_SOURCE,assetsObj)
+            loadAssets(template.PILLER_SOURCE,assetsObj)
         bData['piller_source'] = piller_base
     # 墙体样式
     if template.WALL_SOURCE != "":
         wall_base:bpy.types.Object = \
-            acaLibrary.loadAssets(template.WALL_SOURCE,assetsObj)
+            loadAssets(template.WALL_SOURCE,assetsObj)
         bData['wall_source'] = wall_base
     # 隔扇棂心样式
     if template.LINGXIN_SOURCE != "" :
         lingxin_base:bpy.types.Object = \
-            acaLibrary.loadAssets(template.LINGXIN_SOURCE,assetsObj)
+            loadAssets(template.LINGXIN_SOURCE,assetsObj)
         bData['lingxin_source'] = lingxin_base
     # 斗栱样式
     if template.USE_DG:
         bData['use_dg'] = True
         if template.DG_PILLER_SOURCE != "" :
             dg_piller_base:bpy.types.Object = \
-                acaLibrary.loadAssets(template.DG_PILLER_SOURCE,assetsObj)
+                loadAssets(template.DG_PILLER_SOURCE,assetsObj)
             bData['dg_piller_source'] = dg_piller_base
         if template.DG_FILLGAP_SOURCE != "" :
             dg_fillgap_base:bpy.types.Object = \
-                acaLibrary.loadAssets(template.DG_FILLGAP_SOURCE,assetsObj)
+                loadAssets(template.DG_FILLGAP_SOURCE,assetsObj)
             bData['dg_fillgap_source'] = dg_fillgap_base
         if template.DG_CORNER_SOURCE != "" :
             dg_corner_base:bpy.types.Object = \
-                acaLibrary.loadAssets(template.DG_CORNER_SOURCE,assetsObj)
+                loadAssets(template.DG_CORNER_SOURCE,assetsObj)
             bData['dg_corner_source'] = dg_corner_base
     else:
         bData['use_dg'] = False
     # 瓦片样式
     if template.FLATTILE_SOURCE != "" :
         flatTile_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.FLATTILE_SOURCE,assetsObj)
+            loadAssets(template.FLATTILE_SOURCE,assetsObj)
         bData['flatTile_source'] = flatTile_source
     if template.CIRCULARTILE_SOURCE != "" :
         circularTile_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.CIRCULARTILE_SOURCE,assetsObj)
+            loadAssets(template.CIRCULARTILE_SOURCE,assetsObj)
         bData['circularTile_source'] = circularTile_source
     if template.EAVETILE_SOURCE != "" :
         eaveTile_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.EAVETILE_SOURCE,assetsObj)
+            loadAssets(template.EAVETILE_SOURCE,assetsObj)
         bData['eaveTile_source'] = eaveTile_source
     if template.DRIPTILE_SOURCE != "" :
         dripTile_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.DRIPTILE_SOURCE,assetsObj)
+            loadAssets(template.DRIPTILE_SOURCE,assetsObj)
         bData['dripTile_source'] = dripTile_source
 
     if template.RIDGETOP_SOURCE != "" :
         ridgeTop_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.RIDGETOP_SOURCE,assetsObj)
+            loadAssets(template.RIDGETOP_SOURCE,assetsObj)
         bData['ridgeTop_source'] = ridgeTop_source
     if template.RIDGEBACK_SOURCE != "" :
         ridgeBack_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.RIDGEBACK_SOURCE,assetsObj)
+            loadAssets(template.RIDGEBACK_SOURCE,assetsObj)
         bData['ridgeBack_source'] = ridgeBack_source
     if template.RIDGEFRONT_SOURCE != "" :
         ridgeFront_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.RIDGEFRONT_SOURCE,assetsObj)
+            loadAssets(template.RIDGEFRONT_SOURCE,assetsObj)
         bData['ridgeFront_source'] = ridgeFront_source
     if template.RIDGEEND_SOURCE != "" :
         ridgeEnd_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.RIDGEEND_SOURCE,assetsObj)
+            loadAssets(template.RIDGEEND_SOURCE,assetsObj)
         bData['ridgeEnd_source'] = ridgeEnd_source
     
     if template.BOFENG_SOURCE != "" :
         bofeng_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.BOFENG_SOURCE,assetsObj)
+            loadAssets(template.BOFENG_SOURCE,assetsObj)
         bData['bofeng_source'] = bofeng_source
 
     if template.CHIWEN_SOURCE != "" :
         chiwen_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.CHIWEN_SOURCE,assetsObj)
+            loadAssets(template.CHIWEN_SOURCE,assetsObj)
         bData['chiwen_source'] = chiwen_source
     
     if template.CHUISHOU_SOURCE != "" :
         chuishou_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.CHUISHOU_SOURCE,assetsObj)
+            loadAssets(template.CHUISHOU_SOURCE,assetsObj)
         bData['chuishou_source'] = chuishou_source
 
     if template.TAOSHOU_SOURCE != "" :
         taoshou_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.TAOSHOU_SOURCE,assetsObj)
+            loadAssets(template.TAOSHOU_SOURCE,assetsObj)
         bData['taoshou_source'] = taoshou_source
 
     if template.PAOSHOU_0_SOURCE != "" :
         paoshou_0_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PAOSHOU_0_SOURCE,assetsObj)
+            loadAssets(template.PAOSHOU_0_SOURCE,assetsObj)
         bData['paoshou_0_source'] = paoshou_0_source
     if template.PAOSHOU_1_SOURCE != "" :
         paoshou_1_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PAOSHOU_1_SOURCE,assetsObj)
+            loadAssets(template.PAOSHOU_1_SOURCE,assetsObj)
         bData['paoshou_1_source'] = paoshou_1_source
     if template.PAOSHOU_2_SOURCE != "" :
         paoshou_2_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PAOSHOU_2_SOURCE,assetsObj)
+            loadAssets(template.PAOSHOU_2_SOURCE,assetsObj)
         bData['paoshou_2_source'] = paoshou_2_source
     if template.PAOSHOU_3_SOURCE != "" :
         paoshou_3_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PAOSHOU_3_SOURCE,assetsObj)
+            loadAssets(template.PAOSHOU_3_SOURCE,assetsObj)
         bData['paoshou_3_source'] = paoshou_3_source
     if template.PAOSHOU_4_SOURCE != "" :
         paoshou_4_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PAOSHOU_4_SOURCE,assetsObj)
+            loadAssets(template.PAOSHOU_4_SOURCE,assetsObj)
         bData['paoshou_4_source'] = paoshou_4_source
     if template.PAOSHOU_5_SOURCE != "" :
         paoshou_5_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PAOSHOU_5_SOURCE,assetsObj)
+            loadAssets(template.PAOSHOU_5_SOURCE,assetsObj)
         bData['paoshou_5_source'] = paoshou_5_source
     if template.PAOSHOU_6_SOURCE != "" :
         paoshou_6_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PAOSHOU_6_SOURCE,assetsObj)
+            loadAssets(template.PAOSHOU_6_SOURCE,assetsObj)
         bData['paoshou_6_source'] = paoshou_6_source
     if template.PAOSHOU_7_SOURCE != "" :
         paoshou_7_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PAOSHOU_7_SOURCE,assetsObj)
+            loadAssets(template.PAOSHOU_7_SOURCE,assetsObj)
         bData['paoshou_7_source'] = paoshou_7_source
     if template.PAOSHOU_8_SOURCE != "" :
         paoshou_8_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PAOSHOU_8_SOURCE,assetsObj)
+            loadAssets(template.PAOSHOU_8_SOURCE,assetsObj)
         bData['paoshou_8_source'] = paoshou_8_source
     if template.PAOSHOU_9_SOURCE != "" :
         paoshou_9_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PAOSHOU_9_SOURCE,assetsObj)
+            loadAssets(template.PAOSHOU_9_SOURCE,assetsObj)
         bData['paoshou_9_source'] = paoshou_9_source
     if template.PAOSHOU_10_SOURCE != "" :
         paoshou_10_source:bpy.types.Object = \
-            acaLibrary.loadAssets(template.PAOSHOU_10_SOURCE,assetsObj)
+            loadAssets(template.PAOSHOU_10_SOURCE,assetsObj)
         bData['paoshou_10_source'] = paoshou_10_source
-    
-
-    
 
 # 根据panel中DK的改变，更新整体设计参数
 def updateTemplateByDK(dk,buildingObj:bpy.types.Object):

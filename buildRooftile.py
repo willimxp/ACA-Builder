@@ -9,9 +9,9 @@ from mathutils import Vector,Euler,Matrix
 
 from . import utils
 from . import buildRoof
+from . import acaTemplate
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
-from . import acaLibrary
 
 # 创建瓦作层根节点
 # 如果已存在根节点，则一概清空重建
@@ -404,7 +404,7 @@ def __drawTileGrid(
     # 这里采用几何节点实现，利用了resample curve节点，可以生成均匀分布的网格
     # 而python中暂未找到在curve上均匀分配的API
     # 连接资产blender文件中的瓦面对象，直接放到“瓦作层”节点下
-    tileGrid:bpy.types.Object = acaLibrary.loadAssets(
+    tileGrid:bpy.types.Object = acaTemplate.loadAssets(
         "瓦面",tileRootObj,hide=False)
     # 瓦面要与辅助线重合，并上移一个大连檐高度
     tileGrid.location = TileCurve.location
@@ -1408,11 +1408,10 @@ def __buildRidge(buildingObj: bpy.types.Object,
 # 对外的统一调用接口
 # 一次性重建所有的瓦做
 def buildTile(buildingObj: bpy.types.Object):
-    # 添加或清空根节点
-    __setTileRoot(buildingObj)
-
     # 清理垃圾数据
     utils.delOrphan()
+    # 添加或清空根节点
+    __setTileRoot(buildingObj)
 
     # 载入数据
     bData : acaData = buildingObj.ACA_data

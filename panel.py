@@ -435,6 +435,8 @@ class ACA_PT_dougong(bpy.types.Panel):
             row = box.row()
             row.prop(bData, "dg_height") # 斗栱高度
             row = box.row()
+            row.prop(bData, "dg_gap") # 斗栱间距
+            row = box.row()
             row.prop(bData, "dg_piller_source") # 柱头斗栱
             row = box.row()
             row.prop(bData, "dg_fillgap_source") # 补间斗栱

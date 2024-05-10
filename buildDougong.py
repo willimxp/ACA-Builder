@@ -51,6 +51,10 @@ def buildDougong(buildingObj:bpy.types.Object):
 
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    if bData.aca_type != con.ACA_TYPE_BUILDING:
+        utils.showMessageBox("错误，输入的不是建筑根节点")
+        return
+    dk = bData.DK
 
     # 椽望定位依赖斗栱，强制生成
     if bData.is_showBPW : bData.is_showDougong = True
@@ -58,80 +62,74 @@ def buildDougong(buildingObj:bpy.types.Object):
     if not bData.is_showDougong: return
     # 如果不使用斗栱，以下直接跳过
     if not bData.use_dg: return
-    
-    if bData.aca_type != con.ACA_TYPE_BUILDING:
-        utils.showMessageBox("错误，输入的不是建筑根节点")
-        return
-    dk = bData.DK
 
     # todo：建造平板枋
 
     # 3、布置斗栱/铺作======================================================
+    # 获取地盘数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
-    if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
-        # 庑殿/歇山：做转角斗栱/角科
-        if bData.dg_corner_source != None:
-            dgCornerObj:bpy.types.Object = bData.dg_corner_source
-            # 四个角柱坐标
-            dgCornerArray = [
-                [net_x[-1], net_y[0]],
-                [net_x[-1], net_y[-1]],
-                [net_x[0], net_y[-1]],
-                [net_x[0], net_y[0]]
-            ]
-            for n in range(len(dgCornerArray)) :
-                loc = (dgCornerArray[n][0],dgCornerArray[n][1],0)
-                dgCornerCopy:bpy.types.Object = utils.copyObject(
-                    sourceObj = dgCornerObj,
-                    name = "转角斗栱",
-                    location=loc,
-                    parentObj = dgrootObj
-                    )
-                dgCornerCopy.rotation_euler.z = math.radians(n * 90)
+
+    # 转角斗栱，仅用于庑殿/歇山
+    if (bData.roof_style in (
+            con.ROOF_WUDIAN,con.ROOF_XIESHAN)
+            and bData.dg_corner_source != None):
+        # 四个角柱坐标
+        dgCornerArray = (
+            (net_x[-1], net_y[0],0),
+            (net_x[-1], net_y[-1],0),
+            (net_x[0], net_y[-1],0),
+            (net_x[0], net_y[0],0)
+        )
+        for n in range(len(dgCornerArray)) :
+            dgCornerCopy:bpy.types.Object = utils.copyObject(
+                sourceObj = bData.dg_corner_source,
+                name = "转角斗栱",
+                location = dgCornerArray[n],
+                parentObj = dgrootObj
+                )
+            dgCornerCopy.rotation_euler.z = math.radians(n * 90)
         
-    # 柱头斗栱/柱头科
+    # 柱头斗栱
     if bData.dg_piller_source != None:
-        dgPillerObj:bpy.types.Object = bData.dg_piller_source
+        # 前后坡的柱头斗栱
         if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
             # 庑殿/歇山有转角斗栱，所以四角柱头不做斗栱
             dgRange = range(1,len(net_x)-1) 
         else:
             # 硬山/悬山做到最后一个柱头
             dgRange = range(len(net_x)) 
-        # 下侧
         for n in dgRange : 
+            # 南侧
             dgPillerCopy:bpy.types.Object = utils.copyObject(
-                sourceObj = dgPillerObj,
+                sourceObj = bData.dg_piller_source,
                 name = "柱头斗栱",
                 location=(net_x[n],net_y[0],0),
                 parentObj = dgrootObj
                 )
             dgPillerCopy.rotation_euler.z = math.radians(0)
-        # 上侧
-        for n in dgRange : 
+            # 北侧
             dgPillerCopy:bpy.types.Object = utils.copyObject(
-                sourceObj = dgPillerObj,
+                sourceObj = bData.dg_piller_source,
                 name = "柱头斗栱",
                 location=(net_x[n],net_y[-1],0),
                 parentObj = dgrootObj
                 )
             dgPillerCopy.rotation_euler.z = math.radians(180)
         
+        # 两山的柱头斗栱，仅庑殿/歇山做两山的斗栱
         if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
-            # 仅庑殿/歇山做两山的斗栱
-            # 右侧
             for n in range(len(net_y)-2) : 
+                # 东侧
                 dgPillerCopy:bpy.types.Object = utils.copyObject(
-                    sourceObj = dgPillerObj,
+                    sourceObj = bData.dg_piller_source,
                     name = "柱头斗栱",
                     location=(net_x[-1],net_y[n+1],0),
                     parentObj = dgrootObj
                     )
                 dgPillerCopy.rotation_euler.z = math.radians(90)
-            # 左侧
-            for n in range(len(net_y)-2) : 
+                # 西侧
                 dgPillerCopy:bpy.types.Object = utils.copyObject(
-                    sourceObj = dgPillerObj,
+                    sourceObj = bData.dg_piller_source,
                     name = "柱头斗栱",
                     location=(net_x[0],net_y[-n-2],0),
                     parentObj = dgrootObj
@@ -140,18 +138,20 @@ def buildDougong(buildingObj:bpy.types.Object):
     
     # 补间斗栱/平身科
     if bData.dg_fillgap_source != '' :
-        dgFillObj:bpy.types.Object = bData.dg_fillgap_source
-        # 前后檐
+        # 前后坡的补间斗拱
         for n in range(len(net_x)-1) : 
-            # 求平身科攒数
+            # 计算攒数
             pStart = net_x[n]
             pEnd = net_x[n+1]
-            dougong_count =  round(abs(pEnd - pStart) / (con.DOUGONG_SPAN * dk)) # 向下取整
+            # dougong_count =  round(abs(pEnd - pStart) / (con.DOUGONG_SPAN * dk)) # 向下取整
+            dougong_count =  math.floor(abs(pEnd - pStart) / bData.dg_gap) 
+            # 如果间距过大，可能无需补间斗栱
+            if dougong_count == 0 : continue
             dougong_span = abs(pEnd - pStart) / dougong_count
             for m in range(1,dougong_count):
                 # 上侧
                 dgFillCopy:bpy.types.Object = utils.copyObject(
-                    sourceObj = dgFillObj,
+                    sourceObj = bData.dg_fillgap_source,
                     name = "补间斗栱",
                     location=(net_x[n] + dougong_span * m,
                                 net_y[-1],0),
@@ -160,7 +160,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                 dgFillCopy.rotation_euler.z = math.radians(180)
                 # 下侧
                 dgFillCopy:bpy.types.Object = utils.copyObject(
-                    sourceObj = dgFillObj,
+                    sourceObj = bData.dg_fillgap_source,
                     name = "补间斗栱",
                     location=(net_x[n] + dougong_span * m,
                                 net_y[0],0),
@@ -174,12 +174,15 @@ def buildDougong(buildingObj:bpy.types.Object):
                 # 求平身科攒数
                 pStart = net_y[n]
                 pEnd = net_y[n+1]
-                dougong_count =  math.floor(abs(pEnd - pStart) / (con.DOUGONG_SPAN * dk)) # 向下取整
+                #dougong_count =  math.floor(abs(pEnd - pStart) / (con.DOUGONG_SPAN * dk)) # 向下取整
+                dougong_count =  math.floor(abs(pEnd - pStart) / bData.dg_gap) 
+                # 如果间距过大，可能无需补间斗栱
+                if dougong_count == 0 : continue
                 dougong_span = abs(pEnd - pStart) / dougong_count
                 for m in range(1,dougong_count):
                     # 左侧
                     dgFillCopy:bpy.types.Object = utils.copyObject(
-                        sourceObj = dgFillObj,
+                        sourceObj = bData.dg_fillgap_source,
                         name = "补间斗栱",
                         location=(net_x[0],
                             net_y[n] + dougong_span * m,0),
@@ -188,7 +191,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                     dgFillCopy.rotation_euler.z = math.radians(270)
                     # 右侧
                     dgFillCopy:bpy.types.Object = utils.copyObject(
-                        sourceObj = dgFillObj,
+                        sourceObj = bData.dg_fillgap_source,
                         name = "补间斗栱",
                         location=(net_x[-1],
                             net_y[n] + dougong_span * m,0),

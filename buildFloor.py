@@ -484,8 +484,6 @@ def buildFloor(buildingObj:bpy.types.Object):
     # 清理数据
     utils.outputMsg("清理数据...")
     utils.delOrphan()
-
-    utils.console_clear()
     # 定位到collection，如果没有则新建
     utils.setCollection(con.ROOT_COLL_NAME,isRoot=True)
 

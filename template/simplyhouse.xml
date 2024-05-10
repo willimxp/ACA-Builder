@@ -63,9 +63,9 @@
         </frame>
         <!--斗栱设置-->
         <dougong>
-            <piller_source>四铺作插昂柱头</piller_source>
-            <fillgap_source>四铺作插昂柱头</fillgap_source>
-            <corner_source>四铺作插昂转角</corner_source>
+            <piller_source>四铺作插昂柱头.join</piller_source>
+            <fillgap_source>四铺作插昂柱头.join</fillgap_source>
+            <corner_source>四铺作插昂转角.asset</corner_source>
         </dougong>
         <!--屋顶设置-->
         <roof>

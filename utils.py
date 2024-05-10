@@ -379,26 +379,17 @@ def deleteHierarchy(parent_obj:bpy.types.Object,del_parent=False):
             names.add(child.name)
             if child.children:
                 get_child_names(child)
-
     get_child_names(obj)
     
     # 是否删除根节点？
     if del_parent:
         names.add(parent_obj.name)
     objects = bpy.data.objects
-    # Remove the animation from the all the child objects
     if names:
-        #outputMsg("object removing...")
         for child_name in names:
-            # bpy.data.objects[child_name].animation_data_clear()
-            # objects[child_name].select_set(state=True)
-            # utils.outputMsg("remove child： " +child_name)
             bpy.data.objects.remove(objects[child_name])
-        #outputMsg("object removed")
-        # utils.outputMsg ("Successfully deleted object")
-    # else:
-    #     utils.outputMsg ("Could not delete object")
 
+    delOrphan()
     # 数据清理
     updateScene()
 

@@ -129,7 +129,20 @@ def update_wall(self, context:bpy.types.Context):
     else:
         utils.outputMsg("updated platform failed, context.object should be buildingObj")
     return
-    
+
+# 刷新斗栱布局
+def update_dougong(self, context:bpy.types.Context):
+    # 确认选中为building节点
+    buildingObj,bdata,odata = utils.getRoot(context.object)
+    if buildingObj != None:
+        from . import buildDougong
+        # 重新生成屋顶
+        funproxy = partial(buildDougong.buildDougong,buildingObj=buildingObj)
+        utils.fastRun(funproxy)
+    else:
+        utils.outputMsg("updated platform failed, context.object should be buildingObj")
+    return
+
 def update_roof(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
@@ -402,12 +415,18 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     dg_extend : bpy.props.FloatProperty(
             name="斗栱挑檐",    # 令拱出跳距离
             default=0.45,
-            min=0.0,
+            min=0.01,
         )# type: ignore 
     dg_height : bpy.props.FloatProperty(
             name="斗栱高度",    # 取挑檐桁下皮高度
             default=0.99,
-            min=0.0,
+            min=0.01,
+        )# type: ignore 
+    dg_gap:bpy.props.FloatProperty(
+            name="斗栱间距",    # 斗栱间距
+            default=0.99,
+            min=0.1,
+            update=update_dougong,
         )# type: ignore 
     
     # 屋顶属性

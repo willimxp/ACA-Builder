@@ -38,7 +38,7 @@ def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     else:
         utils.deleteHierarchy(rafterRootObj)
         utils.focusCollByObj(rafterRootObj)
-        
+
     return rafterRootObj
 
 # 举架数据计算，与屋顶样式无关
@@ -194,22 +194,57 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 name = "桁-前后",
                 root_obj = rafterRootObj
             )
-        # 桁垫板
-        loc = (0,pCross.y,
-               (pCross.z - con.HENG_COMMON_D*dk/2
-                - con.BOARD_HENG_H/2))
-        dim = (purlin_length_x,
-               con.BOARD_HENG_Y,
-               con.BOARD_HENG_H)
-        bpy.ops.mesh.primitive_cube_add(
-            location = loc
-        )
-        dianbanObj = bpy.context.object
-        dianbanObj.name = '垫板'
-        dianbanObj.dimensions = dim
-        dianbanObj.parent = rafterRootObj
-        # 桁枋
-        if n != 0:  # 正心桁下不做枋
+        # 前后镜像
+        if n!=len(purlin_pos)-1:
+            # 除最后一根脊桁的处理，挑檐桁、正心桁、金桁做Y镜像
+            utils.addModifierMirror(
+                    object=hengFB,
+                    mirrorObj=rafterRootObj,
+                    use_axis=(False,True,False)
+                )                
+        else: 
+            # 最后一根脊桁添加伏脊木
+            # 伏脊木为6变形（其实不是正六边形，上大下小，这里偷懒了）
+            # 为了补偿圆柱径与六边形柱径的误差，向下调整了1/8的伏脊木高
+            loc_z = pCross.z+ (con.HENG_COMMON_D+con.FUJIMU_D)/2*dk - con.FUJIMU_D/8*dk
+            fujimuObj = utils.addCylinderHorizontal(
+                    radius = con.FUJIMU_D/2*dk, 
+                    depth = purlin_length_x,
+                    location = (0,0,loc_z), 
+                    name = "伏脊木",
+                    root_obj = rafterRootObj,
+                    edge_num =6
+                )
+        
+        # 有斗拱时，正心桁、挑檐桁下不做垫板
+        # 无斗栱时，都要做垫板
+        if ((bData.use_dg and n not in (0,1)) 
+                or (not bData.use_dg)): 
+            # 4、桁垫板
+            loc = (0,pCross.y,
+                (pCross.z - con.HENG_COMMON_D*dk/2
+                    - con.BOARD_HENG_H/2))
+            dim = (purlin_length_x,
+                con.BOARD_HENG_Y,
+                con.BOARD_HENG_H)
+            bpy.ops.mesh.primitive_cube_add(
+                location = loc
+            )
+            dianbanObj = bpy.context.object
+            dianbanObj.name = '垫板'
+            dianbanObj.dimensions = dim
+            dianbanObj.parent = rafterRootObj
+            utils.addModifierMirror(
+                object=dianbanObj,
+                mirrorObj=rafterRootObj,
+                use_axis=(False,True,False)
+            )
+        
+        # 有斗拱时，正心桁、挑檐桁下不做枋
+        # 无斗栱时，仅正心桁下不做枋
+        if ((bData.use_dg and n not in (0,1)) 
+                or (not bData.use_dg and n!=0)): 
+            # 5、桁枋
             loc = (0,pCross.y,
                 (pCross.z - con.HENG_COMMON_D*dk/2
                     - con.BOARD_HENG_H
@@ -224,39 +259,11 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             hengfangObj.name = '金/脊枋'
             hengfangObj.dimensions = dim
             hengfangObj.parent = rafterRootObj
-
-        # 4、前后镜像
-        if n!=len(purlin_pos)-1:
-            # 除最后一根脊桁的处理，挑檐桁、正心桁、金桁做Y镜像
             utils.addModifierMirror(
-                    object=hengFB,
-                    mirrorObj=rafterRootObj,
-                    use_axis=(False,True,False)
-                )
-            utils.addModifierMirror(
-                    object=dianbanObj,
-                    mirrorObj=rafterRootObj,
-                    use_axis=(False,True,False)
-                )
-            if n != 0:
-                utils.addModifierMirror(
-                        object=hengfangObj,
-                        mirrorObj=rafterRootObj,
-                        use_axis=(False,True,False)
-                    )
-        else: 
-            # 最后一根脊桁添加伏脊木
-            # 伏脊木为6变形（其实不是正六边形，上大下小，这里偷懒了）
-            # 为了补偿圆柱径与六边形柱径的误差，向下调整了1/8的伏脊木高
-            loc_z = pCross.z+ (con.HENG_COMMON_D+con.FUJIMU_D)/2*dk - con.FUJIMU_D/8*dk
-            fujimuObj = utils.addCylinderHorizontal(
-                    radius = con.FUJIMU_D/2*dk, 
-                    depth = purlin_length_x,
-                    location = (0,0,loc_z), 
-                    name = "伏脊木",
-                    root_obj = rafterRootObj,
-                    edge_num =6
-                )
+                object=hengfangObj,
+                mirrorObj=rafterRootObj,
+                use_axis=(False,True,False)
+            )  
 
     # 三、布置山面桁檩
     # 仅庑殿、歇山做山面桁檩，硬山、悬山不做山面桁檩
@@ -297,11 +304,27 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     mirrorObj=rafterRootObj,
                     use_axis=(True,False,False)
                 )
-            # 庑殿山面做垫板和枋
-            # 歇山山面仅第一层做垫板
-            if (roofStyle == con.ROOF_WUDIAN 
-                or (roofStyle== con.ROOF_XIESHAN and n==0)):
-                # 桁垫板
+            
+            # 判断垫板、枋的逻辑
+            use_dianban = True
+            use_fang = True
+            # 歇山的踩步金下不做
+            if roofStyle== con.ROOF_XIESHAN :
+                if ((bData.use_dg and n==2) 
+                    or (not bData.use_dg and n==1)):
+                    use_fang = False
+                    use_dianban = False
+            # 正心桁、挑檐桁逻辑
+            if roofStyle in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
+                if bData.use_dg and n in (0,1):
+                    # 有斗栱时，挑檐桁和正心桁都不做枋和垫板
+                    use_fang = False
+                    use_dianban = False
+                if not bData.use_dg and n==0:
+                    # 无斗栱时，正心桁下不做枋，做垫板
+                    use_fang = False
+            # 桁垫板
+            if use_dianban:
                 loc = (pCross.x,0,
                     (pCross.z - con.HENG_COMMON_D*dk/2
                         - con.BOARD_HENG_H/2))
@@ -321,28 +344,28 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     mirrorObj=rafterRootObj,
                     use_axis=(True,False,False)
                 )
-                # 桁枋
-                if n != 0:  # 正心桁下不做枋
-                    loc = (pCross.x,0,
-                        (pCross.z - con.HENG_COMMON_D*dk/2
-                            - con.BOARD_HENG_H
-                            - con.HENGFANG_H/2))
-                    dim = (purlin_length_y,
-                        con.HENGFANG_Y,
-                        con.HENGFANG_H)
-                    bpy.ops.mesh.primitive_cube_add(
-                        location=loc,
-                        rotation=Vector((0, 0, math.radians(90)))
-                    )
-                    hengfangObj = bpy.context.object
-                    hengfangObj.name = '金/脊枋'
-                    hengfangObj.dimensions = dim
-                    hengfangObj.parent = rafterRootObj
-                    utils.addModifierMirror(
-                        object=hengfangObj,
-                        mirrorObj=rafterRootObj,
-                        use_axis=(True,False,False)
-                    )
+            # 桁枋
+            if use_fang:
+                loc = (pCross.x,0,
+                    (pCross.z - con.HENG_COMMON_D*dk/2
+                        - con.BOARD_HENG_H
+                        - con.HENGFANG_H/2))
+                dim = (purlin_length_y,
+                    con.HENGFANG_Y,
+                    con.HENGFANG_H)
+                bpy.ops.mesh.primitive_cube_add(
+                    location=loc,
+                    rotation=Vector((0, 0, math.radians(90)))
+                )
+                hengfangObj = bpy.context.object
+                hengfangObj.name = '金/脊枋'
+                hengfangObj.dimensions = dim
+                hengfangObj.parent = rafterRootObj
+                utils.addModifierMirror(
+                    object=hengfangObj,
+                    mirrorObj=rafterRootObj,
+                    use_axis=(True,False,False)
+                )
 
             # 4、添加镜像
             
@@ -3091,9 +3114,6 @@ def __buildBPW(buildingObj:bpy.types.Object):
 def buildRoof(buildingObj:bpy.types.Object):
     # 清理垃圾数据
     utils.delOrphan()    
-    # 载入数据
-    bData : acaData = buildingObj.ACA_data
-
     # 添加“屋顶层”根节点
     # 斗栱层、梁椽望、瓦作都绑定在该节点下，便于统一重新生成
     # 这三层的结构紧密相连，无法解耦，只能一起生成，一起刷新

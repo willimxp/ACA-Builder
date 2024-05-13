@@ -4,44 +4,41 @@
 # 常数定义
 # 请务必注意，只读取该属性，不要修改属性
 
-DK = 0.08
-PD = DK * 6
-
 class ACA_Consts(object):
     # 继承object类，提供了__setattr__等方法
     # https://www.jb51.net/article/274253.htm
 
     # 系统参数
-    ROOT_COLL_NAME = 'ACA古建营造'       # 根目录名称
-    PLATFORM_NAME = '台基'              # 台基名称
-    ACA_TYPE_BUILDING = 'building'      # ACA类型：台基
-    ACA_TYPE_PLATFORM = 'platform'      # ACA类型：台基
-    ACA_TYPE_FLOOR_ROOT = 'floor'            # ACA类型：柱网
-    ACA_TYPE_PILLER = 'piller'          # ACA类型：柱子
-    ACA_TYPE_FANG = 'fang'              # ACA类型：枋
-    ACA_TYPE_WALL_ROOT = 'wall_root'    # ACA类型：墙体布局，墙体的父节点
-    ACA_TYPE_WALL_CHILD = 'wall_child'  # ACA类型：墙体成员
-    ACA_TYPE_WALL = 'wall'              # ACA类型：墙体
-    ACA_TYPE_DG_ROOT ='dg_root'         # ACA类型：斗栱根节点
-    ACA_TYPE_ROOF_ROOT ='roof_root'     # ACA类型：屋顶根节点
-    ACA_TYPE_RAFTER_ROOT = 'rafter_root' # ACA类型：梁椽望根节点
-    ACA_TYPE_RAFTER_FB = 'rafter_fb'     # ACA类型：前后檐椽
-    ACA_TYPE_RAFTER_LR = 'rafter_lr'     # ACA类型：两山檐椽
-    ACA_TYPE_FLYRAFTER_FB = 'flyrafter_fb'  # 前后檐飞椽
-    ACA_TYPE_FLYRAFTER_LR = 'flyrafter_lr'  # 两山飞椽
+    ROOT_COLL_NAME = 'ACA古建营造'               # 根目录名称
+    PLATFORM_NAME = '台基'                       # 台基名称
+    ACA_TYPE_BUILDING = 'building'              # ACA类型：台基
+    ACA_TYPE_PLATFORM = 'platform'              # ACA类型：台基
+    ACA_TYPE_FLOOR_ROOT = 'floor'               # ACA类型：柱网
+    ACA_TYPE_PILLER = 'piller'                  # ACA类型：柱子
+    ACA_TYPE_FANG = 'fang'                      # ACA类型：枋
+    ACA_TYPE_WALL_ROOT = 'wall_root'            # ACA类型：墙体布局，墙体的父节点
+    ACA_TYPE_WALL_CHILD = 'wall_child'          # ACA类型：墙体成员
+    ACA_TYPE_WALL = 'wall'                      # ACA类型：墙体
+    ACA_TYPE_DG_ROOT ='dg_root'                 # ACA类型：斗栱根节点
+    ACA_TYPE_ROOF_ROOT ='roof_root'             # ACA类型：屋顶根节点
+    ACA_TYPE_RAFTER_ROOT = 'rafter_root'        # ACA类型：梁椽望根节点
+    ACA_TYPE_RAFTER_FB = 'rafter_fb'            # ACA类型：前后檐椽
+    ACA_TYPE_RAFTER_LR = 'rafter_lr'            # ACA类型：两山檐椽
+    ACA_TYPE_FLYRAFTER_FB = 'flyrafter_fb'      # 前后檐飞椽
+    ACA_TYPE_FLYRAFTER_LR = 'flyrafter_lr'      # 两山飞椽
     ACA_TYPE_RAFTER_LKM_FB  = 'rafter_lkm_fb'      # 里口木-前后檐
     ACA_TYPE_RAFTER_LKM_LR  = 'rafter_lkm_lr'      # 里口木-两山
     ACA_TYPE_RAFTER_DLY_FB = 'rafter_dly_fb'       # 大连檐-前后
     ACA_TYPE_RAFTER_DLY_LR = 'rafter_dly_lr'       # 大连檐-两山
-    ACA_TYPE_CORNER_BEAM = 'corner_beam'    # 大角梁
+    ACA_TYPE_CORNER_BEAM = 'corner_beam'                # 大角梁
     ACA_TYPE_CORNER_BEAM_CHILD = 'corner_beam_child'    # 大角梁
     ACA_TYPE_CORNER_RAFTER_CURVE = 'corner_rafter_curve'         # 翼角椽定位线
     ACA_TYPE_CORNER_FLYRAFTER_CURVE = 'corner_flyfater_curve'    # 翘飞椽定位线
-    ACA_TYPE_TILE_ROOT = 'tile_root'     # ACA类型：屋瓦层
-    ACA_TYPE_ASSET_ROOT ='asset_root'    # ACA类型：斗栱根节点
-    ACA_WALLTYPE_WALL = 'wall'           # 隔断属性-墙
-    ACA_WALLTYPE_WINDOW = 'window'       # 隔断属性-槛窗
-    ACA_WALLTYPE_DOOR = 'door'           # 隔断属性-隔扇
+    ACA_TYPE_TILE_ROOT = 'tile_root'            # ACA类型：屋瓦层
+    ACA_TYPE_ASSET_ROOT ='asset_root'           # ACA类型：斗栱根节点
+    ACA_WALLTYPE_WALL = 'wall'                  # 隔断属性-墙
+    ACA_WALLTYPE_WINDOW = 'window'              # 隔断属性-槛窗
+    ACA_WALLTYPE_DOOR = 'door'                  # 隔断属性-隔扇
 
     # 屋顶类型，与面板的下拉框的值对应
     ROOF_WUDIAN = '1'
@@ -50,174 +47,109 @@ class ACA_Consts(object):
     ROOF_YINGSHAN = '4'
 
     # 柱子
-    PILLER_D_EAVE = 6   # 檐柱直接径6斗口
-    PILLER_H_EAVE = 57  # 檐柱高约57斗口（到挑檐桁下皮共70斗口）
-    PILLER_D_JIN = 6.6  # 金柱直径6.6斗口
-    PILLER_CHILD = 5.2  # 蜀柱
+    PILLER_D_EAVE = 6       # 檐柱直径(DK)
+    PILLER_H_EAVE = 57      # 檐柱高(DK)
+    PILLER_D_JIN = 6.6      # 金柱直径(DK)
+    PILLER_CHILD = 5.2      # 蜀柱边长(DK)
 
     # 枋类
-    EFANG_LARGE_H = 6/6   # 大额枋高，单位D
-    EFANG_LARGE_Y = 4.8/6 # 大额枋厚，单位D
-    EFANG_SMALL_H = 4/6   # 小额枋高，单位D
-    EFANG_SMALL_Y = 3.2/6 # 小额枋厚，单位D
-    PINGBAN_H = 2/6       # 平板枋高，单位D
-    PINGBAN_Y = 3.5/6     # 平板枋厚，单位D
-    HENGFANG_H = 3.6*DK   # 金脊枋高
-    HENGFANG_Y = 3*DK     # 金脊枋厚
-    PINGBANFANG_H = 2*DK  # 平板枋高
-    PINGBANFANG_Y = 3.5*DK# 平板枋宽
+    EFANG_LARGE_H = 6       # 大额枋高(DK)
+    EFANG_LARGE_Y = 4.8     # 大额枋厚(DK)
+    EFANG_SMALL_H = 4       # 小额枋高(DK)
+    EFANG_SMALL_Y = 3.2     # 小额枋厚(DK)
+    HENGFANG_H = 3.6        # 金脊枋高(DK)
+    HENGFANG_Y = 3          # 金脊枋厚(DK)
+    PINGBANFANG_H = 2       # 平板枋高(DK)
+    PINGBANFANG_Y = 3.5     # 平板枋宽(DK)
 
     # 垫板
-    BOARD_YOUE_H = 2/6    # 由额垫板高，单位D
-    BOARD_YOUE_Y = 1/6    # 由额垫板厚，单位D
-    BOARD_HENG_H = 0.8*PD    # 金脊桁檩垫板高，D
-    BOARD_HENG_Y = 0.25*PD   # 金脊桁檩垫板厚，D
+    BOARD_YOUE_H = 2        # 由额垫板高(DK)
+    BOARD_YOUE_Y = 1        # 由额垫板厚(DK)
+    BOARD_HENG_H = 4.8      # 金脊桁檩垫板高(DK)
+    BOARD_HENG_Y = 1.5      # 金脊桁檩垫板厚(DK)
 
     # 门窗（马炳坚数据）
-    KAN_DOWN_HEIGHT = 0.8   # 下槛高度，单位D
-    KAN_DOWN_DEEPTH = 0.3   # 下槛深度，单位D，梁思成实际使用的为0.4
-    KAN_MID_HEIGHT = 0.66   # 中槛高度，单位D(汤崇平书p20中定为0.64)
-    KAN_MID_DEEPTH = 0.3    # 中槛深度，单位D
-    KAN_UP_HEIGHT = 0.5     # 上槛高度，单位D
-    KAN_UP_DEEPTH = 0.3     # 上槛深度，单位D
-    KAN_WIND_HEIGHT = 0.5   # 风槛高度，单位D
-    KAN_WIND_DEEPTH = 0.3   # 风槛深度，单位D
-    BAOKUANG_WIDTH = 0.66   # 抱框宽度，单位D
-    BAOKUANG_DEEPTH = 0.3   # 抱框深度，单位D
-    BORDER_WIDTH = 0.2    # 边梃、抹头宽（D）
-    BORDER_DEEPTH = BAOKUANG_DEEPTH     # 边梃、抹头厚
-    ZIBIAN_WIDTH = BORDER_WIDTH*0.5     # 仔边宽
-    ZIBIAN_DEEPTH = BORDER_WIDTH*0.5    # 仔边厚
-    TABAN_DEEPTH = 1.5       # 榻板宽，单位D
-    TABAN_HEIGHT = 3/8      # 榻板高，单位D
-    TABAN_EX = 0.1          # 榻板金边，单位unit（米）
-    GESHAN_GAP = 0.02        # 隔扇的间距，门缝，单位为unit（米）
-    DOUGONG_SPAN = 11   # 斗栱攒距，通常取11斗口
-    MENYIN_HEIGHT = 0.2     # 门楹/窗楹高(米)
-    MENYIN_DEEPTH = KAN_DOWN_DEEPTH*1.8     # 门楹/窗楹厚(D)
-    MENYIN_HEIGHT = KAN_DOWN_HEIGHT*0.5     # 门楹/窗楹高(D)
-    MENYIN_WIDTH = MENYIN_DEEPTH*2      # 门楹/窗楹宽(D)
-    MENZHOU_R = BORDER_WIDTH/2  # 门轴（D）
+    KAN_DOWN_HEIGHT = 0.8       # 下槛高度(PD)
+    KAN_DOWN_DEEPTH = 0.3       # 下槛深度(PD)，梁思成实际使用的为0.4
+    KAN_MID_HEIGHT = 0.66       # 中槛高度(PD)(汤崇平书p20中定为0.64)
+    KAN_MID_DEEPTH = 0.3        # 中槛深度(PD)
+    KAN_UP_HEIGHT = 0.5         # 上槛高度(PD)
+    KAN_UP_DEEPTH = 0.3         # 上槛深度(PD)
+    KAN_WIND_HEIGHT = 0.5       # 风槛高度(PD)
+    KAN_WIND_DEEPTH = 0.3       # 风槛深度(PD)
+    BAOKUANG_WIDTH = 0.66       # 抱框宽度(PD)
+    BAOKUANG_DEEPTH = 0.3       # 抱框深度(PD)
+    BORDER_WIDTH = 0.2          # 边梃、抹头宽(PD)
+    BORDER_DEEPTH = BAOKUANG_DEEPTH         # 边梃、抹头厚(PD)
+    ZIBIAN_WIDTH = BORDER_WIDTH*0.5         # 仔边宽(PD)
+    ZIBIAN_DEEPTH = BORDER_WIDTH*0.5        # 仔边厚(PD)
+    TABAN_DEEPTH = 1.5          # 榻板宽(PD)
+    TABAN_HEIGHT = 3/8          # 榻板高(PD)
+    TABAN_EX = 0.1              # 榻板金边(米)
+    GESHAN_GAP = 0.02           # 隔扇的间距/门缝(米)
+    DOUGONG_SPAN = 11           # 斗栱攒距(DK)
+    MENYIN_DEEPTH = KAN_DOWN_DEEPTH*1.8     # 门楹/窗楹厚(PD)
+    MENYIN_HEIGHT = KAN_DOWN_HEIGHT*0.5     # 门楹/窗楹高(PD)
+    MENYIN_WIDTH = MENYIN_DEEPTH*2          # 门楹/窗楹宽(PD)
+    MENZHOU_R = BORDER_WIDTH/2              # 门轴(PD)
 
     # 桁檩
-    HENG_TIAOYAN_D = 4    # 挑檐桁直径，单位DK，梁思成数据
-    HENG_COMMON_D = 4       # 正心桁直径，单位DK，梁思成数据
-    HENG_EXTEND = HENG_COMMON_D * 2 # 桁檩出梢
-    FUJIMU_D = 4            # 伏脊木
-    #LIFT_RATIO = [0.5,0.65,0.75,0.9]    # 清工程做法则例的推荐系数
-    LIFT_RATIO = [0.5,0.7,0.8,0.9]       # 梁思成图纸中采用的系数，可以进行比较
+    HENG_TIAOYAN_D = 4                  # 挑檐桁直径(DK)，梁思成数据
+    HENG_COMMON_D = 4                   # 正心桁直径(DK)，梁思成数据
+    HENG_EXTEND = HENG_COMMON_D * 2     # 桁檩出梢(DK)
+    FUJIMU_D = 4                        # 伏脊木直径(DK)
+    LIFT_RATIO = [0.5,0.7,0.8,0.9]      # 梁思成图纸中采用的系数，可以进行比较
+    #LIFT_RATIO = [0.5,0.65,0.75,0.9]   # 清工程做法则例的推荐系数
 
     # 梁架
-    BEAM_HEIGHT = 1.4       # 梁高，单位D
-    BEAM_DEEPTH = 1.1       # 梁厚，单位D
-    BOFENG_WIDTH = 1.2      # 博缝板厚，单位斗口
-    BOFENG_HEIGHT = 8       # 博缝板高，单位斗口
-    XYB_WIDTH = 1.2         # 象眼板厚，单位斗口
+    BEAM_HEIGHT = 1.4       # 梁高(PD)
+    BEAM_DEEPTH = 1.1       # 梁厚(PD)
+    BOFENG_WIDTH = 1.2      # 博缝板厚(DK)
+    BOFENG_HEIGHT = 8       # 博缝板高(DK)
+    XYB_WIDTH = 1.2         # 象眼板厚(DK)
 
     # 椽飞类
-    YANCHUAN_EX = 14    # 檐椽平出14斗口
-    FLYRAFTER_EX = 7     # 飞椽平出7斗口
-    YUANCHUAN_D = 1.5   # 圆椽直径
-    FLYRAFTER_H = 1.5    # 飞椽、方椽高
-    FLYRAFTER_Y = 1.5    # 飞椽、方椽厚
-    WANGBAN_H = 0.5     # 望板厚
-    LIKOUMU_H =  FLYRAFTER_H + WANGBAN_H     # 里口木高度，一飞椽+一望板
-    LIKOUMU_Y = FLYRAFTER_H     # 里口木厚度
-    XIAOLIANYAN_H = WANGBAN_H * 1.5         # 小连檐厚度(暂未使用，都用了里口木尺寸)
-    ZADANGBAN_H = FLYRAFTER_H    # 闸挡板高(暂未使用，都用了里口木尺寸)
-    ZADANGBAN_Y = WANGBAN_H     # 闸挡板厚(暂未使用，都用了里口木尺寸)
-    # DALIANYAN_H = YUANCHUAN_D   # 大连檐，高同椽径
-    DALIANYAN_H = YUANCHUAN_D*2   # 大连檐，这里叠加了“瓦口”高度（瓦口定义为1/2椽径或更高，见马炳坚书p179）
-    DALIANYAN_Y = YUANCHUAN_D   # 大连檐，宽1.1-1.2椽径
+    YANCHUAN_EX = 14            # 檐椽平出(DK)
+    FLYRAFTER_EX = 7            # 飞椽平出(DK)
+    YUANCHUAN_D = 1.5           # 圆椽直径(DK)
+    FLYRAFTER_H = 1.5           # 飞椽、方椽高(DK)
+    FLYRAFTER_Y = 1.5           # 飞椽、方椽厚(DK)
+    WANGBAN_H = 0.5             # 望板厚(DK)
+    LIKOUMU_H =  FLYRAFTER_H + WANGBAN_H        # 里口木高度(DK)，一飞椽+一望板
+    LIKOUMU_Y = FLYRAFTER_H     # 里口木厚度(DK)
+    # DALIANYAN_H = YUANCHUAN_D     # 大连檐(DK)，高同椽径
+    DALIANYAN_H = YUANCHUAN_D*2     # 大连檐(DK)，叠加了“瓦口”高度（瓦口定义为1/2椽径或更高，见马炳坚书p179）
+    DALIANYAN_Y = YUANCHUAN_D       # 大连檐(DK)，宽1.1-1.2椽径
     FLYRAFTER_HEAD_TILE_RATIO = 1/2.5        # 飞椽头身比，默认一飞二尾五
-    QUETAI = YUANCHUAN_D*0.2    # 雀台长度(通常1/5~1/3椽径)
+    QUETAI = YUANCHUAN_D*0.2        # 雀台长度(DK)，(通常1/5~1/3椽径)
     
     # 角梁
-    JIAOLIANG_H = 4.5   # 角梁高（老角梁和子角梁）
-    JIAOLIANG_Y = 3     # 角梁厚（老角梁和子角梁）
+    JIAOLIANG_H = 4.5               # 角梁高(DK)，老角梁和子角梁
+    JIAOLIANG_Y = 3                 # 角梁厚(DK)，老角梁和子角梁
     JIAOLIANG_WEI_KOUJIN = 0.2      # 角梁尾的扣金系数，则例没有明说，这个值越小，约陡峭
     JIAOLIANG_HEAD_YAJIN = 0.5      # 角梁头的压金系数，则例没有明说，这个值越小，约陡峭
     YOUQIANG_YAJIN = 1-JIAOLIANG_WEI_KOUJIN           #由戗压金系数
 
     # 其他
-    OFFSET_ORIENTATION = 'GLOBAL' # 'GLOBAL'  'LOCAL' #上下层叠构件的错开方式，一般绘图是垂直位移，但其实相对方向的位移更好看
-    YIJIAOCHUAN_OFFSET = JIAOLIANG_Y/4 # 为了防止翼角椽与角梁打架，而做了一定的让渡
-    CURVE_RESOLUTION = 500  # 曲线的精细度，在细分翼角椽坐标时提高精确度
-    CORNER_RAFTER_START_SPREAD = 2    #翼角椽尾散开的宽度，单位斗口
-    BOOLEAN_TYPE = 'FAST'       # boolean.solver类型：FAST/EXACT
+    OFFSET_ORIENTATION = 'GLOBAL'       # 'GLOBAL'  'LOCAL' #上下层叠构件的错开方式，一般绘图是垂直位移，但其实相对方向的位移更好看
+    YIJIAOCHUAN_OFFSET = JIAOLIANG_Y/4  # 为了防止翼角椽与角梁打架，而做了一定的让渡
+    CURVE_RESOLUTION = 500              # 曲线的精细度，在细分翼角椽坐标时提高精确度
+    CORNER_RAFTER_START_SPREAD = 2      # 翼角椽尾散开的宽度，单位斗口
+    BOOLEAN_TYPE = 'FAST'               # boolean.solver类型：FAST/EXACT
+    DEFAULT_PILLER_HEIGHT = 0.8         # 默认柱高，取明间的0.8，马炳坚p4
 
     # 瓦作类
     # 屋瓦灰背层高度，用于计算铺瓦的高度
     # 一般20cm，北方官式建筑可以达到30cm
     # 其实也考虑了算法中从桁中线垂直向上找点，没有顺着坡面加斜，从而导致的误差
-    ROOFMUD_H = 3   # 单位斗口
-    EAVETILE_EX = 2 # 瓦当、滴水出檐长度，单位斗口
-    SHANQIANG_WIDTH = 9     # 山墙厚度，单位斗口，即1.5柱径
-    SHANQIANG_EX = 11       # 山墙墀头延伸，单位斗口，约1.8柱径
-    TILE_HEIGHT = 0.04      # 瓦层高度，单位米，预估值
+    ROOFMUD_H = 3           # 灰背层高度(DK)
+    EAVETILE_EX = 2         # 瓦当、滴水出檐长度(DK)
+    SHANQIANG_WIDTH = 9     # 山墙厚度(DK)，即1.5柱径
+    SHANQIANG_EX = 11       # 山墙墀头延伸(DK)，约1.8柱径
+    TILE_HEIGHT = 0.04      # 瓦层高度(米)，预估值
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")
-
-# 通则类
-EAVE_EX = 21 # 带斗拱的建筑，上檐出21斗口
-YANCHUAN_EX = 14    # 檐椽平出14斗口
-FLYRAFTER_EX = 7     # 飞椽平出7斗口
-DOUGONG_SPAN = 11   # 斗栱攒距，通常取11斗口
-#LIFT_RATIO = [0.5,0.65,0.75,0.9]    # 清工程做法则例的推荐系数
-LIFT_RATIO = [0.5,0.7,0.8,0.9]       # 梁思成图纸中采用的系数，可以进行比较
-
-# 柱子
-PILLER_D_EAVE = 6   # 檐柱直接径6斗口
-PILLER_H_EAVE = 57  # 檐柱高约57斗口（到挑檐桁下皮共70斗口）
-PILLER_D_JIN = 6.6  # 金柱直径6.6斗口
-
-# 枋类
-EFANG_LARGE_H = 6   # 大额枋高
-EFANG_LARGE_Y = 4.8 # 大额枋厚
-EFANG_SMALL_H = 4   # 小额枋高
-EFANG_SMALL_Y = 3.2 # 小额枋厚
-PINGBAN_H = 2       # 平板枋高
-PINGBAN_Y = 3.5     # 平板枋厚
-
-# 垫板类
-BOARD_YOUE_H = 2    # 由额垫板高，DK
-BOARD_YOUE_Y = 1    # 由额垫板厚，DK
-BOARD_HENG_H = 0.8  # 金脊桁檩垫板高，D
-BOARD_HENG_Y = 0.25 # 金脊桁檩垫板厚，D
-
-# 斗栱类
-BIG_DOU_KOU_TOP = 1.2   # 坐斗的斗口高度，也是第一根瓜栱的高度
-ZJ_LENGTH = 3 # 拽架宽度3斗口
-
-# 桁檩类
-#HENG_TIAOYAN_D = 3   # 挑檐桁直径
-#HENG_COMMON_D = 4.5  # 正心桁直径
-HENG_TIAOYAN_D = 3.2    # 挑檐桁直径，梁思成数据
-HENG_COMMON_D = 4       # 正心桁直径，梁思成数据
-FUJIMU_D = 4            # 伏脊木
-
-# 椽飞类
-YUANCHUAN_D = 1.5   # 圆椽直径
-FLYRAFTER_H = 1.5    # 飞椽、方椽高
-FLYRAFTER_Y = 1.5    # 飞椽、方椽厚
-WANGBAN_H = 0.5     # 望板厚
-LIKOUMU_H =  FLYRAFTER_H + WANGBAN_H     # 里口木高度，一飞椽+一望板
-LIKOUMU_Y = FLYRAFTER_H     # 里口木厚度
-XIAOLIANYAN_H = WANGBAN_H * 1.5         # 小连檐厚度(暂未使用，都用了里口木尺寸)
-ZADANGBAN_H = FLYRAFTER_H    # 闸挡板高(暂未使用，都用了里口木尺寸)
-ZADANGBAN_Y = WANGBAN_H     # 闸挡板厚(暂未使用，都用了里口木尺寸)
-DALIANYAN_H = YUANCHUAN_D   # 大连檐，高同椽径
-DALIANYAN_Y = YUANCHUAN_D   # 大连檐，宽1.1-1.2椽径
-FLYRAFTER_HEAD_TILE_RATIO = 1/2.5        # 飞椽头身比，默认一飞二尾五
-QUETAI = YUANCHUAN_D*0.2    # 雀台长度(通常1/5~1/3椽径)
-
-# 角梁
-JIAOLIANG_H = 4.5   # 角梁高（老角梁和子角梁）
-JIAOLIANG_Y = 3     # 角梁厚（老角梁和子角梁）
-JIAOLIANG_WEI_KOUJIN = 0.2      # 角梁尾的扣金系数，则例没有明说，这个值越小，约陡峭
-JIAOLIANG_HEAD_YAJIN = 0.5      # 角梁头的压金系数，则例没有明说，这个值越小，约陡峭
-YOUQIANG_YAJIN = 1-JIAOLIANG_WEI_KOUJIN           #由戗压金系数
 
 #瓦作类，以下数据来自刘大可《中国古建筑瓦石营法》p287
 BANWA_SIZE = (          # 板瓦=========
@@ -241,33 +173,3 @@ TONGWA_SIZE = (         # 筒瓦==========
    (25.6,9.6,4.8)       # 九样
 ) # 单位厘米，长、宽、高
 TILE_OVERLAP = 0.6      # 底瓦重叠4份，露出6份
-
-
-# 其他
-OFFSET_ORIENTATION = 'GLOBAL' # 'GLOBAL'  'LOCAL' #上下层叠构件的错开方式，一般绘图是垂直位移，但其实相对方向的位移更好看
-YIJIAOCHUAN_OFFSET = JIAOLIANG_Y/4 # 为了防止翼角椽与角梁打架，而做了一定的让渡
-# 屋瓦灰背层高度，用于计算铺瓦的高度
-# 一般20cm，北方官式建筑可以达到30cm
-# 其实也考虑了算法中从桁中线垂直向上找点，没有顺着坡面加斜，从而导致的误差
-ROOFMUD_H = 4
-CHUIJI_SMOOTH = 2   #垂脊艺术化处理，在子角梁中点略作弯曲
-
-# 门窗（马炳坚数据）
-KAN_DOWN_HEIGHT = 0.8   # 下槛高度，单位D
-KAN_DOWN_DEEPTH = 0.3   # 下槛深度，单位D，梁思成实际使用的为0.4
-KAN_MID_HEIGHT = 0.66   # 中槛高度，单位D(汤崇平书p20中定为0.64)
-KAN_MID_DEEPTH = 0.3    # 中槛深度，单位D
-KAN_UP_HEIGHT = 0.5     # 上槛高度，单位D
-KAN_UP_DEEPTH = 0.3     # 上槛深度，单位D
-KAN_WIND_HEIGHT = 0.5   # 风槛高度
-KAN_WIND_DEEPTH = 0.4   # 风槛深度
-BAOKUANG_WIDTH = 0.66   # 抱框宽度，单位D
-BAOKUANG_DEEPTH = 0.3   # 抱框深度，单位D
-BORDER_WIDTH = 0.2    # 边梃、抹头宽
-BORDER_DEEPTH = BAOKUANG_DEEPTH     # 边梃、抹头厚
-ZIBIAN_WIDTH = BORDER_WIDTH*0.5     # 仔边宽
-ZIBIAN_DEEPTH = BORDER_WIDTH*0.5    # 仔边厚
-TABAN_DEEPTH = 1.5       # 榻板宽，单位D
-TABAN_HEIGHT = 3/8      # 榻板高，单位D
-TABAN_EX = 0.1          # 榻板金边，单位unit（米）
-GESHAN_GAP = 0.01        # 隔扇的间距，门缝，单位为unit（米）

@@ -48,6 +48,7 @@ class templateData:
     DG_PILLER_SOURCE = ''       # 柱头斗栱
     DG_FILLGAP_SOURCE = ''      # 补间斗栱
     DG_CORNER_SOURCE = ''       # 转角斗栱
+    DG_GAP = 1.0                # 斗栱攒距
     RAFTER_COUNT = 6            # 椽架数
     ROOF_STYLE = 1              # 屋顶样式
     TILE_WIDTH = 0.4            # 瓦垄宽度
@@ -241,6 +242,9 @@ def getTemplate(name,doukou=0)->templateData:
                 corner_source = dg.find('corner_source')
                 if corner_source != None:
                     tData.DG_CORNER_SOURCE = corner_source.text
+                dg_gap = dg.find('dg_gap')
+                if dg_gap != None:
+                    tData.DG_GAP = float(dg_gap.text)
             else:
                 tData.USE_DG = False    # 不用斗栱
             
@@ -372,7 +376,7 @@ def fillTemplate(buildingObj:bpy.types.Object,
     bData = buildingObj.ACA_data
     bData['aca_obj'] = True
     bData['aca_type'] = con.ACA_TYPE_BUILDING
-    bData['template'] = template.NAME
+    bData['template_name'] = template.NAME
     bData['DK'] = template.DK
     bData['platform_height'] = template.PLATFORM_HEIGHT
     bData['platform_extend'] = template.PLATFORM_EXTEND
@@ -397,6 +401,7 @@ def fillTemplate(buildingObj:bpy.types.Object,
     bData['roof_style'] = template.ROOF_STYLE
     bData['tile_width'] = template.TILE_WIDTH
     bData['tile_length'] = template.TILE_LENGTH
+    bData['dg_gap'] = template.DG_GAP
 
     # 绑定资产
     # 1. 指定资产目录

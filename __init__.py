@@ -55,6 +55,7 @@ classes = (
     operators.ACA_OT_del_wall,
     operators.ACA_OT_add_window,
     operators.ACA_OT_add_door,
+    operators.ACA_OT_default_dk,
 )
 
 def register():   

@@ -169,10 +169,10 @@ def __buildFang(buildingObj:bpy.types.Object):
         
         # 大额枋
         bigFangScale = Vector((fang_length, 
-                con.EFANG_LARGE_Y * pd,
-                con.EFANG_LARGE_H * pd))
+                con.EFANG_LARGE_Y * dk,
+                con.EFANG_LARGE_H * dk))
         bigFangLoc = Vector((fang_x,fang_y,
-                bData.piller_height - con.EFANG_LARGE_H*pd/2))
+                bData.piller_height - con.EFANG_LARGE_H*dk/2))
         bigFangObj = utils.drawHexagon(bigFangScale,bigFangLoc)
         bigFangObj.name =  "大额枋." + fangID
         bigFangObj.rotation_euler = fang_rot
@@ -191,12 +191,12 @@ def __buildFang(buildingObj:bpy.types.Object):
         if bData.use_smallfang:
             # 垫板
             dianbanScale = Vector((fang_length, 
-                    con.BOARD_YOUE_Y * pd,
-                    con.BOARD_YOUE_H * pd))
+                    con.BOARD_YOUE_Y*dk,
+                    con.BOARD_YOUE_H*dk))
             dianbanLoc = Vector((fang_x,fang_y,
                     bigFangLoc.z \
-                    - con.EFANG_LARGE_H*pd/2 \
-                    - con.BOARD_YOUE_H*pd/2))
+                    - con.EFANG_LARGE_H*dk/2 \
+                    - con.BOARD_YOUE_H*dk/2))
             bpy.ops.mesh.primitive_cube_add(
                     size=1.0, 
                     location = dianbanLoc, 
@@ -211,12 +211,12 @@ def __buildFang(buildingObj:bpy.types.Object):
             
             # 小额枋
             smallFangScale = Vector( (fang_length, 
-                    con.EFANG_SMALL_Y * pd,
-                    con.EFANG_SMALL_H * pd))
+                    con.EFANG_SMALL_Y*dk,
+                    con.EFANG_SMALL_H*dk))
             smallFangLoc = Vector((fang_x,fang_y,
                     dianbanLoc.z \
-                    - con.BOARD_YOUE_H*pd/2 \
-                    - con.EFANG_SMALL_H*pd/2))
+                    - con.BOARD_YOUE_H*dk/2 \
+                    - con.EFANG_SMALL_H*dk/2))
             smallFangObj = utils.drawHexagon(smallFangScale,smallFangLoc)
             smallFangObj.name =  "小额枋." + fangID
             smallFangObj.rotation_euler = fang_rot
@@ -493,6 +493,13 @@ def buildFloor(buildingObj:bpy.types.Object):
         # 其中绑定了模版数据
         utils.outputMsg("创建新建筑...")
         buildingObj = __addBuildingRoot()
+    else:
+        roofRoot = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_ROOF_ROOT)
+        utils.deleteHierarchy(roofRoot)
+        wallRoot = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_WALL_ROOT)
+        utils.deleteHierarchy(wallRoot)
 
     buildingColl = buildingObj.users_collection[0]
 

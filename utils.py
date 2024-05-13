@@ -318,6 +318,7 @@ def applyScale(object:bpy.types.Object):
         location=False,
         isolate_users=True) # apply多用户对象时可能失败，所以要加上这个强制单用户
 
+# 应用缩放、旋转、位置
 def applyTransfrom(ob, 
                     use_location=False, 
                     use_rotation=False, 
@@ -351,6 +352,8 @@ def applyTransfrom(ob,
         c.matrix_local = M @ c.matrix_local
         
     ob.matrix_basis = basis[0] @ basis[1] @ basis[2]
+    # 强制一次刷新，以便对象的dimension能够准确应用
+    updateScene()
 
 # 强制聚焦到对象
 def focusObj(object:bpy.types.Object):

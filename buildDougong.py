@@ -69,7 +69,7 @@ def buildDougong(buildingObj:bpy.types.Object):
     if bData.use_pingbanfang:
         extendLength = con.HENG_COMMON_D*dk*2
         # 檐面平板枋
-        loc = (0,net_y[0],-con.PINGBANFANG_H/2)
+        loc = (0,net_y[0],-con.PINGBANFANG_H*dk/2)
         bpy.ops.mesh.primitive_cube_add(
             location=loc
         )
@@ -78,8 +78,8 @@ def buildDougong(buildingObj:bpy.types.Object):
         pingbanfangObj.parent = dgrootObj
         pingbanfangObj.dimensions =(
             bData.x_total + extendLength,
-            con.PINGBANFANG_Y,
-            con.PINGBANFANG_H
+            con.PINGBANFANG_Y*dk,
+            con.PINGBANFANG_H*dk
         )
         utils.applyTransfrom(pingbanfangObj,use_scale=True)
         modBevel:bpy.types.BevelModifier = \
@@ -91,7 +91,7 @@ def buildDougong(buildingObj:bpy.types.Object):
             use_axis=(False,True,False)
         )
         # 山面平板枋
-        loc = (net_x[0],0,-con.PINGBANFANG_H/2)
+        loc = (net_x[0],0,-con.PINGBANFANG_H*dk/2)
         bpy.ops.mesh.primitive_cube_add(
             location=loc
         )
@@ -99,9 +99,9 @@ def buildDougong(buildingObj:bpy.types.Object):
         pingbanfangObj.name = '平板枋'
         pingbanfangObj.parent = dgrootObj
         pingbanfangObj.dimensions =(
-            con.PINGBANFANG_Y,
+            con.PINGBANFANG_Y*dk,
             bData.y_total + extendLength,
-            con.PINGBANFANG_H
+            con.PINGBANFANG_H*dk
         )
         utils.applyTransfrom(pingbanfangObj,use_scale=True)
         modBevel:bpy.types.BevelModifier = \

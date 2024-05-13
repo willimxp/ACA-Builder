@@ -67,8 +67,8 @@ def update_dk(self, context:bpy.types.Context):
     if buildingObj != None:
         dk = buildingObj.ACA_data.DK
         # 更新DK值
-        from . import acaTemplate
-        acaTemplate.updateTemplateByDK(dk,buildingObj)
+        # from . import acaTemplate
+        # acaTemplate.updateTemplateByDK(dk,buildingObj)
         from . import buildFloor
         buildFloor.buildFloor(buildingObj)
     else:
@@ -205,7 +205,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         ) #type: ignore
     DK: bpy.props.FloatProperty(
             name = "斗口",
-            min=0.01,
+            min=0.03,
+            max=0.18,
+            step=0.01,
             update = update_dk
         ) # type: ignore
     COLL:bpy.props.StringProperty(

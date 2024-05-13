@@ -34,9 +34,9 @@ class ACA_PT_basic(bpy.types.Panel):
         row = box.row()
         row.operator("aca.add_newbuilding",icon='FILE_3D')
         
-        # 测试按钮
-        row = layout.row()
-        row.operator("aca.test",icon='HOME')# 按钮：生成门窗
+        # # 测试按钮
+        # row = layout.row()
+        # row.operator("aca.test",icon='HOME')
 
         # 从当前场景中载入数据集
         if context.object != None:
@@ -54,8 +54,14 @@ class ACA_PT_basic(bpy.types.Panel):
             if objData.aca_type == con.ACA_TYPE_BUILDING:
                 col.enabled = False
             # 选择框，是否实时重绘
+            # row = box.row()
+            # row.prop(scnData, "is_auto_redraw")
+            # 斗口值
             row = box.row()
-            row.prop(scnData, "is_auto_redraw")
+            col = row.column()
+            col.prop(bData,'DK')
+            col = row.column()
+            col.operator("aca.default_dk",icon='SHADERFX',text='')
 
 
 # “屋身参数”面板

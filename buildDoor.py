@@ -25,6 +25,13 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
 
+    # 扇心高度校验，以免出现row=0的异常
+    linxingHeight = scale.z- con.ZIBIAN_WIDTH*2*pd
+    unitWidth,unitDeepth,unitHeight = utils.getMeshDims(wData.lingxin_source)
+    rows = math.ceil(linxingHeight/unitHeight)+1
+    if rows<=0:
+        return
+
     # 仔边环绕
     # 创建一个平面，转换为curve，设置curve的横截面
     bpy.ops.mesh.primitive_plane_add(size=1,location=location)
@@ -245,7 +252,7 @@ def __buildKanKuang(wallproxy):
             KankuangObjs.append(hengKuangObj)
         # 横披窗尺寸
         WindowTopScale = Vector((window_top_width, # 宽度取横披窗宽度
-                    con.ZIBIAN_DEEPTH,
+                    con.ZIBIAN_DEEPTH*pd,
                 BaoKuangUpHeight # 高度与上抱框相同
         ))
         # 填充棂心

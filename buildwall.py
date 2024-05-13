@@ -81,11 +81,11 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     # 定义wallproxy尺寸
     wall_deepth = 1 # 墙线框默认尺寸，后续被隐藏显示，所以没有实际影响
     wall_height = bData.piller_height \
-        - con.EFANG_LARGE_H * pd # 除去大额枋高度
+        - con.EFANG_LARGE_H*dk # 除去大额枋高度
     if bData.use_smallfang:
         wall_height += \
-        - con.BOARD_YOUE_H * pd \
-        - con.EFANG_SMALL_H * pd # 除去小额枋、垫板高度
+        - con.BOARD_YOUE_H*dk \
+        - con.EFANG_SMALL_H*dk # 除去小额枋、垫板高度
 
     # 解析wallID，例如”wall#3/0#3/3“，或”window#0/0#0/1“，或”door#0/1#0/2“
     setting = wallID.split('#')
@@ -449,11 +449,11 @@ def resetWallLayout(buildingObj:bpy.types.Object):
     # a、默认尺寸
     wall_deepth = 1 # 墙线框尺寸
     wall_height = bData.piller_height \
-        - con.EFANG_LARGE_H * pd 
+        - con.EFANG_LARGE_H*dk
     if bData.use_smallfang:
         wall_height += \
-        - con.BOARD_YOUE_H * pd \
-        - con.EFANG_SMALL_H * pd
+        - con.BOARD_YOUE_H*dk \
+        - con.EFANG_SMALL_H*dk
 
     # b、计算布局数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)

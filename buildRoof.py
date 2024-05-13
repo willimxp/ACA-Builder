@@ -44,12 +44,12 @@ def __addRoofRoot(buildingObj:bpy.types.Object):
         tile_base += bData.dg_height
         # 是否使用平板枋
         if bData.use_pingbanfang:
-            tile_base += con.PINGBANFANG_H
+            tile_base += con.PINGBANFANG_H*dk
     else:
         # 以大梁抬升
         # tile_base += con.BEAM_HEIGHT*pd
         # 实际为金桁垫板高度+半桁
-        tile_base += con.BOARD_HENG_H + con.HENG_COMMON_D*dk/2
+        tile_base += con.BOARD_HENG_H*dk + con.HENG_COMMON_D*dk/2
         bData['use_pingbanfang'] = False
     
     roofRootObj.location = (0,0,tile_base)       
@@ -194,6 +194,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     # 一、载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
+    pd = con.PILLER_D_EAVE*dk
     # 屋顶样式，1-庑殿，2-歇山，3-悬山，4-硬山
     roofStyle = bData.roof_style
     rafterRootObj = utils.getAcaChild(
@@ -265,10 +266,10 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             # 4、桁垫板
             loc = (0,pCross.y,
                 (pCross.z - con.HENG_COMMON_D*dk/2
-                    - con.BOARD_HENG_H/2))
+                    - con.BOARD_HENG_H*dk/2))
             dim = (purlin_length_x,
-                con.BOARD_HENG_Y,
-                con.BOARD_HENG_H)
+                con.BOARD_HENG_Y*dk,
+                con.BOARD_HENG_H*dk)
             bpy.ops.mesh.primitive_cube_add(
                 location = loc
             )
@@ -289,11 +290,11 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             # 5、桁枋
             loc = (0,pCross.y,
                 (pCross.z - con.HENG_COMMON_D*dk/2
-                    - con.BOARD_HENG_H
-                    - con.HENGFANG_H/2))
+                    - con.BOARD_HENG_H*dk
+                    - con.HENGFANG_H*dk/2))
             dim = (purlin_length_x,
-                con.HENGFANG_Y,
-                con.HENGFANG_H)
+                con.HENGFANG_Y*dk,
+                con.HENGFANG_H*dk)
             bpy.ops.mesh.primitive_cube_add(
                 location=loc
             )
@@ -369,10 +370,10 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             if use_dianban:
                 loc = (pCross.x,0,
                     (pCross.z - con.HENG_COMMON_D*dk/2
-                        - con.BOARD_HENG_H/2))
+                        - con.BOARD_HENG_H*dk/2))
                 dim = (purlin_length_y,
-                    con.BOARD_HENG_Y,
-                    con.BOARD_HENG_H)
+                    con.BOARD_HENG_Y*dk,
+                    con.BOARD_HENG_H*dk)
                 bpy.ops.mesh.primitive_cube_add(
                     location = loc,
                     rotation=Vector((0, 0, math.radians(90)))
@@ -390,11 +391,11 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             if use_fang:
                 loc = (pCross.x,0,
                     (pCross.z - con.HENG_COMMON_D*dk/2
-                        - con.BOARD_HENG_H
-                        - con.HENGFANG_H/2))
+                        - con.BOARD_HENG_H*dk
+                        - con.HENGFANG_H*dk/2))
                 dim = (purlin_length_y,
-                    con.HENGFANG_Y,
-                    con.HENGFANG_H)
+                    con.HENGFANG_Y*dk,
+                    con.HENGFANG_H*dk)
                 bpy.ops.mesh.primitive_cube_add(
                     location=loc,
                     rotation=Vector((0, 0, math.radians(90)))
@@ -433,7 +434,7 @@ def __drawBeam(
     p1 = Vector((0,bLength/2,0))
     # 梁底，从P1向下半檩径+垫板高度
     p2 = p1 - Vector((0,0,
-        con.HENG_COMMON_D*dk/2+con.BOARD_HENG_H))
+        con.HENG_COMMON_D*dk/2+con.BOARD_HENG_H*dk))
     # 梁底，Y镜像P2
     p3 = p2 * Vector((1,-1,1))
     # 梁头，Y镜像坡P1
@@ -445,7 +446,7 @@ def __drawBeam(
     p5 += Vector((0,0.05,0))
     # 梁肩，从梁腰45度，延伸到梁顶部（梁高-垫板高-半桁）
     offset = (bHeight
-              - con.BOARD_HENG_H 
+              - con.BOARD_HENG_H*dk
               - con.HENG_COMMON_D*dk/2)
     p6 = p5 + Vector((0,offset,offset))
     # 梁肩Y镜像
@@ -637,7 +638,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 
                 # 梁下皮与origin的距离
                 beamBottom_offset = (con.HENG_COMMON_D*dk/2 
-                             + con.BOARD_HENG_H)
+                             + con.BOARD_HENG_H*dk)
                 # 梁上皮于origin的距离
                 beamTop_offset = (con.BEAM_HEIGHT*pd 
                              - beamBottom_offset)

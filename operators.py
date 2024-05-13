@@ -272,6 +272,30 @@ class ACA_OT_build_roof(bpy.types.Operator):
             utils.showMessageBox("ERROR: 找不到建筑")
 
         return {'FINISHED'}
+    
+# 计算斗口推荐值
+class ACA_OT_default_dk(bpy.types.Operator):
+    bl_idname="aca.default_dk"
+    bl_label = "计算斗口推荐值"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
+            # 计算斗口推荐值，取明间的0.8，再除以柱高57斗口
+            dk = (bData.x_1 
+                * con.DEFAULT_PILLER_HEIGHT 
+                / con.PILLER_H_EAVE)
+            # 取整
+            bData['DK'] = int(dk*100)/100
+            funproxy = partial(
+                buildFloor.buildFloor,
+                buildingObj=buildingObj)
+            utils.fastRun(funproxy)
+        else:
+            utils.showMessageBox("ERROR: 找不到建筑")
+
+        return {'FINISHED'}
 
 # 测试按钮
 class ACA_OT_test(bpy.types.Operator):

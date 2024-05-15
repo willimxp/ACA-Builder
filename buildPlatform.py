@@ -40,6 +40,8 @@ def buildPlatform(buildingObj:bpy.types.Object):
     # 设置插件属性
     pfObj.ACA_data['aca_obj'] = True
     pfObj.ACA_data['aca_type'] = con.ACA_TYPE_PLATFORM
+    # 设置材质
+    utils.copyMaterial(bData.mat_rock,pfObj)
 
     # 默认锁定对象的位置、旋转、缩放（用户可自行解锁）
     pfObj.lock_location = (True,True,True)
@@ -60,6 +62,7 @@ def buildPlatform(buildingObj:bpy.types.Object):
 def resizePlatform(buildingObj:bpy.types.Object):
     # 载入根节点中的设计参数
     bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
     
     # 找到台基对象
     pfObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PLATFORM)
@@ -76,9 +79,32 @@ def resizePlatform(buildingObj:bpy.types.Object):
     # 平移，保持台基下沿在地平线高度
     pfObj.location.z = bData.platform_height /2
 
-    # 对齐柱网
-    floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
+    # 对齐其他各个层
+    # 柱网层
+    floorRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_FLOOR_ROOT)
     floorRootObj.location.z =  bData.platform_height
+    # 墙体层
+    wallRoot = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_WALL_ROOT)
+    wallRoot.location.z = bData.platform_height
+    # 屋顶层
+    roofRoot = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    tile_base = bData.platform_height \
+                + bData.piller_height
+    # 如果有斗栱，抬高斗栱高度
+    if bData.use_dg:
+        tile_base += bData.dg_height
+        # 是否使用平板枋
+        if bData.use_pingbanfang:
+            tile_base += con.PINGBANFANG_H*dk
+    else:
+        # 以大梁抬升
+        # tile_base += con.BEAM_HEIGHT*pd
+        # 实际为金桁垫板高度+半桁
+        tile_base += con.BOARD_HENG_H*dk + con.HENG_COMMON_D*dk/2
+    roofRoot.location.z = tile_base
 
     # 更新建筑框大小
     buildingObj.empty_display_size = math.sqrt(

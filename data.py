@@ -635,6 +635,19 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             type = bpy.types.Object,
             poll = p_filter
         )# type: ignore 
+    
+    mat_wood:bpy.props.PointerProperty(
+            name = "木材材质",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_rock:bpy.props.PointerProperty(
+            name = "石材材质",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_red:bpy.props.PointerProperty(
+            name = "红漆材质",
+            type = bpy.types.Object,
+        )# type: ignore 
 
 # 场景范围的数据
 # 可绑定面板参数属性

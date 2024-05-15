@@ -76,6 +76,9 @@ class templateData:
     PAOSHOU_9_SOURCE = ''       # 跑兽-斗牛
     PAOSHOU_10_SOURCE = ''      # 跑兽-行什
     BOFENG_SOURCE = ''          # 博缝板
+    MAT_WOOD = ''               # 木材材质
+    MAT_ROCK = ''               # 石材材质
+    MAT_PAINT_RED = ''          # 红漆材质
 
 # 解析XML，获取模版列表
 def getTemplateList():
@@ -338,6 +341,19 @@ def getTemplate(name,doukou=0)->templateData:
                 paoshou_10_source = roof.find('paoshou_10_source')
                 if paoshou_10_source != None:
                     tData.PAOSHOU_10_SOURCE = paoshou_10_source.text
+
+            # 材质
+            mat = template.find('material')
+            if mat != None:
+                mat_wood = mat.find('wood_source')
+                if mat_wood != None:
+                    tData.MAT_WOOD = mat_wood.text
+                mat_rock = mat.find('rock_source')
+                if mat_rock != None:
+                    tData.MAT_ROCK = mat_rock.text
+                mat_red = mat.find('paint_red_source')
+                if mat_red != None:
+                    tData.MAT_PAINT_RED = mat_red.text
                 
     return tData    
 
@@ -547,6 +563,17 @@ def fillTemplate(buildingObj:bpy.types.Object,
         paoshou_10_source:bpy.types.Object = \
             loadAssets(template.PAOSHOU_10_SOURCE,assetsObj)
         bData['paoshou_10_source'] = paoshou_10_source
+
+    # 材质
+    if template.MAT_WOOD != '':
+        matWood = loadAssets(template.MAT_WOOD,assetsObj)
+        bData['mat_wood'] = matWood
+    if template.MAT_ROCK != '':
+        matRock = loadAssets(template.MAT_ROCK,assetsObj)
+        bData['mat_rock'] = matRock
+    if template.MAT_PAINT_RED != '':
+        matRed = loadAssets(template.MAT_PAINT_RED,assetsObj)
+        bData['mat_red'] = matRed
 
 # 根据panel中DK的改变，更新整体设计参数
 def updateTemplateByDK(dk,buildingObj:bpy.types.Object):

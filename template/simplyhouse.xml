@@ -98,6 +98,11 @@
             <paoshou_10_source>10-行什</paoshou_10_source>
             <bofeng_source>博缝板</bofeng_source>
         </roof>
+        <material>
+            <wood_source>原木</wood_source>
+            <rock_source>石材</rock_source>
+            <paint_red_source>红漆</paint_red_source>
+        </material>
     </template>
     <template>
         <name>基本模板</name>

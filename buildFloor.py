@@ -186,6 +186,8 @@ def __buildFang(buildingObj:bpy.types.Object):
         )
         modBevel.width=0.04
         modBevel.segments=3
+        # 设置材质
+        utils.copyMaterial(bData.mat_red,bigFangObj)
 
         # 是否需要做小额枋
         if bData.use_smallfang:
@@ -208,6 +210,8 @@ def __buildFang(buildingObj:bpy.types.Object):
             dianbanObj.ACA_data['aca_obj'] = True
             dianbanObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             dianbanObj.ACA_data['fangID'] = fangID
+            # 设置材质
+            utils.copyMaterial(bData.mat_red,dianbanObj)
             
             # 小额枋
             smallFangScale = Vector( (fang_length, 
@@ -230,6 +234,8 @@ def __buildFang(buildingObj:bpy.types.Object):
             )
             modBevel.width=0.02
             modBevel.segments=2
+            # 设置材质
+            utils.copyMaterial(bData.mat_red,smallFangObj)
     return
 
 # 在选中的柱子间，添加枋

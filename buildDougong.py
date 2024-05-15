@@ -90,6 +90,9 @@ def buildDougong(buildingObj:bpy.types.Object):
             mirrorObj=dgrootObj,
             use_axis=(False,True,False)
         )
+        # 设置材质
+        utils.copyMaterial(bData.mat_red,pingbanfangObj)
+
         # 山面平板枋
         loc = (net_x[0],0,-con.PINGBANFANG_H*dk/2)
         bpy.ops.mesh.primitive_cube_add(
@@ -112,6 +115,8 @@ def buildDougong(buildingObj:bpy.types.Object):
             mirrorObj=dgrootObj,
             use_axis=(True,False,False)
         )       
+        # 设置材质
+        utils.copyMaterial(bData.mat_red,pingbanfangObj)
 
     # 3、布置斗栱/铺作======================================================
     # 转角斗栱，仅用于庑殿/歇山

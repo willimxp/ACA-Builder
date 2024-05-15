@@ -762,6 +762,8 @@ def __buildLKM(buildingObj:bpy.types.Object,
         mirrorObj=rafterRootObj,
         use_axis=LKM_mirrorAxis
     )
+    # 设置材质
+    utils.copyMaterial(bData.mat_red,LKMObj)
     return
 
 # 营造前后檐椽子
@@ -1438,6 +1440,8 @@ def __buildDLY(buildingObj,purlin_pos,direction):
         mirrorObj=rafterRootObj,
         use_axis=DLY_mirrorAxis
     )
+    # 设置材质
+    utils.copyMaterial(bData.mat_red,DLY_Obj)
 
 # 营造飞椽（以及里口木、压飞望板、大连檐等附属构件)
 # 小式建筑中，可以不使用飞椽
@@ -1779,6 +1783,8 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
         mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
+    # 设置材质
+    utils.copyMaterial(bData.mat_red,xly_curve_obj)
 
 # 营造翼角椽参考线，后续为翼角椽椽头的定位
 # 起点=定为正身檐椽的最后一根椽头坐标
@@ -2176,6 +2182,8 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
         mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
+    # 设置材质
+    utils.copyMaterial(bData.mat_red,flyrafterEaveObj)
 
 # 营造翘飞椽定位线
 def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
@@ -3114,6 +3122,10 @@ def __buildBPW(buildingObj:bpy.types.Object):
     if bData.roof_style in (con.ROOF_XIESHAN,
             con.ROOF_XUANSHAN,con.ROOF_YINGSHAN):
         __buildBofeng(buildingObj,rafter_pos)
+
+    # 设置材质
+    for obj in rafterRootObj.children:
+        utils.copyMaterial(bData.mat_wood,obj)
     return
 
 # 营造整个房顶

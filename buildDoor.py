@@ -305,6 +305,12 @@ def __buildKanKuang(wallproxy):
         modBevel:bpy.types.BevelModifier = \
             obj.modifiers.new('Bevel','BEVEL')
         modBevel.width = 0.02
+
+    # 设置材质
+    fromObj = bData.mat_red
+    for obj in KankuangObjs:
+        utils.copyMaterial(fromObj,obj)
+
     # 输出下抱框，做为隔扇生成的参考
     return BaoKuangDownObj
 
@@ -711,6 +717,8 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     kanWindObj = bpy.context.object
     kanWindObj.name = '风槛'
     kanWindObj.parent = wallproxy
+    # 设置材质
+    utils.copyMaterial(bData.mat_red,kanWindObj)
     kanQiangObjs.append(kanWindObj)
 
     # 榻板
@@ -725,6 +733,8 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     taBanObj:bpy.types.Object = utils.drawHexagon(scl2,loc2)
     taBanObj.name = '榻板'
     taBanObj.parent = wallproxy
+    # 设置材质
+    utils.copyMaterial(bData.mat_red,taBanObj)
     kanQiangObjs.append(taBanObj)
 
     # 槛墙
@@ -739,6 +749,8 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     kanqiangObj:bpy.types.Object = utils.drawHexagon(scl3,loc3)
     kanqiangObj.name = '槛墙'
     kanqiangObj.parent = wallproxy
+    # 设置材质
+    utils.copyMaterial(bData.mat_rock,kanqiangObj)
     kanQiangObjs.append(kanqiangObj)
 
     # 窗楹
@@ -767,6 +779,8 @@ def __buildKanqiang(wallproxy:bpy.types.Object
         menyinObj = utils.drawHexagon(dim,loc,half=True)
         menyinObj.parent = wallproxy
         menyinObj.name = '上窗楹'
+        # 设置材质
+        utils.copyMaterial(bData.mat_red,menyinObj)
         kanQiangObjs.append(menyinObj)
 
         # 下窗楹与风槛槛下皮相平
@@ -777,6 +791,8 @@ def __buildKanqiang(wallproxy:bpy.types.Object
         menyinObj = utils.drawHexagon(dim,loc,half=True)
         menyinObj.parent = wallproxy
         menyinObj.name = '下窗楹'
+        # 设置材质
+        utils.copyMaterial(bData.mat_red,menyinObj)
         kanQiangObjs.append(menyinObj)
 
     # 统一添加bevel

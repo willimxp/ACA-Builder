@@ -1249,3 +1249,10 @@ def hideLayer(context,name,isShow):
     # 立即刷新显示，否则可能因为需要刷新所有panel而有延迟感
     redrawViewport()
     return 
+
+# 拷贝目标对象的材质
+def copyMaterial(fromObj:bpy.types.Object,
+                 toObj:bpy.types.Object):
+    if toObj.active_material == None:
+        toObj.active_material = fromObj.active_material
+    return

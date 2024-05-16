@@ -409,6 +409,25 @@ def alignToVector(vector) -> Vector:
     euler = quaternion.to_euler('XYZ')
     return euler
 
+# 封装立方体的构造
+def addCube(name='Cube',
+            location=(0,0,0),
+            rotation=(0,0,0),
+            scale=(1,1,1),
+            parent=None):
+    bpy.ops.mesh.primitive_cube_add(
+                size=1.0, 
+                location = location, 
+                rotation = rotation, 
+                scale=scale)
+    cube = bpy.context.object
+    cube.name = name
+    if parent != None:
+        cube.parent = parent
+    applyTransfrom(cube,use_scale=True)
+    return cube
+
+
 # 根据起始点，创建连接的矩形
 # 长度在X轴方向
 def addCubeBy2Points(start_point:Vector,
@@ -1255,4 +1274,22 @@ def copyMaterial(fromObj:bpy.types.Object,
                  toObj:bpy.types.Object):
     if toObj.active_material == None:
         toObj.active_material = fromObj.active_material
+    return
+
+# 删除对象的边
+def dissolveEdge(object:bpy.types.Object,
+                 index:List):
+    focusObj(object)
+    bpy.ops.object.mode_set(mode='EDIT')
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh(object.data)
+    bpy.ops.mesh.select_mode(type = 'EDGE')
+    bm.edges.ensure_lookup_table()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    for e in index:
+        bm.edges[e].select = True
+    bpy.ops.mesh.dissolve_edges()
+    bmesh.update_edit_mesh(bpy.context.object.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
     return

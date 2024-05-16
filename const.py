@@ -46,6 +46,17 @@ class ACA_Consts(object):
     ROOF_XUANSHAN = '3'
     ROOF_YINGSHAN = '4'
 
+    # 台基
+    STEP_HEIGHT = 0.15      # 阶条石、上基石、中基石的高度(m)，刘大可P418
+    # 规定为大式5寸，小式4寸，根据台明高度相除取整
+    STEP_RATIO = 2.5
+    STEP_WIDTH = STEP_HEIGHT*STEP_RATIO   # 上基石、中基石的宽度
+    # 可取值范围较大，这里为了保持踏跺的斜率比例，统一取2.5倍，刘大可p416，p418
+    GROUND_BORDER = 0.05    # 土衬的地坪露明和外沿金边(m)
+    # 金边大式2寸，小式1.5寸，露明1~2寸，这里统一取了5cm，刘大可p377
+    FIRST_LENGTH  = 0.3     # 好头石比例
+    # 好头石长度取（尽间面阔+山出）*0.2，刘大可p377
+
     # 柱子
     PILLER_D_EAVE = 6       # 檐柱直径(DK)
     PILLER_H_EAVE = 57      # 檐柱高(DK)

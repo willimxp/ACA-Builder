@@ -78,6 +78,7 @@ class templateData:
     BOFENG_SOURCE = ''          # 博缝板
     MAT_WOOD = ''               # 木材材质
     MAT_ROCK = ''               # 石材材质
+    MAT_STONE = ''              # 石头材质
     MAT_PAINT_RED = ''          # 红漆材质
 
 # 解析XML，获取模版列表
@@ -351,6 +352,9 @@ def getTemplate(name,doukou=0)->templateData:
                 mat_rock = mat.find('rock_source')
                 if mat_rock != None:
                     tData.MAT_ROCK = mat_rock.text
+                mat_stone = mat.find('stone_source')
+                if mat_stone != None:
+                    tData.MAT_STONE = mat_stone.text
                 mat_red = mat.find('paint_red_source')
                 if mat_red != None:
                     tData.MAT_PAINT_RED = mat_red.text
@@ -571,6 +575,9 @@ def fillTemplate(buildingObj:bpy.types.Object,
     if template.MAT_ROCK != '':
         matRock = loadAssets(template.MAT_ROCK,assetsObj)
         bData['mat_rock'] = matRock
+    if template.MAT_STONE != '':
+        matStone = loadAssets(template.MAT_STONE,assetsObj)
+        bData['mat_stone'] = matStone
     if template.MAT_PAINT_RED != '':
         matRed = loadAssets(template.MAT_PAINT_RED,assetsObj)
         bData['mat_red'] = matRed

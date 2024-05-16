@@ -101,6 +101,7 @@
         <material>
             <wood_source>原木</wood_source>
             <rock_source>石材</rock_source>
+            <stone_source>石头</stone_source>
             <paint_red_source>红漆</paint_red_source>
         </material>
     </template>

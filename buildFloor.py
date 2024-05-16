@@ -409,6 +409,24 @@ def buildPillers(buildingObj:bpy.types.Object):
             )
             piller_copy.ACA_data['pillerID'] = pillerID
 
+            # 生成柱顶石
+            pillerBase_h = 0.3
+            pillerBase_popup = 0.02
+            pillerBase = utils.addCube(
+                name='柱顶石',
+                location=(net_x[x],
+                          net_y[y],
+                          (piller_copy.location.z 
+                           - pillerBase_h/2
+                           +pillerBase_popup)),
+                scale=(bData.piller_diameter*2,
+                       bData.piller_diameter*2,
+                       pillerBase_h),
+            )
+            pillerBase.parent=floorRootObj
+            # 材质
+            utils.copyMaterial(bData.mat_stone,pillerBase)
+
     # 清理临时柱子
     utils.deleteHierarchy(piller_basemesh,True)
 

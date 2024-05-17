@@ -70,7 +70,7 @@
         </dougong>
         <!--屋顶设置-->
         <roof>
-            <roof_style>2</roof_style>
+            <roof_style>3</roof_style>
             <rafter_count>6</rafter_count>
             <tile_width>0.4</tile_width>
             <tile_length>0.5</tile_length>

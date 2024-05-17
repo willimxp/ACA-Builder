@@ -33,9 +33,7 @@ def __addBuildingRoot():
     buildingObj.empty_display_type = 'SPHERE'
 
     # 在buildingObj中填充模版数据
-    templateData = acaTemplate.getTemplate(templateName)
-    acaTemplate.fillTemplate(buildingObj,templateData)
-    buildingObj.ACA_data['COLL'] = coll.name
+    acaTemplate.loadTemplate(buildingObj,templateName)
     
     return buildingObj
 

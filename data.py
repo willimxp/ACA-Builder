@@ -66,9 +66,6 @@ def update_dk(self, context:bpy.types.Context):
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
         dk = buildingObj.ACA_data.DK
-        # 更新DK值
-        # from . import acaTemplate
-        # acaTemplate.updateTemplateByDK(dk,buildingObj)
         from . import buildFloor
         buildFloor.buildFloor(buildingObj)
     else:
@@ -205,14 +202,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         ) #type: ignore
     DK: bpy.props.FloatProperty(
             name = "斗口",
+            default=0.0,
             min=0.03,
             max=0.18,
             step=0.01,
             update = update_dk
         ) # type: ignore
-    COLL:bpy.props.StringProperty(
-            name="目录名",
-    )# type: ignore
     is_showPlatform: bpy.props.BoolProperty(
             default = True,
             name = "是否显示台基",
@@ -328,13 +323,13 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore
     piller_height : bpy.props.FloatProperty(
             name = "柱高",
-            default = 0,
+            default = 0.0,
             min = 0.01, 
             update = update_piller,
         )# type: ignore
     piller_diameter : bpy.props.FloatProperty(
             name = "柱径",
-            default = 0,
+            default = 0.0,
             min = 0.01, 
             update = update_piller
         )# type: ignore

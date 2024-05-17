@@ -42,26 +42,26 @@ class ACA_PT_basic(bpy.types.Panel):
         if context.object != None:
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
-            #if buildingObj == None: 
-            # 名称
-            box = layout.box()
-            row = box.row()
-            col = row.column()
-            col.prop(context.object,"name",text="")
-            # 聚焦根节点
-            col = row.column()
-            col.operator("aca.focus_building",icon='FILE_PARENT')
-            if objData.aca_type == con.ACA_TYPE_BUILDING:
-                col.enabled = False
-            # 选择框，是否实时重绘
-            # row = box.row()
-            # row.prop(scnData, "is_auto_redraw")
-            # 斗口值
-            row = box.row()
-            col = row.column()
-            col.prop(bData,'DK')
-            col = row.column()
-            col.operator("aca.default_dk",icon='SHADERFX',text='')
+            if buildingObj == None: 
+                layout.label(text='营造中...请耐心等待')
+                return
+            else:
+                # 名称
+                box = layout.box()
+                row = box.row()
+                col = row.column()
+                col.prop(context.object,"name",text="")
+                # 聚焦根节点
+                col = row.column()
+                col.operator("aca.focus_building",icon='FILE_PARENT')
+                if objData.aca_type == con.ACA_TYPE_BUILDING:
+                    col.enabled = False
+                # 斗口值
+                row = box.row()
+                col = row.column()
+                col.prop(bData,'DK')
+                col = row.column()
+                col.operator("aca.default_dk",icon='SHADERFX',text='')
 
 
 # “屋身参数”面板

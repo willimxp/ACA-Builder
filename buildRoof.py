@@ -3069,6 +3069,8 @@ def __buildShanWall(
     shanWallObj.data.update()
     bm.free()
 
+    # 设置材质
+    utils.copyMaterial(bData.mat_rock,shanWallObj)
     # 添加镜像
     utils.addModifierMirror(
         object=shanWallObj,

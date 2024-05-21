@@ -15,7 +15,7 @@ xmlFileName = 'simplyhouse.xml'
 blenderFileName = 'acaAssets.blend'
 
 # 解析XML，获取模版列表
-def getTemplateList():
+def getTemplateList(onlyname=False):
     # 载入XML
     path = os.path.join(templateFolder, xmlFileName)
     tree = ET.parse(path)
@@ -24,10 +24,15 @@ def getTemplateList():
 
     template_list = []
     for template in templates:
-        template_name = template.find('name').text
-        template_list.append((template_name,template_name,''))
-    
-    utils.outputMsg("Get template list")
+        tname = template.find('template_name')
+        if  tname != None:
+            template_name = tname.text
+            if onlyname:
+                template_list.append(template_name)
+            else:
+                template_list.append(
+                    (template_name,template_name,template_name))
+            
     return template_list
 
 # 载入Blender中的资产
@@ -132,7 +137,7 @@ def loadTemplate(buildingObj:bpy.types.Object,
     
     # 在XML中查找对应名称的那个模版
     for template in templates:
-        template_name = template.find('name').text
+        template_name = template.find('template_name').text
         if template_name == templateName:
             # 模版名称
             bData['aca_obj'] = True
@@ -430,3 +435,92 @@ def loadTemplate(buildingObj:bpy.types.Object,
                         mat_red.text,assetsObj)
 
     return
+
+# 保存模版修改
+def saveTemplate(buildingObj:bpy.types.Object):
+    # 载入输入
+    bData:acaData = buildingObj.ACA_data
+    # 模版名称取panel上选择的模版
+    # templateName = bpy.context.scene.ACA_data.template
+    # 模版名称取当前建筑的名称
+    templateName = buildingObj.name
+
+    # 忽略处理的节点
+    ignoreKeys = {
+        'aca_obj',
+        'aca_type',
+        'x_total',
+        'y_total',
+        'is_showPlatform',
+        'is_showPillers',
+        'is_showWalls',
+        'is_showDougong',
+        'is_showBPW',
+        'is_showTiles',
+        'wall_layout',
+        'wall_style',
+        'roof_qiao_point',
+        'tile_width_real',
+        'dg_scale',
+    }
+    
+    # 解析XML配置模版
+    path = os.path.join(templateFolder, xmlFileName)
+    tree = ET.parse(path)
+    root = tree.getroot()   # <templates>根节点
+    # 验证根节点
+    templateNodeList = root.findall('template')
+    if templateNodeList == None:
+        utils.outputMsg("模版解析失败")
+        return
+    
+    # 遍历查找对应模版
+    isNewTemplate = True
+    for templateNode in templateNodeList:
+        nameNode = templateNode.find('template_name')
+        if nameNode != None:
+            if nameNode.text == templateName:
+                # 找到对应模版
+                isNewTemplate = False
+                break
+    # 如果没有找到，则新建模版节点
+    if isNewTemplate:
+        templateNode = ET.SubElement(root,'template')
+
+    # 遍历bData，保存所有的键值
+    # https://blender.stackexchange.com/questions/72402/how-to-iterate-through-a-propertygroup
+    for key in bData.__annotations__.keys():
+        # 提取键值，并保存
+        value = getattr(bData, key)
+        keyType = type(value).__name__
+
+        # 数据验证和预处理
+        # 忽略无需保存的键值
+        if key in ignoreKeys: continue
+        # 以当前建筑名称覆盖模版名称
+        if key == 'template_name':
+            value = templateName
+        # 浮点数取2位精度
+        if keyType == 'float':
+            value = round(value,2)
+
+        # 数据保存
+        # 查找节点
+        keyNode = templateNode.find(key)
+        # 验证节点，不存在就新建
+        if keyNode == None:
+            keyNode = ET.SubElement(templateNode,key)
+        # 写入节点
+        keyNode.text = str(value)
+        keyNode.attrib['type'] = keyType
+
+    # 缩进美化
+    # https://stackoverflow.com/questions/28813876/how-do-i-get-pythons-elementtree-to-pretty-print-to-an-xml-file
+    ET.indent(tree, space="\t", level=0)
+    # 保存
+    tree.write(path, encoding='UTF-8',xml_declaration=True)
+
+    # 刷新panel的模版列表
+    bpy.context.scene.ACA_data.template = templateName
+
+    return 

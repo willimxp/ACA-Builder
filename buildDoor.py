@@ -360,7 +360,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         mod.mirror_object = geshan_root
 
     # 4. 分割棂心、裙板、绦环板
-    gap_num = wData.gap_num   # 门缝，与槛框留出一些距离
+    gap_num = wData.gap_num   # 抹头数量
     windowsill_height = -geshan_height/2       # 窗台高度，在需要做槛墙的槛框中定位
     if gap_num == 2:
         if use_KanWall:

@@ -297,6 +297,21 @@ class ACA_OT_default_dk(bpy.types.Operator):
 
         return {'FINISHED'}
 
+# 计算斗口推荐值
+class ACA_OT_save_template(bpy.types.Operator):
+    bl_idname="aca.save_template"
+    bl_label = "保存模版修改"
+
+    def execute(self, context):  
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
+            from . import acaTemplate
+            acaTemplate.saveTemplate(buildingObj)
+        else:
+            utils.showMessageBox("ERROR: 找不到建筑")
+
+        return {'FINISHED'}
+
 # 测试按钮
 class ACA_OT_test(bpy.types.Operator):
     bl_idname="aca.test"
@@ -310,10 +325,12 @@ class ACA_OT_test(bpy.types.Operator):
         #     utils.fastRun(funproxy)
         # else:
         #     utils.showMessageBox("ERROR: 找不到建筑")
-        from mathutils import Vector,Euler
-        location = Vector((0,0,0))
-        dimention = Vector((0.1,2,0.1))
-        buildRoof.__drawBeam(location,dimention,context.object)
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
+            from . import acaTemplate
+            acaTemplate.saveTemplate(buildingObj)
+        else:
+            utils.showMessageBox("ERROR: 找不到建筑")
 
         return {'FINISHED'}
     

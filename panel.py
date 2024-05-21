@@ -34,9 +34,9 @@ class ACA_PT_basic(bpy.types.Panel):
         row = box.row()
         row.operator("aca.add_newbuilding",icon='FILE_3D')
         
-        # # 测试按钮
-        # row = layout.row()
-        # row.operator("aca.test",icon='HOME')
+        # 测试按钮
+        row = layout.row()
+        row.operator("aca.test",icon='HOME')
 
         # 从当前场景中载入数据集
         if context.object != None:

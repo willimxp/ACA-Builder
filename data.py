@@ -22,6 +22,7 @@ def initprop():
         type=ACA_data_obj,
         name="古建构件属性集"
     )
+    return
 
 # 销毁自定义属性
 def delprop():
@@ -648,6 +649,21 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             type = bpy.types.Object,
         )# type: ignore 
 
+
+# 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据
+# https://docs.blender.org/api/current/bpy.props.html
+# Warning
+# There is a known bug with using a callback, 
+# Python must keep a reference to the strings 
+# returned by the callback or Blender will 
+# misbehave or even crash.
+templateList = []
+def getTemplateList(self, context):
+    from . import acaTemplate
+    global templateList
+    templateList = acaTemplate.getTemplateList()
+    return templateList
+
 # 场景范围的数据
 # 可绑定面板参数属性
 # 也可做为全局变量访问
@@ -661,8 +677,8 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             name = "是否实时重绘"
         ) # type: ignore
     template : bpy.props.EnumProperty(
-            name = "模版样式",
+            name = "模版",
             description = "模板样式",
-            items = acaTemplate.getTemplateList(),
-            options = {"ANIMATABLE"}
+            items = getTemplateList,
+            options = {"ANIMATABLE"},
         ) # type: ignore

@@ -1,187 +1,733 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <templates>
-    <template>
-        <!--建筑名称，显示在插件下拉框中-->
-        <name>示例建筑</name>
-        <!--斗口，全局的模数因子，为了简化，无论是否有斗栱都以次为基准-->
-        <dk>0.08</dk>
-        <!--开间，必须设置-->
-        <floor>
-            <x_rooms>
-                <total>3</total>
-                <x1>6.16</x1>
-                <x2>5.28</x2>
-            </x_rooms>
-            <y_rooms>
-                <total>3</total>
-                <y1>3.52</y1>
-                <y2>3.52</y2>
-            </y_rooms>
-        </floor>
-        <!--柱网设置，可选-->
-        <!--如果不做设定，则根据开间，满做柱体-->
-        <!--柱-->
-        <pillers>
-            <dimeter>0.45</dimeter>
-            <height>4.93</height>
-            <piller_source>梭柱</piller_source>
-            <piller x="0" y="0" />
-            <piller x="0" y="1" />
-            <piller x="0" y="2" />
-            <piller x="0" y="3" />
-            <piller x="1" y="0" />
-            <piller x="1" y="3" />
-            <piller x="2" y="0" />
-            <piller x="2" y="3" />
-            <piller x="3" y="0" />
-            <piller x="3" y="1" />
-            <piller x="3" y="2" />
-            <piller x="3" y="3" />
-            <fang from="0/0" to="1/0" />
-            <fang from="1/0" to="2/0" />
-            <fang from="2/0" to="3/0" />
-            <fang from="3/0" to="3/1" />
-            <fang from="3/1" to="3/2" />
-            <fang from="3/2" to="3/3" />
-            <fang from="3/3" to="2/3" />
-            <fang from="2/3" to="1/3" />
-            <fang from="1/3" to="0/3" />
-            <fang from="0/3" to="0/2" />
-            <fang from="0/2" to="0/1" />
-            <fang from="0/1" to="0/0" />
-        </pillers>
-        <!--墙体框架设置-->
-        <frame>
-            <wall_source>墙体</wall_source>
-            <lingxin_source>棂心.正搭斜交</lingxin_source>
-            <wall type="wall" from="0/3" to="3/3" />
-            <wall type="wall" from="0/0" to="0/3" />
-            <wall type="wall" from="3/3" to="3/0" />
-            <wall type="window" from="0/0" to="1/0" />
-            <wall type="window" from="2/0" to="3/0" />
-            <wall type="door" from="1/0" to="2/0" />
-        </frame>
-        <!--斗栱设置-->
-        <dougong>
-            <piller_source>四铺作插昂柱头.join</piller_source>
-            <fillgap_source>四铺作插昂柱头.join</fillgap_source>
-            <corner_source>四铺作插昂转角.asset</corner_source>
-            <dg_gap>1.7</dg_gap>
-        </dougong>
-        <!--屋顶设置-->
-        <roof>
-            <roof_style>3</roof_style>
-            <rafter_count>6</rafter_count>
-            <tile_width>0.4</tile_width>
-            <tile_length>0.5</tile_length>
-            <flatTile_source>板瓦</flatTile_source>
-            <circularTile_source>筒瓦</circularTile_source>
-            <eaveTile_source>瓦当</eaveTile_source>
-            <dripTile_source>滴水</dripTile_source>
-            <ridgeTop_source>正脊筒</ridgeTop_source>
-            <ridgeBack_source>垂脊兽后</ridgeBack_source>
-            <ridgeFront_source>垂脊兽前</ridgeFront_source>
-            <ridgeEnd_source>端头组合</ridgeEnd_source>
-            <chiwen_source>螭吻</chiwen_source>
-            <chuishou_source>垂兽</chuishou_source>
-            <taoshou_source>套兽</taoshou_source>
-            <paoshou_0_source>0-骑凤仙人</paoshou_0_source>
-            <paoshou_1_source>1-龙</paoshou_1_source>
-            <paoshou_2_source>2-凤</paoshou_2_source>
-            <paoshou_3_source>3-狮子</paoshou_3_source>
-            <paoshou_4_source>4-海马</paoshou_4_source>
-            <paoshou_5_source>5-天马</paoshou_5_source>
-            <paoshou_6_source>6-狎鱼</paoshou_6_source>
-            <paoshou_7_source>7-狻猊</paoshou_7_source>
-            <paoshou_8_source>8-獬豸</paoshou_8_source>
-            <paoshou_9_source>9-斗牛</paoshou_9_source>
-            <paoshou_10_source>10-行什</paoshou_10_source>
-            <bofeng_source>博缝板</bofeng_source>
-        </roof>
-        <material>
-            <wood_source>原木</wood_source>
-            <rock_source>石材</rock_source>
-            <stone_source>石头</stone_source>
-            <paint_red_source>红漆</paint_red_source>
-        </material>
-    </template>
-    <template>
-        <name>基本模板</name>
-        <dk>0.08</dk>
-        <!--柱-->
-        <piller>
-            <dimeter>0.5</dimeter>
-            <height>4.6</height>
-            <style>梭柱</style>
-        </piller>
-        <!--墙体设置-->
-        <wall>
-            <layout>1</layout>
-            <style>2</style>
-            <wall_source>墙体</wall_source>
-            <door_height></door_height>
-            <lingxin_source>棂心.正搭斜交</lingxin_source>
-        </wall>
-        <!--斗栱设置-->
-        <dougong>
-            <piller_source>四铺作插昂柱头</piller_source>
-            <fillgap_source>四铺作插昂柱头</fillgap_source>
-            <corner_source>四铺作插昂转角</corner_source>
-        </dougong>
-        <!--屋顶设置-->
-        <roof>
-            <roof_style>1</roof_style>
-            <rafter_count>6</rafter_count>
-        </roof>
-    </template>
-    <template>
-        <name>大型宫殿</name>
-        <dk>0.1</dk>
-        <platform>
-            <height>3.3</height>
-            <extend>2.4</extend>
-        </platform>
-    </template>
-    <template>
-        <name>多层阁楼</name>
-        <dk>0.05</dk>
-    </template>
-    <template>
-        <name>小型民居</name>
-        <dk>0.03</dk>
-    </template>
-    <template>
-        <name>test</name>
-        <dk>0.08</dk>
-        <!--柱-->
-        <piller>
-            <dimeter>0.5</dimeter>
-            <height>5.6</height>
-        </piller>
-        <!--台基-->
-        <platform>
-            <height>2</height>
-            <extend>2.4</extend>
-        </platform>
-        <!--墙体设置-->
-        <wall>
-            <layout>1</layout>
-        </wall>
-        <!--开间-->
-        <floor>
-            <x_rooms>
-                <total>3</total>
-                <x1>77</x1>
-                <x2>66</x2>
-                <x3>66</x3>
-                <x4>22</x4>
-            </x_rooms>
-            <y_rooms>
-                <total>3</total>
-                <y1>77</y1>
-                <y2>66</y2>
-                <y4>22</y4>
-            </y_rooms>
-        </floor>
-    </template>
+	<template>
+		<template_name type="str">阿斯蒂芬</template_name>
+		<DK type="float">0.08</DK>
+		<platform_height type="float">1.0</platform_height>
+		<platform_extend type="float">1.08</platform_extend>
+		<x_rooms type="int">3</x_rooms>
+		<x_1 type="float">6.16</x_1>
+		<x_2 type="float">5.28</x_2>
+		<x_3 type="float">5.28</x_3>
+		<x_4 type="float">1.76</x_4>
+		<y_rooms type="int">3</y_rooms>
+		<y_1 type="float">3.52</y_1>
+		<y_2 type="float">3.52</y_2>
+		<y_3 type="float">1.76</y_3>
+		<piller_net type="str">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
+		<wall_net type="str">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<fang_net type="str">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
+		<piller_source type="Object">&lt;bpy_struct, Object("梭柱.001") at 0x159c4a008&gt;</piller_source>
+		<piller_height type="float">4.93</piller_height>
+		<piller_diameter type="float">0.45</piller_diameter>
+		<use_smallfang type="bool">False</use_smallfang>
+		<wall_source type="Object">&lt;bpy_struct, Object("墙体.001") at 0x159c16608&gt;</wall_source>
+		<door_height type="float">3.36</door_height>
+		<door_num type="int">4</door_num>
+		<gap_num type="int">5</gap_num>
+		<use_topwin type="bool">False</use_topwin>
+		<use_KanWall type="bool">False</use_KanWall>
+		<lingxin_source type="Object">&lt;bpy_struct, Object("棂心.正搭斜交.001") at 0x159c4a608&gt;</lingxin_source>
+		<use_dg type="bool">True</use_dg>
+		<use_pingbanfang type="bool">True</use_pingbanfang>
+		<dg_piller_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.001") at 0x31fcba808&gt;</dg_piller_source>
+		<dg_fillgap_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.003") at 0x31fcbae08&gt;</dg_fillgap_source>
+		<dg_corner_source type="Object">&lt;bpy_struct, Object("四铺作插昂转角.asset.001") at 0x159bab608&gt;</dg_corner_source>
+		<dg_extend type="float">0.45</dg_extend>
+		<dg_height type="float">0.99</dg_height>
+		<dg_gap type="float">1.7</dg_gap>
+		<roof_style type="str">2</roof_style>
+		<rafter_count type="int">6</rafter_count>
+		<use_flyrafter type="bool">True</use_flyrafter>
+		<use_wangban type="bool">True</use_wangban>
+		<qiqiao type="int">4</qiqiao>
+		<chong type="int">3</chong>
+		<shengqi type="int">1</shengqi>
+		<bofeng_source type="Object">&lt;bpy_struct, Object("博缝板.001") at 0x31fcb7008&gt;</bofeng_source>
+		<tile_width type="float">0.4</tile_width>
+		<tile_length type="float">0.5</tile_length>
+		<flatTile_source type="Object">&lt;bpy_struct, Object("板瓦.001") at 0x159c3a008&gt;</flatTile_source>
+		<circularTile_source type="Object">&lt;bpy_struct, Object("筒瓦.001") at 0x159c56208&gt;</circularTile_source>
+		<eaveTile_source type="Object">&lt;bpy_struct, Object("瓦当.001") at 0x159c54208&gt;</eaveTile_source>
+		<dripTile_source type="Object">&lt;bpy_struct, Object("滴水.001") at 0x159c51208&gt;</dripTile_source>
+		<ridgeTop_source type="Object">&lt;bpy_struct, Object("正脊筒.001") at 0x159c4f408&gt;</ridgeTop_source>
+		<ridgeBack_source type="Object">&lt;bpy_struct, Object("垂脊兽后.001") at 0x159baa608&gt;</ridgeBack_source>
+		<ridgeFront_source type="Object">&lt;bpy_struct, Object("垂脊兽前.001") at 0x159ba9208&gt;</ridgeFront_source>
+		<ridgeEnd_source type="Object">&lt;bpy_struct, Object("端头组合.001") at 0x159c55c08&gt;</ridgeEnd_source>
+		<chiwen_source type="Object">&lt;bpy_struct, Object("螭吻.001") at 0x159c71a08&gt;</chiwen_source>
+		<chuishou_source type="Object">&lt;bpy_struct, Object("垂兽.001") at 0x159ba8608&gt;</chuishou_source>
+		<taoshou_source type="Object">&lt;bpy_struct, Object("套兽.001") at 0x159c26c08&gt;</taoshou_source>
+		<paoshou_0_source type="Object">&lt;bpy_struct, Object("0-骑凤仙人.001") at 0x31fc6dc08&gt;</paoshou_0_source>
+		<paoshou_1_source type="Object">&lt;bpy_struct, Object("1-龙.001") at 0x31fc9b608&gt;</paoshou_1_source>
+		<paoshou_2_source type="Object">&lt;bpy_struct, Object("2-凤.001") at 0x31fc9ca08&gt;</paoshou_2_source>
+		<paoshou_3_source type="Object">&lt;bpy_struct, Object("3-狮子.001") at 0x31fc9d608&gt;</paoshou_3_source>
+		<paoshou_4_source type="Object">&lt;bpy_struct, Object("4-海马.001") at 0x31fc9e208&gt;</paoshou_4_source>
+		<paoshou_5_source type="Object">&lt;bpy_struct, Object("5-天马.001") at 0x31fc9ee08&gt;</paoshou_5_source>
+		<paoshou_6_source type="Object">&lt;bpy_struct, Object("6-狎鱼.001") at 0x31fc9fa08&gt;</paoshou_6_source>
+		<paoshou_7_source type="Object">&lt;bpy_struct, Object("7-狻猊.001") at 0x31fc9a208&gt;</paoshou_7_source>
+		<paoshou_8_source type="Object">&lt;bpy_struct, Object("8-獬豸.001") at 0x31fc9a808&gt;</paoshou_8_source>
+		<paoshou_9_source type="Object">&lt;bpy_struct, Object("9-斗牛.001") at 0x31fc81608&gt;</paoshou_9_source>
+		<paoshou_10_source type="Object">&lt;bpy_struct, Object("10-行什.001") at 0x31fc9c208&gt;</paoshou_10_source>
+		<mat_wood type="Object">&lt;bpy_struct, Object("原木.001") at 0x31fcb9c08&gt;</mat_wood>
+		<mat_rock type="Object">&lt;bpy_struct, Object("石材.001") at 0x159c54808&gt;</mat_rock>
+		<mat_stone type="NoneType">None</mat_stone>
+		<mat_red type="Object">&lt;bpy_struct, Object("红漆.001") at 0x159c5e208&gt;</mat_red>
+	</template>
+	<template>
+		<template_name type="str">示例建筑99</template_name>
+		<DK type="float">0.08</DK>
+		<platform_height type="float">1.0</platform_height>
+		<platform_extend type="float">1.08</platform_extend>
+		<x_rooms type="int">3</x_rooms>
+		<x_1 type="float">6.16</x_1>
+		<x_2 type="float">5.28</x_2>
+		<x_3 type="float">5.28</x_3>
+		<x_4 type="float">1.76</x_4>
+		<y_rooms type="int">3</y_rooms>
+		<y_1 type="float">3.52</y_1>
+		<y_2 type="float">3.52</y_2>
+		<y_3 type="float">1.76</y_3>
+		<piller_net type="str">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
+		<wall_net type="str">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<fang_net type="str">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
+		<piller_source type="Object">&lt;bpy_struct, Object("梭柱.001") at 0x17fc0fa08&gt;</piller_source>
+		<piller_height type="float">4.93</piller_height>
+		<piller_diameter type="float">0.45</piller_diameter>
+		<use_smallfang type="bool">False</use_smallfang>
+		<wall_source type="Object">&lt;bpy_struct, Object("墙体.001") at 0x17fbdc008&gt;</wall_source>
+		<door_height type="float">3.36</door_height>
+		<door_num type="int">4</door_num>
+		<gap_num type="int">5</gap_num>
+		<use_topwin type="bool">False</use_topwin>
+		<use_KanWall type="bool">False</use_KanWall>
+		<lingxin_source type="Object">&lt;bpy_struct, Object("棂心.正搭斜交.001") at 0x17fc10008&gt;</lingxin_source>
+		<use_dg type="bool">True</use_dg>
+		<use_pingbanfang type="bool">True</use_pingbanfang>
+		<dg_piller_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.001") at 0x36b0ec408&gt;</dg_piller_source>
+		<dg_fillgap_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.003") at 0x36b0eda08&gt;</dg_fillgap_source>
+		<dg_corner_source type="Object">&lt;bpy_struct, Object("四铺作插昂转角.asset.001") at 0x17fb6b008&gt;</dg_corner_source>
+		<dg_extend type="float">0.45</dg_extend>
+		<dg_height type="float">0.99</dg_height>
+		<dg_gap type="float">1.7</dg_gap>
+		<roof_style type="str">2</roof_style>
+		<rafter_count type="int">6</rafter_count>
+		<use_flyrafter type="bool">True</use_flyrafter>
+		<use_wangban type="bool">True</use_wangban>
+		<qiqiao type="int">4</qiqiao>
+		<chong type="int">3</chong>
+		<shengqi type="int">1</shengqi>
+		<bofeng_source type="Object">&lt;bpy_struct, Object("博缝板.001") at 0x36b0eb208&gt;</bofeng_source>
+		<tile_width type="float">0.4</tile_width>
+		<tile_length type="float">0.5</tile_length>
+		<flatTile_source type="Object">&lt;bpy_struct, Object("板瓦.001") at 0x17fbffa08&gt;</flatTile_source>
+		<circularTile_source type="Object">&lt;bpy_struct, Object("筒瓦.001") at 0x17fc1bc08&gt;</circularTile_source>
+		<eaveTile_source type="Object">&lt;bpy_struct, Object("瓦当.001") at 0x17fc19c08&gt;</eaveTile_source>
+		<dripTile_source type="Object">&lt;bpy_struct, Object("滴水.001") at 0x17fc16c08&gt;</dripTile_source>
+		<ridgeTop_source type="Object">&lt;bpy_struct, Object("正脊筒.001") at 0x17fc14e08&gt;</ridgeTop_source>
+		<ridgeBack_source type="Object">&lt;bpy_struct, Object("垂脊兽后.001") at 0x17fb71808&gt;</ridgeBack_source>
+		<ridgeFront_source type="Object">&lt;bpy_struct, Object("垂脊兽前.001") at 0x17fb70408&gt;</ridgeFront_source>
+		<ridgeEnd_source type="Object">&lt;bpy_struct, Object("端头组合.001") at 0x17fc1b608&gt;</ridgeEnd_source>
+		<chiwen_source type="Object">&lt;bpy_struct, Object("螭吻.001") at 0x36b109208&gt;</chiwen_source>
+		<chuishou_source type="Object">&lt;bpy_struct, Object("垂兽.001") at 0x17fb6f808&gt;</chuishou_source>
+		<taoshou_source type="Object">&lt;bpy_struct, Object("套兽.001") at 0x17fbec608&gt;</taoshou_source>
+		<paoshou_0_source type="Object">&lt;bpy_struct, Object("0-骑凤仙人.001") at 0x36b095208&gt;</paoshou_0_source>
+		<paoshou_1_source type="Object">&lt;bpy_struct, Object("1-龙.001") at 0x36b0ce008&gt;</paoshou_1_source>
+		<paoshou_2_source type="Object">&lt;bpy_struct, Object("2-凤.001") at 0x36b0cf208&gt;</paoshou_2_source>
+		<paoshou_3_source type="Object">&lt;bpy_struct, Object("3-狮子.001") at 0x36b0d0008&gt;</paoshou_3_source>
+		<paoshou_4_source type="Object">&lt;bpy_struct, Object("4-海马.001") at 0x36b0d0c08&gt;</paoshou_4_source>
+		<paoshou_5_source type="Object">&lt;bpy_struct, Object("5-天马.001") at 0x36b0d1808&gt;</paoshou_5_source>
+		<paoshou_6_source type="Object">&lt;bpy_struct, Object("6-狎鱼.001") at 0x36b0d2408&gt;</paoshou_6_source>
+		<paoshou_7_source type="Object">&lt;bpy_struct, Object("7-狻猊.001") at 0x36b0cd208&gt;</paoshou_7_source>
+		<paoshou_8_source type="Object">&lt;bpy_struct, Object("8-獬豸.001") at 0x36b0cd808&gt;</paoshou_8_source>
+		<paoshou_9_source type="Object">&lt;bpy_struct, Object("9-斗牛.001") at 0x36b0d5c08&gt;</paoshou_9_source>
+		<paoshou_10_source type="Object">&lt;bpy_struct, Object("10-行什.001") at 0x36b0cec08&gt;</paoshou_10_source>
+		<mat_wood type="Object">&lt;bpy_struct, Object("原木.001") at 0x36b0b5808&gt;</mat_wood>
+		<mat_rock type="Object">&lt;bpy_struct, Object("石材.001") at 0x17fc1a208&gt;</mat_rock>
+		<mat_stone type="NoneType">None</mat_stone>
+		<mat_red type="Object">&lt;bpy_struct, Object("红漆.001") at 0x36b0f5a08&gt;</mat_red>
+	</template>
+	<template>
+		<template_name type="str">示例建筑991</template_name>
+		<DK type="float">0.08</DK>
+		<platform_height type="float">1.0</platform_height>
+		<platform_extend type="float">1.08</platform_extend>
+		<x_rooms type="int">3</x_rooms>
+		<x_1 type="float">6.16</x_1>
+		<x_2 type="float">5.28</x_2>
+		<x_3 type="float">5.28</x_3>
+		<x_4 type="float">1.76</x_4>
+		<y_rooms type="int">3</y_rooms>
+		<y_1 type="float">3.52</y_1>
+		<y_2 type="float">3.52</y_2>
+		<y_3 type="float">1.76</y_3>
+		<piller_net type="str">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
+		<wall_net type="str">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<fang_net type="str">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
+		<piller_source type="Object">&lt;bpy_struct, Object("梭柱.001") at 0x17fc0fa08&gt;</piller_source>
+		<piller_height type="float">4.93</piller_height>
+		<piller_diameter type="float">0.45</piller_diameter>
+		<use_smallfang type="bool">False</use_smallfang>
+		<wall_source type="Object">&lt;bpy_struct, Object("墙体.001") at 0x17fbdc008&gt;</wall_source>
+		<door_height type="float">3.36</door_height>
+		<door_num type="int">4</door_num>
+		<gap_num type="int">5</gap_num>
+		<use_topwin type="bool">False</use_topwin>
+		<use_KanWall type="bool">False</use_KanWall>
+		<lingxin_source type="Object">&lt;bpy_struct, Object("棂心.正搭斜交.001") at 0x17fc10008&gt;</lingxin_source>
+		<use_dg type="bool">True</use_dg>
+		<use_pingbanfang type="bool">True</use_pingbanfang>
+		<dg_piller_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.001") at 0x36b0ec408&gt;</dg_piller_source>
+		<dg_fillgap_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.003") at 0x36b0eda08&gt;</dg_fillgap_source>
+		<dg_corner_source type="Object">&lt;bpy_struct, Object("四铺作插昂转角.asset.001") at 0x17fb6b008&gt;</dg_corner_source>
+		<dg_extend type="float">0.45</dg_extend>
+		<dg_height type="float">0.99</dg_height>
+		<dg_gap type="float">1.7</dg_gap>
+		<roof_style type="str">2</roof_style>
+		<rafter_count type="int">6</rafter_count>
+		<use_flyrafter type="bool">True</use_flyrafter>
+		<use_wangban type="bool">True</use_wangban>
+		<qiqiao type="int">4</qiqiao>
+		<chong type="int">3</chong>
+		<shengqi type="int">1</shengqi>
+		<bofeng_source type="Object">&lt;bpy_struct, Object("博缝板.001") at 0x36b0eb208&gt;</bofeng_source>
+		<tile_width type="float">0.4</tile_width>
+		<tile_length type="float">0.5</tile_length>
+		<flatTile_source type="Object">&lt;bpy_struct, Object("板瓦.001") at 0x17fbffa08&gt;</flatTile_source>
+		<circularTile_source type="Object">&lt;bpy_struct, Object("筒瓦.001") at 0x17fc1bc08&gt;</circularTile_source>
+		<eaveTile_source type="Object">&lt;bpy_struct, Object("瓦当.001") at 0x17fc19c08&gt;</eaveTile_source>
+		<dripTile_source type="Object">&lt;bpy_struct, Object("滴水.001") at 0x17fc16c08&gt;</dripTile_source>
+		<ridgeTop_source type="Object">&lt;bpy_struct, Object("正脊筒.001") at 0x17fc14e08&gt;</ridgeTop_source>
+		<ridgeBack_source type="Object">&lt;bpy_struct, Object("垂脊兽后.001") at 0x17fb71808&gt;</ridgeBack_source>
+		<ridgeFront_source type="Object">&lt;bpy_struct, Object("垂脊兽前.001") at 0x17fb70408&gt;</ridgeFront_source>
+		<ridgeEnd_source type="Object">&lt;bpy_struct, Object("端头组合.001") at 0x17fc1b608&gt;</ridgeEnd_source>
+		<chiwen_source type="Object">&lt;bpy_struct, Object("螭吻.001") at 0x36b109208&gt;</chiwen_source>
+		<chuishou_source type="Object">&lt;bpy_struct, Object("垂兽.001") at 0x17fb6f808&gt;</chuishou_source>
+		<taoshou_source type="Object">&lt;bpy_struct, Object("套兽.001") at 0x17fbec608&gt;</taoshou_source>
+		<paoshou_0_source type="Object">&lt;bpy_struct, Object("0-骑凤仙人.001") at 0x36b095208&gt;</paoshou_0_source>
+		<paoshou_1_source type="Object">&lt;bpy_struct, Object("1-龙.001") at 0x36b0ce008&gt;</paoshou_1_source>
+		<paoshou_2_source type="Object">&lt;bpy_struct, Object("2-凤.001") at 0x36b0cf208&gt;</paoshou_2_source>
+		<paoshou_3_source type="Object">&lt;bpy_struct, Object("3-狮子.001") at 0x36b0d0008&gt;</paoshou_3_source>
+		<paoshou_4_source type="Object">&lt;bpy_struct, Object("4-海马.001") at 0x36b0d0c08&gt;</paoshou_4_source>
+		<paoshou_5_source type="Object">&lt;bpy_struct, Object("5-天马.001") at 0x36b0d1808&gt;</paoshou_5_source>
+		<paoshou_6_source type="Object">&lt;bpy_struct, Object("6-狎鱼.001") at 0x36b0d2408&gt;</paoshou_6_source>
+		<paoshou_7_source type="Object">&lt;bpy_struct, Object("7-狻猊.001") at 0x36b0cd208&gt;</paoshou_7_source>
+		<paoshou_8_source type="Object">&lt;bpy_struct, Object("8-獬豸.001") at 0x36b0cd808&gt;</paoshou_8_source>
+		<paoshou_9_source type="Object">&lt;bpy_struct, Object("9-斗牛.001") at 0x36b0d5c08&gt;</paoshou_9_source>
+		<paoshou_10_source type="Object">&lt;bpy_struct, Object("10-行什.001") at 0x36b0cec08&gt;</paoshou_10_source>
+		<mat_wood type="Object">&lt;bpy_struct, Object("原木.001") at 0x36b0b5808&gt;</mat_wood>
+		<mat_rock type="Object">&lt;bpy_struct, Object("石材.001") at 0x17fc1a208&gt;</mat_rock>
+		<mat_stone type="NoneType">None</mat_stone>
+		<mat_red type="Object">&lt;bpy_struct, Object("红漆.001") at 0x36b0f5a08&gt;</mat_red>
+	</template>
+	<template>
+		<template_name type="str">示例建筑9912</template_name>
+		<DK type="float">0.08</DK>
+		<platform_height type="float">1.0</platform_height>
+		<platform_extend type="float">1.08</platform_extend>
+		<x_rooms type="int">3</x_rooms>
+		<x_1 type="float">6.16</x_1>
+		<x_2 type="float">5.28</x_2>
+		<x_3 type="float">5.28</x_3>
+		<x_4 type="float">1.76</x_4>
+		<y_rooms type="int">3</y_rooms>
+		<y_1 type="float">3.52</y_1>
+		<y_2 type="float">3.52</y_2>
+		<y_3 type="float">1.76</y_3>
+		<piller_net type="str">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
+		<wall_net type="str">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<fang_net type="str">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
+		<piller_source type="Object">&lt;bpy_struct, Object("梭柱.001") at 0x17fc0fa08&gt;</piller_source>
+		<piller_height type="float">4.93</piller_height>
+		<piller_diameter type="float">0.45</piller_diameter>
+		<use_smallfang type="bool">False</use_smallfang>
+		<wall_source type="Object">&lt;bpy_struct, Object("墙体.001") at 0x17fbdc008&gt;</wall_source>
+		<door_height type="float">3.36</door_height>
+		<door_num type="int">4</door_num>
+		<gap_num type="int">5</gap_num>
+		<use_topwin type="bool">False</use_topwin>
+		<use_KanWall type="bool">False</use_KanWall>
+		<lingxin_source type="Object">&lt;bpy_struct, Object("棂心.正搭斜交.001") at 0x17fc10008&gt;</lingxin_source>
+		<use_dg type="bool">True</use_dg>
+		<use_pingbanfang type="bool">True</use_pingbanfang>
+		<dg_piller_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.001") at 0x36b0ec408&gt;</dg_piller_source>
+		<dg_fillgap_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.003") at 0x36b0eda08&gt;</dg_fillgap_source>
+		<dg_corner_source type="Object">&lt;bpy_struct, Object("四铺作插昂转角.asset.001") at 0x17fb6b008&gt;</dg_corner_source>
+		<dg_extend type="float">0.45</dg_extend>
+		<dg_height type="float">0.99</dg_height>
+		<dg_gap type="float">1.7</dg_gap>
+		<roof_style type="str">2</roof_style>
+		<rafter_count type="int">6</rafter_count>
+		<use_flyrafter type="bool">True</use_flyrafter>
+		<use_wangban type="bool">True</use_wangban>
+		<qiqiao type="int">4</qiqiao>
+		<chong type="int">3</chong>
+		<shengqi type="int">1</shengqi>
+		<bofeng_source type="Object">&lt;bpy_struct, Object("博缝板.001") at 0x36b0eb208&gt;</bofeng_source>
+		<tile_width type="float">0.4</tile_width>
+		<tile_length type="float">0.5</tile_length>
+		<flatTile_source type="Object">&lt;bpy_struct, Object("板瓦.001") at 0x17fbffa08&gt;</flatTile_source>
+		<circularTile_source type="Object">&lt;bpy_struct, Object("筒瓦.001") at 0x17fc1bc08&gt;</circularTile_source>
+		<eaveTile_source type="Object">&lt;bpy_struct, Object("瓦当.001") at 0x17fc19c08&gt;</eaveTile_source>
+		<dripTile_source type="Object">&lt;bpy_struct, Object("滴水.001") at 0x17fc16c08&gt;</dripTile_source>
+		<ridgeTop_source type="Object">&lt;bpy_struct, Object("正脊筒.001") at 0x17fc14e08&gt;</ridgeTop_source>
+		<ridgeBack_source type="Object">&lt;bpy_struct, Object("垂脊兽后.001") at 0x17fb71808&gt;</ridgeBack_source>
+		<ridgeFront_source type="Object">&lt;bpy_struct, Object("垂脊兽前.001") at 0x17fb70408&gt;</ridgeFront_source>
+		<ridgeEnd_source type="Object">&lt;bpy_struct, Object("端头组合.001") at 0x17fc1b608&gt;</ridgeEnd_source>
+		<chiwen_source type="Object">&lt;bpy_struct, Object("螭吻.001") at 0x36b109208&gt;</chiwen_source>
+		<chuishou_source type="Object">&lt;bpy_struct, Object("垂兽.001") at 0x17fb6f808&gt;</chuishou_source>
+		<taoshou_source type="Object">&lt;bpy_struct, Object("套兽.001") at 0x17fbec608&gt;</taoshou_source>
+		<paoshou_0_source type="Object">&lt;bpy_struct, Object("0-骑凤仙人.001") at 0x36b095208&gt;</paoshou_0_source>
+		<paoshou_1_source type="Object">&lt;bpy_struct, Object("1-龙.001") at 0x36b0ce008&gt;</paoshou_1_source>
+		<paoshou_2_source type="Object">&lt;bpy_struct, Object("2-凤.001") at 0x36b0cf208&gt;</paoshou_2_source>
+		<paoshou_3_source type="Object">&lt;bpy_struct, Object("3-狮子.001") at 0x36b0d0008&gt;</paoshou_3_source>
+		<paoshou_4_source type="Object">&lt;bpy_struct, Object("4-海马.001") at 0x36b0d0c08&gt;</paoshou_4_source>
+		<paoshou_5_source type="Object">&lt;bpy_struct, Object("5-天马.001") at 0x36b0d1808&gt;</paoshou_5_source>
+		<paoshou_6_source type="Object">&lt;bpy_struct, Object("6-狎鱼.001") at 0x36b0d2408&gt;</paoshou_6_source>
+		<paoshou_7_source type="Object">&lt;bpy_struct, Object("7-狻猊.001") at 0x36b0cd208&gt;</paoshou_7_source>
+		<paoshou_8_source type="Object">&lt;bpy_struct, Object("8-獬豸.001") at 0x36b0cd808&gt;</paoshou_8_source>
+		<paoshou_9_source type="Object">&lt;bpy_struct, Object("9-斗牛.001") at 0x36b0d5c08&gt;</paoshou_9_source>
+		<paoshou_10_source type="Object">&lt;bpy_struct, Object("10-行什.001") at 0x36b0cec08&gt;</paoshou_10_source>
+		<mat_wood type="Object">&lt;bpy_struct, Object("原木.001") at 0x36b0b5808&gt;</mat_wood>
+		<mat_rock type="Object">&lt;bpy_struct, Object("石材.001") at 0x17fc1a208&gt;</mat_rock>
+		<mat_stone type="NoneType">None</mat_stone>
+		<mat_red type="Object">&lt;bpy_struct, Object("红漆.001") at 0x36b0f5a08&gt;</mat_red>
+	</template>
+	<template>
+		<template_name type="str">示例建筑99123</template_name>
+		<DK type="float">0.08</DK>
+		<platform_height type="float">1.0</platform_height>
+		<platform_extend type="float">1.08</platform_extend>
+		<x_rooms type="int">3</x_rooms>
+		<x_1 type="float">6.16</x_1>
+		<x_2 type="float">5.28</x_2>
+		<x_3 type="float">5.28</x_3>
+		<x_4 type="float">1.76</x_4>
+		<y_rooms type="int">3</y_rooms>
+		<y_1 type="float">3.52</y_1>
+		<y_2 type="float">3.52</y_2>
+		<y_3 type="float">1.76</y_3>
+		<piller_net type="str">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
+		<wall_net type="str">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<fang_net type="str">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
+		<piller_source type="Object">&lt;bpy_struct, Object("梭柱.001") at 0x17fc0fa08&gt;</piller_source>
+		<piller_height type="float">4.93</piller_height>
+		<piller_diameter type="float">0.45</piller_diameter>
+		<use_smallfang type="bool">False</use_smallfang>
+		<wall_source type="Object">&lt;bpy_struct, Object("墙体.001") at 0x17fbdc008&gt;</wall_source>
+		<door_height type="float">3.36</door_height>
+		<door_num type="int">4</door_num>
+		<gap_num type="int">5</gap_num>
+		<use_topwin type="bool">False</use_topwin>
+		<use_KanWall type="bool">False</use_KanWall>
+		<lingxin_source type="Object">&lt;bpy_struct, Object("棂心.正搭斜交.001") at 0x17fc10008&gt;</lingxin_source>
+		<use_dg type="bool">True</use_dg>
+		<use_pingbanfang type="bool">True</use_pingbanfang>
+		<dg_piller_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.001") at 0x36b0ec408&gt;</dg_piller_source>
+		<dg_fillgap_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.003") at 0x36b0eda08&gt;</dg_fillgap_source>
+		<dg_corner_source type="Object">&lt;bpy_struct, Object("四铺作插昂转角.asset.001") at 0x17fb6b008&gt;</dg_corner_source>
+		<dg_extend type="float">0.45</dg_extend>
+		<dg_height type="float">0.99</dg_height>
+		<dg_gap type="float">1.7</dg_gap>
+		<roof_style type="str">2</roof_style>
+		<rafter_count type="int">6</rafter_count>
+		<use_flyrafter type="bool">True</use_flyrafter>
+		<use_wangban type="bool">True</use_wangban>
+		<qiqiao type="int">4</qiqiao>
+		<chong type="int">3</chong>
+		<shengqi type="int">1</shengqi>
+		<bofeng_source type="Object">&lt;bpy_struct, Object("博缝板.001") at 0x36b0eb208&gt;</bofeng_source>
+		<tile_width type="float">0.4</tile_width>
+		<tile_length type="float">0.5</tile_length>
+		<flatTile_source type="Object">&lt;bpy_struct, Object("板瓦.001") at 0x17fbffa08&gt;</flatTile_source>
+		<circularTile_source type="Object">&lt;bpy_struct, Object("筒瓦.001") at 0x17fc1bc08&gt;</circularTile_source>
+		<eaveTile_source type="Object">&lt;bpy_struct, Object("瓦当.001") at 0x17fc19c08&gt;</eaveTile_source>
+		<dripTile_source type="Object">&lt;bpy_struct, Object("滴水.001") at 0x17fc16c08&gt;</dripTile_source>
+		<ridgeTop_source type="Object">&lt;bpy_struct, Object("正脊筒.001") at 0x17fc14e08&gt;</ridgeTop_source>
+		<ridgeBack_source type="Object">&lt;bpy_struct, Object("垂脊兽后.001") at 0x17fb71808&gt;</ridgeBack_source>
+		<ridgeFront_source type="Object">&lt;bpy_struct, Object("垂脊兽前.001") at 0x17fb70408&gt;</ridgeFront_source>
+		<ridgeEnd_source type="Object">&lt;bpy_struct, Object("端头组合.001") at 0x17fc1b608&gt;</ridgeEnd_source>
+		<chiwen_source type="Object">&lt;bpy_struct, Object("螭吻.001") at 0x36b109208&gt;</chiwen_source>
+		<chuishou_source type="Object">&lt;bpy_struct, Object("垂兽.001") at 0x17fb6f808&gt;</chuishou_source>
+		<taoshou_source type="Object">&lt;bpy_struct, Object("套兽.001") at 0x17fbec608&gt;</taoshou_source>
+		<paoshou_0_source type="Object">&lt;bpy_struct, Object("0-骑凤仙人.001") at 0x36b095208&gt;</paoshou_0_source>
+		<paoshou_1_source type="Object">&lt;bpy_struct, Object("1-龙.001") at 0x36b0ce008&gt;</paoshou_1_source>
+		<paoshou_2_source type="Object">&lt;bpy_struct, Object("2-凤.001") at 0x36b0cf208&gt;</paoshou_2_source>
+		<paoshou_3_source type="Object">&lt;bpy_struct, Object("3-狮子.001") at 0x36b0d0008&gt;</paoshou_3_source>
+		<paoshou_4_source type="Object">&lt;bpy_struct, Object("4-海马.001") at 0x36b0d0c08&gt;</paoshou_4_source>
+		<paoshou_5_source type="Object">&lt;bpy_struct, Object("5-天马.001") at 0x36b0d1808&gt;</paoshou_5_source>
+		<paoshou_6_source type="Object">&lt;bpy_struct, Object("6-狎鱼.001") at 0x36b0d2408&gt;</paoshou_6_source>
+		<paoshou_7_source type="Object">&lt;bpy_struct, Object("7-狻猊.001") at 0x36b0cd208&gt;</paoshou_7_source>
+		<paoshou_8_source type="Object">&lt;bpy_struct, Object("8-獬豸.001") at 0x36b0cd808&gt;</paoshou_8_source>
+		<paoshou_9_source type="Object">&lt;bpy_struct, Object("9-斗牛.001") at 0x36b0d5c08&gt;</paoshou_9_source>
+		<paoshou_10_source type="Object">&lt;bpy_struct, Object("10-行什.001") at 0x36b0cec08&gt;</paoshou_10_source>
+		<mat_wood type="Object">&lt;bpy_struct, Object("原木.001") at 0x36b0b5808&gt;</mat_wood>
+		<mat_rock type="Object">&lt;bpy_struct, Object("石材.001") at 0x17fc1a208&gt;</mat_rock>
+		<mat_stone type="NoneType">None</mat_stone>
+		<mat_red type="Object">&lt;bpy_struct, Object("红漆.001") at 0x36b0f5a08&gt;</mat_red>
+	</template>
+	<template>
+		<template_name type="str">示11</template_name>
+		<DK type="float">0.08</DK>
+		<platform_height type="float">1.0</platform_height>
+		<platform_extend type="float">1.08</platform_extend>
+		<x_rooms type="int">3</x_rooms>
+		<x_1 type="float">6.16</x_1>
+		<x_2 type="float">5.28</x_2>
+		<x_3 type="float">5.28</x_3>
+		<x_4 type="float">1.76</x_4>
+		<y_rooms type="int">3</y_rooms>
+		<y_1 type="float">3.52</y_1>
+		<y_2 type="float">3.52</y_2>
+		<y_3 type="float">1.76</y_3>
+		<piller_net type="str">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
+		<wall_net type="str">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<fang_net type="str">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
+		<piller_source type="Object">&lt;bpy_struct, Object("梭柱.001") at 0x318e49008&gt;</piller_source>
+		<piller_height type="float">4.93</piller_height>
+		<piller_diameter type="float">0.45</piller_diameter>
+		<use_smallfang type="bool">False</use_smallfang>
+		<wall_source type="Object">&lt;bpy_struct, Object("墙体.001") at 0x318e20a08&gt;</wall_source>
+		<door_height type="float">3.36</door_height>
+		<door_num type="int">4</door_num>
+		<gap_num type="int">5</gap_num>
+		<use_topwin type="bool">False</use_topwin>
+		<use_KanWall type="bool">False</use_KanWall>
+		<lingxin_source type="Object">&lt;bpy_struct, Object("棂心.正搭斜交.001") at 0x318e49608&gt;</lingxin_source>
+		<use_dg type="bool">True</use_dg>
+		<use_pingbanfang type="bool">True</use_pingbanfang>
+		<dg_piller_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.001") at 0x318e15a08&gt;</dg_piller_source>
+		<dg_fillgap_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.003") at 0x318e16008&gt;</dg_fillgap_source>
+		<dg_corner_source type="Object">&lt;bpy_struct, Object("四铺作插昂转角.asset.001") at 0x318e17c08&gt;</dg_corner_source>
+		<dg_extend type="float">0.45</dg_extend>
+		<dg_height type="float">0.99</dg_height>
+		<dg_gap type="float">1.7</dg_gap>
+		<roof_style type="str">2</roof_style>
+		<rafter_count type="int">6</rafter_count>
+		<use_flyrafter type="bool">True</use_flyrafter>
+		<use_wangban type="bool">True</use_wangban>
+		<qiqiao type="int">4</qiqiao>
+		<chong type="int">3</chong>
+		<shengqi type="int">1</shengqi>
+		<bofeng_source type="Object">&lt;bpy_struct, Object("博缝板.001") at 0x318e13a08&gt;</bofeng_source>
+		<tile_width type="float">0.4</tile_width>
+		<tile_length type="float">0.5</tile_length>
+		<flatTile_source type="Object">&lt;bpy_struct, Object("板瓦.001") at 0x318dfc408&gt;</flatTile_source>
+		<circularTile_source type="Object">&lt;bpy_struct, Object("筒瓦.001") at 0x318e55208&gt;</circularTile_source>
+		<eaveTile_source type="Object">&lt;bpy_struct, Object("瓦当.001") at 0x318e53208&gt;</eaveTile_source>
+		<dripTile_source type="Object">&lt;bpy_struct, Object("滴水.001") at 0x318e50208&gt;</dripTile_source>
+		<ridgeTop_source type="Object">&lt;bpy_struct, Object("正脊筒.001") at 0x318e4e408&gt;</ridgeTop_source>
+		<ridgeBack_source type="Object">&lt;bpy_struct, Object("垂脊兽后.001") at 0x318e1c208&gt;</ridgeBack_source>
+		<ridgeFront_source type="Object">&lt;bpy_struct, Object("垂脊兽前.001") at 0x318e1b608&gt;</ridgeFront_source>
+		<ridgeEnd_source type="Object">&lt;bpy_struct, Object("端头组合.001") at 0x318e54c08&gt;</ridgeEnd_source>
+		<chiwen_source type="Object">&lt;bpy_struct, Object("螭吻.001") at 0x149fcfc08&gt;</chiwen_source>
+		<chuishou_source type="Object">&lt;bpy_struct, Object("垂兽.001") at 0x318e1aa08&gt;</chuishou_source>
+		<taoshou_source type="Object">&lt;bpy_struct, Object("套兽.001") at 0x318e2ac08&gt;</taoshou_source>
+		<paoshou_0_source type="Object">&lt;bpy_struct, Object("0-骑凤仙人.001") at 0x318df8208&gt;</paoshou_0_source>
+		<paoshou_1_source type="Object">&lt;bpy_struct, Object("1-龙.001") at 0x318df5808&gt;</paoshou_1_source>
+		<paoshou_2_source type="Object">&lt;bpy_struct, Object("2-凤.001") at 0x318df6a08&gt;</paoshou_2_source>
+		<paoshou_3_source type="Object">&lt;bpy_struct, Object("3-狮子.001") at 0x318df8e08&gt;</paoshou_3_source>
+		<paoshou_4_source type="Object">&lt;bpy_struct, Object("4-海马.001") at 0x318df9a08&gt;</paoshou_4_source>
+		<paoshou_5_source type="Object">&lt;bpy_struct, Object("5-天马.001") at 0x318dfa608&gt;</paoshou_5_source>
+		<paoshou_6_source type="Object">&lt;bpy_struct, Object("6-狎鱼.001") at 0x318dfb208&gt;</paoshou_6_source>
+		<paoshou_7_source type="Object">&lt;bpy_struct, Object("7-狻猊.001") at 0x318df7008&gt;</paoshou_7_source>
+		<paoshou_8_source type="Object">&lt;bpy_struct, Object("8-獬豸.001") at 0x318df7608&gt;</paoshou_8_source>
+		<paoshou_9_source type="Object">&lt;bpy_struct, Object("9-斗牛.001") at 0x318df7c08&gt;</paoshou_9_source>
+		<paoshou_10_source type="Object">&lt;bpy_struct, Object("10-行什.001") at 0x318df6408&gt;</paoshou_10_source>
+		<mat_wood type="Object">&lt;bpy_struct, Object("原木.001") at 0x318ddd808&gt;</mat_wood>
+		<mat_rock type="Object">&lt;bpy_struct, Object("石材.001") at 0x318e53808&gt;</mat_rock>
+		<mat_stone type="NoneType">None</mat_stone>
+		<mat_red type="Object">&lt;bpy_struct, Object("红漆.001") at 0x149fbc408&gt;</mat_red>
+	</template>
+	<template>
+		<template_name type="str">示22</template_name>
+		<DK type="float">0.08</DK>
+		<platform_height type="float">1.0</platform_height>
+		<platform_extend type="float">1.08</platform_extend>
+		<x_rooms type="int">3</x_rooms>
+		<x_1 type="float">6.16</x_1>
+		<x_2 type="float">5.28</x_2>
+		<x_3 type="float">5.28</x_3>
+		<x_4 type="float">1.76</x_4>
+		<y_rooms type="int">3</y_rooms>
+		<y_1 type="float">3.52</y_1>
+		<y_2 type="float">3.52</y_2>
+		<y_3 type="float">1.76</y_3>
+		<piller_net type="str">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
+		<wall_net type="str">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<fang_net type="str">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
+		<piller_source type="Object">&lt;bpy_struct, Object("梭柱.001") at 0x318e49008&gt;</piller_source>
+		<piller_height type="float">4.93</piller_height>
+		<piller_diameter type="float">0.45</piller_diameter>
+		<use_smallfang type="bool">False</use_smallfang>
+		<wall_source type="Object">&lt;bpy_struct, Object("墙体.001") at 0x318e20a08&gt;</wall_source>
+		<door_height type="float">3.36</door_height>
+		<door_num type="int">4</door_num>
+		<gap_num type="int">5</gap_num>
+		<use_topwin type="bool">False</use_topwin>
+		<use_KanWall type="bool">False</use_KanWall>
+		<lingxin_source type="Object">&lt;bpy_struct, Object("棂心.正搭斜交.001") at 0x318e49608&gt;</lingxin_source>
+		<use_dg type="bool">True</use_dg>
+		<use_pingbanfang type="bool">True</use_pingbanfang>
+		<dg_piller_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.001") at 0x318e15a08&gt;</dg_piller_source>
+		<dg_fillgap_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.003") at 0x318e16008&gt;</dg_fillgap_source>
+		<dg_corner_source type="Object">&lt;bpy_struct, Object("四铺作插昂转角.asset.001") at 0x318e17c08&gt;</dg_corner_source>
+		<dg_extend type="float">0.45</dg_extend>
+		<dg_height type="float">0.99</dg_height>
+		<dg_gap type="float">1.7</dg_gap>
+		<roof_style type="str">2</roof_style>
+		<rafter_count type="int">6</rafter_count>
+		<use_flyrafter type="bool">True</use_flyrafter>
+		<use_wangban type="bool">True</use_wangban>
+		<qiqiao type="int">4</qiqiao>
+		<chong type="int">3</chong>
+		<shengqi type="int">1</shengqi>
+		<bofeng_source type="Object">&lt;bpy_struct, Object("博缝板.001") at 0x318e13a08&gt;</bofeng_source>
+		<tile_width type="float">0.4</tile_width>
+		<tile_length type="float">0.5</tile_length>
+		<flatTile_source type="Object">&lt;bpy_struct, Object("板瓦.001") at 0x318dfc408&gt;</flatTile_source>
+		<circularTile_source type="Object">&lt;bpy_struct, Object("筒瓦.001") at 0x318e55208&gt;</circularTile_source>
+		<eaveTile_source type="Object">&lt;bpy_struct, Object("瓦当.001") at 0x318e53208&gt;</eaveTile_source>
+		<dripTile_source type="Object">&lt;bpy_struct, Object("滴水.001") at 0x318e50208&gt;</dripTile_source>
+		<ridgeTop_source type="Object">&lt;bpy_struct, Object("正脊筒.001") at 0x318e4e408&gt;</ridgeTop_source>
+		<ridgeBack_source type="Object">&lt;bpy_struct, Object("垂脊兽后.001") at 0x318e1c208&gt;</ridgeBack_source>
+		<ridgeFront_source type="Object">&lt;bpy_struct, Object("垂脊兽前.001") at 0x318e1b608&gt;</ridgeFront_source>
+		<ridgeEnd_source type="Object">&lt;bpy_struct, Object("端头组合.001") at 0x318e54c08&gt;</ridgeEnd_source>
+		<chiwen_source type="Object">&lt;bpy_struct, Object("螭吻.001") at 0x149fcfc08&gt;</chiwen_source>
+		<chuishou_source type="Object">&lt;bpy_struct, Object("垂兽.001") at 0x318e1aa08&gt;</chuishou_source>
+		<taoshou_source type="Object">&lt;bpy_struct, Object("套兽.001") at 0x318e2ac08&gt;</taoshou_source>
+		<paoshou_0_source type="Object">&lt;bpy_struct, Object("0-骑凤仙人.001") at 0x318df8208&gt;</paoshou_0_source>
+		<paoshou_1_source type="Object">&lt;bpy_struct, Object("1-龙.001") at 0x318df5808&gt;</paoshou_1_source>
+		<paoshou_2_source type="Object">&lt;bpy_struct, Object("2-凤.001") at 0x318df6a08&gt;</paoshou_2_source>
+		<paoshou_3_source type="Object">&lt;bpy_struct, Object("3-狮子.001") at 0x318df8e08&gt;</paoshou_3_source>
+		<paoshou_4_source type="Object">&lt;bpy_struct, Object("4-海马.001") at 0x318df9a08&gt;</paoshou_4_source>
+		<paoshou_5_source type="Object">&lt;bpy_struct, Object("5-天马.001") at 0x318dfa608&gt;</paoshou_5_source>
+		<paoshou_6_source type="Object">&lt;bpy_struct, Object("6-狎鱼.001") at 0x318dfb208&gt;</paoshou_6_source>
+		<paoshou_7_source type="Object">&lt;bpy_struct, Object("7-狻猊.001") at 0x318df7008&gt;</paoshou_7_source>
+		<paoshou_8_source type="Object">&lt;bpy_struct, Object("8-獬豸.001") at 0x318df7608&gt;</paoshou_8_source>
+		<paoshou_9_source type="Object">&lt;bpy_struct, Object("9-斗牛.001") at 0x318df7c08&gt;</paoshou_9_source>
+		<paoshou_10_source type="Object">&lt;bpy_struct, Object("10-行什.001") at 0x318df6408&gt;</paoshou_10_source>
+		<mat_wood type="Object">&lt;bpy_struct, Object("原木.001") at 0x318ddd808&gt;</mat_wood>
+		<mat_rock type="Object">&lt;bpy_struct, Object("石材.001") at 0x318e53808&gt;</mat_rock>
+		<mat_stone type="NoneType">None</mat_stone>
+		<mat_red type="Object">&lt;bpy_struct, Object("红漆.001") at 0x149fbc408&gt;</mat_red>
+	</template>
+	<template>
+		<template_name type="str">示33</template_name>
+		<DK type="float">0.08</DK>
+		<platform_height type="float">1.0</platform_height>
+		<platform_extend type="float">1.08</platform_extend>
+		<x_rooms type="int">3</x_rooms>
+		<x_1 type="float">6.16</x_1>
+		<x_2 type="float">5.28</x_2>
+		<x_3 type="float">5.28</x_3>
+		<x_4 type="float">1.76</x_4>
+		<y_rooms type="int">3</y_rooms>
+		<y_1 type="float">3.52</y_1>
+		<y_2 type="float">3.52</y_2>
+		<y_3 type="float">1.76</y_3>
+		<piller_net type="str">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
+		<wall_net type="str">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<fang_net type="str">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
+		<piller_source type="Object">&lt;bpy_struct, Object("梭柱.001") at 0x318e49008&gt;</piller_source>
+		<piller_height type="float">4.93</piller_height>
+		<piller_diameter type="float">0.45</piller_diameter>
+		<use_smallfang type="bool">False</use_smallfang>
+		<wall_source type="Object">&lt;bpy_struct, Object("墙体.001") at 0x318e20a08&gt;</wall_source>
+		<door_height type="float">3.36</door_height>
+		<door_num type="int">4</door_num>
+		<gap_num type="int">5</gap_num>
+		<use_topwin type="bool">False</use_topwin>
+		<use_KanWall type="bool">False</use_KanWall>
+		<lingxin_source type="Object">&lt;bpy_struct, Object("棂心.正搭斜交.001") at 0x318e49608&gt;</lingxin_source>
+		<use_dg type="bool">True</use_dg>
+		<use_pingbanfang type="bool">True</use_pingbanfang>
+		<dg_piller_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.001") at 0x318e15a08&gt;</dg_piller_source>
+		<dg_fillgap_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.003") at 0x318e16008&gt;</dg_fillgap_source>
+		<dg_corner_source type="Object">&lt;bpy_struct, Object("四铺作插昂转角.asset.001") at 0x318e17c08&gt;</dg_corner_source>
+		<dg_extend type="float">0.45</dg_extend>
+		<dg_height type="float">0.99</dg_height>
+		<dg_gap type="float">1.7</dg_gap>
+		<roof_style type="str">2</roof_style>
+		<rafter_count type="int">6</rafter_count>
+		<use_flyrafter type="bool">True</use_flyrafter>
+		<use_wangban type="bool">True</use_wangban>
+		<qiqiao type="int">4</qiqiao>
+		<chong type="int">3</chong>
+		<shengqi type="int">1</shengqi>
+		<bofeng_source type="Object">&lt;bpy_struct, Object("博缝板.001") at 0x318e13a08&gt;</bofeng_source>
+		<tile_width type="float">0.4</tile_width>
+		<tile_length type="float">0.5</tile_length>
+		<flatTile_source type="Object">&lt;bpy_struct, Object("板瓦.001") at 0x318dfc408&gt;</flatTile_source>
+		<circularTile_source type="Object">&lt;bpy_struct, Object("筒瓦.001") at 0x318e55208&gt;</circularTile_source>
+		<eaveTile_source type="Object">&lt;bpy_struct, Object("瓦当.001") at 0x318e53208&gt;</eaveTile_source>
+		<dripTile_source type="Object">&lt;bpy_struct, Object("滴水.001") at 0x318e50208&gt;</dripTile_source>
+		<ridgeTop_source type="Object">&lt;bpy_struct, Object("正脊筒.001") at 0x318e4e408&gt;</ridgeTop_source>
+		<ridgeBack_source type="Object">&lt;bpy_struct, Object("垂脊兽后.001") at 0x318e1c208&gt;</ridgeBack_source>
+		<ridgeFront_source type="Object">&lt;bpy_struct, Object("垂脊兽前.001") at 0x318e1b608&gt;</ridgeFront_source>
+		<ridgeEnd_source type="Object">&lt;bpy_struct, Object("端头组合.001") at 0x318e54c08&gt;</ridgeEnd_source>
+		<chiwen_source type="Object">&lt;bpy_struct, Object("螭吻.001") at 0x149fcfc08&gt;</chiwen_source>
+		<chuishou_source type="Object">&lt;bpy_struct, Object("垂兽.001") at 0x318e1aa08&gt;</chuishou_source>
+		<taoshou_source type="Object">&lt;bpy_struct, Object("套兽.001") at 0x318e2ac08&gt;</taoshou_source>
+		<paoshou_0_source type="Object">&lt;bpy_struct, Object("0-骑凤仙人.001") at 0x318df8208&gt;</paoshou_0_source>
+		<paoshou_1_source type="Object">&lt;bpy_struct, Object("1-龙.001") at 0x318df5808&gt;</paoshou_1_source>
+		<paoshou_2_source type="Object">&lt;bpy_struct, Object("2-凤.001") at 0x318df6a08&gt;</paoshou_2_source>
+		<paoshou_3_source type="Object">&lt;bpy_struct, Object("3-狮子.001") at 0x318df8e08&gt;</paoshou_3_source>
+		<paoshou_4_source type="Object">&lt;bpy_struct, Object("4-海马.001") at 0x318df9a08&gt;</paoshou_4_source>
+		<paoshou_5_source type="Object">&lt;bpy_struct, Object("5-天马.001") at 0x318dfa608&gt;</paoshou_5_source>
+		<paoshou_6_source type="Object">&lt;bpy_struct, Object("6-狎鱼.001") at 0x318dfb208&gt;</paoshou_6_source>
+		<paoshou_7_source type="Object">&lt;bpy_struct, Object("7-狻猊.001") at 0x318df7008&gt;</paoshou_7_source>
+		<paoshou_8_source type="Object">&lt;bpy_struct, Object("8-獬豸.001") at 0x318df7608&gt;</paoshou_8_source>
+		<paoshou_9_source type="Object">&lt;bpy_struct, Object("9-斗牛.001") at 0x318df7c08&gt;</paoshou_9_source>
+		<paoshou_10_source type="Object">&lt;bpy_struct, Object("10-行什.001") at 0x318df6408&gt;</paoshou_10_source>
+		<mat_wood type="Object">&lt;bpy_struct, Object("原木.001") at 0x318ddd808&gt;</mat_wood>
+		<mat_rock type="Object">&lt;bpy_struct, Object("石材.001") at 0x318e53808&gt;</mat_rock>
+		<mat_stone type="NoneType">None</mat_stone>
+		<mat_red type="Object">&lt;bpy_struct, Object("红漆.001") at 0x149fbc408&gt;</mat_red>
+	</template>
+	<template>
+		<template_name type="str">示44</template_name>
+		<DK type="float">0.08</DK>
+		<platform_height type="float">1.0</platform_height>
+		<platform_extend type="float">1.08</platform_extend>
+		<x_rooms type="int">3</x_rooms>
+		<x_1 type="float">6.16</x_1>
+		<x_2 type="float">5.28</x_2>
+		<x_3 type="float">5.28</x_3>
+		<x_4 type="float">1.76</x_4>
+		<y_rooms type="int">3</y_rooms>
+		<y_1 type="float">3.52</y_1>
+		<y_2 type="float">3.52</y_2>
+		<y_3 type="float">1.76</y_3>
+		<piller_net type="str">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
+		<wall_net type="str">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<fang_net type="str">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
+		<piller_source type="Object">&lt;bpy_struct, Object("梭柱.001") at 0x318e49008&gt;</piller_source>
+		<piller_height type="float">4.93</piller_height>
+		<piller_diameter type="float">0.45</piller_diameter>
+		<use_smallfang type="bool">False</use_smallfang>
+		<wall_source type="Object">&lt;bpy_struct, Object("墙体.001") at 0x318e20a08&gt;</wall_source>
+		<door_height type="float">3.36</door_height>
+		<door_num type="int">4</door_num>
+		<gap_num type="int">5</gap_num>
+		<use_topwin type="bool">False</use_topwin>
+		<use_KanWall type="bool">False</use_KanWall>
+		<lingxin_source type="Object">&lt;bpy_struct, Object("棂心.正搭斜交.001") at 0x318e49608&gt;</lingxin_source>
+		<use_dg type="bool">True</use_dg>
+		<use_pingbanfang type="bool">True</use_pingbanfang>
+		<dg_piller_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.001") at 0x318e15a08&gt;</dg_piller_source>
+		<dg_fillgap_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.003") at 0x318e16008&gt;</dg_fillgap_source>
+		<dg_corner_source type="Object">&lt;bpy_struct, Object("四铺作插昂转角.asset.001") at 0x318e17c08&gt;</dg_corner_source>
+		<dg_extend type="float">0.45</dg_extend>
+		<dg_height type="float">0.99</dg_height>
+		<dg_gap type="float">1.7</dg_gap>
+		<roof_style type="str">2</roof_style>
+		<rafter_count type="int">6</rafter_count>
+		<use_flyrafter type="bool">True</use_flyrafter>
+		<use_wangban type="bool">True</use_wangban>
+		<qiqiao type="int">4</qiqiao>
+		<chong type="int">3</chong>
+		<shengqi type="int">1</shengqi>
+		<bofeng_source type="Object">&lt;bpy_struct, Object("博缝板.001") at 0x318e13a08&gt;</bofeng_source>
+		<tile_width type="float">0.4</tile_width>
+		<tile_length type="float">0.5</tile_length>
+		<flatTile_source type="Object">&lt;bpy_struct, Object("板瓦.001") at 0x318dfc408&gt;</flatTile_source>
+		<circularTile_source type="Object">&lt;bpy_struct, Object("筒瓦.001") at 0x318e55208&gt;</circularTile_source>
+		<eaveTile_source type="Object">&lt;bpy_struct, Object("瓦当.001") at 0x318e53208&gt;</eaveTile_source>
+		<dripTile_source type="Object">&lt;bpy_struct, Object("滴水.001") at 0x318e50208&gt;</dripTile_source>
+		<ridgeTop_source type="Object">&lt;bpy_struct, Object("正脊筒.001") at 0x318e4e408&gt;</ridgeTop_source>
+		<ridgeBack_source type="Object">&lt;bpy_struct, Object("垂脊兽后.001") at 0x318e1c208&gt;</ridgeBack_source>
+		<ridgeFront_source type="Object">&lt;bpy_struct, Object("垂脊兽前.001") at 0x318e1b608&gt;</ridgeFront_source>
+		<ridgeEnd_source type="Object">&lt;bpy_struct, Object("端头组合.001") at 0x318e54c08&gt;</ridgeEnd_source>
+		<chiwen_source type="Object">&lt;bpy_struct, Object("螭吻.001") at 0x149fcfc08&gt;</chiwen_source>
+		<chuishou_source type="Object">&lt;bpy_struct, Object("垂兽.001") at 0x318e1aa08&gt;</chuishou_source>
+		<taoshou_source type="Object">&lt;bpy_struct, Object("套兽.001") at 0x318e2ac08&gt;</taoshou_source>
+		<paoshou_0_source type="Object">&lt;bpy_struct, Object("0-骑凤仙人.001") at 0x318df8208&gt;</paoshou_0_source>
+		<paoshou_1_source type="Object">&lt;bpy_struct, Object("1-龙.001") at 0x318df5808&gt;</paoshou_1_source>
+		<paoshou_2_source type="Object">&lt;bpy_struct, Object("2-凤.001") at 0x318df6a08&gt;</paoshou_2_source>
+		<paoshou_3_source type="Object">&lt;bpy_struct, Object("3-狮子.001") at 0x318df8e08&gt;</paoshou_3_source>
+		<paoshou_4_source type="Object">&lt;bpy_struct, Object("4-海马.001") at 0x318df9a08&gt;</paoshou_4_source>
+		<paoshou_5_source type="Object">&lt;bpy_struct, Object("5-天马.001") at 0x318dfa608&gt;</paoshou_5_source>
+		<paoshou_6_source type="Object">&lt;bpy_struct, Object("6-狎鱼.001") at 0x318dfb208&gt;</paoshou_6_source>
+		<paoshou_7_source type="Object">&lt;bpy_struct, Object("7-狻猊.001") at 0x318df7008&gt;</paoshou_7_source>
+		<paoshou_8_source type="Object">&lt;bpy_struct, Object("8-獬豸.001") at 0x318df7608&gt;</paoshou_8_source>
+		<paoshou_9_source type="Object">&lt;bpy_struct, Object("9-斗牛.001") at 0x318df7c08&gt;</paoshou_9_source>
+		<paoshou_10_source type="Object">&lt;bpy_struct, Object("10-行什.001") at 0x318df6408&gt;</paoshou_10_source>
+		<mat_wood type="Object">&lt;bpy_struct, Object("原木.001") at 0x318ddd808&gt;</mat_wood>
+		<mat_rock type="Object">&lt;bpy_struct, Object("石材.001") at 0x318e53808&gt;</mat_rock>
+		<mat_stone type="NoneType">None</mat_stone>
+		<mat_red type="Object">&lt;bpy_struct, Object("红漆.001") at 0x149fbc408&gt;</mat_red>
+	</template>
+	<template>
+		<template_name type="str">示55</template_name>
+		<DK type="float">0.08</DK>
+		<platform_height type="float">1.0</platform_height>
+		<platform_extend type="float">1.08</platform_extend>
+		<x_rooms type="int">3</x_rooms>
+		<x_1 type="float">6.16</x_1>
+		<x_2 type="float">5.28</x_2>
+		<x_3 type="float">5.28</x_3>
+		<x_4 type="float">1.76</x_4>
+		<y_rooms type="int">3</y_rooms>
+		<y_1 type="float">3.52</y_1>
+		<y_2 type="float">3.52</y_2>
+		<y_3 type="float">1.76</y_3>
+		<piller_net type="str">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
+		<wall_net type="str">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<fang_net type="str">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
+		<piller_source type="Object">&lt;bpy_struct, Object("梭柱.001") at 0x318e49008&gt;</piller_source>
+		<piller_height type="float">4.93</piller_height>
+		<piller_diameter type="float">0.45</piller_diameter>
+		<use_smallfang type="bool">False</use_smallfang>
+		<wall_source type="Object">&lt;bpy_struct, Object("墙体.001") at 0x318e20a08&gt;</wall_source>
+		<door_height type="float">3.36</door_height>
+		<door_num type="int">4</door_num>
+		<gap_num type="int">5</gap_num>
+		<use_topwin type="bool">False</use_topwin>
+		<use_KanWall type="bool">False</use_KanWall>
+		<lingxin_source type="Object">&lt;bpy_struct, Object("棂心.正搭斜交.001") at 0x318e49608&gt;</lingxin_source>
+		<use_dg type="bool">True</use_dg>
+		<use_pingbanfang type="bool">True</use_pingbanfang>
+		<dg_piller_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.001") at 0x318e15a08&gt;</dg_piller_source>
+		<dg_fillgap_source type="Object">&lt;bpy_struct, Object("四铺作插昂柱头.join.003") at 0x318e16008&gt;</dg_fillgap_source>
+		<dg_corner_source type="Object">&lt;bpy_struct, Object("四铺作插昂转角.asset.001") at 0x318e17c08&gt;</dg_corner_source>
+		<dg_extend type="float">0.45</dg_extend>
+		<dg_height type="float">0.99</dg_height>
+		<dg_gap type="float">1.7</dg_gap>
+		<roof_style type="str">2</roof_style>
+		<rafter_count type="int">6</rafter_count>
+		<use_flyrafter type="bool">True</use_flyrafter>
+		<use_wangban type="bool">True</use_wangban>
+		<qiqiao type="int">4</qiqiao>
+		<chong type="int">3</chong>
+		<shengqi type="int">1</shengqi>
+		<bofeng_source type="Object">&lt;bpy_struct, Object("博缝板.001") at 0x318e13a08&gt;</bofeng_source>
+		<tile_width type="float">0.4</tile_width>
+		<tile_length type="float">0.5</tile_length>
+		<flatTile_source type="Object">&lt;bpy_struct, Object("板瓦.001") at 0x318dfc408&gt;</flatTile_source>
+		<circularTile_source type="Object">&lt;bpy_struct, Object("筒瓦.001") at 0x318e55208&gt;</circularTile_source>
+		<eaveTile_source type="Object">&lt;bpy_struct, Object("瓦当.001") at 0x318e53208&gt;</eaveTile_source>
+		<dripTile_source type="Object">&lt;bpy_struct, Object("滴水.001") at 0x318e50208&gt;</dripTile_source>
+		<ridgeTop_source type="Object">&lt;bpy_struct, Object("正脊筒.001") at 0x318e4e408&gt;</ridgeTop_source>
+		<ridgeBack_source type="Object">&lt;bpy_struct, Object("垂脊兽后.001") at 0x318e1c208&gt;</ridgeBack_source>
+		<ridgeFront_source type="Object">&lt;bpy_struct, Object("垂脊兽前.001") at 0x318e1b608&gt;</ridgeFront_source>
+		<ridgeEnd_source type="Object">&lt;bpy_struct, Object("端头组合.001") at 0x318e54c08&gt;</ridgeEnd_source>
+		<chiwen_source type="Object">&lt;bpy_struct, Object("螭吻.001") at 0x149fcfc08&gt;</chiwen_source>
+		<chuishou_source type="Object">&lt;bpy_struct, Object("垂兽.001") at 0x318e1aa08&gt;</chuishou_source>
+		<taoshou_source type="Object">&lt;bpy_struct, Object("套兽.001") at 0x318e2ac08&gt;</taoshou_source>
+		<paoshou_0_source type="Object">&lt;bpy_struct, Object("0-骑凤仙人.001") at 0x318df8208&gt;</paoshou_0_source>
+		<paoshou_1_source type="Object">&lt;bpy_struct, Object("1-龙.001") at 0x318df5808&gt;</paoshou_1_source>
+		<paoshou_2_source type="Object">&lt;bpy_struct, Object("2-凤.001") at 0x318df6a08&gt;</paoshou_2_source>
+		<paoshou_3_source type="Object">&lt;bpy_struct, Object("3-狮子.001") at 0x318df8e08&gt;</paoshou_3_source>
+		<paoshou_4_source type="Object">&lt;bpy_struct, Object("4-海马.001") at 0x318df9a08&gt;</paoshou_4_source>
+		<paoshou_5_source type="Object">&lt;bpy_struct, Object("5-天马.001") at 0x318dfa608&gt;</paoshou_5_source>
+		<paoshou_6_source type="Object">&lt;bpy_struct, Object("6-狎鱼.001") at 0x318dfb208&gt;</paoshou_6_source>
+		<paoshou_7_source type="Object">&lt;bpy_struct, Object("7-狻猊.001") at 0x318df7008&gt;</paoshou_7_source>
+		<paoshou_8_source type="Object">&lt;bpy_struct, Object("8-獬豸.001") at 0x318df7608&gt;</paoshou_8_source>
+		<paoshou_9_source type="Object">&lt;bpy_struct, Object("9-斗牛.001") at 0x318df7c08&gt;</paoshou_9_source>
+		<paoshou_10_source type="Object">&lt;bpy_struct, Object("10-行什.001") at 0x318df6408&gt;</paoshou_10_source>
+		<mat_wood type="Object">&lt;bpy_struct, Object("原木.001") at 0x318ddd808&gt;</mat_wood>
+		<mat_rock type="Object">&lt;bpy_struct, Object("石材.001") at 0x318e53808&gt;</mat_rock>
+		<mat_stone type="NoneType">None</mat_stone>
+		<mat_red type="Object">&lt;bpy_struct, Object("红漆.001") at 0x149fbc408&gt;</mat_red>
+	</template>
 </templates>

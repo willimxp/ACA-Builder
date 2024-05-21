@@ -33,10 +33,13 @@ class ACA_PT_basic(bpy.types.Panel):
         # 按钮，生成新建筑
         row = box.row()
         row.operator("aca.add_newbuilding",icon='FILE_3D')
+        # 按钮，保存模版
+        row = box.row()
+        row.operator("aca.save_template",icon='HOME',text='保存模板')
         
         # 测试按钮
-        row = layout.row()
-        row.operator("aca.test",icon='HOME')
+        # row = layout.row()
+        # row.operator("aca.test",icon='HOME')
 
         # 从当前场景中载入数据集
         if context.object != None:

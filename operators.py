@@ -328,7 +328,8 @@ class ACA_OT_test(bpy.types.Operator):
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj != None:
             from . import acaTemplate
-            acaTemplate.saveTemplate(buildingObj)
+            templateName = bpy.context.scene.ACA_data.template
+            acaTemplate.openTemplate(buildingObj,templateName)
         else:
             utils.showMessageBox("ERROR: 找不到建筑")
 

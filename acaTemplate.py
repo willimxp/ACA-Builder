@@ -67,6 +67,8 @@ def loadAssets(assetName : str,parent:bpy.types.Object,hide=True):
 def __loadDefaultData(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
+    bData['aca_obj'] = True
+    bData['aca_type'] = con.ACA_TYPE_BUILDING
 
     # 校验DK,PD不能为空
     if bData.DK == 0.0:
@@ -436,6 +438,82 @@ def loadTemplate(buildingObj:bpy.types.Object,
 
     return
 
+# 载入模版
+# 直接将XML填充入bData
+# 注意，所有的属性都为选填，所以要做好空值的检查
+def openTemplate(buildingObj:bpy.types.Object,
+                 templateName:str):
+    # 解析XML配置模版
+    path = os.path.join(templateFolder, xmlFileName)
+    tree = ET.parse(path)
+    root = tree.getroot()
+    templates = root.findall('template')
+    if templates == None:
+        utils.outputMsg("模版解析失败")
+        return
+    
+    # 同步绑定资产
+    # 1. 指定资产目录
+    buildingColl = buildingObj.users_collection[0]
+    coll = utils.setCollection('资产',parentColl=buildingColl)
+    # 2. 指定资产根节点
+    bpy.ops.object.empty_add(type='PLAIN_AXES')
+    assetsObj = bpy.context.object
+    assetsObj.location = buildingObj.location   # 原点摆放在3D Cursor位置
+    assetsObj.parent = buildingObj
+    assetsObj.name = 'assets'   # 系统遇到重名会自动添加00x的后缀
+    assetsObj.ACA_data['aca_obj'] = True
+    assetsObj.ACA_data['aca_type'] = con.ACA_TYPE_ASSET_ROOT
+    
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    
+    # 在XML中查找对应名称的那个模版
+    for template in templates:
+        template_name = template.find('template_name').text
+        if template_name == templateName:
+            
+            # 初始化bData默认值，根据DK/PD实时刷新一次
+            # 模版名称
+            bData['template_name'] = template_name
+            # 斗口
+            dk = template.find('dk')
+            if dk != None: 
+                bData['DK'] = float(dk.text)
+            # 柱径
+            pd = template.find('piller_diameter')
+            if pd != None:
+                bData['piller_diameter'] = float(pd.text)
+            # 刷新bData默认值
+            bData = __loadDefaultData(buildingObj)
+
+            # 遍历所有子节点，并绑定到对应属性
+            for node in template:
+                print(node.tag, node.attrib['type'],node.text)
+                tag = node.tag
+                type = node.attrib['type']
+                value = node.text
+                if tag == 'roof_style':
+                    print('rooft_style')
+                # 类型转换
+                if type == 'str':
+                    bData[tag] = value
+                    # 特殊处理下拉框
+                    if tag == 'roof_style':
+                        bData[tag] = int(value)
+                elif type == 'float':
+                    bData[tag] = round(float(value),2)
+                elif type == 'int':
+                    bData[tag] = int(value)
+                elif type == 'bool':
+                    bData[tag] = bool(value)
+                elif type == 'object':
+                    bData[tag] = loadAssets(value,assetsObj)
+                else:
+                    print("can't convert:",node.tag, node.attrib['type'],node.text)
+
+    return
+
 # 保存模版修改
 def saveTemplate(buildingObj:bpy.types.Object):
     # 载入输入
@@ -447,6 +525,7 @@ def saveTemplate(buildingObj:bpy.types.Object):
 
     # 忽略处理的节点
     ignoreKeys = {
+        # 辅助参数，无需处理
         'aca_obj',
         'aca_type',
         'x_total',
@@ -462,6 +541,41 @@ def saveTemplate(buildingObj:bpy.types.Object):
         'roof_qiao_point',
         'tile_width_real',
         'dg_scale',
+
+        # 外部引用，暂不处理
+        'piller_source',        # 梭柱
+        'wall_source',          # 墙体
+        'lingxin_source',       # 棂心.正搭斜交
+        'dg_piller_source',     # 四铺作插昂柱头.join
+        'dg_fillgap_source',    # 四铺作插昂柱头.join
+        'dg_corner_source',     # 四铺作插昂转角.asset
+        'bofeng_source',        # 博缝板
+        'flatTile_source',      # 板瓦
+        'circularTile_source',  # 筒瓦
+        'eaveTile_source',      # 瓦当
+        'dripTile_source',      # 滴水
+        'ridgeTop_source',      # 正脊筒
+        'ridgeBack_source',     # 垂脊兽后
+        'ridgeFront_source',    # 垂脊兽前
+        'ridgeEnd_source',      # 端头组合
+        'chiwen_source',        # 螭吻
+        'chuishou_source',      # 垂兽
+        'taoshou_source',       # 套兽
+        'paoshou_0_source',     # 0-骑凤仙人
+        'paoshou_1_source',     # 1-龙
+        'paoshou_2_source',     # 2-凤
+        'paoshou_3_source',     # 3-狮子
+        'paoshou_4_source',     # 4-海马
+        'paoshou_5_source',     # 5-天马
+        'paoshou_6_source',     # 6-狎鱼
+        'paoshou_7_source',     # 7-狻猊
+        'paoshou_8_source',     # 8-獬豸
+        'paoshou_9_source',     # 9-斗牛
+        'paoshou_10_source',    # 10-行什
+        'mat_wood',          # 原木
+        'mat_rock',          # 石材
+        'mat_stone',         # 石头
+        'mat_red',     # 红漆
     }
     
     # 解析XML配置模版

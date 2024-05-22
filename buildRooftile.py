@@ -405,7 +405,7 @@ def __drawTileGrid(
     # 而python中暂未找到在curve上均匀分配的API
     # 连接资产blender文件中的瓦面对象，直接放到“瓦作层”节点下
     tileGrid:bpy.types.Object = acaTemplate.loadAssets(
-        "瓦面",tileRootObj,hide=False)
+        "瓦面",tileRootObj,hide=False,link=False)
     # 瓦面要与辅助线重合，并上移一个大连檐高度
     tileGrid.location = TileCurve.location
     tileGrid.name = tileGrid_name

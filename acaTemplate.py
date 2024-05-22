@@ -38,17 +38,34 @@ def getTemplateList(onlyname=False):
 # 载入Blender中的资产
 # 参考教程：https://b3d.interplanety.org/en/appending-all-objects-from-the-external-blend-file-to-the-scene-with-blender-python-api/
 # 参考文档：https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html
-def loadAssets(assetName : str,parent:bpy.types.Object,hide=True):
-    #print("Loading " + assetName + '...')
+def loadAssets(assetName : str,parent:bpy.types.Object,hide=True,link=True):
+    # 验证资源是否有重复，直接返回现有对象
+    if assetName in bpy.data.objects:
+        if link:    # 仅使用于直接连接，append时不做处理
+            return bpy.data.objects[assetName]
+    
     # 打开资产文件
     filepath = os.path.join(templateFolder, blenderFileName)
 
     # 简化做法，效率更高，但没有关联子对象
     with bpy.data.libraries.load(filepath) as (data_from, data_to):
         data_to.objects = [name for name in data_from.objects if name.startswith(assetName)]
-    for obj in data_to.objects:
+    # 验证找到的资产是否唯一
+    if len(data_to.objects) == 0:
+        utils.outputMsg("未找到指定载入的资产:" + assetName)
+        return
+    if len(data_to.objects) > 1:
+        utils.outputMsg("无法定位唯一的资产:" + assetName)
+        return
+    
+    sourceObj = data_to.objects[0]
+    if link:
+        # 直接返回引用
+        return sourceObj
+    else:
+        # 返回一个复制的新对象
         newobj = utils.copyObject(
-            sourceObj=obj,
+            sourceObj=sourceObj,
             parentObj=parent,
         )
         if hide:
@@ -60,8 +77,7 @@ def loadAssets(assetName : str,parent:bpy.types.Object,hide=True):
                 utils.hideObj(child)
             else:
                 utils.showObj(child)
-
-    return newobj
+        return newobj
 
 # 用const填充XML中未定义的属性
 def __loadDefaultData(buildingObj:bpy.types.Object):
@@ -489,12 +505,9 @@ def openTemplate(buildingObj:bpy.types.Object,
 
             # 遍历所有子节点，并绑定到对应属性
             for node in template:
-                print(node.tag, node.attrib['type'],node.text)
                 tag = node.tag
                 type = node.attrib['type']
                 value = node.text
-                if tag == 'roof_style':
-                    print('rooft_style')
                 # 类型转换
                 if type == 'str':
                     bData[tag] = value
@@ -542,40 +555,40 @@ def saveTemplate(buildingObj:bpy.types.Object):
         'tile_width_real',
         'dg_scale',
 
-        # 外部引用，暂不处理
-        'piller_source',        # 梭柱
-        'wall_source',          # 墙体
-        'lingxin_source',       # 棂心.正搭斜交
-        'dg_piller_source',     # 四铺作插昂柱头.join
-        'dg_fillgap_source',    # 四铺作插昂柱头.join
-        'dg_corner_source',     # 四铺作插昂转角.asset
-        'bofeng_source',        # 博缝板
-        'flatTile_source',      # 板瓦
-        'circularTile_source',  # 筒瓦
-        'eaveTile_source',      # 瓦当
-        'dripTile_source',      # 滴水
-        'ridgeTop_source',      # 正脊筒
-        'ridgeBack_source',     # 垂脊兽后
-        'ridgeFront_source',    # 垂脊兽前
-        'ridgeEnd_source',      # 端头组合
-        'chiwen_source',        # 螭吻
-        'chuishou_source',      # 垂兽
-        'taoshou_source',       # 套兽
-        'paoshou_0_source',     # 0-骑凤仙人
-        'paoshou_1_source',     # 1-龙
-        'paoshou_2_source',     # 2-凤
-        'paoshou_3_source',     # 3-狮子
-        'paoshou_4_source',     # 4-海马
-        'paoshou_5_source',     # 5-天马
-        'paoshou_6_source',     # 6-狎鱼
-        'paoshou_7_source',     # 7-狻猊
-        'paoshou_8_source',     # 8-獬豸
-        'paoshou_9_source',     # 9-斗牛
-        'paoshou_10_source',    # 10-行什
-        'mat_wood',          # 原木
-        'mat_rock',          # 石材
-        'mat_stone',         # 石头
-        'mat_red',     # 红漆
+        # # 外部引用，暂不处理
+        # 'piller_source',        # 梭柱
+        # 'wall_source',          # 墙体
+        # 'lingxin_source',       # 棂心.正搭斜交
+        # 'dg_piller_source',     # 四铺作插昂柱头.join
+        # 'dg_fillgap_source',    # 四铺作插昂柱头.join
+        # 'dg_corner_source',     # 四铺作插昂转角.asset
+        # 'bofeng_source',        # 博缝板
+        # 'flatTile_source',      # 板瓦
+        # 'circularTile_source',  # 筒瓦
+        # 'eaveTile_source',      # 瓦当
+        # 'dripTile_source',      # 滴水
+        # 'ridgeTop_source',      # 正脊筒
+        # 'ridgeBack_source',     # 垂脊兽后
+        # 'ridgeFront_source',    # 垂脊兽前
+        # 'ridgeEnd_source',      # 端头组合
+        # 'chiwen_source',        # 螭吻
+        # 'chuishou_source',      # 垂兽
+        # 'taoshou_source',       # 套兽
+        # 'paoshou_0_source',     # 0-骑凤仙人
+        # 'paoshou_1_source',     # 1-龙
+        # 'paoshou_2_source',     # 2-凤
+        # 'paoshou_3_source',     # 3-狮子
+        # 'paoshou_4_source',     # 4-海马
+        # 'paoshou_5_source',     # 5-天马
+        # 'paoshou_6_source',     # 6-狎鱼
+        # 'paoshou_7_source',     # 7-狻猊
+        # 'paoshou_8_source',     # 8-獬豸
+        # 'paoshou_9_source',     # 9-斗牛
+        # 'paoshou_10_source',    # 10-行什
+        # 'mat_wood',          # 原木
+        # 'mat_rock',          # 石材
+        # 'mat_stone',         # 石头
+        # 'mat_red',     # 红漆
     }
     
     # 解析XML配置模版
@@ -617,6 +630,11 @@ def saveTemplate(buildingObj:bpy.types.Object):
         # 浮点数取2位精度
         if keyType == 'float':
             value = round(value,2)
+        if keyType == 'Object':
+            # value目前未bpy.data.object对象
+            object = getattr(bData, key)
+            value = object.name  # 对象名称
+            # path = object.data.library_weak_reference.filepath
 
         # 数据保存
         # 查找节点

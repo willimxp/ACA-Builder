@@ -327,9 +327,9 @@ class ACA_OT_test(bpy.types.Operator):
         #     utils.showMessageBox("ERROR: 找不到建筑")
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj != None:
-            from . import acaTemplate
-            templateName = bpy.context.scene.ACA_data.template
-            acaTemplate.openTemplate(buildingObj,templateName)
+            from . import buildPlatform
+            funproxy = partial(buildPlatform.buildPlatform,buildingObj=buildingObj)
+            utils.fastRun(funproxy)
         else:
             utils.showMessageBox("ERROR: 找不到建筑")
 

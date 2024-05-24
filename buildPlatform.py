@@ -208,23 +208,49 @@ def __drawStep(stepProxy:bpy.types.Object):
     )
     bData:acaData = buildingObj.ACA_data
     (pWidth,pDeepth,pHeight) = stepProxy.dimensions
+    # 阶条石宽度，取下出-半个柱顶石（柱顶石为2pd，这里直接减1pd）
     stoneWidth = bData.platform_extend \
                     -bData.piller_diameter
     bevel = 0.03
     # 计算柱网数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
     utils.hideObjFace(stepProxy)
+    # 判断是否为“连三踏跺”
+    stepSide = ''
+    spx = stepProxy.location.x
+    spy = stepProxy.location.y
+    if spx != 0 and spy != 0:
+        if spx * spy > 0 :
+            stepSide = 'left'
+        else:
+            stepSide = 'right'
+    # 垂带/象眼石的位置
+    # 中间踏跺做左侧，向右镜像
+    # 左右两侧踏跺不做镜像，仅做左侧或右侧
+    chuidaiX = -pWidth/2
+    if stepSide == 'right' :
+        chuidaiX = pWidth/2
     
     # 土衬
+    # 宽度：柱间距+金边+台阶石出头（垂带中与柱中对齐）
+    tuchenWidth = pWidth+con.GROUND_BORDER*2+stoneWidth
+    tuchenX = 0
+    if stepSide != '':
+        # 连三踏跺，为了不与中间土衬交叠，而错开
+        tuchenWidth = pWidth
+        if stepSide == 'left':
+            tuchenX = -con.GROUND_BORDER-stoneWidth/2
+        else:
+            tuchenX = con.GROUND_BORDER+stoneWidth/2
     brickObj = utils.addCube(
         name='土衬',
         location=(
-            0,0,
+            tuchenX,0,
             (-pHeight/2
              +con.GROUND_BORDER/2)
         ),
         scale=(
-            pWidth+con.GROUND_BORDER*2,             # 从stepProxy扩展金边             
+            tuchenWidth,
             pDeepth+con.GROUND_BORDER*2,    
             con.GROUND_BORDER
         ),
@@ -234,7 +260,8 @@ def __drawStep(stepProxy:bpy.types.Object):
     brickObj = utils.addCube(
         name='象眼石',
         location=(
-            -pWidth/2+stoneWidth/2,
+            # 对齐柱中
+            chuidaiX,
             con.STEP_HEIGHT*con.STEP_RATIO/2,
             con.GROUND_BORDER/2 - con.STEP_HEIGHT/2
         ),
@@ -247,11 +274,13 @@ def __drawStep(stepProxy:bpy.types.Object):
     )
     # 删除一条边，变成三角形，index=11
     utils.dissolveEdge(brickObj,[11])
-    utils.addModifierMirror(
-        object=brickObj,
-        mirrorObj=stepProxy,
-        use_axis=(True,False,False)
-    )
+    # 镜像（连三踏跺中，仅中间踏跺做镜像）
+    if stepSide == '':
+        utils.addModifierMirror(
+            object=brickObj,
+            mirrorObj=stepProxy,
+            use_axis=(True,False,False)
+        )
     # 象眼石拉伸，做为boolean对象
     booleanObj = utils.copySimplyObject(
         sourceObj=brickObj,
@@ -265,7 +294,8 @@ def __drawStep(stepProxy:bpy.types.Object):
     brickObj = utils.addCube(
         name='垂带',
         location=(
-            -pWidth/2+stoneWidth/2,
+            # 对齐柱中
+            chuidaiX,
             0,
             con.GROUND_BORDER/2
         ),
@@ -282,33 +312,34 @@ def __drawStep(stepProxy:bpy.types.Object):
         'boolean','BOOLEAN')
     modBool.object = booleanObj
     modBool.solver = 'EXACT'
-    # 镜像
-    utils.addModifierMirror(
-        object=brickObj,
-        mirrorObj=stepProxy,
-        use_axis=(True,False,False)
-    )
+    # 镜像（三连踏跺中，仅中间踏跺做镜像）
+    if stepSide == '':
+        utils.addModifierMirror(
+            object=brickObj,
+            mirrorObj=stepProxy,
+            use_axis=(True,False,False)
+        )
     # 台阶（上基石、中基石，也叫踏跺心子）
     # 计算台阶数量，每个台阶不超过基石的最大高度（15cm）
     count = math.ceil(
         (pHeight-con.GROUND_BORDER)
         /con.STEP_HEIGHT)
     stepHeight = (pHeight-con.GROUND_BORDER)/count
-    stepWidth = pDeepth/(count)
+    stepDeepth = pDeepth/(count)
     for n in range(count-1):
         brickObj = utils.addCube(
             name='台阶',
             location=(
                 0,
                 (-pDeepth/2
-                 +(n+1.5)*stepWidth),
+                 +(n+1.5)*stepDeepth),
                 (-pHeight/2
                 +con.GROUND_BORDER/2
                 + (n+0.5)*stepHeight)
             ),
             scale=(
-                pWidth-stoneWidth*2,
-                stepWidth+bevel*2,
+                pWidth-stoneWidth,
+                stepDeepth+bevel*2,
                 stepHeight
             ),
             parent=stepProxy
@@ -323,7 +354,6 @@ def __drawStep(stepProxy:bpy.types.Object):
         modBevel.use_clamp_overlap = False
         # 设置材质
         utils.copyMaterial(bData.mat_rock,obj)
-
 
     return
 
@@ -358,49 +388,69 @@ def __buildStep(platformObj:bpy.types.Object):
             pTo_x = int(pTo[0])
             pTo_y = int(pTo[1])
 
-            step_dir = ''
-            if pFrom_x == 0 and pTo_x == 0:
-                # 西门
+            # 考虑周围廊的情况，门可能在外圈，也可能在内圈
+            roomStart = (0,1)
+            roomEndX = (len(net_x)-1,len(net_x)-2)
+            roomEndY = (len(net_y)-1,len(net_x)-2)
+            
+            # 判断台阶朝向
+            step_dir = ''   
+            # 西门
+            if pFrom_x in roomStart and pTo_x in roomStart:
+                # 明间
                 if pFrom_y+pTo_y ==  len(net_y)-1:
-                    # 明间
                     step_dir = 'W'
-            if pFrom_x == len(net_x)-1 and pTo_x == len(net_x)-1:
-                # 东门
+            # 东门
+            if pFrom_x in roomEndX and pTo_x in roomEndX:
+                # 明间
                 if pFrom_y+pTo_y ==  len(net_y)-1:
-                    # 明间
                     step_dir = 'E'
-            if pFrom_y == 0 and pTo_y == 0:
-                # 南门
-                if pFrom_x+pTo_x ==  len(net_x)-1:
-                    # 明间
+            # 南门
+            if pFrom_y in roomStart and pTo_y in roomStart:
+                # 明间
+                if pFrom_x+pTo_x in (len(net_x)-1,  # 明间
+                                     len(net_x)-3,  # 左次间
+                                     len(net_x)+1): # 右次间
                     step_dir = 'S'
-            if pFrom_y == len(net_y)-1 and pTo_y == len(net_y)-1:
-                # 北门
-                if pFrom_x+pTo_x ==  len(net_x)-1:
-                    # 明间
+            # 北门
+            if pFrom_y in roomEndY and pTo_y in roomEndY:
+                # 明间
+                if pFrom_x+pTo_x in (len(net_x)-1,  # 明间
+                                     len(net_x)-3,  # 左次间
+                                     len(net_x)+1): # 右次间
                     step_dir = 'N'
             
+            # 计算踏跺尺度，生成proxy，逐一生成
             if step_dir != '':
+                # 踏跺与台基同高
                 stepHeight = platformObj.dimensions.z
+                # 踏跺进深取固定的2.5倍高
                 stepDeepth = stepHeight * con.STEP_RATIO
+                # 踏跺几何中心：柱头+台基下出+半踏跺
                 offset = bData.platform_extend+stepDeepth/2
                 if step_dir in ('N','S'):
                     stepWidth = abs(net_x[pTo_x] - net_x[pFrom_x])
+                    # 横坐标对齐两柱连线的中间点
                     x = (net_x[pTo_x] + net_x[pFrom_x])/2
                     if step_dir == 'N':
-                        y = net_y[pFrom_y] + offset
+                        # 纵坐标与台基边缘对齐
+                        y = bData.y_total/2 + offset
                         rot = (0,0,math.radians(180))
                     if step_dir == 'S':
-                        y = net_y[pFrom_y] - offset
+                        # 纵坐标与台基边缘对齐
+                        y = -bData.y_total/2 - offset
                         rot = (0,0,0)
                 if step_dir in ('W','E'):
                     stepWidth = abs(net_y[pTo_y] - net_y[pFrom_y])
                     if step_dir == 'W':
-                        x = net_x[pFrom_x] - offset
+                        # 横坐标与台基边缘对齐
+                        x = -bData.x_total/2 - offset
                         rot = (0,0,math.radians(270))
                     if step_dir == 'E':
-                        x = net_x[pFrom_x] + offset
+                        # 横坐标与台基边缘对齐
+                        x = bData.x_total/2 + offset
                         rot = (0,0,math.radians(90))
+                    # 纵坐标对齐两柱连线的中间点
                     y = (net_y[pTo_y] + net_y[pFrom_y])/2
                 stepProxy = utils.addCube(
                     name='踏跺proxy',

@@ -45,74 +45,80 @@ def getFloorDate(buildingObj:bpy.types.Object):
     # 载入设计参数
     bData:acaData = buildingObj.ACA_data
 
-    # 构造柱网X坐标序列，罗列了1，3，5，7，9，11间的情况，未能抽象成通用公式
+    # 构造柱网X坐标序列
     x_rooms = bData.x_rooms   # 面阔几间
     y_rooms = bData.y_rooms   # 进深几间
 
-    net_x = []  # 重新计算
-    if x_rooms >=1:     # 明间
-        offset = bData.x_1 / 2
-        net_x.append(offset)
-        net_x.insert(0, -offset)
-    if x_rooms >=3:     # 次间
-        offset = bData.x_1 / 2 + bData.x_2
-        net_x.append(offset)
-        net_x.insert(0, -offset)  
-    if x_rooms >=5:     # 梢间
-        offset = bData.x_1 / 2 + bData.x_2 \
-                + bData.x_3
-        net_x.append(offset)
-        net_x.insert(0, -offset)  
-    if x_rooms >=7:     # 尽间
-        offset = bData.x_1 / 2 + bData.x_2 \
-            + bData.x_3 + bData.x_4
-        net_x.append(offset)
-        net_x.insert(0, -offset)  
-    if x_rooms >=9:     #更多梢间
-        offset = bData.x_1 / 2 + bData.x_2 \
-            + bData.x_3 * 2
-        net_x[-1] = offset
-        net_x[0]= -offset  
-        offset = bData.x_1 / 2 + bData.x_2 \
-            + bData.x_3 *2 + bData.x_4
+    net_x = []  # 重新计算    
+    # 排布规律：明间+多个次间+梢间
+    # 明间有且只有1间
+    offset = bData.x_1 / 2
+    net_x.append(offset)
+    net_x.insert(0, -offset)
+    # 次间可能有多间
+    if x_rooms > 3:
+        # 减去1间明间，和2间尽间
+        cijianNum = x_rooms - 3
+    else:
+        # 仅需减去1间明间
+        cijianNum = x_rooms - 1
+    for n in range(1,int(cijianNum/2)+1):
+        offset = (bData.x_1/2 + bData.x_2*n)
         net_x.append(offset)
         net_x.insert(0, -offset) 
-    if x_rooms >=11:     #更多梢间
-        offset = bData.x_1 / 2 + bData.x_2 \
-            + bData.x_3 * 3
-        net_x[-1] = offset
-        net_x[0]= -offset  
-        offset = bData.x_1 / 2 + bData.x_2 \
-            + bData.x_3 *3 + bData.x_4
+    # 梢间，大于3间时，才配置一间
+    if x_rooms > 3:
+        offset += bData.x_3 
         net_x.append(offset)
         net_x.insert(0, -offset) 
 
-    # 构造柱网Y坐标序列，罗列了1-5间的情况，未能抽象成通用公式
+    # 构造柱网Y坐标序列
+    # 进深可以为奇数（山柱分两侧），也可以为偶数（山柱居中）
     net_y=[]    # 重新计算
     if y_rooms%2 == 1: # 奇数间
-        if y_rooms >= 1:     # 明间
-            offset = bData.y_1 / 2
-            net_y.append(offset)
-            net_y.insert(0, -offset)
-        if y_rooms >= 3:     # 次间
-            offset = bData.y_1 / 2 + bData.y_2
-            net_y.append(offset)
-            net_y.insert(0, -offset)  
-        if y_rooms >= 5:     # 梢间
-            offset = bData.y_1 / 2 + bData.y_2 \
-                    + bData.y_3
+        # 明间，有且只有1间
+        offset = bData.y_1 / 2
+        net_y.append(offset)
+        net_y.insert(0, -offset)
+        # 计算次间数量
+        if y_rooms > 3:
+            # 1间明间，2间梢间
+            cijianNum = y_rooms - 3
+        else:
+            # 仅1间明间，不做梢间
+            cijianNum = y_rooms -1
+        # 循环计算次间柱位
+        for n in range(1,int(cijianNum/2)+1):
+            offset = (bData.y_1/2 + bData.y_2*n)
             net_y.append(offset)
             net_y.insert(0, -offset) 
+        # 梢间
+        if y_rooms > 3:
+            offset += bData.y_3 
+            net_y.append(offset)
+            net_y.insert(0, -offset)
     else:   #偶数间
-        if y_rooms >= 2:
-            net_y.append(0)
-            offset = bData.y_1
+        # 明间，分做2间
+        offset = bData.y_1
+        net_y.append(offset)
+        net_y.insert(0, -offset)
+        # 计算次间数量
+        if y_rooms > 4:
+            # 2间明间，2间梢间
+            cijianNum = y_rooms - 4
+        else:
+            # 仅2间明间，无梢间
+            cijianNum = y_rooms - 2
+        # 循环计算次间柱位
+        for n in range(1,int(cijianNum/2)+1):
+            offset = (bData.y_1 + bData.y_2*n)
             net_y.append(offset)
-            net_y.insert(0,-offset)
-        if y_rooms >= 4:
-            offset = bData.y_1 + bData.y_2
+            net_y.insert(0, -offset) 
+        # 梢间
+        if y_rooms > 4:
+            offset += bData.y_3 
             net_y.append(offset)
-            net_y.insert(0,-offset)
+            net_y.insert(0, -offset)
     
     # 保存通面阔计算结果，以便其他函数中复用
     bData.x_total = net_x[-1]-net_x[0]
@@ -382,9 +388,9 @@ def buildPillers(buildingObj:bpy.types.Object):
     piller_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
     
     # 3、根据地盘数据，循环排布每根柱子
+    net_x,net_y = getFloorDate(buildingObj)
     x_rooms = bData.x_rooms   # 面阔几间
     y_rooms = bData.y_rooms   # 进深几间
-    net_x,net_y = getFloorDate(buildingObj)
     for y in range(y_rooms + 1):
         for x in range(x_rooms + 1):
             # 统一命名为“柱.x/y”，以免更换不同柱形时，减柱设置失效

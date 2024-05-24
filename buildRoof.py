@@ -277,11 +277,12 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             dianbanObj.name = '垫板'
             dianbanObj.dimensions = dim
             dianbanObj.parent = rafterRootObj
-            utils.addModifierMirror(
-                object=dianbanObj,
-                mirrorObj=rafterRootObj,
-                use_axis=(False,True,False)
-            )
+            if n!=len(purlin_pos)-1:
+                utils.addModifierMirror(
+                    object=dianbanObj,
+                    mirrorObj=rafterRootObj,
+                    use_axis=(False,True,False)
+                )
         
         # 有斗拱时，正心桁、挑檐桁下不做枋
         # 无斗栱时，仅正心桁下不做枋
@@ -302,11 +303,12 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             hengfangObj.name = '金/脊枋'
             hengfangObj.dimensions = dim
             hengfangObj.parent = rafterRootObj
-            utils.addModifierMirror(
-                object=hengfangObj,
-                mirrorObj=rafterRootObj,
-                use_axis=(False,True,False)
-            )  
+            if n!=len(purlin_pos)-1:
+                utils.addModifierMirror(
+                    object=hengfangObj,
+                    mirrorObj=rafterRootObj,
+                    use_axis=(False,True,False)
+                )  
 
     # 三、布置山面桁檩
     # 仅庑殿、歇山做山面桁檩，硬山、悬山不做山面桁檩
@@ -586,13 +588,12 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
 
     # 横向循环每一幅梁架
     roofStyle = bData.roof_style
-    if roofStyle in (con.ROOF_WUDIAN):
-        # 庑殿、歇山不做两山的梁架
-        beamRange = range(1,len(net_x)-1)
-    if roofStyle in (con.ROOF_XIESHAN,con.ROOF_XUANSHAN,con.ROOF_YINGSHAN):
-        # 硬山和悬山在每个开间上都做梁架
-        beamRange = range(len(net_x))
-    for x in beamRange:# 这里为庑殿，山面柱头不设梁架
+    for x in range(len(net_x)):# 这里为庑殿，山面柱头不设梁架
+        # 判断梁架是否与脊槫相交
+        # 在庑殿中很明显，可能存在不合理的梁架
+        if abs(net_x[x]) - purlin_pos[-1].x > con.HENG_EXTEND*dk:
+            # 忽略此副梁架
+            continue
         # 纵向循环每一层梁架
         for n in range(len(purlin_pos)):  
             # 添加横梁
@@ -605,17 +606,17 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 
                 # 歇山做特殊处理
                 if roofStyle == con.ROOF_XIESHAN:
-                    if n==0 and x in (0,beamRange[-1]): 
+                    if n==0 and x in (0,len(net_x)-1): 
                         # 歇山山面一层不做梁
                         continue
                     if n>0 :
                         # 歇山的山面梁坐在金桁的X位置
                         if x == 0:
                             beam_x = -purlin_pos[1].x
-                        if x == beamRange[-1]:
+                        if x == len(net_x)-1:
                             beam_x = purlin_pos[1].x
                     # 歇山做踩步金，向上位移到与桁下皮平
-                    if n==1 and x in (0,beamRange[-1]):
+                    if n==1 and x in (0,len(net_x)-1):
                         beam_z = purlin_pos[n].z \
                             + con.BEAM_HEIGHT*pd \
                             - con.HENG_COMMON_D*dk/2
@@ -644,7 +645,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                              - beamBottom_offset)
 
                 # 在梁上添加蜀柱
-                if roofStyle == con.ROOF_XIESHAN and n==0 and x in (0,beamRange[-1]):
+                if roofStyle == con.ROOF_XIESHAN and n==0 and x in (0,len(net_x)-1):
                     # 歇山山面第一层不做蜀柱
                     continue
                 if n == len(purlin_pos)-2:
@@ -2714,7 +2715,7 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     # 象眼板横坐标
     if bData.roof_style == con.ROOF_XIESHAN:
         # 歇山的象眼板在金桁交点处
-        xyb_x = purlin_pos[1].x
+        xyb_x = purlin_pos[-1].x - con.BOFENG_WIDTH*dk + 0.01
         # 歇山从金桁以上做起
         xyb_range = range(1,len(purlin_pos))
     if bData.roof_style == con.ROOF_XUANSHAN:
@@ -2787,6 +2788,9 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
         mirrorObj=rafterRootObj,
         use_axis=(True,False,False)
     )
+
+    # 应用材质
+    utils.copyMaterial(bData.mat_red,xybObj)
 
     return xybObj
 
@@ -2955,8 +2959,8 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     if bData.roof_style == con.ROOF_XIESHAN:
         utils.addBisect(
             object=bofengObj,
-            pStart=rafterRootObj.matrix_world @ (rafter_pos[1]),
-            pEnd=rafterRootObj.matrix_world @ (rafter_pos[1]) * Vector((1,-1,1)),
+            pStart=Vector((0,1,0)),
+            pEnd=Vector((0,-1,0)),
             pCut=rafterRootObj.matrix_world @ (rafter_pos[1]),
             clear_outer=True,
             direction='Y'

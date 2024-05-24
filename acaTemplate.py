@@ -3,21 +3,32 @@
 # 功能概述：
 #   管理模版
 import bpy
-import os
+import pathlib
 import xml.etree.ElementTree as ET
-
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from . import utils
 
-templateFolder = 'template'
+
 xmlFileName = 'simplyhouse.xml'
 blenderFileName = 'acaAssets.blend'
+
+# 组合绝对路径
+# https://blender.stackexchange.com/questions/253722/blender-api-how-to-distribute-an-add-on-with-assets-and-how-to-append-them-with
+def __getPath(fileName):
+    addonName = "ACA Builder"
+    templateFolder = 'template'
+    USER = pathlib.Path(
+        bpy.utils.resource_path('USER'))
+    srcPath = USER / "scripts/addons" / addonName / templateFolder / fileName
+    return str(srcPath)
 
 # 解析XML，获取模版列表
 def getTemplateList(onlyname=False):
     # 载入XML
-    path = os.path.join(templateFolder, xmlFileName)
+    # 这个结果打包发布后出现错误，改为绝对路径
+    # path = os.path.join(templateFolder, xmlFileName)
+    path = __getPath(xmlFileName)
     tree = ET.parse(path)
     root = tree.getroot()
     templates = root.findall('template')
@@ -45,7 +56,8 @@ def loadAssets(assetName : str,parent:bpy.types.Object,hide=True,link=True):
             return bpy.data.objects[assetName]
     
     # 打开资产文件
-    filepath = os.path.join(templateFolder, blenderFileName)
+    # filepath = os.path.join(templateFolder, blenderFileName)
+    filepath = __getPath(blenderFileName)
 
     # 简化做法，效率更高，但没有关联子对象
     with bpy.data.libraries.load(filepath) as (data_from, data_to):
@@ -123,344 +135,13 @@ def __loadDefaultData(buildingObj:bpy.types.Object):
     return bData
 
 # 载入模版
-# 不再使用templateDate结构中转
-# 直接将XML填充入bData
-# 注意，所有的属性都为选填，所以要做好空值的检查
-def loadTemplate(buildingObj:bpy.types.Object,
-                 templateName:str):
-    # 解析XML配置模版
-    path = os.path.join(templateFolder, xmlFileName)
-    tree = ET.parse(path)
-    root = tree.getroot()
-    templates = root.findall('template')
-    if templates == None:
-        utils.outputMsg("模版解析失败")
-        return
-    
-    # 同步绑定资产
-    # 1. 指定资产目录
-    buildingColl = buildingObj.users_collection[0]
-    coll = utils.setCollection('资产',parentColl=buildingColl)
-    # 2. 指定资产根节点
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
-    assetsObj = bpy.context.object
-    assetsObj.location = buildingObj.location   # 原点摆放在3D Cursor位置
-    assetsObj.parent = buildingObj
-    assetsObj.name = 'assets'   # 系统遇到重名会自动添加00x的后缀
-    assetsObj.ACA_data['aca_obj'] = True
-    assetsObj.ACA_data['aca_type'] = con.ACA_TYPE_ASSET_ROOT
-    
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
-    
-    # 在XML中查找对应名称的那个模版
-    for template in templates:
-        template_name = template.find('template_name').text
-        if template_name == templateName:
-            # 模版名称
-            bData['aca_obj'] = True
-            bData['aca_type'] = con.ACA_TYPE_BUILDING
-            bData['template_name'] = template_name
-            
-            # 斗口
-            dk = template.find('dk').text
-            if dk != None: 
-                bData['DK'] = float(dk)
-            
-            # 柱径
-            pillers = template.find('pillers')
-            if pillers != None:
-                pillerD = pillers.find('dimeter')
-                if pillerD != None:
-                    bData['piller_diameter'] = float(pillerD.text)
-
-            # 初始化默认值，基于前序载入的DK、PD值
-            bData = __loadDefaultData(buildingObj)
-
-            # 柱子
-            pillers = template.find('pillers')
-            if pillers != None:
-                # 柱高
-                pillerHeight = pillers.find('height')
-                if pillerHeight != None:
-                    bData['piller_height'] = float(pillerHeight.text)
-                # 柱形
-                piller_source = pillers.find('piller_source')
-                if piller_source != None:
-                    bData['piller_source'] = loadAssets(
-                        piller_source.text,assetsObj)
-                # 柱网
-                pillerItems = pillers.findall('piller')
-                if pillerItems != None:
-                    pillerNet = '' # 防止重复生成时的垃圾数据
-                    for piller in pillerItems:
-                        pillerNet += piller.attrib['x'] \
-                            + "/" \
-                            + piller.attrib['y'] \
-                            + ","
-                    bData['piller_net'] = pillerNet
-                # 枋网
-                fangs = pillers.findall('fang')
-                if fangs != None:
-                    fangNet = '' # 防止重复生成时的垃圾数据
-                    for fang in fangs:
-                        fangNet += \
-                            fang.attrib['from'] + '#' \
-                            + fang.attrib['to'] + ','
-                    bData['fang_net'] = fangNet
-
-            # 台基
-            platform = template.find('platform')
-            if platform != None:
-                # 台基高度
-                pfHeight = platform.find('height')
-                if pfHeight != None:
-                    bData['platform_height'] = float(pfHeight.text)
-                # 台基下出
-                pfExtend = platform.find('extend')
-                if pfExtend != None:
-                    bData['platform_extend'] = float(pfExtend.text)
-            
-            # 地盘
-            floor = template.find('floor')
-            if floor != None:
-                x_rooms = floor.find('x_rooms')
-                if x_rooms != None:
-                    total = x_rooms.find('total')
-                    if total != None:
-                        bData['x_rooms'] = int(total.text)
-                    x1 = x_rooms.find('x1')
-                    if x1 != None:
-                        bData['x_1'] = float(x1.text)
-                    x2 = x_rooms.find('x2')
-                    if x2 != None:
-                        bData['x_2'] = float(x2.text)
-                    x3 = x_rooms.find('x3')
-                    if x3 != None:
-                        bData['x_3'] = float(x3.text)
-                    x4 = x_rooms.find('x4')
-                    if x4 != None:
-                        bData['x_4'] = float(x4.text)
-                
-                y_rooms = floor.find('y_rooms')
-                if y_rooms != None:
-                    total = y_rooms.find('total')
-                    if total != None:
-                        bData['y_rooms'] = int(total.text)
-                    y1 = y_rooms.find('y1')
-                    if y1 != None:
-                        bData['y_1'] = float(y1.text)
-                    y2 = y_rooms.find('y2')
-                    if y2 != None:
-                        bData['y_2'] = float(y2.text)
-                    y3 = y_rooms.find('y3')
-                    if y3 != None:
-                        bData['y_3'] = float(y3.text)
-
-            # 墙体
-            frame = template.find('frame')
-            if frame != None:
-                # 墙模版
-                wall_source = frame.find('wall_source')
-                if wall_source != None:
-                    bData['wall_source'] = loadAssets(
-                        wall_source.text,assetsObj)
-                # 棂心
-                lingxin_source = frame.find('lingxin_source')
-                if lingxin_source != None:
-                    bData['lingxin_source'] = loadAssets(
-                        lingxin_source.text,assetsObj)
-                # 墙网
-                walls = frame.findall('wall')
-                if walls != None:
-                    wallNet = '' # 防止重新生成时有垃圾数据
-                    for wall in walls:
-                        wallNet += \
-                            wall.attrib['type'] + '#' \
-                            + wall.attrib['from'] + '#' \
-                            + wall.attrib['to'] + ','
-                    bData['wall_net'] = wallNet
-                    
-            # 斗栱
-            dg = template.find('dougong')
-            if dg != None:
-                bData['use_dg'] = True    # 使用斗栱
-                # 柱头斗栱
-                piller_source = dg.find('piller_source')
-                if piller_source != None:
-                    bData['dg_piller_source'] = loadAssets(
-                        piller_source.text,assetsObj)
-                # 补间斗栱
-                fillgap_source = dg.find('fillgap_source')
-                if fillgap_source != None:
-                    bData['dg_fillgap_source'] = loadAssets(
-                        fillgap_source.text,assetsObj)
-                corner_source = dg.find('corner_source')
-                # 转角斗栱
-                if corner_source != None:
-                    bData['dg_corner_source'] = loadAssets(
-                        corner_source.text,assetsObj)
-                # 斗栱攒距
-                dg_gap = dg.find('dg_gap')
-                if dg_gap != None:
-                    bData['dg_gap'] = float(dg_gap.text)
-            else:
-                bData['use_dg'] = False    # 不用斗栱
-            
-            # 屋顶
-            roof = template.find('roof')
-            if roof != None:
-                # 屋顶样式
-                rafter_style = roof.find('roof_style')
-                if rafter_style != None:
-                    bData['roof_style'] = int(rafter_style.text)
-                # 椽架数量
-                rafter_count = roof.find('rafter_count')
-                if rafter_count != None:
-                    bData['rafter_count'] = int(rafter_count.text)
-                # 瓦片垄距
-                tile_width = roof.find('tile_width')
-                if tile_width != None:
-                    bData['tile_width'] = float(tile_width.text)
-                # 瓦层宽度
-                tile_length = roof.find('tile_length')
-                if tile_length != None:
-                    bData['tile_length'] = float(tile_length.text)
-                # 板瓦对象
-                flatTile_source = roof.find('flatTile_source')
-                if flatTile_source != None:                       
-                    bData['flatTile_source'] = loadAssets(
-                        flatTile_source.text,assetsObj)
-                # 筒瓦对象
-                circularTile_source = roof.find('circularTile_source')
-                if circularTile_source != None:                       
-                    bData['circularTile_source'] = loadAssets(
-                        circularTile_source.text,assetsObj)
-                # 瓦当对象
-                eaveTile_source = roof.find('eaveTile_source')
-                if eaveTile_source != None:
-                    bData['eaveTile_source'] = loadAssets(
-                        eaveTile_source.text,assetsObj)
-                # 滴水对象
-                dripTile_source = roof.find('dripTile_source')
-                if dripTile_source != None:
-                    bData['dripTile_source'] = loadAssets(
-                        dripTile_source.text,assetsObj)
-                # 正脊对象
-                ridgeTop_source = roof.find('ridgeTop_source')
-                if ridgeTop_source != None:
-                    bData['ridgeTop_source'] = \
-                        loadAssets(ridgeTop_source.text,assetsObj)
-                # 垂脊兽后对象
-                ridgeBack_source = roof.find('ridgeBack_source')
-                if ridgeBack_source != None:
-                    bData['ridgeBack_source'] = loadAssets(
-                        ridgeBack_source.text,assetsObj)
-                # 垂脊兽前对象
-                ridgeFront_source = roof.find('ridgeFront_source')
-                if ridgeFront_source != None:
-                    bData['ridgeFront_source'] = loadAssets(
-                        ridgeFront_source.text,assetsObj)
-                # 端头盘子
-                ridgeEnd_source = roof.find('ridgeEnd_source')
-                if ridgeEnd_source != None:
-                    bData['ridgeEnd_source'] = loadAssets(
-                        ridgeEnd_source.text,assetsObj)
-                # 博缝板
-                bofeng_source = roof.find('bofeng_source')
-                if bofeng_source != None:
-                    bData['bofeng_source'] = loadAssets(
-                        bofeng_source.text,assetsObj)
-                # 螭吻
-                chiwen_source = roof.find('chiwen_source')
-                if chiwen_source != None:
-                    bData['chiwen_source'] = loadAssets(
-                        chiwen_source.text,assetsObj)
-                # 垂兽
-                chuishou_source = roof.find('chuishou_source')
-                if chuishou_source != None:
-                    bData['chuishou_source'] = loadAssets(
-                        chuishou_source.text,assetsObj)
-                # 套兽
-                taoshou_source = roof.find('taoshou_source')
-                if taoshou_source != None:
-                    bData['taoshou_source'] = loadAssets(
-                        taoshou_source.text,assetsObj)
-                # 跑兽
-                paoshou_0_source = roof.find('paoshou_0_source')
-                if paoshou_0_source != None:
-                    bData['paoshou_0_source'] = loadAssets(
-                        paoshou_0_source.text,assetsObj)
-                paoshou_1_source = roof.find('paoshou_0_source')
-                if paoshou_1_source != None:
-                    bData['paoshou_1_source'] = loadAssets(
-                        paoshou_1_source.text,assetsObj)
-                paoshou_2_source = roof.find('paoshou_0_source')
-                if paoshou_2_source != None:
-                    bData['paoshou_2_source'] = loadAssets(
-                        paoshou_2_source.text,assetsObj)
-                paoshou_3_source = roof.find('paoshou_0_source')
-                if paoshou_3_source != None:
-                    bData['paoshou_3_source'] = loadAssets(
-                        paoshou_3_source.text,assetsObj)
-                paoshou_4_source = roof.find('paoshou_0_source')
-                if paoshou_4_source != None:
-                    bData['paoshou_4_source'] = loadAssets(
-                        paoshou_4_source.text,assetsObj)
-                paoshou_5_source = roof.find('paoshou_0_source')
-                if paoshou_5_source != None:
-                    bData['paoshou_5_source'] = loadAssets(
-                        paoshou_5_source.text,assetsObj)
-                paoshou_6_source = roof.find('paoshou_0_source')
-                if paoshou_6_source != None:
-                    bData['paoshou_6_source'] = loadAssets(
-                        paoshou_6_source.text,assetsObj)
-                paoshou_7_source = roof.find('paoshou_0_source')
-                if paoshou_7_source != None:
-                    bData['paoshou_7_source'] = loadAssets(
-                        paoshou_7_source.text,assetsObj)
-                paoshou_8_source = roof.find('paoshou_0_source')
-                if paoshou_8_source != None:
-                    bData['paoshou_8_source'] = loadAssets(
-                        paoshou_8_source.text,assetsObj)
-                paoshou_9_source = roof.find('paoshou_0_source')
-                if paoshou_9_source != None:
-                    bData['paoshou_9_source'] = loadAssets(
-                        paoshou_9_source.text,assetsObj)
-                paoshou_10_source = roof.find('paoshou_0_source')
-                if paoshou_10_source != None:
-                    bData['paoshou_10_source'] = loadAssets(
-                        paoshou_10_source.text,assetsObj)    
-
-            # 材质
-            mat = template.find('material')
-            if mat != None:
-                mat_wood = mat.find('wood_source')
-                if mat_wood != None:
-                    bData['mat_wood'] = loadAssets(
-                        mat_wood.text,assetsObj)
-                mat_rock = mat.find('rock_source')
-                if mat_rock != None:
-                    bData['mat_rock'] = loadAssets(
-                        mat_rock.text,assetsObj)
-                mat_stone = mat.find('stone_source')
-                if mat_stone != None:
-                    bData['mat_stone'] = loadAssets(
-                        mat_stone.text,assetsObj)
-                mat_red = mat.find('paint_red_source')
-                if mat_red != None:
-                    bData['mat_red'] = loadAssets(
-                        mat_red.text,assetsObj)
-
-    return
-
-# 载入模版
 # 直接将XML填充入bData
 # 注意，所有的属性都为选填，所以要做好空值的检查
 def openTemplate(buildingObj:bpy.types.Object,
                  templateName:str):
     # 解析XML配置模版
-    path = os.path.join(templateFolder, xmlFileName)
+    # path = os.path.join(templateFolder, xmlFileName)
+    path = __getPath(xmlFileName)
     tree = ET.parse(path)
     root = tree.getroot()
     templates = root.findall('template')
@@ -519,8 +200,13 @@ def openTemplate(buildingObj:bpy.types.Object,
                 elif type == 'int':
                     bData[tag] = int(value)
                 elif type == 'bool':
-                    bData[tag] = bool(value)
-                elif type == 'object':
+                    # 注意这里的True/False是str，用bool()强制转换时都为True，
+                    # 所以以下手工进行了判断
+                    if value == 'True':
+                        bData[tag] = True
+                    if value == 'False':
+                        bData[tag] = False
+                elif type == 'Object':
                     bData[tag] = loadAssets(value,assetsObj)
                 else:
                     print("can't convert:",node.tag, node.attrib['type'],node.text)
@@ -592,7 +278,8 @@ def saveTemplate(buildingObj:bpy.types.Object):
     }
     
     # 解析XML配置模版
-    path = os.path.join(templateFolder, xmlFileName)
+    # path = os.path.join(templateFolder, xmlFileName)
+    path = __getPath(xmlFileName)
     tree = ET.parse(path)
     root = tree.getroot()   # <templates>根节点
     # 验证根节点

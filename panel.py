@@ -38,8 +38,8 @@ class ACA_PT_basic(bpy.types.Panel):
         row.operator("aca.save_template",icon='HOME',text='保存模板')
         
         # 测试按钮
-        # row = layout.row()
-        # row.operator("aca.test",icon='HOME')
+        row = layout.row()
+        row.operator("aca.test",icon='HOME')
 
         # 从当前场景中载入数据集
         if context.object != None:
@@ -189,37 +189,38 @@ class ACA_PT_pillers(bpy.types.Panel):
             # 柱网属性
             box = layout.box()
             row = box.column(align=True)
-            row.prop(bData, "x_rooms")    # 面阔间数
-            row.prop(bData, "x_1")        # 明间宽度
+            row.prop(bData, "x_rooms")      # 面阔间数
+            row.prop(bData, "x_1")          # 明间宽度
             if bData.x_rooms >= 3:
-                row.prop(bData, "x_2")    # 次间宽度
+                row.prop(bData, "x_2")      # 次间宽度
             if bData.x_rooms >= 5:
-                row.prop(bData, "x_3")    # 梢间宽度
-            if bData.x_rooms >= 7:
-                row.prop(bData, "x_4")    # 尽间宽度
+                row.prop(bData, "x_3")      # 梢间宽度
+                
             row = box.column(align=True)
-            row.prop(bData, "y_rooms")    # 进深间数
-            row.prop(bData, "y_1")        # 明间深度
+            row.prop(bData, "y_rooms")      # 进深间数
+            row.prop(bData, "y_1")          # 明间深度
             if bData.y_rooms >= 3:
-                row.prop(bData, "y_2")    # 次间深度
+                row.prop(bData, "y_2")      # 次间深度
             if bData.y_rooms >= 5:
-                row.prop(bData, "y_3")    # 梢间深度
+                row.prop(bData, "y_3")      # 梢间深度
 
             #柱子属性
             box = layout.box()
             row = box.row()
-            row.prop(bData, "piller_source") # 柱样式
+            row.prop(bData, "piller_source")    # 柱样式
             row = box.row()
-            row.prop(bData, "piller_height") # 柱高
+            row.prop(bData, "piller_height")    # 柱高
             row = box.row()
-            row.prop(bData, "piller_diameter") # 柱径
+            row.prop(bData, "piller_diameter")  # 柱径
             row = box.row()
             col = row.column()
-            col.operator("aca.del_piller",icon='X',)# 按钮:减柱
+            col.operator(
+                "aca.del_piller",icon='X',)     # 按钮:减柱
             if objData.aca_type != con.ACA_TYPE_PILLER:
                 col.enabled=False
             col = row.column()
-            col.operator("aca.reset_floor",icon='FILE',)# 按钮:重设柱网
+            col.operator(
+                "aca.reset_floor",icon='FILE',) # 按钮:重设柱网
             #col.operator("aca.refresh_floor",icon='FILE_REFRESH',)# 按钮:更新柱网
             
             # 枋属性

@@ -113,14 +113,15 @@ def update_wall(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
-        from . import buildWall
         if odata.aca_type == con.ACA_TYPE_WALL:
             # 仅重新生成当前墙体
+            from . import buildWall
             funproxy = partial(buildWall.buildSingleWall,
                                wallproxy=context.object)
             utils.fastRun(funproxy)
         else:
             # 重新生成墙体
+            from . import buildWall
             funproxy = partial(buildWall.resetWallLayout,
                                buildingObj=buildingObj)
             utils.fastRun(funproxy)
@@ -358,7 +359,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     wall_style : bpy.props.EnumProperty(
             name = "墙类型",
             items = [
-                ("","",""),
+                ("0","",""),
                 ("1","槛墙",""),
                 ("2","隔扇",""),
                 ("3","槛窗",""),

@@ -56,19 +56,27 @@ def getFloorDate(buildingObj:bpy.types.Object):
     net_x.append(offset)
     net_x.insert(0, -offset)
     # 次间可能有多间
-    if x_rooms > 3:
-        # 减去1间明间，和2间尽间
+    if x_rooms > 5:
+        # -1明间-2梢间-2尽间
+        cijianNum = x_rooms - 5
+    elif x_rooms > 3:
+        # -1明间-2梢间
         cijianNum = x_rooms - 3
     else:
-        # 仅需减去1间明间
+        # -1明间
         cijianNum = x_rooms - 1
     for n in range(1,int(cijianNum/2)+1):
         offset = (bData.x_1/2 + bData.x_2*n)
         net_x.append(offset)
         net_x.insert(0, -offset) 
-    # 梢间，大于3间时，才配置一间
-    if x_rooms > 3:
+    # 梢间，5间以上配置一间
+    if x_rooms >= 5 :
         offset += bData.x_3 
+        net_x.append(offset)
+        net_x.insert(0, -offset) 
+    # 尽间，7间以上配置一间
+    if x_rooms >= 7 :
+        offset += bData.x_4 
         net_x.append(offset)
         net_x.insert(0, -offset) 
 
@@ -145,7 +153,8 @@ def __buildFang(buildingObj:bpy.types.Object):
     for obj in floorRootObj.children:
         if 'aca_type' in obj.ACA_data:
             if obj.ACA_data['aca_type'] == con.ACA_TYPE_FANG:
-                bpy.data.objects.remove(obj)
+                # 连带小额枋、垫板子对象
+                utils.deleteHierarchy(obj,del_parent=True)
     
     # 根据建筑模版的参数设置分布
     # '0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,'
@@ -199,8 +208,7 @@ def __buildFang(buildingObj:bpy.types.Object):
             dianbanScale = Vector((fang_length, 
                     con.BOARD_YOUE_Y*dk,
                     con.BOARD_YOUE_H*dk))
-            dianbanLoc = Vector((fang_x,fang_y,
-                    bigFangLoc.z \
+            dianbanLoc = Vector((0,0,
                     - con.EFANG_LARGE_H*dk/2 \
                     - con.BOARD_YOUE_H*dk/2))
             bpy.ops.mesh.primitive_cube_add(
@@ -209,8 +217,7 @@ def __buildFang(buildingObj:bpy.types.Object):
                     scale= dianbanScale)
             dianbanObj = bpy.context.object
             dianbanObj.name =  "由额垫板." + fangID
-            dianbanObj.rotation_euler = fang_rot
-            dianbanObj.parent = floorRootObj
+            dianbanObj.parent = bigFangObj
             dianbanObj.ACA_data['aca_obj'] = True
             dianbanObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             dianbanObj.ACA_data['fangID'] = fangID
@@ -221,14 +228,13 @@ def __buildFang(buildingObj:bpy.types.Object):
             smallFangScale = Vector( (fang_length, 
                     con.EFANG_SMALL_Y*dk,
                     con.EFANG_SMALL_H*dk))
-            smallFangLoc = Vector((fang_x,fang_y,
-                    dianbanLoc.z \
-                    - con.BOARD_YOUE_H*dk/2 \
+            smallFangLoc = Vector((0,0,
+                    - con.EFANG_LARGE_H*dk/2 \
+                    - con.BOARD_YOUE_H*dk \
                     - con.EFANG_SMALL_H*dk/2))
             smallFangObj = utils.drawHexagon(smallFangScale,smallFangLoc)
             smallFangObj.name =  "小额枋." + fangID
-            smallFangObj.rotation_euler = fang_rot
-            smallFangObj.parent = floorRootObj
+            smallFangObj.parent = bigFangObj
             smallFangObj.ACA_data['aca_obj'] = True
             smallFangObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             smallFangObj.ACA_data['fangID'] = fangID
@@ -240,6 +246,9 @@ def __buildFang(buildingObj:bpy.types.Object):
             modBevel.segments=2
             # 设置材质
             utils.copyMaterial(bData.mat_red,smallFangObj)
+    
+    # 聚焦到最后添加的大额枋，便于用户可以直接删除
+    utils.focusObj(bigFangObj)
     return
 
 # 在选中的柱子间，添加枋
@@ -284,9 +293,9 @@ def addFang(buildingObj:bpy.types.Object,
                     fangStr += fangID + ','
                     pFrom = piller
 
-    print(fangStr)
     bData.fang_net = fangStr
     __buildFang(buildingObj)
+    
     return
 
 # 减枋
@@ -314,7 +323,10 @@ def delFang(buildingObj:bpy.types.Object,
             if fang.ACA_data['aca_type']==con.ACA_TYPE_FANG:
                 fangID = fang.ACA_data['fangID']
                 bData.fang_net += fangID + ','
-    print(bData.fang_net)
+    
+    # 重新聚焦根节点
+    utils.focusObj(buildingObj)
+
     return
 
 # 根据柱网数组，排布柱子
@@ -467,7 +479,6 @@ def delPiller(buildingObj:bpy.types.Object,
             if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER:
                 pillerID = piller.ACA_data['pillerID']
                 bData.piller_net += pillerID + ','
-    print(bData.piller_net)
     return
 
 # 根据用户在插件面板修改的柱高、柱径，缩放柱子外观

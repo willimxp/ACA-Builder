@@ -108,7 +108,10 @@ def focusCollection(coll_name:str):
     layer_collection = bpy.context.view_layer.layer_collection
     layerColl = recurLayerCollection(layer_collection, coll_name)
     # 强制关闭目录隐藏属性，防止失焦
-    layerColl.exclude = False
+    if layerColl.exclude == True:
+        # 在确认“ACA古建营造”根目录时，会一同打开所有子目录的exclude
+        # 所以这里做了判断，仅在必要的时候进行切换
+        layerColl.exclude = False
     layerColl.hide_viewport = False
     layerColl.collection.hide_render = False
     layerColl.collection.hide_viewport = False

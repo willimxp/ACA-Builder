@@ -34,19 +34,19 @@ def p_filter(self, object:bpy.types.Object):
     # 仅返回Assets collection中的对象
     return object.users_collection[0].name == 'Assets'
 
-def update_test(self, context:bpy.types.Context):
-    utils.outputMsg("update triggered")
-
 # 更新建筑，但不重设柱网
 def update_building(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
         from . import buildFloor
-        buildFloor.buildFloor(buildingObj)
+        # buildFloor.buildFloor(buildingObj)
+        funproxy = partial(
+                buildFloor.buildFloor,
+                buildingObj=buildingObj)
+        utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated building failed, context.object should be buildingObj")
-    
     return
     
 # 更新建筑，但不重设柱网
@@ -56,19 +56,11 @@ def reset_building(self, context:bpy.types.Context):
     if buildingObj != None:
         # 调用营造序列
         from . import buildFloor
-        buildFloor.resetFloor(buildingObj)
-    else:
-        utils.outputMsg("updated building failed, context.object should be buildingObj")
-    return
-
-# 调整建筑斗口
-def update_dk(self, context:bpy.types.Context):
-    # 确认选中为building节点
-    buildingObj,bdata,odata = utils.getRoot(context.object)
-    if buildingObj != None:
-        dk = buildingObj.ACA_data.DK
-        from . import buildFloor
-        buildFloor.buildFloor(buildingObj)
+        # buildFloor.resetFloor(buildingObj)
+        funproxy = partial(
+                buildFloor.resetFloor,
+                buildingObj=buildingObj)
+        utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated building failed, context.object should be buildingObj")
     return
@@ -79,7 +71,11 @@ def update_platform(self, context:bpy.types.Context):
     if buildingObj != None:
         # 调用台基缩放
         from . import buildPlatform
-        buildPlatform.resizePlatform(buildingObj)
+        # buildPlatform.resizePlatform(buildingObj)
+        funproxy = partial(
+                buildPlatform.resizePlatform,
+                buildingObj=buildingObj)
+        utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated platform failed, context should be buildingObj")
     return
@@ -91,8 +87,11 @@ def update_PillerStyle(self, context:bpy.types.Context):
     if buildingObj != None:
         # 调用营造序列
         from . import buildFloor
-        buildFloor.buildPillers(buildingObj)
-        pass
+        # buildFloor.buildPillers(buildingObj)
+        funproxy = partial(
+                buildFloor.buildPillers,
+                buildingObj=buildingObj)
+        utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated building failed, context.object should be buildingObj")
     return
@@ -104,7 +103,11 @@ def update_piller(self, context:bpy.types.Context):
     if buildingObj != None:
         # 缩放柱形
         from . import buildFloor
-        buildFloor.resizePiller(buildingObj)
+        # buildFloor.resizePiller(buildingObj)
+        funproxy = partial(
+                buildFloor.resizePiller,
+                buildingObj=buildingObj)
+        utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated piller failed, context should be pillerObj")
     return
@@ -136,7 +139,9 @@ def update_dougong(self, context:bpy.types.Context):
     if buildingObj != None:
         from . import buildDougong
         # 重新生成屋顶
-        funproxy = partial(buildDougong.buildDougong,buildingObj=buildingObj)
+        funproxy = partial(
+            buildDougong.buildDougong,
+            buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated platform failed, context.object should be buildingObj")
@@ -149,7 +154,9 @@ def update_dgHeight(self, context:bpy.types.Context):
     if buildingObj != None:
         from . import buildDougong
         # 重新生成屋顶
-        funproxy = partial(buildDougong.update_dgHeight,buildingObj=buildingObj)
+        funproxy = partial(
+            buildDougong.update_dgHeight,
+            buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated platform failed, context.object should be buildingObj")
@@ -161,7 +168,9 @@ def update_roof(self, context:bpy.types.Context):
     if buildingObj != None:
         from . import buildRoof
         # 重新生成屋顶
-        funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
+        funproxy = partial(
+            buildRoof.buildRoof,
+            buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated platform failed, context.object should be buildingObj")
@@ -208,7 +217,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0.03,
             max=0.18,
             step=0.01,
-            update = update_dk
+            update = update_building
         ) # type: ignore
     is_showPlatform: bpy.props.BoolProperty(
             default = True,

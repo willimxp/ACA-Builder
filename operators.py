@@ -109,7 +109,12 @@ class ACA_OT_add_fang(bpy.types.Operator):
         piller = context.object
         pillers = context.selected_objects
         buildingObj = utils.getAcaParent(piller,con.ACA_TYPE_BUILDING)
-        buildFloor.addFang(buildingObj,pillers) 
+        # buildFloor.addFang(buildingObj,pillers) 
+        funproxy = partial(
+                buildFloor.addFang,
+                buildingObj=buildingObj,pillers=pillers)
+        utils.fastRun(funproxy)
+        
         return {'FINISHED'}
     
 # 断开柱-柱，删除枋
@@ -136,7 +141,7 @@ class ACA_OT_reset_wall_layout(bpy.types.Operator):
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj != None:
-            # # 生成墙体框线
+            # 生成墙体框线
             funproxy = partial(
                 buildWall.resetWallLayout,
                 buildingObj=buildingObj)
@@ -158,10 +163,16 @@ class ACA_OT_add_wall(bpy.types.Operator):
         pillers = context.selected_objects
         buildingObj = utils.getAcaParent(
             piller,con.ACA_TYPE_BUILDING)
-        buildWall.addWall(
-            buildingObj,
-            pillers,
-            con.ACA_WALLTYPE_WALL) 
+        # buildWall.addWall(
+        #     buildingObj,
+        #     pillers,
+        #     con.ACA_WALLTYPE_WALL)
+        funproxy = partial(
+                buildWall.addWall,
+                buildingObj=buildingObj,
+                pillers=pillers,
+                wallType=con.ACA_WALLTYPE_WALL)
+        utils.fastRun(funproxy)
 
         return {'FINISHED'}
     
@@ -177,10 +188,16 @@ class ACA_OT_add_door(bpy.types.Operator):
         pillers = context.selected_objects
         buildingObj = utils.getAcaParent(
             piller,con.ACA_TYPE_BUILDING)
-        buildWall.addWall(
-            buildingObj,
-            pillers,
-            con.ACA_WALLTYPE_DOOR) 
+        # buildWall.addWall(
+        #     buildingObj,
+        #     pillers,
+        #     con.ACA_WALLTYPE_DOOR) 
+        funproxy = partial(
+                buildWall.addWall,
+                buildingObj=buildingObj,
+                pillers=pillers,
+                wallType=con.ACA_WALLTYPE_DOOR)
+        utils.fastRun(funproxy)
 
         return {'FINISHED'}
 
@@ -196,10 +213,16 @@ class ACA_OT_add_window(bpy.types.Operator):
         pillers = context.selected_objects
         buildingObj = utils.getAcaParent(
             piller,con.ACA_TYPE_BUILDING)
-        buildWall.addWall(
-            buildingObj,
-            pillers,
-            con.ACA_WALLTYPE_WINDOW) 
+        # buildWall.addWall(
+        #     buildingObj,
+        #     pillers,
+        #     con.ACA_WALLTYPE_WINDOW) 
+        funproxy = partial(
+                buildWall.addWall,
+                buildingObj=buildingObj,
+                pillers=pillers,
+                wallType=con.ACA_WALLTYPE_WINDOW)
+        utils.fastRun(funproxy)
 
         return {'FINISHED'}
     
@@ -212,26 +235,6 @@ class ACA_OT_del_wall(bpy.types.Operator):
 
     def execute(self, context):  
         buildWall.delWall(context.object)
-        return {'FINISHED'}
-
-# 单独生成一个墙体
-class ACA_OT_build_door(bpy.types.Operator):
-    bl_idname="aca.build_door"
-    bl_label = "仅应用该墙体"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):  
-        wallproxy = context.object
-        wData:data.ACA_data_obj = wallproxy.ACA_data
-        if wData.aca_type != con.ACA_TYPE_WALL:
-            utils.showMessageBox("ERROR: 找不到建筑")
-        else:
-            # 生成墙体框线
-            funproxy = partial(
-                buildWall.buildSingleWall,
-                wallproxy=wallproxy)
-            utils.fastRun(funproxy)
-
         return {'FINISHED'}
 
 # 生成斗栱

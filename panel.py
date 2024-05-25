@@ -195,6 +195,8 @@ class ACA_PT_pillers(bpy.types.Panel):
                 row.prop(bData, "x_2")      # 次间宽度
             if bData.x_rooms >= 5:
                 row.prop(bData, "x_3")      # 梢间宽度
+            if bData.x_rooms >= 7:
+                row.prop(bData, "x_4")      # 尽间宽度
                 
             row = box.column(align=True)
             row.prop(bData, "y_rooms")      # 进深间数

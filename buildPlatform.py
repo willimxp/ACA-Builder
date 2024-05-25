@@ -391,7 +391,7 @@ def __buildStep(platformObj:bpy.types.Object):
             # 考虑周围廊的情况，门可能在外圈，也可能在内圈
             roomStart = (0,1)
             roomEndX = (len(net_x)-1,len(net_x)-2)
-            roomEndY = (len(net_y)-1,len(net_x)-2)
+            roomEndY = (len(net_y)-1,len(net_y)-2)
             
             # 判断台阶朝向
             step_dir = ''   

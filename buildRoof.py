@@ -2790,7 +2790,10 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     )
 
     # 应用材质
-    utils.copyMaterial(bData.mat_red,xybObj)
+    if bData.roof_style == con.ROOF_XUANSHAN:
+        utils.copyMaterial(bData.mat_stone,xybObj)
+    elif bData.roof_style == con.ROOF_XIESHAN:
+        utils.copyMaterial(bData.mat_red,xybObj)
 
     return xybObj
 

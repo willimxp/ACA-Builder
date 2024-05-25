@@ -156,7 +156,6 @@ def openTemplate(buildingObj:bpy.types.Object,
     # 2. 指定资产根节点
     bpy.ops.object.empty_add(type='PLAIN_AXES')
     assetsObj = bpy.context.object
-    assetsObj.location = buildingObj.location   # 原点摆放在3D Cursor位置
     assetsObj.parent = buildingObj
     assetsObj.name = 'assets'   # 系统遇到重名会自动添加00x的后缀
     assetsObj.ACA_data['aca_obj'] = True

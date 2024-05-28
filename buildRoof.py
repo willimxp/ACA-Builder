@@ -533,7 +533,7 @@ def __drawJiaobei(shuzhuObj:bpy.types.Object):
     # 角背长度取一个步架宽
     rafterSpan = bData.y_total/bData.rafter_count
     dim = Vector((
-        height/3,
+        con.JIAOBEI_WIDTH*dk,
         rafterSpan,
         height,
     ))
@@ -675,11 +675,12 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     shuzhuCopyObj,use_scale=True)
                 if n!=len(purlin_pos)-1:
                     #镜像
-                    mod = shuzhuCopyObj.modifiers.new(
-                        name='mirror', type='MIRROR')
-                    mod.mirror_object = rafterRootObj
-                    mod.use_axis[0] = False
-                    mod.use_axis[1] = True 
+                    utils.addModifierMirror(
+                        shuzhuCopyObj,
+                        mirrorObj=rafterRootObj,
+                        use_axis=(False,True,False),
+                        use_bisect=(False,True,False)
+                    )
                 # 蜀柱添加角背
                 __drawJiaobei(shuzhuCopyObj)
                            
@@ -2774,7 +2775,7 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     bmesh.ops.translate(bm, verts=verts, vec=offset)
     for v in bm.verts:
         # 移动所有点，居中
-        v.co.y -= con.XYB_WIDTH*dk/2
+        v.co.x -= con.XYB_WIDTH*dk/2
 
     # 确保face normal朝向
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)

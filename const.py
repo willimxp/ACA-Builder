@@ -132,6 +132,7 @@ class ACA_Consts(object):
     BOFENG_WIDTH = 1.2      # 博缝板厚(DK)
     BOFENG_HEIGHT = 8       # 博缝板高(DK)
     XYB_WIDTH = 1.2         # 象眼板厚(DK)
+    JIAOBEI_WIDTH = 2       # 角背厚度(DK)
 
     # 椽飞类
     YANCHUAN_EX = 14            # 檐椽平出(DK)

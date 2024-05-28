@@ -364,6 +364,8 @@ def addWall(buildingObj:bpy.types.Object,
     pFrom = None
     pTo= None
     wall_net = bData.wall_net
+    # 逐一生成墙体
+    # 如果用户选择了2根以上的柱子，将依次生成多个墙体
     for piller in pillers:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
         if 'aca_type' in piller.ACA_data:   # 可能选择了没有属性的对象
@@ -384,18 +386,16 @@ def addWall(buildingObj:bpy.types.Object,
                         continue
                     wallStr = wallType+'#'+wallID
                     
-                    print(wallStr)
                     # 生成墙体
                     wallproxy = buildWallproxy(buildingObj,wallStr)
                     buildSingleWall(wallproxy)
 
                     # 将墙体加入整体布局中
-                    bData.wall_net += wallStr + ','
-                    print(bData.wall_net)                    
+                    bData.wall_net += wallStr + ','            
 
                     # 将柱子交换，为下一次循环做准备
                     pFrom = piller
-    return
+    return {'FINISHED'}
 
 # 删除隔断
 def delWall(object:bpy.types.Object):
@@ -470,7 +470,7 @@ def resetWallLayout(buildingObj:bpy.types.Object):
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
 
-    return
+    return {'FINISHED'}
 
 # 批量生成整个墙体布局
 # 载入建筑根节点buildingObj（及全局设计参数）

@@ -171,14 +171,14 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
                 # 其他椽架，类似悬山，从下金桁交点，悬出固定值（这里取上檐出）
                 purlin_x = liftPos[1].x + (bData.x_total-bData.y_total)/2+ con.YANCHUAN_EX* dk
         # 庑殿为四坡顶，在转角对称的基础上做推山处理
-        if roofStyle == con.ROOF_WUDIAN:
-            purlin_x = liftPos[n].x + (bData.x_total-bData.y_total)/2 
-            if n>1:
-                # ================================
-                # 推山做法，仅清代庑殿建筑使用，其他朝代未见，其他屋顶类型不涉及
-                # 推山：面阔方向推一步架，第一架不推山   
-                purlin_x -= rafterSpan * (1 - 0.9**(n-1))
-        
+        if roofStyle == con.ROOF_WUDIAN:            
+            if n <= 1:
+                # 正心桁和下金桁不做推山
+                purlin_x = liftPos[n].x + (bData.x_total-bData.y_total)/2 
+            else:
+                # 推山公式见马炳坚p25
+                purlin_x -= 0.9**(n-1)*rafterSpan
+
         # 前后檐可直接使用举架数据
         purlin_y = liftPos[n].x
         purlin_z = liftPos[n].y + liftEavePurlin # 加上挑檐桁的举高
@@ -2835,12 +2835,16 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
         
         # 调整曲线终点，与正脊相交
         if n == len(purlin_pos)-1:
-            # 调整2个垂脊筒的长度，多余的会在镜像时裁剪掉
-            # 斜率近似认为45度
+            # 计算尾段斜率
+            prePoint = ridgeCurveVerts[-1]
+            r = abs((point.y - prePoint.y)/(point.z - prePoint.z))
+            # Y方向延伸2个垂脊筒的长度，多余的会在镜像时裁剪掉
             ridgeFrontObj:bpy.types.Object = bData.ridgeFront_source
-            offset = ridgeFrontObj.dimensions.x * 2
-            point.y -= offset
-            point.z += offset
+            offset_y = ridgeFrontObj.dimensions.x * 2
+            point.y -= offset_y
+            # Z方向按尾端斜率延伸
+            point.z += offset_y / r
+
         ridgeCurveVerts.append(point)
     
     # 创建瓦垄曲线
@@ -3160,4 +3164,4 @@ def buildRoof(buildingObj:bpy.types.Object):
     buildRooftile.buildTile(buildingObj)
     
     utils.focusObj(buildingObj)
-    return
+    return {'FINISHED'}

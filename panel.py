@@ -223,11 +223,8 @@ class ACA_PT_pillers(bpy.types.Panel):
             col = row.column()
             col.operator(
                 "aca.reset_floor",icon='FILE',) # 按钮:重设柱网
-            #col.operator("aca.refresh_floor",icon='FILE_REFRESH',)# 按钮:更新柱网
             
             # 枋属性
-            # if objData.aca_type == con.ACA_TYPE_PILLER \
-            #     or objData.aca_type == con.ACA_TYPE_FANG:
             box = layout.box()
             row = box.row()
             col = row.column()

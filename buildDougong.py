@@ -301,7 +301,7 @@ def buildDougong(buildingObj:bpy.types.Object):
     
     # 重新聚焦在建筑根节点
     utils.focusObj(buildingObj)
-    return 
+    return {'FINISHED'}
 
 # 更新斗栱高度
 def update_dgHeight(buildingObj:bpy.types.Object):

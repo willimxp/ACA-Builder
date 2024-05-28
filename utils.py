@@ -1296,3 +1296,13 @@ def dissolveEdge(object:bpy.types.Object,
     bm.free() 
     bpy.ops.object.mode_set( mode = 'OBJECT' )
     return
+
+# 整体缩放对象，不区分XYZ
+def resizeObj(object:bpy.types.Object,
+              scale:float):
+    object.scale.x = object.scale.x * scale
+    object.scale.y = object.scale.y * scale
+    object.scale.z = object.scale.z * scale
+    # 强制生效，以免在fastrun时被其他操作覆盖
+    updateScene()
+    return object

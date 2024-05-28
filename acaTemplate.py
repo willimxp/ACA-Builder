@@ -341,4 +341,4 @@ def saveTemplate(buildingObj:bpy.types.Object):
     # 刷新panel的模版列表
     bpy.context.scene.ACA_data.template = templateName
 
-    return 
+    return {'FINISHED'}

@@ -21,9 +21,7 @@ from . import buildRooftile
 # 添加建筑empty根节点，并绑定设计模版
 # 返回建筑empty根节点对象
 # 被ACA_OT_add_newbuilding类调用
-def __addBuildingRoot():
-    # 获取panel上选择的模版
-    templateName = bpy.context.scene.ACA_data.template
+def __addBuildingRoot(templateName):
     coll = utils.setCollection(templateName)
     # 创建buildObj根节点
     bpy.ops.object.empty_add(type='PLAIN_AXES')
@@ -249,7 +247,7 @@ def __buildFang(buildingObj:bpy.types.Object):
     
     # 聚焦到最后添加的大额枋，便于用户可以直接删除
     utils.focusObj(bigFangObj)
-    return
+    return {'FINISHED'}
 
 # 在选中的柱子间，添加枋
 def addFang(buildingObj:bpy.types.Object,
@@ -293,10 +291,11 @@ def addFang(buildingObj:bpy.types.Object,
                     fangStr += fangID + ','
                     pFrom = piller
 
+    # 根据fang_net字串，重新生成所有枋子
     bData.fang_net = fangStr
-    __buildFang(buildingObj)
+    result = __buildFang(buildingObj)
     
-    return
+    return result
 
 # 减枋
 def delFang(buildingObj:bpy.types.Object,
@@ -513,8 +512,8 @@ def resetFloor(buildingObj:bpy.types.Object):
     bData.piller_net = ''
     bData.fang_net = ''
     bData.wall_net = ''
-    buildFloor(buildingObj)
-    return
+    result = buildFloor(buildingObj)
+    return result
 
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
@@ -528,47 +527,44 @@ def buildFloor(buildingObj:bpy.types.Object):
 
     # 新建还是刷新？
     if buildingObj == None:
-        # 2.添加建筑empty
-        # 其中绑定了模版数据
         utils.outputMsg("创建新建筑...")
-        buildingObj = __addBuildingRoot()
+        # 获取panel上选择的模版
+        templateName = bpy.context.scene.ACA_data.template
+        # 添加建筑根节点，同时载入模版
+        buildingObj = __addBuildingRoot(templateName)
     else:
+        # 删除屋顶，柱网变化必然引起屋顶重构
         roofRoot = utils.getAcaChild(
             buildingObj,con.ACA_TYPE_ROOF_ROOT)
         utils.deleteHierarchy(roofRoot)
+        # 删除墙体，柱网变化必然引起墙体重构
         wallRoot = utils.getAcaChild(
             buildingObj,con.ACA_TYPE_WALL_ROOT)
         utils.deleteHierarchy(wallRoot)
 
+    # 当前根目录，确保所有构件都在该目录中
     buildingColl = buildingObj.users_collection[0]
 
-    # 提高性能模式============
-    # https://blender.stackexchange.com/questions/7358/python-performance-with-blender-operators
     # 生成柱网
     utils.outputMsg("Building Pillers...")
     utils.setCollection('柱网',parentColl=buildingColl)
     buildPillers(buildingObj)
-    # funproxy = partial(buildPillers,buildingObj=buildingObj)
-    # utils.fastRun(funproxy)
     
     # 生成台基
     utils.outputMsg("Building Platform...")
     utils.setCollection('台基',parentColl=buildingColl)
     buildPlatform.buildPlatform(buildingObj)
-    # funproxy = partial(buildPlatform.buildPlatform,buildingObj=buildingObj)
-    # utils.fastRun(funproxy)
     
     # 生成墙体
     utils.outputMsg("Building Wall...")
     utils.setCollection('墙体',parentColl=buildingColl)
     buildWall.resetWallLayout(buildingObj)
-    # funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
-    # utils.fastRun(funproxy)
     
     # 生成屋顶
     utils.outputMsg("Building Roof...")
     buildRoof.buildRoof(buildingObj)
-    # funproxy = partial(buildRoof.buildRoof,buildingObj=buildingObj)
-    # utils.fastRun(funproxy)
 
+    # 重新聚焦回根节点
     utils.focusObj(buildingObj)
+
+    return {'FINISHED'}

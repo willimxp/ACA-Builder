@@ -336,7 +336,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "柱高",
             default = 0.0,
             min = 0.01, 
-            update = update_piller,
+            update = update_building,
         )# type: ignore
     piller_diameter : bpy.props.FloatProperty(
             name = "柱径",
@@ -585,6 +585,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "套兽",
             type = bpy.types.Object,
             poll = p_filter
+        )# type: ignore 
+    paoshou_count:bpy.props.IntProperty(
+            name = '跑兽数量',
+            default=6,
+            min=0,
+            max=10
         )# type: ignore 
     paoshou_0_source:bpy.props.PointerProperty(
             name = "仙人",

@@ -2,7 +2,7 @@
 <templates>
 	<template>
 		<template_name type="str">示例模版</template_name>
-		<DK type="float">0.08</DK>
+		<DK type="float">0.05</DK>
 		<platform_height type="float">1.0</platform_height>
 		<platform_extend type="float">1.08</platform_extend>
 		<x_rooms type="int">3</x_rooms>
@@ -28,15 +28,15 @@
 		<use_topwin type="bool">False</use_topwin>
 		<use_KanWall type="bool">True</use_KanWall>
 		<lingxin_source type="Object">棂心.正搭斜交</lingxin_source>
-		<use_dg type="bool">True</use_dg>
-		<use_pingbanfang type="bool">True</use_pingbanfang>
+		<use_dg type="bool">False</use_dg>
+		<use_pingbanfang type="bool">False</use_pingbanfang>
 		<dg_piller_source type="Object">四铺作插昂柱头.join</dg_piller_source>
 		<dg_fillgap_source type="Object">四铺作插昂柱头.join</dg_fillgap_source>
 		<dg_corner_source type="Object">四铺作插昂转角.asset</dg_corner_source>
 		<dg_extend type="float">0.45</dg_extend>
 		<dg_height type="float">0.99</dg_height>
 		<dg_gap type="float">1.7</dg_gap>
-		<roof_style type="str">2</roof_style>
+		<roof_style type="str">3</roof_style>
 		<rafter_count type="int">6</rafter_count>
 		<use_flyrafter type="bool">True</use_flyrafter>
 		<use_wangban type="bool">True</use_wangban>
@@ -44,8 +44,8 @@
 		<chong type="int">3</chong>
 		<shengqi type="int">1</shengqi>
 		<bofeng_source type="Object">博缝板</bofeng_source>
-		<tile_width type="float">0.4</tile_width>
-		<tile_length type="float">0.5</tile_length>
+		<tile_width type="float">0.24</tile_width>
+		<tile_length type="float">0.31</tile_length>
 		<flatTile_source type="Object">板瓦</flatTile_source>
 		<circularTile_source type="Object">筒瓦</circularTile_source>
 		<eaveTile_source type="Object">瓦当</eaveTile_source>
@@ -72,6 +72,7 @@
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
 		<mat_red type="Object">红漆</mat_red>
+		<paoshou_count type="int">7</paoshou_count>
 	</template>
 	<template>
 		<template_name type="str">九檩单檐庑殿周围廊</template_name>

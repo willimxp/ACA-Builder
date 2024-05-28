@@ -348,10 +348,12 @@ def __getTileCols(buildingObj:bpy.types.Object,direction='X'):
     roofWidth += tileWidth/2
 
     # 瓦垄数（完整的板瓦列数，包括居中的半列）
-    tileCols = math.ceil(roofWidth / tileWidth)
+    tileCols = math.floor(roofWidth / tileWidth)
 
     # 回写实际瓦垄宽度
-    bData['tile_width_real'] = roofWidth / tileCols
+    if direction=='X':
+        bData['tile_width_real'] = roofWidth / tileCols
+        print("Real tile width: ",roofWidth / tileCols)
 
     return tileCols
 
@@ -613,10 +615,6 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     utils.showObj(eaveTile)
     utils.showObj(dripTile)
 
-    # 自动计算瓦垄长宽，不再需要用户输入
-    bData['tile_width'] = flatTile.dimensions.x
-    bData['tile_length'] = circularTile.dimensions.y
-
     # 瓦垄宽度
     tileWidth = bData.tile_width
     # 瓦片长度
@@ -771,10 +769,16 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         sourceObj=bData.ridgeTop_source,
         name="正脊",
         location=(0,0,zhengji_z),
-        parentObj=tileRootObj)
+        parentObj=tileRootObj,
+        singleUser=True)
     # 根据斗口调整尺度
     utils.resizeObj(roofRidgeObj,
         bData.DK / con.DEFAULT_DK)
+    # 与瓦垄宽度匹配
+    roofRidgeObj.dimensions.x = bData.tile_width_real
+    utils.applyTransfrom(roofRidgeObj,use_scale=True)
+    # 筒瓦坐中
+    roofRidgeObj.location.x = - roofRidgeObj.dimensions.x/2
     
     # 横向平铺
     # 硬山正脊做到垂脊中线，即山墙向内半垄瓦
@@ -791,15 +795,13 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         # 与垂脊相交，从金交点偏移半垄
         zhengji_length = rafter_pos[-1].x \
             - bData.tile_width_real/2
-    # 再补半个正脊筒，正脊筒坐中
-    l = roofRidgeObj.dimensions.x
-    count = math.ceil((zhengji_length + l/2)/ l)
-    span = (zhengji_length + l/2)/count
-    roofRidgeObj.dimensions.x = span
+        
+    # 横向平铺
     modArray:bpy.types.ArrayModifier = roofRidgeObj.modifiers.new('横向平铺','ARRAY')
     modArray.use_relative_offset = True
     modArray.relative_offset_displace = (1,0,0)
-    modArray.count = count
+    modArray.fit_type = 'FIT_LENGTH' 
+    modArray.fit_length = zhengji_length
 
     mod:bpy.types.MirrorModifier = roofRidgeObj.modifiers.new('X向对称','MIRROR')
     mod.mirror_object = tileRootObj
@@ -1627,6 +1629,16 @@ def buildTile(buildingObj: bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
     # bData.is_showTiles = True
     if not bData.is_showTiles: return
+
+    # 自动计算瓦垄长宽，不再需要用户输入
+    bData['tile_width'] = (
+        bData.dripTile_source.dimensions.x
+        * (bData.DK / con.DEFAULT_DK)
+    )
+    bData['tile_length'] = (
+        bData.circularTile_source.dimensions.y
+        * (bData.DK / con.DEFAULT_DK)
+    )
 
     # 计算桁檩定位点
     purlin_pos = buildRoof.__getPurlinPos(buildingObj)

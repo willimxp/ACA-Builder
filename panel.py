@@ -552,10 +552,12 @@ class ACA_PT_tiles(bpy.types.Panel):
             
             # 瓦作属性
             box = layout.box()
+            # row = box.row()
+            # row.prop(bData, "tile_width") # 瓦垄宽度
+            # row = box.row()
+            # row.prop(bData, "tile_length") # 瓦片长度
             row = box.row()
-            row.prop(bData, "tile_width") # 瓦垄宽度
-            row = box.row()
-            row.prop(bData, "tile_length") # 瓦片长度
+            row.prop(bData, "paoshou_count") # 跑兽数量
             row = box.row()
             row.prop(bData, "flatTile_source") # 板瓦
             row = box.row()

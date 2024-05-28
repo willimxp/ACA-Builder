@@ -131,7 +131,7 @@ class ACA_OT_reset_wall_layout(bpy.types.Operator):
         if buildingObj != None:
             # 生成墙体框线
             funproxy = partial(
-                buildWall.resetWallLayout,
+                buildWall.buildWallLayout,
                 buildingObj=buildingObj)
             result = utils.fastRun(funproxy)
             if 'FINISHED' in result:

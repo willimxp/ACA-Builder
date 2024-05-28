@@ -125,7 +125,7 @@ def update_wall(self, context:bpy.types.Context):
         else:
             # 重新生成墙体
             from . import buildWall
-            funproxy = partial(buildWall.resetWallLayout,
+            funproxy = partial(buildWall.buildWallLayout,
                                buildingObj=buildingObj)
             utils.fastRun(funproxy)
     else:

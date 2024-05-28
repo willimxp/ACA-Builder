@@ -341,6 +341,10 @@ def buildPillers(buildingObj:bpy.types.Object):
     pd = con.PILLER_D_EAVE * dk
     bData['is_showPillers'] = True
 
+    # 锁定操作目录
+    buildingColl = buildingObj.users_collection[0]
+    utils.setCollection('柱网',parentColl=buildingColl)
+
     # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
     if bData.x_rooms % 2 == 0:
         # 不处理偶数面阔间数
@@ -429,16 +433,20 @@ def buildPillers(buildingObj:bpy.types.Object):
             pillerBase_popup = 0.02
             pillerBase = utils.addCube(
                 name='柱顶石',
-                location=(net_x[x],
-                          net_y[y],
+                location=(0,0,
                           (piller_copy.location.z 
                            - pillerBase_h/2
                            +pillerBase_popup)),
-                scale=(bData.piller_diameter*2,
-                       bData.piller_diameter*2,
+                scale=(2*bData.piller_diameter/piller_copy.scale.x,
+                       2*bData.piller_diameter/piller_copy.scale.y,
                        pillerBase_h),
             )
-            pillerBase.parent=floorRootObj
+            pillerBase.parent=piller_copy
+            # 添加bevel
+            modBevel:bpy.types.BevelModifier = \
+                pillerBase.modifiers.new('Bevel','BEVEL')
+            modBevel.width = 0.02
+            modBevel.offset_type = 'WIDTH'
             # 材质
             utils.copyMaterial(bData.mat_stone,pillerBase)
 
@@ -500,8 +508,7 @@ def resizePiller(buildingObj:bpy.types.Object):
 
     # 柱高、柱径的变化，都会引起隔扇、墙体的变化，需要重建
     # 重新生成墙体
-    #funproxy = partial(buildWall.updateWallLayout,buildingObj=buildingObj)
-    funproxy = partial(buildWall.resetWallLayout,buildingObj=buildingObj)
+    funproxy = partial(buildWall.buildWallLayout,buildingObj=buildingObj)
     utils.fastRun(funproxy)
 
     # 重新聚焦建筑根节点
@@ -544,23 +551,17 @@ def buildFloor(buildingObj:bpy.types.Object):
             buildingObj,con.ACA_TYPE_WALL_ROOT)
         utils.deleteHierarchy(wallRoot)
 
-    # 当前根目录，确保所有构件都在该目录中
-    buildingColl = buildingObj.users_collection[0]
-
     # 生成柱网
     utils.outputMsg("Building Pillers...")
-    utils.setCollection('柱网',parentColl=buildingColl)
     buildPillers(buildingObj)
     
     # 生成台基
     utils.outputMsg("Building Platform...")
-    utils.setCollection('台基',parentColl=buildingColl)
     buildPlatform.buildPlatform(buildingObj)
     
     # 生成墙体
     utils.outputMsg("Building Wall...")
-    utils.setCollection('墙体',parentColl=buildingColl)
-    buildWall.resetWallLayout(buildingObj)
+    buildWall.buildWallLayout(buildingObj)
     
     # 生成屋顶
     utils.outputMsg("Building Roof...")

@@ -259,89 +259,6 @@ def updateWallLayout(buildingObj:bpy.types.Object):
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
 
-# 重设墙布局
-# 因为墙体数量产生了变化，重新生成所有墙体
-# 用户的个性化设置丢失
-# 按照默认设计参数生成
-# todo：后续可以按照模版中的设置生成（包含预设的个性化设置）
-def resetWallLayoutOld(buildingObj:bpy.types.Object):
-    # 查找墙体布局节点
-    wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
-    # 如果找不到“墙体布局”根节点，重新创建
-    if wallrootObj == None:        
-        wallrootObj = __addWallrootNode(buildingObj)
-    else:
-        # 清空根节点
-        utils.deleteHierarchy(wallrootObj)
-
-    # 一、批量生成wallproxy
-    # a、默认尺寸
-    wall_deepth = 1 # 墙线框尺寸
-    pillerObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PILLER)
-    wall_height = pillerObj.dimensions.z   
-    # b、计算布局数据
-    net_x,net_y = buildFloor.getFloorDate(buildingObj)
-    row,col,rowRange,colRange = \
-        __getWallData(buildingObj,net_x,net_y)         
-    # c、生成横向墙体
-    for r in row: 
-        for c in colRange:
-            pStart = Vector((net_x[c],net_y[r],wall_height/2))
-            pEnd = Vector((net_x[c+1],net_y[r],wall_height/2))
-            wallObj = utils.addCubeBy2Points(
-                        start_point = pStart,
-                        end_point = pEnd,
-                        deepth = wall_deepth,
-                        height = wall_height,
-                        name = "墙体proxy",
-                        root_obj = wallrootObj,
-                        origin_at_bottom = True
-                    )
-            if r < len(net_y)/2:
-                wallObj.rotation_euler.z +=  math.radians(-180)
-    # d、生成纵向墙体
-    for c in col: 
-        for r in rowRange:
-            pStart = Vector((net_x[c],net_y[r],wall_height/2))
-            pEnd = Vector((net_x[c],net_y[r+1],wall_height/2))
-            wallObj = utils.addCubeBy2Points(
-                        start_point = pStart,
-                        end_point = pEnd,
-                        deepth = wall_deepth,
-                        height = wall_height,
-                        name = "墙体proxy",
-                        root_obj = wallrootObj,
-                        origin_at_bottom = True
-                    )
-            if c >= len(net_x)/2:
-                wallObj.rotation_euler.z +=  math.radians(180)
-
-    # 二、批量设置wallproxy属性，以全局参数填入
-    bData :acaData = buildingObj.ACA_data
-    for wallproxy in wallrootObj.children:
-        wallproxy.display_type = 'WIRE' # 仅显示线框
-        wallproxy.hide_render = True    # 不渲染输出
-        # 填充wallproxy的数据
-        wData : acaData = wallproxy.ACA_data
-        wData['aca_obj'] = True
-        wData['aca_type'] = con.ACA_TYPE_WALL
-        if bData.wall_style != '':
-            # enumProperty赋值很奇怪
-            wData['wall_style'] = int(bData.wall_style) 
-        wData['wall_source'] = bData.wall_source
-        wData['door_height'] = bData.door_height
-        wData['door_num'] = bData.door_num
-        wData['gap_num'] = bData.gap_num
-        wData['use_KanWall'] = bData.use_KanWall
-        wData['lingxin_source'] = bData.lingxin_source
-
-    # 三、批量绑定墙体构件
-    for wallproxy in wallrootObj.children:
-        buildSingleWall(wallproxy)
-    
-    # 重新聚焦建筑根节点
-    utils.focusObj(buildingObj)
-
 # 手工添加隔断
 def addWall(buildingObj:bpy.types.Object,
               pillers:List[bpy.types.Object],
@@ -442,12 +359,16 @@ def delWall(object:bpy.types.Object):
 # 用户的个性化设置丢失
 # 按照默认设计参数生成
 # todo：后续可以按照模版中的设置生成（包含预设的个性化设置）
-def resetWallLayout(buildingObj:bpy.types.Object):
+def buildWallLayout(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     bData['is_showWalls'] = True
+
+    # 锁定操作目录
+    buildingColl = buildingObj.users_collection[0]
+    utils.setCollection('墙体',parentColl=buildingColl)
     
     # 查找墙体布局节点
     wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
@@ -484,39 +405,3 @@ def resetWallLayout(buildingObj:bpy.types.Object):
     utils.focusObj(buildingObj)
 
     return {'FINISHED'}
-
-# 批量生成整个墙体布局
-# 载入建筑根节点buildingObj（及全局设计参数）
-# 自动判断是否已有墙体布局根节点，如果没有就新建
-# 自动判断墙体数量是否变化，尽可能保留原有个性化设置
-def buildWallLayout(buildingObj:bpy.types.Object) :
-    # 校验输入对象
-    bData : acaData = buildingObj.ACA_data
-    if bData.aca_type != con.ACA_TYPE_BUILDING:
-        utils.showMessageBox("错误，输入的不是建筑根节点")
-        return
-
-    # 查找墙体布局节点
-    wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
-    # 如果找不到“墙体布局”根节点，重新创建
-    if wallrootObj == None:        
-        wallrootObj = __addWallrootNode(buildingObj)
-
-    # 判断墙体数量是否变化
-    net_x,net_y = buildFloor.getFloorDate(buildingObj)
-    row,col,rowRange,colRange = __getWallData(buildingObj,net_x,net_y)
-    # 原有墙体数量
-    wallcount_old = len(wallrootObj.children)
-    # 现需墙体数量
-    wallcount_new = len(row)*len(colRange) + len(col)*len(rowRange)
-
-    if wallcount_new == wallcount_old :
-        # 墙数量没变，仅改变墙的尺寸、外观
-        # 保留墙的个性化设置
-        funproxy = partial(updateWallLayout,buildingObj=buildingObj)
-        utils.fastRun(funproxy)
-    else:
-        # 墙数量变了，丢弃所有墙体数据，重建
-        # 无法保留墙体的个性化设置
-        funproxy = partial(resetWallLayout,buildingObj=buildingObj)
-        utils.fastRun(funproxy)

@@ -339,7 +339,7 @@ def buildPillers(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
-    bData.is_showPillers = True
+    bData['is_showPillers'] = True
 
     # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
     if bData.x_rooms % 2 == 0:
@@ -446,7 +446,9 @@ def buildPillers(buildingObj:bpy.types.Object):
     utils.deleteHierarchy(piller_basemesh,True)
 
     # 添加柱间的额枋
-    __buildFang(buildingObj)
+    # 重设柱网时，可能清除fang_net数据，而导致异常
+    if bData.fang_net != '':
+        __buildFang(buildingObj)
 
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

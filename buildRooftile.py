@@ -1627,7 +1627,6 @@ def buildTile(buildingObj: bpy.types.Object):
 
     # 载入数据
     bData : acaData = buildingObj.ACA_data
-    # bData.is_showTiles = True
     if not bData.is_showTiles: return
 
     # 自动计算瓦垄长宽，不再需要用户输入

@@ -328,7 +328,7 @@
 		<dg_extend type="float">0.45</dg_extend>
 		<dg_height type="float">0.99</dg_height>
 		<dg_gap type="float">1.6</dg_gap>
-		<roof_style type="str">4</roof_style>
+		<roof_style type="str">3</roof_style>
 		<rafter_count type="int">8</rafter_count>
 		<use_flyrafter type="bool">True</use_flyrafter>
 		<use_wangban type="bool">True</use_wangban>
@@ -336,8 +336,8 @@
 		<chong type="int">3</chong>
 		<shengqi type="int">1</shengqi>
 		<bofeng_source type="Object">博缝板</bofeng_source>
-		<tile_width type="float">0.26</tile_width>
-		<tile_length type="float">0.32</tile_length>
+		<tile_width type="float">0.24</tile_width>
+		<tile_length type="float">0.31</tile_length>
 		<flatTile_source type="Object">板瓦</flatTile_source>
 		<circularTile_source type="Object">筒瓦</circularTile_source>
 		<eaveTile_source type="Object">瓦当</eaveTile_source>
@@ -349,6 +349,7 @@
 		<chiwen_source type="Object">螭吻</chiwen_source>
 		<chuishou_source type="Object">垂兽</chuishou_source>
 		<taoshou_source type="Object">套兽</taoshou_source>
+		<paoshou_count type="int">6</paoshou_count>
 		<paoshou_0_source type="Object">0-骑凤仙人</paoshou_0_source>
 		<paoshou_1_source type="Object">1-龙</paoshou_1_source>
 		<paoshou_2_source type="Object">2-凤</paoshou_2_source>
@@ -364,6 +365,5 @@
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
 		<mat_red type="Object">红漆</mat_red>
-		<paoshou_count type="int">6</paoshou_count>
 	</template>
 </templates>

@@ -395,6 +395,15 @@ def addWall(buildingObj:bpy.types.Object,
 
                     # 将柱子交换，为下一次循环做准备
                     pFrom = piller
+    
+    # 刷新台基，添加踏跺
+    if wallType == con.ACA_WALLTYPE_DOOR:
+        from . import buildPlatform
+        buildPlatform.buildPlatform(buildingObj)
+
+    # 聚焦在创建的门上
+    utils.focusObj(wallproxy)
+
     return {'FINISHED'}
 
 # 删除隔断
@@ -420,7 +429,11 @@ def delWall(object:bpy.types.Object):
         wallStr = wallproxy.ACA_data['wallID']
         bData.wall_net += wallStr + ','
 
-    utils.focusObj(wallRootObj)
+    # 刷新台基，删除踏跺
+    from . import buildPlatform
+    buildPlatform.buildPlatform(buildingObj)
+
+    utils.focusObj(buildingObj)
 
     return
 
@@ -434,7 +447,7 @@ def resetWallLayout(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
-    bData.is_showWalls = True
+    bData['is_showWalls'] = True
     
     # 查找墙体布局节点
     wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)

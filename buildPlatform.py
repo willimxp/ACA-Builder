@@ -39,6 +39,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
     )
 
     # 阶条石
+    jtsObjs = []    # 收集待合并的阶条石
     # 阶条石宽度，从台基边缘做到柱顶石边缘
     stoneWidth = bData.platform_extend-bData.piller_diameter
     
@@ -76,6 +77,8 @@ def __drawPlatform(platformObj:bpy.types.Object):
             mirrorObj=platformObj,
             use_axis=(False,True,False)
         )
+        jtsObjs.append(brickObj)
+
     # 两山阶条石
     # 延长尽间阶条石，与好头石相接
     net_y[0] -= bData.piller_diameter
@@ -102,6 +105,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
             mirrorObj=platformObj,
             use_axis=(True,False,False)
         )
+        jtsObjs.append(brickObj)
 
     # 埋头角柱
     # 角柱高度：台基总高度 - 阶条石 - 土衬
@@ -130,6 +134,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         mirrorObj=platformObj,
         use_axis=(True,True,False)
     )
+    jtsObjs.append(brickObj)
 
     # 第二层，陡板
     h = pHeight - con.STEP_HEIGHT - con.GROUND_BORDER
@@ -151,6 +156,8 @@ def __drawPlatform(platformObj:bpy.types.Object):
         mirrorObj=platformObj,
         use_axis=(False,True,False)
     )
+    jtsObjs.append(brickObj)
+    
     brickObj = utils.addCube(
         name='陡板-两山',
         location=(
@@ -170,6 +177,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         mirrorObj=platformObj,
         use_axis=(True,False,False)
     )
+    jtsObjs.append(brickObj)
 
     # 第三层，土衬石，从水平露明，并外扩金边
     brickObj = utils.addCube(
@@ -186,6 +194,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         ),
         parent=platformObj
     )
+    jtsObjs.append(brickObj)
     
     # 统一设置
     for obj in platformObj.children:
@@ -196,6 +205,10 @@ def __drawPlatform(platformObj:bpy.types.Object):
         # 设置材质
         utils.copyMaterial(bData.mat_rock,obj)
     
+    # 合并台基
+    platformSet = utils.joinObjects(jtsObjs)
+    platformSet.name = '台明'
+
     # 隐藏父节点
     utils.hideObj(platformObj)
     return
@@ -230,6 +243,9 @@ def __drawStep(stepProxy:bpy.types.Object):
     chuidaiX = -pWidth/2
     if stepSide == 'right' :
         chuidaiX = pWidth/2
+
+    # 收集待合并对象
+    taduoObjs = []
     
     # 土衬
     # 宽度：柱间距+金边+台阶石出头（垂带中与柱中对齐）
@@ -256,6 +272,8 @@ def __drawStep(stepProxy:bpy.types.Object):
         ),
         parent=stepProxy
     )
+    taduoObjs.append(brickObj)
+
     # 象眼石
     brickObj = utils.addCube(
         name='象眼石',
@@ -281,6 +299,8 @@ def __drawStep(stepProxy:bpy.types.Object):
             mirrorObj=stepProxy,
             use_axis=(True,False,False)
         )
+    taduoObjs.append(brickObj)
+
     # 象眼石拉伸，做为boolean对象
     booleanObj = utils.copySimplyObject(
         sourceObj=brickObj,
@@ -319,6 +339,8 @@ def __drawStep(stepProxy:bpy.types.Object):
             mirrorObj=stepProxy,
             use_axis=(True,False,False)
         )
+    taduoObjs.append(brickObj)
+
     # 台阶（上基石、中基石，也叫踏跺心子）
     # 计算台阶数量，每个台阶不超过基石的最大高度（15cm）
     count = math.ceil(
@@ -344,6 +366,7 @@ def __drawStep(stepProxy:bpy.types.Object):
             ),
             parent=stepProxy
         )
+        taduoObjs.append(brickObj)
     
     # 批量设置
     for obj in stepProxy.children:
@@ -354,6 +377,10 @@ def __drawStep(stepProxy:bpy.types.Object):
         modBevel.use_clamp_overlap = False
         # 设置材质
         utils.copyMaterial(bData.mat_rock,obj)
+
+    # 合并对象
+    taduoSet = utils.joinObjects(taduoObjs)
+    taduoSet.name = '踏跺'
 
     return
 

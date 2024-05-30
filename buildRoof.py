@@ -585,6 +585,9 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+    
+    # 收集所有梁架，便于后续合并
+    beamObjects = []
 
     # 横向循环每一幅梁架
     roofStyle = bData.roof_style
@@ -623,12 +626,14 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                         beam_l = purlin_pos[n].y*2
                         beam_name = '踩步金'
 
+                # 梁定位
                 beam_loc = Vector((beam_x,0,beam_z))
                 beam_dim = Vector((
                     con.BEAM_DEEPTH*pd,
                     beam_l,
                     con.BEAM_HEIGHT*pd
                 ))
+                # 绘制梁mesh，包括梁头形状
                 beamCopyObj = __drawBeam(
                     location=beam_loc,
                     dimension=beam_dim,
@@ -636,6 +641,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     name = beam_name
                 )
                 beamCopyObj.parent= rafterRootObj
+                beamObjects.append(beamCopyObj)
                 
                 # 梁下皮与origin的距离
                 beamBottom_offset = (con.HENG_COMMON_D*dk/2 
@@ -681,8 +687,17 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                         use_axis=(False,True,False),
                         use_bisect=(False,True,False)
                     )
+                beamObjects.append(shuzhuCopyObj)
+
                 # 蜀柱添加角背
-                __drawJiaobei(shuzhuCopyObj)
+                jiaobeiObj = __drawJiaobei(shuzhuCopyObj)
+                beamObjects.append(jiaobeiObj)
+        
+    # 合并梁架各个部件
+    beamSetObj = utils.joinObjects(beamObjects)
+    modBevel:bpy.types.BevelModifier = \
+        beamSetObj.modifiers.new('Bevel','BEVEL')
+    modBevel.width = 0.02
                            
     return
 
@@ -983,6 +998,9 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+    
+    # 收集望板对象，并合并
+    wangbanObjs = []
 
     # 添板只做1象限半幅，然后镜像
     # 根据桁数组循环计算各层椽架
@@ -1011,6 +1029,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             root_obj=rafterRootObj,
             origin_at_start=True
         )
+        
         # 望板延长，按檐总平出加斜计算
         if n==0:
             # 檐椽斜率（圆柱体默认转90度）
@@ -1065,6 +1084,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
                 mirrorObj=rafterRootObj,
                 use_axis=(True,True,False)
             )
+            wangbanObjs.append(tympanumWangban)
 
         if bData.roof_style == con.ROOF_WUDIAN:
             # 仅庑殿需要裁剪望板
@@ -1082,8 +1102,12 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             mirrorObj=rafterRootObj,
             use_axis=(True,True,False)
         )
+        wangbanObjs.append(wangbanObj)
 
-    return  # EOF：__buildWangban_FB
+    # 合并所有望板
+    wangbanSetObj = utils.joinObjects(wangbanObjs)
+
+    return wangbanSetObj # EOF：__buildWangban_FB
 
 # 营造两山望板
 # 与椽架代码解耦，降低复杂度
@@ -1093,6 +1117,9 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+    
+    # 收集待合并的望板
+    wangbanObjs = []
 
     # 望板只做1象限半幅，然后镜像
     # 根据桁数组循环计算各层椽架
@@ -1168,8 +1195,12 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
             mirrorObj=rafterRootObj,
             use_axis=(True,True,False)
         )  
+        wangbanObjs.append(wangbanObj)
+    
+    # 合并望板
+    wangbanSetObj = utils.joinObjects(wangbanObjs)
 
-    return # EOF：
+    return wangbanSetObj # EOF：
 
 # 根据檐椽，绘制对应飞椽
 # 基于“一飞二尾五”的原则计算
@@ -1370,6 +1401,7 @@ def __buildFlyrafterWangban(buildingObj,purlin_pos,direction):
         mirrorObj=rafterRootObj,
         use_axis=mirrorAxis
     )
+    return fwbObj
 
 # 营造大连檐
 # 通过direction='X'或'Y'决定山面和檐面
@@ -1459,12 +1491,12 @@ def __buildFlyrafterAll(buildingObj:bpy.types.Object,purlinPos,direction):
 
         # 压飞望板
         if useWangban:  # 用户可选择暂时不生成望板（更便于观察椽架形态）
-            __buildFlyrafterWangban(buildingObj,purlinPos,direction)     
+            frWangban = __buildFlyrafterWangban(buildingObj,purlinPos,direction)     
 
         # 大连檐
         __buildDLY(buildingObj,purlinPos,direction)
             
-    return
+    return frWangban
 
 # 根据老角梁，绘制对应子角梁
 # 基于“冲三翘四”的原则计算
@@ -2112,6 +2144,7 @@ def __buildCrWangban(buildingObj:bpy.types.Object
         mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
+    return crWangban
 
 # 营造翼角大连檐实体（连接翘飞椽）
 def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
@@ -2626,7 +2659,7 @@ def __buildCfrWangban(
         mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
-    return
+    return cfrWangban
 
 # 营造椽架（包括檐椽、飞椽、望板等）
 # 根据屋顶样式，自动判断
@@ -2637,17 +2670,23 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     useFlyrafter = bData.use_flyrafter
     useWangban = bData.use_wangban
 
+    # 收集待合并的望板
+    wangbanObjs = []
+
     # 各种屋顶都有前后檐
     utils.outputMsg("Building Rafter Front/Back...")
     __buildRafter_FB(buildingObj,purlin_pos)    # 前后檐椽
     
     if useFlyrafter:  # 用户可选择不使用飞椽
         utils.outputMsg("Building Fly Rafter...")
-        __buildFlyrafterAll(buildingObj,purlin_pos,'X') # 前后飞椽
+        wangbanF_FB = __buildFlyrafterAll(
+            buildingObj,purlin_pos,'X') # 前后飞椽
+        wangbanObjs.append(wangbanF_FB)
         
     if useWangban:  # 用户可选择暂时不生成望板（更便于观察椽架形态）
         utils.outputMsg("Building Wangban...")
-        __buildWangban_FB(buildingObj,purlin_pos)   # 前后望板
+        wangbanFB = __buildWangban_FB(buildingObj,purlin_pos)   # 前后望板
+        wangbanObjs.append(wangbanFB)
     
     # 庑殿、歇山的处理（硬山、悬山不涉及）
     if roofStyle in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
@@ -2662,12 +2701,14 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         if useFlyrafter:
             # 两山飞椽
             utils.outputMsg("Building Fly Rafter Left/Right...")
-            __buildFlyrafterAll(buildingObj,purlin_pos,'Y') 
+            wangbanF_LR = __buildFlyrafterAll(buildingObj,purlin_pos,'Y') 
+            wangbanObjs.append(wangbanF_LR)
             
         if useWangban:
             # 两山望板
             utils.outputMsg("Building Wangban Left/Right...")
-            __buildWangban_LR(buildingObj,purlin_pos)   
+            wangbanLR = __buildWangban_LR(buildingObj,purlin_pos)  
+            wangbanObjs.append(wangbanLR) 
             
         # 翼角部分
         # 营造小连檐
@@ -2681,8 +2722,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         if useWangban:
             # 翼角椽望板
             utils.outputMsg("Building Corner Rafter Wangban...")
-            __buildCrWangban(buildingObj,purlin_pos,cornerRafterColl)
-            
+            wangbanCR = __buildCrWangban(buildingObj,purlin_pos,cornerRafterColl)
+            wangbanObjs.append(wangbanCR) 
 
         # 是否做二层飞椽
         if useFlyrafter:
@@ -2697,7 +2738,19 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             if useWangban:
                 # 翘飞椽望板
                 utils.outputMsg("Building Corner Fly Rafter Wangban...")
-                __buildCfrWangban(buildingObj,purlin_pos,cfrCollection)
+                wangbanCFR = __buildCfrWangban(buildingObj,purlin_pos,cfrCollection)
+                wangbanObjs.append(wangbanCFR) 
+
+            # 合并翘飞椽
+            cfrSet = utils.joinObjects(cfrCollection)
+            cfrSet.name = '翘飞椽'
+
+        # 合并翼角椽
+        crSet = utils.joinObjects(cornerRafterColl)
+        crSet.name = '翼角椽'
+        # 合并望板
+        wangbanSet = utils.joinObjects(wangbanObjs)
+        wangbanSet.name = '望板'
     
     return
 
@@ -2715,15 +2768,19 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
 
     # 象眼板横坐标
     if bData.roof_style == con.ROOF_XIESHAN:
-        # 歇山的象眼板在金桁交点处
-        xyb_x = purlin_pos[-1].x - con.BOFENG_WIDTH*dk + 0.01
+        # 歇山的象眼板在金桁交点处（加出梢）
+        xyb_x = (purlin_pos[-1].x       # 桁檩定位点
+                 - con.XYB_WIDTH*dk/2   # 移到外皮位置
+                 + 0.01)                # 防止与檩头交叠
         # 歇山从金桁以上做起
         xyb_range = range(1,len(purlin_pos))
+        xyb_name = '山花板'
     if bData.roof_style == con.ROOF_XUANSHAN:
         # 悬山的象眼板在山柱中线处
         xyb_x = bData.x_total/2
         # 悬山从正心桁做起
         xyb_range = range(len(purlin_pos))
+        xyb_name = '象眼板'
 
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
     # 从举架定位点做偏移
@@ -2740,7 +2797,7 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
         location=(0,0,0)
     )
     xybObj = bpy.context.object
-    xybObj.name = '象眼板'
+    xybObj.name = xyb_name
     xybObj.parent = rafterRootObj
 
     # 创建bmesh

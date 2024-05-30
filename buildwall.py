@@ -174,8 +174,8 @@ def buildSingleWall(wallproxy:bpy.types.Object):
                 parentObj=wallproxy,
                 singleUser=True)
             wallChildObj.dimensions = (wallproxy.dimensions.x,
-                                    wallChildObj.dimensions.y,
-                                    wallproxy.dimensions.z)
+                wallChildObj.dimensions.y*(bData.DK/con.DEFAULT_DK),
+                wallproxy.dimensions.z)
             utils.applyTransfrom(ob=wallChildObj,use_scale=True)
             utils.updateScene()
             wallChildObj.dimensions.z = wallproxy.dimensions.z

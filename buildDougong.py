@@ -45,9 +45,6 @@ def __addDougongRoot(buildingObj:bpy.types.Object):
     return dgrootObj
 
 def buildDougong(buildingObj:bpy.types.Object): 
-    # 添加根节点以及目录
-    dgrootObj = __addDougongRoot(buildingObj)
-
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     if bData.aca_type != con.ACA_TYPE_BUILDING:
@@ -55,12 +52,16 @@ def buildDougong(buildingObj:bpy.types.Object):
         return
     dk = bData.DK
 
-    # 椽望定位依赖斗栱，强制生成
-    if bData.is_showBPW : bData['is_showDougong'] = True
-    # 用户可以暂时不生成斗栱
-    if not bData.is_showDougong: return
     # 如果不使用斗栱，以下直接跳过
     if not bData.use_dg: return
+    # 用户可以暂时不生成斗栱
+    if not bData.is_showDougong: return
+    # 椽望定位依赖斗栱，强制生成
+    if bData.is_showBPW : 
+        bData['is_showDougong'] = True
+
+    # 添加根节点以及目录
+    dgrootObj = __addDougongRoot(buildingObj)
 
     # 获取地盘数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)

@@ -5,6 +5,7 @@
 
 import bpy
 from functools import partial
+import time
 
 from .const import ACA_Consts as con
 from . import data
@@ -43,11 +44,15 @@ class ACA_OT_add_building(bpy.types.Operator):
 
     def execute(self, context):  
         # 创建新建筑
+        timeStart = time.time()
         funproxy = partial(buildFloor.buildFloor,
                     buildingObj=None)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-            self.report({'INFO'},"新建筑营造完成！")
+            timeEnd = time.time()
+            self.report(
+                {'INFO'},"新建筑营造完成！(%.1f秒)" 
+                % (timeEnd-timeStart))
         return {'FINISHED'}
 
 # 重新生成建筑

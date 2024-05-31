@@ -258,6 +258,9 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     root_obj = rafterRootObj,
                     edge_num =6
                 )
+        modBevel:bpy.types.BevelModifier = \
+            hengFB.modifiers.new('Bevel','BEVEL')
+        modBevel.width = 0.01
         
         # 有斗拱时，正心桁、挑檐桁下不做垫板
         # 无斗栱时，都要做垫板
@@ -283,6 +286,10 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     mirrorObj=rafterRootObj,
                     use_axis=(False,True,False)
                 )
+            utils.applyTransfrom(dianbanObj,use_scale=True)
+            modBevel:bpy.types.BevelModifier = \
+                dianbanObj.modifiers.new('Bevel','BEVEL')
+            modBevel.width = 0.005
         
         # 有斗拱时，正心桁、挑檐桁下不做枋
         # 无斗栱时，仅正心桁下不做枋
@@ -309,6 +316,10 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     mirrorObj=rafterRootObj,
                     use_axis=(False,True,False)
                 )  
+            utils.applyTransfrom(hengfangObj,use_scale=True)
+            modBevel:bpy.types.BevelModifier = \
+                hengfangObj.modifiers.new('Bevel','BEVEL')
+            modBevel.width = 0.01
 
     # 三、布置山面桁檩
     # 仅庑殿、歇山做山面桁檩，硬山、悬山不做山面桁檩
@@ -349,6 +360,9 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     mirrorObj=rafterRootObj,
                     use_axis=(True,False,False)
                 )
+            modBevel:bpy.types.BevelModifier = \
+                hengLR.modifiers.new('Bevel','BEVEL')
+            modBevel.width = 0.01
             
             # 判断垫板、枋的逻辑
             use_dianban = True
@@ -389,6 +403,10 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     mirrorObj=rafterRootObj,
                     use_axis=(True,False,False)
                 )
+                utils.applyTransfrom(dianbanObj,use_scale=True)
+                modBevel:bpy.types.BevelModifier = \
+                    dianbanObj.modifiers.new('Bevel','BEVEL')
+                modBevel.width = 0.005
             # 桁枋
             if use_fang:
                 loc = (pCross.x,0,
@@ -411,10 +429,13 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     mirrorObj=rafterRootObj,
                     use_axis=(True,False,False)
                 )
+                utils.applyTransfrom(hengfangObj,use_scale=True)
+                modBevel:bpy.types.BevelModifier = \
+                    hengfangObj.modifiers.new('Bevel','BEVEL')
+                modBevel.width = 0.01
 
             # 4、添加镜像
-            
-            
+                 
     return
 
 # 绘制梁
@@ -888,7 +909,6 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                         Vector((con.JIAOLIANG_Y*dk/2,0,0)),
                     clear_outer=True
             ) 
-            bpy.ops.object.shade_smooth_by_angle()
         
 
         # 五、镜像必须放在裁剪之后，才能做上下对称     
@@ -898,10 +918,17 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             use_axis=(True,True,False)
         )
 
+        # 倒角
+        # modBevel:bpy.types.BevelModifier = \
+        #     fbRafterObj.modifiers.new('Bevel','BEVEL')
+        # modBevel.width = 0.005
+        # 平滑
+        bpy.ops.object.shade_smooth_by_angle()
+
     # 构造里口木
     __buildLKM(buildingObj,purlin_pos,'X') 
 
-    return
+    return fbRafterObj
 
 # 营造两山椽子
 # 硬山、悬山建筑不涉及
@@ -1485,6 +1512,7 @@ def __buildFlyrafterAll(buildingObj:bpy.types.Object,purlinPos,direction):
     useFlyrafter = bData.use_flyrafter
     useWangban = bData.use_wangban
 
+    frWangban = None
     if useFlyrafter:  # 用户可选择不使用飞椽
         # 构造飞椽
         __buildFlyrafter(buildingObj,direction)  
@@ -1495,7 +1523,7 @@ def __buildFlyrafterAll(buildingObj:bpy.types.Object,purlinPos,direction):
 
         # 大连檐
         __buildDLY(buildingObj,purlinPos,direction)
-            
+        
     return frWangban
 
 # 根据老角梁，绘制对应子角梁
@@ -1551,6 +1579,7 @@ def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object):
 
     # 第4点在子角梁腰向上一角梁高
     v4 = Vector((0,0,con.JIAOLIANG_H*dk))
+    #v4.rotate(Euler((0,-smallCornerBeamObj.rotation_euler.y,0)))
     vectors.append(v4)
 
     # 第5点，定位子角梁的梁头上沿
@@ -1704,6 +1733,9 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             ex_length = ex_length / math.cos(CornerBeamObj.rotation_euler.y)
             CornerBeamObj.dimensions.x += ex_length
             utils.applyTransfrom(CornerBeamObj,use_scale=True)
+            modBevel:bpy.types.BevelModifier = \
+                CornerBeamObj.modifiers.new('Bevel','BEVEL')
+            modBevel.width = 0.01
             
             if bData.use_flyrafter:
                 # 绘制子角梁
@@ -1717,6 +1749,9 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                     object=cbcObj,
                     mirrorObj=rafterRootObj,
                     use_axis=(True,True,False))
+                modBevel:bpy.types.BevelModifier = \
+                    cbcObj.modifiers.new('Bevel','BEVEL')
+                modBevel.width = 0.01
 
         # 添加镜像
         utils.addModifierMirror(
@@ -2435,6 +2470,172 @@ def __drawCornerFlyrafter(
     # utils.changeOriginRotation(change_rot,cfrObj)
     return cfrObj
 
+# 绘制一根翘飞椽
+# 椽头定位：基于每一根翼角椽，指向翘飞椽檐口线对应的定位点
+# 椽尾楔形构造：使用bmesh逐点定位、绘制
+# 特殊处理：椽头撇度处理、椽腰扭度处理
+def __drawCornerFlyrafterNew(
+        cornerRafterObj:bpy.types.Object,
+        cornerFlyrafterEnd,
+        name,
+        head_shear:Vector,
+        root_obj,
+        head_shear_base:Vector = None):
+    # 载入数据
+    buildingObj = utils.getAcaParent(cornerRafterObj,con.ACA_TYPE_BUILDING)
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+
+    # 1、定位翘飞椽起点（腰点），在翼角椽头上移半椽+望板
+    # 获取翼角椽的椽头坐标
+    cr_head_co = utils.getObjectHeadPoint(cornerRafterObj,
+            eval=False,
+            is_symmetry=(True,True,False))
+    # 移动到上皮+望板(做法与正身一致，基于水平投影的垂直移动)
+    offset_z = (con.YUANCHUAN_D/2+con.WANGBAN_H)*dk
+    offset_z = offset_z / math.cos(cornerRafterObj.rotation_euler.y)
+    origin_point = cr_head_co + Vector((0,0,offset_z))
+    # # 沿翼角椽Z方向抬升，半椽+1望板
+    # # 不按水平投影抬升，虽然在图纸上好看，但实际会与大连檐穿模
+    # offset = Vector((0,0,con.YUANCHUAN_D*dk/2+con.WANGBAN_H*dk))
+    # offset.rotate(cornerRafterObj.rotation_euler)
+    # origin_point = cr_head_co + offset
+
+    # 2、任意添加一个对象，具体几何数据在bmesh中建立
+    bpy.ops.mesh.primitive_cube_add(
+        # 以椽腰为原点，便于计算
+        location=origin_point
+    )
+    cfrObj = bpy.context.object
+    cfrObj.name = name
+    cfrObj.parent = root_obj    
+    # 翘飞椽与翼角椽对齐旋转角度，便于后续在翼角椽的矩阵空间计算
+    cfrObj.rotation_euler = cornerRafterObj.rotation_euler
+    utils.updateScene() # 需要刷新，才能正确获取到该对象的matrix_local
+
+    # 3、创建bmesh
+    bm = bmesh.new()
+    # 各个点的集合
+    vectors = []
+
+    # P1.翘飞椽腰下沿，即以上计算的原点
+    v1 = Vector((0,0,0))
+    vectors.append(v1)
+
+    # P2.翘飞椽尾的下皮点
+    # 2.1 函数输入了翘飞椽尾的中心点
+    # 将“翘飞椽定位线”坐标系转换到“翘飞椽”坐标系
+    cfrEnd_center = cfrObj.matrix_local.inverted() @ cornerFlyrafterEnd
+    # 2.2 计算翘飞椽头仰角
+    # 从翼角椽头中心点，到腰线中心点（椽腰抬升半椽）
+    cfrMid_center = Vector((0,0,con.FLYRAFTER_H/2*dk))
+    cfrMid_center.rotate(cfrObj.rotation_euler) # 取斜
+    cfr_head_vector:Vector = cfrEnd_center - cfrMid_center
+    cfr_head_rotation = utils.alignToVector(cfr_head_vector)
+    # 2.3 翘飞椽头延长，保证椽头完全超出大连檐
+    # 计算翘飞椽头与檐口线的夹角
+    shear_rot = utils.alignToVector(head_shear) # 檐口线夹角
+    tilt_rot = cfrObj.rotation_euler.z - shear_rot.z 
+    tilt_offset = (con.FLYRAFTER_H/2*dk+con.QUETAI*dk) / math.tan(tilt_rot)
+    # 2.4 向外延长，并且下移半椽
+    offset = Vector((tilt_offset,0,-con.FLYRAFTER_H*dk/2)) # 下移半椽
+    offset.rotate(cfr_head_rotation)
+    # offset.rotate(Euler((0,-cfrObj.rotation_euler.y,0)))
+    v2 = cfrEnd_center + offset
+    vectors.append(v2)
+    
+    # 3.到翘飞椽头上皮，上移一椽径
+    offset = Vector((0,0,con.FLYRAFTER_H*dk))
+    offset.rotate(cfr_head_rotation)
+    # offset.rotate(Euler((0,-cfrObj.rotation_euler.y,0)))
+    v3 = v2 + offset
+    vectors.append(v3)
+
+    # 4.到翘飞椽腰点上皮，上移一椽径，注意坐标系已经旋转到檐椽角度
+    v4 = Vector((0,0,con.FLYRAFTER_H*dk))
+    # 将位置旋转到垂直为止
+    # 尝试了很久矩阵运算，都没搞对，只能先这么做了
+    v4.rotate(Euler((0,-cfrObj.rotation_euler.y,0)))
+    vectors.append(v4)
+
+    # 5.到翘飞椽尾，采用与正身飞椽相同的椽尾长度，以简化计算
+    # 并没有按照实际翘飞椽头长度的2.5倍计算
+    # 飞尾平出：7斗口*2.5=17.5斗口
+    cfr_pingchu = con.FLYRAFTER_EX/con.FLYRAFTER_HEAD_TILE_RATIO*dk
+    # 飞尾长斜边的长度，平出转到檐椽角度
+    cfrEnd_length = cfr_pingchu / math.cos(cornerRafterObj.rotation_euler.y) 
+
+    v5 = Vector((-cfrEnd_length,0,0))
+    vectors.append(v5) 
+
+    # 摆放点
+    vertices=[]
+    for n in range(len(vectors)):
+        if n==0:
+            vert = bm.verts.new(vectors[n])
+        else:
+            # 挤出
+            return_geo = bmesh.ops.extrude_vert_indiv(bm, verts=[vert])
+            vertex_new = return_geo['verts'][0]
+            del return_geo
+            # 给挤出的点赋值
+            vertex_new.co = vectors[n]
+            # 交换vertex给下一次循环
+            vert = vertex_new
+        vertices.append(vert)
+
+    # 创建面
+    flyrafterEnd_face =bm.faces.new((vertices[0],vertices[3],vertices[4])) # 飞尾
+    flyrafterHead_face = bm.faces.new((vertices[0],vertices[1],vertices[2],vertices[3])) # 飞头
+
+    # 挤出厚度
+    return_geo = bmesh.ops.extrude_face_region(bm, geom=[flyrafterEnd_face,flyrafterHead_face])
+    verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
+    bmesh.ops.translate(bm, verts=verts, vec=(0, -con.FLYRAFTER_H*dk, 0))
+    # 移动所有点，居中
+    for v in bm.verts:
+        v.co.y += con.FLYRAFTER_H*dk/2
+
+    # 椽腰扭向处理
+    # 先简单的根据翘飞椽的Z角度，
+    tilt_rot = cfrObj.rotation_euler.z - shear_rot.z 
+    # 计算扭向位移
+    tilt_offset_x = con.YUANCHUAN_D*dk / math.tan(tilt_rot)
+    tilt_offset_z = tilt_offset_x * math.sin(cfrObj.rotation_euler.y)
+    # 控制侧边9号线位移
+    bm.edges.ensure_lookup_table() # 按序号访问前，必须先ensure
+    tilt_edge = bm.edges[5] # 椽腰左侧边
+    # for v in tilt_edge.verts:
+    #     #v.co.x -= tilt_offset_x
+    #     v.co.z -= tilt_offset_z/2
+    tilt_edge = bm.edges[6] # 椽腰左侧边
+    for v in tilt_edge.verts:
+        v.co.x += tilt_offset_x
+        v.co.z += tilt_offset_z
+
+    # 椽头撇向处理
+    # 计算撇向量：用当前斜率-初始斜率，再投影到“翘飞椽头”的Z轴
+    Z_vec = Vector((0,0,1))
+    Z_vec.rotate(cfr_head_rotation)
+    header_adj = (head_shear-head_shear_base)*Z_vec
+    # 点位移
+    bm.edges.ensure_lookup_table() # 按序号访问前，必须先ensure
+    head_shear_edge = bm.edges[10] # 椽头左侧线
+    for v in head_shear_edge.verts:
+        v.co += header_adj/2
+    head_shear_edge = bm.edges[1] # 椽头左侧线
+    for v in head_shear_edge.verts:
+        v.co -= header_adj/2
+
+    bm.to_mesh(cfrObj.data)
+    cfrObj.data.update()
+    bm.free()
+
+    # 把原点放在椽尾，方便后续计算椽头坐标
+    utils.setOrigin(cfrObj,v5)
+
+    return cfrObj
+
 # 营造翼角翘飞椽（Corner Flyrafter,缩写CFR）
 def __buildCornerFlyrafter(
         buildingObj:bpy.types.Object,
@@ -2465,19 +2666,28 @@ def __buildCornerFlyrafter(
     # 摆放翘飞椽
     # 收集翘飞椽对象，输出绘制翘飞椽望板
     cfrCollection = []
+    head_shear_base = Vector((0,0,0))
+    mid_shear_base = Vector((0,0,0))
     for n in range(len(cfrEnds)):
         # 计算相邻椽头间的撇向
         head_shear_direction = Vector((0,0,0))
+        
         mid_shear_direction = Vector((0,0,0))
         if n != 0 :
             head_shear_direction = cfrEnds[n] - cfrEnds[n-1]
             mid_shear_direction = crEnds[n] - crEnds[n-1]
+        # if n != len(cfrEnds)-1:
+        #     mid_shear_base = crEnds[n+1] - crEnds[n]
+        if n == 1:
+            head_shear_base = head_shear_direction
+            mid_shear_base = mid_shear_direction
+        
 
-        cfr_Obj = __drawCornerFlyrafter(
+        cfr_Obj = __drawCornerFlyrafterNew(
             cornerRafterObj = cornerRafterColl[n], # 对应的翼角椽对象
             cornerFlyrafterEnd = cfrEnds[n], # 头在翘飞椽定位线上
             head_shear = head_shear_direction, # 椽头撇向
-            mid_shear = mid_shear_direction, # 椽腰撇向
+            head_shear_base=head_shear_base,    
             name='翘飞椽',
             root_obj=rafterRootObj
         )
@@ -2675,7 +2885,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
 
     # 各种屋顶都有前后檐
     utils.outputMsg("Building Rafter Front/Back...")
-    __buildRafter_FB(buildingObj,purlin_pos)    # 前后檐椽
+    fbRafterObj = __buildRafter_FB(buildingObj,purlin_pos)    # 前后檐椽
     
     if useFlyrafter:  # 用户可选择不使用飞椽
         utils.outputMsg("Building Fly Rafter...")
@@ -2744,14 +2954,56 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             # 合并翘飞椽
             cfrSet = utils.joinObjects(cfrCollection)
             cfrSet.name = '翘飞椽'
+            # 倒角
+            modBevel:bpy.types.BevelModifier = \
+                cfrSet.modifiers.new('Bevel','BEVEL')
+            modBevel.width = 0.005
 
         # 合并翼角椽
         crSet = utils.joinObjects(cornerRafterColl)
         crSet.name = '翼角椽'
+        # 倒角
+        modBevel:bpy.types.BevelModifier = \
+            crSet.modifiers.new('Bevel','BEVEL')
+        modBevel.width = 0.005
+        # 平滑
+        bpy.ops.object.shade_smooth_by_angle()
+        
         # 合并望板
-        wangbanSet = utils.joinObjects(wangbanObjs)
-        wangbanSet.name = '望板'
+        if useWangban:
+            wangbanSet = utils.joinObjects(wangbanObjs)
+            wangbanSet.name = '望板'
     
+    # 檐椽倒角
+    # 只能放在最后加倒角，因为计算翼角椽时有取檐椽头坐标
+    # 加了倒角后，取檐椽头坐标时就出错了
+    yanRafterObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
+    modBevel:bpy.types.BevelModifier = \
+        yanRafterObj.modifiers.new('Bevel','BEVEL')
+    modBevel.width = 0.005
+    # 两山檐椽
+    yanRafterObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_LR)
+    if yanRafterObj != None:
+        modBevel:bpy.types.BevelModifier = \
+            yanRafterObj.modifiers.new('Bevel','BEVEL')
+        modBevel.width = 0.005
+    # 两山飞椽
+    flyRafterObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_LR)
+    if flyRafterObj != None:
+        modBevel:bpy.types.BevelModifier = \
+            flyRafterObj.modifiers.new('Bevel','BEVEL')
+        modBevel.width = 0.005
+    # 前后檐飞椽
+    flyRafterObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_FB)
+    if flyRafterObj != None:
+        modBevel:bpy.types.BevelModifier = \
+            flyRafterObj.modifiers.new('Bevel','BEVEL')
+        modBevel.width = 0.005
+
     return
 
 # 营造象眼板
@@ -3030,7 +3282,9 @@ def __buildBofeng(buildingObj: bpy.types.Object,
             clear_outer=True,
             direction='Y'
         )
-
+    modBevel:bpy.types.BevelModifier = \
+        bofengObj.modifiers.new('Bevel','BEVEL')
+    modBevel.width = 0.01
     return bofengObj
 
 # 营造山墙

@@ -197,9 +197,12 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
             and direction == 'Y' \
             and n>1: continue
         # 向上位移:半桁径+椽径+望板高+灰泥层高+起翘
+        # offset2 = Vector((0,0,
+        #         (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
+        #         + con.WANGBAN_H + con.ROOFMUD_H)*dk+qiqiao))
         offset2 = Vector((0,0,
                 (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
-                + con.WANGBAN_H + con.ROOFMUD_H)*dk+qiqiao))
+                + con.WANGBAN_H + con.ROOFMUD_H)*dk))
         point = purlin_pos[n]*proj_v + offset2
         # 叠加起翘影响，X坐标对齐p1点
         point += Vector((x,y,qiqiao)) * proj_v2
@@ -353,7 +356,6 @@ def __getTileCols(buildingObj:bpy.types.Object,direction='X'):
     # 回写实际瓦垄宽度
     if direction=='X':
         bData['tile_width_real'] = roofWidth / tileCols
-        print("Real tile width: ",roofWidth / tileCols)
 
     return tileCols
 

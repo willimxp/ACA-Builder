@@ -5,6 +5,7 @@
 import bpy
 import math
 import bmesh
+from mathutils import Vector,Euler
 
 from . import utils
 from . import buildFloor
@@ -331,15 +332,6 @@ def __drawStep(stepProxy:bpy.types.Object):
         )
     taduoObjs.append(brickObj)
 
-    # 象眼石拉伸，做为boolean对象
-    booleanObj = utils.copySimplyObject(
-        sourceObj=brickObj,
-        parentObj=stepProxy,
-        location=brickObj.location
-    )
-    booleanObj.scale.x = 2
-    utils.hideObj(booleanObj)
-
     # 垂带宽度（与阶条石宽度相同）
     brickObj = utils.addCube(
         name='垂带',
@@ -358,10 +350,15 @@ def __drawStep(stepProxy:bpy.types.Object):
     )
     # 删除一条边，变成三角形，index=11
     utils.dissolveEdge(brickObj,[11])
-    modBool:bpy.types.BooleanModifier = brickObj.modifiers.new(
-        'boolean','BOOLEAN')
-    modBool.object = booleanObj
-    modBool.solver = 'EXACT'
+    utils.addBisect(
+        object=brickObj,
+        pStart=brickObj.matrix_world @ Vector((0,pDeepth/2,pHeight/2)),
+        pEnd=brickObj.matrix_world @ Vector((0,0,con.GROUND_BORDER/2)),
+        pCut=brickObj.matrix_world @ Vector((0,0,-con.STEP_HEIGHT)),
+        direction='Y',
+        clear_outer=True
+    )
+
     # 镜像（三连踏跺中，仅中间踏跺做镜像）
     if stepSide == '':
         utils.addModifierMirror(

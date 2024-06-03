@@ -18,6 +18,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         platformObj,con.ACA_TYPE_BUILDING
     )
     bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
     (pWidth,pDeepth,pHeight) = platformObj.dimensions
     # 计算柱网数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
@@ -195,6 +196,20 @@ def __drawPlatform(platformObj:bpy.types.Object):
         parent=platformObj
     )
     jtsObjs.append(brickObj)
+
+    # 第四层，散水，将土衬石变形，并拉伸出坡度
+    sanshuiObj = utils.copySimplyObject(
+        brickObj,
+        parentObj=platformObj,
+        name='散水',
+        location=(0,0,
+            -pHeight/2+con.SANSHUI_HEIGHT/2),
+        singleUser=True)
+    sanshuiObj.dimensions = (
+        brickObj.dimensions.x + con.SANSHUI_WIDTH*dk*2,
+        brickObj.dimensions.y + con.SANSHUI_WIDTH*dk*2,
+        con.SANSHUI_HEIGHT
+    )
     
     # 统一设置
     for obj in platformObj.children:
@@ -220,6 +235,7 @@ def __drawStep(stepProxy:bpy.types.Object):
         stepProxy,con.ACA_TYPE_BUILDING
     )
     bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
     (pWidth,pDeepth,pHeight) = stepProxy.dimensions
     # 阶条石宽度，取下出-半个柱顶石（柱顶石为2pd，这里直接减1pd）
     stoneWidth = bData.platform_extend \
@@ -273,6 +289,20 @@ def __drawStep(stepProxy:bpy.types.Object):
         parent=stepProxy
     )
     taduoObjs.append(brickObj)
+
+    # 散水，将土衬石变形，并拉伸出坡度
+    sanshuiObj = utils.copySimplyObject(
+        brickObj,
+        parentObj=stepProxy,
+        name='散水',
+        location=(0,0,
+            -pHeight/2+con.SANSHUI_HEIGHT/2),
+        singleUser=True)
+    sanshuiObj.dimensions = (
+        brickObj.dimensions.x + con.SANSHUI_WIDTH*dk*2,
+        brickObj.dimensions.y + con.SANSHUI_WIDTH*dk*2,
+        con.SANSHUI_HEIGHT
+    )    
 
     # 象眼石
     brickObj = utils.addCube(

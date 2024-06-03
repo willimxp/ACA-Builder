@@ -712,7 +712,8 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
 
                 # 蜀柱添加角背
                 jiaobeiObj = __drawJiaobei(shuzhuCopyObj)
-                beamObjects.append(jiaobeiObj)
+                if jiaobeiObj != None:
+                    beamObjects.append(jiaobeiObj)
         
     # 合并梁架各个部件
     beamSetObj = utils.joinObjects(beamObjects)
@@ -1578,8 +1579,9 @@ def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object):
     vectors.append(v3)
 
     # 第4点在子角梁腰向上一角梁高
-    v4 = Vector((0,0,con.JIAOLIANG_H*dk))
-    #v4.rotate(Euler((0,-smallCornerBeamObj.rotation_euler.y,0)))
+    l = con.JIAOLIANG_H*dk / math.cos(cornerBeamObj.rotation_euler.y)
+    v4 = Vector((0,0,l))
+    v4.rotate(Euler((0,-cornerBeamObj.rotation_euler.y,0)))
     vectors.append(v4)
 
     # 第5点，定位子角梁的梁头上沿

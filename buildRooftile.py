@@ -1373,7 +1373,7 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
     ridgeCurveVerts = []
     
     # 第1点：子角梁头，
-    p0 = bData.roof_qiao_point
+    p0 = bData.roof_qiao_point.copy()
     # 获取子角梁
     ccbObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_CORNER_BEAM_CHILD)

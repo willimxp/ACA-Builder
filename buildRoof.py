@@ -1596,13 +1596,12 @@ def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object):
                             flyrafterObj,
                             is_symmetry=(True,True,False)
                         )
-    #showVector(bpy.context,root_obj,flyrafter_head_co)
     # 翘四: 从飞椽头上皮，到子角梁上皮，其中要补偿0.75斗口，即半椽，合计调整一椽（见汤书p171）
     scb_abs_z = flyrafter_head_co.z + con.YUANCHUAN_D*dk \
             + bData.qiqiao*con.YUANCHUAN_D*dk # 默认起翘4椽
     scb_abs_co = Vector((scb_abs_x,scb_abs_y,scb_abs_z))
     # 将该起翘点存入dataset，后续翼角可供参考（相对于root_obj）
-    bData.roof_qiao_point = scb_abs_co
+    bData['roof_qiao_point'] = scb_abs_co.copy()
     # 将坐标转换到子角梁坐标系中
     v5 = smallCornerBeamObj.matrix_local.inverted() @ scb_abs_co
     vectors.append(v5)
@@ -2889,6 +2888,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     
     if useFlyrafter:  # 用户可选择不使用飞椽
         utils.outputMsg("Building Fly Rafter...")
+        # 这里生成的是飞椽，但返回的是压飞望板
         wangbanF_FB = __buildFlyrafterAll(
             buildingObj,purlin_pos,'X') # 前后飞椽
         wangbanObjs.append(wangbanF_FB)

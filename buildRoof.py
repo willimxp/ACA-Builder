@@ -260,7 +260,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 )
         modBevel:bpy.types.BevelModifier = \
             hengFB.modifiers.new('Bevel','BEVEL')
-        modBevel.width = 0.01
+        modBevel.width = con.BEVEL_LOW
         
         # 有斗拱时，正心桁、挑檐桁下不做垫板
         # 无斗栱时，都要做垫板
@@ -289,7 +289,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             utils.applyTransfrom(dianbanObj,use_scale=True)
             modBevel:bpy.types.BevelModifier = \
                 dianbanObj.modifiers.new('Bevel','BEVEL')
-            modBevel.width = 0.005
+            modBevel.width = con.BEVEL_EXLOW
         
         # 有斗拱时，正心桁、挑檐桁下不做枋
         # 无斗栱时，仅正心桁下不做枋
@@ -319,7 +319,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             utils.applyTransfrom(hengfangObj,use_scale=True)
             modBevel:bpy.types.BevelModifier = \
                 hengfangObj.modifiers.new('Bevel','BEVEL')
-            modBevel.width = 0.01
+            modBevel.width = con.BEVEL_LOW
 
     # 三、布置山面桁檩
     # 仅庑殿、歇山做山面桁檩，硬山、悬山不做山面桁檩
@@ -362,7 +362,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 )
             modBevel:bpy.types.BevelModifier = \
                 hengLR.modifiers.new('Bevel','BEVEL')
-            modBevel.width = 0.01
+            modBevel.width = con.BEVEL_LOW
             
             # 判断垫板、枋的逻辑
             use_dianban = True
@@ -406,7 +406,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 utils.applyTransfrom(dianbanObj,use_scale=True)
                 modBevel:bpy.types.BevelModifier = \
                     dianbanObj.modifiers.new('Bevel','BEVEL')
-                modBevel.width = 0.005
+                modBevel.width = con.BEVEL_EXLOW
             # 桁枋
             if use_fang:
                 loc = (pCross.x,0,
@@ -432,7 +432,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 utils.applyTransfrom(hengfangObj,use_scale=True)
                 modBevel:bpy.types.BevelModifier = \
                     hengfangObj.modifiers.new('Bevel','BEVEL')
-                modBevel.width = 0.01
+                modBevel.width = con.BEVEL_LOW
 
             # 4、添加镜像
                  
@@ -719,7 +719,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     beamSetObj = utils.joinObjects(beamObjects)
     modBevel:bpy.types.BevelModifier = \
         beamSetObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = 0.02
+    modBevel.width = con.BEVEL_HIGH
                            
     return
 
@@ -919,10 +919,6 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             use_axis=(True,True,False)
         )
 
-        # 倒角
-        # modBevel:bpy.types.BevelModifier = \
-        #     fbRafterObj.modifiers.new('Bevel','BEVEL')
-        # modBevel.width = 0.005
         # 平滑
         bpy.ops.object.shade_smooth_by_angle()
 
@@ -1736,7 +1732,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             utils.applyTransfrom(CornerBeamObj,use_scale=True)
             modBevel:bpy.types.BevelModifier = \
                 CornerBeamObj.modifiers.new('Bevel','BEVEL')
-            modBevel.width = 0.01
+            modBevel.width = con.BEVEL_LOW
             
             if bData.use_flyrafter:
                 # 绘制子角梁
@@ -1752,7 +1748,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                     use_axis=(True,True,False))
                 modBevel:bpy.types.BevelModifier = \
                     cbcObj.modifiers.new('Bevel','BEVEL')
-                modBevel.width = 0.01
+                modBevel.width = con.BEVEL_LOW
 
         # 添加镜像
         utils.addModifierMirror(
@@ -2959,7 +2955,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             # 倒角
             modBevel:bpy.types.BevelModifier = \
                 cfrSet.modifiers.new('Bevel','BEVEL')
-            modBevel.width = 0.005
+            modBevel.width = con.BEVEL_EXLOW
 
         # 合并翼角椽
         crSet = utils.joinObjects(cornerRafterColl)
@@ -2967,7 +2963,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         # 倒角
         modBevel:bpy.types.BevelModifier = \
             crSet.modifiers.new('Bevel','BEVEL')
-        modBevel.width = 0.005
+        modBevel.width = con.BEVEL_EXLOW
         # 平滑
         bpy.ops.object.shade_smooth_by_angle()
         
@@ -2983,28 +2979,28 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
     modBevel:bpy.types.BevelModifier = \
         yanRafterObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = 0.005
+    modBevel.width = con.BEVEL_EXLOW
     # 两山檐椽
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_LR)
     if yanRafterObj != None:
         modBevel:bpy.types.BevelModifier = \
             yanRafterObj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = 0.005
+        modBevel.width = con.BEVEL_EXLOW
     # 两山飞椽
     flyRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_LR)
     if flyRafterObj != None:
         modBevel:bpy.types.BevelModifier = \
             flyRafterObj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = 0.005
+        modBevel.width = con.BEVEL_EXLOW
     # 前后檐飞椽
     flyRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_FB)
     if flyRafterObj != None:
         modBevel:bpy.types.BevelModifier = \
             flyRafterObj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = 0.005
+        modBevel.width = con.BEVEL_EXLOW
 
     return
 
@@ -3286,7 +3282,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         )
     modBevel:bpy.types.BevelModifier = \
         bofengObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = 0.01
+    modBevel.width = con.BEVEL_LOW
     return bofengObj
 
 # 营造山墙

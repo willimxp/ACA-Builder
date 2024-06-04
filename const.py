@@ -176,6 +176,12 @@ class ACA_Consts(object):
     SHANQIANG_EX = 11       # 山墙墀头延伸(DK)，约1.8柱径
     TILE_HEIGHT = 0.04      # 瓦层高度(米)，预估值
 
+    # 导角尺度(m)
+    BEVEL_EXHIGH = 0.04
+    BEVEL_HIGH = 0.02
+    BEVEL_LOW = 0.01
+    BEVEL_EXLOW = 0.005
+
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")
 

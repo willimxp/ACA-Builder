@@ -85,7 +85,7 @@ def buildDougong(buildingObj:bpy.types.Object):
         utils.applyTransfrom(pingbanfangObj,use_scale=True)
         modBevel:bpy.types.BevelModifier = \
             pingbanfangObj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = 0.02
+        modBevel.width = con.BEVEL_HIGH
         utils.addModifierMirror(
             object=pingbanfangObj,
             mirrorObj=dgrootObj,
@@ -110,7 +110,7 @@ def buildDougong(buildingObj:bpy.types.Object):
         utils.applyTransfrom(pingbanfangObj,use_scale=True)
         modBevel:bpy.types.BevelModifier = \
             pingbanfangObj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = 0.02
+        modBevel.width = con.BEVEL_HIGH
         utils.addModifierMirror(
             object=pingbanfangObj,
             mirrorObj=dgrootObj,

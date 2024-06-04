@@ -304,7 +304,7 @@ def __buildKanKuang(wallproxy):
     for obj in KankuangObjs:
         modBevel:bpy.types.BevelModifier = \
             obj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = 0.02
+        modBevel.width = con.BEVEL_HIGH
 
     # 设置材质
     fromObj = bData.mat_red
@@ -677,7 +677,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     # 添加整体bevel
     modBevel:bpy.types.BevelModifier = \
         geshanObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = 0.01
+    modBevel.width = con.BEVEL_LOW
 
     return windowsill_height
     
@@ -799,7 +799,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     for obj in kanQiangObjs:
         modBevel:bpy.types.BevelModifier = \
             obj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = 0.02
+        modBevel.width = con.BEVEL_HIGH
 
     return
 

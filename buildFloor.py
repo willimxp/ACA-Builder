@@ -195,7 +195,7 @@ def __buildFang(buildingObj:bpy.types.Object):
         modBevel:bpy.types.BevelModifier=bigFangObj.modifiers.new(
             "Bevel",'BEVEL'
         )
-        modBevel.width=0.04
+        modBevel.width = con.BEVEL_EXHIGH
         modBevel.segments=3
         # 设置材质
         utils.copyMaterial(bData.mat_red,bigFangObj)
@@ -240,7 +240,7 @@ def __buildFang(buildingObj:bpy.types.Object):
             modBevel:bpy.types.BevelModifier=smallFangObj.modifiers.new(
                 "Bevel",'BEVEL'
             )
-            modBevel.width=0.02
+            modBevel.width = con.BEVEL_HIGH
             modBevel.segments=2
             # 设置材质
             utils.copyMaterial(bData.mat_red,smallFangObj)
@@ -445,7 +445,7 @@ def buildPillers(buildingObj:bpy.types.Object):
             # 添加bevel
             modBevel:bpy.types.BevelModifier = \
                 pillerBase.modifiers.new('Bevel','BEVEL')
-            modBevel.width = 0.02
+            modBevel.width = con.BEVEL_HIGH
             modBevel.offset_type = 'WIDTH'
             # 材质
             utils.copyMaterial(bData.mat_stone,pillerBase)

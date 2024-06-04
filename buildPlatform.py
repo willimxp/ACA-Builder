@@ -217,7 +217,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         # 添加bevel
         modBevel:bpy.types.BevelModifier = \
             obj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = 0.04
+        modBevel.width = con.BEVEL_EXHIGH
         # 设置材质
         utils.copyMaterial(bData.mat_rock,obj)
     
@@ -241,7 +241,7 @@ def __drawStep(stepProxy:bpy.types.Object):
     # 阶条石宽度，取下出-半个柱顶石（柱顶石为2pd，这里直接减1pd）
     stoneWidth = bData.platform_extend \
                     -bData.piller_diameter
-    bevel = 0.03
+    bevel = con.BEVEL_HIGH
     # 计算柱网数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
     utils.hideObjFace(stepProxy)

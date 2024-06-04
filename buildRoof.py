@@ -2216,9 +2216,11 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
         ex += bData.dg_extend
     # 冲出，大连檐仅冲1椽
     ex += bData.chong * con.YUANCHUAN_D * dk
-    # 避让角梁，向内1/4角梁，见汤崇平书籍的p196
-    shift = con.JIAOLIANG_Y/4*dk * math.sqrt(2)
-    pEnd_x = bData.x_total/2 + ex - shift
+    # # 避让角梁，向内1/4角梁，见汤崇平书籍的p196
+    # shift = - con.JIAOLIANG_Y/4*dk * math.sqrt(2)
+    # 延伸，以便后续做45度相交裁剪
+    shift = con.JIAOLIANG_H*dk/2
+    pEnd_x = bData.x_total/2 + ex + shift
     pEnd_y = bData.y_total/2 + ex
     qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
     pEnd_z = dlyObj.location.z + qiqiao
@@ -2241,13 +2243,14 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
     utils.addModifierMirror(
         object=flyrafterEaveObj,
         mirrorObj=cornerBeamObj,
-        use_axis=(False,True,False)
+        use_axis=(False,True,False),
+        use_bisect=(False,True,False)
     )
     # 四面对称
     utils.addModifierMirror(
         object=flyrafterEaveObj,
         mirrorObj=rafterRootObj,
-        use_axis=(True,True,False)
+        use_axis=(True,True,False),
     )
     # 设置材质
     utils.copyMaterial(bData.mat_red,flyrafterEaveObj)

@@ -120,28 +120,22 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
-    
-    # 瓦片与大连檐穿模，加了一个手工补偿
-    z_shift = con.TILE_HEIGHT
 
     if direction == 'X':
         sideCurve_name = "前后翼角坡线"
         dly_type = con.ACA_TYPE_RAFTER_DLY_FB
-        # 闪避1/4角梁
-        shift = Vector((con.JIAOLIANG_Y/4*dk * math.sqrt(2),0,0))
     else:
         sideCurve_name = "两山翼角坡线"
         dly_type = con.ACA_TYPE_RAFTER_DLY_LR
-        # 闪避1/4角梁
-        shift = Vector((0,con.JIAOLIANG_Y/4*dk * math.sqrt(2),0))
 
     # ex_eaveTile: 瓦当滴水向外延伸（相对大连檐位移）
+    # 这里以大连檐坐标系旋转，X为水平方向，Y为椽架垂直方向，Z为出檐方向
     if direction == 'X':
-        ex_eaveTile = Vector((0,
+        ex_eaveTile = Vector((con.EAVETILE_EX*dk,
             con.DALIANYAN_H*dk/2,
             -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
     else:
-        ex_eaveTile = Vector((0,
+        ex_eaveTile = Vector((con.EAVETILE_EX*dk,
             con.DALIANYAN_H*dk/2,
             con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
     # 大连檐
@@ -191,10 +185,8 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
         # 4、Z方向的起翘，额外添加半个大连檐高度
         offset_cq = Vector((ex,ex,ex_qiqiao+con.DALIANYAN_H*dk/2 + con.TILE_HEIGHT))
         p1 += offset_cq
-        # 瓦口延伸量
+        # 5、瓦口延伸量
         p1 += ex_eaveTile
-        # 防穿模保护量
-        p1 += shift
         sideCurveVerts.append(p1)
 
         # 第3-5点，从举架定位点做偏移
@@ -231,8 +223,19 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
             resolution = con.CURVE_RESOLUTION,
             root_obj=tileRootObj
         )
-    # 设置origin
-    utils.setOrigin(sideCurve,dlyObj.location+ex_eaveTile)
+    # 设置origin，与eave curve的origin重合，正身瓦口点
+    # 仅做了以免的勾滴延伸，不像上面做了XY两个方面的勾滴延伸
+    if direction == 'X':
+        ex_eaveTile = Vector((0,
+            con.DALIANYAN_H*dk/2,
+            -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
+    else:
+        ex_eaveTile = Vector((0,
+            con.DALIANYAN_H*dk/2,
+            con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
+    ex_eaveTile.rotate(dlyObj.rotation_euler)
+    originPoint = dlyObj.location+ex_eaveTile
+    utils.setOrigin(sideCurve,originPoint)
 
     utils.hideObj(sideCurve)
     return sideCurve
@@ -325,10 +328,12 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     
     # 位移到大连檐外沿，瓦当滴水向外延伸
     if direction == 'X':
-        offset = Vector((0,con.DALIANYAN_H*dk/2,
+        offset = Vector((0,
+            con.DALIANYAN_H*dk/2,
             -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
     else:
-        offset = Vector((0,con.DALIANYAN_H*dk/2,
+        offset = Vector((0,
+            con.DALIANYAN_H*dk/2,
             con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
     offset.rotate(dlyObj.rotation_euler)
     eaveCurve.location += offset
@@ -1303,9 +1308,14 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     # 计算排布间隔，保证筒瓦坐中
     curveLength = sideRidgeCurve.data.splines[0].calc_length()
     # 实际勾头从曲线开头处让开一层瓦距
+    # arrayLength = (curveLength 
+    #                - bData.tile_length
+    #                - eaveTileWidth/2 
+    #                + bData.tile_width
+    #                )
+    # 20240604，为了让端头盘子与两侧紧密连接，不再做脚对脚对齐
     arrayLength = (curveLength 
                    - bData.tile_length
-                   - eaveTileWidth/2 
                    + bData.tile_width
                    )
     arrayCount = int(arrayLength/bData.tile_width)
@@ -1351,14 +1361,18 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     # 让排山勾头与檐面勾头“脚对脚”对齐
     eaveTileObj.location += Vector((
         # X方向（实际为Y方向），位移一个瓦层长，和半个勾头宽
-        -bData.tile_length - eaveTileWidth/2,
+        # -bData.tile_length - eaveTileWidth/2,
+        # 20240604，为了让端头盘子与两侧紧密连接，不再做脚对脚对齐
+        -bData.tile_length,
         0,
         # Z方向（实际为X方向），位移（瓦垄宽-勾头宽）/2
         (bData.tile_width - eaveTileWidth)/2))
     # 排山滴水位移
     dripTileObj.location += Vector((
         # X方向（实际为Y方向），位移一个瓦层长，和半个勾头宽
-        -bData.tile_length - eaveTileWidth/2 + bData.tile_width/2,
+        # -bData.tile_length - eaveTileWidth/2 + bData.tile_width/2,
+        # 20240604，为了让端头盘子与两侧紧密连接，不再做脚对脚对齐
+        -bData.tile_length + bData.tile_width/2,
         0,
         # Z方向（实际为X方向），位移（瓦垄宽-勾头宽）/2
         (bData.tile_width - eaveTileWidth)/2))
@@ -1421,17 +1435,14 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
         ex += bData.dg_extend
     # 冲出
     ex += bData.chong * con.YUANCHUAN_D * dk
+    # 瓦头勾滴延伸
+    ex += con.EAVETILE_EX*dk * math.sqrt(2)
     x = bData.x_total/2 + ex
     y = bData.y_total/2 + ex
     qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
     # 另加半个大连檐高度
     z = p1.z + qiqiao + con.DALIANYAN_H*dk/2 + con.TILE_HEIGHT
-    # 位移到大连檐外沿，瓦当滴水向外延伸
-    offset = Vector((con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk,
-                     con.DALIANYAN_H*dk/2,
-            -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
-    offset.rotate(dlyObj.rotation_euler)
-    p0 = Vector((x,y,z)) + offset
+    p0 = Vector((x,y,z))
     ridgeCurveVerts.append(p0)
 
     # 庑殿垂脊做到顶部的正脊

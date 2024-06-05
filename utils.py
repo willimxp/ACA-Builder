@@ -749,17 +749,23 @@ def addBisect(object:bpy.types.Object,
     # 将对象的mesh数据single化，避免影响场景中其他对象
     object.data = object.data.copy()
     if direction == 'Z':
-        # 1、计算剪切平面，先将由戗投影到XY平面，再旋转90度
+        # 1、计算剪切平面，先将由戗投影到XY平面，再沿Z轴旋转90度
         pstart_project = Vector((pStart.x,pStart.y,0))
         pend_project = Vector((pEnd.x,pEnd.y,0))
         bisect_normal = Vector(pend_project-pstart_project)
         bisect_normal.rotate(Euler((0,0,math.radians(90)),'XYZ'))
     elif direction == 'Y':
-        # 1、计算剪切平面，先将由戗投影到XY平面，再旋转90度
+        # 1、计算剪切平面，先将由戗投影到YZ平面，再沿X轴旋转90度
         pstart_project = Vector((0,pStart.y,pStart.z))
         pend_project = Vector((0,pEnd.y,pEnd.z))
         bisect_normal = Vector(pend_project-pstart_project)
         bisect_normal.rotate(Euler((math.radians(90),0,0),'XYZ'))
+    elif direction == 'X':
+        # 1、计算剪切平面，先将由戗投影到XZ平面，再沿Y轴旋转90度
+        pstart_project = Vector((pStart.x,0,pStart.z))
+        pend_project = Vector((pEnd.x,0,pEnd.z))
+        bisect_normal = Vector(pend_project-pstart_project)
+        bisect_normal.rotate(Euler((0,math.radians(90),0),'XYZ'))
     bisect_normal = Vector(bisect_normal).normalized() # normal必须normalized,注意不是normalize
 
     # 2、选中并裁切
@@ -831,10 +837,11 @@ def copyModifiers(from_0bj,to_obj):
     bpy.ops.object.select_all(action='DESELECT')
 
 # 在坐标点上摆放一个cube，以便直观看到
-def showVector(point: Vector,parentObj,name="定位点") -> object :
+def showVector(point: Vector,parentObj=None,name="定位点") -> object :
     bpy.ops.mesh.primitive_cube_add(size=0.3,location=point)
     cube = bpy.context.active_object
-    cube.parent = parentObj
+    if parentObj != None:
+        cube.parent = parentObj
     cube.name = name
     return cube
 

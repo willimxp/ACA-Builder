@@ -158,6 +158,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         mirrorObj=platformObj,
         use_axis=(False,True,False)
     )
+    # utils.copyMaterial(bData.mat_stone,brickObj)
     jtsObjs.append(brickObj)
     
     brickObj = utils.addCube(
@@ -179,6 +180,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         mirrorObj=platformObj,
         use_axis=(True,False,False)
     )
+    # utils.copyMaterial(bData.mat_stone,brickObj)
     jtsObjs.append(brickObj)
 
     # 第三层，土衬石，从水平露明，并外扩金边
@@ -198,20 +200,6 @@ def __drawPlatform(platformObj:bpy.types.Object):
     )
     jtsObjs.append(brickObj)
 
-    # 第四层，散水，将土衬石变形，并拉伸出坡度
-    sanshuiObj = utils.copySimplyObject(
-        brickObj,
-        parentObj=platformObj,
-        name='散水',
-        location=(0,0,
-            -pHeight/2+con.SANSHUI_HEIGHT/2),
-        singleUser=True)
-    sanshuiObj.dimensions = (
-        pWidth + con.SANSHUI_WIDTH*dk*2,
-        pDeepth + con.SANSHUI_WIDTH*dk*2,
-        con.SANSHUI_HEIGHT
-    )
-    
     # 统一设置
     for obj in platformObj.children:
         # 添加bevel
@@ -225,9 +213,22 @@ def __drawPlatform(platformObj:bpy.types.Object):
     platformSet = utils.joinObjects(jtsObjs)
     platformSet.name = '台明'
 
+    # 第四层，散水，将土衬石变形，并拉伸出坡度
+    sanshuiObj = utils.addCube(
+        name='散水',
+        location=(
+            0,0,
+            -pHeight/2),
+        scale=(
+            pWidth + con.SANSHUI_WIDTH*dk*2,
+            pDeepth + con.SANSHUI_WIDTH*dk*2,
+            con.SANSHUI_HEIGHT
+        ),
+        parent=platformObj,)
+    
     # 隐藏父节点
     utils.hideObj(platformObj)
-    return
+    return sanshuiObj
 
 # 绘制踏跺对象
 def __drawStep(stepProxy:bpy.types.Object):
@@ -305,18 +306,20 @@ def __drawStep(stepProxy:bpy.types.Object):
             sanshuiX = -con.SANSHUI_WIDTH*dk
         else:
             sanshuiX = con.SANSHUI_WIDTH*dk
+    loc = Vector((sanshuiX,
+            -con.SANSHUI_WIDTH*dk,
+            -pHeight/2))
+    loc = stepProxy.matrix_local @ loc
     sanshuiObj = utils.addCube(
         name='散水',
-        location=(
-            sanshuiX,
-            -con.SANSHUI_WIDTH*dk,
-            -pHeight/2+con.SANSHUI_HEIGHT/2),
+        location=loc,
+        rotation=stepProxy.rotation_euler,
         scale=(
             sanshuiWidth,
             pDeepth,    
             con.SANSHUI_HEIGHT
         ),
-        parent=stepProxy)
+        parent=stepProxy.parent)
 
     # 3、象眼石
     brickObj = utils.addCube(
@@ -343,6 +346,7 @@ def __drawStep(stepProxy:bpy.types.Object):
             mirrorObj=stepProxy,
             use_axis=(True,False,False)
         )
+    #utils.copyMaterial(bData.mat_stone,brickObj)
     taduoObjs.append(brickObj)
 
     # 4、垂带
@@ -365,13 +369,36 @@ def __drawStep(stepProxy:bpy.types.Object):
     # 删除一条边，变成三角形，index=11
     utils.dissolveEdge(brickObj,[11])
     # 裁剪掉象眼石的部分，仅剩垂带高度
+    pStart:Vector = stepProxy.matrix_world @ Vector((0,pDeepth/2,pHeight/2))
+    pEnd:Vector = stepProxy.matrix_world @ Vector((0,0,con.GROUND_BORDER/2))
+    pCut:Vector=stepProxy.matrix_world @ Vector((0,0,con.GROUND_BORDER/2-con.STEP_HEIGHT))
+    clear_outer = False
+    clear_inner = False
+    dir='Y'
+    # 南踏跺
+    if stepProxy.rotation_euler.z == 0:
+        clear_outer=True
+        dir='Y'
+    # 北踏跺
+    if abs(stepProxy.rotation_euler.z - math.radians(-180))<0.001:
+        clear_inner=True
+        dir='Y'
+    # 东
+    if abs(stepProxy.rotation_euler.z - math.radians(90))<0.001:
+        clear_outer=True
+        dir='X'
+    # 西
+    if abs(stepProxy.rotation_euler.z - math.radians(-90))<0.001:
+        clear_inner=True
+        dir='X'
     utils.addBisect(
         object=brickObj,
-        pStart=brickObj.matrix_world @ Vector((0,pDeepth/2,pHeight/2)),
-        pEnd=brickObj.matrix_world @ Vector((0,0,con.GROUND_BORDER/2)),
-        pCut=brickObj.matrix_world @ Vector((0,0,-con.STEP_HEIGHT)),
-        direction='Y',
-        clear_outer=True
+        pStart=pStart,
+        pEnd=pEnd,
+        pCut=pCut,
+        direction=dir,
+        clear_outer=clear_outer,
+        clear_inner=clear_inner
     )
     # 镜像（三连踏跺中，仅中间踏跺做镜像）
     if stepSide == 'center':
@@ -422,8 +449,14 @@ def __drawStep(stepProxy:bpy.types.Object):
     # 合并对象
     taduoSet = utils.joinObjects(taduoObjs)
     taduoSet.name = '踏跺'
+    # 绑定到上一层
+    taduoSet.parent = stepProxy.parent
+    taduoSet.location = stepProxy.matrix_local @ taduoSet.location
+    taduoSet.rotation_euler = stepProxy.rotation_euler
+    # 移除proxy
+    bpy.data.objects.remove(stepProxy)
 
-    return
+    return sanshuiObj
 
 # 构造台基的踏跺，根据门的设定，自动判断
 def __buildStep(platformObj:bpy.types.Object):
@@ -435,6 +468,7 @@ def __buildStep(platformObj:bpy.types.Object):
     (pWidth,pDeepth,pHeight) = platformObj.dimensions
     # 计算柱网数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
+    sanshuiObjs = []
 
     # 解析模版输入的墙体设置，格式如下
     # "wall#3/0#3/3,wall#0/0#3/0,wall#0/3#3/3,window#0/0#0/1,window#0/2#0/3,door#0/1#0/2,"
@@ -527,9 +561,10 @@ def __buildStep(platformObj:bpy.types.Object):
                     rotation=rot,
                 )
                 stepProxy.parent = platformObj
-                __drawStep(stepProxy)
+                sanshuiObj = __drawStep(stepProxy)
+                sanshuiObjs.append(sanshuiObj)
 
-    return
+    return sanshuiObjs
 
 # 根据固定模板，创建新的台基
 def buildPlatform(buildingObj:bpy.types.Object):
@@ -575,9 +610,13 @@ def buildPlatform(buildingObj:bpy.types.Object):
     pfObj.lock_scale = (True,True,True)
 
     # 构造台基细节
-    __drawPlatform(pfObj)
+    sanshuiObj = __drawPlatform(pfObj)
     # 构造台基踏跺
-    __buildStep(pfObj)
+    sanshuiobjs = __buildStep(pfObj)
+    # 合并各个散水对象
+    sanshuiobjs.append(sanshuiObj)
+    sanshuiSet = utils.joinObjects(sanshuiobjs)
+    utils.copyMaterial(bData.mat_stone,sanshuiSet)
 
      # 更新建筑框大小
     buildingObj.empty_display_size = math.sqrt(

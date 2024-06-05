@@ -198,13 +198,17 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
             # XY方向冲出,Z方向起翘
             offset_cq = Vector((ex_chong,ex_chong,ex_qiqiao))
             if direction == 'X':
-                # 与檐口点X向对齐
+                # 与檐口P1点X向对齐
                 point = Vector((p1.x,purlin_pos[n].y,purlin_pos[n].z))
+                # 与p1点相同，做瓦口延伸
+                point += ex_eaveTile*Vector((0,1,1))
                 # 檐出、冲出、起翘,不做X方向
                 point += offset_cq * Vector((0,1,1))
             else:
-                # 与檐口点Y向对齐
+                # 与檐口P1点Y向对齐
                 point = Vector((purlin_pos[n].x,p1.y,purlin_pos[n].z))
+                # 与p1点相同，做瓦口延伸
+                point += ex_eaveTile*Vector((1,0,1))
                 # 檐出、冲出、起翘,不做Y方向
                 point += offset_cq * Vector((1,0,1))
             # 垂直偏移瓦作层高度：半桁+椽架+望板+灰泥层
@@ -212,8 +216,6 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
                     (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
                     + con.WANGBAN_H + con.ROOFMUD_H)*dk))
             point += offset_z
-            # 与p1点相同，做瓦口延伸
-            point += ex_eaveTile
             sideCurveVerts.append(point)
 
     # 绘制翼角瓦垄线

@@ -381,10 +381,6 @@ def __getTileCols(buildingObj:bpy.types.Object,direction='X'):
     # 瓦垄数（完整的板瓦列数，包括居中的半列）
     tileCols = math.floor(roofWidth / tileWidth)
 
-    # 回写实际瓦垄宽度
-    if direction=='X':
-        bData['tile_width_real'] = roofWidth / tileCols
-
     return tileCols
 
 # 绘制瓦面网格，依赖于三条曲线的控制
@@ -452,6 +448,13 @@ def __drawTileGrid(
     utils.setGN_Input(gnMod,"瓦片行数",tileRows)  
     # 应用modifier
     utils.applyAllModifer(tileGrid)      
+    
+    # 回写准确的瓦垄宽度
+    # 后续也用在计算正脊筒宽度，以便对齐当沟
+    # 注意：GridCols不是列数，是划线数，需要减一，
+    # 且GridCols是半垄，实际应该乘二
+    if direction == 'X':
+        bData['tile_width_real'] = tileGrid.dimensions.x/(GridCols-1)*2
 
     return tileGrid
 

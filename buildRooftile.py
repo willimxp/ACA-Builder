@@ -107,7 +107,7 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
     utils.setOrigin(tileCurve,curve_p1)
     return tileCurve
 
-# 绘制侧边瓦垄线
+# 绘制侧边瓦垄线，决定了瓦面的宽度、翼角瓦面的曲率
 # 前后檐direction=‘X'
 # 两山direction=’Y‘
 def __drawSideCurve(buildingObj:bpy.types.Object,
@@ -120,25 +120,23 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
-
+    
     if direction == 'X':
         sideCurve_name = "前后翼角坡线"
         dly_type = con.ACA_TYPE_RAFTER_DLY_FB
-    else:
-        sideCurve_name = "两山翼角坡线"
-        dly_type = con.ACA_TYPE_RAFTER_DLY_LR
-
-    # ex_eaveTile: 瓦当滴水向外延伸（相对大连檐位移）
-    # 这里以大连檐坐标系旋转，X为水平方向，Y为椽架垂直方向，Z为出檐方向
-    if direction == 'X':
+        # 瓦口相对大连檐中心的偏移量
+        # 从大连檐中心位移到大连檐的上侧边，然后位移勾滴延伸
+        # 这里为大连檐坐标系，X为水平方向，Y为椽架垂直方向，Z为出檐方向
         ex_eaveTile = Vector((con.EAVETILE_EX*dk,
             con.DALIANYAN_H*dk/2,
             -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
     else:
+        sideCurve_name = "两山翼角坡线"
+        dly_type = con.ACA_TYPE_RAFTER_DLY_LR
         ex_eaveTile = Vector((con.EAVETILE_EX*dk,
             con.DALIANYAN_H*dk/2,
             con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
-    # 大连檐
+    # 变化瓦口延伸到大连檐坐标系
     dlyObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,dly_type)
     ex_eaveTile.rotate(dlyObj.rotation_euler)
@@ -149,19 +147,21 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     # 硬山悬山
     if bData.roof_style in (con.ROOF_XUANSHAN,con.ROOF_YINGSHAN):    
         # 硬山和悬山铺瓦到大连檐外侧
+        # 大连檐的定位中，自动判断了硬山山墙延伸的需求
         x = utils.getMeshDims(dlyObj).x / 2 
         y = dlyObj.location.y
         z = dlyObj.location.z
+        # 叠加瓦口勾滴延伸，与排山勾滴做45度对称
         p1 = Vector((x,y,z))+ex_eaveTile
         sideCurveVerts.append(p1)
         # 第3-5点，从举架定位点做偏移
         for n in range(len(purlin_pos)):
-            point = Vector((p1.x,purlin_pos[n].y,purlin_pos[n].z))
             # 垂直偏移瓦作层高度：半桁+椽架+望板+灰泥层
-            offset_z = Vector((0,0,
-                    (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
-                    + con.WANGBAN_H + con.ROOFMUD_H)*dk))
-            point += offset_z
+            offset_z = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
+                    + con.WANGBAN_H + con.ROOFMUD_H)*dk
+            point = purlin_pos[n] + Vector((0,0,offset_z))
+            # 对齐檐口横坐标
+            point.x = p1.x
             sideCurveVerts.append(point)
 
     # 庑殿、歇山按照冲三翘四的理论值计算（与子角梁解耦）
@@ -697,7 +697,9 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         M.translation = f.calc_center_median()
         
         # 排布板瓦，仅在偶数列排布
-        if (f.index%GridCols) % 2 == 0:
+        if ((f.index%GridCols) % 2 == 0
+            # 不做最后一列板瓦，以免与排山勾滴重叠
+            and f.index%GridCols != GridCols-1):
             tileObj = __setTile(
                 sourceObj=flatTile,
                 name='板瓦',
@@ -741,6 +743,15 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                     boolObj=tile_bool_obj,
                     isBoolInside=isBoolInside
                 )
+                # 最后一个滴水做斜切
+                if f.index%GridCols == GridCols-1:
+                    utils.addBisect(
+                        object=tileObj,
+                        pStart=Vector((0,0,0)),
+                        pEnd=Vector((1,1,0)),
+                        pCut=tileGrid.matrix_world @ f.calc_center_median(),
+                        clear_inner=True
+                    )
                 tileList.append(tileObj) 
 
             # 排布瓦当
@@ -868,7 +879,12 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
 
     # 垂脊横坐标定位
     # 歇山/悬山，向内一垄，让出排山勾滴的位置
-    ridge_x = purlin_pos[-1].x - bData.tile_width_real/2
+    ''' todo: 这样的做法结果是垂脊坐在筒瓦垄上，
+    而刘大可P267的图上是坐在筒瓦外侧，
+    但实际摆放不太合理，所以暂时维持此做法'''
+    ridge_x = (purlin_pos[-1].x 
+               + con.EAVETILE_EX*dk 
+               - bData.tile_width_real)
     # 硬山建筑，向外移动一个山墙
     if bData.roof_style ==con.ROOF_YINGSHAN:
         ridge_x += (con.SHANQIANG_WIDTH * dk 
@@ -1097,13 +1113,14 @@ def __arraySideTile(buildingObj: bpy.types.Object,
         tileObj.modifiers.new('曲线变形','CURVE')
     modCurve.object = ridgeCurve
     modCurve.deform_axis = 'NEG_X'
-
-    # 四面镜像
-    modMirror: bpy.types.MirrorModifier = \
-        tileObj.modifiers.new('镜像','MIRROR')
-    modMirror.mirror_object = tileRootObj
-    modMirror.use_axis = (True,True,False)
-    modMirror.use_bisect_axis = (False,True,False)
+    
+    # 为了实现第一片排山滴水的裁剪，推迟到了排山滴水摆放位置完成后做镜像
+    # # 四面镜像
+    # modMirror: bpy.types.MirrorModifier = \
+    #     tileObj.modifiers.new('镜像','MIRROR')
+    # modMirror.mirror_object = tileRootObj
+    # modMirror.use_axis = (True,True,False)
+    # modMirror.use_bisect_axis = (False,True,False)
 
     return tileObj
 
@@ -1177,9 +1194,11 @@ def __buildPaoshou(buildingObj: bpy.types.Object,
     ridgeEnd_Length = ridgeEndObj.dimensions.x * (bData.DK/con.DEFAULT_DK)
 
     for n in range(count):
+        #跑兽沿垂脊方向间隔一个脊筒，且坐在脊筒中间
+        pao_offset = ridgeEnd_Length + ridgeLength*(n-0.5)
         loc = ridgeCurve.location + Vector((
-            ridgeLength*(n-0.5)+ridgeEnd_Length,
-            0,ridgeHeight)) 
+                pao_offset,
+                0,ridgeHeight)) 
         shouObj = utils.copyObject(
             sourceObj=paoshouObjs[n],
             parentObj=tileRootObj,
@@ -1225,9 +1244,6 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
                     sourceObj=bData.ridgeBack_source,
                     ridgeCurve=frontRidgeCurve,
                     ridgeName='垂脊兽后')
-    
-    # 歇山：直接在垂脊兽后顶端做垂兽
-    # if bData.roof_style == con.ROOF_XIESHAN:
     # 垂脊兽后退后一个脊筒，摆放垂兽
     ridgeObj:bpy.types.Object = bData.ridgeBack_source
     ridgeLength = ridgeObj.dimensions.x * (bData.DK/con.DEFAULT_DK)
@@ -1253,8 +1269,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     )
 
     # 硬山、悬山：做垂脊兽前、端头盘子、跑兽
-    if bData.roof_style in (
-        con.ROOF_YINGSHAN,con.ROOF_XUANSHAN):
+    if bData.roof_style in (con.ROOF_YINGSHAN,con.ROOF_XUANSHAN):
         # 构造端头盘子
         ridgeEndObj = utils.copyObject(
             sourceObj=bData.ridgeEnd_source,
@@ -1301,6 +1316,20 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
             + ridgeUnit_Length * bData.paoshou_count)
         frontRidgeAfterObj.location.x += paoLength
         chuishouObj.location.x += paoLength
+
+    return {'FINISHED'}
+
+# 排布排山勾滴
+def __buildSideTile(buildingObj: bpy.types.Object,
+                 rafter_pos):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT
+    )
+    eaveTile:bpy.types.Object = bData.eaveTile_source
+    eaveTileWidth = eaveTile.dimensions.x
+    eaveTileLength = eaveTile.dimensions.y
     
     # 构造排山滴水
     sideRidgeCurve = __drawSideRidgeCurve(
@@ -1376,6 +1405,36 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         0,
         # Z方向（实际为X方向），位移（瓦垄宽-勾头宽）/2
         (bData.tile_width - eaveTileWidth)/2))
+    
+    if bData.roof_style in (con.ROOF_XUANSHAN,con.ROOF_YINGSHAN):
+        # 第一片滴水裁剪
+        utils.addBisect(
+            object=dripTileObj,
+            pStart=Vector((0,0,0)),
+            pEnd=Vector((1,1,0)),
+            pCut=tileRootObj.matrix_world @ sideRidgeCurve.location+Vector((0,-bData.tile_length,0)),
+            clear_outer=True
+        )
+
+    # 镜像
+    '''本来镜像放在了__arraySideTile函数中，但为了做滴水的裁剪，不得不在裁剪后镜像
+    也考虑过把裁剪放到__arraySideTile函数内，但裁剪一方面必须在curve后，
+    另一方面，curve后的裁剪导致实例化，无法再做上面的沿曲线位移，
+    无奈之下，只能放在这里事后镜像
+    '''
+    utils.addModifierMirror(
+        object=dripTileObj,
+        mirrorObj=tileRootObj,
+        use_axis=(True,True,False),
+        use_bisect=(False,True,False)
+    )
+    utils.addModifierMirror(
+        object=eaveTileObj,
+        mirrorObj=tileRootObj,
+        use_axis=(True,True,False),
+        use_bisect=(False,True,False)
+    )
+
     # 歇山屋顶的排山勾滴仅做到山花高度
     if bData.roof_style == con.ROOF_XIESHAN:
         utils.addBisect(
@@ -1671,7 +1730,10 @@ def __buildRidge(buildingObj: bpy.types.Object,
     
     # 营造前后垂脊（不涉及庑殿，自动判断硬山/悬山、歇山做法的不同）
     if bData.roof_style != con.ROOF_WUDIAN:
+        # 排布垂脊兽前、垂脊兽后、跑兽
         __buildFrontRidge(buildingObj,rafter_pos)
+        # 排布排山勾滴
+        __buildSideTile(buildingObj,rafter_pos)
 
     # 营造歇山戗脊、庑殿垂脊
     if bData.roof_style in (

@@ -746,6 +746,8 @@ def addBisect(object:bpy.types.Object,
               clear_outer=False,
               clear_inner=False,
               direction  = 'Z')    :
+    # 将对象的mesh数据single化，避免影响场景中其他对象
+    object.data = object.data.copy()
     if direction == 'Z':
         # 1、计算剪切平面，先将由戗投影到XY平面，再旋转90度
         pstart_project = Vector((pStart.x,pStart.y,0))

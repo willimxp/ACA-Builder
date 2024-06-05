@@ -207,8 +207,8 @@ def __drawPlatform(platformObj:bpy.types.Object):
             -pHeight/2+con.SANSHUI_HEIGHT/2),
         singleUser=True)
     sanshuiObj.dimensions = (
-        brickObj.dimensions.x + con.SANSHUI_WIDTH*dk*2,
-        brickObj.dimensions.y + con.SANSHUI_WIDTH*dk*2,
+        pWidth + con.SANSHUI_WIDTH*dk*2,
+        pDeepth + con.SANSHUI_WIDTH*dk*2,
         con.SANSHUI_HEIGHT
     )
     
@@ -249,7 +249,9 @@ def __drawStep(stepProxy:bpy.types.Object):
     stepSide = ''
     spx = stepProxy.location.x
     spy = stepProxy.location.y
-    if spx != 0 and spy != 0:
+    if spx == 0 or spy == 0:
+        stepSide = 'center'
+    else:
         if spx * spy > 0 :
             stepSide = 'left'
         else:
@@ -266,16 +268,17 @@ def __drawStep(stepProxy:bpy.types.Object):
     
     # 土衬
     # 宽度：柱间距+金边+台阶石出头（垂带中与柱中对齐）
-    tuchenWidth = pWidth+con.GROUND_BORDER*2+stoneWidth
-    tuchenX = 0
-    if stepSide != '':
+    if stepSide == 'center':
+        tuchenWidth = pWidth+con.GROUND_BORDER*2+stoneWidth
+        tuchenX = 0
+    else:
         # 连三踏跺，为了不与中间土衬交叠，而错开
         tuchenWidth = pWidth
         if stepSide == 'left':
             tuchenX = -con.GROUND_BORDER-stoneWidth/2
         else:
             tuchenX = con.GROUND_BORDER+stoneWidth/2
-    brickObj = utils.addCube(
+    tuchenObj = utils.addCube(
         name='土衬',
         location=(
             tuchenX,0,
@@ -289,21 +292,31 @@ def __drawStep(stepProxy:bpy.types.Object):
         ),
         parent=stepProxy
     )
-    taduoObjs.append(brickObj)
+    taduoObjs.append(tuchenObj)
 
     # 散水，将土衬石变形，并拉伸出坡度
-    sanshuiObj = utils.copySimplyObject(
-        brickObj,
-        parentObj=stepProxy,
+    if stepSide == 'center':
+        sanshuiWidth = pWidth+con.SANSHUI_WIDTH*dk*2
+        sanshuiX = 0
+    else:
+        # 连三踏跺，为了不与中间土衬交叠，而错开
+        sanshuiWidth = pWidth
+        if stepSide == 'left':
+            sanshuiX = -con.SANSHUI_WIDTH*dk
+        else:
+            sanshuiX = con.SANSHUI_WIDTH*dk
+    sanshuiObj = utils.addCube(
         name='散水',
-        location=(0,0,
+        location=(
+            sanshuiX,
+            -con.SANSHUI_WIDTH*dk,
             -pHeight/2+con.SANSHUI_HEIGHT/2),
-        singleUser=True)
-    sanshuiObj.dimensions = (
-        brickObj.dimensions.x + con.SANSHUI_WIDTH*dk*2,
-        brickObj.dimensions.y + con.SANSHUI_WIDTH*dk*2,
-        con.SANSHUI_HEIGHT
-    )    
+        scale=(
+            sanshuiWidth,
+            pDeepth,    
+            con.SANSHUI_HEIGHT
+        ),
+        parent=stepProxy)
 
     # 象眼石
     brickObj = utils.addCube(

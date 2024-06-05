@@ -266,7 +266,7 @@ def __drawStep(stepProxy:bpy.types.Object):
     # 收集待合并对象
     taduoObjs = []
     
-    # 土衬
+    # 1、土衬
     # 宽度：柱间距+金边+台阶石出头（垂带中与柱中对齐）
     if stepSide == 'center':
         tuchenWidth = pWidth+con.GROUND_BORDER*2+stoneWidth
@@ -294,7 +294,7 @@ def __drawStep(stepProxy:bpy.types.Object):
     )
     taduoObjs.append(tuchenObj)
 
-    # 散水，将土衬石变形，并拉伸出坡度
+    # 2、散水，将土衬石变形，并拉伸出坡度
     if stepSide == 'center':
         sanshuiWidth = pWidth+con.SANSHUI_WIDTH*dk*2
         sanshuiX = 0
@@ -318,7 +318,7 @@ def __drawStep(stepProxy:bpy.types.Object):
         ),
         parent=stepProxy)
 
-    # 象眼石
+    # 3、象眼石
     brickObj = utils.addCube(
         name='象眼石',
         location=(
@@ -337,7 +337,7 @@ def __drawStep(stepProxy:bpy.types.Object):
     # 删除一条边，变成三角形，index=11
     utils.dissolveEdge(brickObj,[11])
     # 镜像（连三踏跺中，仅中间踏跺做镜像）
-    if stepSide == '':
+    if stepSide == 'center':
         utils.addModifierMirror(
             object=brickObj,
             mirrorObj=stepProxy,
@@ -345,7 +345,7 @@ def __drawStep(stepProxy:bpy.types.Object):
         )
     taduoObjs.append(brickObj)
 
-    # 垂带宽度（与阶条石宽度相同）
+    # 4、垂带
     brickObj = utils.addCube(
         name='垂带',
         location=(
@@ -355,6 +355,7 @@ def __drawStep(stepProxy:bpy.types.Object):
             con.GROUND_BORDER/2
         ),
         scale=(
+            # 宽度与阶条石宽度相同
             stoneWidth,             
             pDeepth,
             pHeight-con.GROUND_BORDER
@@ -363,6 +364,7 @@ def __drawStep(stepProxy:bpy.types.Object):
     )
     # 删除一条边，变成三角形，index=11
     utils.dissolveEdge(brickObj,[11])
+    # 裁剪掉象眼石的部分，仅剩垂带高度
     utils.addBisect(
         object=brickObj,
         pStart=brickObj.matrix_world @ Vector((0,pDeepth/2,pHeight/2)),
@@ -371,9 +373,8 @@ def __drawStep(stepProxy:bpy.types.Object):
         direction='Y',
         clear_outer=True
     )
-
     # 镜像（三连踏跺中，仅中间踏跺做镜像）
-    if stepSide == '':
+    if stepSide == 'center':
         utils.addModifierMirror(
             object=brickObj,
             mirrorObj=stepProxy,
@@ -381,7 +382,7 @@ def __drawStep(stepProxy:bpy.types.Object):
         )
     taduoObjs.append(brickObj)
 
-    # 台阶（上基石、中基石，也叫踏跺心子）
+    # 5、台阶（上基石、中基石，也叫踏跺心子）
     # 计算台阶数量，每个台阶不超过基石的最大高度（15cm）
     count = math.ceil(
         (pHeight-con.GROUND_BORDER)

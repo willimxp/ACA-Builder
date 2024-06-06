@@ -920,7 +920,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
         )
 
         # 平滑
-        bpy.ops.object.shade_smooth_by_angle()
+        utils.shaderSmooth(fbRafterObj)
 
     # 构造里口木
     __buildLKM(buildingObj,purlin_pos,'X') 
@@ -999,7 +999,7 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
                         Vector((con.JIAOLIANG_Y*dk/2,0,0)),
                     clear_inner=True
             ) 
-            bpy.ops.object.shade_smooth_by_angle()
+            utils.shaderSmooth(lrRafterObj)
         
         # 镜像
         utils.addModifierMirror(
@@ -2968,7 +2968,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             crSet.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
         # 平滑
-        bpy.ops.object.shade_smooth_by_angle()
+        utils.shaderSmooth(crSet)
         
         # 合并望板
         if useWangban:

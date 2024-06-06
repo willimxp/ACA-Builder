@@ -190,7 +190,7 @@ def addCylinder(radius,depth,name,root_obj,
     cylinderObj.name = name
     cylinderObj.parent = root_obj
     cylinderObj.ACA_data.aca_obj = True
-    bpy.ops.object.shade_smooth_by_angle()
+    shaderSmooth(cylinderObj)
 
     # 将Origin置于底部
     if origin_at_bottom :
@@ -1315,3 +1315,23 @@ def resizeObj(object:bpy.types.Object,
     # 强制生效，以免在fastrun时被其他操作覆盖
     updateScene()
     return object
+
+# 表面平滑
+def shaderSmooth(object:bpy.types.Object):
+    focusObj(object)
+    
+    if bpy.app.version > (4, 1, 0) :
+        # 此方法为Blender 4.1中新提供的，4.0以及以前都不支持
+        bpy.ops.object.shade_smooth_by_angle()
+    elif bpy.app.version > (3, 3, 0) :
+        # 在Blender 3.3~4.0提供了use_auto_smooth的参数
+        # 但在4.1中已经移除了这个参数
+        bpy.ops.object.shade_smooth(
+            use_auto_smooth=True, 
+            auto_smooth_angle=0.523599)
+    else:
+        # 这个函数目前可以适应各个版本
+        # 但效果不是很好，normal可能有问题
+        bpy.ops.object.shade_smooth()
+
+    return

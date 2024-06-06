@@ -89,6 +89,7 @@ def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
 # 返回的是纵切面上的二维坐标（x值在Y-axis，y值在Z-axis）
 def __getLiftPos(buildingDeepth,rafterCount): 
     # 步架宽，这里按照常见的步架宽度相等处理，实际有些特例可能是不相等的
+    #if rafterCount%2 == 0:
     rafterSpan = buildingDeepth / rafterCount
 
     # 举架坐标，仅计算纵截面的二维数据
@@ -104,7 +105,7 @@ def __getLiftPos(buildingDeepth,rafterCount):
             purlin_y += rafterSpan * con.LIFT_RATIO[n-1]
         liftPos.append(Vector((purlin_x,purlin_y)))
 
-    # 返回居家数据集
+    # 返回举架数据集
     return liftPos
 
 # 计算举架数据

@@ -1207,13 +1207,15 @@ def getNurbsSegment(nurbsObj:bpy.types.Object,count,
 def setGN_Input(mod:bpy.types.NodesModifier,
                 inputName:str,
                 value):
-    # V4.0前用以下方法
-    # id = mod.node_group.inputs[inputName].identifier
-
-    # V4.0以后用这个方法    
-    id = mod.node_group.interface.items_tree[inputName].identifier
+    if bpy.app.version >= (4,0,0):
+        # V4.0以后用这个方法    
+        id = mod.node_group.interface.items_tree[inputName].identifier
+    else:
+        # V4.0前用以下方法
+        id = mod.node_group.inputs[inputName].identifier
 
     mod[id] = value
+    return
 
 # 合并对个对象
 # https://blender.stackexchange.com/questions/13986/how-to-join-objects-with-python
@@ -1320,10 +1322,10 @@ def resizeObj(object:bpy.types.Object,
 def shaderSmooth(object:bpy.types.Object):
     focusObj(object)
     
-    if bpy.app.version > (4, 1, 0) :
+    if bpy.app.version >= (4, 1, 0) :
         # 此方法为Blender 4.1中新提供的，4.0以及以前都不支持
         bpy.ops.object.shade_smooth_by_angle()
-    elif bpy.app.version > (3, 3, 0) :
+    elif bpy.app.version >= (3, 3, 0) :
         # 在Blender 3.3~4.0提供了use_auto_smooth的参数
         # 但在4.1中已经移除了这个参数
         bpy.ops.object.shade_smooth(

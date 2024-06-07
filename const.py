@@ -48,6 +48,7 @@ class ACA_Consts(object):
     ROOF_XIESHAN = '2'
     ROOF_XUANSHAN = '3'
     ROOF_YINGSHAN = '4'
+    ROOF_XUANSHAN_JUANPENG = '5'
 
     # 台基
     PLATFORM_HEIGHT = 2         # 台基默认高度(PD)
@@ -125,6 +126,7 @@ class ACA_Consts(object):
     FUJIMU_D = 4                        # 伏脊木直径(DK)
     LIFT_RATIO = [0.5,0.7,0.8,0.9]      # 梁思成图纸中采用的系数，可以进行比较
     #LIFT_RATIO = [0.5,0.65,0.75,0.9]   # 清工程做法则例的推荐系数
+    JUANPENG_SPAN = HENG_COMMON_D * 3   # 卷棚顶的两根脊桁间距(DK)
 
     # 梁架
     BEAM_HEIGHT = 1.4       # 梁高(PD)
@@ -175,6 +177,8 @@ class ACA_Consts(object):
     SHANQIANG_WIDTH = 9     # 山墙厚度(DK)，即1.5柱径
     SHANQIANG_EX = 11       # 山墙墀头延伸(DK)，约1.8柱径
     TILE_HEIGHT = 0.04      # 瓦层高度(米)，预估值
+    JUANPENG_PUMP = 6       # 卷棚瓦作的囊(DK)，为了使屋顶更加圆润饱满
+    JUANPENG_OVERLAP = 2    # 卷棚顶部瓦片的交叠(DK)
 
     # 导角尺度(m)
     BEVEL_EXHIGH = 0.04

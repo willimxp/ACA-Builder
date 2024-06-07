@@ -87,10 +87,17 @@ def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
 # 按照清则例的举架算法，引入每一举的举架系数LIFT_RATIO
 # 根据实际的进深，计算出实际的举架高度
 # 返回的是纵切面上的二维坐标（x值在Y-axis，y值在Z-axis）
-def __getLiftPos(buildingDeepth,rafterCount): 
+def __getLiftPos(buildingObj:bpy.types.Object): 
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    buildingDeepth = bData.y_total      # 建筑进深
+    rafterCount = bData.rafter_count    # 步架数
+    rafterSpan = buildingDeepth / rafterCount   # 步架宽
+
     # 步架宽，这里按照常见的步架宽度相等处理，实际有些特例可能是不相等的
-    #if rafterCount%2 == 0:
-    rafterSpan = buildingDeepth / rafterCount
+    if rafterCount%2 == 0:
+        rafterSpan = buildingDeepth / rafterCount
 
     # 举架坐标，仅计算纵截面的二维数据
     liftPos = []
@@ -119,31 +126,42 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
     pd = con.PILLER_D_EAVE * dk
     # 屋顶样式，1-庑殿，2-歇山，3-悬山，4-硬山
     roofStyle = bData.roof_style
-    # 计算举架参数集
+
+    # 计算步架宽度
     buildingDeepth = bData.y_total      # 建筑进深
     rafterCount = bData.rafter_count    # 步架数
-    rafterSpan = buildingDeepth / rafterCount   # 步架宽
-    # 计算举架系数
-    liftPos = __getLiftPos(buildingDeepth,rafterCount)
-
-    # 举架坐标集，保存了各层桁在檐面和山面的交叉点坐标
+    if roofStyle not in (con.ROOF_XUANSHAN_JUANPENG):
+        # 一般屋顶的步架宽度：按椽架数平分进深长度
+        rafterSpan = buildingDeepth / rafterCount
+    else:
+        # 卷棚顶：顶层桁檩间距3椽径，要从进深中减去后，平分椽架
+        rafterSpan = (buildingDeepth 
+            - con.JUANPENG_SPAN*dk)/rafterCount
+        
+    # 硬山桁檩：做到梁的外皮
+    YINGSHAN_width = bData.x_total/2 + con.BEAM_DEEPTH * pd/2
+    # 悬山桁檩：从山柱中加檐出（14斗口）
+    XUANSHAN_width = bData.x_total/2 + con.YANCHUAN_EX* dk
+    
+    # 计算三维的桁檩交叉点
     purlin_pos = []
 
-    liftEavePurlin = 0
     # 1、有斗栱建筑，添加一根挑檐桁
+    liftEavePurlin = 0    
     if bData.use_dg:    
-        # 1、定位挑檐桁
-        # 平面上延伸斗栱出檐
         dgExtend = bData.dg_extend
         if roofStyle == con.ROOF_YINGSHAN:
-            # 硬山，在面阔上延长一柱径，略超出柱边
-            purlin_x = bData.x_total/2 + con.BEAM_DEEPTH * pd/2
-        if roofStyle == con.ROOF_XUANSHAN:
-            # 悬山，出梢一种做法是柱中出四椽四当，一种做法是柱中出上檐出
-            # 这里简单的按上檐出计算
-            purlin_x = bData.x_total/2 + con.YANCHUAN_EX* dk
+            # 硬山桁檩：做到梁的外皮
+            purlin_x = YINGSHAN_width
+        if roofStyle in (
+                con.ROOF_XUANSHAN,
+                con.ROOF_XUANSHAN_JUANPENG):
+            # 悬山桁檩：从山柱中加檐出（14斗口）
+            purlin_x = XUANSHAN_width
         if roofStyle in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
+            # 庑殿/歇山：做到斗栱出跳
             purlin_x = bData.x_total/2 + dgExtend
+        # 各种屋顶的Y向：都做到斗栱出跳
         purlin_y = bData.y_total/2 + dgExtend
         # 屋顶起点root在挑檐枋下皮，上移半桁
         purlin_z = con.HENG_TIAOYAN_D / 2 * dk
@@ -152,18 +170,33 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
         liftEavePurlin = purlin_z + dgExtend * con.LIFT_RATIO[0] \
             - (con.HENG_COMMON_D-con.HENG_TIAOYAN_D)*dk/2   # 减去挑檐桁、正心桁的直径差，向下压实
 
+    # 计算纵截面的二维举架数据
+    liftPos = []
+    # 根据举架系数，逐个桁架上举
+    for n in range(int(rafterCount/2)+1):
+        # 进深方向内推一步架  
+        purlin_x = buildingDeepth/2 - rafterSpan * n
+        # 高度方向逐级上举
+        if n == 0 :
+            purlin_y = 0
+        else:
+            # 每级举架高度 = 步架 * 举架系数
+            purlin_y += rafterSpan * con.LIFT_RATIO[n-1]
+        liftPos.append(Vector((purlin_x,purlin_y)))
+
     # 2、定位正心桁、上下金桁、脊桁    
     for n in range(int(rafterCount/2)+1):
         # 每层桁的宽度与屋顶样式有关
         if roofStyle == con.ROOF_YINGSHAN:
-            # 硬山，在面阔上延长一柱径，略超出柱边
-            purlin_x = bData.x_total/2 + con.BEAM_DEEPTH * pd/2
-        if roofStyle == con.ROOF_XUANSHAN:
-            # 悬山，出梢一种做法是柱中出四椽四当，一种做法是柱中出上檐出
-            # 这里简单的按上檐出计算
-            purlin_x = bData.x_total/2 + con.YANCHUAN_EX* dk
+            # 硬山桁檩：做到梁的外皮
+            purlin_x = YINGSHAN_width
+        # 悬山（包括悬山卷棚）
+        if roofStyle in (con.ROOF_XUANSHAN
+            ,con.ROOF_XUANSHAN_JUANPENG):
+            # 从山柱中加檐出（14斗口）
+            purlin_x = XUANSHAN_width
+        # 歇山
         if roofStyle == con.ROOF_XIESHAN:
-            # 歇山
             if n in (0,1):
                 # 歇山的正心桁、下金桁按45度对称返回
                 # 但实际檐面的下金桁长度在摆放时，应该延伸到脊槫长度
@@ -200,7 +233,10 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     roofStyle = bData.roof_style
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
-    if roofStyle in (con.ROOF_XUANSHAN,con.ROOF_YINGSHAN):
+    if roofStyle in (
+            con.ROOF_XUANSHAN,
+            con.ROOF_YINGSHAN,
+            con.ROOF_XUANSHAN_JUANPENG):
         # 硬山、悬山桁不做出梢
         hengExtend = 0
     else:
@@ -239,7 +275,9 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 root_obj = rafterRootObj
             )
         # 前后镜像
-        if n!=len(purlin_pos)-1:
+        if (n!=len(purlin_pos)-1            # 除了脊桁
+            or (n==len(purlin_pos)-1 and    # 或者卷棚的脊桁
+                bData.roof_style==con.ROOF_XUANSHAN_JUANPENG)) :
             # 除最后一根脊桁的处理，挑檐桁、正心桁、金桁做Y镜像
             utils.addModifierMirror(
                     object=hengFB,
@@ -281,7 +319,9 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             dianbanObj.name = '垫板'
             dianbanObj.dimensions = dim
             dianbanObj.parent = rafterRootObj
-            if n!=len(purlin_pos)-1:
+            if (n!=len(purlin_pos)-1            # 除了脊桁
+                or (n==len(purlin_pos)-1 and    # 或者卷棚的脊桁
+                    bData.roof_style==con.ROOF_XUANSHAN_JUANPENG)) :
                 utils.addModifierMirror(
                     object=dianbanObj,
                     mirrorObj=rafterRootObj,
@@ -311,7 +351,9 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             hengfangObj.name = '金/脊枋'
             hengfangObj.dimensions = dim
             hengfangObj.parent = rafterRootObj
-            if n!=len(purlin_pos)-1:
+            if (n!=len(purlin_pos)-1            # 除了脊桁
+                or (n==len(purlin_pos)-1 and    # 或者卷棚的脊桁
+                    bData.roof_style==con.ROOF_XUANSHAN_JUANPENG)) :
                 utils.addModifierMirror(
                     object=hengfangObj,
                     mirrorObj=rafterRootObj,
@@ -622,7 +664,10 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
         # 纵向循环每一层梁架
         for n in range(len(purlin_pos)):  
             # 添加横梁
-            if n!=len(purlin_pos)-1: # 排除脊槫
+            # 一般脊槫不做横梁，例外：卷棚要做
+            isJuanpengJituan = (n == len(purlin_pos)-1 
+                and bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG))
+            if n!=len(purlin_pos)-1 or isJuanpengJituan: 
                 # X向随槫交点依次排列
                 beam_x = net_x[x]
                 beam_z = purlin_pos[n].z
@@ -673,12 +718,19 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                              - beamBottom_offset)
 
                 # 在梁上添加蜀柱
-                if roofStyle == con.ROOF_XIESHAN and n==0 and x in (0,len(net_x)-1):
+                if (roofStyle == con.ROOF_XIESHAN 
+                        and n==0 and x in (0,len(net_x)-1)):
                     # 歇山山面第一层不做蜀柱
                     continue
-                if n == len(purlin_pos)-2:
+                if (roofStyle in (con.ROOF_XUANSHAN_JUANPENG) 
+                        and n==len(purlin_pos)-1):
+                    # 卷棚的脊槫处不做蜀柱
+                    continue
+                if (n == len(purlin_pos)-2 and 
+                    roofStyle not in (con.ROOF_XUANSHAN_JUANPENG)):
                     # 直接支撑到脊槫
-                    shuzhu_height = purlin_pos[n+1].z - purlin_pos[n].z - beamTop_offset
+                    shuzhu_height = (purlin_pos[n+1].z 
+                        - purlin_pos[n].z - beamTop_offset)
                 else:
                     # 支撑到上下两根梁之间
                     shuzhu_height = purlin_pos[n+1].z \
@@ -823,9 +875,14 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
         # 1.逐层定位椽子，直接连接上下层的桁檩(槫子)
+        # 前后檐椽从X=0的中心平铺，并做四方镜像        
+        rafter_end = purlin_pos[n] * Vector((0,1,1))
+        rafter_start = purlin_pos[n+1] * Vector((0,1,1))
+        # 椽当居中，将桁交点投影到X=0椽子偏移半椽当
         rafter_offset = Vector((rafter_gap_x/2,0,0))
-        rafter_end = purlin_pos[n] * Vector((0,1,1)) + rafter_offset
-        rafter_start = purlin_pos[n+1] * Vector((0,1,1)) + rafter_offset
+        rafter_end += rafter_offset
+        rafter_start += rafter_offset
+        # 根据起始点创建椽子
         fbRafterObj = utils.addCylinderBy2Points(
             radius = con.YUANCHUAN_D/2*dk,
             start_point = rafter_start,
@@ -878,11 +935,76 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                         Vector((con.JIAOLIANG_Y*dk/2,0,0)),
                     clear_inner=True
             ) 
+            # 四方镜像
             utils.addModifierMirror(
                 object=tympanumRafter,
                 mirrorObj=rafterRootObj,
                 use_axis=(True,True,False)
             )
+
+        # 4.1、卷棚顶的最后一个椽架上，再添加一层罗锅椽
+        if (bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG)
+            and n==len(purlin_pos)-2):
+            # p0点从上金桁檩开始（投影到X中心）
+            p0 = purlin_pos[n] * Vector((0,1,1))
+            # p1点从脊檩开始（投影到X中心）
+            p1 = purlin_pos[n+1] * Vector((0,1,1))
+            # p2点为罗锅椽的屋脊高度
+            p2 = p1 + Vector((
+                0,
+                -purlin_pos[n+1].y,   # 回归到y=0的位置
+                con.YUANCHUAN_D*dk  # 抬升1椽径，见马炳坚p20
+            ))
+            # p3点是为了控制罗锅椽的曲率，没有理论依据，我觉得好看就行
+            p3 = p2 + Vector((0,-con.HENG_COMMON_D*dk,0))
+            # 四点生成曲线
+            curveRafter:bpy.types.Object = \
+                utils.addCurveByPoints(
+                    CurvePoints=(p0,p1,p2,p3),
+                    name='罗锅椽',
+                    root_obj=rafterRootObj)
+            # 设置曲线的椽径（半径）
+            curveRafter.data.bevel_depth = con.YUANCHUAN_D*dk/2
+            # 调整定位
+            rafter_offset = Vector((
+                rafter_gap_x/2,     # 椽当坐中
+                0,
+                (con.HENG_COMMON_D*dk/2
+                    +con.YUANCHUAN_D*dk*1.1))   # 桁檩相切，因为曲线弯曲后，略作了调整
+            )
+            curveRafter.location += rafter_offset
+            # 裁剪掉尾部
+            '''为了罗锅椽能与脑椽紧密相连，所以曲线延长到了脑椽上
+            最后把这个部分再裁剪掉'''
+            # 裁剪点置于桁檩上皮（转到全局坐标）
+            pCut = (rafterRootObj.matrix_world @ 
+                    purlin_pos[n+1]
+                    +Vector((0,0,con.HENG_COMMON_D*dk/2)))
+            utils.addBisect(
+                object=curveRafter,
+                pStart=Vector((0,0,0)),
+                pEnd=Vector((0,1,1)),   #近似按45度斜切，其实有误差
+                pCut=pCut,
+                clear_inner=True,
+                direction='Y'
+            )            
+            # 横向平铺
+            rafter_tile_x = purlin_pos[-1].x 
+            utils.addModifierArray(
+                object=curveRafter,
+                count=int(rafter_tile_x /rafter_gap_x),
+                offset=(rafter_gap_x,0,0)
+            )            
+            # 四方镜像，Y向裁剪
+            utils.addModifierMirror(
+                object=curveRafter,
+                mirrorObj=rafterRootObj,
+                use_axis=(True,True,False),
+                use_bisect=(False,True,False)
+            )
+            # 平滑
+            utils.shaderSmooth(curveRafter)
+            
 
         # 5. 各层椽子平铺
         if bData.roof_style == con.ROOF_WUDIAN and n != 0:
@@ -1027,7 +1149,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
     # 收集望板对象，并合并
     wangbanObjs = []
 
-    # 添板只做1象限半幅，然后镜像
+    # 望板只做1象限半幅，然后镜像
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
         # 望板宽度
@@ -1086,6 +1208,25 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             orient_type = 'LOCAL'
         )
 
+        # 仅庑殿需要裁剪望板
+        if bData.roof_style == con.ROOF_WUDIAN:
+            utils.addBisect(
+                    object=wangbanObj,
+                    pStart=buildingObj.matrix_world @ purlin_pos[n],
+                    pEnd=buildingObj.matrix_world @ purlin_pos[n+1],
+                    pCut=buildingObj.matrix_world @ purlin_pos[n] - \
+                        Vector((con.JIAOLIANG_Y*dk/2,0,0)),
+                    clear_outer=True
+            ) 
+
+        # 望板镜像
+        utils.addModifierMirror(
+            object=wangbanObj,
+            mirrorObj=rafterRootObj,
+            use_axis=(True,True,False)
+        )
+        wangbanObjs.append(wangbanObj)
+
         # 歇山顶的山花处，再补一小块望板
         if bData.roof_style == con.ROOF_XIESHAN and n ==0:
             tympanumWangban:bpy.types.Object = wangbanObj.copy()
@@ -1111,23 +1252,61 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             )
             wangbanObjs.append(tympanumWangban)
 
-        if bData.roof_style == con.ROOF_WUDIAN:
-            # 仅庑殿需要裁剪望板
+        # 另做卷棚望板
+        if (n == len(purlin_pos)-2 and 
+            bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG)):
+            # p0点从上金桁檩开始（投影到X中心）
+            p0 = purlin_pos[n] * Vector((0,1,1))
+            # p1点从脊檩开始（投影到X中心）
+            p1 = purlin_pos[n+1] * Vector((0,1,1))
+            # p2点为罗锅椽的屋脊高度
+            p2 = p1 + Vector((
+                0,
+                -purlin_pos[n+1].y,   # 回归到y=0的位置
+                con.YUANCHUAN_D*dk  # 抬升1椽径，见马炳坚p20
+            ))
+            # p3点是为了控制罗锅椽的曲率，没有理论依据，我觉得好看就行
+            p3 = p2 + Vector((0,-con.HENG_COMMON_D*dk,0))
+            # 四点生成曲线
+            curveRafter:bpy.types.Object = \
+                utils.addCurveByPoints(
+                    CurvePoints=(p0,p1,p2,p3),
+                    name='卷棚望板',
+                    root_obj=rafterRootObj,
+                    height=con.WANGBAN_H*dk,
+                    width=purlin_pos[-1].x *2
+                    )
+            # 调整定位
+            rafter_offset = Vector((0,0,
+                (con.HENG_COMMON_D*dk/2
+                    +con.YUANCHUAN_D*dk*1.9))   # 与椽架相切，因为曲线弯曲后，略作了调整
+            )
+            curveRafter.location += rafter_offset
+            # 裁剪掉尾部
+            '''为了罗锅椽能与脑椽紧密相连，所以曲线延长到了脑椽上
+            最后把这个部分再裁剪掉'''
+            # 裁剪点置于桁檩上皮（转到全局坐标）
+            pCut = (rafterRootObj.matrix_world @ 
+                    purlin_pos[n+1]
+                    +Vector((0,0,con.HENG_COMMON_D*dk/2)))
             utils.addBisect(
-                    object=wangbanObj,
-                    pStart=buildingObj.matrix_world @ purlin_pos[n],
-                    pEnd=buildingObj.matrix_world @ purlin_pos[n+1],
-                    pCut=buildingObj.matrix_world @ purlin_pos[n] - \
-                        Vector((con.JIAOLIANG_Y*dk/2,0,0)),
-                    clear_outer=True
-            ) 
-        # 望板镜像
-        utils.addModifierMirror(
-            object=wangbanObj,
-            mirrorObj=rafterRootObj,
-            use_axis=(True,True,False)
-        )
-        wangbanObjs.append(wangbanObj)
+                object=curveRafter,
+                pStart=Vector((0,0,0)),
+                pEnd=Vector((0,1,1)),   #近似按45度斜切，其实有误差
+                pCut=pCut,
+                clear_inner=True,
+                direction='Y'
+            )
+            # 四方镜像，Y向裁剪
+            utils.addModifierMirror(
+                object=curveRafter,
+                mirrorObj=rafterRootObj,
+                use_axis=(False,True,False),
+                use_bisect=(False,True,False)
+            )
+            # 平滑
+            utils.shaderSmooth(curveRafter)
+            
 
     # 合并所有望板
     wangbanSetObj = utils.joinObjects(wangbanObjs)
@@ -3029,7 +3208,9 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
         # 歇山从金桁以上做起
         xyb_range = range(1,len(purlin_pos))
         xyb_name = '山花板'
-    if bData.roof_style == con.ROOF_XUANSHAN:
+    if bData.roof_style in (
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG):
         # 悬山的象眼板在山柱中线处
         xyb_x = bData.x_total/2
         # 悬山从正心桁做起
@@ -3102,7 +3283,9 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     )
 
     # 应用材质
-    if bData.roof_style == con.ROOF_XUANSHAN:
+    if bData.roof_style in (
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG):
         utils.copyMaterial(bData.mat_stone,xybObj)
     elif bData.roof_style == con.ROOF_XIESHAN:
         utils.copyMaterial(bData.mat_red,xybObj)
@@ -3144,22 +3327,31 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
                   + con.WANGBAN_H + con.ROOFMUD_H)*dk
         point:Vector = purlin_pos[n]+Vector((0,0,offset))
         point.x = ridge_x
-        
-        # 调整曲线终点，与正脊相交
-        if n == len(purlin_pos)-1:
-            # 计算尾段斜率
-            prePoint = ridgeCurveVerts[-1]
-            r = abs((point.y - prePoint.y)/(point.z - prePoint.z))
-            # Y方向延伸2个垂脊筒的长度，多余的会在镜像时裁剪掉
-            ridgeFrontObj:bpy.types.Object = bData.ridgeFront_source
-            offset_y = ridgeFrontObj.dimensions.x * 2
-            point.y -= offset_y
-            # Z方向按尾端斜率延伸
-            point.z += offset_y / r
-
         ridgeCurveVerts.append(point)
     
-    # 创建瓦垄曲线
+    # 卷棚顶的曲线调整,最后一点囊相调整，再加两个平滑点
+    if bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG):
+        ridgeCurveVerts[-1] += Vector((0,
+                con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
+                con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
+        # Y=0时，抬升1椽径，见马炳坚p20
+        p1 = Vector((ridge_x,
+            0,
+            purlin_pos[-1].z + con.YUANCHUAN_D*dk))
+        # 向上位移:半桁径+椽径+望板高+灰泥层高
+        offset = Vector(
+                            (0,0,
+                                (con.HENG_COMMON_D/2 
+                                    + con.YUANCHUAN_D 
+                                    + con.WANGBAN_H 
+                                    + con.ROOFMUD_H
+                                )*dk
+                            )
+                        )
+        p1 += offset
+        ridgeCurveVerts.append(p1)
+
+    # 创建博缝板曲线
     ridgeCurve = utils.addCurveByPoints(
             CurvePoints=ridgeCurveVerts,
             name="博缝板曲线",
@@ -3441,13 +3633,18 @@ def __buildBPW(buildingObj:bpy.types.Object):
     # 营造山墙，仅适用于硬山
     if bData.roof_style == con.ROOF_YINGSHAN:
         __buildShanWall(buildingObj,rafter_pos)
-    # 营造象眼板，适用于歇山、悬山
-    if bData.roof_style in (con.ROOF_XIESHAN,
-            con.ROOF_XUANSHAN):
+    # 营造象眼板，适用于歇山、悬山（卷棚）
+    if bData.roof_style in (
+            con.ROOF_XIESHAN,
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG):
         __buildXiangyanBan(buildingObj,rafter_pos)
-    # 营造博缝板，适用于歇山、悬山、硬山
-    if bData.roof_style in (con.ROOF_XIESHAN,
-            con.ROOF_XUANSHAN,con.ROOF_YINGSHAN):
+    # 营造博缝板，适用于歇山、悬山(卷棚)、硬山
+    if bData.roof_style in (
+            con.ROOF_XIESHAN,
+            con.ROOF_XUANSHAN,
+            con.ROOF_YINGSHAN,
+            con.ROOF_XUANSHAN_JUANPENG):
         __buildBofeng(buildingObj,rafter_pos)
 
     # 设置材质

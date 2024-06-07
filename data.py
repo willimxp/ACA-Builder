@@ -469,6 +469,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("2","歇山顶",""),
                 ("3","悬山顶",""),
                 ("4","硬山顶",""),
+                ("5","悬山卷棚顶",""),
             ],
             update = update_roof,
         ) # type: ignore

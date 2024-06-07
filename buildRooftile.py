@@ -95,6 +95,30 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
         point = purlin_pos[n]*proj_v+Vector((0,0,offset))
         tileCurveVerts.append(point)
 
+    # 卷棚的前后坡，增加辅助点
+    if bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG):
+        tileCurveVerts[-1] += Vector((0,
+                con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
+                con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
+        # Y=0时，抬升1椽径，见马炳坚p20
+        p1 = Vector((0,
+            0,
+            purlin_pos[-1].z + con.YUANCHUAN_D*dk))
+        # 向上位移:半桁径+椽径+望板高+灰泥层高
+        offset = Vector(
+                            (0,0,
+                                (con.HENG_COMMON_D/2 
+                                    + con.YUANCHUAN_D 
+                                    + con.WANGBAN_H 
+                                    + con.ROOFMUD_H
+                                )*dk
+                            )
+                        )
+        p1 += offset
+        tileCurveVerts.append(p1)
+        p2 = p1 + Vector((0,-con.JUANPENG_OVERLAP*dk,0))
+        tileCurveVerts.append(p2)
+
     # 创建瓦垄曲线
     tileCurve = utils.addCurveByPoints(
             CurvePoints=tileCurveVerts,
@@ -145,7 +169,9 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     sideCurveVerts = []
     # 第1点：檐口线终点
     # 硬山悬山
-    if bData.roof_style in (con.ROOF_XUANSHAN,con.ROOF_YINGSHAN):    
+    if bData.roof_style in (con.ROOF_XUANSHAN,
+                            con.ROOF_YINGSHAN,
+                            con.ROOF_XUANSHAN_JUANPENG):    
         # 硬山和悬山铺瓦到大连檐外侧
         # 大连檐的定位中，自动判断了硬山山墙延伸的需求
         x = utils.getMeshDims(dlyObj).x / 2 
@@ -163,6 +189,34 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
             # 对齐檐口横坐标
             point.x = p1.x
             sideCurveVerts.append(point)
+    
+    # 卷棚的前后坡，增加辅助点
+    if bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG):
+        sideCurveVerts[-1] += Vector((0,
+                con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
+                con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
+        # 大连檐的定位中，自动判断了硬山山墙延伸的需求
+        x = utils.getMeshDims(dlyObj).x / 2 
+        # Y=0时，抬升1椽径，见马炳坚p20
+        p1 = Vector((x,
+            0,
+            purlin_pos[-1].z + con.YUANCHUAN_D*dk))
+        # 瓦口延伸
+        p1 += ex_eaveTile * Vector((1,0,0))
+        # 向上位移:半桁径+椽径+望板高+灰泥层高
+        offset = Vector(
+                            (0,0,
+                                (con.HENG_COMMON_D/2 
+                                    + con.YUANCHUAN_D 
+                                    + con.WANGBAN_H 
+                                    + con.ROOFMUD_H
+                                )*dk
+                            )
+                        )
+        p1 += offset
+        sideCurveVerts.append(p1)
+        p2 = p1 + Vector((0,-con.JUANPENG_OVERLAP*dk,0))
+        sideCurveVerts.append(p2)
 
     # 庑殿、歇山按照冲三翘四的理论值计算（与子角梁解耦）
     ex_chong = bData.chong * con.YUANCHUAN_D * dk
@@ -222,8 +276,8 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     sideCurve = utils.addCurveByPoints(
             CurvePoints=sideCurveVerts,
             name=sideCurve_name,
-            resolution = con.CURVE_RESOLUTION,
-            root_obj=tileRootObj
+            root_obj=tileRootObj,
+            order_u=4, # 取4级平滑，让坡面曲线更加流畅
         )
     # 设置origin，与eave curve的origin重合，正身瓦口点
     # 仅做了以免的勾滴延伸，不像上面做了XY两个方面的勾滴延伸
@@ -279,7 +333,10 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     p2 = p1 + purlin_pos[1] * proj_v1
     eaveCurveVerts.append(p2)
 
-    if bData.roof_style in (con.ROOF_XUANSHAN,con.ROOF_YINGSHAN):
+    # 硬山，悬山（卷棚）檐口平直
+    if bData.roof_style in (con.ROOF_XUANSHAN,
+                            con.ROOF_YINGSHAN,
+                            con.ROOF_XUANSHAN_JUANPENG):
         # 绘制檐口线
         CurvePoints = utils.setEaveCurvePoint(p1,p2,direction)
         eaveCurve = utils.addBezierByPoints(
@@ -350,14 +407,20 @@ def __getTileCols(buildingObj:bpy.types.Object,direction='X'):
     # 瓦垄宽度
     tileWidth = bData.tile_width
 
-    # 斗栱、飞椽、冲出
-    if bData.roof_style in (con.ROOF_XUANSHAN,con.ROOF_YINGSHAN) and direction=='X':
+    # 计算瓦面宽度
+    # 硬山、悬山（卷棚）做到大连檐
+    ''' 大连檐计算长度时，自动包括了硬山的山墙 '''
+    if (bData.roof_style in (con.ROOF_XUANSHAN,
+                             con.ROOF_YINGSHAN,
+                             con.ROOF_XUANSHAN_JUANPENG) 
+        and direction=='X'):
         # 硬山、悬山的山面不出跳（檐面正常出跳）
         dlyObj:bpy.types.Object = \
             utils.getAcaChild(
                 buildingObj,con.ACA_TYPE_RAFTER_DLY_FB)
         roofWidth = utils.getMeshDims(dlyObj).x / 2 
-
+    
+    # 歇山、庑殿按出檐、出跳、出冲、起翘计算
     if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
         if direction=='X':
             # 通面阔
@@ -898,7 +961,10 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     # 垂脊纵坐标定位
     # P1:硬山、悬山的垂脊从檐口做起
     # （歇山从正心桁做，所以不需要此点）
-    if bData.roof_style in (con.ROOF_YINGSHAN,con.ROOF_XUANSHAN):
+    if bData.roof_style in (
+            con.ROOF_YINGSHAN,
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG):
         # 大连檐中心
         dlyObj:bpy.types.Object = utils.getAcaChild(
             buildingObj,con.ACA_TYPE_RAFTER_DLY_FB)
@@ -931,20 +997,43 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
                   + con.WANGBAN_H + con.ROOFMUD_H)*dk
         point:Vector = purlin_pos[n]+Vector((0,0,offset))
         point.x = ridge_x
-        
-        # 延长曲线终点，与正脊相交
-        if n == len(purlin_pos)-1:
-            # 计算尾段斜率
-            prePoint = ridgeCurveVerts[-1]
-            r = abs((point.y - prePoint.y)/(point.z - prePoint.z))
-            # Y方向延伸2个垂脊筒的长度，多余的会在镜像时裁剪掉
-            ridgeFrontObj:bpy.types.Object = bData.ridgeFront_source
-            offset_y = ridgeFrontObj.dimensions.x * 2
-            point.y -= offset_y
-            # Z方向按尾端斜率延伸
-            point.z += offset_y / r
-        
         ridgeCurveVerts.append(point)
+
+    # 卷棚顶的曲线调整,最后一点囊相调整，再加两个平滑点
+    if bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG):
+        ridgeCurveVerts[-1] += Vector((0,
+                con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
+                con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
+        # Y=0时，抬升1椽径，见马炳坚p20
+        p1 = Vector((ridge_x,
+            0,
+            purlin_pos[-1].z + con.YUANCHUAN_D*dk))
+        # 向上位移:半桁径+椽径+望板高+灰泥层高
+        offset = Vector(
+                            (0,0,
+                                (con.HENG_COMMON_D/2 
+                                    + con.YUANCHUAN_D 
+                                    + con.WANGBAN_H 
+                                    + con.ROOFMUD_H
+                                )*dk
+                            )
+                        )
+        p1 += offset
+        ridgeCurveVerts.append(p1)
+        p2 = p1 + Vector((0,-con.JUANPENG_OVERLAP*dk,0))
+        ridgeCurveVerts.append(p2)
+    else:
+        # 延长曲线终点，与正脊相交
+        # 计算尾段斜率
+        pNeg1 = ridgeCurveVerts[-1]
+        pNeg2 = ridgeCurveVerts[-2]
+        r = abs((pNeg1.y - pNeg2.y)/(pNeg1.z - pNeg2.z))
+        # Y方向延伸2个垂脊筒的长度，多余的会在镜像时裁剪掉
+        ridgeFrontObj:bpy.types.Object = bData.ridgeFront_source
+        offset_y = ridgeFrontObj.dimensions.x * 2
+        pNeg1.y -= offset_y
+        # Z方向按尾端斜率延伸
+        pNeg1.z += offset_y / r
     
     # 创建曲线
     ridgeCurve = utils.addCurveByPoints(
@@ -955,7 +1044,10 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
             )
     # 矫正曲线倾斜
     # todo：添加了八字拐弯后，屋脊不再垂直，只能手工矫正，暂时没有啥好办法
-    if bData.roof_style in (con.ROOF_YINGSHAN,con.ROOF_XUANSHAN):
+    if bData.roof_style in (
+            con.ROOF_YINGSHAN,
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG):
         curve_points = ridgeCurve.data.splines[0].points
         for point in curve_points:
             # 人工调整，这个角度只是估算值，不知道怎么计算
@@ -967,7 +1059,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     # utils.hideObj(ridgeCurve)
     return ridgeCurve
 
-# 绘制歇山顶的前后檐垂脊曲线(专为排山勾滴的布局使用)
+# 绘制排山勾滴曲线(专为排山勾滴的布局使用)
 # 区别在于不做延长，准确的在正脊位置结束
 # 便于计算居中的排山勾头
 def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
@@ -987,7 +1079,10 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
         ridge_x += con.SHANQIANG_WIDTH * dk - con.BEAM_DEEPTH * pd/2
 
     # 硬山、悬山的垂脊从檐口做起
-    if bData.roof_style in (con.ROOF_YINGSHAN,con.ROOF_XUANSHAN):
+    if bData.roof_style in (
+            con.ROOF_YINGSHAN,
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG):
         # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
         # 大连檐中心
         dlyObj:bpy.types.Object = utils.getAcaChild(
@@ -1009,6 +1104,28 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
         point:Vector = purlin_pos[n]+Vector((0,0,offset))
         point.x = ridge_x        
         ridgeCurveVerts.append(point)
+    
+    # 卷棚顶的曲线调整,最后一点囊相调整，再加两个平滑点
+    if bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG):
+        ridgeCurveVerts[-1] += Vector((0,
+                con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
+                con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
+        # Y=0时，抬升1椽径，见马炳坚p20
+        p1 = Vector((ridge_x,
+            0,
+            purlin_pos[-1].z + con.YUANCHUAN_D*dk))
+        # 向上位移:半桁径+椽径+望板高+灰泥层高
+        offset = Vector(
+                            (0,0,
+                                (con.HENG_COMMON_D/2 
+                                    + con.YUANCHUAN_D 
+                                    + con.WANGBAN_H 
+                                    + con.ROOFMUD_H
+                                )*dk
+                            )
+                        )
+        p1 += offset
+        ridgeCurveVerts.append(p1)
     
     # 创建瓦垄曲线
     ridgeCurve = utils.addCurveByPoints(
@@ -1274,7 +1391,10 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     )
 
     # 硬山、悬山：做垂脊兽前、端头盘子、跑兽
-    if bData.roof_style in (con.ROOF_YINGSHAN,con.ROOF_XUANSHAN):
+    if bData.roof_style in (
+                con.ROOF_YINGSHAN,
+                con.ROOF_XUANSHAN,
+                con.ROOF_XUANSHAN_JUANPENG):
         # 构造端头盘子
         ridgeEndObj = utils.copyObject(
             sourceObj=bData.ridgeEnd_source,
@@ -1411,7 +1531,10 @@ def __buildSideTile(buildingObj: bpy.types.Object,
         # Z方向（实际为X方向），位移（瓦垄宽-勾头宽）/2
         (bData.tile_width - eaveTileWidth)/2))
     
-    if bData.roof_style in (con.ROOF_XUANSHAN,con.ROOF_YINGSHAN):
+    if bData.roof_style in (
+            con.ROOF_XUANSHAN,
+            con.ROOF_YINGSHAN,
+            con.ROOF_XUANSHAN_JUANPENG):
         # 第一片滴水裁剪
         utils.addBisect(
             object=dripTileObj,
@@ -1731,10 +1854,11 @@ def __buildRidge(buildingObj: bpy.types.Object,
     bData : acaData = buildingObj.ACA_data
     
     # 营造顶部正脊
-    __buildTopRidge(buildingObj,rafter_pos)
+    if bData.roof_style not in (con.ROOF_XUANSHAN_JUANPENG):
+        __buildTopRidge(buildingObj,rafter_pos)
     
     # 营造前后垂脊（不涉及庑殿，自动判断硬山/悬山、歇山做法的不同）
-    if bData.roof_style != con.ROOF_WUDIAN:
+    if bData.roof_style not in (con.ROOF_WUDIAN):
         # 排布垂脊兽前、垂脊兽后、跑兽
         __buildFrontRidge(buildingObj,rafter_pos)
         # 排布排山勾滴

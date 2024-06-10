@@ -631,11 +631,11 @@ def __drawTileBool(
 
 # 在face上放置瓦片
 def __setTile(
-        sourceObj,name,Matrix,
-        offset,parent,mirrorObj,
-        isNeedBool=False,
-        boolObj=None,
-        isBoolInside=False
+            sourceObj,
+            name,
+            Matrix,
+            offset,
+            parent
 ):    
     TileCopy = utils.copySimplyObject(
         sourceObj=sourceObj,
@@ -646,27 +646,6 @@ def __setTile(
     TileCopy.matrix_local = Matrix
     offset.rotate(TileCopy.rotation_euler)
     TileCopy.location += offset
-
-    # todo：瓦片也可以在join以后的整体上做镜像和裁剪
-    # 这里暂时保留用户不想join的可选余地（如，更方便做异色剪边等）
-    # 添加镜像
-    utils.addModifierMirror(
-        object=TileCopy,
-        mirrorObj=mirrorObj,
-        use_axis=(True,True,False),
-        use_bisect=(True,True,False)
-    ) 
-
-    if isNeedBool:
-        # 添加boolean modifier
-        mod:bpy.types.BooleanModifier = TileCopy.modifiers.new("由戗裁剪","BOOLEAN")
-        mod.object = boolObj
-        mod.solver = con.BOOLEAN_TYPE # FAST / EXACT
-        if isBoolInside:
-            mod.operation = 'INTERSECT'
-        else:
-            mod.operation = 'DIFFERENCE'
-
     return TileCopy   
 
 # 在网格上平铺瓦片
@@ -702,14 +681,11 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     utils.applyTransfrom(circularTile,use_scale=True)
     utils.applyTransfrom(eaveTile,use_scale=True)
     utils.applyTransfrom(dripTile,use_scale=True)
+    # 应用所有的modifier，以免后续快速合并时丢失
     utils.applyAllModifer(flatTile)
     utils.applyAllModifer(circularTile)
     utils.applyAllModifer(eaveTile)
     utils.applyAllModifer(dripTile)
-    utils.showObj(flatTile)
-    utils.showObj(circularTile)
-    utils.showObj(eaveTile)
-    utils.showObj(dripTile)
 
     # 瓦垄宽度
     tileWidth = bData.tile_width
@@ -741,11 +717,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         dir_index = 1
         offset_aside = Vector((-bData.tile_width_real/4,tileLength/2,0))
 
-    # 庑殿、歇山做裁剪
-    isNeedBool = False
-    if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
-        isNeedBool = True
-
+    # 在瓦面网格上依次排布瓦片
     bm = bmesh.new()   # create an empty BMesh
     bm.from_mesh(tileGrid.data)   # fill it in from a Mesh
     tileList = []
@@ -774,10 +746,6 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 Matrix=M,
                 offset=offset_aside.copy(),
                 parent=tileGrid,
-                mirrorObj=tileRootObj,
-                isNeedBool=isNeedBool,
-                boolObj=tile_bool_obj,
-                isBoolInside=isBoolInside
             )
             tileList.append(tileObj)
 
@@ -789,10 +757,6 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 Matrix=M,
                 offset=offset_aside.copy(),
                 parent=tileGrid,
-                mirrorObj=tileRootObj,
-                isNeedBool=isNeedBool,
-                boolObj=tile_bool_obj,
-                isBoolInside=isBoolInside
             )
             tileList.append(tileObj)
 
@@ -806,20 +770,21 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                     Matrix=M,
                     offset=offset_aside.copy(),
                     parent=tileGrid,
-                    mirrorObj=tileRootObj,
-                    isNeedBool=isNeedBool,
-                    boolObj=tile_bool_obj,
-                    isBoolInside=isBoolInside
                 )
-                # 最后一个滴水做斜切
-                if f.index%GridCols == GridCols-1:
-                    utils.addBisect(
-                        object=tileObj,
-                        pStart=Vector((0,0,0)),
-                        pEnd=Vector((1,1,0)),
-                        pCut=tileGrid.matrix_world @ f.calc_center_median(),
-                        clear_inner=True
-                    )
+                # 硬山、悬山（卷棚）最后一个滴水做斜切
+                if bData.roof_style in (
+                            con.ROOF_YINGSHAN,
+                            con.ROOF_XUANSHAN,
+                            con.ROOF_XUANSHAN_JUANPENG
+                        ):
+                    if f.index%GridCols == GridCols-1:
+                        utils.addBisect(
+                            object=tileObj,
+                            pStart=Vector((0,0,0)),
+                            pEnd=Vector((1,1,0)),
+                            pCut=tileGrid.matrix_world @ f.calc_center_median(),
+                            clear_inner=True
+                        )
                 tileList.append(tileObj) 
 
             # 排布瓦当
@@ -830,16 +795,29 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                     Matrix=M,
                     offset=offset_aside.copy(),
                     parent=tileGrid,
-                    mirrorObj=tileRootObj,
-                    isNeedBool=isNeedBool,
-                    boolObj=tile_bool_obj,
-                    isBoolInside=isBoolInside
                 )
                 tileList.append(tileObj)
     
     # 合并所有的瓦片对象
     # 可以极大的提高重新生成时的效率（海量对象删除太慢了）
-    utils.joinObjects(tileList,fast=True)
+    tileSet = utils.joinObjects(tileList,fast=True)
+    tileSet.name = '琉璃瓦'
+    # 庑殿、歇山做裁剪
+    if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
+        mod:bpy.types.BooleanModifier = tileSet.modifiers.new("由戗裁剪","BOOLEAN")
+        mod.object = tile_bool_obj
+        mod.solver = con.BOOLEAN_TYPE # FAST / EXACT
+        if isBoolInside:
+            mod.operation = 'INTERSECT'
+        else:
+            mod.operation = 'DIFFERENCE'
+    # 添加镜像
+    utils.addModifierMirror(
+        object=tileSet,
+        mirrorObj=tileRootObj,
+        use_axis=(True,True,False),
+        use_bisect=(True,True,False),
+    )
         
     # 隐藏辅助对象
     utils.hideObj(tile_bool_obj)
@@ -919,7 +897,8 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         sourceObj=bData.chiwen_source,
         name='螭吻',
         location=(-zhengji_length,0,zhengji_z),
-        parentObj=tileRootObj)
+        parentObj=tileRootObj,
+        singleUser=True)
     # 根据斗口调整尺度
     utils.resizeObj(chiwenObj,
         bData.DK / con.DEFAULT_DK)
@@ -1267,7 +1246,8 @@ def __buildTaoshou(buildingObj: bpy.types.Object):
         sourceObj=bData.taoshou_source,
         name='套兽',
         parentObj=tileRootObj,
-        location=loc
+        location=loc,
+        singleUser=True
     )
     # 根据斗口调整尺度
     utils.resizeObj(taoshouObj,
@@ -1324,7 +1304,8 @@ def __buildPaoshou(buildingObj: bpy.types.Object,
         shouObj = utils.copyObject(
             sourceObj=paoshouObjs[n],
             parentObj=tileRootObj,
-            location=loc
+            location=loc,
+            singleUser=True
         )
         # 根据斗口调整尺度
         utils.resizeObj(shouObj,
@@ -1375,7 +1356,8 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         sourceObj=bData.chuishou_source,
         name='垂兽',
         parentObj=tileRootObj,
-        location=frontRidgeCurve.location)
+        location=frontRidgeCurve.location,
+        singleUser=True)
     # 根据斗口调整尺度
     utils.resizeObj(chuishouObj,
         bData.DK / con.DEFAULT_DK)
@@ -1742,7 +1724,8 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
         sourceObj=bData.chuishou_source,
         name='垂兽',
         parentObj=tileRootObj,
-        location=loc)
+        location=loc,
+        singleUser=True)
     # 根据斗口调整尺度
     utils.resizeObj(chuishouObj,
         bData.DK / con.DEFAULT_DK)

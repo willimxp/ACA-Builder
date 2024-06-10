@@ -246,7 +246,7 @@ def saveTemplate(buildingObj:bpy.types.Object):
         # 'lingxin_source',       # 棂心.正搭斜交
         # 'dg_piller_source',     # 四铺作插昂柱头.join
         # 'dg_fillgap_source',    # 四铺作插昂柱头.join
-        # 'dg_corner_source',     # 四铺作插昂转角.asset
+        # 'dg_corner_source',     # 四铺作插昂转角.join
         # 'bofeng_source',        # 博缝板
         # 'flatTile_source',      # 板瓦
         # 'circularTile_source',  # 筒瓦

@@ -56,6 +56,10 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     # 设置Bevel
     zibianObj.data.bevel_mode = 'PROFILE'        
     zibianObj.data.bevel_depth = con.ZIBIAN_WIDTH/2  # 仔边宽度
+    # 转为mesh
+    bpy.ops.object.convert(target='MESH')
+    # 设置UV
+    utils.UvUnwrap(zibianObj,type='cube')
 
     # 填充棂心
     lingxinObj = wData.lingxin_source
@@ -85,12 +89,17 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     mod_cols = lingxin.modifiers.get('Columns')
     mod_cols.count = cols
     mod_cols.constant_offset_displace[0] = col_span
+    # 转为mesh
+    utils.applyAllModifer(lingxin)
+    # 设置UV
+    utils.UvUnwrap(lingxin,type='cube')
 
-    # 合并棂心
-    lingxinObjs = [zibianObj,lingxin]
-    linxinObj = utils.joinObjects(lingxinObjs)
+
+    # # 合并棂心
+    # lingxinObjs = [zibianObj,lingxin]
+    # linxinObj = utils.joinObjects(lingxinObjs)
     
-    return linxinObj
+    return # linxinObj
 
 # 构建槛框
 # 基于输入的槛框线框对象
@@ -120,13 +129,12 @@ def __buildKanKuang(wallproxy):
                     con.KAN_DOWN_DEEPTH * pd, # 厚0.3D
                     con.KAN_DOWN_HEIGHT * pd, # 高0.8D
                     ))
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = KanDownLoc, 
-                            scale= KanDownScale)
-        KanDownObj = bpy.context.object
-        KanDownObj.name = '下槛'
-        KanDownObj.parent = wallproxy
+        KanDownObj = utils.addCube(
+            name="下槛",
+            location=KanDownLoc,
+            scale=KanDownScale,
+            parent=wallproxy,
+        )
         KankuangObjs.append(KanDownObj)
         
     # 2、上槛 ---------------------
@@ -136,13 +144,12 @@ def __buildKanKuang(wallproxy):
                 con.KAN_UP_DEEPTH * pd, # 厚0.3D
                 con.KAN_UP_HEIGHT * pd, # 高0.8D
                 ))
-    bpy.ops.mesh.primitive_cube_add(
-                        size=1.0, 
-                        location = KanUpLoc, 
-                        scale= KanUpScale)
-    KanTopObj = bpy.context.object
-    KanTopObj.name = '上槛'
-    KanTopObj.parent = wallproxy
+    KanTopObj = utils.addCube(
+        name="上槛",
+        location=KanUpLoc,
+        scale=KanUpScale,
+        parent=wallproxy,
+    )
     KankuangObjs.append(KanTopObj)
 
     # 3、下抱框 ---------------------
@@ -167,13 +174,12 @@ def __buildKanKuang(wallproxy):
                 con.BAOKUANG_DEEPTH * pd, # 厚0.3D
                 BaoKuangDownHeight, 
                 ))
-    bpy.ops.mesh.primitive_cube_add(
-                        size=1.0, 
-                        location = BaoKuangDownLoc, 
-                        scale= BaoKuangDownScale)
-    BaoKuangDownObj = bpy.context.object
-    BaoKuangDownObj.name = '下抱框'
-    BaoKuangDownObj.parent = wallproxy
+    BaoKuangDownObj = utils.addCube(
+        name="下抱框",
+        location=BaoKuangDownLoc,
+        scale=BaoKuangDownScale,
+        parent=wallproxy,
+    )
     # 添加mirror
     mod = BaoKuangDownObj.modifiers.new(name='mirror', type='MIRROR')
     mod.use_axis[0] = True
@@ -189,13 +195,12 @@ def __buildKanKuang(wallproxy):
                 con.KAN_MID_DEEPTH * pd, # 厚0.3D
                 con.KAN_MID_HEIGHT * pd, # 高0.8D
                 ))
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = KanMidLoc, 
-                            scale= KanMidScale)
-        KanMidObj = bpy.context.object
-        KanMidObj.name = '中槛'
-        KanMidObj.parent = wallproxy
+        KanMidObj = utils.addCube(
+            name="中槛",
+            location=KanMidLoc,
+            scale=KanMidScale,
+            parent=wallproxy,
+        )
         KankuangObjs.append(KanMidObj)
 
         # 2、上抱框
@@ -215,13 +220,12 @@ def __buildKanKuang(wallproxy):
                     con.BAOKUANG_DEEPTH * pd, # 厚0.3D
                     BaoKuangUpHeight, 
                     ))
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = BaoKuangUpLoc, 
-                            scale= BaoKuangUpScale)
-        BaoKuangUpObj  = bpy.context.object
-        BaoKuangUpObj.name = '上抱框'
-        BaoKuangUpObj.parent = wallproxy
+        BaoKuangUpObj = utils.addCube(
+            name="上抱框",
+            location=BaoKuangUpLoc,
+            scale=BaoKuangUpScale,
+            parent=wallproxy,
+        )
         # 添加mirror
         mod = BaoKuangUpObj.modifiers.new(name='mirror', type='MIRROR')
         mod.use_axis[0] = True
@@ -242,13 +246,12 @@ def __buildKanKuang(wallproxy):
             windowTopKuang_x = BaoKuangUp_x - con.BAOKUANG_WIDTH*pd*n \
                 - window_top_width * n
             windowTopKuangLoc = Vector((windowTopKuang_x,0,BaoKuangUp_z))
-            bpy.ops.mesh.primitive_cube_add(
-                                size=1.0, 
-                                location = windowTopKuangLoc, 
-                                scale= BaoKuangUpScale)
-            hengKuangObj = bpy.context.object
-            hengKuangObj.name = '横披间框'
-            hengKuangObj.parent = wallproxy
+            hengKuangObj = utils.addCube(
+                name="横披间框",
+                location=windowTopKuangLoc,
+                scale=BaoKuangUpScale,
+                parent=wallproxy,
+            )
             KankuangObjs.append(hengKuangObj)
         # 横披窗尺寸
         WindowTopScale = Vector((window_top_width, # 宽度取横披窗宽度
@@ -346,12 +349,12 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     loc = (0,0,geshan_height/2-border_width/2)
     motou_width = geshan_width-border_width*2
     scale = (motou_width,border_deepth,border_width)
-    bpy.ops.mesh.primitive_cube_add(
-                        size=1.0, 
-                        location = loc, 
-                        scale= scale)
-    bpy.context.object.name = '抹头.上下'
-    bpy.context.object.parent = geshan_root
+    motouObj = utils.addCube(
+        name="抹头.上下",
+        location=loc,
+        scale=scale,
+        parent=geshan_root,
+    )
     if not use_KanWall:
         # 添加mirror
         mod = bpy.context.object.modifiers.new(name='mirror', type='MIRROR')
@@ -380,12 +383,12 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         loc2 = Vector((0,0,
             geshan_height/2-heartHeight-border_width*1.5))
         scale = Vector((motou_width,border_deepth,border_width))
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = loc2, 
-                            scale= scale)
-        bpy.context.object.name = '抹头.二'
-        bpy.context.object.parent = geshan_root
+        motouObj = utils.addCube(
+            name="抹头.二",
+            location=loc2,
+            scale=scale,
+            parent=geshan_root,
+        )
         # 扇心：抹二上推半扇心
         loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
         scale = Vector((motou_width,border_deepth,heartHeight))
@@ -397,12 +400,12 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             # 裙板，抹二下方
             loc3 = loc2-Vector((0,0,heartHeight*2/6+border_width/2))
             scale = Vector((motou_width,border_deepth/3,heartHeight*4/6))
-            bpy.ops.mesh.primitive_cube_add(
-                                size=1.0, 
-                                location = loc3, 
-                                scale= scale)
-            bpy.context.object.name = '裙板'
-            bpy.context.object.parent = geshan_root           
+            motouObj = utils.addCube(
+                name="裙板",
+                location=loc3,
+                scale=scale,
+                parent=geshan_root,
+            )          
     if gap_num == 4:
         # 四抹：一块绦环板
         # 减去4根抹头厚+绦环板(2抹高)，扇心裙板6/4分
@@ -411,30 +414,30 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         loc2 = Vector((0,0,
             geshan_height/2-heartHeight-border_width*1.5))
         scale = (motou_width,border_deepth,border_width)
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = loc2, 
-                            scale= scale)
-        bpy.context.object.name = '抹头.二'
-        bpy.context.object.parent = geshan_root
+        motouObj = utils.addCube(
+                name="抹头.二",
+                location=loc2,
+                scale=scale,
+                parent=geshan_root,
+            ) 
         # 抹三
         loc3 = loc2 - Vector((0,0,border_width*3))
         scale = (motou_width,border_deepth,border_width)
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = loc3, 
-                            scale= scale)
-        bpy.context.object.name = '抹头.三'
-        bpy.context.object.parent = geshan_root
+        motouObj = utils.addCube(
+                name="抹头.三",
+                location=loc3,
+                scale=scale,
+                parent=geshan_root,
+            )
         # 绦环板
         loc4 = (loc2+loc3)/2
         scale = (motou_width,border_deepth/3,border_width*2)
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = loc4, 
-                            scale= scale)
-        bpy.context.object.name = '绦环板'
-        bpy.context.object.parent = geshan_root
+        motouObj = utils.addCube(
+                name="绦环板",
+                location=loc4,
+                scale=scale,
+                parent=geshan_root,
+            )
         # 扇心：抹二上推半扇心
         loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
         scale = Vector((motou_width,border_deepth,heartHeight))
@@ -446,12 +449,12 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             # 裙板，抹三下方
             loc5 = loc3-Vector((0,0,heartHeight*2/6+border_width/2))
             scale = (motou_width,border_deepth/3,heartHeight*4/6)
-            bpy.ops.mesh.primitive_cube_add(
-                                size=1.0, 
-                                location = loc5, 
-                                scale= scale)
-            bpy.context.object.name = '裙板'
-            bpy.context.object.parent = geshan_root            
+            motouObj = utils.addCube(
+                name="裙板",
+                location=loc5,
+                scale=scale,
+                parent=geshan_root,
+            )           
     if gap_num == 5:
         # 五抹：减去5根抹头厚+2绦环板(4抹高)，扇心裙板6/4分
         heartHeight = (geshan_height - border_width*9)*0.6
@@ -459,30 +462,30 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         loc2 = Vector((0,0,
             geshan_height/2-heartHeight-border_width*1.5))
         scale = (motou_width,border_deepth,border_width)
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = loc2, 
-                            scale= scale)
-        bpy.context.object.name = '抹头.二'
-        bpy.context.object.parent = geshan_root
+        motouObj = utils.addCube(
+                name="抹头.二",
+                location=loc2,
+                scale=scale,
+                parent=geshan_root,
+            ) 
         # 抹三，抹二向下一块绦环板
         loc3 = loc2 - Vector((0,0,border_width*3))
         scale = (motou_width,border_deepth,border_width)
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = loc3, 
-                            scale= scale)
-        bpy.context.object.name = '抹头.三'
-        bpy.context.object.parent = geshan_root
+        motouObj = utils.addCube(
+                name="抹头.三",
+                location=loc3,
+                scale=scale,
+                parent=geshan_root,
+            ) 
         # 绦环板一
         loc5 = (loc2+loc3)/2
         scale = (motou_width,border_deepth/3,border_width*2)
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = loc5, 
-                            scale= scale)
-        bpy.context.object.name = '绦环板一'
-        bpy.context.object.parent = geshan_root
+        motouObj = utils.addCube(
+                name="绦环板一",
+                location=loc5,
+                scale=scale,
+                parent=geshan_root,
+            ) 
         # 扇心：抹二上推半扇心
         loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
         scale = Vector((motou_width,border_deepth,heartHeight))
@@ -495,30 +498,30 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             loc4 = Vector((0,0,
                 -geshan_height/2+border_width*3.5))
             scale = (motou_width,border_deepth,border_width)
-            bpy.ops.mesh.primitive_cube_add(
-                                size=1.0, 
-                                location = loc4, 
-                                scale= scale)
-            bpy.context.object.name = '抹头.四'
-            bpy.context.object.parent = geshan_root
+            motouObj = utils.addCube(
+                name="抹头.四",
+                location=loc4,
+                scale=scale,
+                parent=geshan_root,
+            ) 
             # 绦环板二
             loc6 = loc4 - Vector((0,0,border_width*1.5))
             scale = (motou_width,border_deepth/3,border_width*2)
-            bpy.ops.mesh.primitive_cube_add(
-                                size=1.0, 
-                                location = loc6, 
-                                scale= scale)
-            bpy.context.object.name = '绦环板二'
-            bpy.context.object.parent = geshan_root
+            motouObj = utils.addCube(
+                name="绦环板二",
+                location=loc6,
+                scale=scale,
+                parent=geshan_root,
+            ) 
             # 裙板
             loc7 = (loc3+loc4)/2
             scale = (motou_width,border_deepth/3,heartHeight*4/6)
-            bpy.ops.mesh.primitive_cube_add(
-                                size=1.0, 
-                                location = loc7, 
-                                scale= scale)
-            bpy.context.object.name = '裙板'
-            bpy.context.object.parent = geshan_root
+            motouObj = utils.addCube(
+                name="裙板",
+                location=loc7,
+                scale=scale,
+                parent=geshan_root,
+            ) 
     if gap_num == 6:
         # 六抹：减去6根抹头厚+3绦环板(6抹高)，扇心裙板6/4分
         heartHeight = (geshan_height-border_width*12)*0.6
@@ -526,50 +529,48 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         loc2 = Vector((0,0,
             geshan_height/2-border_width*3.5))
         scale = (motou_width,border_deepth,border_width)
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = loc2, 
-                            scale= scale)
-        bpy.context.object.name = '抹头.二'
-        bpy.context.object.parent = geshan_root
+        motouObj = utils.addCube(
+                name="抹头.二",
+                location=loc2,
+                scale=scale,
+                parent=geshan_root,
+            ) 
         # 抹三, 向下一个扇心+抹头
         loc3 = loc2 - Vector((0,0,heartHeight+border_width))
         scale = (motou_width,border_deepth,border_width)
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = loc3, 
-                            scale= scale)
-        bpy.context.object.name = '抹头.三'
-        bpy.context.object.parent = geshan_root
+        motouObj = utils.addCube(
+                name="抹头.三",
+                location=loc3,
+                scale=scale,
+                parent=geshan_root,
+            ) 
         # 抹四，向下一块绦环板
         loc4 = loc3 - Vector((0,0,border_width*3))
         scale = (motou_width,border_deepth,border_width)
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = loc4, 
-                            scale= scale)
-        bpy.context.object.name = '抹头.四'
-        bpy.context.object.parent = geshan_root
-        
+        motouObj = utils.addCube(
+                name="抹头.四",
+                location=loc4,
+                scale=scale,
+                parent=geshan_root,
+            ) 
         # 绦环板一，抹二反推
         loc6 = loc2+Vector((0,0,border_width*1.5))
         scale = (motou_width,border_deepth/3,border_width*2)
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = loc6, 
-                            scale= scale)
-        bpy.context.object.name = '绦环板一'
-        bpy.context.object.parent = geshan_root
+        motouObj = utils.addCube(
+                name="绦环板一",
+                location=loc6,
+                scale=scale,
+                parent=geshan_root,
+            ) 
         # 绦环板二，抹三抹四之间
         loc7 = (loc3+loc4)/2
         scale = (motou_width,border_deepth/3,border_width*2)
-        bpy.ops.mesh.primitive_cube_add(
-                            size=1.0, 
-                            location = loc7, 
-                            scale= scale)
-        bpy.context.object.name = '绦环板二'
-        bpy.context.object.parent = geshan_root
-        
+        motouObj = utils.addCube(
+                name="绦环板二",
+                location=loc7,
+                scale=scale,
+                parent=geshan_root,
+            ) 
         # 扇心：抹二和抹三之间
         loc8 = (loc2+loc3)/2
         scale = Vector((motou_width,border_deepth,heartHeight))
@@ -583,30 +584,30 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
                 0,0,-geshan_height/2+border_width*3.5
             ))
             scale = (motou_width,border_deepth,border_width)
-            bpy.ops.mesh.primitive_cube_add(
-                                size=1.0, 
-                                location = loc5, 
-                                scale= scale)
-            bpy.context.object.name = '抹头.五'
-            bpy.context.object.parent = geshan_root
+            motouObj = utils.addCube(
+                name="抹头.五",
+                location=loc5,
+                scale=scale,
+                parent=geshan_root,
+            ) 
             # 裙板，抹四抹五之间
             loc8 = (loc4+loc5)/2
             scale = (motou_width,border_deepth/3,heartHeight*4/6)
-            bpy.ops.mesh.primitive_cube_add(
-                                size=1.0, 
-                                location = loc8, 
-                                scale= scale)
-            bpy.context.object.name = '裙板'
-            bpy.context.object.parent = geshan_root
+            motouObj = utils.addCube(
+                name="裙板",
+                location=loc8,
+                scale=scale,
+                parent=geshan_root,
+            ) 
             # 绦环板三，底边反推
             loc9 = Vector((0,0,-geshan_height/2+border_width*2))
             scale = (motou_width,border_deepth/3,border_width*2)
-            bpy.ops.mesh.primitive_cube_add(
-                                size=1.0, 
-                                location = loc9, 
-                                scale= scale)
-            bpy.context.object.name = '绦环板三'
-            bpy.context.object.parent = geshan_root        
+            motouObj = utils.addCube(
+                name="绦环板三",
+                location=loc9,
+                scale=scale,
+                parent=geshan_root,
+            )       
     
     # 留出窗缝
     windowsill_height -= con.GESHAN_GAP/2
@@ -624,12 +625,12 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     else:
         loc = (geshan_width/2-border_width/2,0,0)
     scale = (border_width,border_deepth,final_height)
-    bpy.ops.mesh.primitive_cube_add(
-                        size=1.0, 
-                        location = loc, 
-                        scale= scale)
-    bpy.context.object.name = '边梃'
-    bpy.context.object.parent = geshan_root
+    geshanObj = utils.addCube(
+                name="边梃",
+                location=loc,
+                scale=scale,
+                parent=geshan_root,
+            )    
     # 添加mirror
     mod = bpy.context.object.modifiers.new(name='mirror', type='MIRROR')
     mod.use_axis[0] = True
@@ -709,14 +710,12 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     loc1 = Vector((
         0,0,dimension.z-scl1.z/2
     ))
-    bpy.ops.mesh.primitive_cube_add(
-        size=1,
-        location=loc1,
-        scale=scl1
-    )
-    kanWindObj = bpy.context.object
-    kanWindObj.name = '风槛'
-    kanWindObj.parent = wallproxy
+    kanWindObj = utils.addCube(
+                name="风槛",
+                location=loc1,
+                scale=scl1,
+                parent=wallproxy,
+            ) 
     # 设置材质
     utils.copyMaterial(bData.mat_red,kanWindObj)
     kanQiangObjs.append(kanWindObj)

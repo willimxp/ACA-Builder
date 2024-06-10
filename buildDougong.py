@@ -71,21 +71,22 @@ def buildDougong(buildingObj:bpy.types.Object):
         extendLength = con.HENG_COMMON_D*dk*2
         # 檐面平板枋
         loc = (0,net_y[0],-con.PINGBANFANG_H*dk/2)
-        bpy.ops.mesh.primitive_cube_add(
-            location=loc
-        )
-        pingbanfangObj = bpy.context.object
-        pingbanfangObj.name = '平板枋'
-        pingbanfangObj.parent = dgrootObj
-        pingbanfangObj.dimensions =(
+        dimensions =(
             bData.x_total + extendLength,
             con.PINGBANFANG_Y*dk,
             con.PINGBANFANG_H*dk
         )
-        utils.applyTransfrom(pingbanfangObj,use_scale=True)
+        pingbanfangObj = utils.addCube(
+                name="平板枋",
+                location=loc,
+                scale=dimensions,
+                parent=dgrootObj,
+            ) 
+        # 添加倒角
         modBevel:bpy.types.BevelModifier = \
             pingbanfangObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_HIGH
+        # 添加镜像
         utils.addModifierMirror(
             object=pingbanfangObj,
             mirrorObj=dgrootObj,
@@ -96,21 +97,22 @@ def buildDougong(buildingObj:bpy.types.Object):
 
         # 山面平板枋
         loc = (net_x[0],0,-con.PINGBANFANG_H*dk/2)
-        bpy.ops.mesh.primitive_cube_add(
-            location=loc
-        )
-        pingbanfangObj = bpy.context.object
-        pingbanfangObj.name = '平板枋'
-        pingbanfangObj.parent = dgrootObj
-        pingbanfangObj.dimensions =(
+        dimensions =(
             con.PINGBANFANG_Y*dk,
             bData.y_total + extendLength,
             con.PINGBANFANG_H*dk
         )
-        utils.applyTransfrom(pingbanfangObj,use_scale=True)
+        pingbanfangObj = utils.addCube(
+                name="平板枋",
+                location=loc,
+                scale=dimensions,
+                parent=dgrootObj,
+            ) 
+        # 设置倒角
         modBevel:bpy.types.BevelModifier = \
             pingbanfangObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_HIGH
+        # 添加镜像
         utils.addModifierMirror(
             object=pingbanfangObj,
             mirrorObj=dgrootObj,
@@ -136,8 +138,9 @@ def buildDougong(buildingObj:bpy.types.Object):
                 sourceObj = bData.dg_corner_source,
                 name = "转角斗栱",
                 location = dgCornerArray[n],
-                parentObj = dgrootObj
-                )
+                parentObj = dgrootObj,
+                singleUser=True
+            )
             dgCornerCopy.rotation_euler.z = math.radians(n * 90)
             
         
@@ -158,7 +161,8 @@ def buildDougong(buildingObj:bpy.types.Object):
                 sourceObj = dgPiller,
                 name = "柱头斗栱",
                 location=(net_x[n],net_y[0],0),
-                parentObj = dgrootObj
+                parentObj = dgrootObj,
+                singleUser=True
                 )
             dgPillerCopy.rotation_euler.z = math.radians(0)
             # 北侧
@@ -166,7 +170,8 @@ def buildDougong(buildingObj:bpy.types.Object):
                 sourceObj = dgPiller,
                 name = "柱头斗栱",
                 location=(net_x[n],net_y[-1],0),
-                parentObj = dgrootObj
+                parentObj = dgrootObj,
+                singleUser=True
                 )
             dgPillerCopy.rotation_euler.z = math.radians(180)
         
@@ -178,7 +183,8 @@ def buildDougong(buildingObj:bpy.types.Object):
                     sourceObj = dgPiller,
                     name = "柱头斗栱",
                     location=(net_x[-1],net_y[n+1],0),
-                    parentObj = dgrootObj
+                    parentObj = dgrootObj,
+                    singleUser=True
                     )
                 dgPillerCopy.rotation_euler.z = math.radians(90)
                 # 西侧
@@ -186,7 +192,8 @@ def buildDougong(buildingObj:bpy.types.Object):
                     sourceObj = dgPiller,
                     name = "柱头斗栱",
                     location=(net_x[0],net_y[-n-2],0),
-                    parentObj = dgrootObj
+                    parentObj = dgrootObj,
+                    singleUser=True
                     )
                 dgPillerCopy.rotation_euler.z = math.radians(270)
 
@@ -211,6 +218,9 @@ def buildDougong(buildingObj:bpy.types.Object):
             utils.updateScene()
             fangCopy.dimensions.x = bData.x_total + extendLength
             utils.applyTransfrom(fangCopy,use_scale=True)
+            # 处理UV
+            utils.UvUnwrap(fangCopy,type='cube')
+            # 镜像
             utils.addModifierMirror(
                 object=fangCopy,
                 mirrorObj=dgrootObj,
@@ -229,8 +239,11 @@ def buildDougong(buildingObj:bpy.types.Object):
             fangCopy.scale = bData.dg_scale
             utils.updateScene()
             fangCopy.dimensions.x = bData.y_total + extendLength
-            #utils.applyTransfrom(fangCopy,use_scale=True)
+            utils.applyTransfrom(fangCopy,use_scale=True)
             fangCopy.rotation_euler.z = math.radians(90)
+            # 处理UV
+            utils.UvUnwrap(fangCopy,type='cube')
+            # 镜像
             utils.addModifierMirror(
                 object=fangCopy,
                 mirrorObj=dgrootObj,
@@ -256,7 +269,8 @@ def buildDougong(buildingObj:bpy.types.Object):
                     name = "补间斗栱",
                     location=(net_x[n] + dougong_span * m,
                                 net_y[-1],0),
-                    parentObj = dgrootObj
+                    parentObj = dgrootObj,
+                    singleUser=True
                     )
                 dgFillCopy.rotation_euler.z = math.radians(180)
                 # 下侧
@@ -265,7 +279,8 @@ def buildDougong(buildingObj:bpy.types.Object):
                     name = "补间斗栱",
                     location=(net_x[n] + dougong_span * m,
                                 net_y[0],0),
-                    parentObj = dgrootObj
+                    parentObj = dgrootObj,
+                    singleUser=True
                     )
                 dgFillCopy.rotation_euler.z = math.radians(0)
         
@@ -287,7 +302,8 @@ def buildDougong(buildingObj:bpy.types.Object):
                         name = "补间斗栱",
                         location=(net_x[0],
                             net_y[n] + dougong_span * m,0),
-                        parentObj = dgrootObj
+                        parentObj = dgrootObj,
+                        singleUser=True
                         )
                     dgFillCopy.rotation_euler.z = math.radians(270)
                     # 右侧
@@ -296,7 +312,8 @@ def buildDougong(buildingObj:bpy.types.Object):
                         name = "补间斗栱",
                         location=(net_x[-1],
                             net_y[n] + dougong_span * m,0),
-                        parentObj = dgrootObj
+                        parentObj = dgrootObj,
+                        singleUser=True
                         )
                     dgFillCopy.rotation_euler.z = math.radians(90)
     

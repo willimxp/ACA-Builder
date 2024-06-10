@@ -23,7 +23,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
     (pWidth,pDeepth,pHeight) = platformObj.dimensions
     # 计算柱网数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
-    
+
     # 台基第一层
     # 方砖缦地
     brickObj = utils.addCube(
@@ -39,12 +39,14 @@ def __drawPlatform(platformObj:bpy.types.Object):
         ),
         parent=platformObj
     )
+    # UV处理
+    utils.UvUnwrap(brickObj,type='cube')
 
     # 阶条石
     jtsObjs = []    # 收集待合并的阶条石
     # 阶条石宽度，从台基边缘做到柱顶石边缘
     stoneWidth = bData.platform_extend-bData.piller_diameter
-    
+
     # 前后檐面阶条石，两头置好头石，尽间为去除好头石长度，明间(次间)对齐
     # 插入第一点，到台明两山尽头（从角柱延伸台基下出长度）
     firstRoomWidth = net_x[1]-net_x[0]    # 尽间宽度
@@ -158,7 +160,6 @@ def __drawPlatform(platformObj:bpy.types.Object):
         mirrorObj=platformObj,
         use_axis=(False,True,False)
     )
-    # utils.copyMaterial(bData.mat_stone,brickObj)
     jtsObjs.append(brickObj)
     
     brickObj = utils.addCube(
@@ -180,7 +181,6 @@ def __drawPlatform(platformObj:bpy.types.Object):
         mirrorObj=platformObj,
         use_axis=(True,False,False)
     )
-    # utils.copyMaterial(bData.mat_stone,brickObj)
     jtsObjs.append(brickObj)
 
     # 第三层，土衬石，从水平露明，并外扩金边
@@ -201,7 +201,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
     jtsObjs.append(brickObj)
 
     # 统一设置
-    for obj in platformObj.children:
+    for obj in jtsObjs:
         # 添加bevel
         modBevel:bpy.types.BevelModifier = \
             obj.modifiers.new('Bevel','BEVEL')
@@ -212,6 +212,9 @@ def __drawPlatform(platformObj:bpy.types.Object):
     # 合并台基
     platformSet = utils.joinObjects(jtsObjs)
     platformSet.name = '台明'
+    # UV处理
+    utils.UvUnwrap(platformSet,type='cube')
+
 
     # 第四层，散水，将土衬石变形，并拉伸出坡度
     sanshuiObj = utils.addCube(
@@ -375,20 +378,22 @@ def __drawStep(stepProxy:bpy.types.Object):
     clear_outer = False
     clear_inner = False
     dir='Y'
+    # 获取踏跺的全局旋转
+    stepRot = stepProxy.matrix_world.to_euler().z
     # 南踏跺
-    if stepProxy.rotation_euler.z == 0:
+    if stepRot == 0:
         clear_outer=True
         dir='Y'
     # 北踏跺
-    if abs(stepProxy.rotation_euler.z - math.radians(-180))<0.001:
+    if abs(stepRot - math.radians(-180))<0.001:
         clear_inner=True
         dir='Y'
     # 东
-    if abs(stepProxy.rotation_euler.z - math.radians(90))<0.001:
+    if abs(stepRot - math.radians(90))<0.001:
         clear_outer=True
         dir='X'
     # 西
-    if abs(stepProxy.rotation_euler.z - math.radians(-90))<0.001:
+    if abs(stepRot - math.radians(-90))<0.001:
         clear_inner=True
         dir='X'
     utils.addBisect(
@@ -449,6 +454,10 @@ def __drawStep(stepProxy:bpy.types.Object):
     # 合并对象
     taduoSet = utils.joinObjects(taduoObjs)
     taduoSet.name = '踏跺'
+    # UV处理
+    utils.UvUnwrap(taduoSet,type='cube')
+
+
     # 绑定到上一层
     taduoSet.parent = stepProxy.parent
     taduoSet.location = stepProxy.matrix_local @ taduoSet.location
@@ -491,9 +500,15 @@ def __buildStep(platformObj:bpy.types.Object):
             pTo_y = int(pTo[1])
 
             # 考虑周围廊的情况，门可能在外圈，也可能在内圈
-            roomStart = (0,1)
-            roomEndX = (len(net_x)-1,len(net_x)-2)
-            roomEndY = (len(net_y)-1,len(net_y)-2)
+            # 注意：进深1间的小屋，不考虑周围廊，否则会出现既是南门又是北门的笑话
+            if bData.y_rooms>1 and bData.x_rooms>1:
+                roomStart = (0,1)
+                roomEndX = (len(net_x)-1,len(net_x)-2)
+                roomEndY = (len(net_y)-1,len(net_y)-2)
+            else:
+                roomStart = (0,)
+                roomEndX = (len(net_x)-1,)
+                roomEndY = (len(net_y)-1,)
             
             # 判断台阶朝向
             step_dir = ''   
@@ -534,10 +549,12 @@ def __buildStep(platformObj:bpy.types.Object):
                     stepWidth = abs(net_x[pTo_x] - net_x[pFrom_x])
                     # 横坐标对齐两柱连线的中间点
                     x = (net_x[pTo_x] + net_x[pFrom_x])/2
+                    # 北门
                     if step_dir == 'N':
                         # 纵坐标与台基边缘对齐
                         y = bData.y_total/2 + offset
                         rot = (0,0,math.radians(180))
+                    # 南门
                     if step_dir == 'S':
                         # 纵坐标与台基边缘对齐
                         y = -bData.y_total/2 - offset
@@ -571,6 +588,9 @@ def buildPlatform(buildingObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
     bData['is_showPlatform'] = True
 
+    # 台基可以跳过不做
+    if bData.platform_height <= 0.01: return 
+
     # 固定在台基目录中
     buildingColl = buildingObj.users_collection[0]
     utils.setCollection('台基',parentColl=buildingColl)
@@ -601,21 +621,19 @@ def buildPlatform(buildingObj:bpy.types.Object):
     # 设置插件属性
     pfObj.ACA_data['aca_obj'] = True
     pfObj.ACA_data['aca_type'] = con.ACA_TYPE_PLATFORM
-    # 设置材质
-    utils.copyMaterial(bData.mat_rock,pfObj)
-
-    # 默认锁定对象的位置、旋转、缩放（用户可自行解锁）
-    pfObj.lock_location = (True,True,True)
-    pfObj.lock_rotation = (True,True,True)
-    pfObj.lock_scale = (True,True,True)
 
     # 构造台基细节
     sanshuiObj = __drawPlatform(pfObj)
+
     # 构造台基踏跺
     sanshuiobjs = __buildStep(pfObj)
+
     # 合并各个散水对象
     sanshuiobjs.append(sanshuiObj)
     sanshuiSet = utils.joinObjects(sanshuiobjs)
+    # UV处理
+    utils.UvUnwrap(sanshuiObj,type='cube')
+    # 材质设置
     utils.copyMaterial(bData.mat_stone,sanshuiSet)
 
      # 更新建筑框大小
@@ -626,6 +644,7 @@ def buildPlatform(buildingObj:bpy.types.Object):
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
+    return pfObj
 
 # 根据插件面板的台基高度、下出等参数变化，更新台基外观
 # 绑定于data.py中update_platform回调
@@ -634,20 +653,23 @@ def resizePlatform(buildingObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     
-    # 找到台基对象
-    pfObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PLATFORM)
-    # 重绘
-    pf_extend = bData.platform_extend
-    # 缩放台基尺寸
-    pfObj.dimensions= (
-        pf_extend * 2 + bData.x_total,
-        pf_extend * 2 + bData.y_total,
-        bData.platform_height
-    )
-    # 应用缩放(有时ops.object会乱跑，这里确保针对台基对象)
-    utils.applyScale(pfObj)
-    # 平移，保持台基下沿在地平线高度
-    pfObj.location.z = bData.platform_height /2
+    # # 找到台基对象
+    # pfObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PLATFORM)
+    # # 重绘
+    # pf_extend = bData.platform_extend
+    # # 缩放台基尺寸
+    # pfObj.dimensions= (
+    #     pf_extend * 2 + bData.x_total,
+    #     pf_extend * 2 + bData.y_total,
+    #     bData.platform_height
+    # )
+    # # 应用缩放(有时ops.object会乱跑，这里确保针对台基对象)
+    # utils.applyScale(pfObj)
+    # # 平移，保持台基下沿在地平线高度
+    # pfObj.location.z = bData.platform_height /2
+
+    # 刷新台基
+    pfObj = buildPlatform(buildingObj)
 
     # 对齐其他各个层
     # 柱网层

@@ -173,12 +173,19 @@ def buildSingleWall(wallproxy:bpy.types.Object):
                 name='墙体',
                 parentObj=wallproxy,
                 singleUser=True)
+            # 匹配wallproxy尺寸，GN会自动做倒角
             wallChildObj.dimensions = (wallproxy.dimensions.x,
                 wallChildObj.dimensions.y*(bData.DK/con.DEFAULT_DK),
                 wallproxy.dimensions.z)
             utils.applyTransfrom(ob=wallChildObj,use_scale=True)
             utils.updateScene()
+            # 现在做墙体的GN有个bug，应用缩放时会覆盖高度，所以再次设置
             wallChildObj.dimensions.z = wallproxy.dimensions.z
+            # 应用修改器
+            utils.applyAllModifer(wallChildObj)
+            # 处理UV
+            utils.UvUnwrap(wallChildObj,type='cube')
+
             wData : acaData = wallChildObj.ACA_data
             wData['aca_obj'] = True
             wData['aca_type'] = con.ACA_TYPE_WALL_CHILD

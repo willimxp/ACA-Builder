@@ -312,13 +312,12 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             dim = (purlin_length_x,
                 con.BOARD_HENG_Y*dk,
                 con.BOARD_HENG_H*dk)
-            bpy.ops.mesh.primitive_cube_add(
-                location = loc
+            dianbanObj = utils.addCube(
+                name="垫板",
+                location=loc,
+                scale=dim,
+                parent=rafterRootObj,
             )
-            dianbanObj = bpy.context.object
-            dianbanObj.name = '垫板'
-            dianbanObj.dimensions = dim
-            dianbanObj.parent = rafterRootObj
             if (n!=len(purlin_pos)-1            # 除了脊桁
                 or (n==len(purlin_pos)-1 and    # 或者卷棚的脊桁
                     bData.roof_style==con.ROOF_XUANSHAN_JUANPENG)) :
@@ -344,13 +343,12 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             dim = (purlin_length_x,
                 con.HENGFANG_Y*dk,
                 con.HENGFANG_H*dk)
-            bpy.ops.mesh.primitive_cube_add(
-                location=loc
+            hengfangObj = utils.addCube(
+                name="金/脊枋",
+                location=loc,
+                scale=dim,
+                parent=rafterRootObj,
             )
-            hengfangObj = bpy.context.object
-            hengfangObj.name = '金/脊枋'
-            hengfangObj.dimensions = dim
-            hengfangObj.parent = rafterRootObj
             if (n!=len(purlin_pos)-1            # 除了脊桁
                 or (n==len(purlin_pos)-1 and    # 或者卷棚的脊桁
                     bData.roof_style==con.ROOF_XUANSHAN_JUANPENG)) :
@@ -433,14 +431,13 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 dim = (purlin_length_y,
                     con.BOARD_HENG_Y*dk,
                     con.BOARD_HENG_H*dk)
-                bpy.ops.mesh.primitive_cube_add(
-                    location = loc,
-                    rotation=Vector((0, 0, math.radians(90)))
+                dianbanObj = utils.addCube(
+                    name="垫板",
+                    location=loc,
+                    scale=dim,
+                    rotation=Vector((0, 0, math.radians(90))),
+                    parent=rafterRootObj,
                 )
-                dianbanObj = bpy.context.object
-                dianbanObj.name = '垫板'
-                dianbanObj.dimensions = dim
-                dianbanObj.parent = rafterRootObj
                 utils.addModifierMirror(
                     object=dianbanObj,
                     mirrorObj=rafterRootObj,
@@ -459,14 +456,13 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 dim = (purlin_length_y,
                     con.HENGFANG_Y*dk,
                     con.HENGFANG_H*dk)
-                bpy.ops.mesh.primitive_cube_add(
+                hengfangObj = utils.addCube(
+                    name="金/脊枋",
                     location=loc,
-                    rotation=Vector((0, 0, math.radians(90)))
+                    rotation=Vector((0, 0, math.radians(90))),
+                    scale=dim,
+                    parent=rafterRootObj,
                 )
-                hengfangObj = bpy.context.object
-                hengfangObj.name = '金/脊枋'
-                hengfangObj.dimensions = dim
-                hengfangObj.parent = rafterRootObj
                 utils.addModifierMirror(
                     object=hengfangObj,
                     mirrorObj=rafterRootObj,
@@ -572,6 +568,9 @@ def __drawBeam(
     beamObj.data.update()
     bm.free()
 
+    # 处理UV
+    utils.UvUnwrap(beamObj,type='cube')
+
     return beamObj
 
 # 绘制角背
@@ -632,6 +631,9 @@ def __drawJiaobei(shuzhuObj:bpy.types.Object):
     bmesh.update_edit_mesh(bpy.context.object.data ) 
     bm.free() 
     bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+    # 处理UV
+    utils.UvUnwrap(jiaobeiObj,type='cube')
 
     utils.copyModifiers(
         from_0bj=shuzhuObj,
@@ -741,18 +743,17 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     purlin_pos[n+1].y, # 对齐上一层的槫的Y位置
                     purlin_pos[n].z + shuzhu_height/2 + beamTop_offset
                 ))
-                bpy.ops.mesh.primitive_cube_add(
-                    location=shuzhu_loc,)
-                shuzhuCopyObj = bpy.context.object
-                shuzhuCopyObj.name = '蜀柱'
-                shuzhuCopyObj.parent = rafterRootObj
-                shuzhuCopyObj.dimensions = Vector((
+                shuzhu_dimensions = Vector((
                     con.PILLER_CHILD*dk,
                     con.PILLER_CHILD*dk,
                     shuzhu_height
-                ))
-                utils.applyTransfrom(
-                    shuzhuCopyObj,use_scale=True)
+                ))                
+                shuzhuCopyObj = utils.addCube(
+                    name="垫板",
+                    location=shuzhu_loc,
+                    scale=shuzhu_dimensions,
+                    parent=rafterRootObj,
+                )
                 if n!=len(purlin_pos)-1:
                     #镜像
                     utils.addModifierMirror(
@@ -839,14 +840,13 @@ def __buildLKM(buildingObj:bpy.types.Object,
         LKM_type = con.ACA_TYPE_RAFTER_LKM_LR
 
     # 里口木生成
-    bpy.ops.mesh.primitive_cube_add(size=1,
-            location = LKM_loc,
-            rotation = LKM_rotate,
-            scale = LKM_scale
+    LKMObj = utils.addCube(
+                name=LKM_name,
+                location=LKM_loc,
+                scale=LKM_scale,
+                rotation=LKM_rotate,
+                parent=rafterRootObj,
             )
-    LKMObj = bpy.context.object
-    LKMObj.name = LKM_name
-    LKMObj.parent = rafterRootObj
     LKMObj.ACA_data['aca_obj'] = True
     LKMObj.ACA_data['aca_type'] = LKM_type
     utils.addModifierMirror(
@@ -1193,6 +1193,8 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             # 加斜计算
             wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True) 
+            # 更新UV
+            utils.UvUnwrap(wangbanObj,type='cube')
 
         # 所有望板上移
         # 1. 上移到椽头，采用global坐标，半檩+半椽
@@ -1368,6 +1370,8 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
             # 加斜计算
             wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True)
+            # 更新UV
+            utils.UvUnwrap(wangbanObj,type='cube')
 
         # 所有望板上移，与椽架上皮相切（从桁檩中心偏：半桁檩+1椽径+半望板）
         # 1. 上移到椽头，采用global坐标，半檩+半椽
@@ -1524,6 +1528,9 @@ def __drawFlyrafter(yanRafterObj:bpy.types.Object)->bpy.types.Object:
     change_rot = v4-v3
     utils.changeOriginRotation(change_rot,flyrafterObj)
 
+    # 处理UV
+    utils.UvUnwrap(flyrafterObj,type='cube')
+
     return flyrafterObj
 
 # 营造檐椽
@@ -1590,21 +1597,20 @@ def __buildFlyrafterWangban(buildingObj,purlin_pos,direction):
     else:
         frwLoc = (flyrafterObj.location+offset) * Vector((1,0,1)) # 飞椽尾
     # 生成压飞望板
-    bpy.ops.mesh.primitive_cube_add(
-            size=1.0, 
-            location=frwLoc,
-            rotation=flyrafterObj.rotation_euler, 
-            scale=(frwDeepth,frwWidth,con.WANGBAN_H*dk)
-        )
-    fwbObj = bpy.context.object
-    fwbObj.name = frwName
-    fwbObj.parent = rafterRootObj
+    fwbObj = utils.addCube(
+        name=frwName,
+        location=frwLoc,
+        scale=(frwDeepth,frwWidth,con.WANGBAN_H*dk),
+        rotation=flyrafterObj.rotation_euler, 
+        parent=rafterRootObj,
+    )
     # 镜像
     utils.addModifierMirror(
         object=fwbObj,
         mirrorObj=rafterRootObj,
         use_axis=mirrorAxis
     )
+    
     return fwbObj
 
 # 营造大连檐
@@ -1661,14 +1667,13 @@ def __buildDLY(buildingObj,purlin_pos,direction):
         DLY_type = con.ACA_TYPE_RAFTER_DLY_LR
     
     # 生成大连檐
-    bpy.ops.mesh.primitive_cube_add(size=1,
-            location = DLY_loc,
-            rotation = DLY_rotate,
-            scale = DLY_scale
-            )
-    DLY_Obj = bpy.context.object
-    DLY_Obj.name = DLY_name
-    DLY_Obj.parent = rafterRootObj
+    DLY_Obj = utils.addCube(
+        name=DLY_name,
+        location=DLY_loc,
+        rotation=DLY_rotate,
+        scale=DLY_scale,
+        parent=rafterRootObj,
+    )
     DLY_Obj.ACA_data['aca_obj'] = True
     DLY_Obj.ACA_data['aca_type'] = DLY_type
 
@@ -1832,6 +1837,9 @@ def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object):
     # 重设旋转数据：把旋转角度与子角梁头对齐，方便计算端头盘子角度
     change_rot = v5-v4
     utils.changeOriginRotation(change_rot,smallCornerBeamObj)
+
+    # uv处理
+    utils.UvUnwrap(smallCornerBeamObj,type='cube')
 
     return smallCornerBeamObj
 
@@ -2017,6 +2025,11 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
                         width = con.LIKOUMU_Y*dk,
                         height = con.LIKOUMU_H*dk,
                     )
+    # 转为mesh
+    utils.applyAllModifer(xly_curve_obj)
+    # 处理UV
+    utils.UvUnwrap(xly_curve_obj)
+
     # 相对角梁做45度对称
     utils.addModifierMirror(
         object=xly_curve_obj,
@@ -2299,6 +2312,9 @@ def __drawCrWangban(
     crWangbanObj.data.update()
     bm.free()
 
+    # 处理UV
+    utils.UvUnwrap(crWangbanObj,type='cube')
+
     return crWangbanObj
 
 # 营造翼角椽望板
@@ -2418,6 +2434,10 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
                         height = con.DALIANYAN_H*dk,
                         width = con.DALIANYAN_Y*dk
                     )
+    # 转为mesh
+    utils.applyAllModifer(flyrafterEaveObj)
+    # 设置UV
+    utils.UvUnwrap(flyrafterEaveObj,type='cube')
     
     # 相对角梁做45度对称
     utils.addModifierMirror(
@@ -2644,6 +2664,9 @@ def __drawCornerFlyrafter(
     # 把原点放在椽尾，方便后续计算椽头坐标
     utils.setOrigin(cfrObj,v5)
 
+    # 处理UV
+    utils.UvUnwrap(cfrObj,type='cube')
+
     # 以下有bug，导致翘飞椽有异常位移，后续找机会修正
     # 重设旋转数据：把旋转角度与翘飞椽头对齐，方便计算翘飞椽望板
     # change_rot = cfr_head_vector
@@ -2813,6 +2836,9 @@ def __drawCornerFlyrafterNew(
 
     # 把原点放在椽尾，方便后续计算椽头坐标
     utils.setOrigin(cfrObj,v5)
+
+    # 处理UV
+    utils.UvUnwrap(cfrObj,type='cube')
 
     return cfrObj
 
@@ -2994,6 +3020,9 @@ def __drawCfrWangban(
     cfrWangbanObj.data.update()
     bm.free()
 
+    # 处理UV
+    utils.UvUnwrap(cfrWangbanObj,type='cube')
+
     return cfrWangbanObj
 
 # 营造翘飞椽望板
@@ -3149,11 +3178,14 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         modBevel.width = con.BEVEL_EXLOW
         # 平滑
         utils.shaderSmooth(crSet)
-        
-        # 合并望板
-        if useWangban:
-            wangbanSet = utils.joinObjects(wangbanObjs)
-            wangbanSet.name = '望板'
+
+    # 以下为各类屋顶类型通用的处理  
+    # 合并望板
+    if useWangban:
+        wangbanSet = utils.joinObjects(wangbanObjs)
+        wangbanSet.name = '望板'
+        # 更新UV
+        utils.UvUnwrap(wangbanSet,type='cube')
     
     # 檐椽倒角
     # 只能放在最后加倒角，因为计算翼角椽时有取檐椽头坐标
@@ -3274,6 +3306,9 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     bm.to_mesh(xybObj.data)
     xybObj.data.update()
     bm.free()
+
+    # 处理UV
+    utils.UvUnwrap(xybObj,type='cube')
 
     # 应用镜像
     utils.addModifierMirror(
@@ -3585,6 +3620,9 @@ def __buildShanWall(
     bm.to_mesh(shanWallObj.data)
     shanWallObj.data.update()
     bm.free()
+
+    # 处理UV
+    utils.UvUnwrap(shanWallObj,type='cube')
 
     # 设置材质
     utils.copyMaterial(bData.mat_rock,shanWallObj)

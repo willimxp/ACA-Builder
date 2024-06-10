@@ -199,6 +199,9 @@ def addCylinder(radius,depth,name,root_obj,
         bpy.ops.transform.translate(value=(0,0,depth/2))
         bpy.ops.object.mode_set(mode = 'OBJECT')    
 
+    # 处理UV
+    UvUnwrap(cylinderObj,type='cube')
+
     return cylinderObj
 
 # 复制简单对象（仅复制instance）
@@ -427,9 +430,14 @@ def addCube(name='Cube',
     cube.name = name
     if parent != None:
         cube.parent = parent
+    
+    # 应用缩放
     applyTransfrom(cube,use_scale=True)
+    
+    # UV处理
+    UvUnwrap(cube,type='cube')
+    
     return cube
-
 
 # 根据起始点，创建连接的矩形
 # 长度在X轴方向
@@ -447,17 +455,15 @@ def addCubeBy2Points(start_point:Vector,
     origin_point = (start_point+end_point)/2
     rotation = alignToVector(start_point - end_point)
     rotation.x = 0 # 避免x轴翻转
-    bpy.ops.mesh.primitive_cube_add(
-                size=1.0, 
-                calc_uvs=True, 
-                enter_editmode=False, 
-                align='WORLD', 
-                location = origin_point, 
-                rotation = rotation, 
-                scale=(length, deepth,height))
-    cube = bpy.context.object
-    cube.name = name
-    cube.parent = root_obj
+
+    # 调用基本cube函数
+    cube = addCube(
+        name=name,
+        location=origin_point,
+        rotation=rotation,
+        scale=(length,deepth,height),
+        parent=root_obj,
+    )
 
     # 将Origin置于底部
     if origin_at_bottom :
@@ -574,7 +580,6 @@ def drawHexagon(dimensions:Vector,
     verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
     bmesh.ops.translate(bm, verts=verts, vec=(0, 0,dimensions.z))
 
-
     # 确保face normal朝向
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
 
@@ -585,6 +590,10 @@ def drawHexagon(dimensions:Vector,
     bm.to_mesh(obj.data)
     obj.data.update()
     bm.free()
+
+    # UV处理
+    UvUnwrap(obj,type='cube')
+
     return obj
 
 # 快速执行bpy.ops执行
@@ -1221,17 +1230,15 @@ def setGN_Input(mod:bpy.types.NodesModifier,
 # https://blender.stackexchange.com/questions/13986/how-to-join-objects-with-python
 # https://docs.blender.org/api/current/bpy.ops.html#overriding-context
 def joinObjects(objList:List[bpy.types.Object],fast=False):
+    # timeStart = time.time()
     # 这个预处理在海量对象时，非常耗资源
-    if not fast:
-        # 预处理，防止合并丢失信息
-        for ob in objList:
-            # 将曲线等对象转为mesh，否则曲线可能不被合并
-            if ob.type != 'MESH':
-                focusObj(ob)
-                bpy.ops.object.convert(target='MESH')
-            # 应用modifier，否则合并后会丢失
-            if len(ob.modifiers)>0 :
-                applyAllModifer(ob)
+    # if not fast:
+    #     # 预处理，防止合并丢失信息
+    #     for ob in objList:
+    #         # 将曲线等对象转为mesh，否则曲线可能不被合并
+    #         if ob.type != 'MESH' or len(ob.modifiers)>0 :
+    #             focusObj(ob)
+    #             bpy.ops.object.convert(target='MESH')
     
     # 开始合并
     # 与上面的循环要做分开，否则context的选择状态会打架
@@ -1240,8 +1247,15 @@ def joinObjects(objList:List[bpy.types.Object],fast=False):
     for ob in objList:
         ob.select_set(True)
         bpy.context.view_layer.objects.active = ob
+        # 将对象的mesh数据single化，避免影响场景中其他对象
+        if ob.data.users > 1:
+            ob.data = ob.data.copy()
+    # 预处理，可以将Curve转为mesh，还同时应用了所有的modifier
+    bpy.ops.object.convert(target='MESH')
     bpy.ops.object.join()
 
+    # print("Objects joined in %.2f秒" 
+    #             % (time.time()-timeStart))
     return bpy.context.object
 
 
@@ -1337,3 +1351,28 @@ def shaderSmooth(object:bpy.types.Object):
         bpy.ops.object.shade_smooth()
 
     return
+
+def UvUnwrap(object:bpy.types.Object,type=None):
+    # 聚焦对象
+    focusObj(object)
+
+    # 进入编辑模式
+    bpy.ops.object.editmode_toggle()
+    bpy.ops.mesh.select_mode(type = 'FACE')
+    bpy.ops.mesh.select_all(action='SELECT')
+    
+    if type == None:
+        # 默认采用smart project
+        bpy.ops.uv.smart_project(
+            angle_limit=math.radians(66), 
+            margin_method='SCALED', 
+            island_margin=0.0001, 
+            area_weight=0.0, 
+            correct_aspect=True, 
+            scale_to_bounds=False
+        )
+    elif type == 'cube':
+        bpy.ops.uv.cube_project(
+            cube_size=10
+        )
+    bpy.ops.object.editmode_toggle()

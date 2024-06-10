@@ -104,6 +104,8 @@ def getFloorDate(buildingObj:bpy.types.Object):
             net_y.append(offset)
             net_y.insert(0, -offset)
     else:   #偶数间
+        # 偶数间进深，有默认的山柱，位置Y=0
+        net_y.append(0)
         # 明间，分做2间
         offset = bData.y_1
         net_y.append(offset)
@@ -209,13 +211,12 @@ def __buildFang(buildingObj:bpy.types.Object):
             dianbanLoc = Vector((0,0,
                     - con.EFANG_LARGE_H*dk/2 \
                     - con.BOARD_YOUE_H*dk/2))
-            bpy.ops.mesh.primitive_cube_add(
-                    size=1.0, 
-                    location = dianbanLoc, 
-                    scale= dianbanScale)
-            dianbanObj = bpy.context.object
-            dianbanObj.name =  "由额垫板." + fangID
-            dianbanObj.parent = bigFangObj
+            dianbanObj = utils.addCube(
+                name="由额垫板." + fangID,
+                location=dianbanLoc,
+                scale=dianbanScale,
+                parent=bigFangObj,
+            )
             dianbanObj.ACA_data['aca_obj'] = True
             dianbanObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             dianbanObj.ACA_data['fangID'] = fangID
@@ -389,6 +390,7 @@ def buildPillers(buildingObj:bpy.types.Object):
             sourceObj=piller_source,
             name=piller_source.name,
             parentObj=floorRootObj,
+            singleUser=True
         )
         # 获取对象应用modifier后的实际尺寸
         utils.updateScene()
@@ -440,8 +442,8 @@ def buildPillers(buildingObj:bpy.types.Object):
                 scale=(2*bData.piller_diameter/piller_copy.scale.x,
                        2*bData.piller_diameter/piller_copy.scale.y,
                        pillerBase_h),
+                parent=piller_copy
             )
-            pillerBase.parent=piller_copy
             # 添加bevel
             modBevel:bpy.types.BevelModifier = \
                 pillerBase.modifiers.new('Bevel','BEVEL')

@@ -233,7 +233,7 @@ class ACA_PT_pillers(bpy.types.Panel):
             col.prop(objData, "use_smallfang") # 使用小额枋
             row = box.row()
             col = row.column()
-            col.operator("aca.add_fang",icon='LINKED',)# 按钮:连接
+            col.operator("aca.add_fang",icon='LINKED',text='加枋')# 按钮:连接
             if objData.aca_type != con.ACA_TYPE_PILLER \
                 or len(context.selected_objects)<2:
                     col.enabled=False
@@ -297,11 +297,7 @@ class ACA_PT_wall(bpy.types.Panel):
 
             # 墙样式
             box = layout.box()
-            row = box.row() 
-            if objData.aca_type == con.ACA_TYPE_WALL:
-                row.prop(objData, "wall_source") # 个体
-            else:
-                row.prop(bData, "wall_source") # 全局
+            
             # 工具栏
             row = box.row()
             col = row.column()
@@ -310,15 +306,33 @@ class ACA_PT_wall(bpy.types.Panel):
             if objData.aca_type != con.ACA_TYPE_PILLER \
                 or len(context.selected_objects) < 2:
                 col.enabled = False
-            # 删除隔断
-            col = row.column()
-            col.operator("aca.del_wall",icon='TRASH')
-            if objData.aca_type not in (
-                con.ACA_WALLTYPE_WALL,con.ACA_TYPE_WALL_CHILD):
-                col.enabled = False
+            # # 删除隔断
+            # col = row.column()
+            # col.operator("aca.del_wall",icon='TRASH')
+            # if objData.aca_type not in (
+            #     con.ACA_WALLTYPE_WALL,con.ACA_TYPE_WALL_CHILD):
+            #     col.enabled = False
+            row = box.row() 
+            if objData.aca_type == con.ACA_TYPE_WALL:
+                row.prop(objData, "wall_source") # 个体
+            else:
+                row.prop(bData, "wall_source") # 全局
                 
             # 隔扇、槛窗
             box = layout.box()
+            # 工具栏
+            row = box.row()
+            row.operator("aca.add_door",icon='MOD_TRIANGULATE')# 按钮：生成隔扇
+            row.operator("aca.add_window",icon='MOD_LATTICE')# 按钮：生成槛窗
+            if objData.aca_type != con.ACA_TYPE_PILLER \
+                or len(context.selected_objects) < 2:
+                row.enabled = False
+            row = box.row()
+            row.operator("aca.del_wall",icon='TRASH')# 按钮：删除隔断
+            if objData.aca_type not in (
+                con.ACA_TYPE_WALL_CHILD,
+                con.ACA_TYPE_WALL):
+                row.enabled = False
             # 个体
             if objData.aca_type == con.ACA_TYPE_WALL:
                 row = box.row() 
@@ -347,19 +361,7 @@ class ACA_PT_wall(bpy.types.Panel):
                 row.prop(bData, "door_height")  # 中槛高度
                 if not bData.use_topwin:
                     row.enabled = False
-            # 工具栏
-            row = box.row()
-            row.operator("aca.add_door",icon='MOD_TRIANGULATE')# 按钮：生成隔扇
-            row.operator("aca.add_window",icon='MOD_LATTICE')# 按钮：生成槛窗
-            if objData.aca_type != con.ACA_TYPE_PILLER \
-                or len(context.selected_objects) < 2:
-                row.enabled = False
-            row = box.row()
-            row.operator("aca.del_wall",icon='TRASH')# 按钮：删除隔断
-            if objData.aca_type not in (
-                con.ACA_TYPE_WALL_CHILD,
-                con.ACA_TYPE_WALL):
-                row.enabled = False
+            
         
             # 切换显示/隐藏台基
             if not bData.is_showWalls:

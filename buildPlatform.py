@@ -41,6 +41,8 @@ def __drawPlatform(platformObj:bpy.types.Object):
     )
     # UV处理
     utils.UvUnwrap(brickObj,type='cube')
+    # 方砖缦地
+    utils.copyMaterial(bData.mat_brick_1,brickObj)
 
     # 阶条石
     jtsObjs = []    # 收集待合并的阶条石
@@ -155,6 +157,8 @@ def __drawPlatform(platformObj:bpy.types.Object):
         ),
         parent=platformObj
     )
+    # 方砖横铺
+    utils.copyMaterial(bData.mat_brick_3,brickObj)
     utils.addModifierMirror(
         object=brickObj,
         mirrorObj=platformObj,
@@ -176,6 +180,8 @@ def __drawPlatform(platformObj:bpy.types.Object):
         ),
         parent=platformObj
     )
+    # 方砖横铺
+    utils.copyMaterial(bData.mat_brick_3,brickObj)
     utils.addModifierMirror(
         object=brickObj,
         mirrorObj=platformObj,
@@ -229,8 +235,6 @@ def __drawPlatform(platformObj:bpy.types.Object):
         ),
         parent=platformObj,)
     
-    # 隐藏父节点
-    utils.hideObj(platformObj)
     return sanshuiObj
 
 # 绘制踏跺对象
@@ -349,7 +353,8 @@ def __drawStep(stepProxy:bpy.types.Object):
             mirrorObj=stepProxy,
             use_axis=(True,False,False)
         )
-    #utils.copyMaterial(bData.mat_stone,brickObj)
+    # 方砖横铺
+    utils.copyMaterial(bData.mat_brick_3,brickObj)
     taduoObjs.append(brickObj)
 
     # 4、垂带
@@ -616,11 +621,13 @@ def buildPlatform(buildingObj:bpy.types.Object):
                 location = (0,0,height/2), 
                 scale=(width,length,height))
     pfObj = bpy.context.object
+    pfObj.name = '台基proxy'
+    pfObj.data.name = '台基proxy'
     pfObj.parent = buildingObj
-    pfObj.name = con.PLATFORM_NAME
     # 设置插件属性
     pfObj.ACA_data['aca_obj'] = True
     pfObj.ACA_data['aca_type'] = con.ACA_TYPE_PLATFORM
+    utils.hideObjFace(pfObj)
 
     # 构造台基细节
     sanshuiObj = __drawPlatform(pfObj)
@@ -633,8 +640,8 @@ def buildPlatform(buildingObj:bpy.types.Object):
     sanshuiSet = utils.joinObjects(sanshuiobjs)
     # UV处理
     utils.UvUnwrap(sanshuiObj,type='cube')
-    # 材质设置
-    utils.copyMaterial(bData.mat_stone,sanshuiSet)
+    # 条砖竖铺
+    utils.copyMaterial(bData.mat_brick_2,sanshuiSet)
 
      # 更新建筑框大小
     buildingObj.empty_display_size = math.sqrt(

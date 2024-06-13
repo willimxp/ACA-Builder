@@ -290,17 +290,24 @@ def __buildKanKuang(wallproxy):
                 z = frame_height - con.MENYIN_HEIGHT*pd/2
 
             loc = Vector((x,y,z))
-            menyinObj = utils.drawHexagon(dim,loc,half=True)
-            menyinObj.parent = wallproxy
-            menyinObj.name = '上门楹'
+            menyinObj = utils.drawHexagon(
+                dim,
+                loc,
+                half=True,
+                name='上门楹',
+                parent=wallproxy)
             KankuangObjs.append(menyinObj)
 
             # 下门楹与下槛下皮相平
             z = con.MENYIN_HEIGHT*pd/2
             loc = Vector((x,y,z))        
-            menyinObj = utils.drawHexagon(dim,loc,half=True)
-            menyinObj.parent = wallproxy
-            menyinObj.name = '下门楹'
+            menyinObj = utils.drawHexagon(
+                dim,
+                loc,
+                half=True,
+                name='下门楹',
+                parent=wallproxy
+                )
             KankuangObjs.append(menyinObj)
             
     # 统一添加bevel
@@ -308,11 +315,6 @@ def __buildKanKuang(wallproxy):
         modBevel:bpy.types.BevelModifier = \
             obj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_HIGH
-
-    # 设置材质
-    fromObj = bData.mat_red
-    for obj in KankuangObjs:
-        utils.copyMaterial(fromObj,obj)
 
     # 输出下抱框，做为隔扇生成的参考
     return BaoKuangDownObj
@@ -716,8 +718,6 @@ def __buildKanqiang(wallproxy:bpy.types.Object
                 scale=scl1,
                 parent=wallproxy,
             ) 
-    # 设置材质
-    utils.copyMaterial(bData.mat_red,kanWindObj)
     kanQiangObjs.append(kanWindObj)
 
     # 榻板
@@ -729,11 +729,12 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     loc2 = Vector((
         0,0,dimension.z-scl1.z-scl2.z/2
     ))
-    taBanObj:bpy.types.Object = utils.drawHexagon(scl2,loc2)
-    taBanObj.name = '榻板'
-    taBanObj.parent = wallproxy
-    # 设置材质
-    utils.copyMaterial(bData.mat_red,taBanObj)
+    taBanObj:bpy.types.Object = utils.drawHexagon(
+        scl2,
+        loc2,
+        name='榻板',
+        parent=wallproxy
+        )
     kanQiangObjs.append(taBanObj)
 
     # 槛墙
@@ -745,9 +746,12 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     loc3 = Vector((
         0,0,scl3.z/2
     ))
-    kanqiangObj:bpy.types.Object = utils.drawHexagon(scl3,loc3)
-    kanqiangObj.name = '槛墙'
-    kanqiangObj.parent = wallproxy
+    kanqiangObj:bpy.types.Object = utils.drawHexagon(
+        scl3,
+        loc3,
+        name='槛墙',
+        parent = wallproxy,
+        )
     # 设置材质
     utils.copyMaterial(bData.mat_rock,kanqiangObj)
     kanQiangObjs.append(kanqiangObj)
@@ -775,11 +779,13 @@ def __buildKanqiang(wallproxy:bpy.types.Object
             z = frame_height - con.MENYIN_HEIGHT*pd/2
 
         loc = Vector((x,y,z))
-        menyinObj = utils.drawHexagon(dim,loc,half=True)
-        menyinObj.parent = wallproxy
-        menyinObj.name = '上窗楹'
-        # 设置材质
-        utils.copyMaterial(bData.mat_red,menyinObj)
+        menyinObj = utils.drawHexagon(
+            dim,
+            loc,
+            half=True,
+            parent = wallproxy,
+            name = '上窗楹',
+            )
         kanQiangObjs.append(menyinObj)
 
         # 下窗楹与风槛槛下皮相平
@@ -787,11 +793,13 @@ def __buildKanqiang(wallproxy:bpy.types.Object
              - con.KAN_WIND_HEIGHT*pd 
              + con.MENYIN_HEIGHT*pd/2)
         loc = Vector((x,y,z))        
-        menyinObj = utils.drawHexagon(dim,loc,half=True)
-        menyinObj.parent = wallproxy
-        menyinObj.name = '下窗楹'
-        # 设置材质
-        utils.copyMaterial(bData.mat_red,menyinObj)
+        menyinObj = utils.drawHexagon(
+            dim,
+            loc,
+            half=True,
+            parent = wallproxy,
+            name = '下窗楹',
+            )
         kanQiangObjs.append(menyinObj)
 
     # 统一添加bevel
@@ -803,7 +811,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     return
 
 # 构建完整的隔扇
-def buildDoor(wallproxy):       
+def buildDoor(wallproxy:bpy.types.Object):       
     # 载入设计数据
     buildingObj,bData,wData = utils.getRoot(wallproxy)
     if buildingObj == None:
@@ -867,5 +875,11 @@ def buildDoor(wallproxy):
         utils.applyTransfrom(BaoKuangDownObj,use_scale=True)
         # 添加槛墙
         __buildKanqiang(wallproxy,scale)
+
+    # 5、批量设置所有子对象材质
+    for ob in wallproxy.children:
+        # 全部设置为朱漆材质
+        # 其中槛窗的窗台为石质，并不会被覆盖
+        utils.copyMaterial(bData.mat_red,ob)
 
     utils.focusObj(wallproxy)

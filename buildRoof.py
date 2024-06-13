@@ -771,6 +771,8 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
         
     # 合并梁架各个部件
     beamSetObj = utils.joinObjects(beamObjects)
+    beamSetObj.name = '梁架'
+    beamSetObj.data.name = '梁架'
     modBevel:bpy.types.BevelModifier = \
         beamSetObj.modifiers.new('Bevel','BEVEL')
     modBevel.width = con.BEVEL_HIGH
@@ -1553,6 +1555,7 @@ def __buildFlyrafter(buildingObj,direction):
 
     flyrafterObj = __drawFlyrafter(yanRafterObj)
     flyrafterObj.name = flyrafterName
+    flyrafterObj.data.name = flyrafterName
     flyrafterObj.parent = rafterRootObj
     flyrafterObj.ACA_data['aca_obj'] = True
     flyrafterObj.ACA_data['aca_type'] = flyrafterType
@@ -1927,6 +1930,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                 cbcObj:bpy.types.Object = \
                     __drawCornerBeamChild(CornerBeamObj)
                 cbcObj.name = '仔角梁'
+                cbcObj.data.name = '仔角梁'
                 cbcObj.parent = rafterRootObj
                 cbcObj.ACA_data['aca_obj'] = True
                 cbcObj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_BEAM_CHILD
@@ -3164,6 +3168,9 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             # 合并翘飞椽
             cfrSet = utils.joinObjects(cfrCollection)
             cfrSet.name = '翘飞椽'
+            cfrSet.data.name = '翘飞椽'
+            # UV处理
+            utils.UvUnwrap(cfrSet)
             # 倒角
             modBevel:bpy.types.BevelModifier = \
                 cfrSet.modifiers.new('Bevel','BEVEL')
@@ -3172,6 +3179,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         # 合并翼角椽
         crSet = utils.joinObjects(cornerRafterColl)
         crSet.name = '翼角椽'
+        # UV处理
+        utils.UvUnwrap(crSet)
         # 倒角
         modBevel:bpy.types.BevelModifier = \
             crSet.modifiers.new('Bevel','BEVEL')
@@ -3184,14 +3193,16 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     if useWangban:
         wangbanSet = utils.joinObjects(wangbanObjs)
         wangbanSet.name = '望板'
+        wangbanSet.data.name = '望板'
         # 更新UV
         utils.UvUnwrap(wangbanSet,type='cube')
     
-    # 檐椽倒角
+    # 檐椽事后处理(处理UV,添加倒角)
     # 只能放在最后加倒角，因为计算翼角椽时有取檐椽头坐标
     # 加了倒角后，取檐椽头坐标时就出错了
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
+    utils.UvUnwrap(yanRafterObj)
     modBevel:bpy.types.BevelModifier = \
         yanRafterObj.modifiers.new('Bevel','BEVEL')
     modBevel.width = con.BEVEL_EXLOW
@@ -3199,6 +3210,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_LR)
     if yanRafterObj != None:
+        utils.UvUnwrap(yanRafterObj)
         modBevel:bpy.types.BevelModifier = \
             yanRafterObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
@@ -3206,6 +3218,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     flyRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_LR)
     if flyRafterObj != None:
+        utils.UvUnwrap(flyRafterObj)
         modBevel:bpy.types.BevelModifier = \
             flyRafterObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
@@ -3213,6 +3226,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     flyRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_FB)
     if flyRafterObj != None:
+        utils.UvUnwrap(flyRafterObj)
         modBevel:bpy.types.BevelModifier = \
             flyRafterObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
@@ -3265,6 +3279,7 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     )
     xybObj = bpy.context.object
     xybObj.name = xyb_name
+    xybObj.data.name = xyb_name
     xybObj.parent = rafterRootObj
 
     # 创建bmesh
@@ -3582,6 +3597,7 @@ def __buildShanWall(
     )
     shanWallObj = bpy.context.object
     shanWallObj.name = '山墙'
+    shanWallObj.data.name = '山墙'
     shanWallObj.parent = rafterRootObj
 
     # 创建bmesh
@@ -3692,9 +3708,6 @@ def __buildBPW(buildingObj:bpy.types.Object):
 
 # 营造整个房顶
 def buildRoof(buildingObj:bpy.types.Object):
-    # 清理垃圾数据
-    utils.delOrphan()    
-
     # 添加“屋顶层”根节点
     # 斗栱层、梁椽望、瓦作都绑定在该节点下，便于统一重新生成
     # 这三层的结构紧密相连，无法解耦，只能一起生成，一起刷新

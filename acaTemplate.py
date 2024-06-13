@@ -60,7 +60,7 @@ def loadAssets(assetName : str,parent:bpy.types.Object,hide=True,link=True):
     filepath = __getPath(blenderFileName)
 
     # 简化做法，效率更高，但没有关联子对象
-    with bpy.data.libraries.load(filepath) as (data_from, data_to):
+    with bpy.data.libraries.load(filepath,link=True) as (data_from, data_to):
         data_to.objects = [name for name in data_from.objects if name.startswith(assetName)]
     # 验证找到的资产是否唯一
     if len(data_to.objects) == 0:
@@ -68,17 +68,19 @@ def loadAssets(assetName : str,parent:bpy.types.Object,hide=True,link=True):
         return
     if len(data_to.objects) > 1:
         utils.outputMsg("无法定位唯一的资产:" + assetName)
-        return
+        return 
     
     sourceObj = data_to.objects[0]
     if link:
         # 直接返回引用
+        # bpy.context.collection.objects.link(sourceObj)
         return sourceObj
     else:
         # 返回一个复制的新对象
         newobj = utils.copyObject(
             sourceObj=sourceObj,
             parentObj=parent,
+            singleUser=True
         )
         if hide:
             utils.hideObj(newobj)
@@ -228,52 +230,18 @@ def saveTemplate(buildingObj:bpy.types.Object):
         'aca_type',
         'x_total',
         'y_total',
-        'is_showPlatform',
-        'is_showPillers',
-        'is_showWalls',
-        'is_showDougong',
-        'is_showBPW',
-        'is_showTiles',
         'wall_layout',
         'wall_style',
         'roof_qiao_point',
         'tile_width_real',
         'dg_scale',
 
-        # # 外部引用，暂不处理
-        # 'piller_source',        # 梭柱
-        # 'wall_source',          # 墙体
-        # 'lingxin_source',       # 棂心.正搭斜交
-        # 'dg_piller_source',     # 四铺作插昂柱头.join
-        # 'dg_fillgap_source',    # 四铺作插昂柱头.join
-        # 'dg_corner_source',     # 四铺作插昂转角.join
-        # 'bofeng_source',        # 博缝板
-        # 'flatTile_source',      # 板瓦
-        # 'circularTile_source',  # 筒瓦
-        # 'eaveTile_source',      # 瓦当
-        # 'dripTile_source',      # 滴水
-        # 'ridgeTop_source',      # 正脊筒
-        # 'ridgeBack_source',     # 垂脊兽后
-        # 'ridgeFront_source',    # 垂脊兽前
-        # 'ridgeEnd_source',      # 端头组合
-        # 'chiwen_source',        # 螭吻
-        # 'chuishou_source',      # 垂兽
-        # 'taoshou_source',       # 套兽
-        # 'paoshou_0_source',     # 0-骑凤仙人
-        # 'paoshou_1_source',     # 1-龙
-        # 'paoshou_2_source',     # 2-凤
-        # 'paoshou_3_source',     # 3-狮子
-        # 'paoshou_4_source',     # 4-海马
-        # 'paoshou_5_source',     # 5-天马
-        # 'paoshou_6_source',     # 6-狎鱼
-        # 'paoshou_7_source',     # 7-狻猊
-        # 'paoshou_8_source',     # 8-獬豸
-        # 'paoshou_9_source',     # 9-斗牛
-        # 'paoshou_10_source',    # 10-行什
-        # 'mat_wood',          # 原木
-        # 'mat_rock',          # 石材
-        # 'mat_stone',         # 石头
-        # 'mat_red',     # 红漆
+        # 'is_showPlatform',
+        # 'is_showPillers',
+        # 'is_showWalls',
+        # 'is_showDougong',
+        # 'is_showBPW',
+        # 'is_showTiles',
     }
     
     # 解析XML配置模版

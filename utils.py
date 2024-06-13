@@ -167,43 +167,6 @@ def setCollection(name:str, IsClear=False,isRoot=False,
     # 返回目录的对象
     return coll
 
-# 创建一个基本圆柱体，可用于柱等直立构件
-def addCylinder(radius,depth,name,root_obj,
-                location=(0,0,0),
-                rotation=(0,0,0),
-                edge_num = 16,
-                origin_at_bottom = False):
-    # 定义圆柱体圆周面上的面数，不宜太高造成面数负担，也不宜太低影响美观
-    bpy.ops.mesh.primitive_cylinder_add(
-                        vertices = edge_num, 
-                        radius = radius, 
-                        depth = depth,
-                        end_fill_type='NGON', 
-                        calc_uvs=True, 
-                        enter_editmode=False, 
-                        align='WORLD', 
-                        location=location, 
-                        rotation=rotation, 
-                        scale=(1,1,1)
-                    )
-    cylinderObj = bpy.context.object
-    cylinderObj.name = name
-    cylinderObj.parent = root_obj
-    cylinderObj.ACA_data.aca_obj = True
-    shaderSmooth(cylinderObj)
-
-    # 将Origin置于底部
-    if origin_at_bottom :
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_all(action = 'SELECT')
-        bpy.ops.transform.translate(value=(0,0,depth/2))
-        bpy.ops.object.mode_set(mode = 'OBJECT')    
-
-    # 处理UV
-    UvUnwrap(cylinderObj,type='cube')
-
-    return cylinderObj
-
 # 复制简单对象（仅复制instance）
 def copySimplyObject(
         sourceObj:bpy.types.Object, 
@@ -428,6 +391,7 @@ def addCube(name='Cube',
                 scale=scale)
     cube = bpy.context.object
     cube.name = name
+    cube.data.name = name
     if parent != None:
         cube.parent = parent
     
@@ -499,7 +463,10 @@ def getMeshDims(object):
 
 # 绘制六边形，用于窗台、槛墙等
 def drawHexagon(dimensions:Vector,
-                location:Vector,half=False):
+                location:Vector,
+                half=False,
+                name='六棱柱',
+                parent=None,):
     # 创建bmesh
     bm = bmesh.new()
     # 各个点的集合
@@ -591,6 +558,11 @@ def drawHexagon(dimensions:Vector,
     obj.data.update()
     bm.free()
 
+    obj.name = name
+    obj.data.name = name
+    if parent != None:
+        obj.parent = parent
+
     # UV处理
     UvUnwrap(obj,type='cube')
 
@@ -603,6 +575,10 @@ def drawHexagon(dimensions:Vector,
 # 如果函数带参数，需要用偏函数或闭包进行封装后传入
 # https://blender.stackexchange.com/questions/7358/python-performance-with-blender-operators
 def fastRun(func):
+    # 清理垃圾数据
+    delOrphan()
+    
+    # 关闭viewlayer的刷新
     from bpy.ops import _BPyOpsSubModOp
     view_layer_update = _BPyOpsSubModOp._view_layer_update
     def dummy_view_layer_update(context):
@@ -613,6 +589,9 @@ def fastRun(func):
     finally:
         _BPyOpsSubModOp._view_layer_update = view_layer_update
     
+    # 再次清理数据
+    delOrphan()
+
     return result
 
 # 格式化输出内容
@@ -651,6 +630,44 @@ def showObj(object:bpy.types.Object) :
     object.hide_set(False)          # “眼睛”
     object.hide_viewport = False    # “屏幕”，含在viewport中
     object.hide_render = False      # “相机”，渲染
+
+# 创建一个基本圆柱体，可用于柱等直立构件
+def addCylinder(radius,depth,name,root_obj,
+                location=(0,0,0),
+                rotation=(0,0,0),
+                edge_num = 16,
+                origin_at_bottom = False):
+    # 定义圆柱体圆周面上的面数，不宜太高造成面数负担，也不宜太低影响美观
+    bpy.ops.mesh.primitive_cylinder_add(
+                        vertices = edge_num, 
+                        radius = radius, 
+                        depth = depth,
+                        end_fill_type='NGON', 
+                        calc_uvs=True, 
+                        enter_editmode=False, 
+                        align='WORLD', 
+                        location=location, 
+                        rotation=rotation, 
+                        scale=(1,1,1)
+                    )
+    cylinderObj = bpy.context.object
+    cylinderObj.name = name
+    cylinderObj.data.name = name
+    cylinderObj.parent = root_obj
+    cylinderObj.ACA_data.aca_obj = True
+    shaderSmooth(cylinderObj)
+
+    # 将Origin置于底部
+    if origin_at_bottom :
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_all(action = 'SELECT')
+        bpy.ops.transform.translate(value=(0,0,depth/2))
+        bpy.ops.object.mode_set(mode = 'OBJECT')    
+
+    # 处理UV
+    UvUnwrap(cylinderObj,type='cube')
+
+    return cylinderObj
 
 # 创建一个水平放置的圆柱体，可用于桁、椽等构件
 def addCylinderHorizontal(radius,depth,name,root_obj,
@@ -901,8 +918,6 @@ def redrawViewport():
 
 # 删除所有无用数据，以免拖累性能
 def delOrphan():
-    bpy.data.orphans_purge()
-
     for block in bpy.data.collections:
         if block.users == 0:
             bpy.data.collections.remove(block)
@@ -934,6 +949,8 @@ def delOrphan():
     for block in bpy.data.node_groups:
         if block.users == 0:
             bpy.data.node_groups.remove(block)
+
+    bpy.data.orphans_purge()
 
 # 获取对象的几何中心
 # 已经在代码中使用评估对象，可以抗阻塞 
@@ -1254,6 +1271,9 @@ def joinObjects(objList:List[bpy.types.Object],fast=False):
     bpy.ops.object.convert(target='MESH')
     bpy.ops.object.join()
 
+    # 清理垃圾数据
+    delOrphan()
+
     # print("Objects joined in %.2f秒" 
     #             % (time.time()-timeStart))
     return bpy.context.object
@@ -1355,6 +1375,9 @@ def shaderSmooth(object:bpy.types.Object):
 def UvUnwrap(object:bpy.types.Object,type=None):
     # 聚焦对象
     focusObj(object)
+
+    # 应用modifier
+    applyAllModifer(object)
 
     # 进入编辑模式
     bpy.ops.object.editmode_toggle()

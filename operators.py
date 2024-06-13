@@ -41,6 +41,7 @@ class ACA_OT_add_building(bpy.types.Operator):
     bl_idname="aca.add_newbuilding"
     bl_label = "添加新建筑"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '根据选择的模版，自动生成建筑的各个构件'
 
     def execute(self, context):  
         # 创建新建筑
@@ -300,6 +301,7 @@ class ACA_OT_default_dk(bpy.types.Operator):
 class ACA_OT_save_template(bpy.types.Operator):
     bl_idname="aca.save_template"
     bl_label = "保存模版修改"
+    bl_description = '将当前选中的建筑参数保存为模版，以便重复生成'
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)

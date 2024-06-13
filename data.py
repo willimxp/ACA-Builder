@@ -662,7 +662,19 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             type = bpy.types.Object,
         )# type: ignore 
     mat_red:bpy.props.PointerProperty(
-            name = "红漆材质",
+            name = "漆.土朱材质",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_brick_1:bpy.props.PointerProperty(
+            name = "方砖缦地",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_brick_2:bpy.props.PointerProperty(
+            name = "条砖竖铺",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_brick_3:bpy.props.PointerProperty(
+            name = "条砖横铺",
             type = bpy.types.Object,
         )# type: ignore 
 

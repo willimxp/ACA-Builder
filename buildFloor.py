@@ -186,10 +186,13 @@ def __buildFang(buildingObj:bpy.types.Object):
                 con.EFANG_LARGE_H * dk))
         bigFangLoc = Vector((fang_x,fang_y,
                 bData.piller_height - con.EFANG_LARGE_H*dk/2))
-        bigFangObj = utils.drawHexagon(bigFangScale,bigFangLoc)
-        bigFangObj.name =  "大额枋." + fangID
+        bigFangObj = utils.drawHexagon(
+            bigFangScale,
+            bigFangLoc,
+            name =  "大额枋." + fangID,
+            parent = floorRootObj,
+            )
         bigFangObj.rotation_euler = fang_rot
-        bigFangObj.parent = floorRootObj
         bigFangObj.ACA_data['aca_obj'] = True
         bigFangObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
         bigFangObj.ACA_data['fangID'] = fangID
@@ -231,9 +234,12 @@ def __buildFang(buildingObj:bpy.types.Object):
                     - con.EFANG_LARGE_H*dk/2 \
                     - con.BOARD_YOUE_H*dk \
                     - con.EFANG_SMALL_H*dk/2))
-            smallFangObj = utils.drawHexagon(smallFangScale,smallFangLoc)
-            smallFangObj.name =  "小额枋." + fangID
-            smallFangObj.parent = bigFangObj
+            smallFangObj = utils.drawHexagon(
+                smallFangScale,
+                smallFangLoc,
+                name =  "小额枋." + fangID,
+                parent = bigFangObj,
+            )
             smallFangObj.ACA_data['aca_obj'] = True
             smallFangObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             smallFangObj.ACA_data['fangID'] = fangID
@@ -530,9 +536,6 @@ def resetFloor(buildingObj:bpy.types.Object):
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
 # 采用了偏函数和fastrun，极大加速了性能
 def buildFloor(buildingObj:bpy.types.Object):
-    # 清理数据
-    utils.outputMsg("清理数据...")
-    utils.delOrphan()
     # 定位到collection，如果没有则新建
     utils.setCollection(con.ROOT_COLL_NAME,isRoot=True)
 

@@ -29,43 +29,23 @@ class ACA_PT_basic(bpy.types.Panel):
         box = layout.box()
         # 模板选择列表
         row = box.row()
-        row.prop(scnData, "template")
-        # 按钮，生成新建筑
+        row.prop(scnData, "template",text='')
+        # 生成新建筑
         row = box.row()
-        row.operator("aca.add_newbuilding",icon='FILE_3D')
-        # 按钮，保存模版
+        row.operator("aca.add_newbuilding",icon='PLAY')
+        # 保存模版
         row = box.row()
-        row.operator("aca.save_template",icon='HOME',text='保存模板')
+        col = row.column()
+        col.operator("aca.save_template",icon='FILE_TICK',text='保存模板')
+        # 删除模版
+        col = row.column()
+        col.operator("aca.save_template",icon='TRASH',text='删除模板')
         
-        # 测试按钮
-        row = layout.row()
-        row.operator("aca.test",icon='HOME')
+        # # 测试按钮
+        # row = layout.row()
+        # row.operator("aca.test",icon='HOME')
 
-        # 从当前场景中载入数据集
-        if context.object != None:
-            # 追溯全局属性
-            buildingObj,bData,objData = utils.getRoot(context.object)
-            if buildingObj == None: 
-                layout.label(text='营造中...请耐心等待')
-                return
-            else:
-                # 名称
-                box = layout.box()
-                row = box.row()
-                col = row.column()
-                col.prop(context.object,"name",text="")
-                # 聚焦根节点
-                col = row.column()
-                col.operator("aca.focus_building",icon='FILE_PARENT')
-                if objData.aca_type == con.ACA_TYPE_BUILDING:
-                    col.enabled = False
-                # 斗口值
-                row = box.row()
-                col = row.column()
-                col.prop(bData,'DK')
-                col = row.column()
-                col.operator("aca.default_dk",icon='SHADERFX',text='')
-
+        return
 
 # “屋身参数”面板
 class ACA_PT_props(bpy.types.Panel):
@@ -101,6 +81,22 @@ class ACA_PT_props(bpy.types.Panel):
             # col.operator("aca.focus_building",icon='FILE_PARENT')
             # if objData.aca_type == con.ACA_TYPE_BUILDING:
             #     col.enabled = False
+            # 名称
+            box = layout.box()
+            row = box.row()
+            col = row.column()
+            col.prop(context.object,"name",text="")
+            # 聚焦根节点
+            col = row.column()
+            col.operator("aca.focus_building",icon='FILE_PARENT')
+            if objData.aca_type == con.ACA_TYPE_BUILDING:
+                col.enabled = False
+            # 斗口值
+            row = box.row()
+            col = row.column()
+            col.prop(bData,'DK')
+            col = row.column()
+            col.operator("aca.default_dk",icon='SHADERFX',text='')
 
 # “台基属性”子面板
 class ACA_PT_platform(bpy.types.Panel):

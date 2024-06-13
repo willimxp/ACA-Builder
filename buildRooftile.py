@@ -543,6 +543,7 @@ def __drawTileBool(
     )
     tileboolObj = bpy.context.object
     tileboolObj.name = name
+    tileboolObj.data.name = name
     tileboolObj.parent = tileRootObj
 
     # 创建bmesh
@@ -1860,8 +1861,6 @@ def __buildRidge(buildingObj: bpy.types.Object,
 # 对外的统一调用接口
 # 一次性重建所有的瓦做
 def buildTile(buildingObj: bpy.types.Object):
-    # 清理垃圾数据
-    utils.delOrphan()
     # 添加或清空根节点
     __setTileRoot(buildingObj)
 

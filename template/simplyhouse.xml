@@ -71,7 +71,10 @@
 		<mat_wood type="Object">原木</mat_wood>
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
-		<mat_red type="Object">红漆</mat_red>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
 		<paoshou_count type="int">7</paoshou_count>
 	</template>
 	<template>
@@ -145,7 +148,10 @@
 		<mat_wood type="Object">原木</mat_wood>
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
-		<mat_red type="Object">红漆</mat_red>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
 	</template>
 	<template>
 		<template_name type="str">九檩歇山前后廊</template_name>
@@ -217,7 +223,10 @@
 		<mat_wood type="Object">原木</mat_wood>
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
-		<mat_red type="Object">红漆</mat_red>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
 	</template>
 	<template>
 		<template_name type="str">七檩歇山周围廊</template_name>
@@ -290,7 +299,10 @@
 		<mat_wood type="Object">原木</mat_wood>
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
-		<mat_red type="Object">红漆</mat_red>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
 	</template>
 	<template>
 		<template_name type="str">九檩悬山</template_name>
@@ -364,7 +376,10 @@
 		<mat_wood type="Object">原木</mat_wood>
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
-		<mat_red type="Object">红漆</mat_red>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
 	</template>
 	<template>
 		<template_name type="str">围墙</template_name>
@@ -438,7 +453,10 @@
 		<mat_wood type="Object">原木</mat_wood>
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
-		<mat_red type="Object">红漆</mat_red>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
 	</template>
 	<template>
 		<template_name type="str">耳房</template_name>
@@ -512,7 +530,10 @@
 		<mat_wood type="Object">原木</mat_wood>
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
-		<mat_red type="Object">红漆</mat_red>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
 	</template>
 	<template>
 		<template_name type="str">偏厅</template_name>
@@ -586,7 +607,10 @@
 		<mat_wood type="Object">原木</mat_wood>
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
-		<mat_red type="Object">红漆</mat_red>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
 	</template>
 	<template>
 		<template_name type="str">偏厅.001</template_name>
@@ -660,7 +684,10 @@
 		<mat_wood type="Object">原木</mat_wood>
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
-		<mat_red type="Object">红漆</mat_red>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
 	</template>
 	<template>
 		<template_name type="str">围墙.硬山</template_name>
@@ -734,7 +761,10 @@
 		<mat_wood type="Object">原木</mat_wood>
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
-		<mat_red type="Object">红漆</mat_red>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
 	</template>
 	<template>
 		<template_name type="str">偏厅.v2</template_name>
@@ -808,6 +838,169 @@
 		<mat_wood type="Object">原木</mat_wood>
 		<mat_rock type="Object">石材</mat_rock>
 		<mat_stone type="Object">石头</mat_stone>
-		<mat_red type="Object">红漆</mat_red>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
+	</template>
+	<template>
+		<template_name type="str">大殿</template_name>
+		<DK type="float">0.08</DK>
+		<platform_height type="float">1.2</platform_height>
+		<platform_extend type="float">1.08</platform_extend>
+		<x_rooms type="int">3</x_rooms>
+		<x_1 type="float">6.16</x_1>
+		<x_2 type="float">6.16</x_2>
+		<x_3 type="float">5.28</x_3>
+		<x_4 type="float">1.76</x_4>
+		<y_rooms type="int">3</y_rooms>
+		<y_1 type="float">4.0</y_1>
+		<y_2 type="float">3.52</y_2>
+		<y_3 type="float">1.76</y_3>
+		<piller_net type="str" />
+		<wall_net type="str">wall#0/3#3/3,wall#3/0#3/3,wall#0/0#0/3,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<fang_net type="str">0/3#1/3,1/3#2/3,2/3#3/3,3/0#3/1,3/1#3/2,3/2#3/3,0/0#1/0,1/0#2/0,2/0#3/0,0/0#0/1,0/1#0/2,0/2#0/3,</fang_net>
+		<piller_source type="Object">梭柱</piller_source>
+		<piller_height type="float">4.5</piller_height>
+		<piller_diameter type="float">0.45</piller_diameter>
+		<use_smallfang type="bool">False</use_smallfang>
+		<wall_source type="Object">墙体</wall_source>
+		<door_height type="float">3.36</door_height>
+		<door_num type="int">4</door_num>
+		<gap_num type="int">5</gap_num>
+		<use_topwin type="bool">False</use_topwin>
+		<use_KanWall type="bool">True</use_KanWall>
+		<lingxin_source type="Object">棂心.正搭斜交</lingxin_source>
+		<use_dg type="bool">True</use_dg>
+		<use_pingbanfang type="bool">False</use_pingbanfang>
+		<dg_piller_source type="Object">四铺作插昂柱头.join</dg_piller_source>
+		<dg_fillgap_source type="Object">四铺作插昂柱头.join</dg_fillgap_source>
+		<dg_corner_source type="Object">四铺作插昂转角.join</dg_corner_source>
+		<dg_extend type="float">0.45</dg_extend>
+		<dg_height type="float">0.99</dg_height>
+		<dg_gap type="float">1.7</dg_gap>
+		<roof_style type="str">1</roof_style>
+		<rafter_count type="int">6</rafter_count>
+		<use_flyrafter type="bool">True</use_flyrafter>
+		<use_wangban type="bool">True</use_wangban>
+		<qiqiao type="int">4</qiqiao>
+		<chong type="int">3</chong>
+		<shengqi type="int">1</shengqi>
+		<bofeng_source type="Object">博缝板</bofeng_source>
+		<tile_width type="float">0.39</tile_width>
+		<tile_length type="float">0.5</tile_length>
+		<flatTile_source type="Object">板瓦</flatTile_source>
+		<circularTile_source type="Object">筒瓦</circularTile_source>
+		<eaveTile_source type="Object">瓦当</eaveTile_source>
+		<dripTile_source type="Object">滴水</dripTile_source>
+		<ridgeTop_source type="Object">正脊筒</ridgeTop_source>
+		<ridgeBack_source type="Object">垂脊兽后</ridgeBack_source>
+		<ridgeFront_source type="Object">垂脊兽前</ridgeFront_source>
+		<ridgeEnd_source type="Object">端头组合</ridgeEnd_source>
+		<chiwen_source type="Object">螭吻</chiwen_source>
+		<chuishou_source type="Object">垂兽</chuishou_source>
+		<taoshou_source type="Object">套兽</taoshou_source>
+		<paoshou_count type="int">7</paoshou_count>
+		<paoshou_0_source type="Object">0-骑凤仙人</paoshou_0_source>
+		<paoshou_1_source type="Object">1-龙</paoshou_1_source>
+		<paoshou_2_source type="Object">2-凤</paoshou_2_source>
+		<paoshou_3_source type="Object">3-狮子</paoshou_3_source>
+		<paoshou_4_source type="Object">4-海马</paoshou_4_source>
+		<paoshou_5_source type="Object">5-天马</paoshou_5_source>
+		<paoshou_6_source type="Object">6-狎鱼</paoshou_6_source>
+		<paoshou_7_source type="Object">7-狻猊</paoshou_7_source>
+		<paoshou_8_source type="Object">8-獬豸</paoshou_8_source>
+		<paoshou_9_source type="Object">9-斗牛</paoshou_9_source>
+		<paoshou_10_source type="Object">10-行什</paoshou_10_source>
+		<mat_wood type="Object">原木</mat_wood>
+		<mat_rock type="Object">石材</mat_rock>
+		<mat_stone type="Object">石头</mat_stone>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
+	</template>
+	<template>
+		<template_name type="str">空白模版</template_name>
+		<DK type="float">0.05</DK>
+		<is_showPlatform type="bool">True</is_showPlatform>
+		<is_showPillers type="bool">True</is_showPillers>
+		<is_showWalls type="bool">True</is_showWalls>
+		<is_showDougong type="bool">False</is_showDougong>
+		<is_showBPW type="bool">False</is_showBPW>
+		<is_showTiles type="bool">False</is_showTiles>
+		<platform_height type="float">1.0</platform_height>
+		<platform_extend type="float">1.08</platform_extend>
+		<x_rooms type="int">1</x_rooms>
+		<x_1 type="float">6.16</x_1>
+		<x_2 type="float">5.28</x_2>
+		<x_3 type="float">5.28</x_3>
+		<x_4 type="float">1.76</x_4>
+		<y_rooms type="int">1</y_rooms>
+		<y_1 type="float">3.52</y_1>
+		<y_2 type="float">3.52</y_2>
+		<y_3 type="float">1.76</y_3>
+		<piller_net type="str" />
+		<wall_net type="str" />
+		<fang_net type="str" />
+		<piller_source type="Object">梭柱</piller_source>
+		<piller_height type="float">0.01</piller_height>
+		<piller_diameter type="float">0.45</piller_diameter>
+		<use_smallfang type="bool">False</use_smallfang>
+		<wall_source type="Object">墙体</wall_source>
+		<door_height type="float">3.36</door_height>
+		<door_num type="int">4</door_num>
+		<gap_num type="int">5</gap_num>
+		<use_topwin type="bool">False</use_topwin>
+		<use_KanWall type="bool">True</use_KanWall>
+		<lingxin_source type="Object">棂心.正搭斜交</lingxin_source>
+		<use_dg type="bool">False</use_dg>
+		<use_pingbanfang type="bool">False</use_pingbanfang>
+		<dg_piller_source type="Object">四铺作插昂柱头.join</dg_piller_source>
+		<dg_fillgap_source type="Object">四铺作插昂柱头.join</dg_fillgap_source>
+		<dg_corner_source type="Object">四铺作插昂转角.join</dg_corner_source>
+		<dg_extend type="float">0.45</dg_extend>
+		<dg_height type="float">0.99</dg_height>
+		<dg_gap type="float">1.7</dg_gap>
+		<roof_style type="str">3</roof_style>
+		<rafter_count type="int">6</rafter_count>
+		<use_flyrafter type="bool">True</use_flyrafter>
+		<use_wangban type="bool">True</use_wangban>
+		<qiqiao type="int">4</qiqiao>
+		<chong type="int">3</chong>
+		<shengqi type="int">1</shengqi>
+		<bofeng_source type="Object">博缝板</bofeng_source>
+		<tile_width type="float">0.24</tile_width>
+		<tile_length type="float">0.31</tile_length>
+		<flatTile_source type="Object">板瓦</flatTile_source>
+		<circularTile_source type="Object">筒瓦</circularTile_source>
+		<eaveTile_source type="Object">瓦当</eaveTile_source>
+		<dripTile_source type="Object">滴水</dripTile_source>
+		<ridgeTop_source type="Object">正脊筒</ridgeTop_source>
+		<ridgeBack_source type="Object">垂脊兽后</ridgeBack_source>
+		<ridgeFront_source type="Object">垂脊兽前</ridgeFront_source>
+		<ridgeEnd_source type="Object">端头组合</ridgeEnd_source>
+		<chiwen_source type="Object">螭吻</chiwen_source>
+		<chuishou_source type="Object">垂兽</chuishou_source>
+		<taoshou_source type="Object">套兽</taoshou_source>
+		<paoshou_count type="int">7</paoshou_count>
+		<paoshou_0_source type="Object">0-骑凤仙人</paoshou_0_source>
+		<paoshou_1_source type="Object">1-龙</paoshou_1_source>
+		<paoshou_2_source type="Object">2-凤</paoshou_2_source>
+		<paoshou_3_source type="Object">3-狮子</paoshou_3_source>
+		<paoshou_4_source type="Object">4-海马</paoshou_4_source>
+		<paoshou_5_source type="Object">5-天马</paoshou_5_source>
+		<paoshou_6_source type="Object">6-狎鱼</paoshou_6_source>
+		<paoshou_7_source type="Object">7-狻猊</paoshou_7_source>
+		<paoshou_8_source type="Object">8-獬豸</paoshou_8_source>
+		<paoshou_9_source type="Object">9-斗牛</paoshou_9_source>
+		<paoshou_10_source type="Object">10-行什</paoshou_10_source>
+		<mat_wood type="Object">原木</mat_wood>
+		<mat_rock type="Object">石材</mat_rock>
+		<mat_stone type="Object">石头</mat_stone>
+		<mat_red type="Object">漆.土朱</mat_red>
+		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
+		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
+		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
 	</template>
 </templates>

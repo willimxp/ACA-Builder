@@ -56,11 +56,33 @@ class ACA_OT_add_building(bpy.types.Operator):
                 % (timeEnd-timeStart))
         return {'FINISHED'}
 
+# 更新建筑
+class ACA_OT_update_building(bpy.types.Operator):
+    bl_idname="aca.update_building"
+    bl_label = "添加新建筑"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '根据选择的模版，自动生成建筑的各个构件'
+
+    def execute(self, context):  
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        # 更新新建筑
+        timeStart = time.time()
+        funproxy = partial(buildFloor.buildFloor,
+                    buildingObj=buildingObj)
+        result = utils.fastRun(funproxy)
+        if 'FINISHED' in result:
+            timeEnd = time.time()
+            self.report(
+                {'INFO'},"建筑更新完成！(%.1f秒)" 
+                % (timeEnd-timeStart))
+        return {'FINISHED'}
+
 # 重新生成建筑
 class ACA_OT_reset_floor(bpy.types.Operator):
     bl_idname="aca.reset_floor"
     bl_label = "重设柱网"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '重新生成被减柱的柱子，但也会丢失所有的额枋、隔扇、槛墙等'
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -73,6 +95,24 @@ class ACA_OT_reset_floor(bpy.types.Operator):
         else:
             self.report({'ERROR'},"找不到根节点！")
         return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(
+            operator = self,
+            title="重设柱网"
+            )
+
+    def draw(self, context):
+        row = self.layout
+        row.label(
+            text=("请注意"),
+            icon='QUESTION'
+            )
+        row = self.layout
+        row.label(
+            text=("所有额枋、槛墙、槛窗、隔扇都会被删除！"),
+            icon='NONE'
+            )
     
 # 减柱
 class ACA_OT_del_piller(bpy.types.Operator):
@@ -88,6 +128,21 @@ class ACA_OT_del_piller(bpy.types.Operator):
         buildFloor.delPiller(buildingObj,pillers) 
         self.report({'INFO'},"已删除柱子。")
         return {'FINISHED'}
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(
+            operator = self,
+            title="删除柱子"
+            )
+
+    def draw(self, context):
+        row = self.layout
+        row.label(
+            text=("确定删除【" 
+                  + bpy.context.object.name
+                  + "】吗？"),
+            icon='QUESTION'
+            )
     
 # 连接柱-柱，添加枋
 class ACA_OT_add_fang(bpy.types.Operator):
@@ -220,15 +275,48 @@ class ACA_OT_add_window(bpy.types.Operator):
 class ACA_OT_del_wall(bpy.types.Operator):
     bl_idname="aca.del_wall"
     bl_label = "删除"
-    bl_description = "删除隔断"
+    bl_description = "删除柱之间的额枋、槛墙、槛窗、隔扇等"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        funproxy = partial(
-            buildWall.delWall,object=context.object)
-        utils.fastRun(funproxy)
-        self.report({'INFO'},"删除隔断。")
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if objData.aca_type in (
+                con.ACA_TYPE_WALL_CHILD,
+                con.ACA_TYPE_WALL, 
+                ):
+            funproxy = partial(
+                buildWall.delWall,
+                object=context.object)
+            utils.fastRun(funproxy)
+            self.report({'INFO'},"已删除隔断。")
+        elif objData.aca_type in (
+                con.ACA_TYPE_FANG,
+                ):
+            funproxy = partial(
+                buildFloor.delFang,
+                buildingObj=buildingObj,
+                fangs = context.selected_objects)
+            utils.fastRun(funproxy)
+            self.report({'INFO'},"已删除额枋。")
+        else:
+            self.report({'INFO'},"没有可删除的对象")
         return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(
+            operator = self,
+            title="删除对象"
+            )
+
+    def draw(self, context):
+        row = self.layout
+        row.label(
+            text=("确定删除【" 
+                  + bpy.context.object.name
+                  + "】吗？"),
+            icon='QUESTION'
+            )
+
 
 # 生成斗栱
 class ACA_OT_build_dougong(bpy.types.Operator):
@@ -314,6 +402,43 @@ class ACA_OT_save_template(bpy.types.Operator):
             self.report({'ERROR'},"找不到根节点！")
 
         return {'FINISHED'}
+    
+# 删除模版
+class ACA_OT_del_template(bpy.types.Operator):
+    bl_idname="aca.del_template"
+    bl_label = "删除模版"
+    bl_description = '删除当前模版'
+
+    @classmethod
+    def poll(cls, context):
+        return True
+    
+    def execute(self, context):  
+        from . import acaTemplate
+        result = acaTemplate.delTemplate()
+        if 'FINISHED' in result:
+            self.report({'INFO'},"模版已删除。")
+
+        return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        # invoke_confirm调用自动自带的确认框，提示文字取bl_label
+        # return context.window_manager.invoke_confirm(self, event)
+        # invoke_props_dialog调用自定义的对话框，在draw函数中定义
+        # https://docs.blender.org/api/current/bpy.types.WindowManager.html#bpy.types.WindowManager.invoke_props_dialog
+        return context.window_manager.invoke_props_dialog(
+            operator = self,
+            title="删除模版"      # 如果为空，自动取bl_label
+            )
+
+    def draw(self, context):
+        row = self.layout
+        row.label(
+            text=("确定删除【" 
+                  + bpy.context.scene.ACA_data.template 
+                  + "】吗？"),
+            icon='QUESTION'
+            )
 
 # 测试按钮
 class ACA_OT_test(bpy.types.Operator):

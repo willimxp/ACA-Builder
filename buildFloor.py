@@ -496,6 +496,9 @@ def delPiller(buildingObj:bpy.types.Object,
             if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER:
                 pillerID = piller.ACA_data['pillerID']
                 bData.piller_net += pillerID + ','
+
+    # 聚焦根节点
+    utils.focusObj(buildingObj)
     return
 
 # 根据用户在插件面板修改的柱高、柱径，缩放柱子外观

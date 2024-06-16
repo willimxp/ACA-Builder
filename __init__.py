@@ -41,6 +41,7 @@ classes = (
     # 操作逻辑类    
     operators.ACA_OT_test,
     operators.ACA_OT_add_building,
+    operators.ACA_OT_update_building,
     operators.ACA_OT_reset_wall_layout,
     operators.ACA_OT_build_dougong,
     operators.ACA_OT_build_roof,
@@ -55,6 +56,7 @@ classes = (
     operators.ACA_OT_add_door,
     operators.ACA_OT_default_dk,
     operators.ACA_OT_save_template,
+    operators.ACA_OT_del_template,
 )
 
 def register():   

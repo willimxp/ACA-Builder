@@ -24,22 +24,33 @@ class ACA_PT_basic(bpy.types.Panel):
     def draw(self, context):
         # 从当前场景中载入数据集
         scnData : data.ACA_data_scene = context.scene.ACA_data
-        
         layout = self.layout
         box = layout.box()
+        
         # 模板选择列表
-        row = box.row()
-        row.prop(scnData, "template",text='')
-        # 生成新建筑
-        row = box.row()
-        row.operator("aca.add_newbuilding",icon='PLAY')
+        droplistTemplate = box.column(align=True)
+        droplistTemplate.prop(scnData, "template",text='')
+        
+        toolBox = box.column(align=True)
+        toolBar = toolBox.grid_flow(columns=2, align=True)
         # 保存模版
-        row = box.row()
-        col = row.column()
-        col.operator("aca.save_template",icon='FILE_TICK',text='保存模板')
+        col = toolBar.column(align=True)
+        col.operator(
+            "aca.save_template",icon='FILE_TICK',
+            text='保存模板')
         # 删除模版
-        col = row.column()
-        col.operator("aca.save_template",icon='TRASH',text='删除模板')
+        col = toolBar.column(align=True)
+        col.operator(
+            "aca.del_template",icon='TRASH',
+            text='删除模板')
+
+        toolBar = toolBox.grid_flow(columns=1, align=True)
+        # 生成新建筑        
+        buttonAddnew = toolBar.column(align=True)
+        buttonAddnew.operator(
+            "aca.add_newbuilding",icon='PLAY',
+            depress=True,text='添加新建筑'
+            )
         
         # # 测试按钮
         # row = layout.row()
@@ -71,32 +82,51 @@ class ACA_PT_props(bpy.types.Panel):
                 row = layout.row()
                 row.label(text='请先选择一个或多个建筑对象')
                 return             
-
-            # # 名称
-            # row = layout.row()
-            # col = row.column()
-            # col.prop(context.object,"name",text="")
-            # # 聚焦根节点
-            # col = row.column()
-            # col.operator("aca.focus_building",icon='FILE_PARENT')
-            # if objData.aca_type == con.ACA_TYPE_BUILDING:
-            #     col.enabled = False
-            # 名称
+            
             box = layout.box()
-            row = box.row()
-            col = row.column()
+            # 名称
+            row = box.row(align=True)
+            col = row.column(align=True)
             col.prop(context.object,"name",text="")
             # 聚焦根节点
-            col = row.column()
+            col = row.column(align=True)
             col.operator("aca.focus_building",icon='FILE_PARENT')
             if objData.aca_type == con.ACA_TYPE_BUILDING:
                 col.enabled = False
+                
             # 斗口值
-            row = box.row()
-            col = row.column()
+            row = box.row(align=True)
+            col = row.column(align=True)
             col.prop(bData,'DK')
-            col = row.column()
+            # 计算默认斗口值
+            col = row.column(align=True)
             col.operator("aca.default_dk",icon='SHADERFX',text='')
+
+            row = box.column(align=True)
+            row.prop(bData, "x_rooms")      # 面阔间数
+            row.prop(bData, "x_1")          # 明间宽度
+            if bData.x_rooms >= 3:
+                row.prop(bData, "x_2")      # 次间宽度
+            if bData.x_rooms >= 5:
+                row.prop(bData, "x_3")      # 梢间宽度
+            if bData.x_rooms >= 7:
+                row.prop(bData, "x_4")      # 尽间宽度
+                
+            col = box.column(align=True)
+            col.prop(bData, "y_rooms")      # 进深间数
+            col.prop(bData, "y_1")          # 明间深度
+            if bData.y_rooms >= 3:
+                col.prop(bData, "y_2")      # 次间深度
+            if bData.y_rooms >= 5:
+                col.prop(bData, "y_3")      # 梢间深度
+
+            # 更新建筑
+            row = box.row(align=True)
+            row.operator(
+                "aca.update_building",icon='PLAY',
+                depress=True,text='更新建筑'
+            )
+
 
 # “台基属性”子面板
 class ACA_PT_platform(bpy.types.Panel):
@@ -135,10 +165,9 @@ class ACA_PT_platform(bpy.types.Panel):
 
             # 台基属性
             box = layout.box()
-            row = box.row()
-            row.prop(bData, "platform_height")
-            row = box.row()
-            row.prop(bData, "platform_extend")
+            col = box.column(align=True)
+            col.prop(bData, "platform_height")
+            col.prop(bData, "platform_extend")
 
             # 切换显示/隐藏台基
             if not bData.is_showPlatform:
@@ -184,64 +213,28 @@ class ACA_PT_pillers(bpy.types.Panel):
             #if objData.aca_type == con.ACA_TYPE_BUILDING:
             # 柱网属性
             box = layout.box()
-            row = box.column(align=True)
-            row.prop(bData, "x_rooms")      # 面阔间数
-            row.prop(bData, "x_1")          # 明间宽度
-            if bData.x_rooms >= 3:
-                row.prop(bData, "x_2")      # 次间宽度
-            if bData.x_rooms >= 5:
-                row.prop(bData, "x_3")      # 梢间宽度
-            if bData.x_rooms >= 7:
-                row.prop(bData, "x_4")      # 尽间宽度
-                
-            row = box.column(align=True)
-            row.prop(bData, "y_rooms")      # 进深间数
-            row.prop(bData, "y_1")          # 明间深度
-            if bData.y_rooms >= 3:
-                row.prop(bData, "y_2")      # 次间深度
-            if bData.y_rooms >= 5:
-                row.prop(bData, "y_3")      # 梢间深度
 
-            #柱子属性
-            box = layout.box()
-            row = box.row()
-            row.prop(bData, "piller_source")    # 柱样式
-            row = box.row()
-            row.prop(bData, "piller_height")    # 柱高
-            row = box.row()
-            row.prop(bData, "piller_diameter")  # 柱径
-            row = box.row()
-            col = row.column()
+
+            # 柱子属性
+            col = box.column(align=True)
+            grid = col.grid_flow(columns=1, align=True)
+            # 柱高
+            grid.prop(bData, "piller_height") 
+            # 柱径   
+            grid.prop(bData, "piller_diameter")  
+            grid = col.grid_flow(columns=2, align=True)
+            # 按钮:减柱
+            col = grid.column(align=True)
             col.operator(
-                "aca.del_piller",icon='X',)     # 按钮:减柱
+                "aca.del_piller",icon='X',
+                depress=True,text='减柱')  
             if objData.aca_type != con.ACA_TYPE_PILLER:
                 col.enabled=False
-            col = row.column()
+            # 按钮:重设柱网
+            col = grid.column(align=True)
             col.operator(
-                "aca.reset_floor",icon='FILE',) # 按钮:重设柱网
-            
-            # 枋属性
-            box = layout.box()
-            row = box.row()
-            col = row.column()
-            col.label(text='设置枋子:')
-            col = row.column()
-            col.prop(objData, "use_smallfang") # 使用小额枋
-            row = box.row()
-            col = row.column()
-            col.operator("aca.add_fang",icon='LINKED',text='加枋')# 按钮:连接
-            if objData.aca_type != con.ACA_TYPE_PILLER \
-                or len(context.selected_objects)<2:
-                    col.enabled=False
-
-            col = row.column()
-            col.operator("aca.del_fang",icon='UNLINKED',)# 按钮:断开
-            if objData.aca_type == con.ACA_TYPE_PILLER:col.enabled=False
-
-            # 切换显示/隐藏台基
-            if not bData.is_showPillers:
-                layout.enabled = False
-
+                "aca.reset_floor",icon='FILE',
+                depress=True,text='重设') 
                 
 # “墙属性”子面板
 class ACA_PT_wall(bpy.types.Panel):
@@ -291,77 +284,96 @@ class ACA_PT_wall(bpy.types.Panel):
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
 
-            # 墙样式
-            box = layout.box()
-            
-            # 工具栏
-            row = box.row()
-            col = row.column()
-            # 生成墙
-            col.operator("aca.add_wall",icon='MOD_BUILD')
-            if objData.aca_type != con.ACA_TYPE_PILLER \
-                or len(context.selected_objects) < 2:
-                col.enabled = False
-            # # 删除隔断
-            # col = row.column()
-            # col.operator("aca.del_wall",icon='TRASH')
-            # if objData.aca_type not in (
-            #     con.ACA_WALLTYPE_WALL,con.ACA_TYPE_WALL_CHILD):
-            #     col.enabled = False
-            row = box.row() 
-            if objData.aca_type == con.ACA_TYPE_WALL:
-                row.prop(objData, "wall_source") # 个体
-            else:
-                row.prop(bData, "wall_source") # 全局
-                
-            # 隔扇、槛窗
-            box = layout.box()
-            # 工具栏
-            row = box.row()
-            row.operator("aca.add_door",icon='MOD_TRIANGULATE')# 按钮：生成隔扇
-            row.operator("aca.add_window",icon='MOD_LATTICE')# 按钮：生成槛窗
-            if objData.aca_type != con.ACA_TYPE_PILLER \
-                or len(context.selected_objects) < 2:
-                row.enabled = False
-            row = box.row()
-            row.operator("aca.del_wall",icon='TRASH')# 按钮：删除隔断
-            if objData.aca_type not in (
-                con.ACA_TYPE_WALL_CHILD,
-                con.ACA_TYPE_WALL):
-                row.enabled = False
-            # 个体
-            if objData.aca_type == con.ACA_TYPE_WALL:
-                row = box.row() 
-                row.prop(objData, "lingxin_source")   # 棂心样式
-                row = box.row()
-                row.prop(objData, "door_num")     # 隔扇数量
-                row = box.row()
-                row.prop(objData, "gap_num")      # 抹头数量
-                row = box.row()
-                row.prop(objData, "use_topwin")   # 添加横披窗
-                row = box.row()
-                row.prop(objData, "door_height")  # 中槛高度
-                if not objData.use_topwin:
-                    row.enabled = False    
-            # 全局  
-            else: 
-                row = box.row() 
-                row.prop(bData, "lingxin_source")   # 棂心样式
-                row = box.row()
-                row.prop(bData, "door_num")     # 隔扇数量
-                row = box.row()
-                row.prop(bData, "gap_num")      # 抹头数量
-                row = box.row()
-                row.prop(bData, "use_topwin")   # 添加横披窗
-                row = box.row()
-                row.prop(bData, "door_height")  # 中槛高度
-                if not bData.use_topwin:
-                    row.enabled = False
-            
-        
-            # 切换显示/隐藏台基
+            # 控制是否允许修改
             if not bData.is_showWalls:
                 layout.enabled = False
+
+            box = layout.box() 
+
+            # 工具栏：加枋、加墙、加门、加窗、删除
+            toolBox = box.column(align=True)
+            toolBar = toolBox.grid_flow(columns=2, align=True)
+            # 按钮：加枋
+            buttonFang = toolBar.column(align=True)
+            buttonFang.operator(
+                "aca.add_fang",icon='LINKED',text='额枋')
+            # 按钮：加门
+            buttonDoor = toolBar.column(align=True)
+            buttonDoor.operator(
+                "aca.add_door",icon='MOD_TRIANGULATE',text='隔扇')
+            # 按钮：加墙
+            buttonWall = toolBar.column(align=True)
+            buttonWall.operator(
+                "aca.add_wall",icon='MOD_BUILD',text='槛墙')
+            # 按钮：加窗
+            buttonWin = toolBar.column(align=True)
+            buttonWin.operator(
+                "aca.add_window",icon='MOD_LATTICE',text='槛窗')
+            # 通栏宽度按钮
+            toolBar = toolBox.grid_flow(columns=1, align=True)
+            # 按钮：删除
+            buttonDel = toolBar.column(align=True)
+            buttonDel.operator(
+                "aca.del_wall",icon='TRASH',text='删除',depress=True)
+            
+            # 工具可用性判断
+            # 至少应选择两根柱子
+            if objData.aca_type != con.ACA_TYPE_PILLER \
+                or len(context.selected_objects)<2:
+                    buttonFang.enabled=False
+                    buttonDoor.enabled=False
+                    buttonWall.enabled=False
+                    buttonWin.enabled=False
+            # 删除按钮，是否选中个隔断对象
+            if objData.aca_type not in (
+                con.ACA_TYPE_FANG,          # 枋对象
+                con.ACA_TYPE_WALL_CHILD,    # 槛墙对象
+                con.ACA_TYPE_WALL,          # wallProxy
+                ):
+                buttonDel.enabled = False
+
+            # 附属参数框
+            if objData.aca_type == con.ACA_TYPE_WALL:     
+                # 如果用户选中了wallProxy
+                # 仅设置个体参数，取objData
+                dataSource = objData
+            else:
+                dataSource = bData
+            
+            # 是否使用小额枋       
+            toolBox = box.column(align=True)
+            
+            toolBar = toolBox.grid_flow(align=True,columns=1)
+            # 隔扇数量
+            inputDoorNum = toolBar.column(align=True)
+            inputDoorNum.prop(
+                dataSource, "door_num",text='隔扇数量')
+            # 抹头数量
+            inputGapNum = toolBar.column(align=True)
+            inputGapNum.prop(
+                dataSource, "gap_num",text='抹头数量')
+            # 中槛高度
+            inputMidHeight = toolBar.column(align=True)
+            inputMidHeight.prop(
+                dataSource, "door_height",text='中槛高度')
+            
+            toolBar = toolBox.grid_flow(align=True,columns=2)
+            # 复选框：是否使用小额枋
+            checkboxFang = toolBar.column(align=True)
+            checkboxFang.prop(
+                bData, "use_smallfang",
+                toggle=1,text="使用小额枋") 
+            # 复选框：是否使用横披窗
+            checkboxTopwin = toolBar.column(align=True)
+            checkboxTopwin.prop(
+                dataSource, "use_topwin",
+                toggle=1,text='使用横披窗')
+
+            # 关联“是否使用横披窗”和“中槛高度”
+            if not dataSource.use_topwin:
+                inputMidHeight.enabled = False 
+        
+        return
 
 # “屋顶参数”面板
 class ACA_PT_roof_props(bpy.types.Panel):
@@ -582,4 +594,3 @@ class ACA_PT_tiles(bpy.types.Panel):
 
             if not bData.is_showTiles:
                 layout.enabled = False
-            

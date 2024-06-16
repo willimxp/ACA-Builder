@@ -56,7 +56,6 @@ def reset_building(self, context:bpy.types.Context):
     if buildingObj != None:
         # 调用营造序列
         from . import buildFloor
-        # buildFloor.resetFloor(buildingObj)
         funproxy = partial(
                 buildFloor.resetFloor,
                 buildingObj=buildingObj)
@@ -272,27 +271,27 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     x_rooms : bpy.props.IntProperty(
             name = "面阔间数",
             min = 1, max = 11,step = 2,
-            update= reset_building
+            update= reset_building 
         )# type: ignore
     x_1 : bpy.props.FloatProperty(
             name = "明间宽度",
             min = 0, 
-            update = update_building
+            #update = update_building
         )# type: ignore
     x_2 : bpy.props.FloatProperty(
             name = "次间宽度",
             min = 0, 
-            update = update_building
+            #update = update_building
         )# type: ignore
     x_3 : bpy.props.FloatProperty(
             name = "梢间宽度",
             min = 0, 
-            update = update_building
+            #update = update_building
         )# type: ignore
     x_4 : bpy.props.FloatProperty(
             name = "尽间宽度",
             min = 0, 
-            update = update_building
+            #update = update_building
         )# type: ignore
     y_rooms : bpy.props.IntProperty(
             name = "进深间数",
@@ -303,17 +302,17 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     y_1 : bpy.props.FloatProperty(
             name = "明间深度",
             min = 0, 
-            update = update_building
+            #update = update_building
         )# type: ignore
     y_2 : bpy.props.FloatProperty(
             name = "次间深度",
             min = 0, 
-            update = update_building
+            #update = update_building
         )# type: ignore
     y_3 : bpy.props.FloatProperty(
             name = "梢间深度",
             min = 0, 
-            update = update_building
+            #update = update_building
         )# type: ignore
     piller_net : bpy.props.StringProperty(
             name = "保存的柱网列表"
@@ -388,7 +387,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     door_num : bpy.props.IntProperty(
             name="隔扇数量",
-            default=4, max=4,
+            default=4, max=6,step=2,min=2,
             update = update_wall
         )# type: ignore 
     gap_num : bpy.props.IntProperty(

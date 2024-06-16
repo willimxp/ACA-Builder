@@ -168,49 +168,49 @@ def openTemplate(buildingObj:bpy.types.Object,
     
     # 在XML中查找对应名称的那个模版
     for template in templates:
-        template_name = template.find('template_name').text
-        if template_name == templateName:
-            
-            # 初始化bData默认值，根据DK/PD实时刷新一次
-            # 模版名称
-            bData['template_name'] = template_name
-            # 斗口
-            dk = template.find('dk')
-            if dk != None: 
-                bData['DK'] = float(dk.text)
-            # 柱径
-            pd = template.find('piller_diameter')
-            if pd != None:
-                bData['piller_diameter'] = float(pd.text)
-            # 刷新bData默认值
-            bData = __loadDefaultData(buildingObj)
+        nameNode = template.find('template_name')
+        if nameNode != None:
+            if nameNode.text == templateName:
+                # 初始化bData默认值，根据DK/PD实时刷新一次
+                # 模版名称
+                bData['template_name'] = nameNode.text
+                # 斗口
+                dk = template.find('dk')
+                if dk != None: 
+                    bData['DK'] = float(dk.text)
+                # 柱径
+                pd = template.find('piller_diameter')
+                if pd != None:
+                    bData['piller_diameter'] = float(pd.text)
+                # 刷新bData默认值
+                bData = __loadDefaultData(buildingObj)
 
-            # 遍历所有子节点，并绑定到对应属性
-            for node in template:
-                tag = node.tag
-                type = node.attrib['type']
-                value = node.text
-                # 类型转换
-                if type == 'str':
-                    bData[tag] = value
-                    # 特殊处理下拉框
-                    if tag == 'roof_style':
+                # 遍历所有子节点，并绑定到对应属性
+                for node in template:
+                    tag = node.tag
+                    type = node.attrib['type']
+                    value = node.text
+                    # 类型转换
+                    if type == 'str':
+                        bData[tag] = value
+                        # 特殊处理下拉框
+                        if tag == 'roof_style':
+                            bData[tag] = int(value)
+                    elif type == 'float':
+                        bData[tag] = round(float(value),2)
+                    elif type == 'int':
                         bData[tag] = int(value)
-                elif type == 'float':
-                    bData[tag] = round(float(value),2)
-                elif type == 'int':
-                    bData[tag] = int(value)
-                elif type == 'bool':
-                    # 注意这里的True/False是str，用bool()强制转换时都为True，
-                    # 所以以下手工进行了判断
-                    if value == 'True':
-                        bData[tag] = True
-                    if value == 'False':
-                        bData[tag] = False
-                elif type == 'Object':
-                    bData[tag] = loadAssets(value,assetsObj)
-                else:
-                    print("can't convert:",node.tag, node.attrib['type'],node.text)
+                    elif type == 'bool':
+                        # 注意这里的True/False是str，用bool()强制转换时都为True，
+                        # 所以以下手工进行了判断
+                        if value == 'True':
+                            bData[tag] = True
+                        if value == 'False':
+                            bData[tag] = False
+                    elif type == 'Object':
+                        bData[tag] = loadAssets(value,assetsObj)
+                    else:
+                        print("can't convert:",node.tag, node.attrib['type'],node.text)
 
     return
 
@@ -308,5 +308,60 @@ def saveTemplate(buildingObj:bpy.types.Object):
 
     # 刷新panel的模版列表
     bpy.context.scene.ACA_data.template = templateName
+
+    return {'FINISHED'}
+
+# 删除模版
+def delTemplate():
+    # 解析XML配置模版
+    path = __getPath(xmlFileName)
+    tree = ET.parse(path)
+    root = tree.getroot()   # <templates>根节点
+    # 验证根节点
+    templateNodeList = root.findall('template')
+    if templateNodeList == None:
+        utils.outputMsg("模版解析失败")
+        return
+    
+    # 遍历查找对应模版
+    # 模版名称取panel上选择的模版
+    templateName = bpy.context.scene.ACA_data.template
+    bFind = False
+    nextTemplateName = ''
+    preTemplateName = ''
+    for templateNode in templateNodeList:
+        nameNode = templateNode.find('template_name')
+        if nameNode != None:
+            # 判断标志位，以暂存下一个选项
+            if not bFind:
+                if nameNode.text != templateName:
+                    # 未找到之前，暂存为上一个选项
+                    preTemplateName = nameNode.text
+                else:
+                    # 如果找到了对应名称
+                    # 删除模版
+                    root.remove(templateNode)
+                    # 更新标志位，进入下一次循环
+                    # 以便填充nextTemplateName
+                    bFind = True
+            else:
+                # 暂存下一个选项
+                nextTemplateName = nameNode.text
+                break
+
+    # 缩进美化
+    # https://stackoverflow.com/questions/28813876/how-do-i-get-pythons-elementtree-to-pretty-print-to-an-xml-file
+    ET.indent(tree, space="\t", level=0)
+    # 保存
+    tree.write(path, encoding='UTF-8',xml_declaration=True)
+
+    # 刷新panel的模版列表
+    if nextTemplateName != '':
+        # 优先绑定下一个选项
+        bpy.context.scene.ACA_data.template = nextTemplateName
+    elif preTemplateName != '':
+        # 候选上一个选项
+        bpy.context.scene.ACA_data.template = preTemplateName
+    # 如果都为空，则不做绑定
 
     return {'FINISHED'}

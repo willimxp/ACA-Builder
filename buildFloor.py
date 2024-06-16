@@ -346,7 +346,6 @@ def buildPillers(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
-    bData['is_showPillers'] = True
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]
@@ -537,8 +536,9 @@ def resetFloor(buildingObj:bpy.types.Object):
 
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
-# 采用了偏函数和fastrun，极大加速了性能
 def buildFloor(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
     # 定位到collection，如果没有则新建
     utils.setCollection(con.ROOT_COLL_NAME,isRoot=True)
 
@@ -550,26 +550,33 @@ def buildFloor(buildingObj:bpy.types.Object):
         # 添加建筑根节点，同时载入模版
         buildingObj = __addBuildingRoot(templateName)
     else:
-        # 删除屋顶，柱网变化必然引起屋顶重构
-        roofRoot = utils.getAcaChild(
-            buildingObj,con.ACA_TYPE_ROOF_ROOT)
-        utils.deleteHierarchy(roofRoot)
-        # 删除墙体，柱网变化必然引起墙体重构
-        wallRoot = utils.getAcaChild(
-            buildingObj,con.ACA_TYPE_WALL_ROOT)
-        utils.deleteHierarchy(wallRoot)
+        # # 删除屋顶，柱网变化必然引起屋顶重构
+        # roofRoot = utils.getAcaChild(
+        #     buildingObj,con.ACA_TYPE_ROOF_ROOT)
+        # utils.deleteHierarchy(roofRoot)
+        # # 删除墙体，柱网变化必然引起墙体重构
+        # wallRoot = utils.getAcaChild(
+        #     buildingObj,con.ACA_TYPE_WALL_ROOT)
+        # utils.deleteHierarchy(wallRoot)
+
+        # 20240616 简单粗暴的全部删除
+        # todo：wallproxy的个性化设置丢失了
+        utils.deleteHierarchy(buildingObj)
 
     # 生成柱网
-    utils.outputMsg("Building Pillers...")
-    buildPillers(buildingObj)
+    if bData.is_showPillers:
+        utils.outputMsg("Building Pillers...")
+        buildPillers(buildingObj)
     
     # 生成台基
-    utils.outputMsg("Building Platform...")
-    buildPlatform.buildPlatform(buildingObj)
+    if bData.is_showPlatform:
+        utils.outputMsg("Building Platform...")
+        buildPlatform.buildPlatform(buildingObj)
     
     # 生成墙体
-    utils.outputMsg("Building Wall...")
-    buildWall.buildWallLayout(buildingObj)
+    if bData.is_showWalls:
+        utils.outputMsg("Building Wall...")
+        buildWall.buildWallLayout(buildingObj)
     
     # 生成屋顶
     utils.outputMsg("Building Roof...")

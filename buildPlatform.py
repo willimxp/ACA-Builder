@@ -591,7 +591,6 @@ def __buildStep(platformObj:bpy.types.Object):
 # 根据固定模板，创建新的台基
 def buildPlatform(buildingObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
-    bData['is_showPlatform'] = True
 
     # 台基可以跳过不做
     if bData.platform_height <= 0.01: return 

@@ -470,7 +470,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("4","硬山顶",""),
                 ("5","悬山卷棚顶",""),
             ],
-            update = update_roof,
+            #update = update_roof,
         ) # type: ignore
     rafter_count : bpy.props.IntProperty(
             name="椽架数量",

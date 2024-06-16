@@ -54,8 +54,6 @@ def buildDougong(buildingObj:bpy.types.Object):
 
     # 如果不使用斗栱，以下直接跳过
     if not bData.use_dg: return
-    # 用户可以暂时不生成斗栱
-    if not bData.is_showDougong: return
     # 椽望定位依赖斗栱，强制生成
     if bData.is_showBPW : 
         bData['is_showDougong'] = True

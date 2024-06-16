@@ -214,7 +214,6 @@ class ACA_PT_pillers(bpy.types.Panel):
             # 柱网属性
             box = layout.box()
 
-
             # 柱子属性
             col = box.column(align=True)
             grid = col.grid_flow(columns=1, align=True)
@@ -233,7 +232,7 @@ class ACA_PT_pillers(bpy.types.Panel):
             # 按钮:重设柱网
             col = grid.column(align=True)
             col.operator(
-                "aca.reset_floor",icon='FILE',
+                "aca.reset_floor",icon='FILE_REFRESH',
                 depress=True,text='重设') 
                 
 # “墙属性”子面板
@@ -360,14 +359,25 @@ class ACA_PT_wall(bpy.types.Panel):
             toolBar = toolBox.grid_flow(align=True,columns=2)
             # 复选框：是否使用小额枋
             checkboxFang = toolBar.column(align=True)
+            if dataSource.use_smallfang:
+                checkbox_icon = 'CHECKBOX_HLT'
+            else:
+                checkbox_icon = 'CHECKBOX_DEHLT'
             checkboxFang.prop(
                 bData, "use_smallfang",
-                toggle=1,text="使用小额枋") 
+                toggle=1,text="小额枋",
+                icon=checkbox_icon) 
             # 复选框：是否使用横披窗
             checkboxTopwin = toolBar.column(align=True)
+            if dataSource.use_topwin:
+                checkbox_icon = 'CHECKBOX_HLT'
+            else:
+                checkbox_icon = 'CHECKBOX_DEHLT'
             checkboxTopwin.prop(
                 dataSource, "use_topwin",
-                toggle=1,text='使用横披窗')
+                toggle=1,text='横披窗',
+                icon=checkbox_icon)
+            
 
             # 关联“是否使用横披窗”和“中槛高度”
             if not dataSource.use_topwin:
@@ -401,11 +411,16 @@ class ACA_PT_roof_props(bpy.types.Panel):
                 return
             else:
                 # 屋顶属性
-                row = layout.row()
-                row.prop(bData, "roof_style") # 屋顶样式
+                box = layout.box()
+                # 屋顶样式
+                droplistRoofstyle = box.row()
+                droplistRoofstyle.prop(
+                    bData, "roof_style",text='') 
                 # 屋顶营造按钮
-                row = layout.row()
-                row.operator("aca.build_roof",icon='HOME',)# 按钮：生成屋顶
+                buttonBuildroof = box.row()
+                buttonBuildroof.operator(
+                    "aca.build_roof",icon='HOME',
+                    text='生成屋顶',depress=True)# 
 
 # “斗栱属性”子面板
 class ACA_PT_dougong(bpy.types.Panel):
@@ -438,37 +453,59 @@ class ACA_PT_dougong(bpy.types.Panel):
     def draw(self, context):
         # 从当前场景中载入数据集
         if context.object != None:
-            layout = self.layout
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
-            row = layout.row()
-            # 是否使用斗栱
-            col = row.column()
-            col.prop(bData, "use_dg")
-            # 是否使用平板枋
-            col = row.column()
-            col.prop(bData, "use_pingbanfang")
 
-            # 斗栱属性
-            box = layout.box()
-            
-            row = box.row()
-            row.prop(bData, "dg_extend") # 斗栱出跳
-            row = box.row()
-            row.prop(bData, "dg_height") # 斗栱高度
-            row = box.row()
-            row.prop(bData, "dg_gap") # 斗栱间距
-            row = box.row()
-            row.prop(bData, "dg_piller_source") # 柱头斗栱
-            row = box.row()
-            row.prop(bData, "dg_fillgap_source") # 补间斗栱
-            row = box.row()
-            row.prop(bData, "dg_corner_source") # 转角斗栱
+            layout = self.layout
             if not bData.is_showDougong:
                 layout.enabled = False
+
+            box = layout.box()
+            toolBox = box.column(align=True)
+            toolBar = toolBox.grid_flow(
+                align=True,columns=2)
+            # 是否使用斗栱
+            if bData.use_dg:
+                checkbox_icon = 'CHECKBOX_HLT'
+            else:
+                checkbox_icon = 'CHECKBOX_DEHLT'
+            checkboxUsedg = toolBar.column(align=True)
+            checkboxUsedg.prop(
+                bData, "use_dg",
+                toggle=True,icon=checkbox_icon)
+            # 是否使用平板枋
+            if bData.use_pingbanfang:
+                checkbox_icon = 'CHECKBOX_HLT'
+            else:
+                checkbox_icon = 'CHECKBOX_DEHLT'
+            checkboxUsePbf = toolBar.column(align=True)
+            checkboxUsePbf.prop(
+                bData, "use_pingbanfang",
+                toggle=True,icon=checkbox_icon)
+
+            # 斗栱出跳
+            toolBar = toolBox.grid_flow(align=True,columns=1)
+            inputDgextend = toolBar.column(align=True)
+            inputDgextend.prop(
+                bData, "dg_extend",
+                text='斗栱出跳') 
+            # 斗栱高度
+            inputDgheight = toolBar.column(align=True)
+            inputDgheight.prop(
+                bData, "dg_height",
+                text='斗栱高度') 
+            # 斗栱间距
+            inputDggap = toolBar.column(align=True)
+            inputDggap.prop(
+                bData, "dg_gap",
+                text='斗栱间距') 
+            
             if not bData.use_dg:
-                box.enabled =False
+                checkboxUsePbf.enabled =False
+                inputDgextend.enabled =False
+                inputDgheight.enabled =False
+                inputDggap.enabled =False
 
 # “梁椽望属性”子面板
 class ACA_PT_BPW(bpy.types.Panel):
@@ -501,28 +538,61 @@ class ACA_PT_BPW(bpy.types.Panel):
     def draw(self, context):
         # 从当前场景中载入数据集
         if context.object != None:
-            layout = self.layout
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
 
-            # 屋顶属性
-            box = layout.box()
-            row = box.row()
-            row.prop(bData, "rafter_count") # 椽架数量
-            if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
-                row = box.row()
-                row.prop(bData, "chong") # 出冲
-                row = box.row()
-                row.prop(bData, "qiqiao") # 起翘
-                # row = box.row()
-                # row.prop(bData, "shengqi") # 生起
-            row = box.row()
-            row.prop(bData, "use_flyrafter") # 添加飞椽
-            row = box.row()
-            row.prop(bData, "use_wangban") # 添加望板
+            layout = self.layout
             if not bData.is_showBPW:
                 layout.enabled = False
+
+            box = layout.box()
+            toolBox = box.column(align=True)
+            toolBar = toolBox.grid_flow(
+                align=True,columns=1)
+            # 椽架数量          
+            inputRaftercount = toolBar.column(align=True)
+            inputRaftercount.prop(
+                bData, "rafter_count",
+                text='椽架数量')
+            # 出冲
+            inputChong = toolBar.column(align=True)
+            inputChong.prop(
+                bData, "chong",text='出冲(椽径)') 
+             # 起翘
+            inputQiao = toolBar.column(align=True)
+            inputQiao.prop(
+                bData, "qiqiao",text='起翘(椽径)')
+
+            toolBar = toolBox.grid_flow(
+                align=True,columns=2)
+            # 添加飞椽
+            if bData.use_flyrafter:
+                checkbox_icon = 'CHECKBOX_HLT'
+            else:
+                checkbox_icon = 'CHECKBOX_DEHLT'
+            checkboxUseflyrafter = toolBar.column(align=True)
+            checkboxUseflyrafter.prop(
+                bData, "use_flyrafter",
+                text='使用飞椽',toggle=True,
+                icon=checkbox_icon) 
+            # 添加望板
+            if bData.use_wangban:
+                checkbox_icon = 'CHECKBOX_HLT'
+            else:
+                checkbox_icon = 'CHECKBOX_DEHLT'
+            checkboxUseWangban = toolBar.column(align=True)
+            checkboxUseWangban.prop(
+                bData, "use_wangban",
+                toggle=True,text='使用望板',
+                icon=checkbox_icon) 
+            
+            # 只有庑殿、歇山，可以设置冲、翘
+            if bData.roof_style not in (
+                    con.ROOF_WUDIAN,
+                    con.ROOF_XIESHAN):
+                inputChong.enabled = False
+                inputQiao.enabled = False
 
 # “瓦作属性”子面板
 class ACA_PT_tiles(bpy.types.Panel):
@@ -566,31 +636,10 @@ class ACA_PT_tiles(bpy.types.Panel):
             # row.prop(bData, "tile_width") # 瓦垄宽度
             # row = box.row()
             # row.prop(bData, "tile_length") # 瓦片长度
-            row = box.row()
-            row.prop(bData, "tile_width_real") # 瓦垄宽度
+            # row = box.row()
+            # row.prop(bData, "tile_width_real") # 瓦垄宽度
             row = box.row()
             row.prop(bData, "paoshou_count") # 跑兽数量
-            row = box.row()
-            row.prop(bData, "flatTile_source") # 板瓦
-            row = box.row()
-            row.prop(bData, "circularTile_source") # 筒瓦
-            row = box.row()
-            row.prop(bData, "eaveTile_source") # 瓦当
-            row = box.row()
-            row.prop(bData, "dripTile_source") # 滴水
-
-            # 屋脊属性
-            box = layout.box()
-            row = box.row()
-            row.prop(bData, "ridgeTop_source") # 正脊筒
-            row = box.row()
-            row.prop(bData, "ridgeBack_source") # 垂脊兽后
-            row = box.row()
-            row.prop(bData, "ridgeFront_source") # 垂脊兽前
-            row = box.row()
-            row.prop(bData, "ridgeEnd_source") # 端头盘子
-            row = box.row()
-            row.prop(bData, "chiwen_source") # 螭吻
 
             if not bData.is_showTiles:
                 layout.enabled = False

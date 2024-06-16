@@ -371,7 +371,6 @@ def buildWallLayout(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
-    bData['is_showWalls'] = True
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]

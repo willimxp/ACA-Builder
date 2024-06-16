@@ -50,7 +50,7 @@ def __addRoofRoot(buildingObj:bpy.types.Object):
         # tile_base += con.BEAM_HEIGHT*pd
         # 实际为金桁垫板高度+半桁
         tile_base += con.BOARD_HENG_H*dk + con.HENG_COMMON_D*dk/2
-        bData['use_pingbanfang'] = False
+        #bData['use_pingbanfang'] = False
     
     roofRootObj.location = (0,0,tile_base)       
 
@@ -3659,9 +3659,8 @@ def __buildBPW(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     # 屋瓦依赖于椽望，强制生成
-    if bData.is_showTiles : bData['is_showBPW']=True
-    # 可以根据用户需要而不生成
-    if not bData.is_showBPW: return
+    if bData.is_showTiles : 
+        bData['is_showBPW']=True
 
     # 计算桁檩定位点
     purlin_pos = __getPurlinPos(buildingObj)
@@ -3708,22 +3707,27 @@ def __buildBPW(buildingObj:bpy.types.Object):
 
 # 营造整个房顶
 def buildRoof(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
     # 添加“屋顶层”根节点
     # 斗栱层、梁椽望、瓦作都绑定在该节点下，便于统一重新生成
     # 这三层的结构紧密相连，无法解耦，只能一起生成，一起刷新
     __addRoofRoot(buildingObj)
 
     # 生成斗栱层
-    utils.outputMsg("Building Dougong...")
-    buildDougong.buildDougong(buildingObj)
+    if bData.is_showDougong:
+        utils.outputMsg("Building Dougong...")
+        buildDougong.buildDougong(buildingObj)
 
     # 生成梁椽望
-    utils.outputMsg("Building BPW...")
-    __buildBPW(buildingObj)
+    if bData.is_showBPW:
+        utils.outputMsg("Building BPW...")
+        __buildBPW(buildingObj)
 
     # 生成瓦作层
-    utils.outputMsg("Building Tiles...")
-    buildRooftile.buildTile(buildingObj)
+    if bData.is_showTiles:
+        utils.outputMsg("Building Tiles...")
+        buildRooftile.buildTile(buildingObj)
     
     utils.focusObj(buildingObj)
     return {'FINISHED'}

@@ -537,8 +537,6 @@ def resetFloor(buildingObj:bpy.types.Object):
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
 def buildFloor(buildingObj:bpy.types.Object):
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
     # 定位到collection，如果没有则新建
     utils.setCollection(con.ROOT_COLL_NAME,isRoot=True)
 
@@ -562,6 +560,9 @@ def buildFloor(buildingObj:bpy.types.Object):
         # 20240616 简单粗暴的全部删除
         # todo：wallproxy的个性化设置丢失了
         utils.deleteHierarchy(buildingObj)
+
+     # 载入数据
+    bData:acaData = buildingObj.ACA_data
 
     # 生成柱网
     if bData.is_showPillers:

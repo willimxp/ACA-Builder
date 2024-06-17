@@ -1362,40 +1362,49 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         buildingObj,rafter_pos)
     
     # 构造垂脊兽后，歇山、悬山、硬山共用
-    frontRidgeAfterObj = __arrayRidgeByCurve(buildingObj,
-                    sourceObj=bData.ridgeBack_source,
-                    ridgeCurve=frontRidgeCurve,
-                    ridgeName='垂脊兽后')
-    # 垂脊兽后退后一个脊筒，摆放垂兽
-    ridgeObj:bpy.types.Object = bData.ridgeBack_source
-    ridgeLength = ridgeObj.dimensions.x * (bData.DK/con.DEFAULT_DK)
-    frontRidgeAfterObj.location.x += ridgeLength
-    # 摆放垂兽
-    chuishouObj = utils.copyObject(
-        sourceObj=bData.chuishou_source,
-        name='垂兽',
-        parentObj=tileRootObj,
-        location=frontRidgeCurve.location,
-        singleUser=True)
-    # 根据斗口调整尺度
-    utils.resizeObj(chuishouObj,
-        bData.DK / con.DEFAULT_DK)
-    # 通过曲线变形，获得仰角
-    modCurve:bpy.types.CurveModifier = \
-            chuishouObj.modifiers.new('curve','CURVE')
-    modCurve.object = frontRidgeCurve
-    # 四向对称
-    utils.addModifierMirror(
-        object=chuishouObj,
-        mirrorObj=tileRootObj,
-        use_axis=(True,True,False)
-    )
+    # 如果不做跑兽，也不做垂兽和垂脊兽后
+    if bData.paoshou_count > 0 :
+        frontRidgeAfterObj = __arrayRidgeByCurve(buildingObj,
+                        sourceObj=bData.ridgeBack_source,
+                        ridgeCurve=frontRidgeCurve,
+                        ridgeName='垂脊兽后')
+        # 垂脊兽后退后一个脊筒，摆放垂兽
+        ridgeObj:bpy.types.Object = bData.ridgeBack_source
+        ridgeLength = ridgeObj.dimensions.x * (bData.DK/con.DEFAULT_DK)
+        frontRidgeAfterObj.location.x += ridgeLength
+        # 摆放垂兽
+        chuishouObj = utils.copyObject(
+            sourceObj=bData.chuishou_source,
+            name='垂兽',
+            parentObj=tileRootObj,
+            location=frontRidgeCurve.location,
+            singleUser=True)
+        # 根据斗口调整尺度
+        utils.resizeObj(chuishouObj,
+            bData.DK / con.DEFAULT_DK)
+        # 通过曲线变形，获得仰角
+        modCurve:bpy.types.CurveModifier = \
+                chuishouObj.modifiers.new('curve','CURVE')
+        modCurve.object = frontRidgeCurve
+        # 四向对称
+        utils.addModifierMirror(
+            object=chuishouObj,
+            mirrorObj=tileRootObj,
+            use_axis=(True,True,False)
+        )
 
     # 硬山、悬山：做垂脊兽前、端头盘子、跑兽
-    if bData.roof_style in (
+    if (
+            bData.roof_style in (
                 con.ROOF_YINGSHAN,
                 con.ROOF_XUANSHAN,
-                con.ROOF_XUANSHAN_JUANPENG):
+                con.ROOF_XUANSHAN_JUANPENG,
+                ) 
+            or (
+                    bData.roof_style == con.ROOF_XIESHAN 
+                    and bData.paoshou_count == 0
+                ) 
+        ):
         # 构造端头盘子
         ridgeEndObj = utils.copyObject(
             sourceObj=bData.ridgeEnd_source,
@@ -1419,6 +1428,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
             ridgeEndObj.modifiers.new('镜像','MIRROR')
         modMirror.mirror_object = tileRootObj
         modMirror.use_axis = (True,True,False)
+
         # 构造垂脊兽前的脊筒，仅根据需要的跑兽数量排布
         frontRidgeBeforeObj = __arrayRidgeByCurve(buildingObj,
                         sourceObj=bData.ridgeFront_source,
@@ -1427,21 +1437,24 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
                         arrayCount= bData.paoshou_count)        
         # 垂脊兽前后退一个端头盘子长度
         frontRidgeBeforeObj.location.x += ridgeEnd_Length
-    
-        # 放置跑兽
-        __buildPaoshou(
-            buildingObj=buildingObj,
-            ridgeCurve=frontRidgeCurve,
-            count=bData.paoshou_count
-        )
 
-        # 给垂脊兽后留出跑兽的空间
-        ridgeUnit: bpy.types.Object= bData.ridgeFront_source
-        ridgeUnit_Length = ridgeUnit.dimensions.x * (bData.DK/con.DEFAULT_DK)
-        paoLength = (ridgeEnd_Length 
-            + ridgeUnit_Length * bData.paoshou_count)
-        frontRidgeAfterObj.location.x += paoLength
-        chuishouObj.location.x += paoLength
+        if (bData.paoshou_count > 0 
+            and bData.roof_style != con.ROOF_XIESHAN):
+            # 放置跑兽
+            __buildPaoshou(
+                buildingObj=buildingObj,
+                ridgeCurve=frontRidgeCurve,
+                count=bData.paoshou_count
+            )
+
+            # 给垂脊兽后留出跑兽的空间
+            ridgeUnit: bpy.types.Object= bData.ridgeFront_source
+            ridgeUnit_Length = (ridgeUnit.dimensions.x 
+                * (bData.DK/con.DEFAULT_DK))
+            paoLength = (ridgeEnd_Length 
+                + ridgeUnit_Length * bData.paoshou_count)
+            frontRidgeAfterObj.location.x += paoLength
+            chuishouObj.location.x += paoLength
 
     return {'FINISHED'}
 
@@ -1722,47 +1735,46 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     cornerRidgeBeforeObj.location.x += \
         ridgeEnd_Length
     
-    # 放置跑兽
-    __buildPaoshou(
-        buildingObj=buildingObj,
-        ridgeCurve=cornerRidgeCurve,
-        count=bData.paoshou_count
-    )
-    # 放置套兽
-    __buildTaoshou(buildingObj)
+    if bData.paoshou_count > 0:
+        # 放置跑兽
+        __buildPaoshou(
+            buildingObj=buildingObj,
+            ridgeCurve=cornerRidgeCurve,
+            count=bData.paoshou_count
+        )
 
-    # 构造垂脊兽后
-    cornerRidgeAfterObj = __arrayRidgeByCurve(buildingObj,
-                    sourceObj=bData.ridgeBack_source,
-                    ridgeCurve=cornerRidgeCurve,
-                    ridgeName=cornerRidgeName+'兽后')
-    # 留出跑兽的空间
-    ridgeUnit: bpy.types.Object= bData.ridgeFront_source
-    ridgeUnit_Length = ridgeUnit.dimensions.x * (bData.DK/con.DEFAULT_DK)
-    paoLength = (ridgeEnd_Length
-        + ridgeUnit_Length * bData.paoshou_count)
-    cornerRidgeAfterObj.location.x += paoLength +ridgeUnit_Length
-    # 摆放垂兽
-    loc = cornerRidgeCurve.location + Vector((paoLength,0,0))
-    chuishouObj = utils.copyObject(
-        sourceObj=bData.chuishou_source,
-        name='垂兽',
-        parentObj=tileRootObj,
-        location=loc,
-        singleUser=True)
-    # 根据斗口调整尺度
-    utils.resizeObj(chuishouObj,
-        bData.DK / con.DEFAULT_DK)
-    # 通过曲线变形，获得仰角
-    modCurve:bpy.types.CurveModifier = \
-            chuishouObj.modifiers.new('curve','CURVE')
-    modCurve.object = cornerRidgeCurve
-    # 四向对称
-    utils.addModifierMirror(
-        object=chuishouObj,
-        mirrorObj=tileRootObj,
-        use_axis=(True,True,False)
-    )
+        # 构造垂脊兽后
+        cornerRidgeAfterObj = __arrayRidgeByCurve(buildingObj,
+                        sourceObj=bData.ridgeBack_source,
+                        ridgeCurve=cornerRidgeCurve,
+                        ridgeName=cornerRidgeName+'兽后')
+        # 留出跑兽的空间
+        ridgeUnit: bpy.types.Object= bData.ridgeFront_source
+        ridgeUnit_Length = ridgeUnit.dimensions.x * (bData.DK/con.DEFAULT_DK)
+        paoLength = (ridgeEnd_Length
+            + ridgeUnit_Length * bData.paoshou_count)
+        cornerRidgeAfterObj.location.x += paoLength +ridgeUnit_Length
+        # 摆放垂兽
+        loc = cornerRidgeCurve.location + Vector((paoLength,0,0))
+        chuishouObj = utils.copyObject(
+            sourceObj=bData.chuishou_source,
+            name='垂兽',
+            parentObj=tileRootObj,
+            location=loc,
+            singleUser=True)
+        # 根据斗口调整尺度
+        utils.resizeObj(chuishouObj,
+            bData.DK / con.DEFAULT_DK)
+        # 通过曲线变形，获得仰角
+        modCurve:bpy.types.CurveModifier = \
+                chuishouObj.modifiers.new('curve','CURVE')
+        modCurve.object = cornerRidgeCurve
+        # 四向对称
+        utils.addModifierMirror(
+            object=chuishouObj,
+            mirrorObj=tileRootObj,
+            use_axis=(True,True,False)
+        )
 
     # 歇山戗脊，沿垂脊裁剪
     if bData.roof_style == con.ROOF_XIESHAN:
@@ -1777,26 +1789,31 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
             clear_outer=True,
             direction='Z'
         )
-        utils.addBisect(
-            object=cornerRidgeAfterObj,
-            pStart=Vector((0,-1,0)),
-            pEnd=Vector((0,1,0)),
-            pCut=pcut,
-            clear_outer=True,
-            direction='Z'
-        )
+        if bData.paoshou_count > 0:
+            utils.addBisect(
+                object=cornerRidgeAfterObj,
+                pStart=Vector((0,-1,0)),
+                pEnd=Vector((0,1,0)),
+                pCut=pcut,
+                clear_outer=True,
+                direction='Z'
+            )
         # 重建左右镜像
         utils.addModifierMirror(
             object=cornerRidgeBeforeObj,
             mirrorObj=tileRootObj,
             use_axis=(True,False,False)
         )
-        utils.addModifierMirror(
-            object=cornerRidgeAfterObj,
-            mirrorObj=tileRootObj,
-            use_axis=(True,False,False)
-        )        
-    
+        if bData.paoshou_count > 0:
+            utils.addModifierMirror(
+                object=cornerRidgeAfterObj,
+                mirrorObj=tileRootObj,
+                use_axis=(True,False,False)
+            )   
+
+    # 放置套兽
+    __buildTaoshou(buildingObj)
+
     return
 
 # 营造歇山的博脊

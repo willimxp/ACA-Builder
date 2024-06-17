@@ -199,6 +199,20 @@ def update_roofstyle(self, context:bpy.types.Context):
         bData['use_flyrafter'] = True
     return
 
+def update_rooftile(self, context:bpy.types.Context):
+    # 确认选中为building节点
+    buildingObj,bData,oData = utils.getRoot(context.object)
+    if buildingObj != None:
+        from . import buildRooftile
+        # 重新生成屋顶
+        funproxy = partial(
+            buildRooftile.buildTile,
+            buildingObj=buildingObj)
+        utils.fastRun(funproxy)
+    else:
+        utils.outputMsg("updated platform failed, context.object should be buildingObj")
+    return
+
 def hide_platform(self, context:bpy.types.Context):
     utils.hideLayer(context,'台基',self.is_showPlatform)
 
@@ -615,7 +629,8 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = '跑兽数量',
             default=6,
             min=0,
-            max=10
+            max=10,
+            update=update_rooftile
         )# type: ignore 
     paoshou_0_source:bpy.props.PointerProperty(
             name = "仙人",

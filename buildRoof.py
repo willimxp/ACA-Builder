@@ -200,15 +200,19 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
             if n in (0,1):
                 # 歇山的正心桁、下金桁按45度对称返回
                 # 但实际檐面的下金桁长度在摆放时，应该延伸到脊槫长度
-                purlin_x = liftPos[n].x + (bData.x_total-bData.y_total)/2
+                purlin_x = (liftPos[n].x 
+                    + (bData.x_total-bData.y_total)/2)
             else:
                 # 其他椽架，类似悬山，从下金桁交点，悬出固定值（这里取上檐出）
-                purlin_x = liftPos[1].x + (bData.x_total-bData.y_total)/2+ con.YANCHUAN_EX* dk
+                purlin_x = (liftPos[1].x 
+                    + (bData.x_total-bData.y_total)/2
+                    + con.YANCHUAN_EX* dk)
         # 庑殿为四坡顶，在转角对称的基础上做推山处理
         if roofStyle == con.ROOF_WUDIAN:            
             if n <= 1:
                 # 正心桁和下金桁不做推山
-                purlin_x = liftPos[n].x + (bData.x_total-bData.y_total)/2 
+                purlin_x = (liftPos[n].x 
+                    + (bData.x_total-bData.y_total)/2 )
             else:
                 # 推山公式见马炳坚p25
                 purlin_x -= 0.9**(n-1)*rafterSpan
@@ -660,9 +664,18 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     for x in range(len(net_x)):# 这里为庑殿，山面柱头不设梁架
         # 判断梁架是否与脊槫相交
         # 在庑殿中很明显，可能存在不合理的梁架
-        if abs(net_x[x]) - purlin_pos[-1].x > con.HENG_EXTEND*dk:
+        if (bData.roof_style in (con.ROOF_WUDIAN)
+            and abs(net_x[x]) > purlin_pos[-1].x - con.HENG_EXTEND*dk):
             # 忽略此副梁架
             continue
+        # 在歇山中，不做超过金槫交点的梁架
+        # 但放过山面梁架，做为排山梁架
+        if (bData.roof_style in (con.ROOF_XIESHAN)
+            and abs(net_x[x]) > purlin_pos[-1].x - con.HENG_EXTEND*dk
+            and x not in (0,len(net_x)-1)):
+            # 忽略此副梁架
+            continue
+
         # 纵向循环每一层梁架
         for n in range(len(purlin_pos)):  
             # 添加横梁

@@ -163,7 +163,7 @@ def update_dgHeight(self, context:bpy.types.Context):
 
 def update_roof(self, context:bpy.types.Context):
     # 确认选中为building节点
-    buildingObj,bdata,odata = utils.getRoot(context.object)
+    buildingObj,bData,oData = utils.getRoot(context.object)
     if buildingObj != None:
         from . import buildRoof
         # 重新生成屋顶
@@ -173,6 +173,17 @@ def update_roof(self, context:bpy.types.Context):
         utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated platform failed, context.object should be buildingObj")
+    return
+
+# 用户修改屋顶类型时的回调
+def update_roofstyle(self, context:bpy.types.Context):
+    buildingObj,bData,oData = utils.getRoot(context.object)
+    # 庑殿、歇山不可以不做飞椽
+    if bData.roof_style in (
+        con.ROOF_WUDIAN,
+        con.ROOF_XIESHAN
+    ):
+        bData['use_flyrafter'] = True
     return
 
 def hide_platform(self, context:bpy.types.Context):
@@ -471,37 +482,38 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("5","悬山卷棚顶",""),
             ],
             #update = update_roof,
+            update = update_roofstyle,
         ) # type: ignore
     rafter_count : bpy.props.IntProperty(
             name="椽架数量",
             default=8,
             min=0,max=10,
-            update = update_roof,
+            #update = update_roof,
         )# type: ignore 
     use_flyrafter :  bpy.props.BoolProperty(
             default=True,
-            name="添加飞椽",
-            update = update_roof,
+            name="使用飞椽",
+            #update = update_roof,
         )# type: ignore 
     use_wangban :  bpy.props.BoolProperty(
             default=True,
             name="添加望板",
-            update = update_roof,
+            #update = update_roof,
         )# type: ignore 
     qiqiao: bpy.props.IntProperty(
             name="起翘(椽径倍数)",
             default=4, 
-            update=update_roof
+            #update=update_roof
         )# type: ignore 
     chong: bpy.props.IntProperty(
             name="出冲(椽径倍数)",
             default=3, 
-            update=update_roof
+            #update=update_roof
         )# type: ignore 
     shengqi: bpy.props.IntProperty(
             name="生起(椽径倍数)",
             default=1, 
-            update=update_roof
+            #update=update_roof
         )# type: ignore 
     roof_qiao_point : bpy.props.FloatVectorProperty(
         name="翼角起翘参考点",

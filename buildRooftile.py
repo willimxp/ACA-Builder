@@ -56,11 +56,17 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
 
     if direction == 'X':
         tileCurve_name = "前后正身坡线"
-        dly_type = con.ACA_TYPE_RAFTER_DLY_FB
+        if bData.use_flyrafter:
+            dly_type = con.ACA_TYPE_RAFTER_DLY_FB
+        else:
+            dly_type = con.ACA_TYPE_RAFTER_LKM_FB
         proj_v = Vector((0,1,1))
     else:
         tileCurve_name = "两山正身坡线"
-        dly_type = con.ACA_TYPE_RAFTER_DLY_LR
+        if bData.use_flyrafter:
+            dly_type = con.ACA_TYPE_RAFTER_DLY_LR
+        else:
+            dly_type = con.ACA_TYPE_RAFTER_LKM_LR
         proj_v = Vector((1,0,1))
 
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
@@ -147,7 +153,10 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     
     if direction == 'X':
         sideCurve_name = "前后翼角坡线"
-        dly_type = con.ACA_TYPE_RAFTER_DLY_FB
+        if bData.use_flyrafter:
+            dly_type = con.ACA_TYPE_RAFTER_DLY_FB
+        else:
+            dly_type = con.ACA_TYPE_RAFTER_LKM_FB
         # 瓦口相对大连檐中心的偏移量
         # 从大连檐中心位移到大连檐的上侧边，然后位移勾滴延伸
         # 这里为大连檐坐标系，X为水平方向，Y为椽架垂直方向，Z为出檐方向
@@ -156,7 +165,10 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
             -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
     else:
         sideCurve_name = "两山翼角坡线"
-        dly_type = con.ACA_TYPE_RAFTER_DLY_LR
+        if bData.use_flyrafter:
+            dly_type = con.ACA_TYPE_RAFTER_DLY_LR
+        else:
+            dly_type = con.ACA_TYPE_RAFTER_LKM_LR
         ex_eaveTile = Vector((con.EAVETILE_EX*dk,
             con.DALIANYAN_H*dk/2,
             con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
@@ -309,13 +321,19 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     
     if direction == 'X':
         eaveCurve_name = "前后檐口瓦线"
-        dly_type = con.ACA_TYPE_RAFTER_DLY_FB
+        if bData.use_flyrafter:
+            dly_type = con.ACA_TYPE_RAFTER_DLY_FB
+        else:
+            dly_type = con.ACA_TYPE_RAFTER_LKM_FB
         proj_v1 = Vector((1,0,0))
         # 闪避1/4角梁
         shift = Vector((-con.JIAOLIANG_Y/4*dk * math.sqrt(2),0,0))
     else:
         eaveCurve_name = "两山檐口瓦线"
-        dly_type = con.ACA_TYPE_RAFTER_DLY_LR
+        if bData.use_flyrafter:
+            dly_type = con.ACA_TYPE_RAFTER_DLY_LR
+        else:
+            dly_type = con.ACA_TYPE_RAFTER_LKM_LR
         proj_v1 = Vector((0,1,0))
         # 闪避1/4角梁
         shift = Vector((0,-con.JIAOLIANG_Y/4*dk * math.sqrt(2),0))
@@ -1592,9 +1610,14 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
     # 第1点：子角梁头，但不用子角梁定位
     # 因为两侧的瓦面也是基于冲、翘系数来定位，与子角梁头已经解耦
     # 所以戗脊也应该与子角梁头解耦
+    # 如果做飞椽，以大连檐定位，否则以小连檐（里口木）定位
+    if bData.use_flyrafter:
+        lianyanType = con.ACA_TYPE_RAFTER_DLY_FB
+    else:
+        lianyanType = con.ACA_TYPE_RAFTER_LKM_FB
     # 从大连檐算起
     dlyObj:bpy.types.Object = \
-        utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_DLY_FB)
+        utils.getAcaChild(buildingObj,lianyanType)
     p1 = Vector(dlyObj.location)
     # 上檐出（檐椽平出+飞椽平出）
     ex = con.YANCHUAN_EX*dk

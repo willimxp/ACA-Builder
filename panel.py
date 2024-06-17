@@ -576,6 +576,13 @@ class ACA_PT_BPW(bpy.types.Panel):
                 bData, "use_flyrafter",
                 text='使用飞椽',toggle=True,
                 icon=checkbox_icon) 
+            # 庑殿、歇山不可以不做飞椽
+            if bData.roof_style in (
+                con.ROOF_WUDIAN,
+                con.ROOF_XIESHAN
+            ):
+                checkboxUseflyrafter.enabled = False
+
             # 添加望板
             if bData.use_wangban:
                 checkbox_icon = 'CHECKBOX_HLT'

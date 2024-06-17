@@ -3359,9 +3359,14 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
         ridge_x += con.SHANQIANG_WIDTH * dk - con.BEAM_DEEPTH * pd/2
 
     # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
+    # 如果做飞椽，以大连檐定位，否则以小连檐（里口木）定位
+    if bData.use_flyrafter:
+        lianyanType = con.ACA_TYPE_RAFTER_DLY_FB
+    else:
+        lianyanType = con.ACA_TYPE_RAFTER_LKM_FB
     # 大连檐中心
     dlyObj:bpy.types.Object = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_RAFTER_DLY_FB)
+        buildingObj,lianyanType)
     curve_p1 = Vector(dlyObj.location)
     # 位移到大连檐外沿
     offset = Vector((ridge_x,con.DALIANYAN_H*dk/2,0))

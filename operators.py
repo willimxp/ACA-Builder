@@ -61,7 +61,7 @@ class ACA_OT_update_building(bpy.types.Operator):
     bl_idname="aca.update_building"
     bl_label = "添加新建筑"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '根据选择的模版，自动生成建筑的各个构件'
+    bl_description = '根据参数的修改，重新生成建筑'
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -99,14 +99,14 @@ class ACA_OT_reset_floor(bpy.types.Operator):
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(
             operator = self,
-            title="重设柱网"
+            title="重设柱网",
             )
 
     def draw(self, context):
         row = self.layout
         row.label(
-            text=("请注意"),
-            icon='QUESTION'
+            text=("请注意，柱网数据将重新生成。"),
+            icon='ERROR'
             )
         row = self.layout
         row.label(
@@ -118,7 +118,7 @@ class ACA_OT_reset_floor(bpy.types.Operator):
 class ACA_OT_del_piller(bpy.types.Operator):
     bl_idname="aca.del_piller"
     bl_label = "减柱"
-    bl_description = "删除柱子，先选择1根以上的柱子"
+    bl_description = "删除柱子（先选择1根以上的柱子）"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -148,7 +148,7 @@ class ACA_OT_del_piller(bpy.types.Operator):
 class ACA_OT_add_fang(bpy.types.Operator):
     bl_idname="aca.add_fang"
     bl_label = "连接"
-    bl_description = "在柱间添加枋，先选择2根以上的柱子"
+    bl_description = "在柱间添加枋（先选择2根以上的柱子）"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -169,7 +169,7 @@ class ACA_OT_add_fang(bpy.types.Operator):
 class ACA_OT_del_fang(bpy.types.Operator):
     bl_idname="aca.del_fang"
     bl_label = "删除"
-    bl_description = "在柱间删除枋，先选择1根以上的枋"
+    bl_description = "在柱间删除枋（先选择1根以上的枋）"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -186,6 +186,7 @@ class ACA_OT_reset_wall_layout(bpy.types.Operator):
     bl_idname="aca.reset_wall_layout"
     bl_label = "更新所有墙体"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_description = "批量生成各个墙体"
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -206,7 +207,7 @@ class ACA_OT_reset_wall_layout(bpy.types.Operator):
 class ACA_OT_add_wall(bpy.types.Operator):
     bl_idname="aca.add_wall"
     bl_label = "加墙"
-    bl_description = "在柱间加墙，先选择2根以上的柱子"
+    bl_description = "在柱间加墙（先选择2根以上的柱子）"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -229,7 +230,7 @@ class ACA_OT_add_wall(bpy.types.Operator):
 class ACA_OT_add_door(bpy.types.Operator):
     bl_idname="aca.add_door"
     bl_label = "加门"
-    bl_description = "在柱间加隔扇，先选择2根以上的柱子"
+    bl_description = "在柱间加隔扇（先选择2根以上的柱子）"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -252,7 +253,7 @@ class ACA_OT_add_door(bpy.types.Operator):
 class ACA_OT_add_window(bpy.types.Operator):
     bl_idname="aca.add_window"
     bl_label = "加窗"
-    bl_description = "在柱间加槛窗，先选择2根以上的柱子"
+    bl_description = "在柱间加槛窗（先选择2根以上的柱子）"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -323,6 +324,7 @@ class ACA_OT_build_dougong(bpy.types.Operator):
     bl_idname="aca.build_dougong"
     bl_label = "斗栱营造"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_description = "批量生成所有的斗栱"
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -344,6 +346,7 @@ class ACA_OT_build_roof(bpy.types.Operator):
     bl_idname="aca.build_roof"
     bl_label = "屋顶营造"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_description = "重新生成屋顶的梁架、椽架、瓦作"
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -366,6 +369,7 @@ class ACA_OT_default_dk(bpy.types.Operator):
     bl_idname="aca.default_dk"
     bl_label = "计算斗口推荐值"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_description = "根据柱高、明间宽度，计算最合适的斗口值"
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -407,7 +411,7 @@ class ACA_OT_save_template(bpy.types.Operator):
 class ACA_OT_del_template(bpy.types.Operator):
     bl_idname="aca.del_template"
     bl_label = "删除模版"
-    bl_description = '删除当前模版'
+    bl_description = '从配置文件中删除当前模版'
 
     @classmethod
     def poll(cls, context):

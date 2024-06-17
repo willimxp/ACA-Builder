@@ -122,9 +122,19 @@ class ACA_PT_props(bpy.types.Panel):
 
             # 更新建筑
             row = box.row(align=True)
-            row.operator(
+            col = row.column(align=True)
+            col.operator(
                 "aca.update_building",icon='PLAY',
                 depress=True,text='更新建筑'
+            )
+            # 自动更新
+            col = row.column(align=True)
+            col.prop(
+                data=bpy.context.scene.ACA_data,
+                property='is_auto_rebuild',
+                toggle=True,
+                icon='FF',
+                text=''
             )
 
 

@@ -36,11 +36,15 @@ def p_filter(self, object:bpy.types.Object):
 
 # 更新建筑，但不重设柱网
 def update_building(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
         from . import buildFloor
-        # buildFloor.buildFloor(buildingObj)
         funproxy = partial(
                 buildFloor.buildFloor,
                 buildingObj=buildingObj)
@@ -51,18 +55,27 @@ def update_building(self, context:bpy.types.Context):
     
 # 更新建筑，但不重设柱网
 def reset_building(self, context:bpy.types.Context):
-    # 确认选中为building节点
-    buildingObj,bdata,odata = utils.getRoot(context.object)
-    if buildingObj != None:
-        # 调用营造序列
-        from . import buildFloor
-        funproxy = partial(
-                buildFloor.resetFloor,
-                buildingObj=buildingObj)
-        utils.fastRun(funproxy)
-    else:
-        utils.outputMsg("updated building failed, context.object should be buildingObj")
-    return
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
+    # # 确认选中为building节点
+    # buildingObj,bdata,odata = utils.getRoot(context.object)
+    # if buildingObj != None:
+    #     # 调用营造序列
+    #     from . import buildFloor
+    #     funproxy = partial(
+    #             buildFloor.resetFloor,
+    #             buildingObj=buildingObj)
+    #     utils.fastRun(funproxy)
+    # else:
+    #     utils.outputMsg("updated building failed, context.object should be buildingObj")
+    # return
+
+    # 直接调用operator，并且调用invoke，弹出确认提示
+    # https://docs.blender.org/api/current/bpy.types.Operator.html#invoke-function
+    bpy.ops.aca.reset_floor('INVOKE_DEFAULT')
 
 def update_platform(self, context:bpy.types.Context):
     # 确认选中为building节点
@@ -287,22 +300,22 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     x_1 : bpy.props.FloatProperty(
             name = "明间宽度",
             min = 0, 
-            #update = update_building
+            update = update_building
         )# type: ignore
     x_2 : bpy.props.FloatProperty(
             name = "次间宽度",
             min = 0, 
-            #update = update_building
+            update = update_building
         )# type: ignore
     x_3 : bpy.props.FloatProperty(
             name = "梢间宽度",
             min = 0, 
-            #update = update_building
+            update = update_building
         )# type: ignore
     x_4 : bpy.props.FloatProperty(
             name = "尽间宽度",
             min = 0, 
-            #update = update_building
+            update = update_building
         )# type: ignore
     y_rooms : bpy.props.IntProperty(
             name = "进深间数",
@@ -313,17 +326,17 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     y_1 : bpy.props.FloatProperty(
             name = "明间深度",
             min = 0, 
-            #update = update_building
+            update = update_building
         )# type: ignore
     y_2 : bpy.props.FloatProperty(
             name = "次间深度",
             min = 0, 
-            #update = update_building
+            update = update_building
         )# type: ignore
     y_3 : bpy.props.FloatProperty(
             name = "梢间深度",
             min = 0, 
-            #update = update_building
+            update = update_building
         )# type: ignore
     piller_net : bpy.props.StringProperty(
             name = "保存的柱网列表"
@@ -715,6 +728,10 @@ class ACA_data_scene(bpy.types.PropertyGroup):
     is_auto_redraw : bpy.props.BoolProperty(
             default = True,
             name = "是否实时重绘"
+        ) # type: ignore
+    is_auto_rebuild : bpy.props.BoolProperty(
+            default = True,
+            name = "是否实时重建"
         ) # type: ignore
     template : bpy.props.EnumProperty(
             name = "模版",

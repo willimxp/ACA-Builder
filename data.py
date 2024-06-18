@@ -549,6 +549,14 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             max=1.0,
             description="庑殿顶两山坡度的调整系数，标准值为0.9，设置为1.0即不做推山"
         )# type: ignore
+    juzhe : bpy.props.EnumProperty(
+            name = "举折系数",
+            items = [
+                ("0","   举折系数：默认","[0.5,0.7,0.8,0.9]"),
+                ("1","   举折系数：陡峭","[0.5,1,1.5,2]"),
+                ("2","   举折系数：平缓","[0.5,0.65,0.75,0.9]"),
+            ],
+        ) # type: ignore
     roof_qiao_point : bpy.props.FloatVectorProperty(
         name="翼角起翘参考点",
         subtype='XYZ',

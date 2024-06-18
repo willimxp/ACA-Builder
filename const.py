@@ -124,8 +124,9 @@ class ACA_Consts(object):
     HENG_COMMON_D = 4                   # 正心桁直径(DK)，梁思成数据
     HENG_EXTEND = HENG_COMMON_D * 2     # 桁檩出梢(DK)
     FUJIMU_D = 4                        # 伏脊木直径(DK)
-    LIFT_RATIO = [0.5,0.7,0.8,0.9]      # 梁思成图纸中采用的系数，可以进行比较
-    #LIFT_RATIO = [0.5,0.65,0.75,0.9]   # 清工程做法则例的推荐系数
+    LIFT_RATIO_DEFAULT = [0.5,0.7,0.8,0.9]      # 梁思成图纸中采用的系数，可以进行比较
+    LIFT_RATIO_BIG = [0.5,1,1.5,2]              # 尝试在亭子上使用
+    LIFT_RATIO_SMALL = [0.5,0.65,0.75,0.9]      # 清工程做法则例的推荐系数
     JUANPENG_SPAN = HENG_COMMON_D * 3   # 卷棚顶的两根脊桁间距(DK)
 
     # 梁架

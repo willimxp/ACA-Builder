@@ -83,38 +83,6 @@ def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
 
     return rafterRootObj
 
-# 举架数据计算，与屋顶样式无关
-# 按照清则例的举架算法，引入每一举的举架系数LIFT_RATIO
-# 根据实际的进深，计算出实际的举架高度
-# 返回的是纵切面上的二维坐标（x值在Y-axis，y值在Z-axis）
-def __getLiftPos(buildingObj:bpy.types.Object): 
-    # 载入数据
-    bData : acaData = buildingObj.ACA_data
-    dk = bData.DK
-    buildingDeepth = bData.y_total      # 建筑进深
-    rafterCount = bData.rafter_count    # 步架数
-    rafterSpan = buildingDeepth / rafterCount   # 步架宽
-
-    # 步架宽，这里按照常见的步架宽度相等处理，实际有些特例可能是不相等的
-    if rafterCount%2 == 0:
-        rafterSpan = buildingDeepth / rafterCount
-
-    # 举架坐标，仅计算纵截面的二维数据
-    liftPos = []
-    # 根据举架系数，逐个桁架上举
-    for n in range(int(rafterCount/2)+1):
-        # 进深方向内推一步架  
-        purlin_x = buildingDeepth/2 - rafterSpan * n
-        # 高度方向逐级上举
-        if n == 0 :
-            purlin_y = 0
-        else:
-            purlin_y += rafterSpan * con.LIFT_RATIO[n-1]
-        liftPos.append(Vector((purlin_x,purlin_y)))
-
-    # 返回举架数据集
-    return liftPos
-
 # 计算举架数据
 # 1、根据不同的屋顶样式生成，自动判断了桁在檐面需要延长的长度
 # 2、根据是否带斗栱，自动判断了是否插入挑檐桁
@@ -145,6 +113,13 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
     
     # 计算三维的桁檩交叉点
     purlin_pos = []
+    lift_ratio = []
+    if bData.juzhe == '0':
+        lift_ratio = con.LIFT_RATIO_DEFAULT
+    if bData.juzhe == '1':
+        lift_ratio = con.LIFT_RATIO_BIG
+    if bData.juzhe == '2':
+        lift_ratio = con.LIFT_RATIO_SMALL
 
     # 1、有斗栱建筑，添加一根挑檐桁
     liftEavePurlin = 0    
@@ -167,7 +142,7 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
         purlin_z = con.HENG_TIAOYAN_D / 2 * dk
         purlin_pos.append(Vector((purlin_x,purlin_y,purlin_z)))
         # 挑檐部分的举架高度
-        liftEavePurlin = purlin_z + dgExtend * con.LIFT_RATIO[0] \
+        liftEavePurlin = purlin_z + dgExtend * lift_ratio[0] \
             - (con.HENG_COMMON_D-con.HENG_TIAOYAN_D)*dk/2   # 减去挑檐桁、正心桁的直径差，向下压实
 
     # 计算纵截面的二维举架数据
@@ -181,7 +156,7 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
             purlin_y = 0
         else:
             # 每级举架高度 = 步架 * 举架系数
-            purlin_y += rafterSpan * con.LIFT_RATIO[n-1]
+            purlin_y += rafterSpan * lift_ratio[n-1]
         liftPos.append(Vector((purlin_x,purlin_y)))
 
     # 2、定位正心桁、上下金桁、脊桁    

@@ -1667,6 +1667,20 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
     p0 = Vector((x,y,z))
     ridgeCurveVerts.append(p0)
 
+    # 第2点：基于老角梁头，
+    # 获取子角梁
+    cbObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_CORNER_BEAM)
+    # 向上位移:半桁径+椽径+望板高+灰泥层高
+    offset = (con.HENG_COMMON_D/2 
+            + con.YUANCHUAN_D 
+            + con.WANGBAN_H 
+            + con.ROOFMUD_H
+            + con.DALIANYAN_H*dk)*dk
+    p1 = utils.getObjectHeadPoint(cbObj)
+    p1 += Vector((0,0,offset))
+    ridgeCurveVerts.append(p1)
+
     # 庑殿垂脊做到顶部的正脊
     if bData.roof_style == con.ROOF_WUDIAN:
         ridgeRange = range(len(purlin_pos))

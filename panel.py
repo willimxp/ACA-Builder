@@ -577,6 +577,10 @@ class ACA_PT_BPW(bpy.types.Panel):
             inputTuishan = toolBar.column(align=True)
             inputTuishan.prop(
                 bData, "tuishan",text='推山系数',slider=True)
+            # 举折系数
+            droplistJuzhe = toolBar.column(align=True)
+            droplistJuzhe.prop(
+                bData, "juzhe",text='',)
 
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)

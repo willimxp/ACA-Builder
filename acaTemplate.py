@@ -194,7 +194,8 @@ def openTemplate(buildingObj:bpy.types.Object,
                     if type == 'str':
                         bData[tag] = value
                         # 特殊处理下拉框
-                        if tag == 'roof_style':
+                        if tag in ('roof_style',
+                                   'juzhe'):
                             bData[tag] = int(value)
                     elif type == 'float':
                         bData[tag] = round(float(value),2)

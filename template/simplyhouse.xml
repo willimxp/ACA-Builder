@@ -1028,19 +1028,19 @@
 		<platform_height type="float">1.0</platform_height>
 		<platform_extend type="float">1.08</platform_extend>
 		<x_rooms type="int">1</x_rooms>
-		<x_1 type="float">6.0</x_1>
+		<x_1 type="float">4.0</x_1>
 		<x_2 type="float">5.28</x_2>
 		<x_3 type="float">5.28</x_3>
 		<x_4 type="float">1.76</x_4>
 		<y_rooms type="int">1</y_rooms>
-		<y_1 type="float">6.0</y_1>
+		<y_1 type="float">4.0</y_1>
 		<y_2 type="float">3.52</y_2>
 		<y_3 type="float">1.76</y_3>
 		<piller_net type="str" />
 		<wall_net type="str" />
-		<fang_net type="str" />
+		<fang_net type="str">1/0#1/1,0/0#1/0,0/1#1/1,0/0#0/1,</fang_net>
 		<piller_source type="Object">梭柱</piller_source>
-		<piller_height type="float">4.93</piller_height>
+		<piller_height type="float">4.0</piller_height>
 		<piller_diameter type="float">0.45</piller_diameter>
 		<use_smallfang type="bool">True</use_smallfang>
 		<wall_source type="Object">墙体</wall_source>
@@ -1062,8 +1062,8 @@
 		<rafter_count type="int">6</rafter_count>
 		<use_flyrafter type="bool">True</use_flyrafter>
 		<use_wangban type="bool">True</use_wangban>
-		<qiqiao type="int">4</qiqiao>
-		<chong type="int">3</chong>
+		<qiqiao type="int">8</qiqiao>
+		<chong type="int">4</chong>
 		<shengqi type="int">1</shengqi>
 		<tuishan type="float">1.0</tuishan>
 		<bofeng_source type="Object">博缝板</bofeng_source>
@@ -1081,7 +1081,7 @@
 		<baoding_source type="Object">宝顶</baoding_source>
 		<chuishou_source type="Object">垂兽</chuishou_source>
 		<taoshou_source type="Object">套兽</taoshou_source>
-		<paoshou_count type="int">7</paoshou_count>
+		<paoshou_count type="int">3</paoshou_count>
 		<paoshou_0_source type="Object">0-骑凤仙人</paoshou_0_source>
 		<paoshou_1_source type="Object">1-龙</paoshou_1_source>
 		<paoshou_2_source type="Object">2-凤</paoshou_2_source>
@@ -1100,5 +1100,6 @@
 		<mat_brick_1 type="Object">方砖缦地</mat_brick_1>
 		<mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
 		<mat_brick_3 type="Object">条砖横铺</mat_brick_3>
+		<juzhe type="str">1</juzhe>
 	</template>
 </templates>

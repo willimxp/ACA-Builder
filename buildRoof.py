@@ -215,7 +215,7 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
                     + (bData.x_total-bData.y_total)/2 )
             else:
                 # 推山公式见马炳坚p25
-                purlin_x -= 0.9**(n-1)*rafterSpan
+                purlin_x -= bData.tuishan**(n-1)*rafterSpan
 
         # 前后檐可直接使用举架数据
         purlin_y = liftPos[n].x
@@ -783,12 +783,14 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     beamObjects.append(jiaobeiObj)
         
     # 合并梁架各个部件
-    beamSetObj = utils.joinObjects(beamObjects)
-    beamSetObj.name = '梁架'
-    beamSetObj.data.name = '梁架'
-    modBevel:bpy.types.BevelModifier = \
-        beamSetObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_HIGH
+    # 攒尖顶时，不做梁架
+    if beamObjects != []:
+        beamSetObj = utils.joinObjects(beamObjects)
+        beamSetObj.name = '梁架'
+        beamSetObj.data.name = '梁架'
+        modBevel:bpy.types.BevelModifier = \
+            beamSetObj.modifiers.new('Bevel','BEVEL')
+        modBevel.width = con.BEVEL_HIGH
                            
     return
 

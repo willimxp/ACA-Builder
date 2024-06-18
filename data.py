@@ -542,6 +542,13 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=1, 
             #update=update_roof
         )# type: ignore 
+    tuishan: bpy.props.FloatProperty(
+            name="推山系数", 
+            default=0.9,
+            min=0.1,
+            max=1.0,
+            description="庑殿顶两山坡度的调整系数，标准值为0.9，设置为1.0即不做推山"
+        )# type: ignore
     roof_qiao_point : bpy.props.FloatVectorProperty(
         name="翼角起翘参考点",
         subtype='XYZ',
@@ -612,6 +619,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     chiwen_source:bpy.props.PointerProperty(
             name = "螭吻",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    baoding_source:bpy.props.PointerProperty(
+            name = "宝顶",
             type = bpy.types.Object,
             poll = p_filter
         )# type: ignore 

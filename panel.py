@@ -569,14 +569,18 @@ class ACA_PT_BPW(bpy.types.Panel):
             inputChong = toolBar.column(align=True)
             inputChong.prop(
                 bData, "chong",text='出冲(椽径)') 
-             # 起翘
+            # 起翘
             inputQiao = toolBar.column(align=True)
             inputQiao.prop(
                 bData, "qiqiao",text='起翘(椽径)')
+            # 推山
+            inputTuishan = toolBar.column(align=True)
+            inputTuishan.prop(
+                bData, "tuishan",text='推山系数',slider=True)
 
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)
-            # 添加飞椽
+            # 是否使用飞椽
             if bData.use_flyrafter:
                 checkbox_icon = 'CHECKBOX_HLT'
             else:
@@ -593,16 +597,16 @@ class ACA_PT_BPW(bpy.types.Panel):
             ):
                 checkboxUseflyrafter.enabled = False
 
-            # 添加望板
-            if bData.use_wangban:
-                checkbox_icon = 'CHECKBOX_HLT'
-            else:
-                checkbox_icon = 'CHECKBOX_DEHLT'
-            checkboxUseWangban = toolBar.column(align=True)
-            checkboxUseWangban.prop(
-                bData, "use_wangban",
-                toggle=True,text='使用望板',
-                icon=checkbox_icon) 
+            # # 是否使用望板
+            # if bData.use_wangban:
+            #     checkbox_icon = 'CHECKBOX_HLT'
+            # else:
+            #     checkbox_icon = 'CHECKBOX_DEHLT'
+            # checkboxUseWangban = toolBar.column(align=True)
+            # checkboxUseWangban.prop(
+            #     bData, "use_wangban",
+            #     toggle=True,text='使用望板',
+            #     icon=checkbox_icon) 
             
             # 只有庑殿、歇山，可以设置冲、翘
             if bData.roof_style not in (
@@ -610,6 +614,10 @@ class ACA_PT_BPW(bpy.types.Panel):
                     con.ROOF_XIESHAN):
                 inputChong.enabled = False
                 inputQiao.enabled = False
+
+            # 只有庑殿可以设置推山
+            if bData.roof_style != con.ROOF_WUDIAN:
+                inputTuishan.enabled = False
 
 # “瓦作属性”子面板
 class ACA_PT_tiles(bpy.types.Panel):

@@ -864,6 +864,21 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
                 + con.YUANCHUAN_D       # 椽架厚度
                 + con.WANGBAN_H         # 望板厚度
                 + con.ROOFMUD_H)*dk)    # 灰泥厚度
+
+    # 攒尖顶仅做宝顶
+    if (bData.x_total == bData.y_total 
+        and bData.roof_style==con.ROOF_WUDIAN):
+        baodingObj = utils.copyObject(
+            sourceObj=bData.baoding_source,
+            name='宝顶',
+            location=(0,0,zhengji_z),
+            parentObj=tileRootObj)
+        # 根据斗口调整尺度
+        utils.resizeObj(baodingObj,
+            bData.DK / con.DEFAULT_DK)
+        # 退出，不再做后续的正脊和螭吻
+        return
+    
     # 庑殿正脊适当调整（垂脊相交的方式与歇山、悬山等略有不同）
     if bData.roof_style == con.ROOF_WUDIAN:
         # 向下调减1斗口（纯粹为了好看，没啥依据）
@@ -1183,7 +1198,7 @@ def __arrayRidgeByCurve(buildingObj: bpy.types.Object,
         frontRidgeObj.modifiers.new('镜像','MIRROR')
     modMirror.mirror_object = tileRootObj
     modMirror.use_axis = (True,True,False)
-    modMirror.use_bisect_axis = (False,True,False)
+    modMirror.use_bisect_axis = (True,True,False)
 
     return frontRidgeObj
 
@@ -1394,6 +1409,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         )
 
     # 硬山、悬山：做垂脊兽前、端头盘子、跑兽
+    # 歇山不做脊兽时，做垂脊兽前和端头盘子
     if (
             bData.roof_style in (
                 con.ROOF_YINGSHAN,
@@ -1879,7 +1895,7 @@ def __buildRidge(buildingObj: bpy.types.Object,
     
     # 营造顶部正脊
     if bData.roof_style not in (con.ROOF_XUANSHAN_JUANPENG):
-        __buildTopRidge(buildingObj,rafter_pos)
+         __buildTopRidge(buildingObj,rafter_pos)
     
     # 营造前后垂脊（不涉及庑殿，自动判断硬山/悬山、歇山做法的不同）
     if bData.roof_style not in (con.ROOF_WUDIAN):

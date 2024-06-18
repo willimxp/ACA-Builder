@@ -96,9 +96,23 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
             and direction == 'Y' \
             and n>1: continue
         # 向上位移:半桁径+椽径+望板高+灰泥层高
-        offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
-                  + con.WANGBAN_H + con.ROOFMUD_H)*dk
-        point = purlin_pos[n]*proj_v+Vector((0,0,offset))
+        offset_rafter = Vector((0,0,
+            (con.HENG_COMMON_D/2 
+            + con.YUANCHUAN_D 
+            + con.WANGBAN_H)*dk))
+        # 为了与屋脊更好的匹配，将灰背的位移按照椽架斜率旋转
+        offset_mud = Vector((0,0,con.ROOFMUD_H*dk))
+        if n != len(purlin_pos)-1:
+            purlinAngle = math.atan(
+                    (purlin_pos[n+1].z-purlin_pos[n].z)
+                    /(purlin_pos[n].y-purlin_pos[n+1].y)
+                )
+        if direction == 'X':
+            purlinEular = Euler((-purlinAngle,0,0),'XYZ')
+        else:
+            purlinEular = Euler((0,purlinAngle,0),'XYZ')
+        offset_mud.rotate(purlinEular)        
+        point = purlin_pos[n]*proj_v + offset_rafter + offset_mud
         tileCurveVerts.append(point)
 
     # 卷棚的前后坡，增加辅助点
@@ -195,9 +209,20 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
         # 第3-5点，从举架定位点做偏移
         for n in range(len(purlin_pos)):
             # 垂直偏移瓦作层高度：半桁+椽架+望板+灰泥层
-            offset_z = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
-                    + con.WANGBAN_H + con.ROOFMUD_H)*dk
-            point = purlin_pos[n] + Vector((0,0,offset_z))
+            offset_rafter = Vector((0,0,
+                (con.HENG_COMMON_D/2 
+                + con.YUANCHUAN_D 
+                + con.WANGBAN_H)*dk))
+            # 为了与屋脊更好的匹配，将灰背的位移按照椽架斜率旋转
+            offset_mud = Vector((0,0,con.ROOFMUD_H*dk))
+            if n != len(purlin_pos)-1:
+                purlinAngle = math.atan(
+                        (purlin_pos[n+1].z-purlin_pos[n].z)
+                        /(purlin_pos[n].y-purlin_pos[n+1].y)
+                    )
+            purlinEular = Euler((-purlinAngle,0,0),'XYZ')
+            offset_mud.rotate(purlinEular)   
+            point = purlin_pos[n] + offset_rafter + offset_mud
             # 对齐檐口横坐标
             point.x = p1.x
             sideCurveVerts.append(point)
@@ -278,10 +303,23 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
                 # 檐出、冲出、起翘,不做Y方向
                 point += offset_cq * Vector((1,0,1))
             # 垂直偏移瓦作层高度：半桁+椽架+望板+灰泥层
-            offset_z = Vector((0,0,
-                    (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
-                    + con.WANGBAN_H + con.ROOFMUD_H)*dk))
-            point += offset_z
+            offset_rafter = Vector((0,0,
+                (con.HENG_COMMON_D/2 
+                + con.YUANCHUAN_D 
+                + con.WANGBAN_H)*dk))
+            # 为了与屋脊更好的匹配，将灰背的位移按照椽架斜率旋转
+            offset_mud = Vector((0,0,con.ROOFMUD_H*dk))
+            if n != len(purlin_pos)-1:
+                purlinAngle = math.atan(
+                        (purlin_pos[n+1].z-purlin_pos[n].z)
+                        /(purlin_pos[n].y-purlin_pos[n+1].y)
+                    )
+            if direction == 'X':
+                purlinEular = Euler((-purlinAngle,0,0),'XYZ')
+            else:
+                purlinEular = Euler((0,purlinAngle,0),'XYZ')
+            offset_mud.rotate(purlinEular)        
+            point += + offset_rafter + offset_mud
             sideCurveVerts.append(point)
 
     # 绘制翼角瓦垄线

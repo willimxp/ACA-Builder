@@ -294,7 +294,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             dianbanObj = utils.addCube(
                 name="垫板",
                 location=loc,
-                scale=dim,
+                dimension=dim,
                 parent=rafterRootObj,
             )
             if (n!=len(purlin_pos)-1            # 除了脊桁
@@ -325,7 +325,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             hengfangObj = utils.addCube(
                 name="金/脊枋",
                 location=loc,
-                scale=dim,
+                dimension=dim,
                 parent=rafterRootObj,
             )
             if (n!=len(purlin_pos)-1            # 除了脊桁
@@ -413,7 +413,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 dianbanObj = utils.addCube(
                     name="垫板",
                     location=loc,
-                    scale=dim,
+                    dimension=dim,
                     rotation=Vector((0, 0, math.radians(90))),
                     parent=rafterRootObj,
                 )
@@ -439,7 +439,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     name="金/脊枋",
                     location=loc,
                     rotation=Vector((0, 0, math.radians(90))),
-                    scale=dim,
+                    dimension=dim,
                     parent=rafterRootObj,
                 )
                 utils.addModifierMirror(
@@ -739,7 +739,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 shuzhuCopyObj = utils.addCube(
                     name="垫板",
                     location=shuzhu_loc,
-                    scale=shuzhu_dimensions,
+                    dimension=shuzhu_dimensions,
                     parent=rafterRootObj,
                 )
                 if n!=len(purlin_pos)-1:
@@ -835,7 +835,7 @@ def __buildLKM(buildingObj:bpy.types.Object,
     LKMObj = utils.addCube(
                 name=LKM_name,
                 location=LKM_loc,
-                scale=LKM_scale,
+                dimension=LKM_scale,
                 rotation=LKM_rotate,
                 parent=rafterRootObj,
             )
@@ -1593,7 +1593,7 @@ def __buildFlyrafterWangban(buildingObj,purlin_pos,direction):
     fwbObj = utils.addCube(
         name=frwName,
         location=frwLoc,
-        scale=(frwDeepth,frwWidth,con.WANGBAN_H*dk),
+        dimension=(frwDeepth,frwWidth,con.WANGBAN_H*dk),
         rotation=flyrafterObj.rotation_euler, 
         parent=rafterRootObj,
     )
@@ -1664,7 +1664,7 @@ def __buildDLY(buildingObj,purlin_pos,direction):
         name=DLY_name,
         location=DLY_loc,
         rotation=DLY_rotate,
-        scale=DLY_scale,
+        dimension=DLY_scale,
         parent=rafterRootObj,
     )
     DLY_Obj.ACA_data['aca_obj'] = True

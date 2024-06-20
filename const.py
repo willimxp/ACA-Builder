@@ -167,7 +167,9 @@ class ACA_Consts(object):
     BOOLEAN_TYPE = 'FAST'               # boolean.solver类型：FAST/EXACT
     DEFAULT_PILLER_HEIGHT = 0.8         # 默认柱高，取明间的0.8，马炳坚p4
     SANSHUI_WIDTH = 20                  # 散水宽度(DK)
-    SANSHUI_HEIGHT = 0.02
+    SANSHUI_HEIGHT = 0.02               # 散水高度(m)
+    WALL_BOTTOM_RATE = 1/3              # 墙体下碱的高度比例
+    WALL_SHRINK = 0.015                 # 墙体退花碱厚度(m)
 
     # 瓦作类
     # 屋瓦灰背层高度，用于计算铺瓦的高度

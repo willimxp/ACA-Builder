@@ -32,7 +32,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
             0,0,
             pHeight/2-con.STEP_HEIGHT/2
         ),
-        scale=(
+        dimension=(
             bData.x_total+bData.piller_diameter*2,
             bData.y_total+bData.piller_diameter*2,
             con.STEP_HEIGHT
@@ -70,7 +70,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
                 pDeepth/2-stoneWidth/2,
                 pHeight/2-con.STEP_HEIGHT/2
             ),
-            scale=(
+            dimension=(
                 net_x[n+1]-net_x[n],
                 stoneWidth,
                 con.STEP_HEIGHT
@@ -98,7 +98,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
                 (net_y[n+1]+net_y[n])/2,
                 pHeight/2-con.STEP_HEIGHT/2
             ),
-            scale=(
+            dimension=(
                 stoneWidth,
                 net_y[n+1]-net_y[n],
                 con.STEP_HEIGHT
@@ -127,7 +127,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
              -con.STEP_HEIGHT
              -cornerPillerH/2)
         ),
-        scale=(
+        dimension=(
             stoneWidth,             # 与阶条石同宽
             stoneWidth,             # 与阶条石同宽
             cornerPillerH
@@ -150,7 +150,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
             0,pDeepth/2- con.STEP_HEIGHT/2,
             (pHeight/2 - con.STEP_HEIGHT - h/2)
         ),
-        scale=(
+        dimension=(
             pWidth - stoneWidth*2,    # 台基宽度 - 两头的角柱（与阶条石同宽）
             con.STEP_HEIGHT,             # 与阶条石同宽
             h
@@ -173,7 +173,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
             0,
             (pHeight/2 - con.STEP_HEIGHT - h/2)
         ),
-        scale=(
+        dimension=(
             con.STEP_HEIGHT,             # 与阶条石同宽
             pDeepth - stoneWidth*2,    # 台基宽度 - 两头的角柱（与阶条石同宽）
             h
@@ -197,7 +197,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
             (-pHeight/2
              +con.GROUND_BORDER/2)
         ),
-        scale=(
+        dimension=(
             pWidth+con.GROUND_BORDER*2,             # 与阶条石同宽
             pDeepth+con.GROUND_BORDER*2,             # 与阶条石同宽
             con.GROUND_BORDER
@@ -228,7 +228,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         location=(
             0,0,
             -pHeight/2),
-        scale=(
+        dimension=(
             pWidth + con.SANSHUI_WIDTH*dk*2,
             pDeepth + con.SANSHUI_WIDTH*dk*2,
             con.SANSHUI_HEIGHT
@@ -293,7 +293,7 @@ def __drawStep(stepProxy:bpy.types.Object):
             (-pHeight/2
              +con.GROUND_BORDER/2)
         ),
-        scale=(
+        dimension=(
             tuchenWidth,
             pDeepth+con.GROUND_BORDER*2,    
             con.GROUND_BORDER
@@ -321,7 +321,7 @@ def __drawStep(stepProxy:bpy.types.Object):
         name='散水',
         location=loc,
         rotation=stepProxy.rotation_euler,
-        scale=(
+        dimension=(
             sanshuiWidth,
             pDeepth,    
             con.SANSHUI_HEIGHT
@@ -337,7 +337,7 @@ def __drawStep(stepProxy:bpy.types.Object):
             con.STEP_HEIGHT*con.STEP_RATIO/2,
             con.GROUND_BORDER/2 - con.STEP_HEIGHT/2
         ),
-        scale=(
+        dimension=(
             stoneWidth,             
             pDeepth - con.STEP_HEIGHT*con.STEP_RATIO,
             pHeight-con.GROUND_BORDER-con.STEP_HEIGHT
@@ -366,7 +366,7 @@ def __drawStep(stepProxy:bpy.types.Object):
             0,
             con.GROUND_BORDER/2
         ),
-        scale=(
+        dimension=(
             # 宽度与阶条石宽度相同
             stoneWidth,             
             pDeepth,
@@ -437,7 +437,7 @@ def __drawStep(stepProxy:bpy.types.Object):
                 +con.GROUND_BORDER/2
                 + (n+0.5)*stepHeight)
             ),
-            scale=(
+            dimension=(
                 pWidth-stoneWidth,
                 stepDeepth+bevel*2,
                 stepHeight
@@ -579,7 +579,7 @@ def __buildStep(platformObj:bpy.types.Object):
                 stepProxy = utils.addCube(
                     name='踏跺proxy',
                     location=(x,y,0),
-                    scale=(stepWidth,stepDeepth,stepHeight),
+                    dimension=(stepWidth,stepDeepth,stepHeight),
                     rotation=rot,
                 )
                 stepProxy.parent = platformObj

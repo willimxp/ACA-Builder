@@ -132,7 +132,7 @@ def __buildKanKuang(wallproxy):
         KanDownObj = utils.addCube(
             name="下槛",
             location=KanDownLoc,
-            scale=KanDownScale,
+            dimension=KanDownScale,
             parent=wallproxy,
         )
         KankuangObjs.append(KanDownObj)
@@ -147,7 +147,7 @@ def __buildKanKuang(wallproxy):
     KanTopObj = utils.addCube(
         name="上槛",
         location=KanUpLoc,
-        scale=KanUpScale,
+        dimension=KanUpScale,
         parent=wallproxy,
     )
     KankuangObjs.append(KanTopObj)
@@ -177,7 +177,7 @@ def __buildKanKuang(wallproxy):
     BaoKuangDownObj = utils.addCube(
         name="下抱框",
         location=BaoKuangDownLoc,
-        scale=BaoKuangDownScale,
+        dimension=BaoKuangDownScale,
         parent=wallproxy,
     )
     # 添加mirror
@@ -198,7 +198,7 @@ def __buildKanKuang(wallproxy):
         KanMidObj = utils.addCube(
             name="中槛",
             location=KanMidLoc,
-            scale=KanMidScale,
+            dimension=KanMidScale,
             parent=wallproxy,
         )
         KankuangObjs.append(KanMidObj)
@@ -223,7 +223,7 @@ def __buildKanKuang(wallproxy):
         BaoKuangUpObj = utils.addCube(
             name="上抱框",
             location=BaoKuangUpLoc,
-            scale=BaoKuangUpScale,
+            dimension=BaoKuangUpScale,
             parent=wallproxy,
         )
         # 添加mirror
@@ -249,7 +249,7 @@ def __buildKanKuang(wallproxy):
             hengKuangObj = utils.addCube(
                 name="横披间框",
                 location=windowTopKuangLoc,
-                scale=BaoKuangUpScale,
+                dimension=BaoKuangUpScale,
                 parent=wallproxy,
             )
             KankuangObjs.append(hengKuangObj)
@@ -354,7 +354,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     motouObj = utils.addCube(
         name="抹头.上下",
         location=loc,
-        scale=scale,
+        dimension=scale,
         parent=geshan_root,
     )
     if not use_KanWall:
@@ -388,7 +388,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         motouObj = utils.addCube(
             name="抹头.二",
             location=loc2,
-            scale=scale,
+            dimension=scale,
             parent=geshan_root,
         )
         # 扇心：抹二上推半扇心
@@ -405,7 +405,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             motouObj = utils.addCube(
                 name="裙板",
                 location=loc3,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             )          
     if gap_num == 4:
@@ -419,7 +419,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         motouObj = utils.addCube(
                 name="抹头.二",
                 location=loc2,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
         # 抹三
@@ -428,7 +428,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         motouObj = utils.addCube(
                 name="抹头.三",
                 location=loc3,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             )
         # 绦环板
@@ -437,7 +437,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         motouObj = utils.addCube(
                 name="绦环板",
                 location=loc4,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             )
         # 扇心：抹二上推半扇心
@@ -454,7 +454,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             motouObj = utils.addCube(
                 name="裙板",
                 location=loc5,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             )           
     if gap_num == 5:
@@ -467,7 +467,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         motouObj = utils.addCube(
                 name="抹头.二",
                 location=loc2,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
         # 抹三，抹二向下一块绦环板
@@ -476,7 +476,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         motouObj = utils.addCube(
                 name="抹头.三",
                 location=loc3,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
         # 绦环板一
@@ -485,7 +485,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         motouObj = utils.addCube(
                 name="绦环板一",
                 location=loc5,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
         # 扇心：抹二上推半扇心
@@ -503,7 +503,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             motouObj = utils.addCube(
                 name="抹头.四",
                 location=loc4,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
             # 绦环板二
@@ -512,7 +512,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             motouObj = utils.addCube(
                 name="绦环板二",
                 location=loc6,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
             # 裙板
@@ -521,7 +521,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             motouObj = utils.addCube(
                 name="裙板",
                 location=loc7,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
     if gap_num == 6:
@@ -534,7 +534,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         motouObj = utils.addCube(
                 name="抹头.二",
                 location=loc2,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
         # 抹三, 向下一个扇心+抹头
@@ -543,7 +543,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         motouObj = utils.addCube(
                 name="抹头.三",
                 location=loc3,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
         # 抹四，向下一块绦环板
@@ -552,7 +552,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         motouObj = utils.addCube(
                 name="抹头.四",
                 location=loc4,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
         # 绦环板一，抹二反推
@@ -570,7 +570,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         motouObj = utils.addCube(
                 name="绦环板二",
                 location=loc7,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
         # 扇心：抹二和抹三之间
@@ -589,7 +589,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             motouObj = utils.addCube(
                 name="抹头.五",
                 location=loc5,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
             # 裙板，抹四抹五之间
@@ -598,7 +598,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             motouObj = utils.addCube(
                 name="裙板",
                 location=loc8,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
             # 绦环板三，底边反推
@@ -607,7 +607,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             motouObj = utils.addCube(
                 name="绦环板三",
                 location=loc9,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             )       
     
@@ -630,7 +630,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     geshanObj = utils.addCube(
                 name="边梃",
                 location=loc,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             )    
     # 添加mirror
@@ -715,7 +715,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     kanWindObj = utils.addCube(
                 name="风槛",
                 location=loc1,
-                scale=scl1,
+                dimension=scl1,
                 parent=wallproxy,
             ) 
     kanQiangObjs.append(kanWindObj)

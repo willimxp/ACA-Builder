@@ -77,7 +77,7 @@ def buildDougong(buildingObj:bpy.types.Object):
         pingbanfangObj = utils.addCube(
                 name="平板枋",
                 location=loc,
-                scale=dimensions,
+                dimension=dimensions,
                 parent=dgrootObj,
             ) 
         # 添加倒角
@@ -103,7 +103,7 @@ def buildDougong(buildingObj:bpy.types.Object):
         pingbanfangObj = utils.addCube(
                 name="平板枋",
                 location=loc,
-                scale=dimensions,
+                dimension=dimensions,
                 parent=dgrootObj,
             ) 
         # 设置倒角

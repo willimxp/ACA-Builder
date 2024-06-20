@@ -195,7 +195,9 @@ def copyObject(sourceObj:bpy.types.Object,
                name="", 
          parentObj:bpy.types.Object = None, 
          location=(0,0,0),
-         singleUser=False):
+         rotation=None,
+         scale=None,
+         singleUser=False)->bpy.types.Object:
     # 强制原对象不能隐藏
     IsHideEye = sourceObj.hide_get()
     sourceObj.hide_set(False)
@@ -214,16 +216,20 @@ def copyObject(sourceObj:bpy.types.Object,
         newObj.name = name
     newObj.location = location
     newObj.parent = parentObj
-    newObj.scale = sourceObj.scale
+    if scale != None:
+        newObj.scale = scale
+    if rotation != None:
+        newObj.rotation_euler = Euler(rotation,'XYZ')
     bpy.context.collection.objects.link(newObj) 
     # 复制子对象
     if len(sourceObj.children) > 0 :
         for child in sourceObj.children:
-            copyObject(child, 
-                       child.name, 
-                        newObj, 
-                        child.location,
-                        singleUser) 
+            copyObject(
+                sourceObj=child, 
+                name=child.name, 
+                parentObj=newObj, 
+                location=child.location,
+                singleUser=singleUser) 
 
     # 恢复原对象的隐藏属性
     sourceObj.hide_set(IsHideEye)
@@ -382,13 +388,13 @@ def alignToVector(vector) -> Vector:
 def addCube(name='Cube',
             location=(0,0,0),
             rotation=(0,0,0),
-            scale=(1,1,1),
+            dimension=(1,1,1),
             parent=None):
     bpy.ops.mesh.primitive_cube_add(
                 size=1.0, 
                 location = location, 
                 rotation = rotation, 
-                scale=scale)
+                scale=dimension)
     cube = bpy.context.object
     cube.name = name
     cube.data.name = name
@@ -425,7 +431,7 @@ def addCubeBy2Points(start_point:Vector,
         name=name,
         location=origin_point,
         rotation=rotation,
-        scale=(length,deepth,height),
+        dimension=(length,deepth,height),
         parent=root_obj,
     )
 
@@ -737,12 +743,14 @@ def addModifierMirror(object:bpy.types.Object,
                       mirrorObj:bpy.types.Object,
                       use_axis=(False,False,False),
                       use_bisect=(False,False,False),
+                      use_flip=(False,False,False),
                       name='Mirror',):
     mod:bpy.types.MirrorModifier = \
             object.modifiers.new(name,'MIRROR')
     mod.mirror_object = mirrorObj
     mod.use_axis = use_axis
     mod.use_bisect_axis = use_bisect
+    mod.use_bisect_flip_axis = use_flip
 
 # 应用所有修改器
 def applyAllModifer(object:bpy.types.Object):
@@ -771,7 +779,8 @@ def addBisect(object:bpy.types.Object,
               pCut:Vector,
               clear_outer=False,
               clear_inner=False,
-              direction  = 'Z')    :
+              direction  = 'Z',
+              use_fill = True)    :
     # 将对象的mesh数据single化，避免影响场景中其他对象
     object.data = object.data.copy()
     if direction == 'Z':
@@ -803,7 +812,7 @@ def addBisect(object:bpy.types.Object,
         plane_no=bisect_normal, 
         clear_outer=clear_outer,
         clear_inner=clear_inner,
-        use_fill=True
+        use_fill=use_fill
     )
     bpy.ops.object.editmode_toggle()  
     bpy.ops.object.shade_flat()

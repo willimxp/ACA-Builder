@@ -553,7 +553,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "举折系数",
             items = [
                 ("0","   举折系数：默认","[0.5,0.7,0.8,0.9]"),
-                ("1","   举折系数：陡峭","[0.5,1,1.5,2]"),
+                ("1","   举折系数：陡峭","[0.5,1,1.5,2]，慎用，一般用于亭子等建筑"),
                 ("2","   举折系数：平缓","[0.5,0.65,0.75,0.9]"),
             ],
         ) # type: ignore
@@ -736,6 +736,35 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "条砖横铺",
             type = bpy.types.Object,
         )# type: ignore 
+    
+    # 院墙属性
+    yard_width :bpy.props.FloatProperty(
+            name="庭院面阔",
+            default=10,
+            min=1,
+        )# type: ignore 
+    yard_deepth :bpy.props.FloatProperty(
+            name="庭院进深",
+            default=10,
+            min=1,
+        )# type: ignore
+    yardwall_height:bpy.props.FloatProperty(
+            name="院墙高度",
+            default=3,
+            min=1,
+        )# type: ignore
+    yardwall_deepth:bpy.props.FloatProperty(
+            name="院墙厚度",
+            default=1,
+            min=0.5,
+        )# type: ignore
+    yardwall_angle:bpy.props.FloatProperty(
+            name="院墙帽瓦斜率",
+            default=30,
+            min=0,
+            max=45,
+        )# type: ignore
+    
 
 
 # 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据

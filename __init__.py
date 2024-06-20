@@ -37,6 +37,7 @@ classes = (
     panel.ACA_PT_dougong,
     panel.ACA_PT_BPW,
     panel.ACA_PT_tiles,
+    panel.ACA_PT_yardwall_props,
     
     # 操作逻辑类    
     operators.ACA_OT_test,
@@ -57,6 +58,7 @@ classes = (
     operators.ACA_OT_default_dk,
     operators.ACA_OT_save_template,
     operators.ACA_OT_del_template,
+    operators.ACA_OT_build_yardwall,
 )
 
 def register():   

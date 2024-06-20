@@ -444,7 +444,23 @@ class ACA_OT_del_template(bpy.types.Operator):
             icon='QUESTION'
             )
 
-# 测试按钮
+# 生成院墙
+class ACA_OT_build_yardwall(bpy.types.Operator):
+    bl_idname="aca.build_yardwall"
+    bl_label = "生成院墙"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        from . import buildYardWall
+        funproxy = partial(
+            buildYardWall.buildYardWall,
+            buildingObj=buildingObj)
+        utils.fastRun(funproxy)
+
+        return {'FINISHED'}
+    
+# 生成院墙
 class ACA_OT_test(bpy.types.Operator):
     bl_idname="aca.test"
     bl_label = "测试"
@@ -452,12 +468,11 @@ class ACA_OT_test(bpy.types.Operator):
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj != None:
-            from . import buildPlatform
-            funproxy = partial(buildPlatform.buildPlatform,buildingObj=buildingObj)
-            utils.fastRun(funproxy)
-        else:
-            utils.showMessageBox("ERROR: 找不到建筑")
+        from . import buildYardWall
+        funproxy = partial(
+            buildYardWall.buildYardWall,
+            buildingObj=buildingObj)
+        utils.fastRun(funproxy)
 
         return {'FINISHED'}
     

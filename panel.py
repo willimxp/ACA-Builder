@@ -672,3 +672,62 @@ class ACA_PT_tiles(bpy.types.Panel):
 
             if not bData.is_showTiles:
                 layout.enabled = False
+
+# “院墙参数”面板
+class ACA_PT_yardwall_props(bpy.types.Panel):
+    # 常规属性
+    bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
+    bl_region_type = 'UI'           # UI代表sidebar形式
+    bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
+    
+    # 自定义属性
+    bl_category = "古建营造"         # 标签页名称
+    bl_label = "院墙参数"            # 面板名称，显示为可折叠的箭头后
+
+    def draw(self, context):
+        # 从当前场景中载入数据集
+        if context.object != None:
+            layout = self.layout
+            # 追溯全局属性
+            buildingObj,bData,objData = utils.getRoot(context.object)
+            if buildingObj == None: 
+                # 如果不属于建筑构件，提示，并隐藏所有子面板
+                row = layout.row()
+                row.label(text='没有设置项',icon='INFO')
+                row = layout.row()
+                row.label(text='请先选择一个或多个建筑对象')
+                return
+            else:
+                # 院墙属性
+                box = layout.box()
+                toolBar = box.grid_flow(columns=1, align=True)
+                # 庭院面阔
+                inputYardWidth = toolBar.column(align=True)
+                inputYardWidth.prop(bData,'yard_width',
+                    text='庭院面阔')
+                # 庭院进深
+                inputYardDeepth = toolBar.column(align=True)
+                inputYardDeepth.prop(bData,'yard_deepth',
+                    text='庭院进深')
+                # 院墙高度
+                inputYardwallHeight = toolBar.column(align=True)
+                inputYardwallHeight.prop(bData,
+                    'yardwall_height',
+                    text='院墙高度')
+                # 院墙厚度
+                inputYardwallDeepth = toolBar.column(align=True)
+                inputYardwallDeepth.prop(bData,
+                    'yardwall_deepth',
+                    text='院墙厚度')
+                # 帽瓦斜率
+                inputYardtileAngle = toolBar.column(align=True)
+                inputYardtileAngle.prop(bData,
+                    'yardwall_angle',
+                    text='帽瓦斜率')
+                
+                buttionBuildYardwall = box.row()
+                buttionBuildYardwall.operator(
+                    'aca.build_yardwall',
+                    icon='PLAY',
+                    depress=True,
+                    text='生成院墙')

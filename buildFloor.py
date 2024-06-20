@@ -217,7 +217,7 @@ def __buildFang(buildingObj:bpy.types.Object):
             dianbanObj = utils.addCube(
                 name="由额垫板." + fangID,
                 location=dianbanLoc,
-                scale=dianbanScale,
+                dimension=dianbanScale,
                 parent=bigFangObj,
             )
             dianbanObj.ACA_data['aca_obj'] = True
@@ -404,7 +404,10 @@ def buildPillers(buildingObj:bpy.types.Object):
             bData.piller_diameter,
             bData.piller_height
         )
-        #utils.applyScale(piller_basemesh) # 此时mesh已经与source piller解绑，生成了新的mesh
+        '''这里不要应用缩放，
+        以便传递到后续的柱副本中，
+        并且其柱础子对象还能自动集成该缩放'''
+        # utils.applyScale(piller_basemesh)
     # 柱子属性
     piller_basemesh.ACA_data['aca_obj'] = True
     piller_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
@@ -422,7 +425,6 @@ def buildPillers(buildingObj:bpy.types.Object):
             piller_list_str = bData.piller_net
             if pillerID not in piller_list_str \
                     and piller_list_str != "" :
-                # utils.outputMsg("PP: piller skiped " + piller_copy_name)
                 continue    # 结束本次循环
             
             # 复制柱子，仅instance，包含modifier
@@ -444,7 +446,7 @@ def buildPillers(buildingObj:bpy.types.Object):
                           (piller_copy.location.z 
                            - pillerBase_h/2
                            +pillerBase_popup)),
-                scale=(2*bData.piller_diameter/piller_copy.scale.x,
+                dimension=(2*bData.piller_diameter/piller_copy.scale.x,
                        2*bData.piller_diameter/piller_copy.scale.y,
                        pillerBase_h),
                 parent=piller_copy

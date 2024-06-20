@@ -1587,8 +1587,11 @@ def __buildSideTile(buildingObj: bpy.types.Object,
         # 20240604，为了让端头盘子与两侧紧密连接，不再做脚对脚对齐
         -bData.tile_length,
         0,
-        # Z方向（实际为X方向），位移（瓦垄宽-勾头宽）/2
-        (bData.tile_width - eaveTileWidth)/2))
+        # # Z方向（实际为X方向），位移（瓦垄宽-勾头宽）/2
+        # (bData.tile_width - eaveTileWidth)/2,
+        # 20240604，为了让端头盘子与两侧紧密连接，不再做脚对脚对齐
+        0,
+    ))
     # 排山滴水位移
     dripTileObj.location += Vector((
         # X方向（实际为Y方向），位移一个瓦层长，和半个勾头宽
@@ -1596,8 +1599,11 @@ def __buildSideTile(buildingObj: bpy.types.Object,
         # 20240604，为了让端头盘子与两侧紧密连接，不再做脚对脚对齐
         -bData.tile_length + bData.tile_width/2,
         0,
-        # Z方向（实际为X方向），位移（瓦垄宽-勾头宽）/2
-        (bData.tile_width - eaveTileWidth)/2))
+        # # Z方向（实际为X方向），位移（瓦垄宽-勾头宽）/2
+        # (bData.tile_width - eaveTileWidth)/2,
+        # 20240604，为了让端头盘子与两侧紧密连接，不再做脚对脚对齐
+        0,
+    ))
     
     if bData.roof_style in (
             con.ROOF_XUANSHAN,
@@ -1649,6 +1655,10 @@ def __buildSideTile(buildingObj: bpy.types.Object,
             clear_outer=True,
             direction='Y'
         )
+
+    # 平滑处理
+    utils.shaderSmooth(eaveTileObj)
+    utils.shaderSmooth(dripTileObj)
 
 # 营造戗脊（庑殿垂脊）曲线
 def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,

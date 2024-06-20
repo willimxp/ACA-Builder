@@ -50,10 +50,10 @@ def getTemplateList(onlyname=False):
 # 参考教程：https://b3d.interplanety.org/en/appending-all-objects-from-the-external-blend-file-to-the-scene-with-blender-python-api/
 # 参考文档：https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html
 def loadAssets(assetName : str,parent:bpy.types.Object,hide=True,link=True):
-    # 验证资源是否有重复，直接返回现有对象
-    if assetName in bpy.data.objects:
-        if link:    # 仅使用于直接连接，append时不做处理
-            return bpy.data.objects[assetName]
+    # # 验证资源是否有重复，直接返回现有对象
+    # if assetName in bpy.data.objects:
+    #     if link:    # 仅使用于直接连接，append时不做处理
+    #         return bpy.data.objects[assetName]
     
     # 打开资产文件
     # filepath = os.path.join(templateFolder, blenderFileName)
@@ -142,7 +142,6 @@ def __loadDefaultData(buildingObj:bpy.types.Object):
 def openTemplate(buildingObj:bpy.types.Object,
                  templateName:str):
     # 解析XML配置模版
-    # path = os.path.join(templateFolder, xmlFileName)
     path = __getPath(xmlFileName)
     tree = ET.parse(path)
     root = tree.getroot()
@@ -228,7 +227,7 @@ def saveTemplate(buildingObj:bpy.types.Object):
     ignoreKeys = {
         # 辅助参数，无需处理
         'aca_obj',
-        'aca_type',
+        #'aca_type',
         'x_total',
         'y_total',
         'wall_layout',

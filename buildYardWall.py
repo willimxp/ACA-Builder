@@ -16,6 +16,7 @@ from . import acaTemplate
 # 返回建筑empty根节点对象
 # 被ACA_OT_add_newbuilding类调用
 def __addBuildingRoot(templateName):
+    # 创建或锁定根目录
     coll = utils.setCollection(templateName)
     # 创建buildObj根节点
     bpy.ops.object.empty_add(type='PLAIN_AXES')
@@ -259,6 +260,7 @@ def buildSingleWall(
     if use_cut:
         # 合并子对象
         wallObj = utils.joinObjects(wallProxy.children)
+        wallObj.name = '院墙'
         # 左侧剪切
         utils.addBisect(
             object=wallObj,
@@ -317,42 +319,57 @@ def buildYardWall(buildingObj:bpy.types.Object):
     tileAngle = math.radians(bData.yardwall_angle)
 
     wallGroup = []
-    # 南墙
-    wallItem = {
-        'dim': ((yardWidth+wallDeepth,
-                 wallDeepth,
-                 wallHeight)),
-        'loc': (0,-yardDeepth/2,wallHeight/2),
-        'rot': (0,0,0),
-    }
-    wallGroup.append(wallItem)
-    # 北墙
-    wallItem = {
-        'dim': ((yardWidth+wallDeepth,
-                 wallDeepth,
-                 wallHeight)),
-        'loc': (0,yardDeepth/2,wallHeight/2),
-        'rot': (0,0,math.radians(180)),
-    }
-    wallGroup.append(wallItem)
-    # 西墙
-    wallItem = {
-        'dim': ((yardDeepth+wallDeepth,
-                 wallDeepth,
-                 wallHeight)),
-        'loc': (-yardWidth/2,0,wallHeight/2),
-        'rot': (0,0,math.radians(270)),
-    }
-    wallGroup.append(wallItem)
-    # 东墙
-    wallItem = {
-        'dim': ((yardDeepth+wallDeepth,
-                 wallDeepth,
-                 wallHeight)),
-        'loc': (yardWidth/2,0,wallHeight/2),
-        'rot': (0,0,math.radians(90)),
-    }
-    wallGroup.append(wallItem)
+    # 如果做4面墙，则四角剪切
+    use_cut = True
+    # 是否做四面墙
+    if not bData.is_4_sides:
+        wallItem = {
+            'dim': ((yardWidth,
+                    wallDeepth,
+                    wallHeight)),
+            'loc': (0,0,wallHeight/2),
+            'rot': (0,0,0),
+        }
+        wallGroup.append(wallItem)
+        # 四角不做剪切
+        use_cut = False
+    else:
+        # 南墙
+        wallItem = {
+            'dim': ((yardWidth+wallDeepth,
+                    wallDeepth,
+                    wallHeight)),
+            'loc': (0,-yardDeepth/2,wallHeight/2),
+            'rot': (0,0,0),
+        }
+        wallGroup.append(wallItem)
+        # 北墙
+        wallItem = {
+            'dim': ((yardWidth+wallDeepth,
+                    wallDeepth,
+                    wallHeight)),
+            'loc': (0,yardDeepth/2,wallHeight/2),
+            'rot': (0,0,math.radians(180)),
+        }
+        wallGroup.append(wallItem)
+        # 西墙
+        wallItem = {
+            'dim': ((yardDeepth+wallDeepth,
+                    wallDeepth,
+                    wallHeight)),
+            'loc': (-yardWidth/2,0,wallHeight/2),
+            'rot': (0,0,math.radians(270)),
+        }
+        wallGroup.append(wallItem)
+        # 东墙
+        wallItem = {
+            'dim': ((yardDeepth+wallDeepth,
+                    wallDeepth,
+                    wallHeight)),
+            'loc': (yardWidth/2,0,wallHeight/2),
+            'rot': (0,0,math.radians(90)),
+        }
+        wallGroup.append(wallItem)
 
     # 依次生成院子四面的院墙
     for wallItem in wallGroup:        
@@ -371,9 +388,9 @@ def buildYardWall(buildingObj:bpy.types.Object):
             wallProxy=wallProxy,
             bodyShrink=bodyShrink,
             tileAngle=tileAngle,
-            use_cut=True
+            use_cut=use_cut
             )
 
     utils.focusObj(buildingObj)
 
-    return
+    return {'FINISHED'}

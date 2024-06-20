@@ -1297,7 +1297,10 @@ def getRoot(object:bpy.types.Object):
     if hasattr(object, 'ACA_data'):
         objData:data.ACA_data_obj = object.ACA_data
         if 'aca_type' in object.ACA_data:
-            if objData['aca_type'] == con.ACA_TYPE_BUILDING:
+            if objData['aca_type'] in (
+                    con.ACA_TYPE_BUILDING,
+                    con.ACA_TYPE_YARDWALL,
+                ):
                 isRoot = True
 
         if isRoot:
@@ -1308,6 +1311,12 @@ def getRoot(object:bpy.types.Object):
                     object,con.ACA_TYPE_BUILDING)
             if buildingObj != None:
                 bData:data.ACA_data_obj = buildingObj.ACA_data
+            else:
+                buildingObj = getAcaParent(
+                    object,con.ACA_TYPE_YARDWALL
+                )
+                if buildingObj != None:
+                    bData:data.ACA_data_obj = buildingObj.ACA_data
 
     return buildingObj,bData,objData
 

@@ -22,7 +22,9 @@ from . import buildRooftile
 # 返回建筑empty根节点对象
 # 被ACA_OT_add_newbuilding类调用
 def __addBuildingRoot(templateName):
+    # 创建或锁定根目录
     coll = utils.setCollection(templateName)
+    
     # 创建buildObj根节点
     bpy.ops.object.empty_add(type='PLAIN_AXES')
     buildingObj = bpy.context.object

@@ -44,11 +44,13 @@ class ACA_OT_add_building(bpy.types.Operator):
     bl_description = '根据选择的模版，自动生成建筑的各个构件'
 
     def execute(self, context):  
-        # 创建新建筑
         timeStart = time.time()
-        funproxy = partial(buildFloor.buildFloor,
-                    buildingObj=None)
+
+        # 创建新建筑
+        from . import build
+        funproxy = partial(build.build)
         result = utils.fastRun(funproxy)
+
         if 'FINISHED' in result:
             timeEnd = time.time()
             self.report(
@@ -451,16 +453,26 @@ class ACA_OT_build_yardwall(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
+        timeStart = time.time()
+
+        # 添加院墙
         buildingObj,bData,objData = utils.getRoot(context.object)
         from . import buildYardWall
         funproxy = partial(
             buildYardWall.buildYardWall,
             buildingObj=buildingObj)
-        utils.fastRun(funproxy)
+        result = utils.fastRun(funproxy)
+
+        if 'FINISHED' in result:
+            timeEnd = time.time()
+            self.report(
+                {'INFO'},"新院墙添加完成！(%.1f秒)" 
+                % (timeEnd-timeStart))
+        
 
         return {'FINISHED'}
     
-# 生成院墙
+# 测试
 class ACA_OT_test(bpy.types.Operator):
     bl_idname="aca.test"
     bl_label = "测试"

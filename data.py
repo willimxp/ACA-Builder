@@ -59,23 +59,15 @@ def reset_building(self, context:bpy.types.Context):
     isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
     if not isRebuild:
         return
-    
-    # # 确认选中为building节点
-    # buildingObj,bdata,odata = utils.getRoot(context.object)
-    # if buildingObj != None:
-    #     # 调用营造序列
-    #     from . import buildFloor
-    #     funproxy = partial(
-    #             buildFloor.resetFloor,
-    #             buildingObj=buildingObj)
-    #     utils.fastRun(funproxy)
-    # else:
-    #     utils.outputMsg("updated building failed, context.object should be buildingObj")
-    # return
 
     # 直接调用operator，并且调用invoke，弹出确认提示
     # https://docs.blender.org/api/current/bpy.types.Operator.html#invoke-function
     bpy.ops.aca.reset_floor('INVOKE_DEFAULT')
+
+# 更新院墙
+def update_yardwall(self, context:bpy.types.Context):
+    bpy.ops.aca.build_yardwall()
+    return
 
 def update_platform(self, context:bpy.types.Context):
     # 确认选中为building节点
@@ -738,34 +730,41 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     
     # 院墙属性
+    is_4_sides:bpy.props.BoolProperty(
+            default = True,
+            name = "是否做四面墙",
+        ) # type: ignore
     yard_width :bpy.props.FloatProperty(
             name="庭院面阔",
-            default=10,
+            default=40,
             min=1,
+            update=update_yardwall,
         )# type: ignore 
     yard_deepth :bpy.props.FloatProperty(
             name="庭院进深",
-            default=10,
+            default=30,
             min=1,
+            update=update_yardwall,
         )# type: ignore
     yardwall_height:bpy.props.FloatProperty(
             name="院墙高度",
             default=3,
             min=1,
+            update=update_yardwall,
         )# type: ignore
     yardwall_deepth:bpy.props.FloatProperty(
             name="院墙厚度",
             default=1,
             min=0.5,
+            update=update_yardwall,
         )# type: ignore
     yardwall_angle:bpy.props.FloatProperty(
             name="院墙帽瓦斜率",
             default=30,
             min=0,
             max=45,
+            update=update_yardwall,
         )# type: ignore
-    
-
 
 # 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据
 # https://docs.blender.org/api/current/bpy.props.html

@@ -22,15 +22,15 @@ class ACA_PT_basic(bpy.types.Panel):
     bl_label = "营造向导"            # 面板名称，显示为可折叠的箭头后
     
     def draw(self, context):
+        layout = self.layout
+        
+        # 模版属性================
         # 从当前场景中载入数据集
         scnData : data.ACA_data_scene = context.scene.ACA_data
-        layout = self.layout
         box = layout.box()
-        
         # 模板选择列表
         droplistTemplate = box.column(align=True)
         droplistTemplate.prop(scnData, "template",text='')
-        
         toolBox = box.column(align=True)
         toolBar = toolBox.grid_flow(columns=2, align=True)
         # 保存模版
@@ -43,7 +43,6 @@ class ACA_PT_basic(bpy.types.Panel):
         col.operator(
             "aca.del_template",icon='TRASH',
             text='删除模板')
-
         toolBar = toolBox.grid_flow(columns=1, align=True)
         # 生成新建筑        
         buttonAddnew = toolBar.column(align=True)
@@ -51,6 +50,29 @@ class ACA_PT_basic(bpy.types.Panel):
             "aca.add_newbuilding",icon='PLAY',
             depress=True,text='添加新建筑'
             )
+        
+        # 实例属性==============
+        if context.object != None:
+            # 追溯全局属性
+            buildingObj,bData,objData = utils.getRoot(context.object)
+            box = layout.box()
+            # 名称
+            row = box.row(align=True)
+            col = row.column(align=True)
+            col.prop(context.object,"name",text="")
+            # 聚焦根节点
+            col = row.column(align=True)
+            col.operator("aca.focus_building",icon='FILE_PARENT')
+            if objData.aca_type == con.ACA_TYPE_BUILDING:
+                col.enabled = False
+            # 斗口值
+            row = box.row(align=True)
+            col = row.column(align=True)
+            if bData!= None:
+                col.prop(bData,'DK')
+            # 计算默认斗口值
+            col = row.column(align=True)
+            col.operator("aca.default_dk",icon='SHADERFX',text='')
         
         # # 测试按钮
         # row = layout.row()
@@ -84,23 +106,9 @@ class ACA_PT_props(bpy.types.Panel):
                 return             
             
             box = layout.box()
-            # 名称
-            row = box.row(align=True)
-            col = row.column(align=True)
-            col.prop(context.object,"name",text="")
-            # 聚焦根节点
-            col = row.column(align=True)
-            col.operator("aca.focus_building",icon='FILE_PARENT')
-            if objData.aca_type == con.ACA_TYPE_BUILDING:
-                col.enabled = False
-                
-            # 斗口值
-            row = box.row(align=True)
-            col = row.column(align=True)
-            col.prop(bData,'DK')
-            # 计算默认斗口值
-            col = row.column(align=True)
-            col.operator("aca.default_dk",icon='SHADERFX',text='')
+            if bData.aca_type != con.ACA_TYPE_BUILDING:
+                box.enabled = False
+            
 
             row = box.column(align=True)
             row.prop(bData, "x_rooms")      # 面阔间数
@@ -164,6 +172,8 @@ class ACA_PT_platform(bpy.types.Panel):
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showPlatform",text='台基属性')
+        if bData.aca_type != con.ACA_TYPE_BUILDING:
+            layout.enabled = False
 
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -175,6 +185,8 @@ class ACA_PT_platform(bpy.types.Panel):
 
             # 台基属性
             box = layout.box()
+            if bData.aca_type != con.ACA_TYPE_BUILDING:
+                    box.enabled = False
             col = box.column(align=True)
             col.prop(bData, "platform_height")
             col.prop(bData, "platform_extend")
@@ -210,6 +222,8 @@ class ACA_PT_pillers(bpy.types.Panel):
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showPillers",text='柱网属性')
+        if bData.aca_type != con.ACA_TYPE_BUILDING:
+            layout.enabled = False
 
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -223,6 +237,8 @@ class ACA_PT_pillers(bpy.types.Panel):
             #if objData.aca_type == con.ACA_TYPE_BUILDING:
             # 柱网属性
             box = layout.box()
+            if bData.aca_type != con.ACA_TYPE_BUILDING:
+                    box.enabled = False
 
             # 柱子属性
             col = box.column(align=True)
@@ -273,11 +289,16 @@ class ACA_PT_wall(bpy.types.Panel):
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showWalls",text='墙体属性')
 
+        if bData.aca_type != con.ACA_TYPE_BUILDING:
+            layout.enabled = False
+
     def draw_header_preset(self,context):
         layout = self.layout
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj == None: return
+        if bData.aca_type != con.ACA_TYPE_BUILDING:
+            layout.enabled = False
         if objData.aca_type == con.ACA_TYPE_WALL:
             col = row.column()
             col.label(text='[个体]',icon='KEYTYPE_JITTER_VEC')
@@ -298,6 +319,8 @@ class ACA_PT_wall(bpy.types.Panel):
                 layout.enabled = False
 
             box = layout.box() 
+            if bData.aca_type != con.ACA_TYPE_BUILDING:
+                    box.enabled = False
 
             # 工具栏：加枋、加墙、加门、加窗、删除
             toolBox = box.column(align=True)
@@ -422,6 +445,8 @@ class ACA_PT_roof_props(bpy.types.Panel):
             else:
                 # 屋顶属性
                 box = layout.box()
+                if bData.aca_type != con.ACA_TYPE_BUILDING:
+                    box.enabled = False
                 # 屋顶样式
                 droplistRoofstyle = box.row()
                 droplistRoofstyle.prop(
@@ -459,6 +484,8 @@ class ACA_PT_dougong(bpy.types.Panel):
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showDougong",text='斗栱属性')
+        if bData.aca_type != con.ACA_TYPE_BUILDING:
+            layout.enabled = False
 
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -468,6 +495,8 @@ class ACA_PT_dougong(bpy.types.Panel):
             if buildingObj == None: return
 
             layout = self.layout
+            if bData.aca_type != con.ACA_TYPE_BUILDING:
+                layout.enabled = False
             if not bData.is_showDougong:
                 layout.enabled = False
 
@@ -544,6 +573,8 @@ class ACA_PT_BPW(bpy.types.Panel):
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showBPW",text='椽望属性')
+        if bData.aca_type != con.ACA_TYPE_BUILDING:
+            layout.enabled = False
 
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -553,6 +584,8 @@ class ACA_PT_BPW(bpy.types.Panel):
             if buildingObj == None: return
 
             layout = self.layout
+            if bData.aca_type != con.ACA_TYPE_BUILDING:
+                layout.enabled = False
             if not bData.is_showBPW:
                 layout.enabled = False
 
@@ -650,6 +683,8 @@ class ACA_PT_tiles(bpy.types.Panel):
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showTiles",text='瓦作属性')
+        if bData.aca_type != con.ACA_TYPE_BUILDING:
+            layout.enabled = False
 
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -658,6 +693,8 @@ class ACA_PT_tiles(bpy.types.Panel):
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
+            if bData.aca_type != con.ACA_TYPE_BUILDING:
+                layout.enabled = False
             
             # 瓦作属性
             box = layout.box()
@@ -700,15 +737,31 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
             else:
                 # 院墙属性
                 box = layout.box()
+                if bData.aca_type != con.ACA_TYPE_YARDWALL:
+                    box.enabled = False
                 toolBar = box.grid_flow(columns=1, align=True)
-                # 庭院面阔
-                inputYardWidth = toolBar.column(align=True)
-                inputYardWidth.prop(bData,'yard_width',
-                    text='庭院面阔')
-                # 庭院进深
+
+                # 是否做4面围墙
+                if bData.is_4_sides:
+                    checkbox_icon = 'CHECKBOX_HLT'
+                else:
+                    checkbox_icon = 'CHECKBOX_DEHLT'
+                checkbox4sides = toolBar.column(align=True)
+                checkbox4sides.prop(bData,
+                    'is_4_sides',
+                    toggle=True,
+                    text='四面环绕',
+                    icon=checkbox_icon)
+                # 院墙进深
                 inputYardDeepth = toolBar.column(align=True)
                 inputYardDeepth.prop(bData,'yard_deepth',
-                    text='庭院进深')
+                    text='院墙进深')
+                if not bData.is_4_sides:
+                    inputYardDeepth.enabled = False
+                # 院墙面阔
+                inputYardWidth = toolBar.column(align=True)
+                inputYardWidth.prop(bData,'yard_width',
+                    text='院墙面阔')
                 # 院墙高度
                 inputYardwallHeight = toolBar.column(align=True)
                 inputYardwallHeight.prop(bData,
@@ -724,6 +777,7 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
                 inputYardtileAngle.prop(bData,
                     'yardwall_angle',
                     text='帽瓦斜率')
+                
                 
                 buttionBuildYardwall = box.row()
                 buttionBuildYardwall.operator(

@@ -606,41 +606,57 @@ def __drawTileBool(
     bm = bmesh.new()
     # 各个点的集合
     vectors = []
-    z0 = - dk * 10 # 出檐后的檐口低于root_obj,所以要进行补偿
-    # 从子角梁头算起
-    ex = 6*dk # 向外延伸，确保包裹住瓦片
-    roof_qiao_point = bData.roof_qiao_point + Vector((ex,ex,0))
 
-    vectors.insert(0,(roof_qiao_point.x,roof_qiao_point.y,z0))
-    vectors.append((roof_qiao_point.x,-roof_qiao_point.y,z0))
+    # 起始点，从子角梁头向外延伸，确保包住所有瓦片
+    offset = Vector((6*dk,6*dk,-10*dk))
+    p0 = bData.roof_qiao_point + offset
+    # 插入前点
+    vectors.insert(0,p0)
+    # 插入后点，即前点的Y镜像
+    vectors.append(p0 * Vector((1,-1,1)))
 
     # 循环添加由戗节点
     for n in range(len(purlin_cross_points)):
         # 这里不加copy，原始值就会被异常修改，python传值还是传指针太麻烦
         cutPoint = purlin_cross_points[n].copy()
-        # 歇山转折点特殊处理
-        if bData.roof_style == con.ROOF_XIESHAN:
-            if n==1:
-                # 歇山裁剪到下金桁交点
+        
+        # 歇山顶做特殊处理
+        if bData.roof_style == con.ROOF_XIESHAN:          
+            # 正心桁坐标不做处理
+            if n == 0: 
+                pass
+            # 下金桁采用脊桁的坐标定位
+            if n == 1:
+                # 前后檐的山腰裁剪点，垂脊的定位类似
                 if direction == 'X':
-                    # 前后坡瓦的上半部做到脊桁宽度
-                    cutPoint.x = (purlin_cross_points[-1].x 
-                        # 手工修正半垄，以免歇山的瓦与垂脊穿模
-                        -bData.tile_width/2)
-                    # 保持45度斜切，简单的从翼角做X/Y相同的位移
-                    cutPoint.y = roof_qiao_point.y \
-                        - (roof_qiao_point.x-cutPoint.x)
-                else:
-                    # 两山坡瓦，做到下金桁交点
-                    cutPoint.x = purlin_cross_points[1].x
-                    cutPoint.y = (purlin_cross_points[1].y
-                        # 手工修正半垄，以免山面瓦与前后檐面瓦穿模
-                        - bData.tile_width/2)
-            if n > 1:
-                # 歇山不继续计算金桁、脊桁
-                continue
-        vectors.insert(0,(cutPoint.x,cutPoint.y,z0))
-        vectors.append((cutPoint.x,-cutPoint.y,z0))
+                    # X向：以脊桁宽度为基准
+                    cutPoint.x = purlin_cross_points[-1].x
+                    # Y向：与起始点做45度连线
+                    cutPoint.y = p0.y - (p0.x - cutPoint.x)
+                if direction == 'Y':
+                    # 偏移，以免山面瓦与前后檐面瓦穿模
+                    cutPoint -= Vector((0,con.JIAOLIANG_Y/2*dk,0))
+            # 上金桁、脊桁不做裁剪点，直接跳过
+            if n > 1: 
+                continue   
+        # 庑殿特殊处理
+        if bData.roof_style == con.ROOF_WUDIAN: 
+            if direction == 'Y':
+                # 退让两山的瓦面
+                # 以免在夸张的推山系数（如，0.5）时，
+                # 过于陡峭的坡面，裁剪出现的穿模
+                cutPoint += Vector((
+                    con.JIAOLIANG_Y/2*dk,
+                    -con.JIAOLIANG_Y/2*dk,
+                    0))
+        
+        # 纵坐标与起始点对齐
+        cutPoint.z = p0.z         
+        
+        # 插入前点
+        vectors.insert(0,cutPoint)
+        # 插入后点，即前点的Y镜像
+        vectors.append(cutPoint*Vector((1,-1,1)))
     
     # 摆放点
     vertices=[]
@@ -666,11 +682,10 @@ def __drawTileBool(
         ))
 
     # 挤出厚度
-    height = purlin_cross_points[-1].z + 100*dk 
+    height = purlin_cross_points[-1].z + bData.y_total
     return_geo = bmesh.ops.extrude_face_region(bm, geom=bm.faces)
     verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
     bmesh.ops.translate(bm, verts=verts, vec=(0, 0,height))
-    #ps，这个挤出略有遗憾，没有按照每个面的normal进行extrude
 
     # 确保face normal朝向
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)

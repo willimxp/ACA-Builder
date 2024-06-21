@@ -760,9 +760,8 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     # 合并梁架各个部件
     # 攒尖顶时，不做梁架
     if beamObjects != []:
-        beamSetObj = utils.joinObjects(beamObjects)
-        beamSetObj.name = '梁架'
-        beamSetObj.data.name = '梁架'
+        beamSetObj = utils.joinObjects(
+            beamObjects,newName='梁架')
         modBevel:bpy.types.BevelModifier = \
             beamSetObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_HIGH
@@ -1303,7 +1302,8 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             
 
     # 合并所有望板
-    wangbanSetObj = utils.joinObjects(wangbanObjs)
+    wangbanSetObj = utils.joinObjects(
+        wangbanObjs,newName='望板-前后檐')
 
     return wangbanSetObj # EOF：__buildWangban_FB
 
@@ -1398,7 +1398,8 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
         wangbanObjs.append(wangbanObj)
     
     # 合并望板
-    wangbanSetObj = utils.joinObjects(wangbanObjs)
+    wangbanSetObj = utils.joinObjects(
+        wangbanObjs,newName='望板-两山')
 
     return wangbanSetObj # EOF：
 
@@ -3156,9 +3157,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
                 wangbanObjs.append(wangbanCFR) 
 
             # 合并翘飞椽
-            cfrSet = utils.joinObjects(cfrCollection)
-            cfrSet.name = '翘飞椽'
-            cfrSet.data.name = '翘飞椽'
+            cfrSet = utils.joinObjects(
+                cfrCollection,newName='翘飞椽')
             # UV处理
             utils.UvUnwrap(cfrSet)
             # 倒角
@@ -3167,8 +3167,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             modBevel.width = con.BEVEL_EXLOW
 
         # 合并翼角椽
-        crSet = utils.joinObjects(cornerRafterColl)
-        crSet.name = '翼角椽'
+        crSet = utils.joinObjects(
+            cornerRafterColl,newName='翼角椽')
         # UV处理
         utils.UvUnwrap(crSet)
         # 倒角
@@ -3181,9 +3181,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     # 以下为各类屋顶类型通用的处理  
     # 合并望板
     if useWangban:
-        wangbanSet = utils.joinObjects(wangbanObjs)
-        wangbanSet.name = '望板'
-        wangbanSet.data.name = '望板'
+        wangbanSet = utils.joinObjects(
+            wangbanObjs,newName='望板')
         # 更新UV
         utils.UvUnwrap(wangbanSet,type='cube')
     

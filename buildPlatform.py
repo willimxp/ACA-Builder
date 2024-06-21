@@ -216,8 +216,9 @@ def __drawPlatform(platformObj:bpy.types.Object):
         utils.copyMaterial(bData.mat_rock,obj)
     
     # 合并台基
-    platformSet = utils.joinObjects(jtsObjs)
-    platformSet.name = '台明'
+    platformSet = utils.joinObjects(
+        jtsObjs,newName='台明'
+        )
     # UV处理
     utils.UvUnwrap(platformSet,type='cube')
 
@@ -457,8 +458,8 @@ def __drawStep(stepProxy:bpy.types.Object):
         utils.copyMaterial(bData.mat_rock,obj)
 
     # 合并对象
-    taduoSet = utils.joinObjects(taduoObjs)
-    taduoSet.name = '踏跺'
+    taduoSet = utils.joinObjects(
+        taduoObjs,newName='踏跺')
     # UV处理
     utils.UvUnwrap(taduoSet,type='cube')
 
@@ -636,7 +637,8 @@ def buildPlatform(buildingObj:bpy.types.Object):
 
     # 合并各个散水对象
     sanshuiobjs.append(sanshuiObj)
-    sanshuiSet = utils.joinObjects(sanshuiobjs)
+    sanshuiSet = utils.joinObjects(
+        sanshuiobjs,newName='散水')
     # UV处理
     utils.UvUnwrap(sanshuiObj,type='cube')
     # 条砖竖铺

@@ -857,8 +857,8 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     
     # 合并所有的瓦片对象
     # 可以极大的提高重新生成时的效率（海量对象删除太慢了）
-    tileSet = utils.joinObjects(tileList,fast=True)
-    tileSet.name = '琉璃瓦'
+    tileSet = utils.joinObjects(
+        tileList,newName='屋瓦')
     # 庑殿、歇山做裁剪
     if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_XIESHAN):
         mod:bpy.types.BooleanModifier = tileSet.modifiers.new("由戗裁剪","BOOLEAN")

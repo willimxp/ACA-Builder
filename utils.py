@@ -27,6 +27,7 @@ def console_get():
     return None, None, None
 
 # 在blender内部的console窗口中输出调试信息
+# 这个方法已经不再使用，发现进程引起blender的崩溃
 def console_print(*args, clear=False):
     s = " ".join([str(arg) for arg in args])
     area, space, region = console_get()
@@ -1255,16 +1256,9 @@ def setGN_Input(mod:bpy.types.NodesModifier,
 # 合并对个对象
 # https://blender.stackexchange.com/questions/13986/how-to-join-objects-with-python
 # https://docs.blender.org/api/current/bpy.ops.html#overriding-context
-def joinObjects(objList:List[bpy.types.Object],fast=False):
+def joinObjects(objList:List[bpy.types.Object],
+                newName:str):
     # timeStart = time.time()
-    # 这个预处理在海量对象时，非常耗资源
-    # if not fast:
-    #     # 预处理，防止合并丢失信息
-    #     for ob in objList:
-    #         # 将曲线等对象转为mesh，否则曲线可能不被合并
-    #         if ob.type != 'MESH' or len(ob.modifiers)>0 :
-    #             focusObj(ob)
-    #             bpy.ops.object.convert(target='MESH')
     
     # 开始合并
     # 与上面的循环要做分开，否则context的选择状态会打架
@@ -1272,21 +1266,26 @@ def joinObjects(objList:List[bpy.types.Object],fast=False):
     bpy.ops.object.select_all(action='DESELECT')
     for ob in objList:
         ob.select_set(True)
-        bpy.context.view_layer.objects.active = ob
         # 将对象的mesh数据single化，避免影响场景中其他对象
         if ob.data.users > 1:
             ob.data = ob.data.copy()
+    bpy.context.view_layer.objects.active = ob
     # 预处理，可以将Curve转为mesh，还同时应用了所有的modifier
     bpy.ops.object.convert(target='MESH')
+    
+    # 合并对象
     bpy.ops.object.join()
+    joinedObj = bpy.context.object
+    joinedObj.name = newName
+    joinedObj.data.name = newName
 
     # 清理垃圾数据
     delOrphan()
 
-    # print("Objects joined in %.2f秒" 
-    #             % (time.time()-timeStart))
-    return bpy.context.object
-
+    # print("Objects join in %.2f秒" 
+    #            % (time.time()-timeStart))
+    
+    return joinedObj
 
 # 返回根对象
 def getRoot(object:bpy.types.Object):

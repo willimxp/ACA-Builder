@@ -259,8 +259,8 @@ def buildSingleWall(
     # 6、做裁剪
     if use_cut:
         # 合并子对象
-        wallObj = utils.joinObjects(wallProxy.children)
-        wallObj.name = '院墙'
+        wallObj = utils.joinObjects(
+            wallProxy.children,newName='院墙')
         # 左侧剪切
         utils.addBisect(
             object=wallObj,

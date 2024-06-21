@@ -93,11 +93,6 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     utils.applyAllModifer(lingxin)
     # 设置UV
     utils.UvUnwrap(lingxin,type='cube')
-
-
-    # # 合并棂心
-    # lingxinObjs = [zibianObj,lingxin]
-    # linxinObj = utils.joinObjects(lingxinObjs)
     
     return # linxinObj
 
@@ -668,8 +663,9 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     utils.hideObj(geshan_root)
 
     # 隔扇子对象合并
-    geshanObj = utils.joinObjects(geshan_root.children)
-    geshanObj.name='隔扇门'
+    geshanObj = utils.joinObjects(
+        geshan_root.children,
+        newName='隔扇门')
     geshanObj.parent = wallproxy
     geshanObj.location += geshan_root.location
     bpy.data.objects.remove(geshan_root)

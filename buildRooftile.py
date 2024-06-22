@@ -807,6 +807,15 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         # 坐标系转置（行列互换，以复合blender的坐标系要求）
         M = Matrix((x, y, z)).transposed().to_4x4()
         M.translation = f.calc_center_median()
+
+        # 平滑补偿计算
+        lastEdge = f.edges[3]
+        angle = None
+        if len(lastEdge.link_faces) >1:
+            # 计算相邻两面的法线夹角，做为后续simply deform的补偿角度
+            thisFaceNormal = lastEdge.link_faces[0].normal
+            nextFaceNormal = lastEdge.link_faces[1].normal
+            angle = thisFaceNormal.angle(nextFaceNormal)
         
         # 排布板瓦，仅在偶数列排布
         if ((f.index%GridCols) % 2 == 0
@@ -819,6 +828,12 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 offset=offset_aside.copy(),
                 parent=tileGrid,
             )
+            # 平滑补偿
+            if angle != None:
+                modDeform:bpy.types.SimpleDeformModifier = \
+                    tileObj.modifiers.new('变形','SIMPLE_DEFORM')
+                modDeform.deform_method = 'BEND'
+                modDeform.angle = angle
             tileList.append(tileObj)
 
         # 排布筒瓦，奇数列排布
@@ -830,6 +845,12 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 offset=offset_aside.copy(),
                 parent=tileGrid,
             )
+            # 平滑补偿
+            if angle != None:
+                modDeform:bpy.types.SimpleDeformModifier = \
+                    tileObj.modifiers.new('变形','SIMPLE_DEFORM')
+                modDeform.deform_method = 'BEND'
+                modDeform.angle = angle
             tileList.append(tileObj)
 
         # 排布檐口瓦

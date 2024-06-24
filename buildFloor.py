@@ -481,12 +481,20 @@ def delPiller(buildingObj:bpy.types.Object,
     bData:acaData = buildingObj.ACA_data
 
     # 删除柱子和柱础
+    # 20240624 发现批量删除柱子时报错：ReferenceError: StructRNA of type Object has been removed
+    # 发现执行柱子删除时，顺带删除了柱础，导致真的轮询到柱础时已经找不到对象
+    # 为了解决这个问题，先把要删除的对象名称挑出来，然后仅执行这些对象的删除
+    # https://blender.stackexchange.com/questions/206060/how-to-resolve-referenceerror-structrna-of-type-object-has-been-removed
+    delPillerNames = []
     for piller in pillers:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
         if 'aca_type' in piller.ACA_data:
             if piller.ACA_data['aca_type'] \
                 == con.ACA_TYPE_PILLER:
-                utils.deleteHierarchy(piller,del_parent=True)
+                delPillerNames.append(piller.name)    
+    for name in delPillerNames:
+        piller = bpy.data.objects[name]
+        utils.deleteHierarchy(piller,del_parent=True)
 
     # 重新生成柱网配置
     floorRootObj = utils.getAcaChild(

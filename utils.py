@@ -1397,7 +1397,7 @@ def UvUnwrap(object:bpy.types.Object,type=None):
     applyAllModifer(object)
 
     # 进入编辑模式
-    bpy.ops.object.editmode_toggle()
+    bpy.ops.object.mode_set(mode = 'EDIT') 
     bpy.ops.mesh.select_mode(type = 'FACE')
     bpy.ops.mesh.select_all(action='SELECT')
     
@@ -1415,4 +1415,4 @@ def UvUnwrap(object:bpy.types.Object,type=None):
         bpy.ops.uv.cube_project(
             cube_size=10
         )
-    bpy.ops.object.editmode_toggle()
+    bpy.ops.object.mode_set(mode = 'OBJECT')

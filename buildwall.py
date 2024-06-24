@@ -3,6 +3,7 @@
 # 功能概述：
 #   墙体布局树状结构的营造
 import bpy
+import bmesh
 import math
 from mathutils import Vector
 from functools import partial
@@ -153,6 +154,76 @@ def buildWallproxy(buildingObj:bpy.types.Object,
 
     return wallproxy
 
+# 绘制墙体
+def __drawWall(wallProxy:bpy.types.Object):
+    # 载入数据
+    buildingObj = utils.getAcaParent(wallProxy,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
+    # 退花碱厚度
+    bodyShrink = con.WALL_SHRINK
+
+    # 1、创建下碱对象
+    height = wallHeight * con.WALL_BOTTOM_RATE
+    bottomObj = utils.drawHexagon(
+        name='下碱',
+        dimensions=Vector((wallLength,
+               wallDeepth,
+               height)),
+        location=Vector((0,0,height/2)),
+        parent=wallProxy,
+    )
+    # 展UV
+    utils.UvUnwrap(bottomObj,type='cube')
+    # 赋材质
+    utils.copyMaterial(bData.mat_rock,bottomObj)
+
+    # 2、创建上身对象
+    extrudeHeight = wallHeight/10
+    bodyObj = utils.drawHexagon(
+        name='上身',
+        dimensions=Vector((wallLength-bodyShrink*2,
+               wallDeepth-bodyShrink*2,
+               wallHeight-bodyShrink*2-extrudeHeight)),
+        location=Vector((0,0,wallHeight/2-extrudeHeight/2)),
+        parent=wallProxy,
+    )
+    # 绘制签尖，刘大可p99
+    bpy.ops.object.mode_set(mode = 'EDIT') 
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh(bpy.context.object.data)
+    bpy.ops.mesh.select_mode(type = 'FACE')
+    # 先向上拉伸拉伸
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bm.faces.ensure_lookup_table()
+    return_geo = bmesh.ops.extrude_face_region(
+        bm, geom=[bm.faces[1]])
+    verts = [elem for elem in return_geo['geom'] 
+             if type(elem) == bmesh.types.BMVert]
+    bmesh.ops.translate(bm, 
+            verts=verts, 
+            vec=(0,0, extrudeHeight))
+    # 再挤压顶面宽度，形成签尖坡度
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bm.faces.ensure_lookup_table()
+    faceTop = bm.faces[8]
+    for v in faceTop.verts:
+        v.co.y = v.co.y /2
+    # 结束
+    bmesh.update_edit_mesh(bpy.context.object.data)
+    bm.free() 
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+    # 展UV
+    utils.UvUnwrap(bodyObj,type='cube')
+
+    # 赋材质
+    utils.copyMaterial(bData.mat_red,bodyObj)
+
+    # 合并
+    # wallObj = utils.joinObjects([bottomObj,bodyObj],'墙体')
+    return bodyObj
+
 # 个性化设置一个墙体
 # 传入wallproxy
 def buildSingleWall(wallproxy:bpy.types.Object):
@@ -168,23 +239,24 @@ def buildSingleWall(wallproxy:bpy.types.Object):
     
     if wData.wall_style == "1":   #槛墙
         if wData.wall_source != None:
-            wallChildObj:bpy.types.Object = utils.copyObject(
-                sourceObj=wData.wall_source,
-                name='墙体',
-                parentObj=wallproxy,
-                singleUser=True)
-            # 匹配wallproxy尺寸，GN会自动做倒角
-            wallChildObj.dimensions = (wallproxy.dimensions.x,
-                wallChildObj.dimensions.y*(bData.DK/con.DEFAULT_DK),
-                wallproxy.dimensions.z)
-            utils.applyTransfrom(ob=wallChildObj,use_scale=True)
-            utils.updateScene()
-            # 现在做墙体的GN有个bug，应用缩放时会覆盖高度，所以再次设置
-            wallChildObj.dimensions.z = wallproxy.dimensions.z
-            # 应用修改器
-            utils.applyAllModifer(wallChildObj)
-            # 处理UV
-            utils.UvUnwrap(wallChildObj,type='cube')
+            # wallChildObj:bpy.types.Object = utils.copyObject(
+            #     sourceObj=wData.wall_source,
+            #     name='墙体',
+            #     parentObj=wallproxy,
+            #     singleUser=True)
+            # # 匹配wallproxy尺寸，GN会自动做倒角
+            # wallChildObj.dimensions = (wallproxy.dimensions.x,
+            #     wallChildObj.dimensions.y*(bData.DK/con.DEFAULT_DK),
+            #     wallproxy.dimensions.z)
+            # utils.applyTransfrom(ob=wallChildObj,use_scale=True)
+            # utils.updateScene()
+            # # 现在做墙体的GN有个bug，应用缩放时会覆盖高度，所以再次设置
+            # wallChildObj.dimensions.z = wallproxy.dimensions.z
+            # # 应用修改器
+            # utils.applyAllModifer(wallChildObj)
+            # # 处理UV
+            # utils.UvUnwrap(wallChildObj,type='cube')
+            wallChildObj = __drawWall(wallproxy)
 
             wData : acaData = wallChildObj.ACA_data
             wData['aca_obj'] = True

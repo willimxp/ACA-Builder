@@ -1511,7 +1511,7 @@ def __drawFlyrafter(yanRafterObj:bpy.types.Object)->bpy.types.Object:
             vert = vertex_new
         vertices.append(vert)
 
-    # 创建面
+    # 创建面    
     flyrafterEnd_face = bm.faces.new((vertices[0],vertices[1],vertices[2])) # 飞尾
     flyrafterHead_face =bm.faces.new((vertices[0],vertices[2],vertices[3],vertices[4])) # 飞头
 

@@ -186,7 +186,8 @@ def update_roofstyle(self, context:bpy.types.Context):
     # 庑殿、歇山不可以不做飞椽
     if bData.roof_style in (
         con.ROOF_WUDIAN,
-        con.ROOF_XIESHAN
+        con.ROOF_XIESHAN,
+        con.ROOF_LUDING,
     ):
         bData['use_flyrafter'] = True
     return
@@ -499,6 +500,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("3","悬山顶",""),
                 ("4","硬山顶",""),
                 ("5","悬山卷棚顶",""),
+                ('6','盝顶',''),
             ],
             #update = update_roof,
             update = update_roofstyle,

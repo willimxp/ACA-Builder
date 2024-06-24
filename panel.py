@@ -630,7 +630,8 @@ class ACA_PT_BPW(bpy.types.Panel):
             # 庑殿、歇山不可以不做飞椽
             if bData.roof_style in (
                 con.ROOF_WUDIAN,
-                con.ROOF_XIESHAN
+                con.ROOF_XIESHAN,
+                con.ROOF_LUDING,
             ):
                 checkboxUseflyrafter.enabled = False
 
@@ -648,7 +649,9 @@ class ACA_PT_BPW(bpy.types.Panel):
             # 只有庑殿、歇山，可以设置冲、翘
             if bData.roof_style not in (
                     con.ROOF_WUDIAN,
-                    con.ROOF_XIESHAN):
+                    con.ROOF_XIESHAN,
+                    con.ROOF_LUDING,
+                    ):
                 inputChong.enabled = False
                 inputQiao.enabled = False
 

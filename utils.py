@@ -399,9 +399,10 @@ def addCube(name='Cube',
     cube = bpy.context.object
     cube.name = name
     cube.data.name = name
+    
     if parent != None:
         cube.parent = parent
-    
+
     # 应用缩放
     applyTransfrom(cube,use_scale=True)
     
@@ -720,8 +721,6 @@ def addCylinderBy2Points(radius:float,
     # 设置origin到椽头，便于后续向外檐出
     origin = locationTrans(start_point,root_obj,cylinder)
     setOrigin(cylinder,origin)
-
-
     return cylinder
 
 # 添加阵列修改器
@@ -755,10 +754,11 @@ def addModifierMirror(object:bpy.types.Object,
 
 # 应用所有修改器
 def applyAllModifer(object:bpy.types.Object):
-    #if len(object.modifiers) == 0: return
-    # high level
     focusObj(object)  
-    bpy.ops.object.convert(target='MESH')
+    # 仅在有修改器，或为curve等非mesh对象上执行，以便提升效率
+    if (len(object.modifiers) > 0
+        or object.type != 'MESH'):
+        bpy.ops.object.convert(target='MESH')
 
 # 翻转对象的normal
 def flipNormal(object:bpy.types.Object):

@@ -145,7 +145,7 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     if style == con.ACA_WALLTYPE_WINDOW:
         wData['wall_style'] = 3
         wData['use_KanWall'] = True
-    wData['wall_source'] = bData.wall_source
+    wData['wall_deepth'] = bData.wall_deepth
     wData['door_height'] = bData.door_height
     wData['door_num'] = bData.door_num
     wData['gap_num'] = bData.gap_num
@@ -160,11 +160,17 @@ def __drawWall(wallProxy:bpy.types.Object):
     buildingObj = utils.getAcaParent(wallProxy,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
     (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
+    # 覆盖墙体厚度
+    wallDeepth = con.WALL_DEEPTH * bData.piller_diameter
     # 退花碱厚度
     bodyShrink = con.WALL_SHRINK
 
     # 1、创建下碱对象
+    # 下碱一般取墙体高度的1/3
     height = wallHeight * con.WALL_BOTTOM_RATE
+    # 但最高不超过1.5m
+    if height > con.WALL_BOTTOM_LIMIT:
+        height = con.WALL_BOTTOM_LIMIT
     bottomObj = utils.drawHexagon(
         name='下碱',
         dimensions=Vector((wallLength,
@@ -188,41 +194,45 @@ def __drawWall(wallProxy:bpy.types.Object):
         location=Vector((0,0,wallHeight/2-extrudeHeight/2)),
         parent=wallProxy,
     )
-    # 绘制签尖，刘大可p99
-    bpy.ops.object.mode_set(mode = 'EDIT') 
+    
+    # 2.1 上身顶部做出签尖造型，刘大可p99
     bm = bmesh.new()
-    bm = bmesh.from_edit_mesh(bpy.context.object.data)
-    bpy.ops.mesh.select_mode(type = 'FACE')
+    bm.from_mesh(bodyObj.data)
     # 先向上拉伸拉伸
-    bpy.ops.mesh.select_all(action = 'DESELECT')
     bm.faces.ensure_lookup_table()
+    faceTop = bm.faces[1]
     return_geo = bmesh.ops.extrude_face_region(
-        bm, geom=[bm.faces[1]])
+        bm, geom=[faceTop])
     verts = [elem for elem in return_geo['geom'] 
              if type(elem) == bmesh.types.BMVert]
     bmesh.ops.translate(bm, 
             verts=verts, 
             vec=(0,0, extrudeHeight))
     # 再挤压顶面宽度，形成签尖坡度
-    bpy.ops.mesh.select_all(action = 'DESELECT')
+    # bpy.ops.mesh.select_all(action = 'DESELECT')
     bm.faces.ensure_lookup_table()
     faceTop = bm.faces[8]
     for v in faceTop.verts:
         v.co.y = v.co.y /2
     # 结束
-    bmesh.update_edit_mesh(bpy.context.object.data)
+    bm.to_mesh(bodyObj.data)
     bm.free() 
-    bpy.ops.object.mode_set(mode = 'OBJECT')
-
     # 展UV
     utils.UvUnwrap(bodyObj,type='cube')
-
     # 赋材质
-    utils.copyMaterial(bData.mat_red,bodyObj)
-
+    utils.copyMaterial(bData.mat_dust_red,bodyObj)
+    
     # 合并
-    # wallObj = utils.joinObjects([bottomObj,bodyObj],'墙体')
-    return bodyObj
+    wallObj = utils.joinObjects([bottomObj,bodyObj],'墙体')
+    wData : acaData = wallObj.ACA_data
+    wData['aca_obj'] = True
+    wData['aca_type'] = con.ACA_TYPE_WALL_CHILD
+    # 导角
+    modBevel:bpy.types.BevelModifier = \
+        wallObj.modifiers.new('Bevel','BEVEL')
+    modBevel.width = con.BEVEL_HIGH
+
+    return wallObj
 
 # 个性化设置一个墙体
 # 传入wallproxy
@@ -238,29 +248,8 @@ def buildSingleWall(wallproxy:bpy.types.Object):
     pd = con.PILLER_D_EAVE * dk
     
     if wData.wall_style == "1":   #槛墙
-        if wData.wall_source != None:
-            # wallChildObj:bpy.types.Object = utils.copyObject(
-            #     sourceObj=wData.wall_source,
-            #     name='墙体',
-            #     parentObj=wallproxy,
-            #     singleUser=True)
-            # # 匹配wallproxy尺寸，GN会自动做倒角
-            # wallChildObj.dimensions = (wallproxy.dimensions.x,
-            #     wallChildObj.dimensions.y*(bData.DK/con.DEFAULT_DK),
-            #     wallproxy.dimensions.z)
-            # utils.applyTransfrom(ob=wallChildObj,use_scale=True)
-            # utils.updateScene()
-            # # 现在做墙体的GN有个bug，应用缩放时会覆盖高度，所以再次设置
-            # wallChildObj.dimensions.z = wallproxy.dimensions.z
-            # # 应用修改器
-            # utils.applyAllModifer(wallChildObj)
-            # # 处理UV
-            # utils.UvUnwrap(wallChildObj,type='cube')
-            wallChildObj = __drawWall(wallproxy)
-
-            wData : acaData = wallChildObj.ACA_data
-            wData['aca_obj'] = True
-            wData['aca_type'] = con.ACA_TYPE_WALL_CHILD
+        wallChildObj = __drawWall(wallproxy)
+            
 
     if wData.wall_style in ("2","3"): # 2-隔扇，3-槛墙
         utils.focusObj(wallproxy)
@@ -324,7 +313,7 @@ def updateWallLayout(buildingObj:bpy.types.Object):
             # enumProperty赋值很奇怪
             if bData.wall_style != "":
                 wData['wall_style'] = int(bData.wall_style) 
-            wData['wall_source'] = bData.wall_source
+            wData['wall_deepth'] = bData.wall_deepth
             wData['door_height'] = bData.door_height
             wData['door_num'] = bData.door_num
             wData['gap_num'] = bData.gap_num
@@ -391,11 +380,6 @@ def addWall(buildingObj:bpy.types.Object,
 
                     # 将柱子交换，为下一次循环做准备
                     pFrom = piller
-    
-    # 刷新台基，添加踏跺
-    if wallType == con.ACA_WALLTYPE_DOOR:
-        from . import buildPlatform
-        buildPlatform.buildPlatform(buildingObj)
 
     # 聚焦在创建的门上
     utils.focusObj(wallproxy)

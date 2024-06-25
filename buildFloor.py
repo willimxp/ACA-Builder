@@ -312,7 +312,7 @@ def delFang(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
 
-    # 删除柱子和柱础
+    # 删除额枋对象
     for fang in fangs:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
         if 'aca_type' in fang.ACA_data:
@@ -321,6 +321,7 @@ def delFang(buildingObj:bpy.types.Object,
                 utils.deleteHierarchy(fang,del_parent=True)
 
     # 重新生成柱网配置
+    # 遍历父节点，查找所有的枋对象，重新组合fangstr
     floorRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_FLOOR_ROOT
     )    

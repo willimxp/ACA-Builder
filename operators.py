@@ -145,11 +145,54 @@ class ACA_OT_del_piller(bpy.types.Operator):
                   + "】吗？"),
             icon='QUESTION'
             )
-    
+
+# 添加踏跺
+class ACA_OT_add_step(bpy.types.Operator):
+    bl_idname="aca.add_step"
+    bl_label = "添加踏跺"
+    bl_description = "在柱间添加踏跺（先选择2根以上的柱子）"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        piller = context.object
+        pillers = context.selected_objects
+        buildingObj = utils.getAcaParent(piller,con.ACA_TYPE_BUILDING)
+        from . import buildPlatform
+        funproxy = partial(
+                buildPlatform.addStep,
+                buildingObj=buildingObj,pillers=pillers)
+        result = utils.fastRun(funproxy)
+        if 'FINISHED' in result:
+                self.report({'INFO'},"已添加踏跺。")
+        
+        return {'FINISHED'}
+
+# 删除踏跺
+class ACA_OT_del_step(bpy.types.Operator):
+    bl_idname="aca.del_step"
+    bl_label = "删除踏跺"
+    bl_description = "在柱间删除踏跺（先选择1个以上的踏跺）"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        step = context.object
+        steps = context.selected_objects
+        buildingObj = utils.getAcaParent(
+            step,con.ACA_TYPE_BUILDING)
+        from . import buildPlatform
+        funproxy = partial(
+                buildPlatform.delStep,
+                buildingObj=buildingObj,steps=steps)
+        result = utils.fastRun(funproxy)
+        if 'FINISHED' in result:
+                self.report({'INFO'},"已删除踏跺。")
+        
+        return {'FINISHED'}
+
 # 连接柱-柱，添加枋
 class ACA_OT_add_fang(bpy.types.Operator):
     bl_idname="aca.add_fang"
-    bl_label = "连接"
+    bl_label = "添加额枋"
     bl_description = "在柱间添加枋（先选择2根以上的柱子）"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -157,7 +200,6 @@ class ACA_OT_add_fang(bpy.types.Operator):
         piller = context.object
         pillers = context.selected_objects
         buildingObj = utils.getAcaParent(piller,con.ACA_TYPE_BUILDING)
-        # buildFloor.addFang(buildingObj,pillers) 
         funproxy = partial(
                 buildFloor.addFang,
                 buildingObj=buildingObj,pillers=pillers)
@@ -177,7 +219,8 @@ class ACA_OT_del_fang(bpy.types.Operator):
     def execute(self, context):  
         fang = context.object
         fangs = context.selected_objects
-        buildingObj = utils.getAcaParent(fang,con.ACA_TYPE_BUILDING)
+        buildingObj = utils.getAcaParent(
+            fang,con.ACA_TYPE_BUILDING)
         buildFloor.delFang(buildingObj,fangs) 
         self.report({'INFO'},"已删除枋。")
         return {'FINISHED'}
@@ -305,20 +348,20 @@ class ACA_OT_del_wall(bpy.types.Operator):
             self.report({'INFO'},"没有可删除的对象")
         return {'FINISHED'}
     
-    def invoke(self, context, event):
-        return context.window_manager.invoke_props_dialog(
-            operator = self,
-            title="删除对象"
-            )
+    # def invoke(self, context, event):
+    #     return context.window_manager.invoke_props_dialog(
+    #         operator = self,
+    #         title="删除对象"
+    #         )
 
-    def draw(self, context):
-        row = self.layout
-        row.label(
-            text=("确定删除【" 
-                  + bpy.context.object.name
-                  + "】吗？"),
-            icon='QUESTION'
-            )
+    # def draw(self, context):
+    #     row = self.layout
+    #     row.label(
+    #         text=("确定删除【" 
+    #               + bpy.context.object.name
+    #               + "】吗？"),
+    #         icon='QUESTION'
+    #         )
 
 
 # 生成斗栱
@@ -479,12 +522,18 @@ class ACA_OT_test(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
+        timeStart = time.time()
         buildingObj,bData,objData = utils.getRoot(context.object)
-        from . import buildYardWall
+        from . import buildPlatform
         funproxy = partial(
-            buildYardWall.buildYardWall,
+            buildPlatform.buildPlatform,
             buildingObj=buildingObj)
         utils.fastRun(funproxy)
+
+        timeEnd = time.time()
+        self.report(
+                {'INFO'},"完成：(%.2f秒)" 
+                % (timeEnd-timeStart))
 
         return {'FINISHED'}
     

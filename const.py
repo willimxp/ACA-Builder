@@ -13,6 +13,7 @@ class ACA_Consts(object):
     PLATFORM_NAME = '台基'                       # 台基名称
     ACA_TYPE_BUILDING = 'building'              # ACA类型：台基
     ACA_TYPE_PLATFORM = 'platform'              # ACA类型：台基
+    ACA_TYPE_STEP = 'step'                      # ACA类型：踏跺
     ACA_TYPE_FLOOR_ROOT = 'floor'               # ACA类型：柱网
     ACA_TYPE_PILLER = 'piller'                  # ACA类型：柱子
     ACA_TYPE_FANG = 'fang'                      # ACA类型：枋
@@ -56,6 +57,7 @@ class ACA_Consts(object):
     PLATFORM_HEIGHT = 2         # 台基默认高度(PD)
     PLATFORM_EXTEND = 2.4       # 台基下檐出(PD)
     STEP_HEIGHT = 0.15          # 阶条石、上基石、中基石的高度(m)，刘大可P418
+    STEP_SIDE_WIDTH = 0.15      # 垂带宽度占整个踏跺的比例
     # 规定为大式5寸，小式4寸，根据台明高度相除取整
     STEP_RATIO = 2.5
     STEP_WIDTH = STEP_HEIGHT*STEP_RATIO   # 上基石、中基石的宽度
@@ -97,6 +99,10 @@ class ACA_Consts(object):
     BOARD_HENG_Y = 1.5      # 金脊桁檩垫板厚(DK)
 
     # 门窗（马炳坚数据）
+    WALL_DEEPTH = 1.5           # 槛墙厚度(PD)
+    WALL_BOTTOM_RATE = 1/3      # 墙体下碱的高度比例
+    WALL_BOTTOM_LIMIT = 1.5     # 墙体下碱限高(m)
+    WALL_SHRINK = 0.015         # 墙体退花碱厚度(m)
     KAN_DOWN_HEIGHT = 0.8       # 下槛高度(PD)
     KAN_DOWN_DEEPTH = 0.3       # 下槛深度(PD)，梁思成实际使用的为0.4
     KAN_MID_HEIGHT = 0.66       # 中槛高度(PD)(汤崇平书p20中定为0.64)
@@ -170,8 +176,6 @@ class ACA_Consts(object):
     DEFAULT_PILLER_HEIGHT = 0.8         # 默认柱高，取明间的0.8，马炳坚p4
     SANSHUI_WIDTH = 20                  # 散水宽度(DK)
     SANSHUI_HEIGHT = 0.02               # 散水高度(m)
-    WALL_BOTTOM_RATE = 1/3              # 墙体下碱的高度比例
-    WALL_SHRINK = 0.015                 # 墙体退花碱厚度(m)
 
     # 瓦作类
     # 屋瓦灰背层高度，用于计算铺瓦的高度

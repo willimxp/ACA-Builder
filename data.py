@@ -291,6 +291,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min = 0.01, 
             update = update_platform    # 绑定回调
         ) # type: ignore
+    step_net : bpy.props.StringProperty(
+            name = "保存的踏跺列表"
+        )# type: ignore
     
     # 柱网对象属性
     x_total : bpy.props.FloatProperty(
@@ -404,13 +407,13 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("3","槛窗",""),
             ],
         ) # type: ignore
-    wall_source : bpy.props.PointerProperty(
-            name = "墙样式",
-            type = bpy.types.Object,
-            poll = p_filter,
+    wall_deepth : bpy.props.FloatProperty(
+            name="墙厚度",
+            default=1.0,
+            min=0.1,
+            max=2,
             update = update_wall
-        )# type: ignore 
-    
+        )# type: ignore
     # 隔扇属性
     door_height : bpy.props.FloatProperty(
             name="中槛高度",
@@ -728,6 +731,10 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     mat_brick_3:bpy.props.PointerProperty(
             name = "条砖横铺",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_dust_red:bpy.props.PointerProperty(
+            name = "抹灰.红",
             type = bpy.types.Object,
         )# type: ignore 
     

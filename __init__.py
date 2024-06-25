@@ -48,6 +48,8 @@ classes = (
     operators.ACA_OT_build_roof,
     operators.ACA_OT_focusBuilding,
     operators.ACA_OT_reset_floor,
+    operators.ACA_OT_add_step,
+    operators.ACA_OT_del_step,
     operators.ACA_OT_del_piller,
     operators.ACA_OT_add_fang,
     operators.ACA_OT_del_fang,

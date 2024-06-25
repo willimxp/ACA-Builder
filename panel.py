@@ -74,9 +74,9 @@ class ACA_PT_basic(bpy.types.Panel):
             col = row.column(align=True)
             col.operator("aca.default_dk",icon='SHADERFX',text='')
         
-        # # 测试按钮
-        # row = layout.row()
-        # row.operator("aca.test",icon='HOME')
+        # 测试按钮
+        row = layout.row()
+        row.operator("aca.test",icon='HOME')
 
         return
 
@@ -190,6 +190,14 @@ class ACA_PT_platform(bpy.types.Panel):
             col = box.column(align=True)
             col.prop(bData, "platform_height")
             col.prop(bData, "platform_extend")
+            col.operator(operator='aca.add_step',
+                         text='添加踏跺',
+                         depress=True,
+                         icon='PACKAGE')
+            col.operator(operator='aca.del_step',
+                         text='删除踏跺',
+                         depress=True,
+                         icon='TRASH')
 
             # 切换显示/隐藏台基
             if not bData.is_showPlatform:
@@ -376,6 +384,11 @@ class ACA_PT_wall(bpy.types.Panel):
             toolBox = box.column(align=True)
             
             toolBar = toolBox.grid_flow(align=True,columns=1)
+            # 暂时隐藏了该设置项，墙体全部默认用1.5D作为厚度
+            # # 墙体厚度
+            # inputWallDeepth = toolBar.column(align=True)
+            # inputWallDeepth.prop(
+            #     dataSource, "wall_deepth",text='墙体厚度')
             # 隔扇数量
             inputDoorNum = toolBar.column(align=True)
             inputDoorNum.prop(

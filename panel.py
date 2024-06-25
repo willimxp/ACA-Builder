@@ -623,6 +623,10 @@ class ACA_PT_BPW(bpy.types.Panel):
             inputTuishan = toolBar.column(align=True)
             inputTuishan.prop(
                 bData, "tuishan",text='推山系数',slider=True)
+            # 收山
+            inputShoushan = toolBar.column(align=True)
+            inputShoushan.prop(
+                bData, "shoushan",text='收山尺寸(m)')
             # 举折系数
             droplistJuzhe = toolBar.column(align=True)
             droplistJuzhe.prop(
@@ -671,6 +675,10 @@ class ACA_PT_BPW(bpy.types.Panel):
             # 只有庑殿可以设置推山
             if bData.roof_style != con.ROOF_WUDIAN:
                 inputTuishan.enabled = False
+
+            # 只有歇山可以设置收山
+            if bData.roof_style != con.ROOF_XIESHAN:
+                inputShoushan.enabled = False
 
 # “瓦作属性”子面板
 class ACA_PT_tiles(bpy.types.Panel):

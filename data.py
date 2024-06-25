@@ -546,6 +546,13 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             max=1.0,
             description="庑殿顶两山坡度的调整系数，标准值为0.9，设置为1.0即不做推山"
         )# type: ignore
+    shoushan: bpy.props.FloatProperty(
+            name="收山尺寸", 
+            default=0.3,
+            min=0,
+            max=2,
+            description="歇山顶的山面内返的距离(米)，建议取一桁径以上，不超过一步架"
+        )# type: ignore
     juzhe : bpy.props.EnumProperty(
             name = "举折系数",
             items = [

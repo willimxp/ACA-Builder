@@ -167,11 +167,15 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
         # 歇山，面阔方向，下金桁以上按收山法则
         elif (roofStyle == con.ROOF_XIESHAN
                 and n>0):
-                # 这里暂时用上檐出
-                # todo：后续可以参数化，允许用户设置
-                purlinWidth = (bData.x_total/2
-                        - rafterSpan 
-                        + con.YANCHUAN_EX*dk)
+                # 收山系统的选择，推荐一桁径以上，一步架以下
+                # 当超出限制值时，自动设置为限制值
+                shoushanLimit = rafterSpan - con.BOFENG_WIDTH*dk
+                if bData.shoushan > shoushanLimit:
+                    bData['shoushan'] = shoushanLimit
+                purlinWidth = (bData.x_total/2 
+                        - con.BOFENG_WIDTH*dk   # 推山做到博缝板外皮
+                        - bData.shoushan         # 用户自定义推山尺寸
+                    )
         # 庑殿，下金桁以上，应用推山做法
         elif (roofStyle == con.ROOF_WUDIAN
             and n>0): 

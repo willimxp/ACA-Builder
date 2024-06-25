@@ -1405,7 +1405,7 @@
 		<is_showBPW type="bool">True</is_showBPW>
 		<is_showTiles type="bool">True</is_showTiles>
 		<platform_height type="float">1.12</platform_height>
-		<platform_extend type="float">1.76</platform_extend>
+		<platform_extend type="float">2.0</platform_extend>
 		<x_rooms type="int">7</x_rooms>
 		<x_1 type="float">6.16</x_1>
 		<x_2 type="float">5.28</x_2>
@@ -1486,6 +1486,8 @@
 		<yardwall_height type="float">3.0</yardwall_height>
 		<yardwall_deepth type="float">1.0</yardwall_deepth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
+		<step_net type="str">2/0#3/0,3/0#4/0,4/0#5/0,7/2#7/3,2/5#3/5,3/5#4/5,4/5#5/5,0/2#0/3,</step_net>
+		<wall_deepth type="float">1.0</wall_deepth>
 	</template>
 	<template>
 		<aca_type type="str">building</aca_type>
@@ -1496,7 +1498,7 @@
 		<is_showWalls type="bool">True</is_showWalls>
 		<is_showDougong type="bool">True</is_showDougong>
 		<is_showBPW type="bool">True</is_showBPW>
-		<is_showTiles type="bool">True</is_showTiles>
+		<is_showTiles type="bool">False</is_showTiles>
 		<platform_height type="float">1.12</platform_height>
 		<platform_extend type="float">1.76</platform_extend>
 		<x_rooms type="int">5</x_rooms>
@@ -1580,5 +1582,7 @@
 		<yardwall_deepth type="float">1.0</yardwall_deepth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
 		<wall_deepth type="float">0.5</wall_deepth>
+		<step_net type="str" />
+		<shoushan type="float">0.1</shoushan>
 	</template>
 </templates>

@@ -670,6 +670,12 @@ def delStep(buildingObj:bpy.types.Object,
 # 根据固定模板，创建新的台基
 def buildPlatform(buildingObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
+    # 创建地基
+    # 如果已有，先删除
+    pfProxy = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_PLATFORM)
+    if pfProxy != None:
+        utils.deleteHierarchy(pfProxy,del_parent=True)
 
     # 台基可以跳过不做
     if bData.platform_height <= 0.01: return 
@@ -677,13 +683,6 @@ def buildPlatform(buildingObj:bpy.types.Object):
     # 固定在台基目录中
     buildingColl = buildingObj.users_collection[0]
     utils.setCollection('台基',parentColl=buildingColl)
-
-    # 创建地基
-    # 如果已有，先删除
-    pfProxy = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_PLATFORM)
-    if pfProxy != None:
-        utils.deleteHierarchy(pfProxy,del_parent=True)
 
     # 生成台基框线
     pfProxy = __addPlatformProxy(buildingObj)
@@ -758,10 +757,13 @@ def resizePlatform(buildingObj:bpy.types.Object):
     roofRoot.location.z = tile_base
 
     # 更新建筑框大小
-    buildingObj.empty_display_size = math.sqrt(
-            pfObj.dimensions.x * pfObj.dimensions.x
-            + pfObj.dimensions.y * pfObj.dimensions.y
-        ) / 2
+    if pfObj == None:
+        buildingObj.empty_display_size = bData.x_total
+    else:
+        buildingObj.empty_display_size = math.sqrt(
+                pfObj.dimensions.x * pfObj.dimensions.x
+                + pfObj.dimensions.y * pfObj.dimensions.y
+            ) / 2
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

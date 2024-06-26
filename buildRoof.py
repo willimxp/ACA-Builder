@@ -1041,7 +1041,8 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             # 檐椽平铺到上层桁交点
             rafter_tile_x = purlin_pos[n+1].x  
         # 计算椽子数量：椽当数+1
-        count = round(
+        # 取整可小不可大，否则会超出博缝板，导致穿模
+        count = math.floor(
             (rafter_tile_x- con.YUANCHUAN_D*dk)
                 /rafter_gap_x) + 1
         utils.addModifierArray(

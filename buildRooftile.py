@@ -991,7 +991,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     # 与瓦垄宽度匹配
     roofRidgeObj.dimensions.x = bData.tile_width_real
     utils.applyTransfrom(roofRidgeObj,use_scale=True)
-    # 筒瓦坐中
+    # 脊筒坐中
     roofRidgeObj.location.x = - roofRidgeObj.dimensions.x/2
     
     # 横向平铺
@@ -1011,14 +1011,17 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
             - bData.tile_width_real/2
         
     # 横向平铺
-    modArray:bpy.types.ArrayModifier = roofRidgeObj.modifiers.new('横向平铺','ARRAY')
+    modArray:bpy.types.ArrayModifier = \
+        roofRidgeObj.modifiers.new('横向平铺','ARRAY')
     modArray.use_relative_offset = True
     modArray.relative_offset_displace = (1,0,0)
     modArray.fit_type = 'FIT_LENGTH' 
     modArray.fit_length = zhengji_length
 
-    mod:bpy.types.MirrorModifier = roofRidgeObj.modifiers.new('X向对称','MIRROR')
+    mod:bpy.types.MirrorModifier = \
+        roofRidgeObj.modifiers.new('X向对称','MIRROR')
     mod.mirror_object = tileRootObj
+    mod.use_axis = (True,False,False)
     mod.use_bisect_axis = (True,False,False)
 
     # 摆放螭吻
@@ -1036,6 +1039,106 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         mirrorObj=tileRootObj,
         use_axis=(True,False,False)
     )
+    return
+
+# 营造盝顶的围脊
+def __buildSurroundRidge(buildingObj:bpy.types.Object,
+                    rafter_pos):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT
+    )
+   
+    # 围脊相交点，以金桁交点为参考
+    # todo: 后续允许设置收分距离
+    ridgeCross = rafter_pos[1]
+    # 偏移计算：
+    offset = Vector((
+            # X、Y偏移：半柱径
+            bData.piller_diameter/2,
+            bData.piller_diameter/2,
+            # Z偏移：槫子上皮+椽径+望板高+灰泥层高
+            (con.HENG_COMMON_D/2     # 槫子上皮
+                + con.YUANCHUAN_D       # 椽架厚度
+                + con.WANGBAN_H         # 望板厚度
+                + con.ROOFMUD_H)*dk     # 灰泥厚度
+        ))
+    ridgeCross += offset
+    
+    # 横向围脊
+    roofRidgeObj = utils.copyObject(
+        sourceObj=bData.ridgeBack_source,
+        name="围脊",
+        location=(0,
+                  ridgeCross.y,
+                  ridgeCross.z),
+        parentObj=tileRootObj,
+        singleUser=True)
+    # 根据斗口调整尺度
+    utils.resizeObj(roofRidgeObj,
+        bData.DK / con.DEFAULT_DK)
+    # 与瓦垄宽度匹配
+    roofRidgeObj.dimensions.x = bData.tile_width_real
+    utils.applyTransfrom(roofRidgeObj,use_scale=True)
+    # 脊筒坐中
+    roofRidgeObj.location.x = - roofRidgeObj.dimensions.x/2
+    # 横向平铺
+    # 适当延长，保证转角处能紧密对接（在45度镜像时，超出的部分被裁剪）
+    zhengji_length = ridgeCross.x + 0.5
+    modArray:bpy.types.ArrayModifier = \
+        roofRidgeObj.modifiers.new('横向平铺','ARRAY')
+    modArray.use_relative_offset = True
+    modArray.relative_offset_displace = (1,0,0)
+    modArray.fit_type = 'FIT_LENGTH' 
+    modArray.fit_length = zhengji_length
+
+    # 45度镜像
+    bpy.ops.object.empty_add(
+        type='PLAIN_AXES',
+        location=ridgeCross
+        )
+    diagnalObj = bpy.context.object
+    diagnalObj.parent = tileRootObj
+    diagnalObj.name = '45度镜像'
+    diagnalObj.rotation_euler.z = math.radians(45)
+    mod:bpy.types.MirrorModifier = \
+        roofRidgeObj.modifiers.new('45度对称','MIRROR')
+    mod.mirror_object = diagnalObj
+    mod.use_axis = (False,True,False)
+    mod.use_bisect_axis = (False,True,False)
+
+    # 镜像
+    mod:bpy.types.MirrorModifier = \
+        roofRidgeObj.modifiers.new('XY对称','MIRROR')
+    mod.mirror_object = tileRootObj
+    mod.use_axis = (True,True,False)
+    mod.use_bisect_axis = (True,True,False)
+
+    # 摆放螭吻
+    chiwenObj = utils.copyObject(
+        sourceObj=bData.chiwen_source,
+        name='合角吻',
+        location=ridgeCross,
+        rotation=(0,0,math.radians(180)),
+        parentObj=tileRootObj,
+        singleUser=True)
+    # 根据斗口调整尺度
+    utils.resizeObj(chiwenObj,
+        bData.DK / con.DEFAULT_DK *0.75)
+    mod:bpy.types.MirrorModifier = \
+        chiwenObj.modifiers.new('45度对称','MIRROR')
+    mod.mirror_object = diagnalObj
+    mod.use_axis = (False,True,False)
+    mod.use_bisect_axis = (False,True,False)
+
+    utils.addModifierMirror(
+        object=chiwenObj,
+        mirrorObj=tileRootObj,
+        use_axis=(True,True,False)
+    )
+
     return
 
 # 绘制前后檐垂脊曲线
@@ -2048,6 +2151,11 @@ def __buildRidge(buildingObj: bpy.types.Object,
     # 营造歇山的博脊
     if bData.roof_style == con.ROOF_XIESHAN:
         __buildSideRidge(buildingObj,rafter_pos)
+
+    # 营造盝顶的围脊
+    if bData.roof_style == con.ROOF_LUDING:
+        __buildSurroundRidge(buildingObj,rafter_pos)
+
     return
 
 # 对外的统一调用接口

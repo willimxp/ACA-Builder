@@ -548,7 +548,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore
     shoushan: bpy.props.FloatProperty(
             name="收山尺寸", 
-            default=0.3,
+            default=2,
             min=0,
             max=2,
             description="歇山顶的山面内返的距离(米)，建议取一桁径以上，不超过一步架"

@@ -1416,3 +1416,11 @@ def UvUnwrap(object:bpy.types.Object,type=None):
             cube_size=10
         )
     bpy.ops.object.mode_set(mode = 'OBJECT')
+
+# 锁定对象
+def lockObj(obj:bpy.types.Object):
+    obj.hide_select = True
+    obj.lock_scale = (True,True,False)
+    obj.lock_location = (True,True,False)
+    obj.lock_rotation = (True,True,False)
+    return

@@ -381,18 +381,10 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 从当前场景中载入数据集
     bData:acaData = buildingObj.ACA_data
     piller_source = bData.piller_source
-    piller_height = bData.piller_height
-    piller_R = bData.piller_diameter /2
-    if piller_source == None:
-        # 默认创建简单柱子
-        piller_basemesh = utils.addCylinder(radius=piller_R,
-                depth=piller_height,
-                location=(0, 0, 0),
-                name="基本立柱",
-                root_obj=floorRootObj,  # 挂接在柱网节点下
-                origin_at_bottom = True,    # 将origin放在底部
-            )
-    else:
+
+    # 创建临时引用，便于在本建筑内复用，但各建筑间可以隔离
+    # 在最后会被删除
+    if piller_source != None:
         # 已设置柱样式，根据设计参数实例化
         piller_basemesh:bpy.types.Object = utils.copyObject(
             sourceObj=piller_source,
@@ -400,20 +392,6 @@ def buildPillers(buildingObj:bpy.types.Object):
             parentObj=floorRootObj,
             singleUser=True
         )
-        # 获取对象应用modifier后的实际尺寸
-        utils.updateScene()
-        piller_basemesh.dimensions = (
-            bData.piller_diameter,
-            bData.piller_diameter,
-            bData.piller_height
-        )
-        '''这里不要应用缩放，
-        以便传递到后续的柱副本中，
-        并且其柱础子对象还能自动集成该缩放'''
-        # utils.applyScale(piller_basemesh)
-    # 柱子属性
-    piller_basemesh.ACA_data['aca_obj'] = True
-    piller_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
     
     # 3、根据地盘数据，循环排布每根柱子
     net_x,net_y = getFloorDate(buildingObj)
@@ -430,30 +408,64 @@ def buildPillers(buildingObj:bpy.types.Object):
                     and piller_list_str != "" :
                 continue    # 结束本次循环
             
-            # 复制柱子，仅instance，包含modifier
-            piller_loc = (net_x[x],net_y[y],piller_basemesh.location.z)
-            piller_copy = utils.copyObject(
-                sourceObj = piller_basemesh,
-                name = '柱.' + pillerID,
-                location=piller_loc,
-                parentObj = floorRootObj
+            # 添加柱子父节点
+            pillerProxy = utils.addCube(
+                name='柱proxy' + pillerID,
+                location=(net_x[x],
+                          net_y[y],
+                          bData.piller_height/2),
+                dimension=(
+                    bData.piller_diameter,
+                    bData.piller_diameter,
+                    bData.piller_height,
+                ),
+                parent=floorRootObj
             )
-            piller_copy.ACA_data['pillerID'] = pillerID
+            utils.setOrigin(pillerProxy,
+                Vector((0,0,-bData.piller_height/2)))
+            utils.hideObjFace(pillerProxy)
+            pillerProxy.ACA_data['aca_obj'] = True
+            pillerProxy.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
+            pillerProxy.ACA_data['pillerID'] = pillerID
 
+            # 复制柱子，仅instance，包含modifier
+            pillerObj = utils.copyObject(
+                sourceObj = piller_basemesh,
+                name = '柱子',
+                parentObj = pillerProxy,
+                scale=(
+                    bData.piller_diameter/piller_basemesh.dimensions.x,
+                    bData.piller_diameter/piller_basemesh.dimensions.y,
+                    bData.piller_height/piller_basemesh.dimensions.z
+                )
+            )
+            utils.lockObj(pillerObj)
+            # 复制柱础
+            pillerbaseObj = utils.copyObject(
+                sourceObj= bData.pillerbase_source,
+                name='柱础',
+                parentObj= pillerProxy,
+                scale=(
+                    bData.piller_diameter/piller_basemesh.dimensions.x,
+                    bData.piller_diameter/piller_basemesh.dimensions.y,
+                    bData.piller_diameter/piller_basemesh.dimensions.x,
+                )
+            )
+            utils.lockObj(pillerbaseObj)
             # 生成柱顶石
             pillerBase_h = 0.3
             pillerBase_popup = 0.02
             pillerBase = utils.addCube(
                 name='柱顶石',
                 location=(0,0,
-                          (piller_copy.location.z 
-                           - pillerBase_h/2
+                          (- pillerBase_h/2
                            +pillerBase_popup)),
-                dimension=(2*bData.piller_diameter/piller_copy.scale.x,
-                       2*bData.piller_diameter/piller_copy.scale.y,
+                dimension=(2*bData.piller_diameter,
+                       2*bData.piller_diameter,
                        pillerBase_h),
-                parent=piller_copy
+                parent=pillerProxy
             )
+            utils.lockObj(pillerBase)
             # 添加bevel
             modBevel:bpy.types.BevelModifier = \
                 pillerBase.modifiers.new('Bevel','BEVEL')
@@ -521,13 +533,15 @@ def resizePiller(buildingObj:bpy.types.Object):
     
     floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
     if len(floorRootObj.children) >0 :
-        for piller in floorRootObj.children:
-            if piller.ACA_data['aca_type'] == con.ACA_TYPE_PILLER:
-                piller.dimensions = (
-                    bData.piller_diameter,
-                    bData.piller_diameter,
-                    bData.piller_height
-                )
+        for pillerProxy in floorRootObj.children:
+            if pillerProxy.ACA_data['aca_type'] == con.ACA_TYPE_PILLER:
+                for child in pillerProxy.children:
+                    if '柱子' in child.name:
+                        child.dimensions = (
+                            bData.piller_diameter,
+                            bData.piller_diameter,
+                            bData.piller_height
+                        )
 
     # 柱高、柱径的变化，都会引起隔扇、墙体的变化，需要重建
     # 重新生成墙体

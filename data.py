@@ -216,7 +216,10 @@ def hide_walls(self, context:bpy.types.Context):
     utils.hideLayer(context,'墙体',self.is_showWalls)
 
 def hide_dougong(self, context:bpy.types.Context):
-    utils.hideLayer(context,'斗栱',self.is_showDougong)
+    buildingObj,bData,objData = utils.getRoot(context.object)
+    # 如果不做斗栱，就没有斗栱的目录和layer，会报错
+    if bData.use_dg:
+        utils.hideLayer(context,'斗栱',self.is_showDougong)
 
 def hide_BPW(self, context:bpy.types.Context):
     utils.hideLayer(context,'梁椽望',self.is_showBPW)
@@ -362,8 +365,10 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     piller_source : bpy.props.PointerProperty(
             name = "柱样式",
             type = bpy.types.Object,
-            poll = p_filter,
-            update = update_PillerStyle,
+        )# type: ignore
+    pillerbase_source : bpy.props.PointerProperty(
+            name = "柱础样式",
+            type = bpy.types.Object,
         )# type: ignore
     piller_height : bpy.props.FloatProperty(
             name = "柱高",
@@ -375,7 +380,8 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "柱径",
             default = 0.0,
             min = 0.01, 
-            update = update_piller
+            # update = update_piller
+            update = update_building,
         )# type: ignore
     use_smallfang: bpy.props.BoolProperty(
             default=False,

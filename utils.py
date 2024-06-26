@@ -96,12 +96,13 @@ def hideCollection(coll_name:str,
     # 模糊匹配，因为目录名可能带“.001”后缀
     layerColl = recurLayerCollection(
         layer_collection, coll_name,is_like=True)
-    if isShow:
-        layerColl.exclude = False
-        #layerColl.hide_viewport = False
-    else:
-        layerColl.exclude = True
-        #layerColl.hide_viewport = True
+    if layerColl != None:
+        if isShow:
+            layerColl.exclude = False
+            #layerColl.hide_viewport = False
+        else:
+            layerColl.exclude = True
+            #layerColl.hide_viewport = True
 
 # 聚焦选中指定名称的目录
 def focusCollection(coll_name:str):

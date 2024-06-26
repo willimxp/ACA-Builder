@@ -216,10 +216,7 @@ def hide_walls(self, context:bpy.types.Context):
     utils.hideLayer(context,'墙体',self.is_showWalls)
 
 def hide_dougong(self, context:bpy.types.Context):
-    buildingObj,bData,objData = utils.getRoot(context.object)
-    # 如果不做斗栱，就没有斗栱的目录和layer，会报错
-    if bData.use_dg:
-        utils.hideLayer(context,'斗栱',self.is_showDougong)
+    utils.hideLayer(context,'斗栱',self.is_showDougong)
 
 def hide_BPW(self, context:bpy.types.Context):
     utils.hideLayer(context,'梁椽望',self.is_showBPW)

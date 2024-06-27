@@ -514,7 +514,27 @@ class ACA_OT_build_yardwall(bpy.types.Operator):
         
 
         return {'FINISHED'}
-    
+
+class ACA_OT_default_ludingRafterSpan(bpy.types.Operator):
+    bl_idname="aca.default_luding_rafterspan"
+    bl_label = "默认盝顶步架"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '步架推荐值，自动获取尽间开间尺寸'
+
+    def execute(self, context):  
+        # 盝顶步架默认去面阔的尽间宽度
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if bData.x_rooms >= 7:
+            bData.luding_rafterspan = bData.x_4
+        elif bData.x_rooms >= 5:
+            bData.luding_rafterspan = bData.x_3
+        elif bData.x_rooms >=3:
+            bData.luding_rafterspan = bData.x_2
+        else:
+            bData.luding_rafterspan = 0.01
+
+        return {'FINISHED'}
+
 # 测试
 class ACA_OT_test(bpy.types.Operator):
     bl_idname="aca.test"

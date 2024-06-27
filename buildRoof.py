@@ -105,12 +105,16 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
         lift_ratio = con.LIFT_RATIO_SMALL
 
     # 2、步架宽度：进深/步架数（卷棚等减3椽）
+    # 卷棚顶：顶层桁檩间距3椽径，要从进深中减去后，平分椽架
     if roofStyle == con.ROOF_XUANSHAN_JUANPENG:
-        # 卷棚顶：顶层桁檩间距3椽径，要从进深中减去后，平分椽架
         rafterSpan = (bData.y_total 
             - con.JUANPENG_SPAN*dk)/bData.rafter_count
+    # 盝顶：直接采用用户设置的参数
+    if roofStyle == con.ROOF_LUDING:
+        rafterSpan = bData.luding_rafterspan
+    # 其他屋顶的步架宽度：按椽架数平分进深长度
+    # 包括庑殿、歇山、悬山、硬山
     else:
-        # 一般屋顶的步架宽度：按椽架数平分进深长度
         rafterSpan = bData.y_total/bData.rafter_count
 
     # 3、起始点

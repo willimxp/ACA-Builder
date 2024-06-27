@@ -1060,10 +1060,12 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
             bData.piller_diameter/2,
             bData.piller_diameter/2,
             # Z偏移：槫子上皮+椽径+望板高+灰泥层高
-            (con.HENG_COMMON_D/2     # 槫子上皮
-                + con.YUANCHUAN_D       # 椽架厚度
-                + con.WANGBAN_H         # 望板厚度
-                + con.ROOFMUD_H)*dk     # 灰泥厚度
+            (con.HENG_COMMON_D/2*dk     # 槫子上皮
+                + con.YUANCHUAN_D*dk    # 椽架厚度
+                + con.WANGBAN_H*dk      # 望板厚度
+                + con.ROOFMUD_H*dk      # 灰泥厚度
+                - 1.2*dk                # 手工微调
+            )
         ))
     ridgeCross += offset
     

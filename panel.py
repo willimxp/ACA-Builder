@@ -627,6 +627,22 @@ class ACA_PT_BPW(bpy.types.Panel):
             inputShoushan = toolBar.column(align=True)
             inputShoushan.prop(
                 bData, "shoushan",text='收山尺寸(m)')
+            
+            toolBar = toolBox.grid_flow(
+                align=True,columns=2)
+            # 盝顶步架宽度
+            inputLudingBujia = toolBar.column(align=True)
+            inputLudingBujia.prop(
+                bData, "luding_rafterspan",text='盝顶步架')
+            buttonDefaultLDBJ = toolBar.column(align=True)
+            buttonDefaultLDBJ.operator(
+                operator='aca.default_luding_rafterspan',
+                text='',
+                icon='SHADERFX',
+            )
+
+            toolBar = toolBox.grid_flow(
+                align=True,columns=1)
             # 举折系数
             droplistJuzhe = toolBar.column(align=True)
             droplistJuzhe.prop(
@@ -679,6 +695,10 @@ class ACA_PT_BPW(bpy.types.Panel):
             # 只有歇山可以设置收山
             if bData.roof_style != con.ROOF_XIESHAN:
                 inputShoushan.enabled = False
+
+            # 只有盝顶可以设置步架
+            if bData.roof_style != con.ROOF_LUDING:
+                inputLudingBujia.enabled = False
 
 # “瓦作属性”子面板
 class ACA_PT_tiles(bpy.types.Panel):

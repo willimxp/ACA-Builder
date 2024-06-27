@@ -61,6 +61,7 @@ classes = (
     operators.ACA_OT_save_template,
     operators.ACA_OT_del_template,
     operators.ACA_OT_build_yardwall,
+    operators.ACA_OT_default_ludingRafterSpan,
 )
 
 def register():   

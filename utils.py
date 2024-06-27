@@ -783,6 +783,7 @@ def addBisect(object:bpy.types.Object,
               clear_inner=False,
               direction  = 'Z',
               use_fill = True)    :
+    focusObj(object)
     # 将对象的mesh数据single化，避免影响场景中其他对象
     object.data = object.data.copy()
     if direction == 'Z':
@@ -806,7 +807,7 @@ def addBisect(object:bpy.types.Object,
     bisect_normal = Vector(bisect_normal).normalized() # normal必须normalized,注意不是normalize
 
     # 2、选中并裁切
-    applyAllModifer(object)
+    bpy.ops.object.convert(target='MESH')
     bpy.ops.object.editmode_toggle()
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(

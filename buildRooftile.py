@@ -583,7 +583,7 @@ def __drawTileGrid(
     utils.setGN_Input(gnMod,"翼角瓦线",SideCurve)
     utils.setGN_Input(gnMod,"瓦片列数",GridCols)
     utils.setGN_Input(gnMod,"瓦片行数",tileRows)  
-    # 应用modifier
+    # 应用GN modifier
     utils.applyAllModifer(tileGrid)      
     
     # 回写准确的瓦垄宽度

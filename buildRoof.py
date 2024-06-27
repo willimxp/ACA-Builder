@@ -942,6 +942,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             # 复制檐椽
             tympanumRafter:bpy.types.Object = fbRafterObj.copy()
             tympanumRafter.data = fbRafterObj.data.copy()
+            tympanumRafter.name = '山花补齐檐椽'
             bpy.context.collection.objects.link(tympanumRafter)
             tympanumRafter.ACA_data['aca_type'] = ''
             # 重设檐椽平铺宽度
@@ -1261,19 +1262,19 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
         # 歇山顶的山花处，再补一小块望板
         if bData.roof_style == con.ROOF_XIESHAN and n ==0:
             tympanumWangban:bpy.types.Object = wangbanObj.copy()
-            tympanumWangban.modifiers.clear()
             tympanumWangban.data = wangbanObj.data.copy()
-            bpy.context.collection.objects.link(tympanumWangban)
+            tympanumWangban.name = '山花补齐望板'
+            tympanumWangban.modifiers.clear()
             tympanumWangban.ACA_data['aca_type'] = ''
             tympanumWangban.dimensions.y = purlin_pos[-1].x
             tympanumWangban.location.x += (purlin_pos[-1].x - purlin_pos[1].x)/2
+            bpy.context.collection.objects.link(tympanumWangban)
             # 裁剪
             utils.addBisect(
                     object=tympanumWangban,
-                    pStart=buildingObj.matrix_world @ purlin_pos[n],
-                    pEnd=buildingObj.matrix_world @ purlin_pos[n+1],
-                    pCut=buildingObj.matrix_world @ purlin_pos[n] + \
-                        Vector((con.JIAOLIANG_Y*dk/2,0,0)),
+                    pStart=Vector((0,0,0)),
+                    pEnd=Vector((-1,-1,0)),
+                    pCut=buildingObj.matrix_world @ purlin_pos[0],
                     clear_inner=True
             )
             # 望板镜像
@@ -1339,7 +1340,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             # 平滑
             utils.shaderSmooth(curveRafter)
             
-    # 合并所有望板
+    # 合并望板
     wangbanSetObj = utils.joinObjects(
         wangbanObjs,newName='望板-前后檐')
 
@@ -2058,7 +2059,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
                         width = con.LIKOUMU_Y*dk,
                         height = con.LIKOUMU_H*dk,
                     )
-    # 转为mesh
+    # Curve转为mesh
     utils.applyAllModifer(xly_curve_obj)
     # 处理UV
     utils.UvUnwrap(xly_curve_obj)
@@ -2467,7 +2468,7 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
                         height = con.DALIANYAN_H*dk,
                         width = con.DALIANYAN_Y*dk
                     )
-    # 转为mesh
+    # Curve转为mesh
     utils.applyAllModifer(flyrafterEaveObj)
     # 设置UV
     utils.UvUnwrap(flyrafterEaveObj,type='cube')

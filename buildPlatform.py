@@ -574,7 +574,7 @@ def __addSanshui(pfProxy:bpy.types.Object,
         modBool.operation = 'UNION'
         utils.hideObj(sanshuiObjs[n])
 
-    # 应用boolean
+    # 应用boolean modifier
     utils.applyAllModifer(joinBaseObj)
     # UV处理
     utils.UvUnwrap(joinBaseObj,type='cube')

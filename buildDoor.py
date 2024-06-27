@@ -89,7 +89,7 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     mod_cols = lingxin.modifiers.get('Columns')
     mod_cols.count = cols
     mod_cols.constant_offset_displace[0] = col_span
-    # 转为mesh
+    # 应用array modifier
     utils.applyAllModifer(lingxin)
     # 设置UV
     utils.UvUnwrap(lingxin,type='cube')

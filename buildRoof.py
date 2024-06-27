@@ -173,7 +173,12 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
                 and n>0):
                 # 收山系统的选择，推荐一桁径以上，一步架以下
                 # 当超出限制值时，自动设置为限制值
-                shoushanLimit = rafterSpan - con.BOFENG_WIDTH*dk
+                shoushanLimit = (
+                    rafterSpan              # 步架
+                    - con.BOFENG_WIDTH*dk   # 博缝板
+                    - con.XYB_WIDTH*dk      # 山花板
+                    - con.BEAM_DEEPTH*pd/2  # 梁架中线
+                    )
                 if bData.shoushan > shoushanLimit:
                     bData['shoushan'] = shoushanLimit
                 purlinWidth = (bData.x_total/2 
@@ -675,7 +680,6 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
         # 在庑殿中很明显，可能存在不合理的梁架
         if (bData.roof_style in (
                     con.ROOF_WUDIAN,
-                    con.ROOF_XIESHAN,
                     con.ROOF_LUDING,)
             and abs(net_x[x]) > purlin_pos[-1].x ):
             # 忽略此副梁架
@@ -701,24 +705,26 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 beam_l = purlin_pos[n].y*2 + con.HENG_COMMON_D*dk*2
                 beam_name = '梁'
                 
-                # 歇山做特殊处理
-                if roofStyle == con.ROOF_XIESHAN:
-                    if n==0 and x in (0,len(net_x)-1): 
-                        # 歇山山面一层不做梁
+                # 歇山特殊处理：做排山梁架
+                # 将两山柱对应的梁架，偏移到金桁交点
+                if (roofStyle == con.ROOF_XIESHAN and
+                        x in (0,len(net_x)-1)):
+                    # 第一层不做（排山梁架不坐在柱头）
+                    if n == 0: 
                         continue
-                    if n>0 :
-                        # 歇山的山面梁坐在金桁的X位置
+                    # 第二层做踩步金，与下金桁下皮平
+                    if n == 1:
+                        beam_z = purlin_pos[1].z \
+                            + con.BEAM_HEIGHT*pd \
+                            - con.HENG_COMMON_D*dk/2
+                        beam_l = purlin_pos[1].y*2
+                        beam_name = '踩步金'
+                    # X坐标，位移到下金桁的X位置
+                    if n > 0 :
                         if x == 0:
                             beam_x = -purlin_pos[1].x
                         if x == len(net_x)-1:
                             beam_x = purlin_pos[1].x
-                    # 歇山做踩步金，向上位移到与桁下皮平
-                    if n==1 and x in (0,len(net_x)-1):
-                        beam_z = purlin_pos[n].z \
-                            + con.BEAM_HEIGHT*pd \
-                            - con.HENG_COMMON_D*dk/2
-                        beam_l = purlin_pos[n].y*2
-                        beam_name = '踩步金'
 
                 # 梁定位
                 beam_loc = Vector((beam_x,0,beam_z))

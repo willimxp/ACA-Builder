@@ -742,23 +742,47 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 )
                 beamCopyObj.parent= rafterRootObj
                 beamObjects.append(beamCopyObj)
+
+                # 盝顶仅做抱头梁
+                if roofStyle == con.ROOF_LUDING:
+                    # 剪切到金柱位置
+                    utils.addBisect(
+                        object=beamCopyObj,
+                        pStart=Vector((0,0,0)),
+                        pEnd=Vector((1,0,0)),
+                        pCut=((
+                            0,
+                            bData.y_total/2 - bData.luding_rafterspan,
+                            0)),
+                        clear_inner=True,
+                    )
+                    utils.addModifierMirror(
+                        object=beamCopyObj,
+                        mirrorObj=rafterRootObj,
+                        use_axis=(False,True,False),
+                    )
                 
+                # 开始做蜀柱和垫板 ===============
+                # 在梁上添加蜀柱
+                # 歇山山面第一层不做蜀柱和垫板
+                if (roofStyle == con.ROOF_XIESHAN 
+                        and n==0 and x in (0,len(net_x)-1)):
+                    continue
+                # 卷棚的脊槫处不做蜀柱和垫板
+                if (roofStyle in (con.ROOF_XUANSHAN_JUANPENG) 
+                        and n==len(purlin_pos)-1):
+                    continue
+                # 盝顶不做蜀柱和垫板
+                if (roofStyle in (con.ROOF_LUDING)):
+                    # 卷棚的脊槫处不做蜀柱
+                    continue
+
                 # 梁下皮与origin的距离
                 beamBottom_offset = (con.HENG_COMMON_D*dk/2 
                              + con.BOARD_HENG_H*dk)
                 # 梁上皮于origin的距离
                 beamTop_offset = (con.BEAM_HEIGHT*pd 
                              - beamBottom_offset)
-
-                # 在梁上添加蜀柱
-                if (roofStyle == con.ROOF_XIESHAN 
-                        and n==0 and x in (0,len(net_x)-1)):
-                    # 歇山山面第一层不做蜀柱
-                    continue
-                if (roofStyle in (con.ROOF_XUANSHAN_JUANPENG) 
-                        and n==len(purlin_pos)-1):
-                    # 卷棚的脊槫处不做蜀柱
-                    continue
                 if (n == len(purlin_pos)-2 and 
                     roofStyle not in (con.ROOF_XUANSHAN_JUANPENG)):
                     # 直接支撑到脊槫

@@ -201,18 +201,13 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 先向上拉伸拉伸
     bm.faces.ensure_lookup_table()
     faceTop = bm.faces[1]
-    return_geo = bmesh.ops.extrude_face_region(
-        bm, geom=[faceTop])
-    verts = [elem for elem in return_geo['geom'] 
-             if type(elem) == bmesh.types.BMVert]
-    bmesh.ops.translate(bm, 
-            verts=verts, 
-            vec=(0,0, extrudeHeight))
-    # 再挤压顶面宽度，形成签尖坡度
-    # bpy.ops.mesh.select_all(action = 'DESELECT')
-    bm.faces.ensure_lookup_table()
-    faceTop = bm.faces[8]
-    for v in faceTop.verts:
+    return_geo = bmesh.ops.extrude_discrete_faces(
+        bm, faces=[faceTop])
+    return_face = return_geo['faces'][0]
+    for v in return_face.verts:
+        # 向上拉伸
+        v.co.z += extrudeHeight
+        # Y向挤压
         v.co.y = v.co.y /2
     # 结束
     bm.to_mesh(bodyObj.data)
@@ -408,10 +403,6 @@ def delWall(object:bpy.types.Object):
     for wallproxy in wallRootObj.children:
         wallStr = wallproxy.ACA_data['wallID']
         bData.wall_net += wallStr + ','
-
-    # 刷新台基，删除踏跺
-    from . import buildPlatform
-    buildPlatform.buildPlatform(buildingObj)
 
     utils.focusObj(buildingObj)
 

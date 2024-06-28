@@ -423,15 +423,15 @@ def buildPillers(buildingObj:bpy.types.Object):
             )
             utils.setOrigin(pillerProxy,
                 Vector((0,0,-bData.piller_height/2)))
-            utils.hideObjFace(pillerProxy)
+            utils.hideObj(pillerProxy)
             pillerProxy.ACA_data['aca_obj'] = True
-            pillerProxy.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
+            pillerProxy.ACA_data['aca_type'] = con.ACA_TYPE_PILLER_ROOT
             pillerProxy.ACA_data['pillerID'] = pillerID
 
             # 复制柱子，仅instance，包含modifier
             pillerObj = utils.copyObject(
                 sourceObj = piller_basemesh,
-                name = '柱子',
+                name = '柱子.'+pillerID,
                 parentObj = pillerProxy,
                 scale=(
                     bData.piller_diameter/piller_basemesh.dimensions.x,
@@ -439,7 +439,9 @@ def buildPillers(buildingObj:bpy.types.Object):
                     bData.piller_height/piller_basemesh.dimensions.z
                 )
             )
-            utils.lockObj(pillerObj)
+            pillerObj.ACA_data['aca_obj'] = True
+            pillerObj.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
+            pillerObj.ACA_data['pillerID'] = pillerID
             # 复制柱础
             pillerbaseObj = utils.copyObject(
                 sourceObj= bData.pillerbase_source,
@@ -502,9 +504,16 @@ def delPiller(buildingObj:bpy.types.Object,
     for piller in pillers:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
         if 'aca_type' in piller.ACA_data:
-            if piller.ACA_data['aca_type'] \
-                == con.ACA_TYPE_PILLER:
-                delPillerNames.append(piller.name)    
+            # 柱身向上查找柱proxy
+            if piller.ACA_data['aca_type'] == \
+                    con.ACA_TYPE_PILLER:
+                pillerProxy = utils.getAcaParent(
+                    piller,con.ACA_TYPE_PILLER_ROOT)
+                # 验证柱proxy没有重复
+                if pillerProxy.name not in delPillerNames:
+                    delPillerNames.append(pillerProxy.name)    
+    
+    # 批量删除所有的柱proxy
     for name in delPillerNames:
         piller = bpy.data.objects[name]
         utils.deleteHierarchy(piller,del_parent=True)
@@ -517,7 +526,7 @@ def delPiller(buildingObj:bpy.types.Object,
     bData.piller_net = ''
     for piller in floorChildren:
         if 'aca_type' in piller.ACA_data:
-            if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER:
+            if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER_ROOT:
                 pillerID = piller.ACA_data['pillerID']
                 bData.piller_net += pillerID + ','
 

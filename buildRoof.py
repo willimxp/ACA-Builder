@@ -256,21 +256,34 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
 
         # 3、创建桁对象
         loc = (0,pCross.y,pCross.z)
-        hengFB = utils.addCylinderHorizontal(
-                radius = purlin_r, 
-                depth = purlin_length_x,
-                location = loc, 
-                name = "桁-前后",
-                root_obj = rafterRootObj
+        # 盝顶做承椽枋
+        if (n == len(purlin_pos)-1 and 
+               bData.roof_style == con.ROOF_LUDING) :
+            hengFB = utils.addCube(
+                name = '承椽枋-前后',
+                location= loc,
+                dimension= (purlin_length_x,
+                            con.EFANG_SMALL_H*dk,
+                            con.HENG_COMMON_D*dk),
+                parent=rafterRootObj
             )
+        # 其他一般情况下的槫子
+        else:
+            hengFB = utils.addCylinderHorizontal(
+                    radius = purlin_r, 
+                    depth = purlin_length_x,
+                    location = loc, 
+                    name = "桁-前后",
+                    root_obj = rafterRootObj
+                )
         # 前后镜像
         if (
-                # 除了脊桁
+                # 一般情况最后一根为脊桁，不做镜像
                 n!=len(purlin_pos)-1            
-                # 或者卷棚的脊桁
+                # 卷棚最后一根为脊桁，应该做前后的镜像
                 or (n==len(purlin_pos)-1 and    
                     bData.roof_style==con.ROOF_XUANSHAN_JUANPENG)
-                # 或者盝顶的下金桁
+                # 盝顶最后一根为下金桁，应该做前后镜像
                 or (n==len(purlin_pos)-1 and    
                     bData.roof_style==con.ROOF_LUDING)
             ):
@@ -403,14 +416,27 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             purlin_length_y = pCross.y * 2 + hengExtend
 
             # 3、摆放桁对象
-            hengLR = utils.addCylinderHorizontal(
-                    radius = purlin_r, 
-                    depth = purlin_length_y,
-                    location = (pCross.x,0,pCross.z), 
-                    rotation=Vector((0, 0, math.radians(90))), 
-                    name = "桁-两山",
-                    root_obj = rafterRootObj
+            # 盝顶做承椽枋
+            if (n == len(purlin_pos)-1 and 
+                bData.roof_style == con.ROOF_LUDING) :
+                hengLR = utils.addCube(
+                    name = '承椽枋-两山',
+                    location= (pCross.x,0,pCross.z),
+                    dimension= (con.EFANG_SMALL_H*dk,
+                                purlin_length_y,
+                                con.HENG_COMMON_D*dk),
+                    parent=rafterRootObj
                 )
+            # 其他一般情况下的槫子
+            else:
+                hengLR = utils.addCylinderHorizontal(
+                        radius = purlin_r, 
+                        depth = purlin_length_y,
+                        location = (pCross.x,0,pCross.z), 
+                        rotation=Vector((0, 0, math.radians(90))), 
+                        name = "桁-两山",
+                        root_obj = rafterRootObj
+                    )
             utils.addModifierMirror(
                     object=hengLR,
                     mirrorObj=rafterRootObj,

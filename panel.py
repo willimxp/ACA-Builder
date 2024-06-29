@@ -401,6 +401,10 @@ class ACA_PT_wall(bpy.types.Panel):
             inputMidHeight = toolBar.column(align=True)
             inputMidHeight.prop(
                 dataSource, "door_height",text='中槛高度')
+            # 上槛高度
+            inputMidHeight = toolBar.column(align=True)
+            inputMidHeight.prop(
+                dataSource, "wall_span",text='上槛高度')
             
             toolBar = toolBox.grid_flow(align=True,columns=2)
             # 复选框：是否使用小额枋

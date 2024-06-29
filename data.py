@@ -417,6 +417,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             max=2,
             update = update_wall
         )# type: ignore
+    wall_span : bpy.props.FloatProperty(
+            name="墙体顶部间隔",
+            default=0,
+            description='重檐时，装修不做到柱头，用走马板填充'
+        )# type: ignore 
     # 隔扇属性
     door_height : bpy.props.FloatProperty(
             name="中槛高度",

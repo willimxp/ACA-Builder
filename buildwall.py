@@ -87,6 +87,8 @@ def buildWallproxy(buildingObj:bpy.types.Object,
         wall_height += \
         - con.BOARD_YOUE_H*dk \
         - con.EFANG_SMALL_H*dk # 除去小额枋、垫板高度
+    if bData.wall_span != 0:
+        wall_height -= bData.wall_span
 
     # 解析wallID，例如”wall#3/0#3/3“，或”window#0/0#0/1“，或”door#0/1#0/2“
     setting = wallID.split('#')
@@ -131,6 +133,22 @@ def buildWallproxy(buildingObj:bpy.types.Object,
                 root_obj = wallrootObj,
                 origin_at_bottom = True
             )
+    # 针对重檐，装修不一定做到柱头，用走马板填充
+    if bData.wall_span != 0 :
+        offset = Vector(
+            (
+                0,0,wall_height/2+bData.wall_span/2
+            )
+        )
+        wallHeadBoard = utils.addCubeBy2Points(
+                start_point = pStart + offset,
+                end_point = pEnd + offset,
+                deepth = con.BOARD_YOUE_Y*dk,
+                height = bData.wall_span,
+                name = "走马板",
+                root_obj = wallrootObj,
+            )
+        utils.copyMaterial(bData.mat_wood,wallHeadBoard)
     
     # 填充wallproxy的数据
     wData:acaData = wallproxy.ACA_data
@@ -433,16 +451,7 @@ def buildWallLayout(buildingObj:bpy.types.Object):
         utils.deleteHierarchy(wallrootObj)
 
     # 一、批量生成wallproxy
-    # a、默认尺寸
-    wall_deepth = 1 # 墙线框尺寸
-    wall_height = bData.piller_height \
-        - con.EFANG_LARGE_H*dk
-    if bData.use_smallfang:
-        wall_height += \
-        - con.BOARD_YOUE_H*dk \
-        - con.EFANG_SMALL_H*dk
-
-    # b、计算布局数据
+    # 计算布局数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
     # 解析模版输入的墙体设置，格式如下
     # "wall#3/0#3/3,wall#0/0#3/0,wall#0/3#3/3,window#0/0#0/1,window#0/2#0/3,door#0/1#0/2,"

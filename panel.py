@@ -73,10 +73,27 @@ class ACA_PT_basic(bpy.types.Panel):
             # 计算默认斗口值
             col = row.column(align=True)
             col.operator("aca.default_dk",icon='SHADERFX',text='')
+
+            # 更新建筑
+            row = box.row(align=True)
+            col = row.column(align=True)
+            col.operator(
+                "aca.update_building",icon='PLAY',
+                depress=True,text='更新建筑'
+            )
+            # 自动更新
+            col = row.column(align=True)
+            col.prop(
+                data=bpy.context.scene.ACA_data,
+                property='is_auto_rebuild',
+                toggle=True,
+                icon='FF',
+                text=''
+            )
         
-        # 测试按钮
-        row = layout.row()
-        row.operator("aca.test",icon='HOME')
+        # # 测试按钮
+        # row = layout.row()
+        # row.operator("aca.test",icon='HOME')
 
         return
 
@@ -104,47 +121,8 @@ class ACA_PT_props(bpy.types.Panel):
                 row = layout.row()
                 row.label(text='请先选择一个或多个建筑对象')
                 return             
-            
-            box = layout.box()
-            if bData.aca_type != con.ACA_TYPE_BUILDING:
-                box.enabled = False
-            
-
-            row = box.column(align=True)
-            row.prop(bData, "x_rooms")      # 面阔间数
-            row.prop(bData, "x_1")          # 明间宽度
-            if bData.x_rooms >= 3:
-                row.prop(bData, "x_2")      # 次间宽度
-            if bData.x_rooms >= 5:
-                row.prop(bData, "x_3")      # 梢间宽度
-            if bData.x_rooms >= 7:
-                row.prop(bData, "x_4")      # 尽间宽度
-                
-            col = box.column(align=True)
-            col.prop(bData, "y_rooms")      # 进深间数
-            col.prop(bData, "y_1")          # 明间深度
-            if bData.y_rooms >= 3:
-                col.prop(bData, "y_2")      # 次间深度
-            if bData.y_rooms >= 5:
-                col.prop(bData, "y_3")      # 梢间深度
-
-            # 更新建筑
-            row = box.row(align=True)
-            col = row.column(align=True)
-            col.operator(
-                "aca.update_building",icon='PLAY',
-                depress=True,text='更新建筑'
-            )
-            # 自动更新
-            col = row.column(align=True)
-            col.prop(
-                data=bpy.context.scene.ACA_data,
-                property='is_auto_rebuild',
-                toggle=True,
-                icon='FF',
-                text=''
-            )
-
+        
+        return
 
 # “台基属性”子面板
 class ACA_PT_platform(bpy.types.Panel):
@@ -187,13 +165,20 @@ class ACA_PT_platform(bpy.types.Panel):
             box = layout.box()
             if bData.aca_type != con.ACA_TYPE_BUILDING:
                     box.enabled = False
+
             col = box.column(align=True)
-            col.prop(bData, "platform_height")
-            col.prop(bData, "platform_extend")
+            grid = col.grid_flow(columns=1, align=True)
+            grid.prop(bData, "platform_height")
+            grid.prop(bData, "platform_extend")
+            
+            col = box.column(align=True)
+            grid = col.grid_flow(columns=2, align=True)
+            col = grid.column(align=True)
             col.operator(operator='aca.add_step',
                          text='添加踏跺',
                          depress=True,
                          icon='PACKAGE')
+            col = grid.column(align=True)
             col.operator(operator='aca.del_step',
                          text='删除踏跺',
                          depress=True,
@@ -247,6 +232,24 @@ class ACA_PT_pillers(bpy.types.Panel):
             box = layout.box()
             if bData.aca_type != con.ACA_TYPE_BUILDING:
                     box.enabled = False
+
+            row = box.column(align=True)
+            row.prop(bData, "x_rooms")      # 面阔间数
+            row.prop(bData, "x_1")          # 明间宽度
+            if bData.x_rooms >= 3:
+                row.prop(bData, "x_2")      # 次间宽度
+            if bData.x_rooms >= 5:
+                row.prop(bData, "x_3")      # 梢间宽度
+            if bData.x_rooms >= 7:
+                row.prop(bData, "x_4")      # 尽间宽度
+                
+            col = box.column(align=True)
+            col.prop(bData, "y_rooms")      # 进深间数
+            col.prop(bData, "y_1")          # 明间深度
+            if bData.y_rooms >= 3:
+                col.prop(bData, "y_2")      # 次间深度
+            if bData.y_rooms >= 5:
+                col.prop(bData, "y_3")      # 梢间深度
 
             # 柱子属性
             col = box.column(align=True)
@@ -402,8 +405,8 @@ class ACA_PT_wall(bpy.types.Panel):
             inputMidHeight.prop(
                 dataSource, "door_height",text='中槛高度')
             # 上槛高度
-            inputMidHeight = toolBar.column(align=True)
-            inputMidHeight.prop(
+            inputTopHeight = toolBar.column(align=True)
+            inputTopHeight.prop(
                 dataSource, "wall_span",text='上槛高度')
             
             toolBar = toolBox.grid_flow(align=True,columns=2)

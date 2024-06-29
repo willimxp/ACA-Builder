@@ -1605,5 +1605,7 @@
 		<wall_deepth type="float">0.5</wall_deepth>
 		<step_net type="str" />
 		<shoushan type="float">0.1</shoushan>
+		<wall_span type="float">1.7</wall_span>
+		<luding_rafterspan type="float">3.0</luding_rafterspan>
 	</template>
 </templates>

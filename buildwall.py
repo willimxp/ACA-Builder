@@ -129,7 +129,7 @@ def buildWallproxy(buildingObj:bpy.types.Object,
                 end_point = pEnd,
                 deepth = wall_deepth,
                 height = wall_height,
-                name = "墙体proxy",
+                name = "wallproxy",
                 root_obj = wallrootObj,
                 origin_at_bottom = True
             )
@@ -141,12 +141,15 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     wData['wallID'] = wallID
     if style == con.ACA_WALLTYPE_WALL:
         wData['wall_style'] = 1
+        wallproxy.name = '墙体proxy'
     if style == con.ACA_WALLTYPE_DOOR:
         wData['wall_style'] = 2
         wData['use_KanWall'] = False
+        wallproxy.name = '隔扇proxy'
     if style == con.ACA_WALLTYPE_WINDOW:
         wData['wall_style'] = 3
         wData['use_KanWall'] = True
+        wallproxy.name = '槛窗proxy'
     wData['wall_deepth'] = bData.wall_deepth
     wData['wall_span'] = bData.wall_span
     wData['door_height'] = bData.door_height

@@ -1551,7 +1551,7 @@
 		<dg_fillgap_source type="Object">平身科.A</dg_fillgap_source>
 		<dg_corner_source type="Object">角科</dg_corner_source>
 		<dg_extend type="float">0.72</dg_extend>
-		<dg_height type="float">0.896</dg_height>
+		<dg_height type="float">0.9</dg_height>
 		<dg_gap type="float">0.88</dg_gap>
 		<roof_style type="str">2</roof_style>
 		<rafter_count type="int">8</rafter_count>

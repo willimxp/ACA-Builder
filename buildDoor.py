@@ -556,7 +556,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         motouObj = utils.addCube(
                 name="绦环板一",
                 location=loc6,
-                scale=scale,
+                dimension=scale,
                 parent=geshan_root,
             ) 
         # 绦环板二，抹三抹四之间
@@ -822,6 +822,20 @@ def buildDoor(wallproxy:bpy.types.Object):
 
     # 清理之前的子对象
     utils.deleteHierarchy(wallproxy)
+
+    # 针对重檐，装修不一定做到柱头，用走马板填充
+    if bData.wall_span != 0 :
+        wallHeadBoard = utils.addCube(
+                name = "走马板",
+                location=(0,0,
+                    frame_height \
+                        +bData.wall_span/2),
+                dimension=(frame_width,
+                           con.BOARD_YOUE_Y*dk,
+                           bData.wall_span),
+                parent=wallproxy,
+            )
+        utils.copyMaterial(bData.mat_wood,wallHeadBoard)
     
     # 1、构建槛框
     # 返回的是下抱框，做为隔扇生成的参考  

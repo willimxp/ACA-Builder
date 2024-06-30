@@ -283,7 +283,7 @@ def saveTemplate(buildingObj:bpy.types.Object):
             value = templateName
         # 浮点数取2位精度
         if keyType == 'float':
-            value = round(value,2)
+            value = round(value,3)
         if keyType == 'Object':
             # value目前未bpy.data.object对象
             object = getattr(bData, key)

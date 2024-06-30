@@ -225,7 +225,7 @@ class ACA_OT_del_fang(bpy.types.Operator):
         self.report({'INFO'},"已删除枋。")
         return {'FINISHED'}
 
-# 批量重新生成墙体布局，及所有墙体
+# 批量重新生成装修布局，及所有墙体
 # 绑定在建筑面板的“墙体营造按钮上”
 class ACA_OT_reset_wall_layout(bpy.types.Operator):
     bl_idname="aca.reset_wall_layout"

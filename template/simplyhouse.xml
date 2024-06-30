@@ -1448,12 +1448,12 @@
 		<lingxin_source type="Object">棂心.正搭斜交</lingxin_source>
 		<use_dg type="bool">True</use_dg>
 		<use_pingbanfang type="bool">True</use_pingbanfang>
-		<dg_piller_source type="Object">四铺作插昂柱头.join</dg_piller_source>
-		<dg_fillgap_source type="Object">四铺作插昂柱头.join</dg_fillgap_source>
-		<dg_corner_source type="Object">四铺作插昂转角.join</dg_corner_source>
-		<dg_extend type="float">0.45</dg_extend>
-		<dg_height type="float">0.99</dg_height>
-		<dg_gap type="float">1.7</dg_gap>
+		<dg_piller_source type="Object">柱头科</dg_piller_source>
+		<dg_fillgap_source type="Object">平身科.A</dg_fillgap_source>
+		<dg_corner_source type="Object">角科</dg_corner_source>
+		<dg_extend type="float">0.72</dg_extend>
+		<dg_height type="float">0.896</dg_height>
+		<dg_gap type="float">0.88</dg_gap>
 		<roof_style type="str">6</roof_style>
 		<rafter_count type="int">8</rafter_count>
 		<use_flyrafter type="bool">True</use_flyrafter>
@@ -1464,7 +1464,7 @@
 		<tuishan type="float">0.9</tuishan>
 		<juzhe type="str">0</juzhe>
 		<bofeng_source type="Object">博缝板</bofeng_source>
-		<tile_width type="float">0.39</tile_width>
+		<tile_width type="float">0.387</tile_width>
 		<tile_length type="float">0.5</tile_length>
 		<flatTile_source type="Object">板瓦</flatTile_source>
 		<circularTile_source type="Object">筒瓦</circularTile_source>
@@ -1508,6 +1508,7 @@
 		<wall_deepth type="float">1.0</wall_deepth>
 		<shoushan type="float">2.0</shoushan>
 		<luding_rafterspan type="float">1.76</luding_rafterspan>
+		<wall_span type="float">0.0</wall_span>
 	</template>
 	<template>
 		<aca_type type="str">building</aca_type>
@@ -1546,12 +1547,12 @@
 		<lingxin_source type="Object">棂心.正搭斜交</lingxin_source>
 		<use_dg type="bool">True</use_dg>
 		<use_pingbanfang type="bool">True</use_pingbanfang>
-		<dg_piller_source type="Object">四铺作插昂柱头.join</dg_piller_source>
-		<dg_fillgap_source type="Object">四铺作插昂柱头.join</dg_fillgap_source>
-		<dg_corner_source type="Object">四铺作插昂转角.join</dg_corner_source>
-		<dg_extend type="float">0.45</dg_extend>
-		<dg_height type="float">0.99</dg_height>
-		<dg_gap type="float">1.7</dg_gap>
+		<dg_piller_source type="Object">柱头科</dg_piller_source>
+		<dg_fillgap_source type="Object">平身科.A</dg_fillgap_source>
+		<dg_corner_source type="Object">角科</dg_corner_source>
+		<dg_extend type="float">0.72</dg_extend>
+		<dg_height type="float">0.896</dg_height>
+		<dg_gap type="float">0.88</dg_gap>
 		<roof_style type="str">2</roof_style>
 		<rafter_count type="int">8</rafter_count>
 		<use_flyrafter type="bool">True</use_flyrafter>
@@ -1562,7 +1563,7 @@
 		<tuishan type="float">0.9</tuishan>
 		<juzhe type="str">0</juzhe>
 		<bofeng_source type="Object">博缝板</bofeng_source>
-		<tile_width type="float">0.39</tile_width>
+		<tile_width type="float">0.387</tile_width>
 		<tile_length type="float">0.5</tile_length>
 		<flatTile_source type="Object">板瓦</flatTile_source>
 		<circularTile_source type="Object">筒瓦</circularTile_source>

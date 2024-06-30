@@ -389,8 +389,8 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     
     # 墙体属性
     wall_layout : bpy.props.EnumProperty(
-            name = "墙体布局",
-            description = "墙体布局",
+            name = "装修布局",
+            description = "装修布局",
             items = [
                 ("0","-无墙体-",""),
                 ("1","默认(无廊)",""),

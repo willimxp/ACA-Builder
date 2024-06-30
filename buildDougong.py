@@ -207,8 +207,8 @@ def buildDougong(buildingObj:bpy.types.Object):
         for fang in dgPiller.children:
             yLoc = fang.location.y * bData.dg_scale[1]
             zLoc = fang.location.z * bData.dg_scale[2]
-            if yLoc == 0:
-                extendLength = con.HENG_COMMON_D*dk*2
+            if yLoc < 0:
+                extendLength = con.HENG_COMMON_D*dk*2 - yLoc*2
             else:
                 extendLength = 0
             # 做前后檐连接件
@@ -339,10 +339,12 @@ def update_dgHeight(buildingObj:bpy.types.Object):
     if 'dgHeight' in bData.dg_piller_source:
         originHeight = bData.dg_piller_source['dgHeight']
     else:
+        originHeight = bData.dg_height
         utils.outputMsg("斗栱未定义该属性")
     if 'dgExtend' in bData.dg_piller_source:
         originExtend = bData.dg_piller_source['dgExtend']
     else:
+        originExtend = bData.dg_extend
         utils.outputMsg("斗栱未定义该属性")
 
     # 用户缩放比例

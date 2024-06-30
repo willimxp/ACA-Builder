@@ -272,7 +272,7 @@ class ACA_PT_pillers(bpy.types.Panel):
                 "aca.reset_floor",icon='FILE_REFRESH',
                 depress=True,text='重设') 
                 
-# “墙属性”子面板
+# “装修属性”子面板
 class ACA_PT_wall(bpy.types.Panel):
     # 常规属性
     bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
@@ -298,7 +298,7 @@ class ACA_PT_wall(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
-        row.prop(bData, "is_showWalls",text='墙体属性')
+        row.prop(bData, "is_showWalls",text='装修属性')
 
         if bData.aca_type != con.ACA_TYPE_BUILDING:
             layout.enabled = False
@@ -376,15 +376,13 @@ class ACA_PT_wall(bpy.types.Panel):
                 buttonDel.enabled = False
 
             # 附属参数框
+            toolBox = box.column(align=True)
             if objData.aca_type == con.ACA_TYPE_WALL:     
                 # 如果用户选中了wallProxy
                 # 仅设置个体参数，取objData
                 dataSource = objData
             else:
-                dataSource = bData
-            
-            # 是否使用小额枋       
-            toolBox = box.column(align=True)
+                dataSource = bData    
             
             toolBar = toolBox.grid_flow(align=True,columns=1)
             # 暂时隐藏了该设置项，墙体全部默认用1.5D作为厚度
@@ -418,7 +416,7 @@ class ACA_PT_wall(bpy.types.Panel):
                 checkbox_icon = 'CHECKBOX_DEHLT'
             checkboxFang.prop(
                 bData, "use_smallfang",
-                toggle=1,text="小额枋",
+                toggle=1,text="双重额枋",
                 icon=checkbox_icon) 
             # 复选框：是否使用横披窗
             checkboxTopwin = toolBar.column(align=True)

@@ -1,7 +1,7 @@
 # 作者：willimxp
 # 所属插件：ACA Builder
 # 功能概述：
-#   墙体布局树状结构的营造
+#   装修布局树状结构的营造
 import bpy
 import bmesh
 import math
@@ -20,7 +20,7 @@ def __addWallrootNode(buildingObj:bpy.types.Object):
     # 创建新地盘对象（empty）
     bpy.ops.object.empty_add(type='PLAIN_AXES')
     wallrootObj = bpy.context.object
-    wallrootObj.name = "墙体布局"
+    wallrootObj.name = "装修布局"
     wallrootObj.parent = buildingObj  # 挂接在对应建筑节点下
     wallrootObj.ACA_data['aca_obj'] = True
     wallrootObj.ACA_data['aca_type'] = con.ACA_TYPE_WALL_ROOT
@@ -33,7 +33,7 @@ def __addWallrootNode(buildingObj:bpy.types.Object):
 # 用于根据有廊、无廊、前廊、后廊、斗底槽等自动布局
 # 已暂时停用
 def __getWallData(buildingObj:bpy.types.Object,net_x,net_y):
-    # 根据墙体布局类型（无廊、周围廊、前廊等），分别处理
+    # 根据装修布局类型（无廊、周围廊、前廊等），分别处理
     bData = buildingObj.ACA_data
     wallLayout = int(bData.wall_layout)
     row=[]
@@ -133,22 +133,6 @@ def buildWallproxy(buildingObj:bpy.types.Object,
                 root_obj = wallrootObj,
                 origin_at_bottom = True
             )
-    # 针对重檐，装修不一定做到柱头，用走马板填充
-    if bData.wall_span != 0 :
-        offset = Vector(
-            (
-                0,0,wall_height/2+bData.wall_span/2
-            )
-        )
-        wallHeadBoard = utils.addCubeBy2Points(
-                start_point = pStart + offset,
-                end_point = pEnd + offset,
-                deepth = con.BOARD_YOUE_Y*dk,
-                height = bData.wall_span,
-                name = "走马板",
-                root_obj = wallrootObj,
-            )
-        utils.copyMaterial(bData.mat_wood,wallHeadBoard)
     
     # 填充wallproxy的数据
     wData:acaData = wallproxy.ACA_data
@@ -164,6 +148,7 @@ def buildWallproxy(buildingObj:bpy.types.Object,
         wData['wall_style'] = 3
         wData['use_KanWall'] = True
     wData['wall_deepth'] = bData.wall_deepth
+    wData['wall_span'] = bData.wall_span
     wData['door_height'] = bData.door_height
     wData['door_num'] = bData.door_num
     wData['gap_num'] = bData.gap_num
@@ -177,11 +162,26 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 载入数据
     buildingObj = utils.getAcaParent(wallProxy,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
     (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
     # 覆盖墙体厚度
     wallDeepth = con.WALL_DEEPTH * bData.piller_diameter
     # 退花碱厚度
     bodyShrink = con.WALL_SHRINK
+
+    # 针对重檐，装修不一定做到柱头，用走马板填充
+    if bData.wall_span != 0 :
+        wallHeadBoard = utils.addCube(
+                name = "走马板",
+                location=(0,0,
+                    wallHeight \
+                        +bData.wall_span/2),
+                dimension=(wallLength,
+                           con.BOARD_YOUE_Y*dk,
+                           bData.wall_span),
+                parent=wallProxy,
+            )
+        utils.copyMaterial(bData.mat_wood,wallHeadBoard)
 
     # 1、创建下碱对象
     # 下碱一般取墙体高度的1/3
@@ -327,10 +327,11 @@ def updateWallLayout(buildingObj:bpy.types.Object):
             if bData.wall_style != "":
                 wData['wall_style'] = int(bData.wall_style) 
             wData['wall_deepth'] = bData.wall_deepth
+            wData['wall_span'] = bData.wall_span
             wData['door_height'] = bData.door_height
             wData['door_num'] = bData.door_num
             wData['gap_num'] = bData.gap_num
-            wData['use_KanWall'] = bData.use_KanWall
+            wData['use_topwin'] = bData.use_topwin  
             wData['lingxin_source'] = bData.lingxin_source
 
     # 三、批量绑定墙体构件
@@ -439,11 +440,11 @@ def buildWallLayout(buildingObj:bpy.types.Object):
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('墙体',parentColl=buildingColl)
+    utils.setCollection('装修',parentColl=buildingColl)
     
-    # 查找墙体布局节点
+    # 查找装修布局节点
     wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
-    # 如果找不到“墙体布局”根节点，重新创建
+    # 如果找不到“装修布局”根节点，重新创建
     if wallrootObj == None:        
         wallrootObj = __addWallrootNode(buildingObj)
     else:

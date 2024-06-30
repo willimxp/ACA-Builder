@@ -1450,6 +1450,7 @@
 		<use_pingbanfang type="bool">True</use_pingbanfang>
 		<dg_piller_source type="Object">柱头科</dg_piller_source>
 		<dg_fillgap_source type="Object">平身科.A</dg_fillgap_source>
+        <dg_fillgap_alt_source type="Object">平身科.B</dg_fillgap_alt_source>
 		<dg_corner_source type="Object">角科</dg_corner_source>
 		<dg_extend type="float">0.72</dg_extend>
 		<dg_height type="float">0.896</dg_height>
@@ -1549,6 +1550,7 @@
 		<use_pingbanfang type="bool">True</use_pingbanfang>
 		<dg_piller_source type="Object">柱头科</dg_piller_source>
 		<dg_fillgap_source type="Object">平身科.A</dg_fillgap_source>
+        <dg_fillgap_alt_source type="Object">平身科.B</dg_fillgap_alt_source>
 		<dg_corner_source type="Object">角科</dg_corner_source>
 		<dg_extend type="float">0.72</dg_extend>
 		<dg_height type="float">0.9</dg_height>

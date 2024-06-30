@@ -467,17 +467,18 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     dg_piller_source:bpy.props.PointerProperty(
             name = "柱头斗栱",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     dg_fillgap_source:bpy.props.PointerProperty(
             name = "补间斗栱",
             type = bpy.types.Object,
-            poll = p_filter
+        )# type: ignore 
+    dg_fillgap_alt_source:bpy.props.PointerProperty(
+            name = "补间斗栱-异色",
+            type = bpy.types.Object,
         )# type: ignore 
     dg_corner_source:bpy.props.PointerProperty(
             name = "转角斗栱",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     dg_extend : bpy.props.FloatProperty(
             name="斗栱挑檐",    # 令拱出跳距离
@@ -487,8 +488,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     dg_height : bpy.props.FloatProperty(
             name="斗栱高度",    # 取挑檐桁下皮高度
-            default=0.99,
-            min=0.01,
+            default=1.0,
         )# type: ignore 
     dg_scale:bpy.props.FloatVectorProperty(
             name="斗栱缩放",    # 斗栱缩放

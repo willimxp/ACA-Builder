@@ -282,18 +282,27 @@ def buildDougong(buildingObj:bpy.types.Object):
     if bData.dg_fillgap_source != '' :
         # 前后坡的补间斗拱
         for n in range(len(net_x)-1) : 
-            # 计算攒数
+            # 计算补间斗栱攒数
             pStart = net_x[n]
             pEnd = net_x[n+1]
-            # dougong_count =  round(abs(pEnd - pStart) / (con.DOUGONG_SPAN * dk)) # 向下取整
+            # 向下取整，宜疏不宜密
             dougong_count =  math.floor(abs(pEnd - pStart) / bData.dg_gap) 
             # 如果间距过大，可能无需补间斗栱
             if dougong_count == 0 : continue
+            # 计算斗栱排布的实际间距
             dougong_span = abs(pEnd - pStart) / dougong_count
             for m in range(1,dougong_count):
+                # 补间斗栱异色判断
+                dgFillSource = None
+                if (bData.dg_fillgap_alt_source != None
+                            and m%2 == 0):
+                        dgFillSource = bData.dg_fillgap_alt_source
+                else:
+                    dgFillSource = bData.dg_fillgap_source
+
                 # 上侧
                 dgFillCopy:bpy.types.Object = utils.copySimplyObject(
-                    sourceObj = bData.dg_fillgap_source,
+                    sourceObj = dgFillSource,
                     name = "补间斗栱",
                     location=(net_x[n] + dougong_span * m,
                                 net_y[-1],0),
@@ -304,7 +313,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                 dgFillCopy.rotation_euler.z = math.radians(180)
                 # 下侧
                 dgFillCopy:bpy.types.Object = utils.copySimplyObject(
-                    sourceObj = bData.dg_fillgap_source,
+                    sourceObj = dgFillSource,
                     name = "补间斗栱",
                     location=(net_x[n] + dougong_span * m,
                                 net_y[0],0),
@@ -329,9 +338,17 @@ def buildDougong(buildingObj:bpy.types.Object):
                 if dougong_count == 0 : continue
                 dougong_span = abs(pEnd - pStart) / dougong_count
                 for m in range(1,dougong_count):
+                    # 补间斗栱异色判断
+                    dgFillSource = None
+                    if (bData.dg_fillgap_alt_source != None
+                                and m%2 == 0):
+                            dgFillSource = bData.dg_fillgap_alt_source
+                    else:
+                        dgFillSource = bData.dg_fillgap_source
+
                     # 左侧
                     dgFillCopy:bpy.types.Object = utils.copySimplyObject(
-                        sourceObj = bData.dg_fillgap_source,
+                        sourceObj = dgFillSource,
                         name = "补间斗栱",
                         location=(net_x[0],
                             net_y[n] + dougong_span * m,0),
@@ -342,7 +359,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                     dgFillCopy.rotation_euler.z = math.radians(270)
                     # 右侧
                     dgFillCopy:bpy.types.Object = utils.copySimplyObject(
-                        sourceObj = bData.dg_fillgap_source,
+                        sourceObj = dgFillSource,
                         name = "补间斗栱",
                         location=(net_x[-1],
                             net_y[n] + dougong_span * m,0),

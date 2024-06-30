@@ -74,7 +74,7 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     wallrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_WALL_ROOT)
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('墙体',parentColl=buildingColl)
+    utils.setCollection('装修',parentColl=buildingColl)
     
     # 获取柱网数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)

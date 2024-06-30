@@ -1539,9 +1539,9 @@
 		<piller_height type="float">8.5</piller_height>
 		<piller_diameter type="float">0.45</piller_diameter>
 		<use_smallfang type="bool">True</use_smallfang>
-		<door_height type="float">4.2</door_height>
+		<door_height type="float">3.5</door_height>
 		<door_num type="int">4</door_num>
-		<gap_num type="int">5</gap_num>
+		<gap_num type="int">6</gap_num>
 		<use_topwin type="bool">True</use_topwin>
 		<use_KanWall type="bool">True</use_KanWall>
 		<lingxin_source type="Object">棂心.正搭斜交</lingxin_source>

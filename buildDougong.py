@@ -120,6 +120,25 @@ def buildDougong(buildingObj:bpy.types.Object):
         utils.copyMaterial(bData.mat_red,pingbanfangObj)
 
     # 3、布置斗栱/铺作======================================================
+    # 斗栱缩放
+    # 读取斗栱资产自定义属性dgHeight,dgExtend（需要在blender中定义）
+    if 'dgHeight' in bData.dg_piller_source:
+        originHeight = bData.dg_piller_source['dgHeight']
+    else:
+        originHeight = bData.dg_height
+        utils.outputMsg("斗栱未定义默认高度")
+    if 'dgExtend' in bData.dg_piller_source:
+        originExtend = bData.dg_piller_source['dgExtend']
+    else:
+        originExtend = bData.dg_extend
+        utils.outputMsg("斗栱未定义默认出跳")
+    # 以用户定义的出跳，计算缩放
+    scale = bData.dg_extend / originExtend
+    # 斗栱高度，根据出跳缩放联动
+    bData['dg_height'] = originHeight * scale
+    # 暂存缩放比例，后续排布斗栱时使用
+    bData['dg_scale'] = (scale,scale,scale)
+    
     # 转角斗栱，仅用于庑殿/歇山
     if (bData.roof_style in (
                 con.ROOF_WUDIAN,
@@ -139,6 +158,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                 name = "转角斗栱",
                 location = dgCornerArray[n],
                 parentObj = dgrootObj,
+                scale= bData.dg_scale,
                 singleUser=True
             )
             dgCornerCopy.rotation_euler.z = math.radians(n * 90)
@@ -146,8 +166,6 @@ def buildDougong(buildingObj:bpy.types.Object):
         
     # 柱头斗栱
     if bData.dg_piller_source != None:
-        dgPiller:bpy.types.Object = bData.dg_piller_source
-        dgPiller.scale = bData.dg_scale
         # 前后坡的柱头斗栱
         if bData.roof_style in (
                 con.ROOF_WUDIAN,
@@ -161,18 +179,20 @@ def buildDougong(buildingObj:bpy.types.Object):
         for n in dgRange : 
             # 南侧
             dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
-                sourceObj = dgPiller,
+                sourceObj = bData.dg_piller_source,
                 name = "柱头斗栱",
                 location=(net_x[n],net_y[0],0),
+                scale= bData.dg_scale,
                 parentObj = dgrootObj,
                 singleUser=True
                 )
             dgPillerCopy.rotation_euler.z = math.radians(0)
             # 北侧
             dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
-                sourceObj = dgPiller,
+                sourceObj = bData.dg_piller_source,
                 name = "柱头斗栱",
                 location=(net_x[n],net_y[-1],0),
+                scale= bData.dg_scale,
                 parentObj = dgrootObj,
                 singleUser=True
                 )
@@ -186,25 +206,27 @@ def buildDougong(buildingObj:bpy.types.Object):
             for n in range(len(net_y)-2) : 
                 # 东侧
                 dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
-                    sourceObj = dgPiller,
+                    sourceObj = bData.dg_piller_source,
                     name = "柱头斗栱",
                     location=(net_x[-1],net_y[n+1],0),
+                    scale= bData.dg_scale,
                     parentObj = dgrootObj,
                     singleUser=True
                     )
                 dgPillerCopy.rotation_euler.z = math.radians(90)
                 # 西侧
                 dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
-                    sourceObj = dgPiller,
+                    sourceObj = bData.dg_piller_source,
                     name = "柱头斗栱",
                     location=(net_x[0],net_y[-n-2],0),
+                    scale= bData.dg_scale,
                     parentObj = dgrootObj,
                     singleUser=True
                     )
                 dgPillerCopy.rotation_euler.z = math.radians(270)
 
         # 各个连接件
-        for fang in dgPiller.children:
+        for fang in bData.dg_piller_source.children:
             yLoc = fang.location.y * bData.dg_scale[1]
             zLoc = fang.location.z * bData.dg_scale[2]
             if yLoc < 0:
@@ -275,6 +297,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                     name = "补间斗栱",
                     location=(net_x[n] + dougong_span * m,
                                 net_y[-1],0),
+                    scale= bData.dg_scale,            
                     parentObj = dgrootObj,
                     singleUser=True
                     )
@@ -285,6 +308,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                     name = "补间斗栱",
                     location=(net_x[n] + dougong_span * m,
                                 net_y[0],0),
+                    scale= bData.dg_scale,
                     parentObj = dgrootObj,
                     singleUser=True
                     )
@@ -311,6 +335,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                         name = "补间斗栱",
                         location=(net_x[0],
                             net_y[n] + dougong_span * m,0),
+                        scale= bData.dg_scale,
                         parentObj = dgrootObj,
                         singleUser=True
                         )
@@ -321,6 +346,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                         name = "补间斗栱",
                         location=(net_x[-1],
                             net_y[n] + dougong_span * m,0),
+                        scale= bData.dg_scale,
                         parentObj = dgrootObj,
                         singleUser=True
                         )
@@ -331,6 +357,7 @@ def buildDougong(buildingObj:bpy.types.Object):
     return {'FINISHED'}
 
 # 更新斗栱高度
+# 根据用户输入的斗栱出跳，转换斗栱挑高
 def update_dgHeight(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
@@ -347,16 +374,12 @@ def update_dgHeight(buildingObj:bpy.types.Object):
         originExtend = bData.dg_extend
         utils.outputMsg("斗栱未定义该属性")
 
-    # 用户缩放比例
-    scale = bData.dg_height / originHeight
-    bData['dg_extend'] = originExtend * scale
+    # 以用户定义的出跳，计算缩放
+    scale = bData.dg_extend / originExtend
+    # 斗栱高度，根据出跳缩放联动
+    bData['dg_height'] = originHeight * scale
+    # 暂存缩放比例，后续排布斗栱时使用
     bData['dg_scale'] = (scale,scale,scale)
-    if bData.dg_corner_source != None:
-        bData.dg_corner_source.scale = bData.dg_scale
-    if bData.dg_fillgap_source != None:
-        bData.dg_fillgap_source.scale = bData.dg_scale
-    if bData.dg_piller_source != None:
-        bData.dg_piller_source.scale = bData.dg_scale
 
     # 重新生成
     buildRoof.buildRoof(buildingObj)

@@ -175,6 +175,7 @@ def copySimplyObject(
         name="", 
         parentObj:bpy.types.Object = None, 
         location=(0,0,0),
+        scale=None,
         rotation=(0,0,0),
         singleUser=False,):
     # 复制基本信息
@@ -187,6 +188,8 @@ def copySimplyObject(
         newObj.name = name
     newObj.location = location
     newObj.rotation_euler = rotation
+    if scale != None:
+        newObj.scale = scale
     newObj.parent = parentObj
     bpy.context.collection.objects.link(newObj)     
     showObj(newObj)

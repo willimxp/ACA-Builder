@@ -483,12 +483,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name="斗栱挑檐",    # 令拱出跳距离
             default=0.45,
             min=0.01,
+            update = update_dgHeight,
         )# type: ignore 
     dg_height : bpy.props.FloatProperty(
             name="斗栱高度",    # 取挑檐桁下皮高度
             default=0.99,
             min=0.01,
-            update = update_dgHeight,
         )# type: ignore 
     dg_scale:bpy.props.FloatVectorProperty(
             name="斗栱缩放",    # 斗栱缩放

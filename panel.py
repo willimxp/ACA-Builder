@@ -547,11 +547,11 @@ class ACA_PT_dougong(bpy.types.Panel):
             inputDgextend.prop(
                 bData, "dg_extend",
                 text='斗栱出跳') 
-            # 斗栱高度
-            inputDgheight = toolBar.column(align=True)
-            inputDgheight.prop(
-                bData, "dg_height",
-                text='斗栱高度') 
+            # # 斗栱高度
+            # inputDgheight = toolBar.column(align=True)
+            # inputDgheight.prop(
+            #     bData, "dg_height",
+            #     text='斗栱高度') 
             # 斗栱间距
             inputDggap = toolBar.column(align=True)
             inputDggap.prop(

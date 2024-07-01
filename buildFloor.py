@@ -138,6 +138,56 @@ def getFloorDate(buildingObj:bpy.types.Object):
 
     return net_x,net_y
 
+# 判断枋子使用的AB配色
+# 传入fangType：1-大额枋，2-小额枋
+def __setFangMat(fangObj:bpy.types.Object,
+                 fangID,
+                 fangType=1):
+    # 载入数据
+    aData:tmpData = bpy.context.scene.ACA_temp
+    wData:acaData = fangObj.ACA_data
+    # 获取开间、进深数据
+    buildingObj = utils.getAcaParent(fangObj,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+
+    # 分解获取柱子编号
+    setting = fangID.split('#')
+    pFrom = setting[0].split('/')
+    pFrom_x = int(pFrom[0])
+    pFrom_y = int(pFrom[1])
+    pTo = setting[1].split('/')
+    pTo_x = int(pTo[0])
+    pTo_y = int(pTo[1])
+
+    # 计算为第几间？
+    rangeFB = [0,bData.y_rooms]
+    rangeLR = [0,bData.x_rooms]
+    # 前后檐
+    if pFrom_y in rangeFB and pTo_y in rangeFB:
+        roomIndex = (pFrom_x+pTo_x-1)/2
+        n = int((bData.x_rooms+1)/2)%2
+    # 两山
+    elif pFrom_x in rangeLR and pTo_x in rangeLR:
+        roomIndex = (pFrom_y+pTo_y-1)/2
+        n = int((bData.y_rooms+1)/2)%2
+
+    ''' 根据n来判断是否是明间,比如，
+    5间时,奇数间(1,3,5)应该用正色
+    7间时,偶数间(2,4,6)应该用正色'''
+
+    if roomIndex%2 == n and fangType == 1:
+        # 大额枋的明间用异色
+        mat = aData.mat_paint_beam_alt
+    elif roomIndex%2 != n and fangType == 2:
+        # 小额枋的明间间用异色
+        mat = aData.mat_paint_beam_alt
+    else:
+        mat = aData.mat_paint_beam
+
+    # UV设置为满幅填充
+    utils.UvUnwrap(fangObj,'scale')
+    utils.copyMaterial(mat,fangObj)
+    return
 
 # 在柱间添加额枋
 def __buildFang(buildingObj:bpy.types.Object):
@@ -208,9 +258,8 @@ def __buildFang(buildingObj:bpy.types.Object):
         )
         modBevel.width = con.BEVEL_EXHIGH
         modBevel.segments=3
-        # 设置材质
-        utils.UvUnwrap(bigFangObj,'scale')
-        utils.copyMaterial(aData.mat_paint_beam,bigFangObj)
+        # 设置梁枋彩画
+        __setFangMat(bigFangObj,fangID,1)
 
         # 是否需要做小额枋
         if bData.use_smallfang:
@@ -256,9 +305,8 @@ def __buildFang(buildingObj:bpy.types.Object):
             )
             modBevel.width = con.BEVEL_HIGH
             modBevel.segments=2
-            # 设置材质
-            utils.UvUnwrap(smallFangObj,'scale')
-            utils.copyMaterial(aData.mat_paint_beam,smallFangObj)
+            # 设置梁枋彩画
+            __setFangMat(smallFangObj,fangID,2)
     
     # 聚焦到最后添加的大额枋，便于用户可以直接删除
     utils.focusObj(bigFangObj)

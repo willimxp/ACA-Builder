@@ -46,3 +46,16 @@ def build():
         utils.outputMsg("无法创建该类型的建筑：" + bData.aca_type)
 
     return {'FINISHED'}
+
+# 删除建筑
+def delBuilding(buildingObj:bpy.types.Object):
+    # 找到对应的目录
+    buildingColl = buildingObj.users_collection[0]
+    # 从“ACA古建营造”目录查找
+    rootcoll = bpy.context.scene.collection.children[con.ROOT_COLL_NAME]
+    # 删除该目录
+    rootcoll.children.unlink(buildingColl)
+    bpy.data.collections.remove(buildingColl)
+    # 清理垃圾  
+    utils.delOrphan()
+    return

@@ -90,6 +90,13 @@ class ACA_PT_basic(bpy.types.Panel):
                 icon='FF',
                 text=''
             )
+
+            row = box.row(align=True)
+            col = row.column(align=True)
+            col.operator(
+                "aca.del_building",icon='TRASH',
+                depress=True,text='删除建筑'
+            )
         
         # # 测试按钮
         # row = layout.row()
@@ -561,7 +568,7 @@ class ACA_PT_dougong(bpy.types.Panel):
             if not bData.use_dg:
                 checkboxUsePbf.enabled =False
                 inputDgextend.enabled =False
-                inputDgheight.enabled =False
+                #inputDgheight.enabled =False
                 inputDggap.enabled =False
 
 # “梁椽望属性”子面板

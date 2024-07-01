@@ -933,39 +933,44 @@ def redrawViewport():
 
 # 删除所有无用数据，以免拖累性能
 def delOrphan():
-    for block in bpy.data.collections:
-        if block.users == 0:
-            bpy.data.collections.remove(block)
-
-    for block in bpy.data.objects:
-        if block.users == 0:
-            bpy.data.objects.remove(block)
+    bpy.ops.outliner.orphans_purge(
+                do_local_ids=True, 
+                do_linked_ids=True, 
+                do_recursive=True)
     
-    for block in bpy.data.meshes:
-        if block.users == 0:
-            bpy.data.meshes.remove(block)
+    # for block in bpy.data.collections:
+    #     if block.users == 0:
+    #         bpy.data.collections.remove(block)
+
+    # for block in bpy.data.objects:
+    #     if block.users == 0:
+    #         bpy.data.objects.remove(block)
     
-    for block in bpy.data.curves:
-        if block.users == 0:
-            bpy.data.curves.remove(block)
-
-    for block in bpy.data.materials:
-        if block.users == 0:
-            bpy.data.materials.remove(block)
-
-    for block in bpy.data.textures:
-        if block.users == 0:
-            bpy.data.textures.remove(block)
-
-    for block in bpy.data.images:
-        if block.users == 0:
-            bpy.data.images.remove(block)
+    # for block in bpy.data.meshes:
+    #     if block.users == 0:
+    #         bpy.data.meshes.remove(block)
     
-    for block in bpy.data.node_groups:
-        if block.users == 0:
-            bpy.data.node_groups.remove(block)
+    # for block in bpy.data.curves:
+    #     if block.users == 0:
+    #         bpy.data.curves.remove(block)
 
-    bpy.data.orphans_purge()
+    # for block in bpy.data.materials:
+    #     if block.users == 0:
+    #         bpy.data.materials.remove(block)
+
+    # for block in bpy.data.textures:
+    #     if block.users == 0:
+    #         bpy.data.textures.remove(block)
+
+    # for block in bpy.data.images:
+    #     if block.users == 0:
+    #         bpy.data.images.remove(block)
+    
+    # for block in bpy.data.node_groups:
+    #     if block.users == 0:
+    #         bpy.data.node_groups.remove(block)
+
+    # bpy.data.orphans_purge()
 
 # 获取对象的几何中心
 # 已经在代码中使用评估对象，可以抗阻塞 

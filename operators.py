@@ -78,6 +78,23 @@ class ACA_OT_update_building(bpy.types.Operator):
                 {'INFO'},"建筑更新完成！(%.1f秒)" 
                 % (timeEnd-timeStart))
         return {'FINISHED'}
+    
+# 删除建筑
+class ACA_OT_del_building(bpy.types.Operator):
+    bl_idname="aca.del_building"
+    bl_label = "删除建筑"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '删除当前建筑'
+
+    def execute(self, context):  
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
+            from . import build
+            build.delBuilding(buildingObj)
+            self.report(
+                {'INFO'},"建筑已删除！")
+
+        return {'FINISHED'}
 
 # 重新生成建筑
 class ACA_OT_reset_floor(bpy.types.Operator):

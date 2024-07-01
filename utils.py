@@ -1425,6 +1425,10 @@ def UvUnwrap(object:bpy.types.Object,type=None):
         bpy.ops.uv.cube_project(
             cube_size=10
         )
+    elif type == 'scale':
+        bpy.ops.uv.cube_project(
+            scale_to_bounds=True
+        )
     bpy.ops.object.mode_set(mode = 'OBJECT')
 
 # 锁定对象

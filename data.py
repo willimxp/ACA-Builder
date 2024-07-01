@@ -18,6 +18,10 @@ def initprop():
         type=ACA_data_scene,
         name="古建场景属性集"
     )
+    bpy.types.Scene.ACA_temp = bpy.props.PointerProperty(
+        type=ACA_data_template,
+        name="古建场景资产集"
+    )
     bpy.types.Object.ACA_data = bpy.props.PointerProperty(
         type=ACA_data_obj,
         name="古建构件属性集"
@@ -359,14 +363,6 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore
     
     # 柱子属性
-    piller_source : bpy.props.PointerProperty(
-            name = "柱样式",
-            type = bpy.types.Object,
-        )# type: ignore
-    pillerbase_source : bpy.props.PointerProperty(
-            name = "柱础样式",
-            type = bpy.types.Object,
-        )# type: ignore
     piller_height : bpy.props.FloatProperty(
             name = "柱高",
             default = 0.0,
@@ -446,12 +442,6 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=False,
             name="添加槛墙"
         )# type: ignore 
-    lingxin_source:bpy.props.PointerProperty(
-            name = "棂心",
-            type = bpy.types.Object,
-            poll = p_filter,
-            update = update_wall
-        )# type: ignore 
     
     # 斗栱属性
     use_dg :  bpy.props.BoolProperty(
@@ -463,22 +453,6 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=True,
             name="使用平板枋",
             update=update_roof
-        )# type: ignore 
-    dg_piller_source:bpy.props.PointerProperty(
-            name = "柱头斗栱",
-            type = bpy.types.Object,
-        )# type: ignore 
-    dg_fillgap_source:bpy.props.PointerProperty(
-            name = "补间斗栱",
-            type = bpy.types.Object,
-        )# type: ignore 
-    dg_fillgap_alt_source:bpy.props.PointerProperty(
-            name = "补间斗栱-异色",
-            type = bpy.types.Object,
-        )# type: ignore 
-    dg_corner_source:bpy.props.PointerProperty(
-            name = "转角斗栱",
-            type = bpy.types.Object,
         )# type: ignore 
     dg_extend : bpy.props.FloatProperty(
             name="斗栱挑檐",    # 令拱出跳距离
@@ -582,12 +556,6 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         unit='LENGTH',
         )# type: ignore 
     
-    # 博缝板
-    bofeng_source : bpy.props.PointerProperty(
-            name = "博缝板",
-            type = bpy.types.Object,
-        )# type: ignore
-    
     # 瓦作属性
     tile_width : bpy.props.FloatProperty(
             name="瓦垄宽度", 
@@ -602,162 +570,14 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=0.4,
             min=0.0,
         )# type: ignore
-    flatTile_source:bpy.props.PointerProperty(
-            name = "板瓦",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    circularTile_source:bpy.props.PointerProperty(
-            name = "筒瓦",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    eaveTile_source:bpy.props.PointerProperty(
-            name = "瓦当",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    dripTile_source:bpy.props.PointerProperty(
-            name = "滴水",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
     
     # 屋脊属性
-    ridgeTop_source:bpy.props.PointerProperty(
-            name = "正脊筒",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    ridgeBack_source:bpy.props.PointerProperty(
-            name = "垂脊兽后",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    ridgeFront_source:bpy.props.PointerProperty(
-            name = "垂脊兽前",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    ridgeEnd_source:bpy.props.PointerProperty(
-            name = "端头盘子",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    chiwen_source:bpy.props.PointerProperty(
-            name = "螭吻",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    baoding_source:bpy.props.PointerProperty(
-            name = "宝顶",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    chuishou_source:bpy.props.PointerProperty(
-            name = "垂兽",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    taoshou_source:bpy.props.PointerProperty(
-            name = "套兽",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
     paoshou_count:bpy.props.IntProperty(
             name = '跑兽数量',
             default=6,
             min=0,
             max=10,
             update=update_rooftile
-        )# type: ignore 
-    paoshou_0_source:bpy.props.PointerProperty(
-            name = "仙人",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    paoshou_1_source:bpy.props.PointerProperty(
-            name = "龙",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    paoshou_2_source:bpy.props.PointerProperty(
-            name = "凤",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    paoshou_3_source:bpy.props.PointerProperty(
-            name = "狮子",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    paoshou_4_source:bpy.props.PointerProperty(
-            name = "海马",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    paoshou_5_source:bpy.props.PointerProperty(
-            name = "天马",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    paoshou_6_source:bpy.props.PointerProperty(
-            name = "狎鱼",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    paoshou_7_source:bpy.props.PointerProperty(
-            name = "狻猊",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    paoshou_8_source:bpy.props.PointerProperty(
-            name = "獬豸",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    paoshou_9_source:bpy.props.PointerProperty(
-            name = "斗牛",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    paoshou_10_source:bpy.props.PointerProperty(
-            name = "行什",
-            type = bpy.types.Object,
-            poll = p_filter
-        )# type: ignore 
-    
-    mat_wood:bpy.props.PointerProperty(
-            name = "木材材质",
-            type = bpy.types.Object,
-        )# type: ignore 
-    mat_rock:bpy.props.PointerProperty(
-            name = "石材材质",
-            type = bpy.types.Object,
-        )# type: ignore 
-    mat_stone:bpy.props.PointerProperty(
-            name = "石头材质",
-            type = bpy.types.Object,
-        )# type: ignore 
-    mat_red:bpy.props.PointerProperty(
-            name = "漆.土朱材质",
-            type = bpy.types.Object,
-        )# type: ignore 
-    mat_brick_1:bpy.props.PointerProperty(
-            name = "方砖缦地",
-            type = bpy.types.Object,
-        )# type: ignore 
-    mat_brick_2:bpy.props.PointerProperty(
-            name = "条砖竖铺",
-            type = bpy.types.Object,
-        )# type: ignore 
-    mat_brick_3:bpy.props.PointerProperty(
-            name = "条砖横铺",
-            type = bpy.types.Object,
-        )# type: ignore 
-    mat_dust_red:bpy.props.PointerProperty(
-            name = "抹灰.红",
-            type = bpy.types.Object,
         )# type: ignore 
     
     # 院墙属性
@@ -818,7 +638,6 @@ def getTemplateList(self, context):
 # 直接添加“# type:ignore”
 # https://blender.stackexchange.com/questions/311578/how-do-you-correctly-add-ui-elements-to-adhere-to-the-typing-spec
 class ACA_data_scene(bpy.types.PropertyGroup):
-    from . import acaTemplate
     is_auto_redraw : bpy.props.BoolProperty(
             default = True,
             name = "是否实时重绘"
@@ -828,8 +647,216 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             name = "是否实时重建"
         ) # type: ignore
     template : bpy.props.EnumProperty(
-            name = "模版",
-            description = "模板样式",
+            name = "模版列表",
+            description = "模板列表",
             items = getTemplateList,
             options = {"ANIMATABLE"},
         ) # type: ignore
+
+# 全局共用的模版信息，各个建筑都进行引用
+# 包括资产库资产引用等    
+class ACA_data_template(bpy.types.PropertyGroup):
+    # 材质对象
+    mat_wood:bpy.props.PointerProperty(
+            name = "木材材质",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_rock:bpy.props.PointerProperty(
+            name = "石材材质",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_stone:bpy.props.PointerProperty(
+            name = "石头材质",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_red:bpy.props.PointerProperty(
+            name = "漆.土朱材质",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_brick_1:bpy.props.PointerProperty(
+            name = "方砖缦地",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_brick_2:bpy.props.PointerProperty(
+            name = "条砖竖铺",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_brick_3:bpy.props.PointerProperty(
+            name = "条砖横铺",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_dust_red:bpy.props.PointerProperty(
+            name = "抹灰.红",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_paint_beam :bpy.props.PointerProperty(
+            name = "梁枋彩画",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_paint_beam_alt :bpy.props.PointerProperty(
+            name = "梁枋彩画.异色",
+            type = bpy.types.Object,
+        )# type: ignore 
+    
+    # 柱对象
+    piller_source : bpy.props.PointerProperty(
+            name = "柱样式",
+            type = bpy.types.Object,
+        )# type: ignore
+    pillerbase_source : bpy.props.PointerProperty(
+            name = "柱础样式",
+            type = bpy.types.Object,
+        )# type: ignore
+    
+    # 棂心对象
+    lingxin_source:bpy.props.PointerProperty(
+            name = "棂心",
+            type = bpy.types.Object,
+            poll = p_filter,
+            update = update_wall
+        )# type: ignore 
+    
+    # 斗栱对象
+    dg_piller_source:bpy.props.PointerProperty(
+            name = "柱头斗栱",
+            type = bpy.types.Object,
+        )# type: ignore 
+    dg_fillgap_source:bpy.props.PointerProperty(
+            name = "补间斗栱",
+            type = bpy.types.Object,
+        )# type: ignore 
+    dg_fillgap_alt_source:bpy.props.PointerProperty(
+            name = "补间斗栱-异色",
+            type = bpy.types.Object,
+        )# type: ignore 
+    dg_corner_source:bpy.props.PointerProperty(
+            name = "转角斗栱",
+            type = bpy.types.Object,
+        )# type: ignore 
+    
+    # 博缝板对象
+    bofeng_source : bpy.props.PointerProperty(
+            name = "博缝板",
+            type = bpy.types.Object,
+        )# type: ignore
+    
+    # 琉璃瓦对象
+    flatTile_source:bpy.props.PointerProperty(
+            name = "板瓦",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    circularTile_source:bpy.props.PointerProperty(
+            name = "筒瓦",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    eaveTile_source:bpy.props.PointerProperty(
+            name = "瓦当",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    dripTile_source:bpy.props.PointerProperty(
+            name = "滴水",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    
+    # 屋脊对象
+    ridgeTop_source:bpy.props.PointerProperty(
+            name = "正脊筒",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    ridgeBack_source:bpy.props.PointerProperty(
+            name = "垂脊兽后",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    ridgeFront_source:bpy.props.PointerProperty(
+            name = "垂脊兽前",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    ridgeEnd_source:bpy.props.PointerProperty(
+            name = "端头盘子",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    chiwen_source:bpy.props.PointerProperty(
+            name = "螭吻",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    baoding_source:bpy.props.PointerProperty(
+            name = "宝顶",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    chuishou_source:bpy.props.PointerProperty(
+            name = "垂兽",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    taoshou_source:bpy.props.PointerProperty(
+            name = "套兽",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    
+    # 跑兽对象
+    paoshou_0_source:bpy.props.PointerProperty(
+            name = "仙人",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_1_source:bpy.props.PointerProperty(
+            name = "龙",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_2_source:bpy.props.PointerProperty(
+            name = "凤",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_3_source:bpy.props.PointerProperty(
+            name = "狮子",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_4_source:bpy.props.PointerProperty(
+            name = "海马",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_5_source:bpy.props.PointerProperty(
+            name = "天马",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_6_source:bpy.props.PointerProperty(
+            name = "狎鱼",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_7_source:bpy.props.PointerProperty(
+            name = "狻猊",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_8_source:bpy.props.PointerProperty(
+            name = "獬豸",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_9_source:bpy.props.PointerProperty(
+            name = "斗牛",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore 
+    paoshou_10_source:bpy.props.PointerProperty(
+            name = "行什",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore     

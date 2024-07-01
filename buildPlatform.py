@@ -12,6 +12,7 @@ from . import utils
 from . import buildFloor
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
+from .data import ACA_data_template as tmpData
 
 # 生成台基Proxy
 def __addPlatformProxy(buildingObj:bpy.types.Object):
@@ -42,6 +43,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         platformObj,con.ACA_TYPE_BUILDING
     )
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     (pWidth,pDeepth,pHeight) = platformObj.dimensions
     # 计算柱网数据
@@ -65,7 +67,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
     # UV处理
     utils.UvUnwrap(brickObj,type='cube')
     # 方砖缦地
-    utils.copyMaterial(bData.mat_brick_1,brickObj)
+    utils.copyMaterial(aData.mat_brick_1,brickObj)
 
     # 阶条石
     jtsObjs = []    # 收集待合并的阶条石
@@ -181,7 +183,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         parent=platformObj
     )
     # 方砖横铺
-    utils.copyMaterial(bData.mat_brick_3,brickObj)
+    utils.copyMaterial(aData.mat_brick_3,brickObj)
     utils.addModifierMirror(
         object=brickObj,
         mirrorObj=platformObj,
@@ -204,7 +206,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         parent=platformObj
     )
     # 方砖横铺
-    utils.copyMaterial(bData.mat_brick_3,brickObj)
+    utils.copyMaterial(aData.mat_brick_3,brickObj)
     utils.addModifierMirror(
         object=brickObj,
         mirrorObj=platformObj,
@@ -236,7 +238,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
             obj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXHIGH
         # 设置材质
-        utils.copyMaterial(bData.mat_rock,obj)
+        utils.copyMaterial(aData.mat_rock,obj)
     
     # 合并台基
     platformSet = utils.joinObjects(
@@ -253,6 +255,8 @@ def __drawStep(stepProxy:bpy.types.Object):
         stepProxy,con.ACA_TYPE_BUILDING
     )
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
+
     dk = bData.DK
     (pWidth,pDeepth,pHeight) = stepProxy.dimensions
     bevel = con.BEVEL_HIGH
@@ -319,7 +323,7 @@ def __drawStep(stepProxy:bpy.types.Object):
         use_axis=(True,False,False)
     )
     # 方砖横铺
-    utils.copyMaterial(bData.mat_brick_3,brickObj)
+    utils.copyMaterial(aData.mat_brick_3,brickObj)
     taduoObjs.append(brickObj)
 
     # 4、垂带
@@ -420,7 +424,7 @@ def __drawStep(stepProxy:bpy.types.Object):
         modBevel.offset_type = 'WIDTH'
         modBevel.use_clamp_overlap = False
         # 设置材质
-        utils.copyMaterial(bData.mat_rock,obj)
+        utils.copyMaterial(aData.mat_rock,obj)
 
     # 合并对象
     taduoSet = utils.joinObjects(
@@ -536,6 +540,7 @@ def __addSanshui(pfProxy:bpy.types.Object,
         pfProxy,con.ACA_TYPE_BUILDING
     )
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
 
     sanshuiObjs = []
@@ -579,7 +584,7 @@ def __addSanshui(pfProxy:bpy.types.Object,
     # UV处理
     utils.UvUnwrap(joinBaseObj,type='cube')
     # 条砖竖铺
-    utils.copyMaterial(bData.mat_brick_2,joinBaseObj)
+    utils.copyMaterial(aData.mat_brick_2,joinBaseObj)
 
     # 清理无用的散水对象
     for n in range(1,len(sanshuiObjs)):
@@ -626,9 +631,12 @@ def addStep(buildingObj:bpy.types.Object,
                         print(stepID + " is in stepstr:" + stepStr)
                         continue
                     
-                    # 生成踏跺
-                    __buildSingleStep(buildingObj,stepID)
-                    
+                    # 根据stepID生成踏跺（如，’3/0#4/0‘）
+                    stepProxy = __addStepProxy(
+                        buildingObj,stepID)
+                    # 生成踏跺对象
+                    stepObj = __drawStep(stepProxy)
+                                
                     # 将踏跺加入整体布局中
                     bData.step_net += stepID + ','
 

@@ -7,11 +7,13 @@ import pathlib
 import xml.etree.ElementTree as ET
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
+from .data import ACA_data_template as tmpData
 from . import utils
 
 
 xmlFileName = 'simplyhouse.xml'
 blenderFileName = 'acaAssets.blend'
+assetsFileName = 'assetsIndex.xml'
 
 # 组合绝对路径
 # https://blender.stackexchange.com/questions/253722/blender-api-how-to-distribute-an-add-on-with-assets-and-how-to-append-them-with
@@ -49,14 +51,11 @@ def getTemplateList(onlyname=False):
 # 载入Blender中的资产
 # 参考教程：https://b3d.interplanety.org/en/appending-all-objects-from-the-external-blend-file-to-the-scene-with-blender-python-api/
 # 参考文档：https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html
-def loadAssets(assetName : str,parent:bpy.types.Object,hide=True,link=True):
-    # # 验证资源是否有重复，直接返回现有对象
-    # if assetName in bpy.data.objects:
-    #     if link:    # 仅使用于直接连接，append时不做处理
-    #         return bpy.data.objects[assetName]
-    
+def loadAssets(assetName : str,
+               parent:bpy.types.Object=None,
+               hide=True,
+               link=True):   
     # 打开资产文件
-    # filepath = os.path.join(templateFolder, blenderFileName)
     filepath = __getPath(blenderFileName)
 
     # 简化做法，效率更高，但没有关联子对象
@@ -136,6 +135,27 @@ def __loadDefaultData(buildingObj:bpy.types.Object):
     bData['door_height'] = 0.6*bData['piller_height']
     return bData
 
+# 填充资产库对象索引
+def openAssets():
+    # 载入数据
+    aData : tmpData = bpy.context.scene.ACA_temp
+
+    # 解析XML配置模版
+    path = __getPath(assetsFileName)
+    tree = ET.parse(path)
+    root = tree.getroot()
+    
+    # 填充
+    for node in root:
+        tag = node.tag
+        type = node.attrib['type']
+        value = node.text
+        if type == 'Object':
+            aData[tag] = loadAssets(value)
+    
+    return
+    
+
 # 载入模版
 # 直接将XML填充入bData
 # 注意，所有的属性都为选填，所以要做好空值的检查
@@ -149,18 +169,6 @@ def openTemplate(buildingObj:bpy.types.Object,
     if templates == None:
         utils.outputMsg("模版解析失败")
         return
-    
-    # 同步绑定资产
-    # 1. 指定资产目录
-    buildingColl = buildingObj.users_collection[0]
-    coll = utils.setCollection('资产',parentColl=buildingColl)
-    # 2. 指定资产根节点
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
-    assetsObj = bpy.context.object
-    assetsObj.parent = buildingObj
-    assetsObj.name = 'assets'   # 系统遇到重名会自动添加00x的后缀
-    assetsObj.ACA_data['aca_obj'] = True
-    assetsObj.ACA_data['aca_type'] = con.ACA_TYPE_ASSET_ROOT
     
     # 载入数据
     bData:acaData = buildingObj.ACA_data
@@ -208,18 +216,19 @@ def openTemplate(buildingObj:bpy.types.Object,
                         if value == 'False':
                             bData[tag] = False
                     elif type == 'Object':
-                        bData[tag] = loadAssets(value,assetsObj)
+                        bData[tag] = loadAssets(value)
                     else:
                         print("can't convert:",node.tag, node.attrib['type'],node.text)
 
+    # 填充资产库对象索引
+    openAssets()
+    
     return
 
 # 保存模版修改
 def saveTemplate(buildingObj:bpy.types.Object):
     # 载入输入
     bData:acaData = buildingObj.ACA_data
-    # 模版名称取panel上选择的模版
-    # templateName = bpy.context.scene.ACA_data.template
     # 模版名称取当前建筑的名称
     templateName = buildingObj.name
 
@@ -227,7 +236,6 @@ def saveTemplate(buildingObj:bpy.types.Object):
     ignoreKeys = {
         # 辅助参数，无需处理
         'aca_obj',
-        #'aca_type',
         'x_total',
         'y_total',
         'wall_layout',
@@ -235,17 +243,9 @@ def saveTemplate(buildingObj:bpy.types.Object):
         'roof_qiao_point',
         'tile_width_real',
         'dg_scale',
-
-        # 'is_showPlatform',
-        # 'is_showPillers',
-        # 'is_showWalls',
-        # 'is_showDougong',
-        # 'is_showBPW',
-        # 'is_showTiles',
     }
     
     # 解析XML配置模版
-    # path = os.path.join(templateFolder, xmlFileName)
     path = __getPath(xmlFileName)
     tree = ET.parse(path)
     root = tree.getroot()   # <templates>根节点

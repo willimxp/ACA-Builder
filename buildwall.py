@@ -11,6 +11,7 @@ from typing import List
 
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
+from .data import ACA_data_template as tmpData
 from . import utils
 from . import buildDoor
 from . import buildFloor
@@ -155,9 +156,7 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     wData['door_height'] = bData.door_height
     wData['door_num'] = bData.door_num
     wData['gap_num'] = bData.gap_num
-    wData['use_topwin'] = bData.use_topwin    
-    wData['lingxin_source'] = bData.lingxin_source
-
+    wData['use_topwin'] = bData.use_topwin
     return wallproxy
 
 # 绘制墙体
@@ -165,6 +164,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 载入数据
     buildingObj = utils.getAcaParent(wallProxy,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
     # 覆盖墙体厚度
@@ -184,7 +184,7 @@ def __drawWall(wallProxy:bpy.types.Object):
                            bData.wall_span),
                 parent=wallProxy,
             )
-        utils.copyMaterial(bData.mat_wood,wallHeadBoard)
+        utils.copyMaterial(aData.mat_wood,wallHeadBoard)
 
     # 1、创建下碱对象
     # 下碱一般取墙体高度的1/3
@@ -203,7 +203,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 展UV
     utils.UvUnwrap(bottomObj,type='cube')
     # 赋材质
-    utils.copyMaterial(bData.mat_rock,bottomObj)
+    utils.copyMaterial(aData.mat_rock,bottomObj)
 
     # 2、创建上身对象
     extrudeHeight = wallHeight/10
@@ -236,7 +236,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 展UV
     utils.UvUnwrap(bodyObj,type='cube')
     # 赋材质
-    utils.copyMaterial(bData.mat_dust_red,bodyObj)
+    utils.copyMaterial(aData.mat_dust_red,bodyObj)
     
     # 合并
     wallObj = utils.joinObjects([bottomObj,bodyObj],'墙体')
@@ -334,8 +334,7 @@ def updateWallLayout(buildingObj:bpy.types.Object):
             wData['door_height'] = bData.door_height
             wData['door_num'] = bData.door_num
             wData['gap_num'] = bData.gap_num
-            wData['use_topwin'] = bData.use_topwin  
-            wData['lingxin_source'] = bData.lingxin_source
+            wData['use_topwin'] = bData.use_topwin
 
     # 三、批量绑定墙体构件
     for wallproxy in wallrootObj.children:

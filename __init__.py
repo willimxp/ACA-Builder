@@ -26,6 +26,7 @@ classes = (
     # 全局数据类
     data.ACA_data_scene,    
     data.ACA_data_obj,
+    data.ACA_data_template,
     
     # 基本面板类
     panel.ACA_PT_basic,

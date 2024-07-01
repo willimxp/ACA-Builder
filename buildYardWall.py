@@ -9,6 +9,7 @@ import math
 
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
+from .data import ACA_data_template as tmpData
 from . import utils
 from . import acaTemplate
 
@@ -43,17 +44,18 @@ def __arrayTile(
     # 载入数据
     buildingObj = wallProxy.parent
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     # 墙体的长宽高，以wallproxy为依据
     (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
 
     # 瓦件缩放，当前设置的斗口与默认斗口
     tileScale = bData.DK / con.DEFAULT_DK
     # 垄距，以最宽的滴水瓦为参考
-    colWidth = bData.dripTile_source.dimensions.x * tileScale
+    colWidth = aData.dripTile_source.dimensions.x * tileScale
     # 取可以整数排布的垄距
     colWidth = wallLength/math.floor(wallLength/colWidth)
     # 行距，以筒瓦长度为参考
-    rowHeight = bData.circularTile_source.dimensions.y * tileScale
+    rowHeight = aData.circularTile_source.dimensions.y * tileScale
 
     # 导入瓦片对象
     tileObj = utils.copyObject(
@@ -105,6 +107,7 @@ def buildSingleWall(
     # 载入数据
     buildingObj = wallProxy.parent
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     
     # 如果要四角融合，则适当延长瓦面
@@ -128,7 +131,7 @@ def buildSingleWall(
     # 展UV
     utils.UvUnwrap(bottomObj,type='cube')
     # 赋材质
-    utils.copyMaterial(bData.mat_rock,bottomObj)
+    utils.copyMaterial(aData.mat_rock,bottomObj)
 
     # 2、创建上身对象
     bodyObj = utils.addCube(
@@ -142,20 +145,20 @@ def buildSingleWall(
     # 展UV
     utils.UvUnwrap(bodyObj,type='cube')
     # 赋材质
-    utils.copyMaterial(bData.mat_red,bodyObj)
+    utils.copyMaterial(aData.mat_red,bodyObj)
 
     # 3、瓦顶
     # 瓦件缩放
     tileScale = bData.DK / con.DEFAULT_DK
     # 垄距
-    colWidth = bData.dripTile_source.dimensions.x * tileScale
+    colWidth = aData.dripTile_source.dimensions.x * tileScale
     # 取可以整数排布的垄距
     colWidth = wallLength / math.floor(wallLength/colWidth)
     
     # 3.1、滴水
     __arrayTile(
         name = '滴水',
-        sourceObj=bData.dripTile_source,
+        sourceObj=aData.dripTile_source,
         location=(-wallLength/2+colWidth/2,
                   -wallDeepth/2,
                   wallHeight/2),
@@ -166,7 +169,7 @@ def buildSingleWall(
     # 3.2、瓦当
     __arrayTile(
         name = '瓦当',
-        sourceObj=bData.eaveTile_source,
+        sourceObj=aData.eaveTile_source,
         location=(-wallLength/2,
                   -wallDeepth/2
                   ,wallHeight/2),
@@ -177,7 +180,7 @@ def buildSingleWall(
     # 3.3、板瓦
     __arrayTile(
         name = '板瓦',
-        sourceObj=bData.flatTile_source,
+        sourceObj=aData.flatTile_source,
         location=(-wallLength/2+colWidth/2,
                   -wallDeepth/2,
                   wallHeight/2),
@@ -189,7 +192,7 @@ def buildSingleWall(
     # 3.4、筒瓦
     __arrayTile(
         name = '筒瓦',
-        sourceObj=bData.circularTile_source,
+        sourceObj=aData.circularTile_source,
         location=(-wallLength/2,
                   -wallDeepth/2,
                   wallHeight/2),
@@ -200,7 +203,7 @@ def buildSingleWall(
     
     # 4、端头做博缝板
     bofengObj = utils.copyObject(
-        sourceObj=bData.bofeng_source,
+        sourceObj=aData.bofeng_source,
         name="博缝板",
         parentObj=wallProxy,
         location=(-wallLength/2+bodyShrink,
@@ -223,14 +226,14 @@ def buildSingleWall(
 
     # 5、正脊 
     # 正脊长度，与瓦顶的出梢匹配
-    bofengWidth = bData.bofeng_source.dimensions.y\
+    bofengWidth = aData.bofeng_source.dimensions.y\
                      * tileScale*0.5
     ridgeLength = wallLength + bofengWidth
     # 正脊高度，根据瓦顶斜率计算，略作微调
     ridgeHeight = wallDeepth/2 * math.tan(tileAngle)-con.TILE_HEIGHT
     # 导入正脊
     ridgeObj = utils.copyObject(
-        sourceObj=bData.ridgeFront_source,
+        sourceObj=aData.ridgeFront_source,
         name="正脊",
         parentObj=wallProxy,
         singleUser=True)

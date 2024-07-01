@@ -12,6 +12,7 @@ from . import buildRoof
 from . import acaTemplate
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
+from .data import ACA_data_template as tmpData
 
 # 创建瓦作层根节点
 # 如果已存在根节点，则一概清空重建
@@ -745,19 +746,20 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 direction='X'):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
 
     # 载入瓦片资源
     flatTile:bpy.types.Object = utils.copyObject(
-        bData.flatTile_source,singleUser=True)
+        aData.flatTile_source,singleUser=True)
     circularTile:bpy.types.Object = utils.copyObject(
-        bData.circularTile_source,singleUser=True)
+        aData.circularTile_source,singleUser=True)
     eaveTile:bpy.types.Object = utils.copyObject(
-        bData.eaveTile_source,singleUser=True)
+        aData.eaveTile_source,singleUser=True)
     dripTile:bpy.types.Object = utils.copyObject(
-        bData.dripTile_source,singleUser=True)
+        aData.dripTile_source,singleUser=True)
     # 根据斗口调整尺度
     flatTile = utils.resizeObj(flatTile,
         bData.DK / con.DEFAULT_DK)
@@ -947,6 +949,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
                  rafter_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
@@ -964,7 +967,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     if (bData.x_total == bData.y_total 
         and bData.roof_style==con.ROOF_WUDIAN):
         baodingObj = utils.copyObject(
-            sourceObj=bData.baoding_source,
+            sourceObj=aData.baoding_source,
             name='宝顶',
             location=(0,0,zhengji_z),
             parentObj=tileRootObj)
@@ -980,7 +983,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         zhengji_z -= dk
     # 载入正脊资产对象
     roofRidgeObj = utils.copyObject(
-        sourceObj=bData.ridgeTop_source,
+        sourceObj=aData.ridgeTop_source,
         name="正脊",
         location=(0,0,zhengji_z),
         parentObj=tileRootObj,
@@ -1026,7 +1029,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
 
     # 摆放螭吻
     chiwenObj = utils.copyObject(
-        sourceObj=bData.chiwen_source,
+        sourceObj=aData.chiwen_source,
         name='螭吻',
         location=(-zhengji_length,0,zhengji_z),
         parentObj=tileRootObj,
@@ -1046,6 +1049,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
                     rafter_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
@@ -1071,7 +1075,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     
     # 横向围脊
     roofRidgeObj = utils.copyObject(
-        sourceObj=bData.ridgeBack_source,
+        sourceObj=aData.ridgeBack_source,
         name="围脊",
         location=(0,
                   ridgeCross.y,
@@ -1120,7 +1124,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
 
     # 摆放螭吻
     chiwenObj = utils.copyObject(
-        sourceObj=bData.chiwen_source,
+        sourceObj=aData.chiwen_source,
         name='合角吻',
         location=ridgeCross,
         rotation=(0,0,math.radians(180)),
@@ -1151,6 +1155,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
                     purlin_pos):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     tileRootObj = utils.getAcaChild(
@@ -1242,7 +1247,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
         pNeg2 = ridgeCurveVerts[-2]
         r = abs((pNeg1.y - pNeg2.y)/(pNeg1.z - pNeg2.z))
         # Y方向延伸2个垂脊筒的长度，多余的会在镜像时裁剪掉
-        ridgeFrontObj:bpy.types.Object = bData.ridgeFront_source
+        ridgeFrontObj:bpy.types.Object = aData.ridgeFront_source
         offset_y = ridgeFrontObj.dimensions.x * 2
         pNeg1.y -= offset_y
         # Z方向按尾端斜率延伸
@@ -1463,6 +1468,7 @@ def __arraySideTile(buildingObj: bpy.types.Object,
 def __buildTaoshou(buildingObj: bpy.types.Object):
     # 载入数据
     bData:acaData  = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
@@ -1477,7 +1483,7 @@ def __buildTaoshou(buildingObj: bpy.types.Object):
     loc = bData.roof_qiao_point - offset
 
     taoshouObj = utils.copyObject(
-        sourceObj=bData.taoshou_source,
+        sourceObj=aData.taoshou_source,
         name='套兽',
         parentObj=tileRootObj,
         location=loc,
@@ -1503,30 +1509,31 @@ def __buildPaoshou(buildingObj: bpy.types.Object,
                    count):
     # 载入数据
     bData:acaData  = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
     
     # 载入10个跑兽
     paoshouObjs = []
-    paoshouObjs.append(bData.paoshou_0_source)
-    paoshouObjs.append(bData.paoshou_1_source)
-    paoshouObjs.append(bData.paoshou_2_source)
-    paoshouObjs.append(bData.paoshou_3_source)
-    paoshouObjs.append(bData.paoshou_4_source)
-    paoshouObjs.append(bData.paoshou_5_source)
-    paoshouObjs.append(bData.paoshou_6_source)
-    paoshouObjs.append(bData.paoshou_7_source)
-    paoshouObjs.append(bData.paoshou_8_source)
-    paoshouObjs.append(bData.paoshou_9_source)
-    paoshouObjs.append(bData.paoshou_10_source)
+    paoshouObjs.append(aData.paoshou_0_source)
+    paoshouObjs.append(aData.paoshou_1_source)
+    paoshouObjs.append(aData.paoshou_2_source)
+    paoshouObjs.append(aData.paoshou_3_source)
+    paoshouObjs.append(aData.paoshou_4_source)
+    paoshouObjs.append(aData.paoshou_5_source)
+    paoshouObjs.append(aData.paoshou_6_source)
+    paoshouObjs.append(aData.paoshou_7_source)
+    paoshouObjs.append(aData.paoshou_8_source)
+    paoshouObjs.append(aData.paoshou_9_source)
+    paoshouObjs.append(aData.paoshou_10_source)
 
     # 以一个脊筒长度为单位距离
-    ridgeObj:bpy.types.Object = bData.ridgeFront_source
+    ridgeObj:bpy.types.Object = aData.ridgeFront_source
     ridgeLength = ridgeObj.dimensions.x * (bData.DK/con.DEFAULT_DK)
     ridgeHeight = ridgeObj.dimensions.z * (bData.DK/con.DEFAULT_DK)
     # 端头盘子长度
-    ridgeEndObj:bpy.types.Object = bData.ridgeEnd_source
+    ridgeEndObj:bpy.types.Object = aData.ridgeEnd_source
     ridgeEnd_Length = ridgeEndObj.dimensions.x * (bData.DK/con.DEFAULT_DK)
 
     for n in range(count):
@@ -1563,10 +1570,11 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
                  rafter_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
-    eaveTile:bpy.types.Object = bData.eaveTile_source
+    eaveTile:bpy.types.Object = aData.eaveTile_source
     eaveTileWidth = eaveTile.dimensions.x
     eaveTileLength = eaveTile.dimensions.y
     
@@ -1580,16 +1588,16 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     # 如果不做跑兽，也不做垂兽和垂脊兽后
     if bData.paoshou_count > 0 :
         frontRidgeAfterObj = __arrayRidgeByCurve(buildingObj,
-                        sourceObj=bData.ridgeBack_source,
+                        sourceObj=aData.ridgeBack_source,
                         ridgeCurve=frontRidgeCurve,
                         ridgeName='垂脊兽后')
         # 垂脊兽后退后一个脊筒，摆放垂兽
-        ridgeObj:bpy.types.Object = bData.ridgeBack_source
+        ridgeObj:bpy.types.Object = aData.ridgeBack_source
         ridgeLength = ridgeObj.dimensions.x * (bData.DK/con.DEFAULT_DK)
         frontRidgeAfterObj.location.x += ridgeLength
         # 摆放垂兽
         chuishouObj = utils.copyObject(
-            sourceObj=bData.chuishou_source,
+            sourceObj=aData.chuishou_source,
             name='垂兽',
             parentObj=tileRootObj,
             location=frontRidgeCurve.location,
@@ -1623,7 +1631,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         ):
         # 构造端头盘子
         ridgeEndObj = utils.copyObject(
-            sourceObj=bData.ridgeEnd_source,
+            sourceObj=aData.ridgeEnd_source,
             name='端头盘子',
             location=frontRidgeCurve.location,
             parentObj=tileRootObj,
@@ -1647,7 +1655,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
 
         # 构造垂脊兽前的脊筒，仅根据需要的跑兽数量排布
         frontRidgeBeforeObj = __arrayRidgeByCurve(buildingObj,
-                        sourceObj=bData.ridgeFront_source,
+                        sourceObj=aData.ridgeFront_source,
                         ridgeCurve=frontRidgeCurve,
                         ridgeName='垂脊兽前',
                         arrayCount= bData.paoshou_count)        
@@ -1664,7 +1672,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
             )
 
             # 给垂脊兽后留出跑兽的空间
-            ridgeUnit: bpy.types.Object= bData.ridgeFront_source
+            ridgeUnit: bpy.types.Object= aData.ridgeFront_source
             ridgeUnit_Length = (ridgeUnit.dimensions.x 
                 * (bData.DK/con.DEFAULT_DK))
             paoLength = (ridgeEnd_Length 
@@ -1679,10 +1687,11 @@ def __buildSideTile(buildingObj: bpy.types.Object,
                  rafter_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
-    eaveTile:bpy.types.Object = bData.eaveTile_source
+    eaveTile:bpy.types.Object = aData.eaveTile_source
     eaveTileWidth = eaveTile.dimensions.x
     eaveTileLength = eaveTile.dimensions.y
     
@@ -1705,13 +1714,13 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     arrayCount = int(arrayLength/bData.tile_width)
     arraySpan = arrayLength / arrayCount
     dripTileObj = __arraySideTile(buildingObj,
-                    sourceObj=bData.dripTile_source,
+                    sourceObj=aData.dripTile_source,
                     ridgeCurve=sideRidgeCurve,
                     arraySpan=arraySpan,
                     tileName='排山滴水',)
     
     eaveTileObj = __arraySideTile(buildingObj,
-                    sourceObj=bData.eaveTile_source,
+                    sourceObj=aData.eaveTile_source,
                     ridgeCurve=sideRidgeCurve,
                     arraySpan=arraySpan,
                     arrayCount = arrayCount-1,  # 少做一个勾头，手工放置坐中勾头
@@ -1719,7 +1728,7 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     
     # 放置勾头坐中
     eaveTileCenterObj = utils.copyObject(
-        sourceObj=bData.eaveTile_source,
+        sourceObj=aData.eaveTile_source,
         name='排山勾头坐中',
         location=(
                 sideRidgeCurve.location.x,
@@ -1929,6 +1938,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
                     rafter_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
@@ -1945,7 +1955,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     
     # 垂脊兽前摆放端头盘子
     ridgeEndObj = utils.copyObject(
-            sourceObj=bData.ridgeEnd_source,
+            sourceObj=aData.ridgeEnd_source,
             name='端头盘子',
             location=cornerRidgeCurve.location,
             parentObj=tileRootObj,
@@ -1971,7 +1981,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     # 沿曲线排布脊筒
     # 构造垂脊兽前
     cornerRidgeBeforeObj = __arrayRidgeByCurve(buildingObj,
-                    sourceObj=bData.ridgeFront_source,
+                    sourceObj=aData.ridgeFront_source,
                     ridgeCurve=cornerRidgeCurve,
                     ridgeName=cornerRidgeName+'兽前',
                     arrayCount= bData.paoshou_count)
@@ -1989,11 +1999,11 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
 
         # 构造垂脊兽后
         cornerRidgeAfterObj = __arrayRidgeByCurve(buildingObj,
-                        sourceObj=bData.ridgeBack_source,
+                        sourceObj=aData.ridgeBack_source,
                         ridgeCurve=cornerRidgeCurve,
                         ridgeName=cornerRidgeName+'兽后')
         # 留出跑兽的空间
-        ridgeUnit: bpy.types.Object= bData.ridgeFront_source
+        ridgeUnit: bpy.types.Object= aData.ridgeFront_source
         ridgeUnit_Length = ridgeUnit.dimensions.x * (bData.DK/con.DEFAULT_DK)
         paoLength = (ridgeEnd_Length
             + ridgeUnit_Length * bData.paoshou_count)
@@ -2008,7 +2018,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
         # 摆放垂兽
         loc = cornerRidgeCurve.location + Vector((paoLength,0,0))
         chuishouObj = utils.copyObject(
-            sourceObj=bData.chuishou_source,
+            sourceObj=aData.chuishou_source,
             name='垂兽',
             parentObj=tileRootObj,
             location=loc,
@@ -2072,11 +2082,12 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
                     rafter_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
-    ridgeObj:bpy.types.Object = bData.ridgeFront_source
+    ridgeObj:bpy.types.Object = aData.ridgeFront_source
 
     # 绘制博脊曲线
     sideRidgeVerts = []
@@ -2115,7 +2126,7 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
     # 平铺脊筒
     __arrayRidgeByCurve(
         buildingObj=buildingObj,
-        sourceObj=bData.ridgeFront_source,
+        sourceObj=aData.ridgeFront_source,
         ridgeCurve=sideRidgeCurve,
         ridgeName='博脊'
     )
@@ -2168,14 +2179,15 @@ def buildTile(buildingObj: bpy.types.Object):
 
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
 
     # 自动计算瓦垄长宽，不再需要用户输入
     bData['tile_width'] = (
-        bData.dripTile_source.dimensions.x
+        aData.dripTile_source.dimensions.x
         * (bData.DK / con.DEFAULT_DK)
     )
     bData['tile_length'] = (
-        bData.circularTile_source.dimensions.y
+        aData.circularTile_source.dimensions.y
         * (bData.DK / con.DEFAULT_DK)
     )
 

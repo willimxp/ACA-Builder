@@ -10,6 +10,7 @@ from typing import List
 
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
+from .data import ACA_data_template as tmpData
 from . import utils
 from . import acaTemplate
 from . import buildWall
@@ -137,12 +138,15 @@ def getFloorDate(buildingObj:bpy.types.Object):
 
     return net_x,net_y
 
+
 # 在柱间添加额枋
 def __buildFang(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
+    aData:tmpData = bpy.context.scene.ACA_temp
+
     # 柱网根节点
     floorRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_FLOOR_ROOT)
@@ -205,7 +209,8 @@ def __buildFang(buildingObj:bpy.types.Object):
         modBevel.width = con.BEVEL_EXHIGH
         modBevel.segments=3
         # 设置材质
-        utils.copyMaterial(bData.mat_red,bigFangObj)
+        utils.UvUnwrap(bigFangObj,'scale')
+        utils.copyMaterial(aData.mat_paint_beam,bigFangObj)
 
         # 是否需要做小额枋
         if bData.use_smallfang:
@@ -226,7 +231,7 @@ def __buildFang(buildingObj:bpy.types.Object):
             dianbanObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             dianbanObj.ACA_data['fangID'] = fangID
             # 设置材质
-            utils.copyMaterial(bData.mat_red,dianbanObj)
+            utils.copyMaterial(aData.mat_red,dianbanObj)
             
             # 小额枋
             smallFangScale = Vector( (fang_length, 
@@ -252,7 +257,8 @@ def __buildFang(buildingObj:bpy.types.Object):
             modBevel.width = con.BEVEL_HIGH
             modBevel.segments=2
             # 设置材质
-            utils.copyMaterial(bData.mat_red,smallFangObj)
+            utils.UvUnwrap(smallFangObj,'scale')
+            utils.copyMaterial(aData.mat_paint_beam,smallFangObj)
     
     # 聚焦到最后添加的大额枋，便于用户可以直接删除
     utils.focusObj(bigFangObj)
@@ -349,6 +355,7 @@ def buildPillers(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
+    aData:tmpData = bpy.context.scene.ACA_temp
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]
@@ -380,7 +387,7 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 2、生成一个柱子实例piller_basemesh
     # 从当前场景中载入数据集
     bData:acaData = buildingObj.ACA_data
-    piller_source = bData.piller_source
+    piller_source = aData.piller_source
 
     # 创建临时引用，便于在本建筑内复用，但各建筑间可以隔离
     # 在最后会被删除
@@ -444,7 +451,7 @@ def buildPillers(buildingObj:bpy.types.Object):
             pillerObj.ACA_data['pillerID'] = pillerID
             # 复制柱础
             pillerbaseObj = utils.copyObject(
-                sourceObj= bData.pillerbase_source,
+                sourceObj= aData.pillerbase_source,
                 name='柱础',
                 parentObj= pillerProxy,
                 scale=(
@@ -474,7 +481,7 @@ def buildPillers(buildingObj:bpy.types.Object):
             modBevel.width = con.BEVEL_HIGH
             modBevel.offset_type = 'WIDTH'
             # 材质
-            utils.copyMaterial(bData.mat_stone,pillerBase)
+            utils.copyMaterial(aData.mat_stone,pillerBase)
 
     # 清理临时柱子
     utils.deleteHierarchy(piller_basemesh,True)

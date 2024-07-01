@@ -8,6 +8,7 @@ from mathutils import Vector
 
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
+from .data import ACA_data_template as tmpData
 from . import utils
 
 # 构建扇心
@@ -19,6 +20,7 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     buildingObj = utils.getAcaParent(parent,con.ACA_TYPE_BUILDING)
     wallproxy = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL)
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     wData:acaData = wallproxy.ACA_data
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
     # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
@@ -27,7 +29,7 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
 
     # 扇心高度校验，以免出现row=0的异常
     linxingHeight = scale.z- con.ZIBIAN_WIDTH*2*pd
-    unitWidth,unitDeepth,unitHeight = utils.getMeshDims(wData.lingxin_source)
+    unitWidth,unitDeepth,unitHeight = utils.getMeshDims(aData.lingxin_source)
     rows = math.ceil(linxingHeight/unitHeight)+1
     if rows<=0:
         return
@@ -62,7 +64,7 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     utils.UvUnwrap(zibianObj,type='cube')
 
     # 填充棂心
-    lingxinObj = wData.lingxin_source
+    lingxinObj = aData.lingxin_source
     if lingxinObj == None: return
     # 定位：从左下角排布array
     loc = (location.x-scale.x/2+con.ZIBIAN_WIDTH*pd,
@@ -687,6 +689,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     # 载入数据
     buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     wData:acaData = wallproxy.ACA_data
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
     # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
@@ -749,7 +752,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
         parent = wallproxy,
         )
     # 设置材质
-    utils.copyMaterial(bData.mat_rock,kanqiangObj)
+    utils.copyMaterial(aData.mat_rock,kanqiangObj)
     kanQiangObjs.append(kanqiangObj)
 
     # 窗楹
@@ -810,6 +813,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
 def buildDoor(wallproxy:bpy.types.Object):       
     # 载入设计数据
     buildingObj,bData,wData = utils.getRoot(wallproxy)
+    aData:tmpData = bpy.context.scene.ACA_temp
     if buildingObj == None:
         utils.showMessageBox(
             "未找到建筑根节点或设计数据","ERROR")
@@ -835,7 +839,7 @@ def buildDoor(wallproxy:bpy.types.Object):
                            bData.wall_span),
                 parent=wallproxy,
             )
-        utils.copyMaterial(bData.mat_wood,wallHeadBoard)
+        utils.copyMaterial(aData.mat_wood,wallHeadBoard)
     
     # 1、构建槛框
     # 返回的是下抱框，做为隔扇生成的参考  
@@ -890,6 +894,6 @@ def buildDoor(wallproxy:bpy.types.Object):
     for ob in wallproxy.children:
         # 全部设置为朱漆材质
         # 其中槛窗的窗台为石质，并不会被覆盖
-        utils.copyMaterial(bData.mat_red,ob)
+        utils.copyMaterial(aData.mat_red,ob)
 
     utils.focusObj(wallproxy)

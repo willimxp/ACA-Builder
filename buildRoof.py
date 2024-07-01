@@ -9,6 +9,7 @@ from mathutils import Vector,Euler
 
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
+from .data import ACA_data_template as tmpData
 from . import utils
 from . import buildFloor
 from . import buildDougong
@@ -879,6 +880,7 @@ def __buildLKM(buildingObj:bpy.types.Object,
                direction):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
@@ -936,7 +938,7 @@ def __buildLKM(buildingObj:bpy.types.Object,
         use_axis=LKM_mirrorAxis
     )
     # 设置材质
-    utils.copyMaterial(bData.mat_red,LKMObj)
+    utils.copyMaterial(aData.mat_red,LKMObj)
     return
 
 # 营造前后檐椽子
@@ -1708,6 +1710,7 @@ def __buildFlyrafterWangban(buildingObj,purlin_pos,direction):
 def __buildDLY(buildingObj,purlin_pos,direction):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
@@ -1774,7 +1777,7 @@ def __buildDLY(buildingObj,purlin_pos,direction):
         use_axis=DLY_mirrorAxis
     )
     # 设置材质
-    utils.copyMaterial(bData.mat_red,DLY_Obj)
+    utils.copyMaterial(aData.mat_red,DLY_Obj)
 
 # 营造飞椽（以及里口木、压飞望板、大连檐等附属构件)
 # 小式建筑中，可以不使用飞椽
@@ -2041,6 +2044,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
 def __buildCornerRafterEave(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     # 屋顶根节点
     rafterRootObj = utils.getAcaChild(
@@ -2134,7 +2138,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
         use_axis=(True,True,False)
     )
     # 设置材质
-    utils.copyMaterial(bData.mat_red,xly_curve_obj)
+    utils.copyMaterial(aData.mat_red,xly_curve_obj)
 
 # 营造翼角椽参考线，后续为翼角椽椽头的定位
 # 起点=定为正身檐椽的最后一根椽头坐标
@@ -2469,6 +2473,7 @@ def __buildCrWangban(buildingObj:bpy.types.Object
 def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     # 屋顶根节点
     rafterRootObj = utils.getAcaChild(
@@ -2544,7 +2549,7 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
         use_axis=(True,True,False),
     )
     # 设置材质
-    utils.copyMaterial(bData.mat_red,flyrafterEaveObj)
+    utils.copyMaterial(aData.mat_red,flyrafterEaveObj)
 
 # 营造翘飞椽定位线
 def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
@@ -3326,6 +3331,7 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
                  purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
@@ -3424,9 +3430,9 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     if bData.roof_style in (
             con.ROOF_XUANSHAN,
             con.ROOF_XUANSHAN_JUANPENG):
-        utils.copyMaterial(bData.mat_stone,xybObj)
+        utils.copyMaterial(aData.mat_stone,xybObj)
     elif bData.roof_style == con.ROOF_XIESHAN:
-        utils.copyMaterial(bData.mat_red,xybObj)
+        utils.copyMaterial(aData.mat_red,xybObj)
 
     return xybObj
 
@@ -3573,6 +3579,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
                  rafter_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
@@ -3583,7 +3590,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     
     # 复制博缝板资产
     bofengObj = utils.copyObject(
-        sourceObj=bData.bofeng_source,
+        sourceObj=aData.bofeng_source,
         name="博缝板",
         parentObj=rafterRootObj,
         location=bofengCurve.location,
@@ -3631,6 +3638,7 @@ def __buildShanWall(
         purlin_pos):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     rafterRootObj = utils.getAcaChild(
@@ -3734,7 +3742,7 @@ def __buildShanWall(
     utils.UvUnwrap(shanWallObj,type='cube')
 
     # 设置材质
-    utils.copyMaterial(bData.mat_rock,shanWallObj)
+    utils.copyMaterial(aData.mat_rock,shanWallObj)
     # 添加镜像
     utils.addModifierMirror(
         object=shanWallObj,
@@ -3751,6 +3759,7 @@ def __buildBPW(buildingObj:bpy.types.Object):
 
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     # 屋瓦依赖于椽望，强制生成
     if bData.is_showTiles : 
         bData['is_showBPW']=True
@@ -3795,7 +3804,7 @@ def __buildBPW(buildingObj:bpy.types.Object):
 
     # 设置材质
     for obj in rafterRootObj.children:
-        utils.copyMaterial(bData.mat_wood,obj)
+        utils.copyMaterial(aData.mat_wood,obj)
     return
 
 # 营造整个房顶

@@ -7,6 +7,7 @@ import math
 
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
+from .data import ACA_data_template as tmpData
 from . import utils
 from . import buildFloor
 from . import buildRoof
@@ -47,6 +48,7 @@ def __addDougongRoot(buildingObj:bpy.types.Object):
 def buildDougong(buildingObj:bpy.types.Object): 
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     if bData.aca_type != con.ACA_TYPE_BUILDING:
         utils.showMessageBox("错误，输入的不是建筑根节点")
         return
@@ -91,7 +93,7 @@ def buildDougong(buildingObj:bpy.types.Object):
             use_axis=(False,True,False)
         )
         # 设置材质
-        utils.copyMaterial(bData.mat_red,pingbanfangObj)
+        utils.copyMaterial(aData.mat_red,pingbanfangObj)
 
         # 山面平板枋
         loc = (net_x[0],0,-con.PINGBANFANG_H*dk/2)
@@ -117,18 +119,18 @@ def buildDougong(buildingObj:bpy.types.Object):
             use_axis=(True,False,False)
         )       
         # 设置材质
-        utils.copyMaterial(bData.mat_red,pingbanfangObj)
+        utils.copyMaterial(aData.mat_red,pingbanfangObj)
 
     # 3、布置斗栱/铺作======================================================
     # 斗栱缩放
     # 读取斗栱资产自定义属性dgHeight,dgExtend（需要在blender中定义）
-    if 'dgHeight' in bData.dg_piller_source:
-        originHeight = bData.dg_piller_source['dgHeight']
+    if 'dgHeight' in aData.dg_piller_source:
+        originHeight = aData.dg_piller_source['dgHeight']
     else:
         originHeight = bData.dg_height
         utils.outputMsg("斗栱未定义默认高度")
-    if 'dgExtend' in bData.dg_piller_source:
-        originExtend = bData.dg_piller_source['dgExtend']
+    if 'dgExtend' in aData.dg_piller_source:
+        originExtend = aData.dg_piller_source['dgExtend']
     else:
         originExtend = bData.dg_extend
         utils.outputMsg("斗栱未定义默认出跳")
@@ -144,7 +146,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
                 con.ROOF_LUDING,)
-            and bData.dg_corner_source != None):
+            and aData.dg_corner_source != None):
         # 四个角柱坐标
         dgCornerArray = (
             (net_x[-1], net_y[0],0),
@@ -154,7 +156,7 @@ def buildDougong(buildingObj:bpy.types.Object):
         )
         for n in range(len(dgCornerArray)) :
             dgCornerCopy:bpy.types.Object = utils.copyObject(
-                sourceObj = bData.dg_corner_source,
+                sourceObj = aData.dg_corner_source,
                 name = "转角斗栱",
                 location = dgCornerArray[n],
                 parentObj = dgrootObj,
@@ -165,7 +167,7 @@ def buildDougong(buildingObj:bpy.types.Object):
             
         
     # 柱头斗栱
-    if bData.dg_piller_source != None:
+    if aData.dg_piller_source != None:
         # 前后坡的柱头斗栱
         if bData.roof_style in (
                 con.ROOF_WUDIAN,
@@ -179,7 +181,7 @@ def buildDougong(buildingObj:bpy.types.Object):
         for n in dgRange : 
             # 南侧
             dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
-                sourceObj = bData.dg_piller_source,
+                sourceObj = aData.dg_piller_source,
                 name = "柱头斗栱",
                 location=(net_x[n],net_y[0],0),
                 scale= bData.dg_scale,
@@ -189,7 +191,7 @@ def buildDougong(buildingObj:bpy.types.Object):
             dgPillerCopy.rotation_euler.z = math.radians(0)
             # 北侧
             dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
-                sourceObj = bData.dg_piller_source,
+                sourceObj = aData.dg_piller_source,
                 name = "柱头斗栱",
                 location=(net_x[n],net_y[-1],0),
                 scale= bData.dg_scale,
@@ -206,7 +208,7 @@ def buildDougong(buildingObj:bpy.types.Object):
             for n in range(len(net_y)-2) : 
                 # 东侧
                 dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
-                    sourceObj = bData.dg_piller_source,
+                    sourceObj = aData.dg_piller_source,
                     name = "柱头斗栱",
                     location=(net_x[-1],net_y[n+1],0),
                     scale= bData.dg_scale,
@@ -216,7 +218,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                 dgPillerCopy.rotation_euler.z = math.radians(90)
                 # 西侧
                 dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
-                    sourceObj = bData.dg_piller_source,
+                    sourceObj = aData.dg_piller_source,
                     name = "柱头斗栱",
                     location=(net_x[0],net_y[-n-2],0),
                     scale= bData.dg_scale,
@@ -226,7 +228,7 @@ def buildDougong(buildingObj:bpy.types.Object):
                 dgPillerCopy.rotation_euler.z = math.radians(270)
 
         # 各个连接件
-        for fang in bData.dg_piller_source.children:
+        for fang in aData.dg_piller_source.children:
             yLoc = fang.location.y * bData.dg_scale[1]
             zLoc = fang.location.z * bData.dg_scale[2]
             if yLoc < 0:
@@ -279,7 +281,7 @@ def buildDougong(buildingObj:bpy.types.Object):
             )
     
     # 补间斗栱/平身科
-    if bData.dg_fillgap_source != '' :
+    if aData.dg_fillgap_source != '' :
         # 前后坡的补间斗拱
         for n in range(len(net_x)-1) : 
             # 计算补间斗栱攒数
@@ -294,11 +296,11 @@ def buildDougong(buildingObj:bpy.types.Object):
             for m in range(1,dougong_count):
                 # 补间斗栱异色判断
                 dgFillSource = None
-                if (bData.dg_fillgap_alt_source != None
+                if (aData.dg_fillgap_alt_source != None
                             and m%2 == 0):
-                        dgFillSource = bData.dg_fillgap_alt_source
+                        dgFillSource = aData.dg_fillgap_alt_source
                 else:
-                    dgFillSource = bData.dg_fillgap_source
+                    dgFillSource = aData.dg_fillgap_source
 
                 # 上侧
                 dgFillCopy:bpy.types.Object = utils.copySimplyObject(
@@ -340,11 +342,11 @@ def buildDougong(buildingObj:bpy.types.Object):
                 for m in range(1,dougong_count):
                     # 补间斗栱异色判断
                     dgFillSource = None
-                    if (bData.dg_fillgap_alt_source != None
+                    if (aData.dg_fillgap_alt_source != None
                                 and m%2 == 0):
-                            dgFillSource = bData.dg_fillgap_alt_source
+                            dgFillSource = aData.dg_fillgap_alt_source
                     else:
-                        dgFillSource = bData.dg_fillgap_source
+                        dgFillSource = aData.dg_fillgap_source
 
                     # 左侧
                     dgFillCopy:bpy.types.Object = utils.copySimplyObject(
@@ -378,15 +380,16 @@ def buildDougong(buildingObj:bpy.types.Object):
 def update_dgHeight(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     
     # 原始比例
-    if 'dgHeight' in bData.dg_piller_source:
-        originHeight = bData.dg_piller_source['dgHeight']
+    if 'dgHeight' in aData.dg_piller_source:
+        originHeight = aData.dg_piller_source['dgHeight']
     else:
         originHeight = bData.dg_height
         utils.outputMsg("斗栱未定义该属性")
-    if 'dgExtend' in bData.dg_piller_source:
-        originExtend = bData.dg_piller_source['dgExtend']
+    if 'dgExtend' in aData.dg_piller_source:
+        originExtend = aData.dg_piller_source['dgExtend']
     else:
         originExtend = bData.dg_extend
         utils.outputMsg("斗栱未定义该属性")

@@ -1346,8 +1346,9 @@ def hideLayer(context,name,isShow):
 
 # 拷贝目标对象的材质
 def copyMaterial(fromObj:bpy.types.Object,
-                 toObj:bpy.types.Object):
-    if toObj.active_material == None:
+                 toObj:bpy.types.Object,
+                 override = False):
+    if toObj.active_material == None or override:
         toObj.active_material = fromObj.active_material
     return
 
@@ -1399,7 +1400,20 @@ def shaderSmooth(object:bpy.types.Object):
 
     return
 
-def UvUnwrap(object:bpy.types.Object,type=None):
+#Scale a 2D vector v, considering a scale s and a pivot point p
+def Scale2D( v, s, p ):
+    return ( p[0] + s[0]*(v[0] - p[0]), p[1] + s[1]*(v[1] - p[1]) )     
+
+#Scale a UV map iterating over its coordinates to a given scale and with a pivot point
+def ScaleUV( uvMap, scale, pivot ):
+    for uvIndex in range( len(uvMap.data) ):
+        uvMap.data[uvIndex].uv = Scale2D( uvMap.data[uvIndex].uv, scale, pivot )
+
+def UvUnwrap(object:bpy.types.Object,
+             type=None,
+             scale=None,
+             pivot=(0,0),
+             ):
     # 聚焦对象
     focusObj(object)
 
@@ -1429,7 +1443,21 @@ def UvUnwrap(object:bpy.types.Object,type=None):
         bpy.ops.uv.cube_project(
             scale_to_bounds=True
         )
+    elif type == 'cylinder':
+        bpy.ops.uv.cylinder_project(
+            direction='ALIGN_TO_OBJECT',
+            align='POLAR_ZY',
+            scale_to_bounds=True
+        )
     bpy.ops.object.mode_set(mode = 'OBJECT')
+
+    # 拉伸UV，参考以下：
+    # https://blender.stackexchange.com/questions/75061/scale-uv-map-script
+    if scale != None:
+        uvMap = object.data.uv_layers['UVMap']
+        ScaleUV(uvMap,scale,pivot)
+
+    return
 
 # 锁定对象
 def lockObj(obj:bpy.types.Object):

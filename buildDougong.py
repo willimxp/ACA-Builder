@@ -287,8 +287,11 @@ def buildDougong(buildingObj:bpy.types.Object):
             # 计算补间斗栱攒数
             pStart = net_x[n]
             pEnd = net_x[n+1]
+            roomWidth = abs(pEnd - pStart)
+            # 补偿float精度
+            roomWidth += 0.001
             # 向下取整，宜疏不宜密
-            dougong_count =  math.floor(abs(pEnd - pStart) / bData.dg_gap) 
+            dougong_count =  math.floor(roomWidth/ bData.dg_gap) 
             # 如果间距过大，可能无需补间斗栱
             if dougong_count == 0 : continue
             # 计算斗栱排布的实际间距

@@ -10,6 +10,7 @@
     <mat_dust_red type="Object">抹灰.红</mat_dust_red>
     <mat_paint_beam type="Object">梁枋彩画</mat_paint_beam>
     <mat_paint_beam_alt type="Object">梁枋彩画.异色</mat_paint_beam_alt>
+    <mat_paint_pillerhead type="Object">柱头贴图</mat_paint_pillerhead>
     <piller_source type="Object">梭柱</piller_source>
     <pillerbase_source type="Object">素平柱础</pillerbase_source>
     <lingxin_source type="Object">棂心.正搭斜交</lingxin_source>

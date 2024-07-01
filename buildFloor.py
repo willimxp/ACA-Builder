@@ -392,6 +392,37 @@ def delFang(buildingObj:bpy.types.Object,
 
     return
 
+# 柱头贴图
+def __paintPiller(pillerObj:bpy.types.Object):
+    # 载入数据
+    buildingObj = utils.getAcaParent(
+        pillerObj,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
+    dk = bData.DK
+
+    utils.copyMaterial(
+        aData.mat_paint_pillerhead,
+        pillerObj,
+        override=True)
+    # 计算缩放
+    # 以柱高/大小额枋的高度
+    fangHeight = con.EFANG_LARGE_H*dk
+    if bData.use_smallfang:
+        fangHeight += (con.BOARD_YOUE_H*dk
+            + con.EFANG_SMALL_H*dk)
+    scale = bData.piller_height / fangHeight
+
+    # UV unwarp
+    utils.UvUnwrap(
+        object=pillerObj,
+        type='cylinder',
+        # 只做Y拉伸
+        scale=(1,scale),
+        # 从左上角拉伸
+        pivot=(0,1))
+    return
+
 # 根据柱网数组，排布柱子
 # 1. 第一次按照模板生成，柱网下没有柱，一切从0开始；
 # 2. 用户调整柱网的开间、进深，需要保持柱子的高、径、样式
@@ -447,6 +478,9 @@ def buildPillers(buildingObj:bpy.types.Object):
             parentObj=floorRootObj,
             singleUser=True
         )
+
+    # 柱头贴图
+    __paintPiller(piller_basemesh)
     
     # 3、根据地盘数据，循环排布每根柱子
     net_x,net_y = getFloorDate(buildingObj)

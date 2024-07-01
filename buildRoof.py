@@ -46,11 +46,8 @@ def __addRoofRoot(buildingObj:bpy.types.Object):
         if bData.use_pingbanfang:
             tile_base += con.PINGBANFANG_H*dk
     else:
-        # 以大梁抬升
-        # tile_base += con.BEAM_HEIGHT*pd
-        # 实际为金桁垫板高度+半桁
-        tile_base += con.BOARD_HENG_H*dk + con.HENG_COMMON_D*dk/2
-        #bData['use_pingbanfang'] = False
+        # 以大梁抬升金桁垫板高度，即为挑檐桁下皮位置
+        tile_base += con.BOARD_HENG_H*dk
     
     roofRootObj.location = (0,0,tile_base)       
 

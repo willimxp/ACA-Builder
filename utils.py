@@ -1349,7 +1349,7 @@ def copyMaterial(fromObj:bpy.types.Object,
                  toObj:bpy.types.Object,
                  override = False):
     if toObj.active_material == None or override:
-        toObj.active_material = fromObj.active_material
+        toObj.active_material = fromObj.active_material.copy()
     return
 
 # 删除对象的边
@@ -1465,4 +1465,16 @@ def lockObj(obj:bpy.types.Object):
     obj.lock_scale = (True,True,True)
     obj.lock_location = (True,True,True)
     obj.lock_rotation = (True,True,True)
+    return
+
+# 设置材质的输入参数
+# https://blender.stackexchange.com/questions/191183/changing-a-value-node-in-many-materials-with-a-python-script
+def setMatValue(mat:bpy.types.Material,
+                inputName:str,
+                value):
+    if mat is not None and mat.use_nodes and mat.node_tree is not None:
+        for node in mat.node_tree.nodes:
+            for input in node.inputs:
+                if input.name == inputName and input.type == 'VALUE':
+                    input.default_value = value 
     return

@@ -401,26 +401,28 @@ def __paintPiller(pillerObj:bpy.types.Object):
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
 
+    # 绑定材质
     utils.copyMaterial(
         aData.mat_paint_pillerhead,
         pillerObj,
         override=True)
-    # 计算缩放
-    # 以柱高/大小额枋的高度
-    fangHeight = con.EFANG_LARGE_H*dk
-    if bData.use_smallfang:
-        fangHeight += (con.BOARD_YOUE_H*dk
-            + con.EFANG_SMALL_H*dk)
-    scale = bData.piller_height / fangHeight
 
     # UV unwarp
     utils.UvUnwrap(
         object=pillerObj,
-        type='cylinder',
-        # 只做Y拉伸
-        scale=(1,scale),
-        # 从左上角拉伸
-        pivot=(0,1))
+        type='cylinder',)
+    
+    # 缩放柱头贴图尺寸，与大小额枋及垫板的高度计算
+    fangHeight = con.EFANG_LARGE_H*dk
+    if bData.use_smallfang:
+        fangHeight += (con.BOARD_YOUE_H*dk
+            + con.EFANG_SMALL_H*dk)
+    scale = fangHeight / bData.piller_height
+    utils.setMatValue(
+        mat=pillerObj.active_material,
+        inputName='headRate',
+        value=scale)
+
     return
 
 # 根据柱网数组，排布柱子

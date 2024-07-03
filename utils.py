@@ -1409,10 +1409,28 @@ def ScaleUV( uvMap, scale, pivot ):
     for uvIndex in range( len(uvMap.data) ):
         uvMap.data[uvIndex].uv = Scale2D( uvMap.data[uvIndex].uv, scale, pivot )
 
+def make_rotation_transformation(angle, origin=(0, 0)):
+    from math import cos, sin
+    cos_theta, sin_theta = cos(angle), sin(angle)
+    x0, y0 = origin    
+    def xform(point):
+        x, y = point[0] - x0, point[1] - y0
+        return (x * cos_theta - y * sin_theta + x0,
+                x * sin_theta + y * cos_theta + y0)
+    return xform
+
+def RotateUV(uvMap, angle, pivot):
+    rot = make_rotation_transformation(angle, pivot)
+    for uvIndex in range( len(uvMap.data) ):
+        uvMap.data[uvIndex].uv = rot(uvMap.data[uvIndex].uv ) 
+    return
+
 def UvUnwrap(object:bpy.types.Object,
              type=None,
              scale=None,
              pivot=(0,0),
+             rotate=None,
+             fitIndex=None,
              ):
     # 聚焦对象
     focusObj(object)
@@ -1435,14 +1453,42 @@ def UvUnwrap(object:bpy.types.Object,
             correct_aspect=True, 
             scale_to_bounds=False
         )
+    # 普通材质的cube project，保证贴图缩放的一致性
     elif type == 'cube':
         bpy.ops.uv.cube_project(
             cube_size=10
         )
+    # 系统默认的cube project，在梁枋的六棱柱上效果更好
     elif type == 'scale':
         bpy.ops.uv.cube_project(
             scale_to_bounds=True
         )
+    # 精确适配
+    # 先所有面一起做加权分uv，然后针对需要特殊处理的面，进行二次适配
+    elif type == 'fit':
+        # 先做一次加权投影
+        bpy.ops.uv.cube_project(
+            scale_to_bounds=True
+        )
+        # 清空选择
+        bpy.ops.mesh.select_all(action = 'DESELECT')
+        # 载入bmesh
+        me = object.data
+        bm = bmesh.from_edit_mesh(me)
+        # 选择面
+        for face in bm.faces:
+            if face.index in fitIndex:
+                face.select = True 
+        # 写回对象
+        bmesh.update_edit_mesh(me)
+        # unwarp
+        bpy.ops.uv.cube_project(
+            scale_to_bounds=True
+        )
+    # 重置UV，让每个面都满铺，但存在rotate的问题，暂未使用
+    elif type == 'reset':
+        bpy.ops.uv.reset()
+    # 柱状投影，在柱子上效果很好
     elif type == 'cylinder':
         bpy.ops.uv.cylinder_project(
             direction='ALIGN_TO_OBJECT',
@@ -1456,6 +1502,12 @@ def UvUnwrap(object:bpy.types.Object,
     if scale != None:
         uvMap = object.data.uv_layers['UVMap']
         ScaleUV(uvMap,scale,pivot)
+
+    # 旋转UV，参考：
+    # https://blender.stackexchange.com/questions/28929/rotate-uv-by-specific-angle-e-g-30deg-in-python-script-in-backgroud-mode
+    if rotate != None:
+        uvMap = object.data.uv_layers['UVMap']
+        RotateUV(uvMap,rotate,pivot)
 
     return
 

@@ -82,44 +82,49 @@ def buildDougong(buildingObj:bpy.types.Object):
                 dimension=dimensions,
                 parent=dgrootObj,
             ) 
+        # 设置材质
+        utils.UvUnwrap(pingbanfangObj,'fit',fitIndex=[1,3])
+        utils.copyMaterial(aData.mat_paint_walkdragon,pingbanfangObj)
         # 添加倒角
         modBevel:bpy.types.BevelModifier = \
             pingbanfangObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_HIGH
+        modBevel.segments = 2
         # 添加镜像
         utils.addModifierMirror(
             object=pingbanfangObj,
             mirrorObj=dgrootObj,
             use_axis=(False,True,False)
         )
-        # 设置材质
-        utils.copyMaterial(aData.mat_red,pingbanfangObj)
 
         # 山面平板枋
         loc = (net_x[0],0,-con.PINGBANFANG_H*dk/2)
         dimensions =(
-            con.PINGBANFANG_Y*dk,
             bData.y_total + extendLength,
+            con.PINGBANFANG_Y*dk,
             con.PINGBANFANG_H*dk
         )
         pingbanfangObj = utils.addCube(
                 name="平板枋",
                 location=loc,
                 dimension=dimensions,
+                rotation=(0,0,math.radians(90)),
                 parent=dgrootObj,
             ) 
+        # 设置材质
+        utils.UvUnwrap(pingbanfangObj,'fit',fitIndex=[1,3])
+        utils.copyMaterial(aData.mat_paint_walkdragon,pingbanfangObj)
         # 设置倒角
         modBevel:bpy.types.BevelModifier = \
             pingbanfangObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_HIGH
+        modBevel.segments = 2
         # 添加镜像
         utils.addModifierMirror(
             object=pingbanfangObj,
             mirrorObj=dgrootObj,
             use_axis=(True,False,False)
-        )       
-        # 设置材质
-        utils.copyMaterial(aData.mat_red,pingbanfangObj)
+        )        
 
     # 3、布置斗栱/铺作======================================================
     # 斗栱缩放

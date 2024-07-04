@@ -12,6 +12,7 @@
     <mat_paint_beam_alt type="Object">梁枋彩画.异色</mat_paint_beam_alt>
     <mat_paint_pillerhead type="Object">柱头贴图</mat_paint_pillerhead>
     <mat_paint_walkdragon type="Object">平板枋.行龙</mat_paint_walkdragon>
+    <mat_paint_grasscouple type="Object">垫板.公母草</mat_paint_grasscouple>
     <piller_source type="Object">梭柱</piller_source>
     <pillerbase_source type="Object">素平柱础</pillerbase_source>
     <lingxin_source type="Object">棂心.正搭斜交</lingxin_source>

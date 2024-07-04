@@ -705,6 +705,10 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "平板枋.行龙",
             type = bpy.types.Object,
         )# type: ignore 
+    mat_paint_grasscouple :bpy.props.PointerProperty(
+            name = "垫板.公母草",
+            type = bpy.types.Object,
+        )# type: ignore 
     
     # 柱对象
     piller_source : bpy.props.PointerProperty(

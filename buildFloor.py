@@ -252,14 +252,14 @@ def __buildFang(buildingObj:bpy.types.Object):
         bigFangObj.ACA_data['aca_obj'] = True
         bigFangObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
         bigFangObj.ACA_data['fangID'] = fangID
+        # 设置梁枋彩画
+        __setFangMat(bigFangObj,fangID,1)
         # 添加边缘导角
         modBevel:bpy.types.BevelModifier=bigFangObj.modifiers.new(
             "Bevel",'BEVEL'
         )
         modBevel.width = con.BEVEL_EXHIGH
         modBevel.segments=3
-        # 设置梁枋彩画
-        __setFangMat(bigFangObj,fangID,1)
 
         # 是否需要做小额枋
         if bData.use_smallfang:
@@ -280,7 +280,10 @@ def __buildFang(buildingObj:bpy.types.Object):
             dianbanObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             dianbanObj.ACA_data['fangID'] = fangID
             # 设置材质
-            utils.copyMaterial(aData.mat_red,dianbanObj)
+            utils.UvUnwrap(dianbanObj,'scale')
+            utils.copyMaterial(
+                aData.mat_paint_grasscouple,
+                dianbanObj)
             
             # 小额枋
             smallFangScale = Vector( (fang_length, 
@@ -299,14 +302,14 @@ def __buildFang(buildingObj:bpy.types.Object):
             smallFangObj.ACA_data['aca_obj'] = True
             smallFangObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             smallFangObj.ACA_data['fangID'] = fangID
+            # 设置梁枋彩画
+            __setFangMat(smallFangObj,fangID,2)
             # 添加边缘导角
             modBevel:bpy.types.BevelModifier=smallFangObj.modifiers.new(
                 "Bevel",'BEVEL'
             )
             modBevel.width = con.BEVEL_HIGH
-            modBevel.segments=2
-            # 设置梁枋彩画
-            __setFangMat(smallFangObj,fangID,2)
+            modBevel.segments=2     
     
     # 聚焦到最后添加的大额枋，便于用户可以直接删除
     utils.focusObj(bigFangObj)

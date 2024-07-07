@@ -108,7 +108,7 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
         rafterSpan = (bData.y_total 
             - con.JUANPENG_SPAN*dk)/bData.rafter_count
     # 盝顶：直接采用用户设置的参数
-    if roofStyle == con.ROOF_LUDING:
+    elif roofStyle == con.ROOF_LUDING:
         rafterSpan = bData.luding_rafterspan
     # 其他屋顶的步架宽度：按椽架数平分进深长度
     # 包括庑殿、歇山、悬山、硬山
@@ -208,6 +208,107 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
     # 返回桁檩定位数据集
     return purlin_pos
 
+# 檐桁为了便于彩画贴图，按开间逐一生成
+# 其他的桁为了效率，还是贯通整做成一根
+def __buildYanHeng(rafterRootObj:bpy.types.Object,
+                   purlin_pos):
+    # 载入数据
+    buildingObj = utils.getAcaParent(
+        rafterRootObj,con.ACA_TYPE_BUILDING)
+    bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
+    dk = bData.DK
+    # 获取开间、进深数据
+    net_x,net_y = buildFloor.getFloorDate(buildingObj)
+    # 挑檐桁交叉点
+    purlin_cross = purlin_pos[0]
+
+    # 收集待生成的挑檐桁
+    purlinList = []
+    
+    # 计算转角出头
+    hengExtend = 0
+    # 悬山做固定的出跳
+    if bData.roof_style in (
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG):
+        # 延长悬山的悬出
+        hengExtend += con.YANCHUAN_EX*dk
+    else:
+        # 四坡顶为了垂直交扣，做一桁径的出梢
+        # 硬山为了承托斗栱，也做了出梢
+        if bData.use_dg:
+            hengExtend += con.HENG_EXTEND*dk /2
+    # 四坡顶用斗拱时，增加斗栱出跳
+    if bData.roof_style in (
+            con.ROOF_WUDIAN,
+            con.ROOF_XIESHAN,
+            con.ROOF_LUDING):
+        if bData.use_dg:
+            hengExtend += bData.dg_extend
+
+    # 前后檐排布
+    for n in range(len(net_x)-1):
+        length = net_x[n+1] - net_x[n]
+        loc = Vector(((net_x[n+1] + net_x[n])/2,
+               purlin_cross.y,
+               purlin_cross.z))
+        # 转角出头
+        if n in (0,len(net_x)-2):
+            length += hengExtend
+            sign = utils.getSign(net_x[n])
+            loc += Vector((hengExtend/2*sign,0,0))
+        purlinList.append(
+            {'len':length,
+             'loc':loc,
+             'rot':0,
+             'mirror':(False,True,False)})
+    # 两山排布(仅庑殿、歇山、盝顶，不适用硬山、悬山、卷棚)
+    if bData.roof_style in (
+            con.ROOF_WUDIAN,
+            con.ROOF_XIESHAN,
+            con.ROOF_LUDING):
+        for n in range(len(net_y)-1):
+            length = net_y[n+1] - net_y[n]
+            loc = Vector((purlin_cross.x,
+                (net_y[n+1] + net_y[n])/2,
+                purlin_cross.z))
+            # 转角出头
+            if n in (0,len(net_y)-2):
+                length += hengExtend
+                sign = utils.getSign(net_y[n])
+                loc += Vector((0,hengExtend/2*sign,0))
+            purlinList.append(
+                {'len':length,
+                'loc':loc,
+                'rot':90,
+                'mirror':(True,False,False)
+                })
+    
+    # 生成所有的挑檐桁
+    for purlin in purlinList:
+        hengObj = utils.addCylinderHorizontal(
+            radius= con.HENG_COMMON_D / 2 * dk,
+            depth = purlin['len'],
+            location = purlin['loc'], 
+            rotation = (
+                math.radians(-26),0,
+                math.radians(purlin['rot'])),
+            name = "挑檐桁",
+            root_obj = rafterRootObj,
+        )
+        # 设置材质
+        utils.UvUnwrap(hengObj,'scale')
+        utils.copyMaterial(aData.mat_paint_beam,hengObj)
+        # 设置对称
+        utils.addModifierMirror(
+            object=hengObj,
+            mirrorObj=rafterRootObj,
+            use_axis=purlin['mirror']
+        )
+    
+    return
+
 # 营造桁檩
 # 包括檐面和山面
 # 其中对庑殿和歇山做了特殊处理
@@ -220,6 +321,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     roofStyle = bData.roof_style
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+    
+    # 桁的各个参数
     if roofStyle in (
             con.ROOF_XUANSHAN,
             con.ROOF_YINGSHAN,
@@ -229,27 +332,26 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     else:
         # 庑殿和歇山为了便于垂直交扣，做一桁径的出梢
         hengExtend = con.HENG_EXTEND * dk
+    # 桁直径（正心桁、金桁、脊桁）
+    purlin_r = con.HENG_COMMON_D / 2 * dk
     
+    
+    # 檐桁为了便于彩画贴图，按开间逐一生成
+    if bData.use_dg:
+        __buildYanHeng(rafterRootObj,purlin_pos)
+        # 删除挑檐桁数据
+        del purlin_pos[0]
+    # 其他的桁为了效率，还是贯通整做成一根
+
     # 二、布置前后檐桁,根据上述计算的purlin_pos数据，批量放置桁对象
     for n in range(len(purlin_pos)) :
-        # 桁交点
+        # 1、桁交点
         pCross = purlin_pos[n]
-        
-        # 1、计算桁的直径
-        if bData.use_dg and n==0:
-            # 有斗栱建筑，第一根桁直径使用挑檐桁
-            purlin_r = con.HENG_TIAOYAN_D / 2 * dk
-        else:   # 金桁、脊桁
-            # 其他桁直径（正心桁、金桁、脊桁）
-            purlin_r = con.HENG_COMMON_D / 2 * dk
         
         # 2、计算桁的长度
         purlin_length_x = pCross.x * 2 + hengExtend
         # 歇山檐面的下金桁延长，与上层对齐
-        if roofStyle == con.ROOF_XIESHAN :
-            if bData.use_dg and n >= 2 :
-                purlin_length_x = purlin_pos[-1].x * 2
-            if not bData.use_dg and n >= 1 :
+        if roofStyle == con.ROOF_XIESHAN and n >= 1 :
                 purlin_length_x = purlin_pos[-1].x * 2
 
         # 3、创建桁对象
@@ -308,10 +410,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             hengFB.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_LOW
         
-        # 有斗拱时，正心桁、挑檐桁下不做垫板
-        # 无斗栱时，都要做垫板
-        if ((bData.use_dg and n not in (0,1)) 
-                or (not bData.use_dg)): 
+        # 有斗拱时，正心桁下不做垫板
+        if not (bData.use_dg and n == 0):
             # 4、桁垫板
             loc = (0,pCross.y,
                 (pCross.z - con.HENG_COMMON_D*dk/2
@@ -345,10 +445,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 dianbanObj.modifiers.new('Bevel','BEVEL')
             modBevel.width = con.BEVEL_EXLOW
         
-        # 有斗拱时，正心桁、挑檐桁下不做枋
-        # 无斗栱时，仅正心桁下不做枋
-        if ((bData.use_dg and n not in (0,1)) 
-                or (not bData.use_dg and n!=0)): 
+        # 正心桁下不做枋
+        if n != 0: 
             # 5、桁枋
             loc = (0,pCross.y,
                 (pCross.z - con.HENG_COMMON_D*dk/2
@@ -393,22 +491,12 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             # 庑殿的上面做所有桁檩，除脊桁
             rafterRange = range(len(purlin_pos)-1)
         if roofStyle == con.ROOF_XIESHAN:
-            # 歇山仅做挑檐桁(如果有)、正心桁、下金桁
-            if bData.use_dg:
-                rafterRange = range(3)
-            else:
-                rafterRange = range(2)
+            # 歇山仅做正心桁、下金桁
+            rafterRange = range(2)
         if roofStyle == con.ROOF_LUDING:
             rafterRange = range(len(purlin_pos))
         for n in rafterRange :
             pCross = purlin_pos[n]
-            # 1、计算桁的直径
-            if bData.use_dg and n==0:
-                # 有斗栱建筑，第一根桁直径使用挑檐桁
-                purlin_r = con.HENG_TIAOYAN_D / 2 * dk
-            else:   # 金桁、脊桁
-                # 其他桁直径（正心桁、金桁、脊桁）
-                purlin_r = con.HENG_COMMON_D / 2 * dk
 
             # 2、计算桁的长度
             purlin_length_y = pCross.y * 2 + hengExtend
@@ -449,22 +537,18 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             use_fang = True
             # 歇山的踩步金下不做
             if roofStyle== con.ROOF_XIESHAN :
-                if ((bData.use_dg and n==2) 
-                    or (not bData.use_dg and n==1)):
+                if n==1:
                     use_fang = False
                     use_dianban = False
-            # 正心桁、挑檐桁逻辑
+            # 正心桁下不做枋
+            # 有斗栱时，正心桁下不做垫板
             if roofStyle in (
                     con.ROOF_WUDIAN,
                     con.ROOF_XIESHAN,
-                    con.ROOF_LUDING,):
-                if bData.use_dg and n in (0,1):
-                    # 有斗栱时，挑檐桁和正心桁都不做枋和垫板
-                    use_fang = False
+                    con.ROOF_LUDING,) and n==0:
+                use_fang = False
+                if bData.use_dg:
                     use_dianban = False
-                if not bData.use_dg and n==0:
-                    # 无斗栱时，正心桁下不做枋，做垫板
-                    use_fang = False
             # 桁垫板
             if use_dianban:
                 loc = (pCross.x,0,
@@ -1075,9 +1159,14 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             )            
             # 横向平铺
             rafter_tile_x = purlin_pos[-1].x 
+            # 计算椽子数量：椽当数+1
+            # 取整可小不可大，否则会超出博缝板，导致穿模
+            count = math.floor(
+                (rafter_tile_x- con.YUANCHUAN_D*dk)
+                    /rafter_gap_x) + 1
             utils.addModifierArray(
                 object=curveRafter,
-                count=int(rafter_tile_x /rafter_gap_x),
+                count=count,
                 offset=(rafter_gap_x,0,0)
             )            
             # 四方镜像，Y向裁剪
@@ -3769,7 +3858,7 @@ def __buildBPW(buildingObj:bpy.types.Object):
     
     # 摆放桁檩
     utils.outputMsg("Building Purlin...")
-    __buildPurlin(buildingObj,purlin_pos)
+    __buildPurlin(buildingObj,purlin_pos.copy())
     
     # 如果有斗栱，剔除挑檐桁
     # 在梁架、椽架、角梁的计算中不考虑挑檐桁

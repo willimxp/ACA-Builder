@@ -539,7 +539,7 @@ class ACA_OT_default_ludingRafterSpan(bpy.types.Operator):
     bl_description = '步架推荐值，自动获取尽间开间尺寸'
 
     def execute(self, context):  
-        # 盝顶步架默认去面阔的尽间宽度
+        # 盝顶步架默认取面阔的尽间宽度
         buildingObj,bData,objData = utils.getRoot(context.object)
         if bData.x_rooms >= 7:
             bData.luding_rafterspan = bData.x_4

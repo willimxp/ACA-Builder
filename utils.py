@@ -1530,3 +1530,8 @@ def setMatValue(mat:bpy.types.Material,
                 if input.name == inputName and input.type == 'VALUE':
                     input.default_value = value 
     return
+
+# 返回数字的正负数
+# https://stackoverflow.com/questions/1986152/why-doesnt-python-have-a-sign-function
+def getSign(value):
+    return math.copysign(1,value)

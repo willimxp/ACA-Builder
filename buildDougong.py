@@ -135,10 +135,36 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
     # 定位连接件
     yLoc = fangSourceObj.location.y * bData.dg_scale[1]
     zLoc = fangSourceObj.location.z * bData.dg_scale[2]
-    if yLoc < 0:
-        extendLength = con.HENG_COMMON_D*dk*2 - yLoc*2
-    else:
-        extendLength = 0
+    # 转角出头的处理
+    extendLength = 0
+    # 悬山
+    if bData.roof_style in (
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG):
+        # 挑檐桁下，配合檐桁延长到悬出长度
+        if (yLoc + bData.dg_extend)<0.001:
+            extendLength += con.YANCHUAN_EX*dk*2
+        # 其他连接件，如果有斗栱，做出梢
+        else:
+            if bData.use_dg:
+                extendLength += con.HENG_EXTEND*dk
+    # 硬山也为了承托斗栱，做了出梢
+    if bData.roof_style in (con.ROOF_YINGSHAN):
+        if bData.use_dg:
+            extendLength += con.HENG_EXTEND*dk        
+    # 四坡顶的转角按Y向出跳
+    if (yLoc < 0 
+        and bData.roof_style in (
+            con.ROOF_WUDIAN,
+            con.ROOF_XIESHAN,
+            con.ROOF_LUDING)):
+        # 配合斗栱，做出跳
+        extendLength += abs(yLoc)*2
+        # 配合挑檐桁做出梢
+        if (yLoc + bData.dg_extend)<0.001:
+            extendLength += con.HENG_EXTEND*dk
+    
+        
     # 做前后檐连接件
     loc = (0, net_y[0] + yLoc, zLoc)
     fangCopy = utils.copyObject(
@@ -161,28 +187,33 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         use_axis=(False,True,False)
     )
     
-    # 做两山连接件
-    loc = (net_x[-1]- yLoc,0,zLoc)
-    fangCopy = utils.copyObject(
-        sourceObj = fangSourceObj,
-        location = loc,
-        parentObj = dgrootObj,
-        singleUser=True
-    )
-    # 跟随缩放
-    fangCopy.scale = bData.dg_scale
-    utils.updateScene()
-    fangCopy.dimensions.x = bData.y_total + extendLength
-    utils.applyTransfrom(fangCopy,use_scale=True)
-    fangCopy.rotation_euler.z = math.radians(90)
-    # 处理UV
-    utils.UvUnwrap(fangCopy,type='cube')
-    # 镜像
-    utils.addModifierMirror(
-        object=fangCopy,
-        mirrorObj=dgrootObj,
-        use_axis=(True,False,False)
-    )
+    # 做两山连接件(仅适用四坡顶，不适用于二坡顶)
+    if (bData.roof_style in (
+            con.ROOF_WUDIAN,
+            con.ROOF_XIESHAN,
+            con.ROOF_LUDING)
+        or yLoc==0):
+        loc = (net_x[-1]- yLoc,0,zLoc)
+        fangCopy = utils.copyObject(
+            sourceObj = fangSourceObj,
+            location = loc,
+            parentObj = dgrootObj,
+            singleUser=True
+        )
+        # 跟随缩放
+        fangCopy.scale = bData.dg_scale
+        utils.updateScene()
+        fangCopy.dimensions.x = bData.y_total + extendLength
+        utils.applyTransfrom(fangCopy,use_scale=True)
+        fangCopy.rotation_euler.z = math.radians(90)
+        # 处理UV
+        utils.UvUnwrap(fangCopy,type='cube')
+        # 镜像
+        utils.addModifierMirror(
+            object=fangCopy,
+            mirrorObj=dgrootObj,
+            use_axis=(True,False,False)
+        )
     return
 
 # 生成连接枋

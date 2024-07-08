@@ -8,6 +8,7 @@ from functools import partial
 import math
 from typing import List
 
+from . import texture as mat
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
@@ -175,18 +176,18 @@ def __setFangMat(fangObj:bpy.types.Object,
     5间时,奇数间(1,3,5)应该用正色
     7间时,偶数间(2,4,6)应该用正色'''
 
-    if roomIndex%2 == n and fangType == 1:
-        # 大额枋的明间用异色
-        mat = aData.mat_paint_beam_alt
-    elif roomIndex%2 != n and fangType == 2:
-        # 小额枋的明间间用异色
-        mat = aData.mat_paint_beam_alt
+    if (
+            # 大额枋的明间用异色
+            (roomIndex%2 == n and fangType == 1)
+            # 小额枋的明间间用异色
+            or (roomIndex%2 != n and fangType == 2)
+    ) :
+        mat.setShader(fangObj,
+            mat.shaderType.LIANGFANG_ALT)
     else:
-        mat = aData.mat_paint_beam
+        mat.setShader(fangObj,
+            mat.shaderType.LIANGFANG)
 
-    # UV设置为满幅填充
-    utils.UvUnwrap(fangObj,'scale')
-    utils.copyMaterial(mat,fangObj)
     return
 
 # 在柱间添加额枋
@@ -280,10 +281,8 @@ def __buildFang(buildingObj:bpy.types.Object):
             dianbanObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             dianbanObj.ACA_data['fangID'] = fangID
             # 设置材质
-            utils.UvUnwrap(dianbanObj,'scale')
-            utils.copyMaterial(
-                aData.mat_paint_grasscouple,
-                dianbanObj)
+            mat.setShader(dianbanObj,
+                mat.shaderType.YOUEDIANBAN)
             
             # 小额枋
             smallFangScale = Vector( (fang_length, 
@@ -395,39 +394,6 @@ def delFang(buildingObj:bpy.types.Object,
 
     return
 
-# 柱头贴图
-def __paintPiller(pillerObj:bpy.types.Object):
-    # 载入数据
-    buildingObj = utils.getAcaParent(
-        pillerObj,con.ACA_TYPE_BUILDING)
-    bData:acaData = buildingObj.ACA_data
-    aData:tmpData = bpy.context.scene.ACA_temp
-    dk = bData.DK
-
-    # 绑定材质
-    utils.copyMaterial(
-        aData.mat_paint_pillerhead,
-        pillerObj,
-        override=True)
-
-    # UV unwarp
-    utils.UvUnwrap(
-        object=pillerObj,
-        type='cylinder',)
-    
-    # 缩放柱头贴图尺寸，与大小额枋及垫板的高度计算
-    fangHeight = con.EFANG_LARGE_H*dk
-    if bData.use_smallfang:
-        fangHeight += (con.BOARD_YOUE_H*dk
-            + con.EFANG_SMALL_H*dk)
-    scale = fangHeight / bData.piller_height
-    utils.setMatValue(
-        mat=pillerObj.active_material,
-        inputName='headRate',
-        value=scale)
-
-    return
-
 # 根据柱网数组，排布柱子
 # 1. 第一次按照模板生成，柱网下没有柱，一切从0开始；
 # 2. 用户调整柱网的开间、进深，需要保持柱子的高、径、样式
@@ -471,21 +437,89 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 2、生成一个柱子实例piller_basemesh
     # 从当前场景中载入数据集
     bData:acaData = buildingObj.ACA_data
-    piller_source = aData.piller_source
 
     # 创建临时引用，便于在本建筑内复用，但各建筑间可以隔离
     # 在最后会被删除
+
+    # 柱子父节点框线
+    pillerProxy_basemesh = utils.addCube(
+        dimension=(
+            bData.piller_diameter,
+            bData.piller_diameter,
+            bData.piller_height,
+        ),
+        parent=floorRootObj
+    )
+    utils.setOrigin(pillerProxy_basemesh,
+        Vector((0,0,-bData.piller_height/2)))
+    pillerProxy_basemesh.ACA_data['aca_obj'] = True
+    pillerProxy_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER_ROOT
+
+    # 柱身
+    piller_source = aData.piller_source
     if piller_source != None:
         # 已设置柱样式，根据设计参数实例化
         piller_basemesh:bpy.types.Object = utils.copyObject(
             sourceObj=piller_source,
-            name=piller_source.name,
-            parentObj=floorRootObj,
+            location=(0,0,0),
+            scale=(
+                    bData.piller_diameter/piller_source.dimensions.x,
+                    bData.piller_diameter/piller_source.dimensions.y,
+                    bData.piller_height/piller_source.dimensions.z
+                ),
+            parentObj=pillerProxy_basemesh,
             singleUser=True
         )
-
+        # 应用拉伸
+        utils.applyTransfrom(piller_basemesh,use_scale=True)
+        # 根据拉伸，更新UV平铺
+        mat.UvUnwrap(piller_basemesh,mat.uvType.CUBE)
+        piller_basemesh.ACA_data['aca_obj'] = True
+        piller_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
     # 柱头贴图
-    __paintPiller(piller_basemesh)
+    mat.setShader(piller_basemesh,
+        mat.shaderType.PILLER)
+    
+    # 柱础
+    pillerbase_source = aData.pillerbase_source
+    if pillerbase_source != None:
+        # 已设置柱样式，根据设计参数实例化
+        pillerbase_basemesh:bpy.types.Object = utils.copyObject(
+            sourceObj=pillerbase_source,
+            location=(0,0,0),
+            scale=(
+                    bData.piller_diameter/piller_source.dimensions.x,
+                    bData.piller_diameter/piller_source.dimensions.y,
+                    bData.piller_diameter/piller_source.dimensions.x,
+                ),
+            parentObj=pillerProxy_basemesh,
+            singleUser=True
+        )
+    # 材质
+    mat.setShader(pillerbase_basemesh,
+        mat.shaderType.PILLERBASE)
+    
+    # 生成柱顶石
+    pillerBase_h = 0.3
+    pillerBase_popup = 0.02
+    pillerBottom_basemesh = utils.addCube(
+        location=(0,0,
+                    (- pillerBase_h/2
+                    +pillerBase_popup)),
+        dimension=(2*bData.piller_diameter,
+                2*bData.piller_diameter,
+                pillerBase_h),
+        parent=pillerProxy_basemesh,
+    )
+    # 材质
+    mat.setShader(pillerBottom_basemesh,
+        mat.shaderType.PILLERBASE)
+    utils.lockObj(pillerBottom_basemesh)
+    # 添加bevel
+    modBevel:bpy.types.BevelModifier = \
+        pillerBottom_basemesh.modifiers.new('Bevel','BEVEL')
+    modBevel.width = con.BEVEL_HIGH
+    modBevel.offset_type = 'WIDTH'
     
     # 3、根据地盘数据，循环排布每根柱子
     net_x,net_y = getFloorDate(buildingObj)
@@ -503,75 +537,42 @@ def buildPillers(buildingObj:bpy.types.Object):
                 continue    # 结束本次循环
             
             # 添加柱子父节点
-            pillerProxy = utils.addCube(
+            pillerProxy = utils.copyObject(
                 name='柱proxy' + pillerID,
+                sourceObj=pillerProxy_basemesh,
                 location=(net_x[x],
                           net_y[y],
-                          bData.piller_height/2),
-                dimension=(
-                    bData.piller_diameter,
-                    bData.piller_diameter,
-                    bData.piller_height,
-                ),
-                parent=floorRootObj
+                          0),
             )
-            utils.setOrigin(pillerProxy,
-                Vector((0,0,-bData.piller_height/2)))
-            utils.hideObj(pillerProxy)
-            pillerProxy.ACA_data['aca_obj'] = True
-            pillerProxy.ACA_data['aca_type'] = con.ACA_TYPE_PILLER_ROOT
             pillerProxy.ACA_data['pillerID'] = pillerID
+            utils.hideObj(pillerProxy)
 
             # 复制柱子，仅instance，包含modifier
             pillerObj = utils.copyObject(
                 sourceObj = piller_basemesh,
                 name = '柱子.'+pillerID,
                 parentObj = pillerProxy,
-                scale=(
-                    bData.piller_diameter/piller_basemesh.dimensions.x,
-                    bData.piller_diameter/piller_basemesh.dimensions.y,
-                    bData.piller_height/piller_basemesh.dimensions.z
-                )
             )
-            pillerObj.ACA_data['aca_obj'] = True
-            pillerObj.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
             pillerObj.ACA_data['pillerID'] = pillerID
+
             # 复制柱础
             pillerbaseObj = utils.copyObject(
-                sourceObj= aData.pillerbase_source,
-                name='柱础',
-                parentObj= pillerProxy,
-                scale=(
-                    bData.piller_diameter/piller_basemesh.dimensions.x,
-                    bData.piller_diameter/piller_basemesh.dimensions.y,
-                    bData.piller_diameter/piller_basemesh.dimensions.x,
-                )
+                sourceObj= pillerbase_basemesh,
+                parentObj=pillerProxy
             )
             utils.lockObj(pillerbaseObj)
-            # 生成柱顶石
-            pillerBase_h = 0.3
-            pillerBase_popup = 0.02
-            pillerBase = utils.addCube(
+
+            # 复制柱顶石
+            pillerBottomObj = utils.copyObject(
                 name='柱顶石',
-                location=(0,0,
-                          (- pillerBase_h/2
-                           +pillerBase_popup)),
-                dimension=(2*bData.piller_diameter,
-                       2*bData.piller_diameter,
-                       pillerBase_h),
-                parent=pillerProxy
+                sourceObj=pillerBottom_basemesh,
+                parentObj=pillerProxy
             )
-            utils.lockObj(pillerBase)
-            # 添加bevel
-            modBevel:bpy.types.BevelModifier = \
-                pillerBase.modifiers.new('Bevel','BEVEL')
-            modBevel.width = con.BEVEL_HIGH
-            modBevel.offset_type = 'WIDTH'
-            # 材质
-            utils.copyMaterial(aData.mat_stone,pillerBase)
+            utils.lockObj(pillerbaseObj)
+            
 
     # 清理临时柱子
-    utils.deleteHierarchy(piller_basemesh,True)
+    utils.deleteHierarchy(pillerProxy_basemesh,True)
 
     # 添加柱间的额枋
     # 重设柱网时，可能清除fang_net数据，而导致异常

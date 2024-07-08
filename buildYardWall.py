@@ -12,6 +12,7 @@ from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
 from . import utils
 from . import acaTemplate
+from . import texture as mat
 
 # 添加建筑empty根节点，并绑定设计模版
 # 返回建筑empty根节点对象
@@ -128,10 +129,10 @@ def buildSingleWall(
         location=(0,0,height/2-wallHeight/2),
         parent=wallProxy,
     )
-    # 展UV
-    utils.UvUnwrap(bottomObj,type='cube')
+
     # 赋材质
-    utils.copyMaterial(aData.mat_rock,bottomObj)
+    mat.setShader(bottomObj,
+            mat.shaderType.ROCK)
 
     # 2、创建上身对象
     bodyObj = utils.addCube(
@@ -142,10 +143,10 @@ def buildSingleWall(
         location=(0,0,0),
         parent=wallProxy,
     )
-    # 展UV
-    utils.UvUnwrap(bodyObj,type='cube')
+
     # 赋材质
-    utils.copyMaterial(aData.mat_red,bodyObj)
+    mat.setShader(bodyObj,
+            mat.shaderType.REDDUST)
 
     # 3、瓦顶
     # 瓦件缩放

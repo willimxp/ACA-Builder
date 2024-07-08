@@ -12,6 +12,7 @@ from .data import ACA_data_template as tmpData
 from . import utils
 from . import buildFloor
 from . import buildRoof
+from . import texture as mat
 
 # 添加斗栱根节点
 def __addDougongRoot(buildingObj:bpy.types.Object):
@@ -74,9 +75,9 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
             parent=dgrootObj,
         ) 
     # 设置材质
-    # 对前后面做fit方式，保证能够铺满这个材质
-    utils.UvUnwrap(pingbanfangObj,'fit',fitIndex=[1,3])
-    utils.copyMaterial(aData.mat_paint_walkdragon,pingbanfangObj)
+    mat.setShader(pingbanfangObj,
+        mat.shaderType.PINGBANFANG)
+
     # 添加倒角
     modBevel:bpy.types.BevelModifier = \
         pingbanfangObj.modifiers.new('Bevel','BEVEL')
@@ -104,8 +105,8 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
             parent=dgrootObj,
         ) 
     # 设置材质
-    utils.UvUnwrap(pingbanfangObj,'fit',fitIndex=[1,3])
-    utils.copyMaterial(aData.mat_paint_walkdragon,pingbanfangObj)
+    mat.setShader(pingbanfangObj,
+        mat.shaderType.PINGBANFANG)
     # 设置倒角
     modBevel:bpy.types.BevelModifier = \
         pingbanfangObj.modifiers.new('Bevel','BEVEL')
@@ -163,7 +164,6 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         # 配合挑檐桁做出梢
         if (yLoc + bData.dg_extend)<0.001:
             extendLength += con.HENG_EXTEND*dk
-    
         
     # 做前后檐连接件
     loc = (0, net_y[0] + yLoc, zLoc)
@@ -179,7 +179,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
     fangCopy.dimensions.x = bData.x_total + extendLength
     utils.applyTransfrom(fangCopy,use_scale=True)
     # 处理UV
-    utils.UvUnwrap(fangCopy,type='cube')
+    mat.UvUnwrap(fangCopy,type='cube')
     # 镜像
     utils.addModifierMirror(
         object=fangCopy,
@@ -207,7 +207,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         utils.applyTransfrom(fangCopy,use_scale=True)
         fangCopy.rotation_euler.z = math.radians(90)
         # 处理UV
-        utils.UvUnwrap(fangCopy,type='cube')
+        mat.UvUnwrap(fangCopy,type='cube')
         # 镜像
         utils.addModifierMirror(
             object=fangCopy,
@@ -275,21 +275,15 @@ def __buildDGFangbyRoom(
         fangCopy.dimensions.x = fang_length
         utils.applyTransfrom(fangCopy,use_scale=True)
 
-        # 处理UV
-        if fangCopy.active_material.name == '栱垫板':
-            utils.UvUnwrap(fangCopy,type='scale')
-            utils.copyMaterial(
-                aData.mat_paint_dgfillboard,
-                fangCopy,
-                override=True)
-            # 设置材质中的斗栱攒数
-            count = round(fang_length / bData.dg_gap)
-            utils.setMatValue(
-                mat=fangCopy.active_material,
-                inputName='count',
-                value=count)
-        else:
-            utils.UvUnwrap(fangCopy,'cube')
+        # 根据拉伸，更新UV平铺
+        mat.UvUnwrap(fangCopy,mat.uvType.CUBE)
+
+        # 栱垫板材质
+        if fangSourceObj.name == '栱垫板':
+            # 设置栱垫板彩画
+            mat.setShader(fangCopy,
+                mat.shaderType.GONGDIANBAN)
+            
     return
 
 # 排布斗栱

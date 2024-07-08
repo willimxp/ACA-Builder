@@ -1,0 +1,326 @@
+# 作者：willimxp
+# 所属插件：ACA Builder
+# 功能概述：
+#   对象展UV和贴材质
+import bpy
+import bmesh
+import math
+
+from . import utils
+from .const import ACA_Consts as con
+from .data import ACA_data_obj as acaData
+from .data import ACA_data_template as tmpData
+
+# 设置材质的输入参数
+# https://blender.stackexchange.com/questions/191183/changing-a-value-node-in-many-materials-with-a-python-script
+def setMatValue(mat:bpy.types.Material,
+                inputName:str,
+                value):
+    if mat is not None and mat.use_nodes and mat.node_tree is not None:
+        for node in mat.node_tree.nodes:
+            for input in node.inputs:
+                if input.name == inputName and input.type == 'VALUE':
+                    input.default_value = value 
+    return
+
+# 二维点阵基于p点的缩放
+# v：待缩放的向量（vx，vy）
+# s: 缩放比例（sx，sy）
+# p：缩放的原点（px，py）
+def Scale2D( v, s, p ):
+    return ( p[0] + s[0]*(v[0] - p[0]), p[1] + s[1]*(v[1] - p[1]) )     
+
+# UV的缩放
+def ScaleUV( uvMap, scale, pivot ):
+    for uvIndex in range( len(uvMap.data) ):
+        uvMap.data[uvIndex].uv = Scale2D( uvMap.data[uvIndex].uv, scale, pivot )
+
+# 二维点阵的旋转
+def make_rotation_transformation(angle, origin=(0, 0)):
+    from math import cos, sin
+    cos_theta, sin_theta = cos(angle), sin(angle)
+    x0, y0 = origin    
+    def xform(point):
+        x, y = point[0] - x0, point[1] - y0
+        return (x * cos_theta - y * sin_theta + x0,
+                x * sin_theta + y * cos_theta + y0)
+    return xform
+
+# UV的旋转
+def RotateUV(uvMap, angle, pivot):
+    rot = make_rotation_transformation(angle, pivot)
+    for uvIndex in range( len(uvMap.data) ):
+        uvMap.data[uvIndex].uv = rot(uvMap.data[uvIndex].uv ) 
+    return
+
+# 展UV，提供了多种不同的方式
+def UvUnwrap(object:bpy.types.Object,
+             type=None,
+             scale=None,
+             pivot=(0,0),
+             rotate=None,
+             fitIndex=None,
+             ):
+    # 聚焦对象
+    utils.focusObj(object)
+
+    # 应用modifier
+    utils.applyAllModifer(object)
+
+    # 进入编辑模式
+    bpy.ops.object.mode_set(mode = 'EDIT') 
+    bpy.ops.mesh.select_mode(type = 'FACE')
+    bpy.ops.mesh.select_all(action='SELECT')
+    
+    if type == None:
+        # 默认采用smart project
+        bpy.ops.uv.smart_project(
+            angle_limit=math.radians(66), 
+            margin_method='SCALED', 
+            island_margin=0.0001, 
+            area_weight=0.0, 
+            correct_aspect=True, 
+            scale_to_bounds=False
+        )
+    # 普通材质的cube project，保证贴图缩放的一致性
+    elif type == uvType.CUBE:
+        bpy.ops.uv.cube_project(
+            cube_size=10,
+        )
+    # 系统默认的cube project，在梁枋的六棱柱上效果更好
+    elif type == uvType.SCALE:
+        bpy.ops.uv.cube_project(
+            scale_to_bounds=True
+        )
+    # 精确适配
+    # 先所有面一起做加权分uv，然后针对需要特殊处理的面，进行二次适配
+    elif type == uvType.FIT:
+        # 先做一次加权投影
+        bpy.ops.uv.cube_project(
+            scale_to_bounds=True
+        )
+        # 清空选择
+        bpy.ops.mesh.select_all(action = 'DESELECT')
+        # 载入bmesh
+        me = object.data
+        bm = bmesh.from_edit_mesh(me)
+        # 选择面
+        for face in bm.faces:
+            if face.index in fitIndex:
+                face.select = True 
+        # 写回对象
+        bmesh.update_edit_mesh(me)
+        # unwarp
+        bpy.ops.uv.cube_project(
+            scale_to_bounds=True
+        )
+    # 重置UV，让每个面都满铺，但存在rotate的问题，暂未使用
+    elif type == uvType.RESET:
+        bpy.ops.uv.reset()
+    # 柱状投影，在柱子上效果很好
+    elif type == uvType.CYLINDER:
+        bpy.ops.uv.cylinder_project(
+            direction='ALIGN_TO_OBJECT',
+            align='POLAR_ZY',
+            scale_to_bounds=True
+        )
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+    # 拉伸UV，参考以下：
+    # https://blender.stackexchange.com/questions/75061/scale-uv-map-script
+    if scale != None:
+        uvMap = object.data.uv_layers['UVMap']
+        ScaleUV(uvMap,scale,pivot)
+
+    # 旋转UV，参考：
+    # https://blender.stackexchange.com/questions/28929/rotate-uv-by-specific-angle-e-g-30deg-in-python-script-in-backgroud-mode
+    if rotate != None:
+        uvMap = object.data.uv_layers['UVMap']
+        RotateUV(uvMap,rotate,pivot)
+
+    return
+# 拷贝目标对象的材质
+
+# 展UV的类型
+class uvType:
+    CUBE = 'cube'
+    SCALE = 'scale'
+    FIT = 'fit'
+    RESET = 'reset'
+    CYLINDER  = 'cylinder'
+
+def copyMaterial(fromObj:bpy.types.Object,
+                 toObj:bpy.types.Object,
+                 override = False):
+    if toObj.active_material == None or override:
+        toObj.active_material = fromObj.active_material.copy()
+    return
+
+# 根据制定的材质，展UV，并调用材质属性设置
+def setTexture(
+        object:bpy.types.Object,
+        mat:bpy.types.Object):
+    # 绑定材质
+    copyMaterial(mat,object,override=True)
+    aData:tmpData = bpy.context.scene.ACA_temp
+    attr = None
+
+    # 简单平铺的材质
+    if mat in (
+        aData.mat_wood,         # 木材材质
+        aData.mat_rock,         # 石材材质
+        aData.mat_stone,        # 石头材质
+        aData.mat_red,          # 漆.土朱材质
+        aData.mat_brick_1,      # 方砖缦地
+        aData.mat_brick_2,      # 条砖竖铺
+        aData.mat_brick_3,      # 条砖横铺
+        aData.mat_dust_red,     # 抹灰.红
+    ):
+        # 依赖几何体默认生成的UV，不再重新生成
+        # UvUnwrap(object,uvType.CUBE)
+        pass  
+    
+    # 需要满铺的彩画类材质
+    if mat in (
+            aData.mat_paint_beam,           # 梁枋彩画
+            aData.mat_paint_beam_alt,       # 梁枋彩画.异色
+            aData.mat_paint_grasscouple,    # 垫板.公母草
+        ):
+        UvUnwrap(object,uvType.SCALE)   
+
+    # 其他进行了复杂计算的材质
+    # 柱头贴图
+    if mat == aData.mat_paint_pillerhead:
+        UvUnwrap(object,uvType.CYLINDER)
+        attr = 'headRate'
+
+    # 平板枋.行龙
+    if mat == aData.mat_paint_walkdragon:
+        # 对前后面做fit方式，保证能够铺满这个材质
+        UvUnwrap(object,uvType.FIT,fitIndex=[1,3])
+
+    # 栱垫板
+    if mat == aData.mat_paint_dgfillboard:
+        UvUnwrap(object,uvType.SCALE)
+        attr = 'count'
+    
+    # 材质属性设置
+    if attr == 'headRate':
+        __setPillerHead(object)
+    if attr == 'count':
+        __setDgCount(object)
+
+    return
+
+# 材质类型，实际是对材质的指向关系
+class shaderType:
+    WOOD = '木材'
+    REDPAINT = '漆.土朱材质'
+    REDDUST = '抹灰.红'
+    BRICK1 = '方砖缦地'
+    BRICK2 = '条砖竖铺'
+    BRICK3 = '条砖横铺'
+    ROCK = '石材'
+    STONE = '石头'
+    PILLER = '柱子'
+    PILLERBASE = '柱础'
+    PINGBANFANG = '平板枋'
+    GONGDIANBAN = '栱垫板'
+    LIANGFANG = '梁枋'
+    LIANGFANG_ALT = '梁枋异色'
+    YOUEDIANBAN = '由额垫板'
+
+# 映射对象与材质的关系
+# 便于后续统一的在“酱油配色”，“清官式彩画”等配色方案间切换
+def setShader(object:bpy.types.Object,
+              shader:str):
+    aData:tmpData = bpy.context.scene.ACA_temp
+    mat = None
+
+    # 木材
+    if shader == shaderType.WOOD:
+        mat = aData.mat_wood
+
+    # 红
+    if shader == shaderType.REDPAINT:
+        mat = aData.mat_red
+    if shader == shaderType.REDDUST:
+        mat = aData.mat_dust_red
+
+    # 石材
+    if shader == shaderType.ROCK:
+        mat = aData.mat_rock
+    if shader == shaderType.STONE:
+        mat == aData.mat_stone
+
+    # 方砖缦地
+    if shader == shaderType.BRICK1:
+        mat = aData.mat_brick_1
+    if shader == shaderType.BRICK2:
+        mat = aData.mat_brick_2
+    if shader == shaderType.BRICK3:
+        mat = aData.mat_brick_3
+
+    # 柱础
+    if shader == shaderType.PILLERBASE:
+        mat = aData.mat_stone
+
+    # 柱头彩画
+    if shader == shaderType.PILLER:
+        mat = aData.mat_paint_pillerhead
+    
+    # 梁枋彩画
+    if shader == shaderType.LIANGFANG:
+        mat = aData.mat_paint_beam
+    if shader == shaderType.LIANGFANG_ALT:
+        mat = aData.mat_paint_beam_alt
+
+    # 平板枋，行龙彩画
+    if shader == shaderType.PINGBANFANG:
+        mat = aData.mat_paint_walkdragon
+
+    # 栱垫板，三宝珠彩画
+    if shader == shaderType.GONGDIANBAN:
+        mat = aData.mat_paint_dgfillboard
+
+    if shader == shaderType.YOUEDIANBAN:
+        mat = aData.mat_paint_grasscouple
+
+    if mat != None:
+        # 展UV，绑材质
+        setTexture(object,mat)
+
+# 计算柱头贴图的高度
+# 依据大额枋、由额垫板、小额枋的高度计算
+# 不判断是否做双重额枋
+def __setPillerHead(object:bpy.types.Object):
+    buildingObj = utils.getAcaParent(
+        object,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+
+    # 缩放柱头贴图尺寸，与大小额枋及垫板的高度计算
+    fangHeight = con.EFANG_LARGE_H*dk
+    if bData.use_smallfang:
+        fangHeight += (con.BOARD_YOUE_H*dk
+            + con.EFANG_SMALL_H*dk)
+    scale = fangHeight / bData.piller_height
+    setMatValue(
+        mat=object.active_material,
+        inputName='headRate',
+        value=scale)
+
+# 设置垫拱板的重复次数，根据斗栱攒数计算
+def __setDgCount(object:bpy.types.Object):
+    # 载入数据
+    buildingObj = utils.getAcaParent(
+        object,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+
+    # 设置材质中的斗栱攒数
+    fang_length = object.dimensions.x
+    count = round(fang_length / bData.dg_gap)
+    setMatValue(
+        mat=object.active_material,
+        inputName='count',
+        value=count)

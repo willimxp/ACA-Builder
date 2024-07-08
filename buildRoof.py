@@ -14,6 +14,7 @@ from . import utils
 from . import buildFloor
 from . import buildDougong
 from . import buildRooftile
+from . import texture as mat
 
 # 添加屋顶根节点
 def __addRoofRoot(buildingObj:bpy.types.Object):
@@ -297,9 +298,8 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
             name = "挑檐桁",
             root_obj = rafterRootObj,
         )
-        # 设置材质
-        utils.UvUnwrap(hengObj,'scale')
-        utils.copyMaterial(aData.mat_paint_beam,hengObj)
+        # 设置梁枋彩画
+        mat.setShader(hengObj,mat.shaderType.LIANGFANG)
         # 设置对称
         utils.addModifierMirror(
             object=hengObj,
@@ -695,7 +695,7 @@ def __drawBeam(
     bm.free()
 
     # 处理UV
-    utils.UvUnwrap(beamObj,type='cube')
+    mat.UvUnwrap(beamObj,type='cube')
 
     return beamObj
 
@@ -759,7 +759,7 @@ def __drawJiaobei(shuzhuObj:bpy.types.Object):
     bpy.ops.object.mode_set( mode = 'OBJECT' )
 
     # 处理UV
-    utils.UvUnwrap(jiaobeiObj,type='cube')
+    mat.UvUnwrap(jiaobeiObj,type='cube')
 
     utils.copyModifiers(
         from_0bj=shuzhuObj,
@@ -1021,8 +1021,8 @@ def __buildLKM(buildingObj:bpy.types.Object,
         mirrorObj=rafterRootObj,
         use_axis=LKM_mirrorAxis
     )
-    # 设置材质
-    utils.copyMaterial(aData.mat_red,LKMObj)
+    # 设置材质，刷红漆
+    mat.setShader(LKMObj,mat.shaderType.REDPAINT)
     return
 
 # 营造前后檐椽子
@@ -1372,7 +1372,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True) 
             # 更新UV
-            utils.UvUnwrap(wangbanObj,type='cube')
+            mat.UvUnwrap(wangbanObj,type='cube')
 
         # 所有望板上移
         # 1. 上移到椽头，采用global坐标，半檩+半椽
@@ -1550,7 +1550,7 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
             wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True)
             # 更新UV
-            utils.UvUnwrap(wangbanObj,type='cube')
+            mat.UvUnwrap(wangbanObj,type='cube')
 
         # 所有望板上移，与椽架上皮相切（从桁檩中心偏：半桁檩+1椽径+半望板）
         # 1. 上移到椽头，采用global坐标，半檩+半椽
@@ -1709,7 +1709,7 @@ def __drawFlyrafter(yanRafterObj:bpy.types.Object)->bpy.types.Object:
     utils.changeOriginRotation(change_rot,flyrafterObj)
 
     # 处理UV
-    utils.UvUnwrap(flyrafterObj,type='cube')
+    mat.UvUnwrap(flyrafterObj,type='cube')
 
     return flyrafterObj
 
@@ -1865,8 +1865,8 @@ def __buildDLY(buildingObj,purlin_pos,direction):
         mirrorObj=rafterRootObj,
         use_axis=DLY_mirrorAxis
     )
-    # 设置材质
-    utils.copyMaterial(aData.mat_red,DLY_Obj)
+    # 设置材质，刷红漆
+    mat.setShader(DLY_Obj,mat.shaderType.REDPAINT)
 
 # 营造飞椽（以及里口木、压飞望板、大连檐等附属构件)
 # 小式建筑中，可以不使用飞椽
@@ -2021,7 +2021,7 @@ def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object):
     utils.changeOriginRotation(change_rot,smallCornerBeamObj)
 
     # uv处理
-    utils.UvUnwrap(smallCornerBeamObj,type='cube')
+    mat.UvUnwrap(smallCornerBeamObj,type='cube')
 
     return smallCornerBeamObj
 
@@ -2212,7 +2212,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
     # Curve转为mesh
     utils.applyAllModifer(xly_curve_obj)
     # 处理UV
-    utils.UvUnwrap(xly_curve_obj)
+    mat.UvUnwrap(xly_curve_obj)
 
     # 相对角梁做45度对称
     utils.addModifierMirror(
@@ -2226,8 +2226,9 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object):
         mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
-    # 设置材质
-    utils.copyMaterial(aData.mat_red,xly_curve_obj)
+    # 设置材质，刷红漆
+    mat.setShader(xly_curve_obj,
+        mat.shaderType.REDPAINT)
 
 # 营造翼角椽参考线，后续为翼角椽椽头的定位
 # 起点=定为正身檐椽的最后一根椽头坐标
@@ -2497,7 +2498,7 @@ def __drawCrWangban(
     bm.free()
 
     # 处理UV
-    utils.UvUnwrap(crWangbanObj,type='cube')
+    mat.UvUnwrap(crWangbanObj,type='cube')
 
     return crWangbanObj
 
@@ -2622,7 +2623,7 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
     # Curve转为mesh
     utils.applyAllModifer(flyrafterEaveObj)
     # 设置UV
-    utils.UvUnwrap(flyrafterEaveObj,type='cube')
+    mat.UvUnwrap(flyrafterEaveObj,type='cube')
     
     # 相对角梁做45度对称
     utils.addModifierMirror(
@@ -2638,7 +2639,8 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
         use_axis=(True,True,False),
     )
     # 设置材质
-    utils.copyMaterial(aData.mat_red,flyrafterEaveObj)
+    mat.setShader(flyrafterEaveObj,
+        mat.shaderType.REDPAINT)
 
 # 营造翘飞椽定位线
 def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
@@ -2850,7 +2852,7 @@ def __drawCornerFlyrafter(
     utils.setOrigin(cfrObj,v5)
 
     # 处理UV
-    utils.UvUnwrap(cfrObj,type='cube')
+    mat.UvUnwrap(cfrObj,type='cube')
 
     # 以下有bug，导致翘飞椽有异常位移，后续找机会修正
     # 重设旋转数据：把旋转角度与翘飞椽头对齐，方便计算翘飞椽望板
@@ -3023,7 +3025,7 @@ def __drawCornerFlyrafterNew(
     utils.setOrigin(cfrObj,v5)
 
     # 处理UV
-    utils.UvUnwrap(cfrObj,type='cube')
+    mat.UvUnwrap(cfrObj,type='cube')
 
     return cfrObj
 
@@ -3206,7 +3208,7 @@ def __drawCfrWangban(
     bm.free()
 
     # 处理UV
-    utils.UvUnwrap(cfrWangbanObj,type='cube')
+    mat.UvUnwrap(cfrWangbanObj,type='cube')
 
     return cfrWangbanObj
 
@@ -3353,7 +3355,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             cfrSet = utils.joinObjects(
                 cfrCollection,newName='翘飞椽')
             # UV处理
-            utils.UvUnwrap(cfrSet)
+            mat.UvUnwrap(cfrSet)
             # 倒角
             modBevel:bpy.types.BevelModifier = \
                 cfrSet.modifiers.new('Bevel','BEVEL')
@@ -3363,7 +3365,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         crSet = utils.joinObjects(
             cornerRafterColl,newName='翼角椽')
         # UV处理
-        utils.UvUnwrap(crSet)
+        mat.UvUnwrap(crSet)
         # 倒角
         modBevel:bpy.types.BevelModifier = \
             crSet.modifiers.new('Bevel','BEVEL')
@@ -3377,14 +3379,14 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         wangbanSet = utils.joinObjects(
             wangbanObjs,newName='望板')
         # 更新UV
-        utils.UvUnwrap(wangbanSet,type='cube')
+        mat.UvUnwrap(wangbanSet,type='cube')
     
     # 檐椽事后处理(处理UV,添加倒角)
     # 只能放在最后加倒角，因为计算翼角椽时有取檐椽头坐标
     # 加了倒角后，取檐椽头坐标时就出错了
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
-    utils.UvUnwrap(yanRafterObj)
+    mat.UvUnwrap(yanRafterObj)
     modBevel:bpy.types.BevelModifier = \
         yanRafterObj.modifiers.new('Bevel','BEVEL')
     modBevel.width = con.BEVEL_EXLOW
@@ -3392,7 +3394,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_LR)
     if yanRafterObj != None:
-        utils.UvUnwrap(yanRafterObj)
+        mat.UvUnwrap(yanRafterObj)
         modBevel:bpy.types.BevelModifier = \
             yanRafterObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
@@ -3400,7 +3402,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     flyRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_LR)
     if flyRafterObj != None:
-        utils.UvUnwrap(flyRafterObj)
+        mat.UvUnwrap(flyRafterObj)
         modBevel:bpy.types.BevelModifier = \
             flyRafterObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
@@ -3408,7 +3410,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     flyRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_FB)
     if flyRafterObj != None:
-        utils.UvUnwrap(flyRafterObj)
+        mat.UvUnwrap(flyRafterObj)
         modBevel:bpy.types.BevelModifier = \
             flyRafterObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
@@ -3506,7 +3508,7 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     bm.free()
 
     # 处理UV
-    utils.UvUnwrap(xybObj,type='cube')
+    mat.UvUnwrap(xybObj,type='cube')
 
     # 应用镜像
     utils.addModifierMirror(
@@ -3519,9 +3521,13 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     if bData.roof_style in (
             con.ROOF_XUANSHAN,
             con.ROOF_XUANSHAN_JUANPENG):
-        utils.copyMaterial(aData.mat_stone,xybObj)
+        # 悬山用石材封堵
+        mat.setShader(xybObj,
+            mat.shaderType.STONE)
     elif bData.roof_style == con.ROOF_XIESHAN:
-        utils.copyMaterial(aData.mat_red,xybObj)
+        # 歇山刷红漆
+        mat.setShader(xybObj,
+            mat.shaderType.REDPAINT)
 
     return xybObj
 
@@ -3827,11 +3833,10 @@ def __buildShanWall(
     shanWallObj.data.update()
     bm.free()
 
-    # 处理UV
-    utils.UvUnwrap(shanWallObj,type='cube')
-
     # 设置材质
-    utils.copyMaterial(aData.mat_rock,shanWallObj)
+    mat.setShader(shanWallObj,
+            mat.shaderType.ROCK)
+    
     # 添加镜像
     utils.addModifierMirror(
         object=shanWallObj,
@@ -3891,9 +3896,11 @@ def __buildBPW(buildingObj:bpy.types.Object):
             con.ROOF_XUANSHAN_JUANPENG):
         __buildBofeng(buildingObj,rafter_pos)
 
-    # 设置材质
+    # 设置材质，原木色
     for obj in rafterRootObj.children:
-        utils.copyMaterial(aData.mat_wood,obj)
+        mat.setShader(obj,
+            mat.shaderType.WOOD)
+        
     return
 
 # 营造整个房顶

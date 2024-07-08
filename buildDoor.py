@@ -9,6 +9,7 @@ from mathutils import Vector
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
+from . import texture as mat
 from . import utils
 
 # 构建扇心
@@ -61,7 +62,7 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     # 转为mesh
     bpy.ops.object.convert(target='MESH')
     # 设置UV
-    utils.UvUnwrap(zibianObj,type='cube')
+    mat.UvUnwrap(zibianObj,type='cube')
 
     # 填充棂心
     lingxinObj = aData.lingxin_source
@@ -94,7 +95,7 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     # 应用array modifier
     utils.applyAllModifer(lingxin)
     # 设置UV
-    utils.UvUnwrap(lingxin,type='cube')
+    mat.UvUnwrap(lingxin,type='cube')
     
     return # linxinObj
 
@@ -752,7 +753,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
         parent = wallproxy,
         )
     # 设置材质
-    utils.copyMaterial(aData.mat_rock,kanqiangObj)
+    mat.setShader(kanqiangObj,mat.shaderType.ROCK)
     kanQiangObjs.append(kanqiangObj)
 
     # 窗楹
@@ -839,7 +840,7 @@ def buildDoor(wallproxy:bpy.types.Object):
                            bData.wall_span),
                 parent=wallproxy,
             )
-        utils.copyMaterial(aData.mat_wood,wallHeadBoard)
+        mat.setShader(wallHeadBoard,mat.shaderType.WOOD)
     
     # 1、构建槛框
     # 返回的是下抱框，做为隔扇生成的参考  
@@ -894,6 +895,6 @@ def buildDoor(wallproxy:bpy.types.Object):
     for ob in wallproxy.children:
         # 全部设置为朱漆材质
         # 其中槛窗的窗台为石质，并不会被覆盖
-        utils.copyMaterial(aData.mat_red,ob)
+        mat.setShader(ob,mat.shaderType.REDPAINT)
 
     utils.focusObj(wallproxy)

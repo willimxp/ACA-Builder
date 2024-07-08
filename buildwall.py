@@ -15,6 +15,7 @@ from .data import ACA_data_template as tmpData
 from . import utils
 from . import buildDoor
 from . import buildFloor
+from . import texture as mat
 
 # 创建新地盘对象（empty）
 def __addWallrootNode(buildingObj:bpy.types.Object):
@@ -184,7 +185,8 @@ def __drawWall(wallProxy:bpy.types.Object):
                            bData.wall_span),
                 parent=wallProxy,
             )
-        utils.copyMaterial(aData.mat_wood,wallHeadBoard)
+        mat.setShader(wallHeadBoard,
+            mat.shaderType.WOOD)
 
     # 1、创建下碱对象
     # 下碱一般取墙体高度的1/3
@@ -200,10 +202,9 @@ def __drawWall(wallProxy:bpy.types.Object):
         location=Vector((0,0,height/2)),
         parent=wallProxy,
     )
-    # 展UV
-    utils.UvUnwrap(bottomObj,type='cube')
     # 赋材质
-    utils.copyMaterial(aData.mat_rock,bottomObj)
+    mat.setShader(wallHeadBoard,
+            mat.shaderType.ROCK)
 
     # 2、创建上身对象
     extrudeHeight = wallHeight/10
@@ -233,10 +234,10 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 结束
     bm.to_mesh(bodyObj.data)
     bm.free() 
-    # 展UV
-    utils.UvUnwrap(bodyObj,type='cube')
+
     # 赋材质
-    utils.copyMaterial(aData.mat_dust_red,bodyObj)
+    mat.setShader(bodyObj,
+            mat.shaderType.REDDUST)
     
     # 合并
     wallObj = utils.joinObjects([bottomObj,bodyObj],'墙体')

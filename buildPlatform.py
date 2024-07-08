@@ -13,6 +13,7 @@ from . import buildFloor
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
+from . import texture as mat
 
 # 生成台基Proxy
 def __addPlatformProxy(buildingObj:bpy.types.Object):
@@ -65,9 +66,10 @@ def __drawPlatform(platformObj:bpy.types.Object):
         parent=platformObj
     )
     # UV处理
-    utils.UvUnwrap(brickObj,type='cube')
+    mat.UvUnwrap(brickObj,type='cube')
     # 方砖缦地
-    utils.copyMaterial(aData.mat_brick_1,brickObj)
+    mat.setShader(brickObj,
+        mat.shaderType.BRICK1)
 
     # 阶条石
     jtsObjs = []    # 收集待合并的阶条石
@@ -183,7 +185,9 @@ def __drawPlatform(platformObj:bpy.types.Object):
         parent=platformObj
     )
     # 方砖横铺
-    utils.copyMaterial(aData.mat_brick_3,brickObj)
+    mat.setShader(brickObj,
+        mat.shaderType.BRICK3)
+
     utils.addModifierMirror(
         object=brickObj,
         mirrorObj=platformObj,
@@ -206,7 +210,8 @@ def __drawPlatform(platformObj:bpy.types.Object):
         parent=platformObj
     )
     # 方砖横铺
-    utils.copyMaterial(aData.mat_brick_3,brickObj)
+    mat.setShader(brickObj,
+        mat.shaderType.BRICK3)
     utils.addModifierMirror(
         object=brickObj,
         mirrorObj=platformObj,
@@ -238,14 +243,16 @@ def __drawPlatform(platformObj:bpy.types.Object):
             obj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXHIGH
         # 设置材质
-        utils.copyMaterial(aData.mat_rock,obj)
+        mat.setShader(brickObj,
+            mat.shaderType.ROCK)
     
     # 合并台基
     platformSet = utils.joinObjects(
         jtsObjs,newName='台明'
         )
     # UV处理
-    utils.UvUnwrap(platformSet,type='cube')
+    mat.UvUnwrap(platformSet,type='cube')
+
     return platformSet
 
 # 绘制踏跺对象
@@ -323,7 +330,7 @@ def __drawStep(stepProxy:bpy.types.Object):
         use_axis=(True,False,False)
     )
     # 方砖横铺
-    utils.copyMaterial(aData.mat_brick_3,brickObj)
+    mat.setShader(brickObj,mat.shaderType.BRICK3)
     taduoObjs.append(brickObj)
 
     # 4、垂带
@@ -424,7 +431,7 @@ def __drawStep(stepProxy:bpy.types.Object):
         modBevel.offset_type = 'WIDTH'
         modBevel.use_clamp_overlap = False
         # 设置材质
-        utils.copyMaterial(aData.mat_rock,obj)
+        mat.setShader(obj,mat.shaderType.ROCK)
 
     # 合并对象
     taduoSet = utils.joinObjects(
@@ -433,7 +440,7 @@ def __drawStep(stepProxy:bpy.types.Object):
     taduoSet.ACA_data['aca_type'] = con.ACA_TYPE_STEP
     taduoSet.ACA_data['stepID'] = stepProxy.ACA_data['stepID'] 
     # UV处理
-    utils.UvUnwrap(taduoSet,type='cube')
+    mat.UvUnwrap(taduoSet,type='cube')
 
     # # 绑定到上一层
     # taduoSet.parent = stepProxy.parent
@@ -582,9 +589,9 @@ def __addSanshui(pfProxy:bpy.types.Object,
     # 应用boolean modifier
     utils.applyAllModifer(joinBaseObj)
     # UV处理
-    utils.UvUnwrap(joinBaseObj,type='cube')
+    mat.UvUnwrap(joinBaseObj,type='cube')
     # 条砖竖铺
-    utils.copyMaterial(aData.mat_brick_2,joinBaseObj)
+    mat.setShader(joinBaseObj,mat.shaderType.BRICK2)
 
     # 清理无用的散水对象
     for n in range(1,len(sanshuiObjs)):

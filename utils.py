@@ -197,12 +197,12 @@ def copySimplyObject(
 
 # 复制对象（仅复制instance，包括modifier）
 def copyObject(sourceObj:bpy.types.Object, 
-               name="", 
-         parentObj:bpy.types.Object = None, 
-         location=(0,0,0),
-         rotation=None,
-         scale=None,
-         singleUser=False)->bpy.types.Object:
+        name=None, 
+        parentObj:bpy.types.Object = None, 
+        location=None,
+        rotation=None,
+        scale=None,
+        singleUser=False)->bpy.types.Object:
     # 强制原对象不能隐藏
     IsHideEye = sourceObj.hide_get()
     sourceObj.hide_set(False)
@@ -215,12 +215,12 @@ def copyObject(sourceObj:bpy.types.Object,
     newObj:bpy.types.Object = sourceObj.copy()
     if singleUser :
         newObj.data = sourceObj.data.copy()
-    if name=="":
-        newObj.name = sourceObj.name
-    else:
+    if name != None:
         newObj.name = name
-    newObj.location = location
-    newObj.parent = parentObj
+    if location != None:
+        newObj.location = location
+    if parentObj != None:
+        newObj.parent = parentObj
     if scale != None:
         newObj.scale = scale
     if rotation != None:
@@ -411,7 +411,8 @@ def addCube(name='Cube',
     applyTransfrom(cube,use_scale=True)
     
     # UV处理
-    UvUnwrap(cube,type='cube')
+    from . import texture
+    texture.UvUnwrap(cube,type='cube')
     
     return cube
 
@@ -576,7 +577,8 @@ def drawHexagon(dimensions:Vector,
         obj.parent = parent
 
     # UV处理
-    UvUnwrap(obj,type='cube')
+    from . import texture
+    texture.UvUnwrap(obj,type='cube')
 
     return obj
 
@@ -677,7 +679,8 @@ def addCylinder(radius,depth,name,root_obj,
         bpy.ops.object.mode_set(mode = 'OBJECT')    
 
     # 处理UV
-    UvUnwrap(cylinderObj,type='cube')
+    from . import texture
+    texture.UvUnwrap(cylinderObj,type='cube')
 
     return cylinderObj
 
@@ -758,10 +761,10 @@ def addModifierMirror(object:bpy.types.Object,
 
 # 应用所有修改器
 def applyAllModifer(object:bpy.types.Object):
-    focusObj(object)  
     # 仅在有修改器，或为curve等非mesh对象上执行，以便提升效率
     if (len(object.modifiers) > 0
         or object.type != 'MESH'):
+        focusObj(object)
         bpy.ops.object.convert(target='MESH')
 
 # 翻转对象的normal
@@ -1344,14 +1347,6 @@ def hideLayer(context,name,isShow):
     redrawViewport()
     return 
 
-# 拷贝目标对象的材质
-def copyMaterial(fromObj:bpy.types.Object,
-                 toObj:bpy.types.Object,
-                 override = False):
-    if toObj.active_material == None or override:
-        toObj.active_material = fromObj.active_material.copy()
-    return
-
 # 删除对象的边
 def dissolveEdge(object:bpy.types.Object,
                  index:List):
@@ -1400,135 +1395,12 @@ def shaderSmooth(object:bpy.types.Object):
 
     return
 
-#Scale a 2D vector v, considering a scale s and a pivot point p
-def Scale2D( v, s, p ):
-    return ( p[0] + s[0]*(v[0] - p[0]), p[1] + s[1]*(v[1] - p[1]) )     
-
-#Scale a UV map iterating over its coordinates to a given scale and with a pivot point
-def ScaleUV( uvMap, scale, pivot ):
-    for uvIndex in range( len(uvMap.data) ):
-        uvMap.data[uvIndex].uv = Scale2D( uvMap.data[uvIndex].uv, scale, pivot )
-
-def make_rotation_transformation(angle, origin=(0, 0)):
-    from math import cos, sin
-    cos_theta, sin_theta = cos(angle), sin(angle)
-    x0, y0 = origin    
-    def xform(point):
-        x, y = point[0] - x0, point[1] - y0
-        return (x * cos_theta - y * sin_theta + x0,
-                x * sin_theta + y * cos_theta + y0)
-    return xform
-
-def RotateUV(uvMap, angle, pivot):
-    rot = make_rotation_transformation(angle, pivot)
-    for uvIndex in range( len(uvMap.data) ):
-        uvMap.data[uvIndex].uv = rot(uvMap.data[uvIndex].uv ) 
-    return
-
-def UvUnwrap(object:bpy.types.Object,
-             type=None,
-             scale=None,
-             pivot=(0,0),
-             rotate=None,
-             fitIndex=None,
-             ):
-    # 聚焦对象
-    focusObj(object)
-
-    # 应用modifier
-    applyAllModifer(object)
-
-    # 进入编辑模式
-    bpy.ops.object.mode_set(mode = 'EDIT') 
-    bpy.ops.mesh.select_mode(type = 'FACE')
-    bpy.ops.mesh.select_all(action='SELECT')
-    
-    if type == None:
-        # 默认采用smart project
-        bpy.ops.uv.smart_project(
-            angle_limit=math.radians(66), 
-            margin_method='SCALED', 
-            island_margin=0.0001, 
-            area_weight=0.0, 
-            correct_aspect=True, 
-            scale_to_bounds=False
-        )
-    # 普通材质的cube project，保证贴图缩放的一致性
-    elif type == 'cube':
-        bpy.ops.uv.cube_project(
-            cube_size=10
-        )
-    # 系统默认的cube project，在梁枋的六棱柱上效果更好
-    elif type == 'scale':
-        bpy.ops.uv.cube_project(
-            scale_to_bounds=True
-        )
-    # 精确适配
-    # 先所有面一起做加权分uv，然后针对需要特殊处理的面，进行二次适配
-    elif type == 'fit':
-        # 先做一次加权投影
-        bpy.ops.uv.cube_project(
-            scale_to_bounds=True
-        )
-        # 清空选择
-        bpy.ops.mesh.select_all(action = 'DESELECT')
-        # 载入bmesh
-        me = object.data
-        bm = bmesh.from_edit_mesh(me)
-        # 选择面
-        for face in bm.faces:
-            if face.index in fitIndex:
-                face.select = True 
-        # 写回对象
-        bmesh.update_edit_mesh(me)
-        # unwarp
-        bpy.ops.uv.cube_project(
-            scale_to_bounds=True
-        )
-    # 重置UV，让每个面都满铺，但存在rotate的问题，暂未使用
-    elif type == 'reset':
-        bpy.ops.uv.reset()
-    # 柱状投影，在柱子上效果很好
-    elif type == 'cylinder':
-        bpy.ops.uv.cylinder_project(
-            direction='ALIGN_TO_OBJECT',
-            align='POLAR_ZY',
-            scale_to_bounds=True
-        )
-    bpy.ops.object.mode_set(mode = 'OBJECT')
-
-    # 拉伸UV，参考以下：
-    # https://blender.stackexchange.com/questions/75061/scale-uv-map-script
-    if scale != None:
-        uvMap = object.data.uv_layers['UVMap']
-        ScaleUV(uvMap,scale,pivot)
-
-    # 旋转UV，参考：
-    # https://blender.stackexchange.com/questions/28929/rotate-uv-by-specific-angle-e-g-30deg-in-python-script-in-backgroud-mode
-    if rotate != None:
-        uvMap = object.data.uv_layers['UVMap']
-        RotateUV(uvMap,rotate,pivot)
-
-    return
-
 # 锁定对象
 def lockObj(obj:bpy.types.Object):
     obj.hide_select = True
     obj.lock_scale = (True,True,True)
     obj.lock_location = (True,True,True)
     obj.lock_rotation = (True,True,True)
-    return
-
-# 设置材质的输入参数
-# https://blender.stackexchange.com/questions/191183/changing-a-value-node-in-many-materials-with-a-python-script
-def setMatValue(mat:bpy.types.Material,
-                inputName:str,
-                value):
-    if mat is not None and mat.use_nodes and mat.node_tree is not None:
-        for node in mat.node_tree.nodes:
-            for input in node.inputs:
-                if input.name == inputName and input.type == 'VALUE':
-                    input.default_value = value 
     return
 
 # 返回数字的正负数

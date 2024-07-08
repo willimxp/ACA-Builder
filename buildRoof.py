@@ -249,6 +249,8 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
             hengExtend += bData.dg_extend
 
     # 前后檐排布
+    # 计算明间的序号，从0开始
+    centerRoomIndex = int((len(net_x))/2)-1
     for n in range(len(net_x)-1):
         length = net_x[n+1] - net_x[n]
         loc = Vector(((net_x[n+1] + net_x[n])/2,
@@ -259,16 +261,25 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
             length += hengExtend
             sign = utils.getSign(net_x[n])
             loc += Vector((hengExtend/2*sign,0,0))
+        # 判断异色
+        if n%2 == centerRoomIndex%2:
+            isAlt = True
+        else:
+            isAlt = False
         purlinList.append(
             {'len':length,
              'loc':loc,
-             'rot':0,
+             'rot':(math.radians(-26),
+                    0,0),
+             'alt':isAlt,
              'mirror':(False,True,False)})
     # 两山排布(仅庑殿、歇山、盝顶，不适用硬山、悬山、卷棚)
     if bData.roof_style in (
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
             con.ROOF_LUDING):
+        # 计算明间的序号，从0开始
+        centerRoomIndex = int((len(net_y))/2)-1
         for n in range(len(net_y)-1):
             length = net_y[n+1] - net_y[n]
             loc = Vector((purlin_cross.x,
@@ -279,10 +290,17 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
                 length += hengExtend
                 sign = utils.getSign(net_y[n])
                 loc += Vector((0,hengExtend/2*sign,0))
+            # 判断异色
+            if n%2 == centerRoomIndex%2:
+                isAlt = True
+            else:
+                isAlt = False
             purlinList.append(
                 {'len':length,
                 'loc':loc,
-                'rot':90,
+                'alt':isAlt,
+                'rot':(math.radians(26),
+                    0,math.radians(90)),
                 'mirror':(True,False,False)
                 })
     
@@ -292,14 +310,15 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
             radius= con.HENG_COMMON_D / 2 * dk,
             depth = purlin['len'],
             location = purlin['loc'], 
-            rotation = (
-                math.radians(-26),0,
-                math.radians(purlin['rot'])),
+            rotation = purlin['rot'],
             name = "挑檐桁",
             root_obj = rafterRootObj,
         )
         # 设置梁枋彩画
-        mat.setShader(hengObj,mat.shaderType.LIANGFANG)
+        if purlin['alt']:
+            mat.setShader(hengObj,mat.shaderType.LIANGFANG_ALT)
+        else:
+            mat.setShader(hengObj,mat.shaderType.LIANGFANG)
         # 设置对称
         utils.addModifierMirror(
             object=hengObj,

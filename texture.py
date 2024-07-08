@@ -159,9 +159,10 @@ def copyMaterial(fromObj:bpy.types.Object,
 # 根据制定的材质，展UV，并调用材质属性设置
 def setTexture(
         object:bpy.types.Object,
-        mat:bpy.types.Object):
+        mat:bpy.types.Object,
+        override=False):
     # 绑定材质
-    copyMaterial(mat,object,override=True)
+    copyMaterial(mat,object,override=override)
     aData:tmpData = bpy.context.scene.ACA_temp
     attr = None
 
@@ -233,7 +234,8 @@ class shaderType:
 # 映射对象与材质的关系
 # 便于后续统一的在“酱油配色”，“清官式彩画”等配色方案间切换
 def setShader(object:bpy.types.Object,
-              shader:str):
+              shader:str,
+              override=False):
     aData:tmpData = bpy.context.scene.ACA_temp
     mat = None
 
@@ -288,7 +290,7 @@ def setShader(object:bpy.types.Object,
 
     if mat != None:
         # 展UV，绑材质
-        setTexture(object,mat)
+        setTexture(object,mat,override)
 
 # 计算柱头贴图的高度
 # 依据大额枋、由额垫板、小额枋的高度计算

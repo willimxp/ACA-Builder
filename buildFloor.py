@@ -478,7 +478,7 @@ def buildPillers(buildingObj:bpy.types.Object):
         piller_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
     # 柱头贴图
     mat.setShader(piller_basemesh,
-        mat.shaderType.PILLER)
+        mat.shaderType.PILLER,override=True)
     
     # 柱础
     pillerbase_source = aData.pillerbase_source
@@ -497,7 +497,7 @@ def buildPillers(buildingObj:bpy.types.Object):
         )
     # 材质
     mat.setShader(pillerbase_basemesh,
-        mat.shaderType.PILLERBASE)
+        mat.shaderType.PILLERBASE,override=True)
     
     # 生成柱顶石
     pillerBase_h = 0.3

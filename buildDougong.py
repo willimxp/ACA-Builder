@@ -282,7 +282,7 @@ def __buildDGFangbyRoom(
         if fangSourceObj.name == '栱垫板':
             # 设置栱垫板彩画
             mat.setShader(fangCopy,
-                mat.shaderType.GONGDIANBAN)
+                mat.shaderType.GONGDIANBAN,override=True)
             
     return
 

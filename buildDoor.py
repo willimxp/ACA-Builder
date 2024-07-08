@@ -673,6 +673,10 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     geshanObj.location += geshan_root.location
     bpy.data.objects.remove(geshan_root)
 
+    # 隔扇着色
+    mat.setShader(geshanObj,
+        mat.shaderType.REDPAINT,override=True)
+
     # 锁定旋转，仅允许Z轴开窗、开门
     geshanObj.lock_rotation = (True,True,False)
 

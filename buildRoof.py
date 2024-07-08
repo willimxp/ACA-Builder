@@ -3691,6 +3691,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         location=bofengCurve.location,
         singleUser=True
     )
+    mat.setShader(bofengObj,mat.shaderType.REDPAINT,override=True)
     height = (con.HENG_COMMON_D + con.YUANCHUAN_D*4
                    + con.WANGBAN_H + con.ROOFMUD_H)*dk
     bofengObj.dimensions = (

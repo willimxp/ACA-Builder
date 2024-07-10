@@ -3056,22 +3056,11 @@ def __buildCornerFlyrafter(
         cornerRafterColl):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
-    dk = bData.DK
     # 屋顶根节点
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
-    # 老角梁
-    cornerBeamObj = utils.getAcaChild(
-        buildingObj,
-        con.ACA_TYPE_CORNER_BEAM)
-    # 翼角椽定位线
-    rafterCurveObj = utils.getAcaChild(
-        buildingObj,
-        con.ACA_TYPE_CORNER_RAFTER_CURVE)
     # 翼角椽的椽尾坐标集合
     crCount = len(cornerRafterColl)
-    crEnds = utils.getBezierSegment(rafterCurveObj,crCount)
-
     # 绘制翘飞椽定位线
     cfrCurve = __buildCornerFlyrafterCurve(buildingObj)
     # 翘飞椽的椽尾坐标集合
@@ -3081,22 +3070,15 @@ def __buildCornerFlyrafter(
     # 收集翘飞椽对象，输出绘制翘飞椽望板
     cfrCollection = []
     head_shear_base = Vector((0,0,0))
-    mid_shear_base = Vector((0,0,0))
     for n in range(len(cfrEnds)):
         # 计算相邻椽头间的撇向
-        head_shear_direction = Vector((0,0,0))
-        
-        mid_shear_direction = Vector((0,0,0))
-        if n != 0 :
-            head_shear_direction = cfrEnds[n] - cfrEnds[n-1]
-            mid_shear_direction = crEnds[n] - crEnds[n-1]
-        # if n != len(cfrEnds)-1:
-        #     mid_shear_base = crEnds[n+1] - crEnds[n]
-        if n == 1:
+        if n == 0:
+            head_shear_direction = Vector((0,0,0))
+        elif n == 1:
             head_shear_base = head_shear_direction
-            mid_shear_base = mid_shear_direction
+        else:
+            head_shear_direction = cfrEnds[n] - cfrEnds[n-1] 
         
-
         cfr_Obj = __drawCornerFlyrafterNew(
             cornerRafterObj = cornerRafterColl[n], # 对应的翼角椽对象
             cornerFlyrafterEnd = cfrEnds[n], # 头在翘飞椽定位线上
@@ -3106,14 +3088,6 @@ def __buildCornerFlyrafter(
             root_obj=rafterRootObj
         )
         cfrCollection.append(cfr_Obj)
-        mod = cfr_Obj.modifiers.new(name='角梁对称', type='MIRROR')
-        mod.mirror_object = cornerBeamObj
-        mod.use_axis[0] = False
-        mod.use_axis[1] = True
-        mod = cfr_Obj.modifiers.new(name='mirror', type='MIRROR')
-        mod.mirror_object = rafterRootObj
-        mod.use_axis[0] = True
-        mod.use_axis[1] = True
 
     return cfrCollection
 
@@ -3359,6 +3333,9 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             wangbanObjs.append(wangbanCR) 
 
         # 是否做二层飞椽
+        # 找到角梁，做为翘飞椽和翼角椽45度镜像的依据
+        cornerBeamObj = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_CORNER_BEAM)
         if useFlyrafter:
             # 大连檐
             utils.outputMsg("Building Corner Fly Rafter Eave...")
@@ -3377,12 +3354,26 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             # 合并翘飞椽
             cfrSet = utils.joinObjects(
                 cfrCollection,newName='翘飞椽')
-            # UV处理
-            mat.UvUnwrap(cfrSet)
+            # 绑定材质
+            cfrSet = mat.setShader(
+                cfrSet,mat.shaderType.FLYRAFTER)
             # 倒角
             modBevel:bpy.types.BevelModifier = \
                 cfrSet.modifiers.new('Bevel','BEVEL')
             modBevel.width = con.BEVEL_EXLOW
+            modBevel.segments = 2
+            # 角梁45度对称
+            utils.addModifierMirror(
+                object=cfrSet,
+                mirrorObj=cornerBeamObj,
+                use_axis=(False,True,False)
+            )
+            # 四向对称
+            utils.addModifierMirror(
+                object=cfrSet,
+                mirrorObj=rafterRootObj,
+                use_axis=(True,True,False)
+            )
 
         # 合并翼角椽
         crSet = utils.joinObjects(
@@ -3393,9 +3384,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         modBevel:bpy.types.BevelModifier = \
             crSet.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
-        # 镜像
-        cornerBeamObj = utils.getAcaChild(
-            buildingObj,con.ACA_TYPE_CORNER_BEAM)
+        modBevel.segments = 2
         # 角梁45度对称
         utils.addModifierMirror(
             object=crSet,
@@ -3425,53 +3414,72 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     # 加了倒角后，取檐椽头坐标时就出错了
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
-    yanRafterObj = mat.setShader(yanRafterObj,mat.shaderType.RAFTER)
+    # 材质设置
+    yanRafterObj = mat.setShader(
+        yanRafterObj,mat.shaderType.RAFTER)
+    # 倒角
     modBevel:bpy.types.BevelModifier = \
         yanRafterObj.modifiers.new('Bevel','BEVEL')
     modBevel.width = con.BEVEL_EXLOW
     modBevel.segments = 2
+    # 镜像
     utils.addModifierMirror(
             object=yanRafterObj,
             mirrorObj=rafterRootObj,
             use_axis=(True,True,False)
         )
+    
     # 两山檐椽
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_LR)
     if yanRafterObj != None:
-        yanRafterObj = mat.setShader(yanRafterObj,mat.shaderType.RAFTER)
+        # 材质设置
+        yanRafterObj = mat.setShader(
+            yanRafterObj,mat.shaderType.RAFTER)
+        # 倒角
         modBevel:bpy.types.BevelModifier = \
             yanRafterObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
         modBevel.segments = 2
+        # 镜像
         utils.addModifierMirror(
             object=yanRafterObj,
             mirrorObj=rafterRootObj,
             use_axis=(True,True,False)
         )
-    # 两山飞椽
+
+    # 前后檐飞椽
     flyRafterObj:bpy.types.Object = \
-        utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_LR)
+        utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_FB)
     if flyRafterObj != None:
-        mat.UvUnwrap(flyRafterObj)
+        # 设置材质
+        flyRafterObj = mat.setShader(
+            flyRafterObj,mat.shaderType.FLYRAFTER)
+        # 倒角
         modBevel:bpy.types.BevelModifier = \
             flyRafterObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
         modBevel.segments = 2
+        # 镜像
         utils.addModifierMirror(
             object=flyRafterObj,
             mirrorObj=rafterRootObj,
             use_axis=(True,True,False)
         )
-    # 前后檐飞椽
+
+    # 两山飞椽
     flyRafterObj:bpy.types.Object = \
-        utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_FB)
+        utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_LR)
     if flyRafterObj != None:
-        mat.UvUnwrap(flyRafterObj)
+        # 设置材质
+        flyRafterObj = mat.setShader(
+            flyRafterObj,mat.shaderType.FLYRAFTER)
+        # 倒角
         modBevel:bpy.types.BevelModifier = \
             flyRafterObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
         modBevel.segments = 2
+        # 镜像
         utils.addModifierMirror(
             object=flyRafterObj,
             mirrorObj=rafterRootObj,

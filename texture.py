@@ -246,7 +246,7 @@ def __setRafterMat(rafter:bpy.types.Object):
         for face in bm.faces:
             # 面的几何中心点
             faceCenter = face.calc_center_median()
-            if faceCenter > headPoint:
+            if faceCenter.x > headPoint.x:
                 headPoint = faceCenter
                 endFaceIndex = face.index
         # 端头材质绑定
@@ -260,15 +260,12 @@ def __setRafterMat(rafter:bpy.types.Object):
         bm.faces[endFaceIndex].select = True
         bm.to_mesh(rafter.data)
         bm.free()
-        # 端头按scale展开
-        bpy.ops.object.mode_set(mode = 'EDIT') 
-        bpy.ops.uv.cube_project(
-            scale_to_bounds=True
-        )
-        bpy.ops.object.mode_set(mode = 'OBJECT')
-
-        # 反选其他面
-        # 按Cube展开
+    # 端头按scale展开
+    bpy.ops.object.mode_set(mode = 'EDIT') 
+    bpy.ops.uv.cube_project(
+        scale_to_bounds=True
+    )
+    bpy.ops.object.mode_set(mode = 'OBJECT')
 
     # 重新合并，以免造成混乱
     rafter = utils.joinObjects(rafterList)
@@ -277,7 +274,37 @@ def __setRafterMat(rafter:bpy.types.Object):
 # 飞椽展UV
 def __setFlyrafterMat(flyrafter:bpy.types.Object):
     # 拆分，将合并或array的椽子，拆分到独立的对象
-    rafterList = utils.separateObject(flyrafter)
+    flyrafterList = utils.separateObject(flyrafter)
+
+    # 逐一处理每根椽子
+    for n in range(len(flyrafterList)):
+        flyrafter = flyrafterList[n]
+        # 找到端头面
+        bm = bmesh.new()
+        bm.from_mesh(flyrafter.data)
+        bm.faces.ensure_lookup_table()
+        # 轮询面集合，查找最大值
+        headPoint = Vector((0,0,0))
+        endFaceIndex = 0
+        for face in bm.faces:
+            # 面的几何中心点
+            faceCenter = face.calc_center_median()
+            if faceCenter.x > headPoint.x:
+                headPoint = faceCenter
+                endFaceIndex = face.index
+        # 端头材质绑定
+        bm.faces[endFaceIndex].material_index = 1
+        # 选中并展UV
+        bm.faces[endFaceIndex].select = True
+        bm.to_mesh(flyrafter.data)
+        bm.free()
+    # 端头用reset方式，可以适配椽头菱形的变形
+    bpy.ops.object.mode_set(mode = 'EDIT') 
+    bpy.ops.uv.reset()
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+    # 重新合并，以免造成混乱
+    flyrafter = utils.joinObjects(flyrafterList)
 
     return flyrafter
 
@@ -299,6 +326,7 @@ class shaderType:
     LIANGFANG_ALT = '梁枋异色'
     YOUEDIANBAN = '由额垫板'
     RAFTER = '檐椽'
+    FLYRAFTER = '飞椽'
 
 # 映射对象与材质的关系
 # 便于后续统一的在“酱油配色”，“清官式彩画”等配色方案间切换
@@ -358,8 +386,13 @@ def setShader(object:bpy.types.Object,
     if shader == shaderType.YOUEDIANBAN:
         mat = aData.mat_paint_grasscouple
 
+    # 檐椽，龙眼
     if shader == shaderType.RAFTER:
         mat = aData.mat_paint_rafter
+
+    # 飞椽，万字
+    if shader == shaderType.FLYRAFTER:
+        mat = aData.mat_paint_flyrafter
 
     if mat != None:
         # 展UV，绑材质

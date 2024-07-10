@@ -14,7 +14,7 @@ from .data import ACA_data_template as tmpData
 
 # 设置材质的输入参数
 # https://blender.stackexchange.com/questions/191183/changing-a-value-node-in-many-materials-with-a-python-script
-def setMatValue(mat:bpy.types.Material,
+def __setMatValue(mat:bpy.types.Material,
                 inputName:str,
                 value):
     if mat is not None and mat.use_nodes and mat.node_tree is not None:
@@ -28,16 +28,16 @@ def setMatValue(mat:bpy.types.Material,
 # v：待缩放的向量（vx，vy）
 # s: 缩放比例（sx，sy）
 # p：缩放的原点（px，py）
-def Scale2D( v, s, p ):
+def __Scale2D( v, s, p ):
     return ( p[0] + s[0]*(v[0] - p[0]), p[1] + s[1]*(v[1] - p[1]) )     
 
 # UV的缩放
-def ScaleUV( uvMap, scale, pivot ):
+def __ScaleUV( uvMap, scale, pivot ):
     for uvIndex in range( len(uvMap.data) ):
-        uvMap.data[uvIndex].uv = Scale2D( uvMap.data[uvIndex].uv, scale, pivot )
+        uvMap.data[uvIndex].uv = __Scale2D( uvMap.data[uvIndex].uv, scale, pivot )
 
 # 二维点阵的旋转
-def make_rotation_transformation(angle, origin=(0, 0)):
+def __make_rotation_transformation(angle, origin=(0, 0)):
     from math import cos, sin
     cos_theta, sin_theta = cos(angle), sin(angle)
     x0, y0 = origin    
@@ -48,8 +48,8 @@ def make_rotation_transformation(angle, origin=(0, 0)):
     return xform
 
 # UV的旋转
-def RotateUV(uvMap, angle, pivot):
-    rot = make_rotation_transformation(angle, pivot)
+def __RotateUV(uvMap, angle, pivot):
+    rot = __make_rotation_transformation(angle, pivot)
     for uvIndex in range( len(uvMap.data) ):
         uvMap.data[uvIndex].uv = rot(uvMap.data[uvIndex].uv ) 
     return
@@ -131,13 +131,13 @@ def UvUnwrap(object:bpy.types.Object,
     # https://blender.stackexchange.com/questions/75061/scale-uv-map-script
     if scale != None:
         uvMap = object.data.uv_layers['UVMap']
-        ScaleUV(uvMap,scale,pivot)
+        __ScaleUV(uvMap,scale,pivot)
 
     # 旋转UV，参考：
     # https://blender.stackexchange.com/questions/28929/rotate-uv-by-specific-angle-e-g-30deg-in-python-script-in-backgroud-mode
     if rotate != None:
         uvMap = object.data.uv_layers['UVMap']
-        RotateUV(uvMap,rotate,pivot)
+        __RotateUV(uvMap,rotate,pivot)
 
     return
 # 拷贝目标对象的材质
@@ -151,26 +151,26 @@ class uvType:
     CYLINDER  = 'cylinder'
 
 # 复制所有材质
-def copyMaterial(fromObj:bpy.types.Object,
+def __copyMaterial(fromObj:bpy.types.Object,
                  toObj:bpy.types.Object,
                  single=False):
-    toObj.data.materials.clear()
-    for mat in fromObj.data.materials:
-        if single:
-            mat = mat.copy()
-        toObj.data.materials.append(mat)
+    if type(fromObj) == bpy.types.Object:
+        toObj.data.materials.clear()
+        for mat in fromObj.data.materials:
+            if single:
+                mat = mat.copy()
+            toObj.data.materials.append(mat)
 
     return
 
 # 根据制定的材质，展UV，并调用材质属性设置
-def setTexture(
+def __setTexture(
         object:bpy.types.Object,
         mat:bpy.types.Object,
         single=False):
     # 绑定材质
-    copyMaterial(mat,object,single)
+    __copyMaterial(mat,object,single)
     aData:tmpData = bpy.context.scene.ACA_temp
-    attr = None
 
     # 简单平铺的材质
     if mat in (
@@ -199,7 +199,8 @@ def setTexture(
     # 柱头贴图
     if mat == aData.mat_paint_pillerhead:
         UvUnwrap(object,uvType.CYLINDER)
-        attr = 'headRate'
+        # 设置材质属性
+        __setPillerHead(object)
 
     # 平板枋.行龙
     if mat == aData.mat_paint_walkdragon:
@@ -209,7 +210,8 @@ def setTexture(
     # 栱垫板
     if mat == aData.mat_paint_dgfillboard:
         UvUnwrap(object,uvType.SCALE)
-        attr = 'count'
+        # 设置材质属性
+        __setDgCount(object)
 
     # 檐椽
     if mat == aData.mat_paint_rafter:
@@ -219,14 +221,39 @@ def setTexture(
     # 飞椽
     if mat == aData.mat_paint_flyrafter:
         object = __setFlyrafterMat(object)
-    
-    # 材质属性设置
-    if attr == 'headRate':
-        __setPillerHead(object)
-    if attr == 'count':
-        __setDgCount(object)
+
+    # 翼角望板
+    if mat == shaderType.WANGCORNER:
+        UvUnwrap(object,uvType.CUBE)
+        __setWangCornerMat(object)
 
     return object
+
+# 翼角望板材质，底面刷红
+def __setWangCornerMat(wangban:bpy.types.Object):
+    # 添加原木和红漆材质
+    aData:tmpData = bpy.context.scene.ACA_temp
+    matWood = aData.mat_wood.active_material
+    wangban.data.materials.append(matWood)
+    matRed = aData.mat_red.active_material
+    wangban.data.materials.append(matRed)
+
+    # 找到所有的底面
+    bm = bmesh.new()
+    bm.from_mesh(wangban.data)
+    bm.faces.ensure_lookup_table()
+
+    # 以底面可确定的0号面为参考
+    baseNormal = bm.faces[0].normal
+    baseNormal = Vector((0,0,-1))
+    # 选择法线类似的所有面，0.1是在blender里尝试的经验值
+    for face in bm.faces:
+        threshold:Vector = face.normal - baseNormal
+        if threshold.length < 1:
+            face.material_index = 1
+    bm.to_mesh(wangban.data)
+    bm.free()
+    return
 
 # 檐椽展UV
 def __setRafterMat(rafter:bpy.types.Object):
@@ -327,6 +354,7 @@ class shaderType:
     YOUEDIANBAN = '由额垫板'
     RAFTER = '檐椽'
     FLYRAFTER = '飞椽'
+    WANGCORNER = '翼角望板'
 
 # 映射对象与材质的关系
 # 便于后续统一的在“酱油配色”，“清官式彩画”等配色方案间切换
@@ -401,9 +429,14 @@ def setShader(object:bpy.types.Object,
     if shader == shaderType.FLYRAFTER:
         mat = aData.mat_paint_flyrafter
 
+    # 翼角望板，底面刷红
+    if shader == shaderType.WANGCORNER:
+        # 没有独立材质，传入类型字串
+        mat = shaderType.WANGCORNER
+
     if mat != None:
         # 展UV，绑材质
-        object = setTexture(object,mat,single)
+        object = __setTexture(object,mat,single)
 
     return object
 
@@ -422,7 +455,7 @@ def __setPillerHead(object:bpy.types.Object):
         fangHeight += (con.BOARD_YOUE_H*dk
             + con.EFANG_SMALL_H*dk)
     scale = fangHeight / bData.piller_height
-    setMatValue(
+    __setMatValue(
         mat=object.active_material,
         inputName='headRate',
         value=scale)
@@ -437,7 +470,7 @@ def __setDgCount(object:bpy.types.Object):
     # 设置材质中的斗栱攒数
     fang_length = object.dimensions.x
     count = round(fang_length / bData.dg_gap)
-    setMatValue(
+    __setMatValue(
         mat=object.active_material,
         inputName='count',
         value=count)

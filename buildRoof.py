@@ -1375,7 +1375,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             origin_at_start=True
         )
         
-        # 望板延长，按檐总平出加斜计算
+        # 檐椽望板延长，按檐总平出加斜计算
         if n==0:
             # 檐椽斜率（圆柱体默认转90度）
             angle = wangbanObj.rotation_euler.y
@@ -1391,8 +1391,9 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             # 加斜计算
             wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True) 
-            # 更新UV
-            mat.UvUnwrap(wangbanObj,type='cube')
+            # 设置材质
+            mat.setShader(wangbanObj,
+                mat.shaderType.WANGCORNER)
 
         # 所有望板上移
         # 1. 上移到椽头，采用global坐标，半檩+半椽
@@ -1552,7 +1553,7 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
             root_obj=rafterRootObj,
             origin_at_start=True
         )
-        # 望板延长，按檐总平出加斜计算
+        # 檐椽望板延长，按檐总平出加斜计算
         if n==0:
             # 檐椽斜率（圆柱体默认转90度）
             angle = wangbanObj.rotation_euler.y
@@ -1569,8 +1570,9 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
             # 加斜计算
             wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True)
-            # 更新UV
-            mat.UvUnwrap(wangbanObj,type='cube')
+            # 设置材质
+            mat.setShader(wangbanObj,
+                mat.shaderType.WANGCORNER)
 
         # 所有望板上移，与椽架上皮相切（从桁檩中心偏：半桁檩+1椽径+半望板）
         # 1. 上移到椽头，采用global坐标，半檩+半椽
@@ -1805,6 +1807,8 @@ def __buildFlyrafterWangban(buildingObj,purlin_pos,direction):
         rotation=flyrafterObj.rotation_euler, 
         parent=rafterRootObj,
     )
+    # 设置材质
+    mat.setShader(fwbObj,mat.shaderType.WANGCORNER)
     # 镜像
     utils.addModifierMirror(
         object=fwbObj,
@@ -2518,8 +2522,8 @@ def __drawCrWangban(
     crWangbanObj.data.update()
     bm.free()
 
-    # 处理UV
-    mat.UvUnwrap(crWangbanObj,type='cube')
+    # 设置材质
+    mat.setShader(crWangbanObj,mat.shaderType.WANGCORNER)
 
     return crWangbanObj
 
@@ -3202,8 +3206,8 @@ def __drawCfrWangban(
     cfrWangbanObj.data.update()
     bm.free()
 
-    # 处理UV
-    mat.UvUnwrap(cfrWangbanObj,type='cube')
+    # 设置材质
+    mat.setShader(cfrWangbanObj,mat.shaderType.WANGCORNER)
 
     return cfrWangbanObj
 

@@ -3356,7 +3356,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
                 cfrCollection,newName='翘飞椽')
             # 绑定材质
             cfrSet = mat.setShader(
-                cfrSet,mat.shaderType.FLYRAFTER)
+                cfrSet,mat.shaderType.FLYRAFTER,override=True)
             # 倒角
             modBevel:bpy.types.BevelModifier = \
                 cfrSet.modifiers.new('Bevel','BEVEL')
@@ -3379,7 +3379,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         crSet = utils.joinObjects(
             cornerRafterColl,newName='翼角椽')
         # 绑定材质
-        crSet = mat.setShader(crSet,mat.shaderType.RAFTER)
+        crSet = mat.setShader(crSet,mat.shaderType.RAFTER,override=True)
         # 倒角
         modBevel:bpy.types.BevelModifier = \
             crSet.modifiers.new('Bevel','BEVEL')
@@ -3416,7 +3416,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
     # 材质设置
     yanRafterObj = mat.setShader(
-        yanRafterObj,mat.shaderType.RAFTER)
+        yanRafterObj,mat.shaderType.RAFTER,override=True)
     # 倒角
     modBevel:bpy.types.BevelModifier = \
         yanRafterObj.modifiers.new('Bevel','BEVEL')
@@ -3435,7 +3435,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     if yanRafterObj != None:
         # 材质设置
         yanRafterObj = mat.setShader(
-            yanRafterObj,mat.shaderType.RAFTER)
+            yanRafterObj,mat.shaderType.RAFTER,override=True)
         # 倒角
         modBevel:bpy.types.BevelModifier = \
             yanRafterObj.modifiers.new('Bevel','BEVEL')
@@ -3454,7 +3454,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     if flyRafterObj != None:
         # 设置材质
         flyRafterObj = mat.setShader(
-            flyRafterObj,mat.shaderType.FLYRAFTER)
+            flyRafterObj,mat.shaderType.FLYRAFTER,override=True)
         # 倒角
         modBevel:bpy.types.BevelModifier = \
             flyRafterObj.modifiers.new('Bevel','BEVEL')
@@ -3473,7 +3473,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     if flyRafterObj != None:
         # 设置材质
         flyRafterObj = mat.setShader(
-            flyRafterObj,mat.shaderType.FLYRAFTER)
+            flyRafterObj,mat.shaderType.FLYRAFTER,override=True)
         # 倒角
         modBevel:bpy.types.BevelModifier = \
             flyRafterObj.modifiers.new('Bevel','BEVEL')

@@ -227,62 +227,67 @@ def __buildDGFangbyRoom(
     buildingObj = utils.getAcaParent(
         dgrootObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
-    aData:tmpData = bpy.context.scene.ACA_temp
-    
     # 获取开间、进深数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
+
+    # 收集待生成的连接枋
+    fangList = []
+    # 前后檐排布
+    for n in range(len(net_x)-1):
+        length = net_x[n+1] - net_x[n]
+        loc = Vector(((net_x[n+1] + net_x[n])/2,
+               net_y[0] + fangSourceObj.location.y * bData.dg_scale[1],
+               fangSourceObj.location.z * bData.dg_scale[2]))
+        fangList.append(
+            {'len':length,
+             'loc':loc,
+             'rot':(0,0,0),
+             'mirror':(False,True,False)})
+    # 两山排布(仅庑殿、歇山、盝顶，不适用硬山、悬山、卷棚)
+    if bData.roof_style in (
+            con.ROOF_WUDIAN,
+            con.ROOF_XIESHAN,
+            con.ROOF_LUDING):
+        for n in range(len(net_y)-1):
+            length = net_y[n+1] - net_y[n]
+            loc = Vector((
+                net_x[0] + fangSourceObj.location.x * bData.dg_scale[0],
+                (net_y[n+1] + net_y[n])/2,
+                fangSourceObj.location.z * bData.dg_scale[2]))
+            fangList.append(
+                {'len':length,
+                'loc':loc,
+                'rot':(0,0,math.radians(90)),
+                'mirror':(True,False,False)
+                })
     
-    # 根据建筑模版的参数设置分布
-    # '0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,'
-    fangStr = bData.fang_net
-    fangID_List = fangStr.split(',')
-    for fangID in fangID_List:
-        if fangID == '': continue
-        setting = fangID.split('#')
-        # 分解获取柱子编号
-        pFrom = setting[0].split('/')
-        pFrom_x = int(pFrom[0])
-        pFrom_y = int(pFrom[1])
-        vFrom = Vector((net_x[pFrom_x],net_y[pFrom_y],0))
-
-        pTo = setting[1].split('/')
-        pTo_x = int(pTo[0])
-        pTo_y = int(pTo[1])
-        vTo = Vector((net_x[pTo_x],net_y[pTo_y],0))
-
-        # 计算柱子之间的距离和定位      
-        fang_length = utils.getVectorDistance(vFrom,vTo)
-        fang_rot = utils.alignToVector(vFrom-vTo)
-        fang_x = (net_x[pFrom_x]+net_x[pTo_x])/2
-        fang_y = (net_y[pFrom_y]+net_y[pTo_y])/2      
-        offset_y = fangSourceObj.location.y * bData.dg_scale[1]
-        offset_z = fangSourceObj.location.z * bData.dg_scale[2]
-        loc = (fang_x, fang_y + offset_y, offset_z)
-        # 生成
+    # 生成所有的连接枋
+    for fang in fangList:
         fangCopy = utils.copyObject(
             sourceObj = fangSourceObj,
-            location = loc,
-            rotation= fang_rot,
+            location = fang['loc'],
+            rotation = fang['rot'],
+            scale = bData.dg_scale,
             parentObj = dgrootObj,
             singleUser=True
         )
-
-        # 跟随斗栱缩放
-        fangCopy.scale = bData.dg_scale
         utils.updateScene()
-
         # 拉伸到开间面阔
-        fangCopy.dimensions.x = fang_length
+        fangCopy.dimensions.x = fang['len']
         utils.applyTransfrom(fangCopy,use_scale=True)
-
         # 根据拉伸，更新UV平铺
         mat.UvUnwrap(fangCopy,mat.uvType.CUBE)
-
         # 栱垫板材质
         if fangSourceObj.name == '栱垫板':
             # 设置栱垫板彩画
             mat.setShader(fangCopy,
-                mat.shaderType.GONGDIANBAN,override=True)
+                mat.shaderType.GONGDIANBAN,override=True,single=True)
+        # 设置对称
+        utils.addModifierMirror(
+            object=fangCopy,
+            mirrorObj=dgrootObj,
+            use_axis=fang['mirror']
+        )
             
     return
 

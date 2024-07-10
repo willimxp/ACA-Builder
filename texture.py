@@ -150,25 +150,25 @@ class uvType:
     RESET = 'reset'
     CYLINDER  = 'cylinder'
 
+# 复制所有材质
 def copyMaterial(fromObj:bpy.types.Object,
                  toObj:bpy.types.Object,
-                 override = False):
-    # 仅复制活动材质
-    # if toObj.active_material == None or override:
-    #     toObj.active_material = fromObj.active_material.copy()
-
-    # 复制所有材质
+                 single=False):
+    toObj.data.materials.clear()
     for mat in fromObj.data.materials:
+        if single:
+            mat = mat.copy()
         toObj.data.materials.append(mat)
+
     return
 
 # 根据制定的材质，展UV，并调用材质属性设置
 def setTexture(
         object:bpy.types.Object,
         mat:bpy.types.Object,
-        override=False):
+        single=False):
     # 绑定材质
-    copyMaterial(mat,object,override=override)
+    copyMaterial(mat,object,single)
     aData:tmpData = bpy.context.scene.ACA_temp
     attr = None
 
@@ -332,7 +332,14 @@ class shaderType:
 # 便于后续统一的在“酱油配色”，“清官式彩画”等配色方案间切换
 def setShader(object:bpy.types.Object,
               shader:str,
-              override=False):
+              override=False,
+              single=False):
+    # 如果已经有材质，且未声明override，则不做材质
+    if object.active_material != None \
+        and not override:
+        # 不做任何改变
+        return
+    
     aData:tmpData = bpy.context.scene.ACA_temp
     mat = None
 
@@ -396,7 +403,7 @@ def setShader(object:bpy.types.Object,
 
     if mat != None:
         # 展UV，绑材质
-        object = setTexture(object,mat,override)
+        object = setTexture(object,mat,single)
 
     return object
 

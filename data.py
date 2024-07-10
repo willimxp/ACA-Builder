@@ -713,6 +713,14 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "栱垫板",
             type = bpy.types.Object,
         )# type: ignore 
+    mat_paint_rafter : bpy.props.PointerProperty(
+            name = "檐椽贴图",
+            type = bpy.types.Object,
+        )# type: ignore 
+    mat_paint_flyrafter : bpy.props.PointerProperty(
+            name = "飞椽贴图",
+            type = bpy.types.Object,
+        )# type: ignore 
     
     # 柱对象
     piller_source : bpy.props.PointerProperty(

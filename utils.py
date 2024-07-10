@@ -823,6 +823,7 @@ def addBisect(object:bpy.types.Object,
         clear_inner=clear_inner,
         use_fill=use_fill
     )
+    bpy.ops.mesh.select_all(action='DESELECT')
     bpy.ops.object.editmode_toggle()  
     bpy.ops.object.shade_flat()
 
@@ -853,7 +854,13 @@ def getObjectHeadPoint(object:bpy.types.Object,
     for face in bm.faces:
         # 面的几何中心点
         faceCenter = face.calc_center_median()
-        if faceCenter > headPoint:
+        # 240709 用本地坐标系转换后进行比较
+        # 为了解决查找最后一根飞椽头的bug，如果从几何中心比较，飞椽侧边反而成了最远的面
+        # 为了矫正这个问题，从原点0的坐标来比较，更加合理
+        # if faceCenter > headPoint:
+        faceCenterLocal = object.matrix_local @ faceCenter
+        headPointLocal = object.matrix_local @ headPoint
+        if faceCenterLocal > headPointLocal:
             headPoint = faceCenter      
     # 基于origin点进行转换，转换到局部坐标（以root_obj为参考）
     objMatrix  = object.matrix_local
@@ -1270,7 +1277,9 @@ def setGN_Input(mod:bpy.types.NodesModifier,
 # https://blender.stackexchange.com/questions/13986/how-to-join-objects-with-python
 # https://docs.blender.org/api/current/bpy.ops.html#overriding-context
 def joinObjects(objList:List[bpy.types.Object],
-                newName:str):
+                newName=None):
+    if newName==None:
+        newName = objList[0].name
     # timeStart = time.time()
     
     # 开始合并
@@ -1282,13 +1291,14 @@ def joinObjects(objList:List[bpy.types.Object],
         # 将对象的mesh数据single化，避免影响场景中其他对象
         if ob.data.users > 1:
             ob.data = ob.data.copy()
-    bpy.context.view_layer.objects.active = ob
+    bpy.context.view_layer.objects.active = objList[0]
     # 预处理，可以将Curve转为mesh，还同时应用了所有的modifier
     bpy.ops.object.convert(target='MESH')
     
     # 合并对象
     bpy.ops.object.join()
     joinedObj = bpy.context.object
+    
     joinedObj.name = newName
     joinedObj.data.name = newName
 
@@ -1407,3 +1417,15 @@ def lockObj(obj:bpy.types.Object):
 # https://stackoverflow.com/questions/1986152/why-doesnt-python-have-a-sign-function
 def getSign(value):
     return math.copysign(1,value)
+
+# 拆分对象
+def separateObject(objArray:bpy.types.Object):
+    # 将array modifier生成的对象实例化
+    applyAllModifer(objArray)
+    # 拆分成独立实体
+    bpy.ops.mesh.separate(type="LOOSE")
+    objList = []
+    for obj in bpy.context.view_layer.objects.selected:
+        objList.append(obj)
+    
+    return objList

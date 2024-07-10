@@ -5,6 +5,7 @@
 import bpy
 import bmesh
 import math
+from mathutils import Vector,Euler
 
 from . import utils
 from .const import ACA_Consts as con
@@ -152,8 +153,13 @@ class uvType:
 def copyMaterial(fromObj:bpy.types.Object,
                  toObj:bpy.types.Object,
                  override = False):
-    if toObj.active_material == None or override:
-        toObj.active_material = fromObj.active_material.copy()
+    # 仅复制活动材质
+    # if toObj.active_material == None or override:
+    #     toObj.active_material = fromObj.active_material.copy()
+
+    # 复制所有材质
+    for mat in fromObj.data.materials:
+        toObj.data.materials.append(mat)
     return
 
 # 根据制定的材质，展UV，并调用材质属性设置
@@ -204,6 +210,15 @@ def setTexture(
     if mat == aData.mat_paint_dgfillboard:
         UvUnwrap(object,uvType.SCALE)
         attr = 'count'
+
+    # 檐椽
+    if mat == aData.mat_paint_rafter:
+        # 檐椽展UV比较特殊，专门写了一个处理函数
+        object = __setRafterMat(object)
+    
+    # 飞椽
+    if mat == aData.mat_paint_flyrafter:
+        object = __setFlyrafterMat(object)
     
     # 材质属性设置
     if attr == 'headRate':
@@ -211,7 +226,60 @@ def setTexture(
     if attr == 'count':
         __setDgCount(object)
 
-    return
+    return object
+
+# 檐椽展UV
+def __setRafterMat(rafter:bpy.types.Object):
+    # 拆分，将合并或array的椽子，拆分到独立的对象
+    rafterList = utils.separateObject(rafter)
+
+    # 逐一处理每根椽子
+    for n in range(len(rafterList)):
+        rafter = rafterList[n]
+        # 找到端头面
+        bm = bmesh.new()
+        bm.from_mesh(rafter.data)
+        bm.faces.ensure_lookup_table()
+        # 轮询面集合，查找最大值
+        headPoint = Vector((0,0,0))
+        endFaceIndex = 0
+        for face in bm.faces:
+            # 面的几何中心点
+            faceCenter = face.calc_center_median()
+            if faceCenter > headPoint:
+                headPoint = faceCenter
+                endFaceIndex = face.index
+        # 端头材质绑定
+        if n%2 == 1 :
+            # 正常色（绿）
+            bm.faces[endFaceIndex].material_index = 1
+        else:
+            # 异色（青）
+            bm.faces[endFaceIndex].material_index = 2
+        # 选中并展UV
+        bm.faces[endFaceIndex].select = True
+        bm.to_mesh(rafter.data)
+        bm.free()
+        # 端头按scale展开
+        bpy.ops.object.mode_set(mode = 'EDIT') 
+        bpy.ops.uv.cube_project(
+            scale_to_bounds=True
+        )
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+
+        # 反选其他面
+        # 按Cube展开
+
+    # 重新合并，以免造成混乱
+    rafter = utils.joinObjects(rafterList)
+    return rafter
+
+# 飞椽展UV
+def __setFlyrafterMat(flyrafter:bpy.types.Object):
+    # 拆分，将合并或array的椽子，拆分到独立的对象
+    rafterList = utils.separateObject(flyrafter)
+
+    return flyrafter
 
 # 材质类型，实际是对材质的指向关系
 class shaderType:
@@ -230,6 +298,7 @@ class shaderType:
     LIANGFANG = '梁枋'
     LIANGFANG_ALT = '梁枋异色'
     YOUEDIANBAN = '由额垫板'
+    RAFTER = '檐椽'
 
 # 映射对象与材质的关系
 # 便于后续统一的在“酱油配色”，“清官式彩画”等配色方案间切换
@@ -267,11 +336,11 @@ def setShader(object:bpy.types.Object,
     if shader == shaderType.PILLERBASE:
         mat = aData.mat_stone
 
-    # 柱头彩画
+    # 柱头彩画，坐龙
     if shader == shaderType.PILLER:
         mat = aData.mat_paint_pillerhead
     
-    # 梁枋彩画
+    # 梁枋彩画，双龙和玺
     if shader == shaderType.LIANGFANG:
         mat = aData.mat_paint_beam
     if shader == shaderType.LIANGFANG_ALT:
@@ -285,12 +354,18 @@ def setShader(object:bpy.types.Object,
     if shader == shaderType.GONGDIANBAN:
         mat = aData.mat_paint_dgfillboard
 
+    # 由额垫板，公母草
     if shader == shaderType.YOUEDIANBAN:
         mat = aData.mat_paint_grasscouple
 
+    if shader == shaderType.RAFTER:
+        mat = aData.mat_paint_rafter
+
     if mat != None:
         # 展UV，绑材质
-        setTexture(object,mat,override)
+        object = setTexture(object,mat,override)
+
+    return object
 
 # 计算柱头贴图的高度
 # 依据大额枋、由额垫板、小额枋的高度计算

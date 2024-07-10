@@ -1231,13 +1231,13 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                     clear_outer=True
             ) 
         
-
+        # 为了便于贴图，延后到飞椽、翼角椽等做完后，再做镜像
         # 五、镜像必须放在裁剪之后，才能做上下对称     
-        utils.addModifierMirror(
-            object=fbRafterObj,
-            mirrorObj=rafterRootObj,
-            use_axis=(True,True,False)
-        )
+        # utils.addModifierMirror(
+        #     object=fbRafterObj,
+        #     mirrorObj=rafterRootObj,
+        #     use_axis=(True,True,False)
+        # )
 
         # 平滑
         utils.shaderSmooth(fbRafterObj)
@@ -1321,12 +1321,13 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
             ) 
             utils.shaderSmooth(lrRafterObj)
         
-        # 镜像
-        utils.addModifierMirror(
-            object=lrRafterObj,
-            mirrorObj=rafterRootObj,
-            use_axis=(True,True,False)
-        )
+        # 为了便于贴图，延后到椽架全部生成后再做镜像
+        # # 镜像
+        # utils.addModifierMirror(
+        #     object=lrRafterObj,
+        #     mirrorObj=rafterRootObj,
+        #     use_axis=(True,True,False)
+        # )
     
     # 构造里口木
     __buildLKM(buildingObj,purlin_pos,'Y') 
@@ -2395,18 +2396,19 @@ def __buildCornerRafter(buildingObj:bpy.types.Object,purlin_pos):
                     Vector((con.JIAOLIANG_Y*dk/2*math.sqrt(2),0,0)),
                 clear_outer=True
         ) 
-        # 角梁45度对称
-        utils.addModifierMirror(
-            object=cornerRafterObj,
-            mirrorObj=cornerBeamObj,
-            use_axis=(False,True,False)
-        )
-        # 四向对称
-        utils.addModifierMirror(
-            object=cornerRafterObj,
-            mirrorObj=rafterRootObj,
-            use_axis=(True,True,False)
-        )
+        # 为了便于贴图，将镜像延后到所有椽架做完后添加
+        # # 角梁45度对称
+        # utils.addModifierMirror(
+        #     object=cornerRafterObj,
+        #     mirrorObj=cornerBeamObj,
+        #     use_axis=(False,True,False)
+        # )
+        # # 四向对称
+        # utils.addModifierMirror(
+        #     object=cornerRafterObj,
+        #     mirrorObj=rafterRootObj,
+        #     use_axis=(True,True,False)
+        # )
 
         cornerRafterColl.append(cornerRafterObj)
     
@@ -2675,7 +2677,7 @@ def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
         utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_FB)
     flyrafterHeader_co = utils.getObjectHeadPoint(flyrafterObj,
             eval=True,
-            is_symmetry=(True,True,False))
+            )
     pStart = flyrafterHeader_co
     
     # 2.曲线终点     
@@ -3294,6 +3296,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     roofStyle = bData.roof_style
     useFlyrafter = bData.use_flyrafter
     useWangban = bData.use_wangban
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
 
     # 收集待合并的望板
     wangbanObjs = []
@@ -3383,12 +3387,28 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         # 合并翼角椽
         crSet = utils.joinObjects(
             cornerRafterColl,newName='翼角椽')
-        # UV处理
-        mat.UvUnwrap(crSet)
+        # 绑定材质
+        crSet = mat.setShader(crSet,mat.shaderType.RAFTER)
         # 倒角
         modBevel:bpy.types.BevelModifier = \
             crSet.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
+        # 镜像
+        cornerBeamObj = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_CORNER_BEAM)
+        # 角梁45度对称
+        utils.addModifierMirror(
+            object=crSet,
+            mirrorObj=cornerBeamObj,
+            use_axis=(False,True,False)
+        )
+        # 四向对称
+        utils.addModifierMirror(
+            object=crSet,
+            mirrorObj=rafterRootObj,
+            use_axis=(True,True,False)
+        )
+
         # 平滑
         utils.shaderSmooth(crSet)
 
@@ -3405,18 +3425,30 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     # 加了倒角后，取檐椽头坐标时就出错了
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
-    mat.UvUnwrap(yanRafterObj)
+    yanRafterObj = mat.setShader(yanRafterObj,mat.shaderType.RAFTER)
     modBevel:bpy.types.BevelModifier = \
         yanRafterObj.modifiers.new('Bevel','BEVEL')
     modBevel.width = con.BEVEL_EXLOW
+    modBevel.segments = 2
+    utils.addModifierMirror(
+            object=yanRafterObj,
+            mirrorObj=rafterRootObj,
+            use_axis=(True,True,False)
+        )
     # 两山檐椽
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_LR)
     if yanRafterObj != None:
-        mat.UvUnwrap(yanRafterObj)
+        yanRafterObj = mat.setShader(yanRafterObj,mat.shaderType.RAFTER)
         modBevel:bpy.types.BevelModifier = \
             yanRafterObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
+        modBevel.segments = 2
+        utils.addModifierMirror(
+            object=yanRafterObj,
+            mirrorObj=rafterRootObj,
+            use_axis=(True,True,False)
+        )
     # 两山飞椽
     flyRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_LR)
@@ -3425,6 +3457,12 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         modBevel:bpy.types.BevelModifier = \
             flyRafterObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
+        modBevel.segments = 2
+        utils.addModifierMirror(
+            object=flyRafterObj,
+            mirrorObj=rafterRootObj,
+            use_axis=(True,True,False)
+        )
     # 前后檐飞椽
     flyRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_FB)
@@ -3433,6 +3471,12 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         modBevel:bpy.types.BevelModifier = \
             flyRafterObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXLOW
+        modBevel.segments = 2
+        utils.addModifierMirror(
+            object=flyRafterObj,
+            mirrorObj=rafterRootObj,
+            use_axis=(True,True,False)
+        )
 
     return
 

@@ -177,9 +177,9 @@ def __setFangMat(fangObj:bpy.types.Object,
     7间时,偶数间(2,4,6)应该用正色'''
 
     if (
-            # 大额枋的明间用异色
+            # 大额枋的次间用异色
             (roomIndex%2 == n and fangType == 1)
-            # 小额枋的明间间用异色
+            # 小额枋的明间用异色
             or (roomIndex%2 != n and fangType == 2)
     ) :
         mat.setShader(fangObj,

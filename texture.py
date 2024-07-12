@@ -187,15 +187,19 @@ def __setTexture(
         # UvUnwrap(object,uvType.CUBE)
         pass  
     
-    # 需要满铺的彩画类材质
+    # 梁枋彩画
     if mat in (
-            aData.mat_paint_beam,           # 梁枋彩画
-            aData.mat_paint_beam_alt,       # 梁枋彩画.异色
-            aData.mat_paint_grasscouple,    # 垫板.公母草
+            aData.mat_paint_beam, 
+            aData.mat_paint_beam_alt,
         ):
+        UvUnwrap(object,uvType.SCALE)
+        # 设置槫头坐龙
+        __setTuanHead(object)
+
+    # 垫板.公母草
+    if mat == aData.mat_paint_grasscouple:
         UvUnwrap(object,uvType.SCALE)   
 
-    # 其他进行了复杂计算的材质
     # 柱头贴图
     if mat == aData.mat_paint_pillerhead:
         UvUnwrap(object,uvType.CYLINDER)
@@ -234,6 +238,44 @@ def __setTexture(
 
     return object
 
+# 设置槫头坐龙
+def __setTuanHead(tuan:bpy.types.Object):
+    # 追加槫头坐龙材质
+    aData:tmpData = bpy.context.scene.ACA_temp
+    matHeadDragon = aData.mat_paint_tuanend.active_material
+    tuan.data.materials.append(matHeadDragon)
+
+    # 找到左右两个端头，并绑定新材质
+    bm = bmesh.new()
+    bm.from_mesh(tuan.data)
+    for face in bm.faces:
+        face.select = False
+
+    # 以底面可确定的0号面为参考
+    rightNormal = Vector((1,0,0))
+    leftNormal = Vector((-1,0,0))
+    # 选择法线类似的所有面，0.1是在blender里尝试的经验值
+    for face in bm.faces:
+        right:Vector = face.normal - rightNormal
+        if right.length < 1:
+            face.material_index = 1
+            face.select = True
+        left:Vector = face.normal - leftNormal
+        if left.length < 1:
+            face.material_index = 1
+            face.select = True
+    bm.to_mesh(tuan.data)
+    bm.free()
+
+    # 端头按scale展开
+    bpy.ops.object.mode_set(mode = 'EDIT') 
+    bpy.ops.uv.cube_project(
+        scale_to_bounds=True
+    )
+    bpy.ops.object.mode_set(mode = 'OBJECT')
+
+    return
+
 # 翼角望板材质，底面刷红
 def __setWangCornerMat(wangban:bpy.types.Object):
     # 添加原木和红漆材质
@@ -246,10 +288,10 @@ def __setWangCornerMat(wangban:bpy.types.Object):
     # 找到所有的底面
     bm = bmesh.new()
     bm.from_mesh(wangban.data)
-    bm.faces.ensure_lookup_table()
 
     # 以底面可确定的0号面为参考
-    baseNormal = bm.faces[0].normal
+    # bm.faces.ensure_lookup_table()
+    # baseNormal = bm.faces[0].normal
     baseNormal = Vector((0,0,-1))
     # 选择法线类似的所有面，0.1是在blender里尝试的经验值
     for face in bm.faces:

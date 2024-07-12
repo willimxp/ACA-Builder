@@ -733,6 +733,10 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "端头坐龙",
             type = bpy.types.Object,
         )# type: ignore 
+    mat_paint_ccb : bpy.props.PointerProperty(
+            name = "子角梁",
+            type = bpy.types.Object,
+        )# type: ignore
     
     # 柱对象
     piller_source : bpy.props.PointerProperty(
@@ -773,6 +777,12 @@ class ACA_data_template(bpy.types.PropertyGroup):
     # 博缝板对象
     bofeng_source : bpy.props.PointerProperty(
             name = "博缝板",
+            type = bpy.types.Object,
+        )# type: ignore
+    
+    # 老角梁对象
+    cornerbeam_source : bpy.props.PointerProperty(
+            name = "老角梁",
             type = bpy.types.Object,
         )# type: ignore
     

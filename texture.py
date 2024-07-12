@@ -236,6 +236,10 @@ def __setTexture(
     if mat == aData.mat_paint_cloud:
         UvUnwrap(object,uvType.SCALE)
 
+    # 子角梁，龙肚子
+    if mat == aData.mat_paint_ccb:
+        UvUnwrap(object,uvType.RESET)
+
     return object
 
 # 设置槫头坐龙
@@ -403,6 +407,7 @@ class shaderType:
     FLYRAFTER = '飞椽'
     WANGBANRED = '望板'
     CLOUD = '工王云'
+    CCB = '子角梁'
 
 # 映射对象与材质的关系
 # 便于后续统一的在“酱油配色”，“清官式彩画”等配色方案间切换
@@ -484,6 +489,9 @@ def setShader(object:bpy.types.Object,
     # 挑檐枋，工王云
     if shader == shaderType.CLOUD:
         mat = aData.mat_paint_cloud
+    
+    if shader == shaderType.CCB:
+        mat = aData.mat_paint_ccb
 
     if mat != None:
         # 展UV，绑材质

@@ -1435,3 +1435,23 @@ def separateObject(objArray:bpy.types.Object):
         objList.append(obj)
     
     return objList
+
+# 替换对象
+# 传递旧对象的位置、旋转、尺寸、名称、父子关系、修改器
+# 保持新对象的造型、材质
+# （需要手工保证两个对象的origin一致）
+def replaceObject(
+        fromObj:bpy.types.Object,
+        toObj:bpy.types.Object):
+    # 传递旧对象的位置、旋转、尺寸、名称、父子关系、修改器
+    toObj.location = fromObj.location
+    toObj.rotation_euler = fromObj.rotation_euler
+    toObj.dimensions = fromObj.dimensions
+    applyTransfrom(toObj,use_scale=True)
+    toObj.name = fromObj.name
+    toObj.parent = fromObj.parent
+    copyModifiers(fromObj,toObj)
+
+    # 隐藏原对象
+    hideObj(fromObj)
+    return

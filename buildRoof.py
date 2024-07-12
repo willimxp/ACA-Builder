@@ -2049,6 +2049,7 @@ def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object):
 def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
@@ -2123,11 +2124,25 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             modBevel:bpy.types.BevelModifier = \
                 CornerBeamObj.modifiers.new('Bevel','BEVEL')
             modBevel.width = con.BEVEL_LOW
+            # 替换老角梁造型
+            if aData.cornerbeam_source != None:
+                cbNewObj = utils.copyObject(
+                    sourceObj=aData.cornerbeam_source
+                )
+                # 传递老角梁属性
+                utils.replaceObject(CornerBeamObj,cbNewObj)
+                # 添加镜像
+                utils.addModifierMirror(
+                    object=cbNewObj,
+                    mirrorObj=rafterRootObj,
+                    use_axis=(True,True,False))
             
             if bData.use_flyrafter:
                 # 绘制子角梁
                 cbcObj:bpy.types.Object = \
                     __drawCornerBeamChild(CornerBeamObj)
+                # 设置材质
+                mat.setShader(cbcObj,mat.shaderType.CCB)
                 cbcObj.name = '仔角梁'
                 cbcObj.data.name = '仔角梁'
                 cbcObj.parent = rafterRootObj

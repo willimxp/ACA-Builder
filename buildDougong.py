@@ -178,8 +178,15 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
     utils.updateScene()
     fangCopy.dimensions.x = bData.x_total + extendLength
     utils.applyTransfrom(fangCopy,use_scale=True)
-    # 处理UV
-    mat.UvUnwrap(fangCopy,type='cube')
+
+    # 设置材质
+    if fangSourceObj.name == '挑檐枋':
+        # 设置工王云
+        mat.setShader(fangCopy,
+            mat.shaderType.CLOUD,override=True)
+    else:
+        # 根据缩放，更新UV
+        mat.UvUnwrap(fangCopy,type='cube')
     # 镜像
     utils.addModifierMirror(
         object=fangCopy,
@@ -206,8 +213,14 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         fangCopy.dimensions.x = bData.y_total + extendLength
         utils.applyTransfrom(fangCopy,use_scale=True)
         fangCopy.rotation_euler.z = math.radians(90)
-        # 处理UV
-        mat.UvUnwrap(fangCopy,type='cube')
+        # 设置材质
+        if fangSourceObj.name == '挑檐枋':
+            # 设置工王云
+            mat.setShader(fangCopy,
+                mat.shaderType.CLOUD,override=True)
+        else:
+            # 根据缩放，更新UV
+            mat.UvUnwrap(fangCopy,type='cube')
         # 镜像
         utils.addModifierMirror(
             object=fangCopy,

@@ -725,6 +725,10 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "望板着色",
             type = bpy.types.Object,
         )# type: ignore 
+    mat_paint_cloud: bpy.props.PointerProperty(
+            name = "工王云",
+            type = bpy.types.Object,
+        )# type: ignore 
     
     # 柱对象
     piller_source : bpy.props.PointerProperty(

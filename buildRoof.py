@@ -1231,13 +1231,15 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                     clear_outer=True
             ) 
         
-        # 为了便于贴图，延后到飞椽、翼角椽等做完后，再做镜像
         # 五、镜像必须放在裁剪之后，才能做上下对称     
-        # utils.addModifierMirror(
-        #     object=fbRafterObj,
-        #     mirrorObj=rafterRootObj,
-        #     use_axis=(True,True,False)
-        # )
+        # 檐椽不在此时镜像，延后到整个椽架做完后镜像
+        # 因为檐椽需要做AB色的贴图，且需要考虑居中对称问题
+        if n != 0:
+            utils.addModifierMirror(
+                object=fbRafterObj,
+                mirrorObj=rafterRootObj,
+                use_axis=(True,True,False)
+            )
 
         # 平滑
         utils.shaderSmooth(fbRafterObj)
@@ -1321,13 +1323,15 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
             ) 
             utils.shaderSmooth(lrRafterObj)
         
-        # 为了便于贴图，延后到椽架全部生成后再做镜像
-        # # 镜像
-        # utils.addModifierMirror(
-        #     object=lrRafterObj,
-        #     mirrorObj=rafterRootObj,
-        #     use_axis=(True,True,False)
-        # )
+        # 五、镜像必须放在裁剪之后，才能做上下对称     
+        # 檐椽不在此时镜像，延后到整个椽架做完后镜像
+        # 因为檐椽需要做AB色的贴图，且需要考虑居中对称问题
+        if n != 0 :
+            utils.addModifierMirror(
+                object=lrRafterObj,
+                mirrorObj=rafterRootObj,
+                use_axis=(True,True,False)
+            )
     
     # 构造里口木
     __buildLKM(buildingObj,purlin_pos,'Y') 

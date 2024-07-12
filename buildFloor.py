@@ -537,7 +537,7 @@ def buildPillers(buildingObj:bpy.types.Object):
                 continue    # 结束本次循环
             
             # 添加柱子父节点
-            pillerProxy = utils.copyObject(
+            pillerProxy = utils.copySimplyObject(
                 name='柱proxy' + pillerID,
                 sourceObj=pillerProxy_basemesh,
                 location=(net_x[x],
@@ -548,7 +548,7 @@ def buildPillers(buildingObj:bpy.types.Object):
             utils.hideObj(pillerProxy)
 
             # 复制柱子，仅instance，包含modifier
-            pillerObj = utils.copyObject(
+            pillerObj = utils.copySimplyObject(
                 sourceObj = piller_basemesh,
                 name = '柱子.'+pillerID,
                 parentObj = pillerProxy,
@@ -556,14 +556,14 @@ def buildPillers(buildingObj:bpy.types.Object):
             pillerObj.ACA_data['pillerID'] = pillerID
 
             # 复制柱础
-            pillerbaseObj = utils.copyObject(
+            pillerbaseObj = utils.copySimplyObject(
                 sourceObj= pillerbase_basemesh,
                 parentObj=pillerProxy
             )
             utils.lockObj(pillerbaseObj)
 
             # 复制柱顶石
-            pillerBottomObj = utils.copyObject(
+            pillerBottomObj = utils.copySimplyObject(
                 name='柱顶石',
                 sourceObj=pillerBottom_basemesh,
                 parentObj=pillerProxy

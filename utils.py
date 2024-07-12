@@ -172,31 +172,35 @@ def setCollection(name:str, IsClear=False,isRoot=False,
 # 复制简单对象（仅复制instance）
 def copySimplyObject(
         sourceObj:bpy.types.Object, 
-        name="", 
+        name=None, 
         parentObj:bpy.types.Object = None, 
-        location=(0,0,0),
+        location=None,
+        rotation=None,
         scale=None,
-        rotation=(0,0,0),
         singleUser=False,):
     # 复制基本信息
     newObj:bpy.types.Object = sourceObj.copy()
     if singleUser :
         newObj.data = sourceObj.data.copy()
-    if name=="":
+    if name == None:
         newObj.name = sourceObj.name
     else:
         newObj.name = name
-    newObj.location = location
-    newObj.rotation_euler = rotation
+    if location != None:
+        newObj.location = location
+    if rotation != None:
+        newObj.rotation_euler = rotation
     if scale != None:
         newObj.scale = scale
-    newObj.parent = parentObj
+    if parentObj != None:
+        newObj.parent = parentObj
     bpy.context.collection.objects.link(newObj)     
     showObj(newObj)
     return newObj
 
 # 复制对象（仅复制instance，包括modifier）
-def copyObject(sourceObj:bpy.types.Object, 
+def copyObject(
+        sourceObj:bpy.types.Object, 
         name=None, 
         parentObj:bpy.types.Object = None, 
         location=None,
@@ -215,16 +219,18 @@ def copyObject(sourceObj:bpy.types.Object,
     newObj:bpy.types.Object = sourceObj.copy()
     if singleUser :
         newObj.data = sourceObj.data.copy()
-    if name != None:
+    if name == None:
+        newObj.name = sourceObj.name
+    else:
         newObj.name = name
     if location != None:
         newObj.location = location
-    if parentObj != None:
-        newObj.parent = parentObj
-    if scale != None:
-        newObj.scale = scale
     if rotation != None:
         newObj.rotation_euler = Euler(rotation,'XYZ')
+    if scale != None:
+        newObj.scale = scale
+    if parentObj != None:
+        newObj.parent = parentObj
     bpy.context.collection.objects.link(newObj) 
     # 复制子对象
     if len(sourceObj.children) > 0 :

@@ -1391,9 +1391,6 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             # 加斜计算
             wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True) 
-            # 设置材质
-            mat.setShader(wangbanObj,
-                mat.shaderType.WANGCORNER)
 
         # 所有望板上移
         # 1. 上移到椽头，采用global坐标，半檩+半椽
@@ -1570,9 +1567,6 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
             # 加斜计算
             wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True)
-            # 设置材质
-            mat.setShader(wangbanObj,
-                mat.shaderType.WANGCORNER)
 
         # 所有望板上移，与椽架上皮相切（从桁檩中心偏：半桁檩+1椽径+半望板）
         # 1. 上移到椽头，采用global坐标，半檩+半椽
@@ -1807,8 +1801,6 @@ def __buildFlyrafterWangban(buildingObj,purlin_pos,direction):
         rotation=flyrafterObj.rotation_euler, 
         parent=rafterRootObj,
     )
-    # 设置材质
-    mat.setShader(fwbObj,mat.shaderType.WANGCORNER)
     # 镜像
     utils.addModifierMirror(
         object=fwbObj,
@@ -2522,9 +2514,6 @@ def __drawCrWangban(
     crWangbanObj.data.update()
     bm.free()
 
-    # 设置材质
-    mat.setShader(crWangbanObj,mat.shaderType.WANGCORNER)
-
     return crWangbanObj
 
 # 营造翼角椽望板
@@ -3206,9 +3195,6 @@ def __drawCfrWangban(
     cfrWangbanObj.data.update()
     bm.free()
 
-    # 设置材质
-    mat.setShader(cfrWangbanObj,mat.shaderType.WANGCORNER)
-
     return cfrWangbanObj
 
 # 营造翘飞椽望板
@@ -3410,8 +3396,9 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     if useWangban:
         wangbanSet = utils.joinObjects(
             wangbanObjs,newName='望板')
-        # 更新UV
-        mat.UvUnwrap(wangbanSet,type='cube')
+        # 设置材质
+        mat.setShader(wangbanSet,
+                mat.shaderType.WANGBANRED)
     
     # 檐椽事后处理(处理UV,添加倒角)
     # 只能放在最后加倒角，因为计算翼角椽时有取檐椽头坐标

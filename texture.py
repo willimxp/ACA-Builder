@@ -223,9 +223,10 @@ def __setTexture(
         object = __setFlyrafterMat(object)
 
     # 翼角望板
-    if mat == shaderType.WANGCORNER:
+    if mat == shaderType.WANGBANRED:
         UvUnwrap(object,uvType.CUBE)
-        __setWangCornerMat(object)
+        # 已经在材质中判断了在原木底面刷红，不需要用python设置了
+        #__setWangCornerMat(object)
 
     return object
 
@@ -354,7 +355,7 @@ class shaderType:
     YOUEDIANBAN = '由额垫板'
     RAFTER = '檐椽'
     FLYRAFTER = '飞椽'
-    WANGCORNER = '翼角望板'
+    WANGBANRED = '望板'
 
 # 映射对象与材质的关系
 # 便于后续统一的在“酱油配色”，“清官式彩画”等配色方案间切换
@@ -430,9 +431,8 @@ def setShader(object:bpy.types.Object,
         mat = aData.mat_paint_flyrafter
 
     # 翼角望板，底面刷红
-    if shader == shaderType.WANGCORNER:
-        # 没有独立材质，传入类型字串
-        mat = shaderType.WANGCORNER
+    if shader == shaderType.WANGBANRED:
+        mat = aData.mat_paint_wangban
 
     if mat != None:
         # 展UV，绑材质

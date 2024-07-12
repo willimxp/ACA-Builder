@@ -16,6 +16,7 @@
     <mat_paint_dgfillboard type="Object">材质.栱垫板</mat_paint_dgfillboard>
     <mat_paint_rafter type="Object">檐椽</mat_paint_rafter>
     <mat_paint_flyrafter type="Object">飞椽</mat_paint_flyrafter>
+    <mat_paint_wangban type="Object">木.底面红漆</mat_paint_wangban>
     <piller_source type="Object">梭柱</piller_source>
     <pillerbase_source type="Object">素平柱础</pillerbase_source>
     <lingxin_source type="Object">棂心.正搭斜交</lingxin_source>

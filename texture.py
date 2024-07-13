@@ -194,7 +194,8 @@ def __setTexture(
         ):
         UvUnwrap(object,uvType.SCALE)
         # 设置槫头坐龙
-        __setTuanHead(object)
+        if object.name.startswith('挑檐桁'):
+            __setTuanHead(object)
 
     # 垫板.公母草
     if mat == aData.mat_paint_grasscouple:
@@ -271,12 +272,35 @@ def __setTuanHead(tuan:bpy.types.Object):
     bm.to_mesh(tuan.data)
     bm.free()
 
-    # 端头按scale展开
-    bpy.ops.object.mode_set(mode = 'EDIT') 
-    bpy.ops.uv.cube_project(
-        scale_to_bounds=True
+    # 从资产中传递预定义的UV
+    __copyUV(
+        fromObj=aData.mat_paint_tuanend,
+        toObj= tuan,
     )
-    bpy.ops.object.mode_set(mode = 'OBJECT')
+    return
+
+# 复制UV
+def __copyUV(
+    fromObj:bpy.types.Object,
+    toObj:bpy.types.Object):
+    # 从资产中传递预定义的UV
+    # 确认选中两个对象
+    fromobjCopy = utils.copySimplyObject(fromObj,singleUser=True)
+    fromobjCopy.select_set(True)
+    toObj.select_set(True)
+    bpy.context.view_layer.objects.active = fromobjCopy
+    # 获取源UV
+    uv = fromobjCopy.data.uv_layers[0]
+    uv.active = True
+    # 重建目标UV
+    toObj.data.uv_layers.remove(toObj.data.uv_layers[0])
+    new_uv = toObj.data.uv_layers.new(name='UVMap')
+    new_uv.active = True
+    # 调用UV传递
+    bpy.ops.object.join_uvs()
+
+    # 删除fromObj
+    bpy.data.objects.remove(fromobjCopy)
 
     return
 

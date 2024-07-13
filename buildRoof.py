@@ -269,8 +269,7 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
         purlinList.append(
             {'len':length,
              'loc':loc,
-             'rot':(math.radians(-26),
-                    0,0),
+             'rot':(0,0,math.radians(180)),
              'alt':isAlt,
              'mirror':(False,True,False)})
     # 两山排布(仅庑殿、歇山、盝顶，不适用硬山、悬山、卷棚)
@@ -299,8 +298,7 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
                 {'len':length,
                 'loc':loc,
                 'alt':isAlt,
-                'rot':(math.radians(26),
-                    0,math.radians(90)),
+                'rot':(0,0,math.radians(90)),
                 'mirror':(True,False,False)
                 })
     

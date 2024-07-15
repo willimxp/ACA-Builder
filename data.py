@@ -737,6 +737,10 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "子角梁",
             type = bpy.types.Object,
         )# type: ignore
+    mat_paint_door : bpy.props.PointerProperty(
+            name = "壶门",
+            type = bpy.types.Object,
+        )# type: ignore
     
     # 柱对象
     piller_source : bpy.props.PointerProperty(

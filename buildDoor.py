@@ -364,6 +364,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
 
     # 4. 分割棂心、裙板、绦环板
     gap_num = wData.gap_num   # 抹头数量
+    qunbanObj = None    # 裙板对象
     windowsill_height = -geshan_height/2       # 窗台高度，在需要做槛墙的槛框中定位
     if gap_num == 2:
         if use_KanWall:
@@ -400,7 +401,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             # 裙板，抹二下方
             loc3 = loc2-Vector((0,0,heartHeight*2/6+border_width/2))
             scale = Vector((motou_width,border_deepth/3,heartHeight*4/6))
-            motouObj = utils.addCube(
+            qunbanObj = utils.addCube(
                 name="裙板",
                 location=loc3,
                 dimension=scale,
@@ -449,7 +450,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             # 裙板，抹三下方
             loc5 = loc3-Vector((0,0,heartHeight*2/6+border_width/2))
             scale = (motou_width,border_deepth/3,heartHeight*4/6)
-            motouObj = utils.addCube(
+            qunbanObj = utils.addCube(
                 name="裙板",
                 location=loc5,
                 dimension=scale,
@@ -516,7 +517,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             # 裙板
             loc7 = (loc3+loc4)/2
             scale = (motou_width,border_deepth/3,heartHeight*4/6)
-            motouObj = utils.addCube(
+            qunbanObj = utils.addCube(
                 name="裙板",
                 location=loc7,
                 dimension=scale,
@@ -593,7 +594,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             # 裙板，抹四抹五之间
             loc8 = (loc4+loc5)/2
             scale = (motou_width,border_deepth/3,heartHeight*4/6)
-            motouObj = utils.addCube(
+            qunbanObj = utils.addCube(
                 name="裙板",
                 location=loc8,
                 dimension=scale,
@@ -608,7 +609,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
                 dimension=scale,
                 parent=geshan_root,
             )       
-    
+        
     # 留出窗缝
     windowsill_height -= con.GESHAN_GAP/2
 
@@ -665,6 +666,17 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     # 隐藏隔扇根节点
     utils.hideObj(geshan_root)
 
+    # 隔扇着色
+    for ob in geshan_root.children:
+        # 全部设置为朱漆材质
+        # 其中槛窗的窗台为石质，并不会被覆盖
+        mat.setShader(ob,mat.shaderType.REDPAINT)
+
+    # 设置裙板材质
+    if qunbanObj != None:
+        mat.setShader(qunbanObj,
+            mat.shaderType.DOOR,override=True)
+
     # 隔扇子对象合并
     geshanObj = utils.joinObjects(
         geshan_root.children,
@@ -672,10 +684,6 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     geshanObj.parent = wallproxy
     geshanObj.location += geshan_root.location
     bpy.data.objects.remove(geshan_root)
-
-    # 隔扇着色
-    mat.setShader(geshanObj,
-        mat.shaderType.REDPAINT,override=True)
 
     # 锁定旋转，仅允许Z轴开窗、开门
     geshanObj.lock_rotation = (True,True,False)

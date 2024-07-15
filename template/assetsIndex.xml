@@ -20,6 +20,7 @@
     <mat_paint_tuanend type="Object">槫子端头</mat_paint_tuanend>
     <mat_paint_cloud type="Object">工王云</mat_paint_cloud>
     <mat_paint_ccb type="Object">子角梁</mat_paint_ccb>
+    <mat_paint_door type="Object">壶门</mat_paint_door>
     <piller_source type="Object">梭柱</piller_source>
     <pillerbase_source type="Object">素平柱础</pillerbase_source>
     <lingxin_source type="Object">棂心.正搭斜交</lingxin_source>

@@ -245,6 +245,10 @@ def __setTexture(
     if mat == aData.mat_paint_door:
         UvUnwrap(object,uvType.SCALE)
 
+    # 隔扇，绦环板
+    if mat == aData.mat_paint_doorring:
+        UvUnwrap(object,uvType.SCALE)
+
     return object
 
 # 设置槫头坐龙
@@ -436,7 +440,8 @@ class shaderType:
     WANGBANRED = '望板'
     CLOUD = '工王云'
     CCB = '子角梁'
-    DOOR = '壶门'
+    DOOR = '裙板'
+    DOORRING = '绦环板'
 
 # 映射对象与材质的关系
 # 便于后续统一的在“酱油配色”，“清官式彩画”等配色方案间切换
@@ -526,6 +531,10 @@ def setShader(object:bpy.types.Object,
     # 隔扇，壶门
     if shader == shaderType.DOOR:
         mat = aData.mat_paint_door
+    
+    # 隔扇，绦环板
+    if shader == shaderType.DOORRING:
+        mat = aData.mat_paint_doorring
 
     if mat != None:
         # 展UV，绑材质

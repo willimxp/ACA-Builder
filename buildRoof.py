@@ -3606,7 +3606,7 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     elif bData.roof_style == con.ROOF_XIESHAN:
         # 歇山刷红漆
         mat.setShader(xybObj,
-            mat.shaderType.REDPAINT)
+            mat.shaderType.SHANHUA,override=True)
 
     return xybObj
 

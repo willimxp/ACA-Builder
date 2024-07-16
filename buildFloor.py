@@ -472,13 +472,11 @@ def buildPillers(buildingObj:bpy.types.Object):
         )
         # 应用拉伸
         utils.applyTransfrom(piller_basemesh,use_scale=True)
-        # 根据拉伸，更新UV平铺
-        mat.UvUnwrap(piller_basemesh,mat.uvType.CUBE)
         piller_basemesh.ACA_data['aca_obj'] = True
         piller_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
     # 柱头贴图
     mat.setShader(piller_basemesh,
-        mat.shaderType.PILLER,override=True)
+        mat.shaderType.PILLER,override=True,single=True)
     
     # 柱础
     pillerbase_source = aData.pillerbase_source

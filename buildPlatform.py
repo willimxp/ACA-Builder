@@ -243,15 +243,13 @@ def __drawPlatform(platformObj:bpy.types.Object):
             obj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXHIGH
         # 设置材质
-        mat.setShader(brickObj,
+        mat.setShader(obj,
             mat.shaderType.ROCK)
     
     # 合并台基
     platformSet = utils.joinObjects(
         jtsObjs,newName='台明'
         )
-    # UV处理
-    mat.UvUnwrap(platformSet,type='cube')
 
     return platformSet
 

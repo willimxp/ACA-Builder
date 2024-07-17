@@ -649,7 +649,9 @@ def __drawTileBool(
                 # 前后檐的山腰裁剪点，垂脊的定位类似
                 if direction == 'X':
                     # X向：以脊桁宽度为基准
-                    cutPoint.x = purlin_cross_points[-1].x
+                    cutPoint.x = (purlin_cross_points[-1].x
+                            + con.EAVETILE_EX*dk 
+                            - bData.tile_width_real)
                     # Y向：与起始点做45度连线
                     cutPoint.y = p0.y - (p0.x - cutPoint.x)
                 if direction == 'Y':

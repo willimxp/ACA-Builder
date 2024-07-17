@@ -3748,6 +3748,58 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
 #     # 应用裁剪
 #     return
 
+# 营造博缝板的雪花钉
+def __buildBofengNails(
+        buildingObj: bpy.types.Object,
+        bofengObj : bpy.types.Object,
+        rafter_pos,
+        ):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+    
+    # 定位
+    # 与博缝板外皮相切
+    loc_x = bofengObj.location.x + con.BOFENG_WIDTH*dk
+    # 大小
+    radius = 0.6*dk
+    # 六边形环绕
+    count = 6
+    span = 3*dk
+
+    # 收集对象
+    nails = []
+    
+    # 根据槫子位置，摆放雪花钉
+    for rafter in rafter_pos:
+        # 中心
+        nailObj = utils.addSphere(
+            name='雪花钉',
+            radius=radius,
+            rotation=(0,math.radians(90),0),
+            location= (
+                loc_x,
+                rafter.y,
+                rafter.z - 2*dk),   # 适当向下调整
+            parent=rafterRootObj
+        )
+        nails.append(nailObj)
+        # 六边形环绕
+        for n in range(count):
+            nailObjCopy = utils.copySimplyObject(nailObj)
+            offset = Vector((0,span,0))
+            angle = n * 360/count
+            rotEuler = Euler((math.radians(angle),0,0)) 
+            offset.rotate(rotEuler)
+            nailObjCopy.location += offset
+            nails.append(nailObjCopy)
+    
+    # 合并雪花钉
+    nailsSet = utils.joinObjects(nails)
+    return nailsSet
+
 # 营造博缝板，依赖于外部资产，更便于调整
 def __buildBofeng(buildingObj: bpy.types.Object,
                  rafter_pos):
@@ -3770,19 +3822,30 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         location=bofengCurve.location,
         singleUser=True
     )
-    mat.setShader(bofengObj,mat.shaderType.REDPAINT,override=True)
+    # 尺寸适配
     height = (con.HENG_COMMON_D + con.YUANCHUAN_D*4
                    + con.WANGBAN_H + con.ROOFMUD_H)*dk
     bofengObj.dimensions = (
         bofengObj.dimensions.x,
         con.BOFENG_WIDTH*dk,
-        height)    
-
-    # 添加curve modifier
+        height)
+    # 添加curve变形
     modCurve : bpy.types.CurveModifier = \
         bofengObj.modifiers.new('曲线拟合','CURVE')
     modCurve.object = bofengCurve
-    
+
+    # 根据槫子位置，摆放雪花钉
+    nailsSet = __buildBofengNails(buildingObj,
+                bofengObj,
+                rafter_pos)
+    # 博缝板刷成红色
+    mat.setShader(bofengObj,
+        mat.shaderType.REDPAINT,override=True)
+    # 雪花钉刷成金色
+    mat.setShader(nailsSet,mat.shaderType.GOLDPAINT)
+    # 合并博缝板和雪花钉
+    bofengObj = utils.joinObjects([bofengObj,nailsSet])
+
     # 应用镜像
     utils.addModifierMirror(
         object=bofengObj,

@@ -426,7 +426,8 @@ def __setFlyrafterMat(flyrafter:bpy.types.Object):
 # 材质类型，实际是对材质的指向关系
 class shaderType:
     WOOD = '木材'
-    REDPAINT = '漆.土朱材质'
+    REDPAINT = '漆.土朱'
+    GOLDPAINT = '漆.金'
     REDDUST = '抹灰.红'
     BRICK1 = '方砖缦地'
     BRICK2 = '条砖竖铺'
@@ -471,6 +472,10 @@ def setShader(object:bpy.types.Object,
     # 红
     if shader == shaderType.REDPAINT:
         mat = aData.mat_red
+    # 金
+    if shader == shaderType.GOLDPAINT:
+        mat = aData.mat_gold
+    # 灰.红
     if shader == shaderType.REDDUST:
         mat = aData.mat_dust_red
 

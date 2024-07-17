@@ -461,6 +461,34 @@ def addCubeBy2Points(start_point:Vector,
 
     return cube
 
+# 添加球体
+def addSphere(
+        name='球',
+        radius=1,
+        segments=10,
+        ringCount=10,
+        rotation=(0,0,0),
+        location=(0,0,0),
+        parent=None
+        ):
+    bpy.ops.mesh.primitive_uv_sphere_add(
+        radius=radius,
+        segments=segments,
+        ring_count=ringCount,
+        rotation=rotation,
+        location=location
+    )
+    sphereObj = bpy.context.object
+    sphereObj.name = name
+    sphereObj.data.name = name
+    sphereObj.parent = parent
+
+    shaderSmooth(sphereObj)
+    # UV处理
+    from . import texture
+    texture.UvUnwrap(sphereObj,type='cube')
+    return sphereObj
+
 # 获取对象的原始尺寸
 # 排除modifier的影响
 # 参考 https://blender.stackexchange.com/questions/238109/how-to-set-the-dimensions-of-an-object-without-its-modifiers

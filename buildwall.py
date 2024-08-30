@@ -203,7 +203,7 @@ def __drawWall(wallProxy:bpy.types.Object):
         parent=wallProxy,
     )
     # 赋材质
-    mat.setShader(wallHeadBoard,
+    mat.setShader(bottomObj,
             mat.shaderType.ROCK)
 
     # 2、创建上身对象

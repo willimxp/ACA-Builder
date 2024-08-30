@@ -161,14 +161,12 @@ def __setFangMat(fangObj:bpy.types.Object,
     pTo_y = int(pTo[1])
 
     # 计算为第几间？
-    rangeFB = [0,bData.y_rooms]
-    rangeLR = [0,bData.x_rooms]
     # 前后檐
-    if pFrom_y in rangeFB and pTo_y in rangeFB:
+    if pFrom_y == pTo_y:
         roomIndex = (pFrom_x+pTo_x-1)/2
         n = int((bData.x_rooms+1)/2)%2
     # 两山
-    elif pFrom_x in rangeLR and pTo_x in rangeLR:
+    elif pFrom_x == pTo_x:
         roomIndex = (pFrom_y+pTo_y-1)/2
         n = int((bData.y_rooms+1)/2)%2
 

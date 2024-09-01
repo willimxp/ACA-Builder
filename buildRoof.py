@@ -22,6 +22,9 @@ def __addRoofRoot(buildingObj:bpy.types.Object):
     buildingColl = buildingObj.users_collection[0]
     utils.focusCollection(buildingColl.name)
 
+    # 刷新斗栱数据
+    buildDougong.updateDGdata(buildingObj)
+
     # 设置根节点
     roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT) 
     if roofRootObj != None:

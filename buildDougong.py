@@ -14,6 +14,38 @@ from . import buildFloor
 from . import buildRoof
 from . import texture as mat
 
+# 刷新斗栱设定
+# 为了避免配置文件中dgExtend,dgHeight,dgScale不匹配（如，清式、宋式斗栱的替换）
+# 仅仅以配置文件中的dgExtend为基准，以资源文件中的斗栱参数，自动计算dgHeight，dgScale
+# 建议屋顶层根节点、斗栱层根节点定位前，都调用一次本函数
+def updateDGdata(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
+    if bData.aca_type != con.ACA_TYPE_BUILDING:
+        utils.showMessageBox("错误，输入的不是建筑根节点")
+        return
+    
+    # 斗栱自动缩放，根据斗栱资产，更新建筑的bData设置
+    # 读取斗栱资产自定义属性dgHeight,dgExtend（需要在blender中定义）
+    if 'dgHeight' in aData.dg_piller_source:
+        originHeight = aData.dg_piller_source['dgHeight']
+    else:
+        originHeight = bData.dg_height
+        utils.outputMsg("斗栱未定义默认高度")
+    if 'dgExtend' in aData.dg_piller_source:
+        originExtend = aData.dg_piller_source['dgExtend']
+    else:
+        originExtend = bData.dg_extend
+        utils.outputMsg("斗栱未定义默认出跳")
+    # 以用户定义的出跳，计算缩放
+    scale = bData.dg_extend / originExtend
+    # 斗栱高度，根据出跳缩放联动
+    bData['dg_height'] = originHeight * scale
+    # 暂存缩放比例，后续排布斗栱时使用
+    bData['dg_scale'] = (scale,scale,scale)
+    return
+
 # 添加斗栱根节点
 def __addDougongRoot(buildingObj:bpy.types.Object):
     # 设置目录
@@ -22,6 +54,9 @@ def __addDougongRoot(buildingObj:bpy.types.Object):
     
     # 载入数据
     bData : acaData = buildingObj.ACA_data # 载入数据
+
+    # 刷新斗栱数据
+    updateDGdata(buildingObj)
 
     # 新建或清空根节点
     dgrootObj = utils.getAcaChild(
@@ -496,24 +531,6 @@ def buildDougong(buildingObj:bpy.types.Object):
         __buildPingbanFang(dgrootObj)
 
     # 2、布置斗栱/铺作======================================================
-    # 斗栱缩放
-    # 读取斗栱资产自定义属性dgHeight,dgExtend（需要在blender中定义）
-    if 'dgHeight' in aData.dg_piller_source:
-        originHeight = aData.dg_piller_source['dgHeight']
-    else:
-        originHeight = bData.dg_height
-        utils.outputMsg("斗栱未定义默认高度")
-    if 'dgExtend' in aData.dg_piller_source:
-        originExtend = aData.dg_piller_source['dgExtend']
-    else:
-        originExtend = bData.dg_extend
-        utils.outputMsg("斗栱未定义默认出跳")
-    # 以用户定义的出跳，计算缩放
-    scale = bData.dg_extend / originExtend
-    # 斗栱高度，根据出跳缩放联动
-    bData['dg_height'] = originHeight * scale
-    # 暂存缩放比例，后续排布斗栱时使用
-    bData['dg_scale'] = (scale,scale,scale)
     # 排布斗栱
     __buildDougong(dgrootObj)
 

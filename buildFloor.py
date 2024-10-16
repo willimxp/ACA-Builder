@@ -498,12 +498,14 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 生成柱顶石
     pillerBase_h = 0.3
     pillerBase_popup = 0.02
+    # 柱顶石边长（为了防止与方砖缦地交叠，做了1/10000的放大）
+    pillerBase_size = 2*bData.piller_diameter * 1.0001
     pillerBottom_basemesh = utils.addCube(
         location=(0,0,
                     (- pillerBase_h/2
                     +pillerBase_popup)),
-        dimension=(2*bData.piller_diameter,
-                2*bData.piller_diameter,
+        dimension=(pillerBase_size,
+                pillerBase_size,
                 pillerBase_h),
         parent=pillerProxy_basemesh,
     )

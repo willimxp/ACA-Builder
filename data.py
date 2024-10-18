@@ -251,6 +251,8 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0.03,
             max=0.18,
             step=0.01,
+            precision=3,
+            description="比例模数(m)，清官式常用0.08(二寸半)、0.096(三寸)等",
             update = update_building
         ) # type: ignore
     is_showPlatform: bpy.props.BoolProperty(
@@ -288,10 +290,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     platform_height : bpy.props.FloatProperty(
             name = "台基高度",
             min = 0.01, 
+            precision=3,
             update = update_platform # 绑定回调
         ) # type: ignore
     platform_extend : bpy.props.FloatProperty(
             name = "台基下出",
+            precision=3,
             min = 0.01, 
             update = update_platform    # 绑定回调
         ) # type: ignore
@@ -314,21 +318,25 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     x_1 : bpy.props.FloatProperty(
             name = "明间宽度",
             min = 0, 
+            precision=3,
             update = update_building
         )# type: ignore
     x_2 : bpy.props.FloatProperty(
             name = "次间宽度",
             min = 0, 
+            precision=3,
             update = update_building
         )# type: ignore
     x_3 : bpy.props.FloatProperty(
             name = "梢间宽度",
             min = 0, 
+            precision=3,
             update = update_building
         )# type: ignore
     x_4 : bpy.props.FloatProperty(
             name = "尽间宽度",
             min = 0, 
+            precision=3,
             update = update_building
         )# type: ignore
     y_rooms : bpy.props.IntProperty(
@@ -340,16 +348,19 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     y_1 : bpy.props.FloatProperty(
             name = "明间深度",
             min = 0, 
+            precision=3,
             update = update_building
         )# type: ignore
     y_2 : bpy.props.FloatProperty(
             name = "次间深度",
             min = 0, 
+            precision=3,
             update = update_building
         )# type: ignore
     y_3 : bpy.props.FloatProperty(
             name = "梢间深度",
             min = 0, 
+            precision=3,
             update = update_building
         )# type: ignore
     piller_net : bpy.props.StringProperty(
@@ -367,12 +378,14 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "柱高",
             default = 0.0,
             min = 0.01, 
+            precision=3,
             update = update_building,
         )# type: ignore
     piller_diameter : bpy.props.FloatProperty(
             name = "柱径",
             default = 0.0,
             min = 0.01, 
+            precision=3,
             # update = update_piller
             update = update_building,
         )# type: ignore
@@ -458,19 +471,23 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name="斗栱挑檐",    # 令拱出跳距离
             default=0.45,
             min=0.01,
+            precision=3,
             update = update_dgHeight,
         )# type: ignore 
     dg_height : bpy.props.FloatProperty(
             name="斗栱高度",    # 取挑檐桁下皮高度
             default=1.0,
+            precision=3,
         )# type: ignore 
     dg_scale:bpy.props.FloatVectorProperty(
             name="斗栱缩放",    # 斗栱缩放
             default=(1,1,1),
+            precision=3,
         )# type: ignore 
     dg_gap:bpy.props.FloatProperty(
             name="斗栱间距",    # 斗栱间距
             default=0.99,
+            precision=3,
             min=0.1,
             update=update_dougong,
         )# type: ignore 
@@ -526,6 +543,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=0.9,
             min=0.1,
             max=1.0,
+            precision=3,
             description="庑殿顶两山坡度的调整系数，标准值为0.9，设置为1.0即不做推山"
         )# type: ignore
     shoushan: bpy.props.FloatProperty(
@@ -533,6 +551,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=2,
             min=0,
             max=2,
+            precision=3,
             description="歇山顶的山面内返的距离(米)，建议取一桁径以上，不超过一步架"
         )# type: ignore
     luding_rafterspan:bpy.props.FloatProperty(
@@ -540,6 +559,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=3,
             min=0,
             max=6,
+            precision=3,
             description="盝顶檐步架宽度，用于重檐时，请设置为上下层面阔/进深收分的距离"
         )# type: ignore
     juzhe : bpy.props.EnumProperty(
@@ -561,14 +581,17 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name="瓦垄宽度", 
             default=0.4,
             min=0.0,
+            precision=3,
         )# type: ignore
     tile_width_real : bpy.props.FloatProperty(
             name="瓦垄实际宽度", 
+            precision=3,
         )# type: ignore
     tile_length : bpy.props.FloatProperty(
             name="瓦片长度", 
             default=0.4,
             min=0.0,
+            precision=3,
         )# type: ignore
     
     # 屋脊属性

@@ -476,8 +476,11 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 # 求平身科攒数
                 pStart = net_y[n]
                 pEnd = net_y[n+1]
-                #dougong_count =  math.floor(abs(pEnd - pStart) / (con.DOUGONG_SPAN * dk)) # 向下取整
-                dougong_count =  math.floor(abs(pEnd - pStart) / bData.dg_gap) 
+                roomWidth = abs(pEnd - pStart)
+                # 补偿float精度
+                roomWidth += 0.001
+                # 向下取整，宜疏不宜密
+                dougong_count =  math.floor(roomWidth/ bData.dg_gap) 
                 # 如果间距过大，可能无需补间斗栱
                 if dougong_count == 0 : continue
                 dougong_span = abs(pEnd - pStart) / dougong_count

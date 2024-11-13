@@ -88,6 +88,11 @@ def UvUnwrap(object:bpy.types.Object,
         bpy.ops.uv.cube_project(
             cube_size=10,
         )
+    # 窗棂比例较小
+    elif type == uvType.WIN:
+        bpy.ops.uv.cube_project(
+            cube_size=0.1,
+        )
     # 系统默认的cube project，在梁枋的六棱柱上效果更好
     elif type == uvType.SCALE:
         bpy.ops.uv.cube_project(
@@ -149,6 +154,7 @@ class uvType:
     FIT = 'fit'
     RESET = 'reset'
     CYLINDER  = 'cylinder'
+    WIN = 'win'
 
 # 复制所有材质
 def __copyMaterial(fromObj:bpy.types.Object,
@@ -253,6 +259,10 @@ def __setTexture(
     if mat == aData.mat_paint_shanhua:
         # do nothing
         pass
+
+    # 三交六椀隔心
+    if mat == aData.mat_geshanxin:
+        UvUnwrap(object,uvType.WIN)
 
     return object
 
@@ -449,6 +459,7 @@ class shaderType:
     DOOR = '裙板'
     DOORRING = '绦环板'
     SHANHUA = '山花板'
+    GESHANXIN = '三交六椀隔心'
 
 # 映射对象与材质的关系
 # 便于后续统一的在“酱油配色”，“清官式彩画”等配色方案间切换
@@ -550,6 +561,10 @@ def setShader(object:bpy.types.Object,
     # 山花板
     if shader == shaderType.SHANHUA:
         mat = aData.mat_paint_shanhua
+
+    # 三交六椀隔心
+    if shader == shaderType.GESHANXIN:
+        mat = aData.mat_geshanxin
 
     if mat != None:
         # 展UV，绑材质

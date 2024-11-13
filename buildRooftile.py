@@ -837,7 +837,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
             # 计算相邻两面的法线夹角，做为后续simply deform的补偿角度
             thisFaceNormal = lastEdge.link_faces[0].normal
             nextFaceNormal = lastEdge.link_faces[1].normal
-            angle = thisFaceNormal.angle(nextFaceNormal)
+            angle = -thisFaceNormal.angle(nextFaceNormal)
         
         # 排布板瓦，仅在偶数列排布
         if ((f.index%GridCols) % 2 == 0

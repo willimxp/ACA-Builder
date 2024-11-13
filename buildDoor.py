@@ -64,39 +64,52 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     # 设置UV
     mat.UvUnwrap(zibianObj,type='cube')
 
-    # 填充棂心
-    lingxinObj = aData.lingxin_source
-    if lingxinObj == None: return
-    # 定位：从左下角排布array
-    loc = (location.x-scale.x/2+con.ZIBIAN_WIDTH*pd,
-            location.y,
-            location.z-scale.z/2+con.ZIBIAN_WIDTH*pd)
-    lingxin = utils.copyObject(
-        sourceObj=lingxinObj,
-        name='棂心',
-        parentObj=parent,
-        location=loc,
-        singleUser=True)
-    # 计算平铺的行列数
-    unitWidth,unitDeepth,unitHeight = utils.getMeshDims(lingxin)
-    lingxingWidth = scale.x- con.ZIBIAN_WIDTH*2*pd
-    linxingHeight = scale.z- con.ZIBIAN_WIDTH*2*pd
-    rows = math.ceil(linxingHeight/unitHeight)+1 #加一，尽量让棂心紧凑，避免出现割裂
-    row_span = linxingHeight/rows
-    mod_rows = lingxin.modifiers.get('Rows')
-    mod_rows.count = rows
-    mod_rows.constant_offset_displace[2] = row_span
+    # # 填充棂心
+    # lingxinObj = aData.lingxin_source
+    # if lingxinObj == None: return
+    # # 定位：从左下角排布array
+    # loc = (location.x-scale.x/2+con.ZIBIAN_WIDTH*pd,
+    #         location.y,
+    #         location.z-scale.z/2+con.ZIBIAN_WIDTH*pd)
+    # lingxin = utils.copyObject(
+    #     sourceObj=lingxinObj,
+    #     name='棂心',
+    #     parentObj=parent,
+    #     location=loc,
+    #     singleUser=True)
+    # # 计算平铺的行列数
+    # unitWidth,unitDeepth,unitHeight = utils.getMeshDims(lingxin)
+    # lingxingWidth = scale.x- con.ZIBIAN_WIDTH*2*pd
+    # linxingHeight = scale.z- con.ZIBIAN_WIDTH*2*pd
+    # rows = math.ceil(linxingHeight/unitHeight)+1 #加一，尽量让棂心紧凑，避免出现割裂
+    # row_span = linxingHeight/rows
+    # mod_rows = lingxin.modifiers.get('Rows')
+    # mod_rows.count = rows
+    # mod_rows.constant_offset_displace[2] = row_span
 
-    cols = math.ceil(lingxingWidth/unitWidth)+1#加一，尽量让棂心紧凑，避免出现割裂
-    col_span = lingxingWidth/cols
-    mod_cols = lingxin.modifiers.get('Columns')
-    mod_cols.count = cols
-    mod_cols.constant_offset_displace[0] = col_span
-    # 应用array modifier
-    utils.applyAllModifer(lingxin)
-    # 设置UV
-    mat.UvUnwrap(lingxin,type='cube')
-    
+    # cols = math.ceil(lingxingWidth/unitWidth)+1#加一，尽量让棂心紧凑，避免出现割裂
+    # col_span = lingxingWidth/cols
+    # mod_cols = lingxin.modifiers.get('Columns')
+    # mod_cols.count = cols
+    # mod_cols.constant_offset_displace[0] = col_span
+    # # 应用array modifier
+    # utils.applyAllModifer(lingxin)
+    # # 设置UV
+    # mat.UvUnwrap(lingxin,type='cube')
+
+    # 添加简化版的棂心（平面贴图方式）
+    plane = bpy.context.object
+    plane.name = '棂心'
+    plane.data.name = '棂心'
+    plane.parent = parent
+    plane.scale = (scale.x- con.ZIBIAN_WIDTH*2*pd,
+                   scale.z- con.ZIBIAN_WIDTH*2*pd,
+                   1)
+    plane.rotation_euler.x = math.radians(90)
+    # apply
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    mat.setShader(plane,mat.shaderType.GESHANXIN)
+
     return # linxinObj
 
 # 构建槛框

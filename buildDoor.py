@@ -98,6 +98,7 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     # mat.UvUnwrap(lingxin,type='cube')
 
     # 添加简化版的棂心（平面贴图方式）
+    bpy.ops.mesh.primitive_plane_add(location=location,size=1)
     plane = bpy.context.object
     plane.name = '棂心'
     plane.data.name = '棂心'

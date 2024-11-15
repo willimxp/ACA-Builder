@@ -635,12 +635,6 @@ def addStep(buildingObj:bpy.types.Object,
                     if stepID in stepStr or stepID_alt in stepStr:
                         print(stepID + " is in stepstr:" + stepStr)
                         continue
-                    
-                    # 根据stepID生成踏跺（如，’3/0#4/0‘）
-                    stepProxy = __addStepProxy(
-                        buildingObj,stepID)
-                    # 生成踏跺对象
-                    stepObj = __drawStep(stepProxy)
                                 
                     # 将踏跺加入整体布局中
                     bData.step_net += stepID + ','
@@ -648,6 +642,9 @@ def addStep(buildingObj:bpy.types.Object,
                     # 交换柱子，为下一次循环做准备
                     pFrom = piller
     
+    # 241115 重新生成台基，以便刷新合并后的散水
+    buildPlatform(buildingObj)
+
     return {'FINISHED'}
 
 def delStep(buildingObj:bpy.types.Object,

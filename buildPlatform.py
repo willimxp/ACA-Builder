@@ -254,7 +254,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
     return platformSet
 
 # 绘制踏跺对象
-def __drawStep(stepProxy:bpy.types.Object):
+def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
     # 载入数据
     buildingObj = utils.getAcaParent(
         stepProxy,con.ACA_TYPE_BUILDING
@@ -275,14 +275,15 @@ def __drawStep(stepProxy:bpy.types.Object):
     taduoObjs = []
 
     # # 阶条石宽度，取下出-半个柱顶石（柱顶石为2pd，这里直接减1pd）
-    # stoneWidth = bData.platform_extend \
-    #                 -bData.piller_diameter
+    stoneWidth = bData.platform_extend \
+                    -bData.piller_diameter
     # 20240625 修改垂带为柱间距的1/10，可以适应更短的开间
-    stoneWidth = pWidth * con.STEP_SIDE_WIDTH
+    # stoneWidth = pWidth * con.STEP_SIDE_WIDTH
     # 垂带/象眼石的位置
     # 中间踏跺做左侧，向右镜像
     # 左右两侧踏跺不做镜像，仅做左侧或右侧
-    chuidaiX = -pWidth/2 + stoneWidth/2
+    # 241115 垂带与柱对齐
+    chuidaiX = -pWidth/2  # + stoneWidth/2
 
     # 1、土衬
     # 宽度：柱间距+金边+台阶石出头（垂带中与柱中对齐）
@@ -322,11 +323,12 @@ def __drawStep(stepProxy:bpy.types.Object):
     # 删除一条边，变成三角形，index=11
     utils.dissolveEdge(brickObj,[11])
     # 镜像
-    utils.addModifierMirror(
-        object=brickObj,
-        mirrorObj=stepProxy,
-        use_axis=(True,False,False)
-    )
+    if not isOnlyLeft:
+        utils.addModifierMirror(
+            object=brickObj,
+            mirrorObj=stepProxy,
+            use_axis=(True,False,False)
+        )
     # 方砖横铺
     mat.setShader(brickObj,mat.shaderType.BRICK3)
     taduoObjs.append(brickObj)
@@ -385,10 +387,11 @@ def __drawStep(stepProxy:bpy.types.Object):
         clear_inner=clear_inner
     )
     # 镜像（三连踏跺中，仅中间踏跺做镜像）
-    utils.addModifierMirror(
-        object=brickObj,
-        mirrorObj=stepProxy,
-        use_axis=(True,False,False))
+    if not isOnlyLeft:
+        utils.addModifierMirror(
+            object=brickObj,
+            mirrorObj=stepProxy,
+            use_axis=(True,False,False))
     taduoObjs.append(brickObj)
 
     # 5、台阶（上基石、中基石，也叫踏跺心子）
@@ -532,8 +535,10 @@ def __addStepProxy(buildingObj:bpy.types.Object,
         rotation=rot,
     )
     stepProxy.parent = platformObj
-    utils.hideObjFace(stepProxy)
     stepProxy.ACA_data['stepID'] = stepID
+    stepProxy.ACA_data['aca_type'] = con.ACA_TYPE_STEP
+    utils.hideObjFace(stepProxy)
+    utils.lockObj(stepProxy)
 
     return stepProxy
 
@@ -655,10 +660,13 @@ def delStep(buildingObj:bpy.types.Object,
     # 删除踏跺对象
     for step in steps:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
+        # 如果用户选择的是step子对象，则强制转换到父对象
         if 'aca_type' in step.ACA_data:
             if step.ACA_data['aca_type'] \
-                == con.ACA_TYPE_STEP:
-                utils.deleteHierarchy(step,del_parent=True)
+                    == con.ACA_TYPE_STEP:
+                # 将step转换为stepProxy
+                stepProxy = step.parent
+                utils.deleteHierarchy(stepProxy,del_parent=True)
 
     # 重新生成柱网配置
     pfRootObj = utils.getAcaChild(
@@ -671,11 +679,36 @@ def delStep(buildingObj:bpy.types.Object,
             if step.ACA_data['aca_type']==con.ACA_TYPE_STEP:
                 stepID = step.ACA_data['stepID']
                 bData.step_net += stepID + ','
-    print(bData.step_net)
     
+    # 241115 重新生成台基，以便刷新合并后的散水
+    buildPlatform(buildingObj)
     # 重新聚焦根节点
     utils.focusObj(buildingObj)
     return {'FINISHED'}
+
+# 判断踏跺是否有相邻需要绘制
+# StepList的样式如"3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
+def __checkNextStep(StepList,stepID):
+    # 解析踏跺配置参数
+    setting = stepID.split('#')
+    # 起始柱子
+    pFrom = setting[0].split('/')
+    pFrom_x = int(pFrom[0])
+    pFrom_y = int(pFrom[1])
+    # 结束柱子
+    pTo = setting[1].split('/')
+    pTo_x = int(pTo[0])
+    pTo_y = int(pTo[1])
+
+    # stepID向右加1
+    EastStepID = str(pFrom_x+1) + '/' + str(pFrom_y) \
+        + '#' + str(pTo_x+1) + '/' + str(pTo_y)
+    
+    hasNextStep= False
+    if EastStepID in StepList:
+        hasNextStep = True
+
+    return hasNextStep
 
 # 根据固定模板，创建新的台基
 def buildPlatform(buildingObj:bpy.types.Object):
@@ -713,7 +746,9 @@ def buildPlatform(buildingObj:bpy.types.Object):
         stepProxy = __addStepProxy(
             buildingObj,stepID)
         # 生成踏跺对象
-        stepObj = __drawStep(stepProxy)
+        # 241115 判断相邻踏跺，只做单边
+        hasNextStep = __checkNextStep(stepList,stepID)
+        stepObj = __drawStep(stepProxy,hasNextStep)
 
         # 收集散水参考对象
         sanshuiRefList.append(stepProxy)

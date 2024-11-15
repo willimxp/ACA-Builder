@@ -105,18 +105,19 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
             (con.HENG_COMMON_D/2 
             + con.YUANCHUAN_D 
             + con.WANGBAN_H)*dk))
-        # 为了与屋脊更好的匹配，将灰背的位移按照椽架斜率旋转
         offset_mud = Vector((0,0,con.ROOFMUD_H*dk))
-        if n != len(purlin_pos)-1:
-            purlinAngle = math.atan(
-                    (purlin_pos[n+1].z-purlin_pos[n].z)
-                    /(purlin_pos[n].y-purlin_pos[n+1].y)
-                )
-        if direction == 'X':
-            purlinEular = Euler((-purlinAngle,0,0),'XYZ')
-        else:
-            purlinEular = Euler((0,purlinAngle,0),'XYZ')
-        offset_mud.rotate(purlinEular)        
+        #241115 取消了灰背计算时的旋转，否则导致瓦面在正脊处无法闭合，与正脊割裂
+        # # 为了与屋脊更好的匹配，将灰背的位移按照椽架斜率旋转
+        # if n != len(purlin_pos)-1:
+        #     purlinAngle = math.atan(
+        #             (purlin_pos[n+1].z-purlin_pos[n].z)
+        #             /(purlin_pos[n].y-purlin_pos[n+1].y)
+        #         )
+        # if direction == 'X':
+        #     purlinEular = Euler((-purlinAngle,0,0),'XYZ')
+        # else:
+        #     purlinEular = Euler((0,purlinAngle,0),'XYZ')
+        #offset_mud.rotate(purlinEular)
         point = purlin_pos[n]*proj_v + offset_rafter + offset_mud
         tileCurveVerts.append(point)
 
@@ -218,15 +219,16 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
                 (con.HENG_COMMON_D/2 
                 + con.YUANCHUAN_D 
                 + con.WANGBAN_H)*dk))
-            # 为了与屋脊更好的匹配，将灰背的位移按照椽架斜率旋转
             offset_mud = Vector((0,0,con.ROOFMUD_H*dk))
-            if n != len(purlin_pos)-1:
-                purlinAngle = math.atan(
-                        (purlin_pos[n+1].z-purlin_pos[n].z)
-                        /(purlin_pos[n].y-purlin_pos[n+1].y)
-                    )
-            purlinEular = Euler((-purlinAngle,0,0),'XYZ')
-            offset_mud.rotate(purlinEular)   
+            #241115 取消了灰背计算时的旋转，否则导致瓦面在正脊处无法闭合，与正脊割裂
+            # 为了与屋脊更好的匹配，将灰背的位移按照椽架斜率旋转
+            # if n != len(purlin_pos)-1:
+            #     purlinAngle = math.atan(
+            #             (purlin_pos[n+1].z-purlin_pos[n].z)
+            #             /(purlin_pos[n].y-purlin_pos[n+1].y)
+            #         )
+            # purlinEular = Euler((-purlinAngle,0,0),'XYZ')
+            #offset_mud.rotate(purlinEular)   
             point = purlin_pos[n] + offset_rafter + offset_mud
             # 对齐檐口横坐标
             point.x = p1.x
@@ -320,18 +322,19 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
                 (con.HENG_COMMON_D/2 
                 + con.YUANCHUAN_D 
                 + con.WANGBAN_H)*dk))
-            # 为了与屋脊更好的匹配，将灰背的位移按照椽架斜率旋转
             offset_mud = Vector((0,0,con.ROOFMUD_H*dk))
-            if n != len(purlin_pos)-1:
-                purlinAngle = math.atan(
-                        (purlin_pos[n+1].z-purlin_pos[n].z)
-                        /(purlin_pos[n].y-purlin_pos[n+1].y)
-                    )
-            if direction == 'X':
-                purlinEular = Euler((-purlinAngle,0,0),'XYZ')
-            else:
-                purlinEular = Euler((0,purlinAngle,0),'XYZ')
-            offset_mud.rotate(purlinEular)        
+            #241115 取消了灰背计算时的旋转，否则导致瓦面在正脊处无法闭合，与正脊割裂
+            # # 为了与屋脊更好的匹配，将灰背的位移按照椽架斜率旋转
+            # if n != len(purlin_pos)-1:
+            #     purlinAngle = math.atan(
+            #             (purlin_pos[n+1].z-purlin_pos[n].z)
+            #             /(purlin_pos[n].y-purlin_pos[n+1].y)
+            #         )
+            # if direction == 'X':
+            #     purlinEular = Euler((-purlinAngle,0,0),'XYZ')
+            # else:
+            #     purlinEular = Euler((0,purlinAngle,0),'XYZ')
+            # offset_mud.rotate(purlinEular)        
             point += + offset_rafter + offset_mud
             sideCurveVerts.append(point)
 
@@ -802,14 +805,16 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         isBoolInside=False
         # 瓦片走向取第一条边
         dir_index = 0
-        offset_aside = Vector((bData.tile_width_real/4,tileLength/2,0))
+        offset_aside = Vector((bData.tile_width_real/4,-tileLength/2,0))
+        offset_head = Vector((bData.tile_width_real/4,tileLength/2,0))
     else:
         tileGrid = utils.flipNormal(tileGrid)
         # boolean用intersec，向内切
         isBoolInside=True
         # 瓦片走向取第二条边
         dir_index = 1
-        offset_aside = Vector((-bData.tile_width_real/4,tileLength/2,0))
+        offset_aside = Vector((-bData.tile_width_real/4,-tileLength/2,0))
+        offset_head = Vector((-bData.tile_width_real/4,tileLength/2,0))
 
     # 在瓦面网格上依次排布瓦片
     bm = bmesh.new()   # create an empty BMesh
@@ -822,27 +827,22 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         e = f.edges[dir_index]
         # 边的向量(归一化)，做为Y轴
         y = (e.verts[1].co - e.verts[0].co).normalized()
-        # 平均相邻面的法线，做为边的法线，做为Z轴
-        z = sum((f.normal for f in e.link_faces), Vector()).normalized()
+        # # 平均相邻面的法线，做为边的法线，做为Z轴
+        # z = sum((f.normal for f in e.link_faces), Vector()).normalized()
+        z = f.normal.normalized()
         # Y/Z轴做叉积，得到与之垂直的X轴
         x = y.cross(z)
         # 坐标系转置（行列互换，以复合blender的坐标系要求）
         M = Matrix((x, y, z)).transposed().to_4x4()
         M.translation = f.calc_center_median()
-
-        # 平滑补偿计算
-        lastEdge = f.edges[3]
-        angle = None
-        if len(lastEdge.link_faces) >1:
-            # 计算相邻两面的法线夹角，做为后续simply deform的补偿角度
-            thisFaceNormal = lastEdge.link_faces[0].normal
-            nextFaceNormal = lastEdge.link_faces[1].normal
-            angle = -thisFaceNormal.angle(nextFaceNormal)
         
+        # 241113 修正bug：原来的筒板瓦排布时从檐口的瓦面face开始计算，
+        # 实际上第一行应该是勾头滴水的normal，筒板瓦应该从第二行的face开始计算
         # 排布板瓦，仅在偶数列排布
         if ((f.index%GridCols) % 2 == 0
             # 不做最后一列板瓦，以免与排山勾滴重叠
-            and f.index%GridCols != GridCols-1):
+            and f.index%GridCols != GridCols-1
+            and f.index >= GridCols):
             tileObj = __setTile(
                 sourceObj=flatTile,
                 name='板瓦',
@@ -850,16 +850,10 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 offset=offset_aside.copy(),
                 parent=tileGrid,
             )
-            # 平滑补偿
-            if angle != None:
-                modDeform:bpy.types.SimpleDeformModifier = \
-                    tileObj.modifiers.new('变形','SIMPLE_DEFORM')
-                modDeform.deform_method = 'BEND'
-                modDeform.angle = angle
             tileList.append(tileObj)
 
         # 排布筒瓦，奇数列排布
-        if (f.index%GridCols) % 2 == 1:
+        if (f.index%GridCols) % 2 == 1 and f.index >= GridCols:
             tileObj = __setTile(
                 sourceObj=circularTile,
                 name='筒瓦',
@@ -867,12 +861,6 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 offset=offset_aside.copy(),
                 parent=tileGrid,
             )
-            # 平滑补偿
-            if angle != None:
-                modDeform:bpy.types.SimpleDeformModifier = \
-                    tileObj.modifiers.new('变形','SIMPLE_DEFORM')
-                modDeform.deform_method = 'BEND'
-                modDeform.angle = angle
             tileList.append(tileObj)
 
         # 排布檐口瓦
@@ -883,7 +871,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                     sourceObj=dripTile,
                     name='滴水',
                     Matrix=M,
-                    offset=offset_aside.copy(),
+                    offset=offset_head.copy(),
                     parent=tileGrid,
                 )
                 # 硬山、悬山（卷棚）最后一个滴水做斜切
@@ -908,7 +896,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                     sourceObj=eaveTile,
                     name='瓦当',
                     Matrix=M,
-                    offset=offset_aside.copy(),
+                    offset=offset_head.copy(),
                     parent=tileGrid,
                 )
                 tileList.append(tileObj)

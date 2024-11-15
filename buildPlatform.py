@@ -34,7 +34,7 @@ def __addPlatformProxy(buildingObj:bpy.types.Object):
     # 设置插件属性
     pfProxy.ACA_data['aca_obj'] = True
     pfProxy.ACA_data['aca_type'] = con.ACA_TYPE_PLATFORM
-    utils.hideObjFace(pfProxy)
+    utils.hideObj(pfProxy)
     return pfProxy
 
 # 构造台基的几何细节
@@ -220,7 +220,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
     jtsObjs.append(brickObj)
 
     # 第三层，土衬石，从水平露明，并外扩金边
-    brickObj = utils.addCube(
+    tuchenObj = utils.addCube(
         name='土衬',
         location=(
             0,0,
@@ -234,7 +234,8 @@ def __drawPlatform(platformObj:bpy.types.Object):
         ),
         parent=platformObj
     )
-    jtsObjs.append(brickObj)
+    mat.setShader(tuchenObj,
+        mat.shaderType.ROCK)
 
     # 统一设置
     for obj in jtsObjs:
@@ -251,7 +252,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         jtsObjs,newName='台明'
         )
 
-    return platformSet
+    return platformSet,tuchenObj
 
 # 绘制踏跺对象
 def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
@@ -287,7 +288,7 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
 
     # 1、土衬
     # 宽度：柱间距+金边+台阶石出头（垂带中与柱中对齐）
-    tuchenWidth = pWidth # +con.GROUND_BORDER*2+stoneWidth
+    tuchenWidth = pWidth +con.GROUND_BORDER*2+stoneWidth
     tuchenObj = utils.addCube(
         name='土衬',
         location=(
@@ -302,7 +303,7 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
         ),
         parent=stepProxy
     )
-    taduoObjs.append(tuchenObj)
+    #taduoObjs.append(tuchenObj)
 
     # 3、象眼石
     brickObj = utils.addCube(
@@ -450,7 +451,7 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
     # # 移除proxy
     # bpy.data.objects.remove(stepProxy)
 
-    return taduoSet
+    return taduoSet,tuchenObj
 
 # 根据踏跺配置参数stepID，生成踏跺proxy
 def __addStepProxy(buildingObj:bpy.types.Object,
@@ -537,7 +538,7 @@ def __addStepProxy(buildingObj:bpy.types.Object,
     stepProxy.parent = platformObj
     stepProxy.ACA_data['stepID'] = stepID
     stepProxy.ACA_data['aca_type'] = con.ACA_TYPE_STEP
-    utils.hideObjFace(stepProxy)
+    utils.hideObj(stepProxy)
     utils.lockObj(stepProxy)
 
     return stepProxy
@@ -714,7 +715,7 @@ def __checkNextStep(StepList,stepID):
         pTo_x -= 1
     if pFrom_x == pTo_x and pFrom_x == 0 and pTo_x == 0:
         # 西向，stepID向下查看
-        pFrom_y-= 1
+        pFrom_y -= 1
         pTo_y -= 1
     if pFrom_x == pTo_x and pFrom_x != 0 and pTo_x != 0:
         # 东向，stepID向上查看
@@ -745,8 +746,8 @@ def buildPlatform(buildingObj:bpy.types.Object):
 
     # 生成台基框线
     pfProxy = __addPlatformProxy(buildingObj)
-    # 构造台基细节
-    platformObj = __drawPlatform(pfProxy)
+    # 构造台基细节，单独返回了台明和土衬
+    platformObj,tuchenObj = __drawPlatform(pfProxy)
 
     # 散水参考对象
     sanshuiRefList = [pfProxy]
@@ -764,7 +765,18 @@ def buildPlatform(buildingObj:bpy.types.Object):
         # 生成踏跺对象
         # 241115 判断相邻踏跺，只做单边
         hasNextStep = __checkNextStep(stepList,stepID)
-        stepObj = __drawStep(stepProxy,hasNextStep)
+        stepObj,stepTuchenObj = __drawStep(stepProxy,hasNextStep)
+        # 241115 合并土衬对象
+        # 添加boolean
+        modBool:bpy.types.BooleanModifier = \
+        tuchenObj.modifiers.new('合并','BOOLEAN')
+        modBool.object = stepTuchenObj
+        modBool.solver = 'EXACT'
+        modBool.operation = 'UNION'
+        # 应用
+        utils.applyAllModifer(tuchenObj)
+        # 删除已合并对象
+        bpy.data.objects.remove(stepTuchenObj)
 
         # 收集散水参考对象
         sanshuiRefList.append(stepProxy)

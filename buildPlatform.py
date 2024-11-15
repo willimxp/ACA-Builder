@@ -643,6 +643,7 @@ def addStep(buildingObj:bpy.types.Object,
                                 
                     # 将踏跺加入整体布局中
                     bData.step_net += stepID + ','
+                    utils.outputMsg("添加踏跺：" + stepID)
 
                     # 交换柱子，为下一次循环做准备
                     pFrom = piller
@@ -686,9 +687,11 @@ def delStep(buildingObj:bpy.types.Object,
     utils.focusObj(buildingObj)
     return {'FINISHED'}
 
-# 判断踏跺是否有相邻需要绘制
+# 241115 判断踏跺是否有相邻需要绘制
 # StepList的样式如"3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
 def __checkNextStep(StepList,stepID):
+    hasNextStep= False
+
     # 解析踏跺配置参数
     setting = stepID.split('#')
     # 起始柱子
@@ -700,14 +703,27 @@ def __checkNextStep(StepList,stepID):
     pTo_x = int(pTo[0])
     pTo_y = int(pTo[1])
 
-    # stepID向右加1
-    EastStepID = str(pFrom_x+1) + '/' + str(pFrom_y) \
-        + '#' + str(pTo_x+1) + '/' + str(pTo_y)
-    
-    hasNextStep= False
-    if EastStepID in StepList:
+    # 区分方向
+    if pFrom_y == pTo_y and pFrom_y == 0 and pTo_y == 0:
+        # 南向，stepID向右查看
+        pFrom_x += 1
+        pTo_x += 1
+    if pFrom_y == pTo_y and pFrom_y != 0 and pTo_y != 0:
+        # 北向，stepID向左查看
+        pFrom_x -= 1
+        pTo_x -= 1
+    if pFrom_x == pTo_x and pFrom_x == 0 and pTo_x == 0:
+        # 西向，stepID向下查看
+        pFrom_y-= 1
+        pTo_y -= 1
+    if pFrom_x == pTo_x and pFrom_x != 0 and pTo_x != 0:
+        # 东向，stepID向上查看
+        pFrom_y += 1
+        pTo_y += 1
+    NextStepID = str(pFrom_x) + '/' + str(pFrom_y) \
+            + '#' + str(pTo_x) + '/' + str(pTo_y)
+    if NextStepID in StepList:
         hasNextStep = True
-
     return hasNextStep
 
 # 根据固定模板，创建新的台基

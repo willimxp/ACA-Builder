@@ -22,7 +22,6 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     wallproxy = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL)
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
-    wData:acaData = wallproxy.ACA_data
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
     # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
     dk = bData.DK

@@ -41,7 +41,6 @@ def __addRoofRoot(buildingObj:bpy.types.Object):
     # 以挑檐桁下皮为起始点
     bData : acaData = buildingObj.ACA_data # 载入数据
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
     tile_base = bData.platform_height \
                 + bData.piller_height
     # 如果有斗栱，抬高斗栱高度
@@ -336,7 +335,6 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     # 一、载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE*dk
     # 屋顶样式，1-庑殿，2-歇山，3-悬山，4-硬山
     roofStyle = bData.roof_style
     rafterRootObj = utils.getAcaChild(
@@ -633,7 +631,6 @@ def __drawBeam(
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
     bWidth = dimension.x
     bLength = dimension.y
     bHeight = dimension.z
@@ -726,7 +723,6 @@ def __drawJiaobei(shuzhuObj:bpy.types.Object):
         shuzhuObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
     
     shuzhu_height = shuzhuObj.dimensions.z
     # 仅柱高大于柱径才需要角背，否则直接返回
@@ -3879,7 +3875,6 @@ def __buildShanWall(
         purlin_pos):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
-    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     rafterRootObj = utils.getAcaChild(

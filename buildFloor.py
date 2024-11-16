@@ -193,7 +193,6 @@ def __buildFang(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
     aData:tmpData = bpy.context.scene.ACA_temp
 
     # 柱网根节点
@@ -401,8 +400,6 @@ def delFang(buildingObj:bpy.types.Object,
 def buildPillers(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
-    dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
     aData:tmpData = bpy.context.scene.ACA_temp
 
     # 锁定操作目录

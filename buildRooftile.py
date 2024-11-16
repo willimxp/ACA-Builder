@@ -166,7 +166,6 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
@@ -1147,7 +1146,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
+    pd = bData.piller_diameter
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
@@ -1275,7 +1274,7 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
+    pd = bData.piller_diameter
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
@@ -1827,7 +1826,6 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
 # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )

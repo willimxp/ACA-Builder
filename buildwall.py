@@ -71,7 +71,6 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
     # 墙体根节点
     wallrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_WALL_ROOT)
@@ -258,15 +257,10 @@ def buildSingleWall(wallproxy:bpy.types.Object):
     utils.deleteHierarchy(wallproxy)
 
     # 载入数据
-    buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
-    bData:acaData = buildingObj.ACA_data
     wData:acaData = wallproxy.ACA_data
-    dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
     
     if wData.wall_style == "1":   #槛墙
         wallChildObj = __drawWall(wallproxy)
-            
 
     if wData.wall_style in ("2","3"): # 2-隔扇，3-槛墙
         utils.focusObj(wallproxy)
@@ -439,7 +433,6 @@ def buildWallLayout(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]

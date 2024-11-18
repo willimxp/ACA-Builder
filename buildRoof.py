@@ -448,6 +448,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 dimension=dim,
                 parent=rafterRootObj,
             )
+            mat.setShader(dianbanObj,mat.shaderType.REDPAINT)
             if (
                     # 除了脊桁
                     n!=len(purlin_pos)-1  
@@ -484,6 +485,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 dimension=dim,
                 parent=rafterRootObj,
             )
+            mat.setShader(hengfangObj,mat.shaderType.REDPAINT)
             if (
                     # 除了脊桁
                     n!=len(purlin_pos)-1  
@@ -589,6 +591,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     rotation=Vector((0, 0, math.radians(90))),
                     parent=rafterRootObj,
                 )
+                mat.setShader(dianbanObj,mat.shaderType.REDPAINT)
                 utils.addModifierMirror(
                     object=dianbanObj,
                     mirrorObj=rafterRootObj,
@@ -614,6 +617,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     dimension=dim,
                     parent=rafterRootObj,
                 )
+                mat.setShader(hengfangObj,mat.shaderType.REDPAINT)
                 utils.addModifierMirror(
                     object=hengfangObj,
                     mirrorObj=rafterRootObj,
@@ -871,6 +875,13 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     buildingObj=buildingObj,
                     name = beam_name
                 )
+                # 贴彩画
+                beamCopyObj.rotation_euler.z = math.radians(90)
+                utils.applyTransfrom(beamCopyObj,use_rotation=True)
+                mat.setShader(beamCopyObj,mat.shaderType.LIANGFANG)
+                beamCopyObj.rotation_euler.z = math.radians(-90)
+                utils.applyTransfrom(beamCopyObj,use_rotation=True)
+
                 beamCopyObj.parent= rafterRootObj
                 beamObjects.append(beamCopyObj)
 
@@ -940,6 +951,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     dimension=shuzhu_dimensions,
                     parent=rafterRootObj,
                 )
+                mat.setShader(shuzhuCopyObj,mat.shaderType.WOOD)
                 if n!=len(purlin_pos)-1:
                     #镜像
                     utils.addModifierMirror(
@@ -953,6 +965,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 # 蜀柱添加角背
                 jiaobeiObj = __drawJiaobei(shuzhuCopyObj)
                 if jiaobeiObj != None:
+                    mat.setShader(jiaobeiObj,mat.shaderType.WOOD)
                     beamObjects.append(jiaobeiObj)
         
     # 合并梁架各个部件

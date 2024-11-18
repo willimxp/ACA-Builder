@@ -214,7 +214,7 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
 # 檐桁为了便于彩画贴图，按开间逐一生成
 # 其他的桁为了效率，还是贯通整做成一根
 def __buildYanHeng(rafterRootObj:bpy.types.Object,
-                   purlin_pos):
+                   purlin_cross,purlin_name):
     # 载入数据
     buildingObj = utils.getAcaParent(
         rafterRootObj,con.ACA_TYPE_BUILDING)
@@ -223,8 +223,6 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
     dk = bData.DK
     # 获取开间、进深数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
-    # 挑檐桁交叉点
-    purlin_cross = purlin_pos[0]
 
     # 收集待生成的挑檐桁
     purlinList = []
@@ -240,8 +238,8 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
     else:
         # 四坡顶为了垂直交扣，做一桁径的出梢
         # 硬山为了承托斗栱，也做了出梢
-        if bData.use_dg:
-            hengExtend += con.HENG_EXTEND*dk /2
+        # 241118 无论是否有斗拱都应该出梢
+        hengExtend += con.HENG_EXTEND*dk /2
     # 四坡顶用斗拱时，增加斗栱出跳
     if bData.roof_style in (
             con.ROOF_WUDIAN,
@@ -311,7 +309,7 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
             depth = purlin['len'],
             location = purlin['loc'], 
             rotation = purlin['rot'],
-            name = "挑檐桁",
+            name = purlin_name,
             root_obj = rafterRootObj,
         )
         # 设置梁枋彩画
@@ -340,6 +338,15 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     
+    # 檐桁为了便于彩画贴图，按开间逐一生成
+    if bData.use_dg:
+        __buildYanHeng(rafterRootObj,
+                       purlin_cross=purlin_pos[0],
+                       purlin_name='挑檐桁')
+        # 删除挑檐桁数据
+        del purlin_pos[0]
+    # 其他的桁为了效率，还是贯通整做成一根
+    
     # 桁的各个参数
     if roofStyle in (
             con.ROOF_XUANSHAN,
@@ -352,81 +359,79 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
         hengExtend = con.HENG_EXTEND * dk
     # 桁直径（正心桁、金桁、脊桁）
     purlin_r = con.HENG_COMMON_D / 2 * dk
-    
-    
-    # 檐桁为了便于彩画贴图，按开间逐一生成
-    if bData.use_dg:
-        __buildYanHeng(rafterRootObj,purlin_pos)
-        # 删除挑檐桁数据
-        del purlin_pos[0]
-    # 其他的桁为了效率，还是贯通整做成一根
 
     # 二、布置前后檐桁,根据上述计算的purlin_pos数据，批量放置桁对象
     for n in range(len(purlin_pos)) :
         # 1、桁交点
         pCross = purlin_pos[n]
-        
         # 2、计算桁的长度
         purlin_length_x = pCross.x * 2 + hengExtend
-        # 歇山檐面的下金桁延长，与上层对齐
-        if roofStyle == con.ROOF_XIESHAN and n >= 1 :
-                purlin_length_x = purlin_pos[-1].x * 2
 
-        # 3、创建桁对象
-        loc = (0,pCross.y,pCross.z)
-        # 盝顶做承椽枋
-        if (n == len(purlin_pos)-1 and 
-               bData.roof_style == con.ROOF_LUDING) :
-            hengFB = utils.addCube(
-                name = '承椽枋-前后',
-                location= loc,
-                dimension= (purlin_length_x,
-                            con.EFANG_SMALL_H*dk,
-                            con.HENG_COMMON_D*dk),
-                parent=rafterRootObj
-            )
-        # 其他一般情况下的槫子
+        # 241118 正心桁也做彩画
+        if n==0:
+            __buildYanHeng(rafterRootObj,
+                           purlin_cross=purlin_pos[0],
+                           purlin_name='正心桁')
         else:
-            hengFB = utils.addCylinderHorizontal(
-                    radius = purlin_r, 
-                    depth = purlin_length_x,
-                    location = loc, 
-                    name = "桁-前后",
-                    root_obj = rafterRootObj
+            # 歇山檐面的下金桁延长，与上层对齐
+            if roofStyle == con.ROOF_XIESHAN and n >= 1 :
+                    purlin_length_x = purlin_pos[-1].x * 2
+
+            # 3、创建桁对象
+            loc = (0,pCross.y,pCross.z)
+            # 盝顶做承椽枋
+            if (n == len(purlin_pos)-1 and 
+                bData.roof_style == con.ROOF_LUDING) :
+                hengFB = utils.addCube(
+                    name = '承椽枋-前后',
+                    location= loc,
+                    dimension= (purlin_length_x,
+                                con.EFANG_SMALL_H*dk,
+                                con.HENG_COMMON_D*dk),
+                    parent=rafterRootObj
                 )
-        # 前后镜像
-        if (
-                # 一般情况最后一根为脊桁，不做镜像
-                n!=len(purlin_pos)-1            
-                # 卷棚最后一根为脊桁，应该做前后的镜像
-                or (n==len(purlin_pos)-1 and    
-                    bData.roof_style==con.ROOF_XUANSHAN_JUANPENG)
-                # 盝顶最后一根为下金桁，应该做前后镜像
-                or (n==len(purlin_pos)-1 and    
-                    bData.roof_style==con.ROOF_LUDING)
-            ):
-            # 除最后一根脊桁的处理，挑檐桁、正心桁、金桁做Y镜像
-            utils.addModifierMirror(
-                    object=hengFB,
-                    mirrorObj=rafterRootObj,
-                    use_axis=(False,True,False)
-                )                
-        else: 
-            # 最后一根脊桁添加伏脊木
-            # 伏脊木为6变形（其实不是正六边形，上大下小，这里偷懒了）
-            # 为了补偿圆柱径与六边形柱径的误差，向下调整了1/8的伏脊木高
-            loc_z = pCross.z+ (con.HENG_COMMON_D+con.FUJIMU_D)/2*dk - con.FUJIMU_D/8*dk
-            fujimuObj = utils.addCylinderHorizontal(
-                    radius = con.FUJIMU_D/2*dk, 
-                    depth = purlin_length_x,
-                    location = (0,0,loc_z), 
-                    name = "伏脊木",
-                    root_obj = rafterRootObj,
-                    edge_num =6
-                )
-        modBevel:bpy.types.BevelModifier = \
-            hengFB.modifiers.new('Bevel','BEVEL')
-        modBevel.width = con.BEVEL_LOW
+            # 其他一般情况下的槫子
+            else:
+                hengFB = utils.addCylinderHorizontal(
+                        radius = purlin_r, 
+                        depth = purlin_length_x,
+                        location = loc, 
+                        name = "桁-前后",
+                        root_obj = rafterRootObj
+                    )
+            # 前后镜像
+            if (
+                    # 一般情况最后一根为脊桁，不做镜像
+                    n!=len(purlin_pos)-1            
+                    # 卷棚最后一根为脊桁，应该做前后的镜像
+                    or (n==len(purlin_pos)-1 and    
+                        bData.roof_style==con.ROOF_XUANSHAN_JUANPENG)
+                    # 盝顶最后一根为下金桁，应该做前后镜像
+                    or (n==len(purlin_pos)-1 and    
+                        bData.roof_style==con.ROOF_LUDING)
+                ):
+                # 除最后一根脊桁的处理，挑檐桁、正心桁、金桁做Y镜像
+                utils.addModifierMirror(
+                        object=hengFB,
+                        mirrorObj=rafterRootObj,
+                        use_axis=(False,True,False)
+                    )                
+            else: 
+                # 最后一根脊桁添加伏脊木
+                # 伏脊木为6变形（其实不是正六边形，上大下小，这里偷懒了）
+                # 为了补偿圆柱径与六边形柱径的误差，向下调整了1/8的伏脊木高
+                loc_z = pCross.z+ (con.HENG_COMMON_D+con.FUJIMU_D)/2*dk - con.FUJIMU_D/8*dk
+                fujimuObj = utils.addCylinderHorizontal(
+                        radius = con.FUJIMU_D/2*dk, 
+                        depth = purlin_length_x,
+                        location = (0,0,loc_z), 
+                        name = "伏脊木",
+                        root_obj = rafterRootObj,
+                        edge_num =6
+                    )
+            modBevel:bpy.types.BevelModifier = \
+                hengFB.modifiers.new('Bevel','BEVEL')
+            modBevel.width = con.BEVEL_LOW
         
         # 有斗拱时，正心桁下不做垫板
         if not (bData.use_dg and n == 0):
@@ -515,40 +520,42 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             rafterRange = range(len(purlin_pos))
         for n in rafterRange :
             pCross = purlin_pos[n]
-
             # 2、计算桁的长度
             purlin_length_y = pCross.y * 2 + hengExtend
 
-            # 3、摆放桁对象
-            # 盝顶做承椽枋
-            if (n == len(purlin_pos)-1 and 
-                bData.roof_style == con.ROOF_LUDING) :
-                hengLR = utils.addCube(
-                    name = '承椽枋-两山',
-                    location= (pCross.x,0,pCross.z),
-                    dimension= (con.EFANG_SMALL_H*dk,
-                                purlin_length_y,
-                                con.HENG_COMMON_D*dk),
-                    parent=rafterRootObj
-                )
-            # 其他一般情况下的槫子
+            # 241118 正心桁做彩画
+            if n==0: pass
             else:
-                hengLR = utils.addCylinderHorizontal(
-                        radius = purlin_r, 
-                        depth = purlin_length_y,
-                        location = (pCross.x,0,pCross.z), 
-                        rotation=Vector((0, 0, math.radians(90))), 
-                        name = "桁-两山",
-                        root_obj = rafterRootObj
+                # 3、摆放桁对象
+                # 盝顶做承椽枋
+                if (n == len(purlin_pos)-1 and 
+                    bData.roof_style == con.ROOF_LUDING) :
+                    hengLR = utils.addCube(
+                        name = '承椽枋-两山',
+                        location= (pCross.x,0,pCross.z),
+                        dimension= (con.EFANG_SMALL_H*dk,
+                                    purlin_length_y,
+                                    con.HENG_COMMON_D*dk),
+                        parent=rafterRootObj
                     )
-            utils.addModifierMirror(
-                    object=hengLR,
-                    mirrorObj=rafterRootObj,
-                    use_axis=(True,False,False)
-                )
-            modBevel:bpy.types.BevelModifier = \
-                hengLR.modifiers.new('Bevel','BEVEL')
-            modBevel.width = con.BEVEL_LOW
+                # 其他一般情况下的槫子
+                else:
+                    hengLR = utils.addCylinderHorizontal(
+                            radius = purlin_r, 
+                            depth = purlin_length_y,
+                            location = (pCross.x,0,pCross.z), 
+                            rotation=Vector((0, 0, math.radians(90))), 
+                            name = "桁-两山",
+                            root_obj = rafterRootObj
+                        )
+                utils.addModifierMirror(
+                        object=hengLR,
+                        mirrorObj=rafterRootObj,
+                        use_axis=(True,False,False)
+                    )
+                modBevel:bpy.types.BevelModifier = \
+                    hengLR.modifiers.new('Bevel','BEVEL')
+                modBevel.width = con.BEVEL_LOW
             
             # 判断垫板、枋的逻辑
             use_dianban = True

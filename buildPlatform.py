@@ -426,7 +426,7 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
     taduoObjs.append(brickObj)
 
     # 批量设置
-    for obj in stepProxy.children:
+    for obj in taduoObjs:
         modBevel:bpy.types.BevelModifier = \
             obj.modifiers.new('Bevel','BEVEL')
         modBevel.width = bevel
@@ -780,6 +780,14 @@ def buildPlatform(buildingObj:bpy.types.Object):
 
         # 收集散水参考对象
         sanshuiRefList.append(stepProxy)
+
+    # 土衬处理
+    # 添加导角
+    modBevel:bpy.types.BevelModifier = \
+            tuchenObj.modifiers.new('Bevel','BEVEL')
+    modBevel.width = con.BEVEL_HIGH
+    modBevel.offset_type = 'WIDTH'
+    modBevel.use_clamp_overlap = False
 
     # 生成散水
     sanshuiObj = __addSanshui(pfProxy,sanshuiRefList)

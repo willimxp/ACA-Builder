@@ -3515,6 +3515,121 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
 
     return
 
+# 营造山花板
+def __buildShanhuaBan(buildingObj: bpy.types.Object,
+                 purlin_pos):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
+    dk = bData.DK
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+
+    # 绘制象眼板上沿曲线
+    shbVerts = []
+    # 歇山的山花板横坐标在金桁交点处（加出梢）
+    shb_x = (purlin_pos[-1].x       # 桁檩定位点
+                 - con.XYB_WIDTH*dk/2   # 移到外皮位置
+                 + 0.01)                # 防止与檩头交叠
+
+    # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
+    for n in range(1,len(purlin_pos)): # 歇山从金桁以上做起
+        # 博缝板的高度调整，参考__buildBofeng()中的处理
+        bofeng_height= (con.HENG_COMMON_D + con.YUANCHUAN_D*4
+                   + con.WANGBAN_H + con.ROOFMUD_H)*dk
+        # 向上位移:沿着椽架方向，位移博缝板
+        # 博缝板是沿着博缝板曲线进行排布，该曲线z位移了桁径+椽径+望板+灰泥，按40度加斜计算，
+        bofeng_offset = (con.HENG_COMMON_D + con.YUANCHUAN_D 
+                  + con.WANGBAN_H + con.ROOFMUD_H)*dk * math.sin(math.radians(40))
+        l= bofeng_height - bofeng_offset
+        # 用三角函数进行了计算，建议画个图看看
+        p1= purlin_pos[n-1]
+        p2= purlin_pos[n]
+        ang = math.atan((p2.z-p1.z)/(p2.y-p1.y))
+        h = l/math.cos(ang)
+
+        point:Vector = purlin_pos[n].copy()
+        point.x = shb_x
+        point.z -= h
+        shbVerts.insert(0,point*Vector((1,-1,1)))
+        shbVerts.append(point)
+    
+    # 创建象眼板实体
+    # 任意添加一个对象，具体几何数据在bmesh中建立
+    bpy.ops.mesh.primitive_cube_add(
+        location=(0,0,0)
+    )
+    shbObj = bpy.context.object
+    shbObj.name = '山花板'
+    shbObj.data.name = '山花板'
+    shbObj.parent = rafterRootObj
+
+    # 创建bmesh
+    bm = bmesh.new()
+    # 摆放点
+    vertices=[]
+    for n in range(len(shbVerts)):
+        if n==0:
+            vert = bm.verts.new(shbVerts[n])
+        else:
+            # 挤出
+            return_geo = bmesh.ops.extrude_vert_indiv(bm, verts=[vert])
+            vertex_new = return_geo['verts'][0]
+            del return_geo
+            # 给挤出的点赋值
+            vertex_new.co = shbVerts[n]
+            # 交换vertex给下一次循环
+            vert = vertex_new
+        vertices.append(vert)
+    
+    # 创建面
+    for n in range(len(vertices)//2-1): #注意‘/’可能是float除,用'//'进行整除
+        bm.faces.new((
+            vertices[n],vertices[n+1], 
+            vertices[-n-2],vertices[-n-1] 
+        ))
+
+    # 挤出山花板厚度
+    offset=Vector((con.XYB_WIDTH*dk, 0,0))
+    return_geo = bmesh.ops.extrude_face_region(bm, geom=bm.faces)
+    verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
+    bmesh.ops.translate(bm, verts=verts, vec=offset)
+    for v in bm.verts:
+        # 移动所有点，居中
+        v.co.x -= con.XYB_WIDTH*dk/2
+
+    # 确保face normal朝向
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(shbObj.data)
+    shbObj.data.update()
+    bm.free()
+
+    # 山花板板沿金桁高度裁剪
+    # 裁剪高度从金桁中心+半桁+博脊高
+    cutPoint = purlin_pos[1] \
+        + Vector((0,0,con.HENG_COMMON_D/4*dk)) \
+        + Vector((0,0,aData.ridgeFront_source.dimensions.z))
+    utils.addBisect(
+        object=shbObj,
+        pStart=Vector((0,1,0)),
+        pEnd=Vector((0,-1,0)),
+        pCut=rafterRootObj.matrix_world @ cutPoint,
+        clear_outer=True,
+        direction='Y'
+    )
+
+    # 应用镜像
+    utils.addModifierMirror(
+        object=shbObj,
+        mirrorObj=rafterRootObj,
+        use_axis=(True,False,False)
+    )
+
+    # 应用材质
+    mat.setShader(shbObj,mat.shaderType.SHANHUA)
+
+    return shbObj
+
 # 营造象眼板
 def __buildXiangyanBan(buildingObj: bpy.types.Object,
                  purlin_pos):
@@ -4053,12 +4168,15 @@ def __buildBPW(buildingObj:bpy.types.Object):
     # 营造山墙，仅适用于硬山
     if bData.roof_style == con.ROOF_YINGSHAN:
         __buildShanWall(buildingObj,rafter_pos)
-    # 营造象眼板，适用于歇山、悬山（卷棚）
+    # 营造象眼板，适用于悬山（卷棚）
     if bData.roof_style in (
-            con.ROOF_XIESHAN,
             con.ROOF_XUANSHAN,
             con.ROOF_XUANSHAN_JUANPENG):
         __buildXiangyanBan(buildingObj,rafter_pos)
+    # 营造山花板，适用于歇山
+    if bData.roof_style in (
+            con.ROOF_XIESHAN):
+        __buildShanhuaBan(buildingObj,rafter_pos)
     # 营造博缝板，适用于歇山、悬山(卷棚)、硬山
     if bData.roof_style in (
             con.ROOF_XIESHAN,

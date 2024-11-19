@@ -2086,7 +2086,8 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
     y = math.ceil(rafter_pos[1].y 
             /ridgeObj.dimensions.x) \
         * ridgeObj.dimensions.x
-    z = rafter_pos[1].z - con.HENG_COMMON_D*dk/2
+    # 241119 博脊定位异常
+    z = rafter_pos[1].z + con.HENG_COMMON_D*dk/2
     # 垂脊中点
     p0 = Vector((x,0,z))
     sideRidgeVerts.append(p0)

@@ -876,11 +876,11 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     name = beam_name
                 )
                 # 贴彩画
-                beamCopyObj.rotation_euler.z = math.radians(90)
-                utils.applyTransfrom(beamCopyObj,use_rotation=True)
-                mat.setShader(beamCopyObj,mat.shaderType.LIANGFANG)
-                beamCopyObj.rotation_euler.z = math.radians(-90)
-                utils.applyTransfrom(beamCopyObj,use_rotation=True)
+                # beamCopyObj.rotation_euler.z = math.radians(90)
+                # utils.applyTransfrom(beamCopyObj,use_rotation=True)
+                # mat.setShader(beamCopyObj,mat.shaderType.LIANGFANG)
+                # beamCopyObj.rotation_euler.z = math.radians(-90)
+                # utils.applyTransfrom(beamCopyObj,use_rotation=True)
 
                 beamCopyObj.parent= rafterRootObj
                 beamObjects.append(beamCopyObj)
@@ -951,7 +951,6 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     dimension=shuzhu_dimensions,
                     parent=rafterRootObj,
                 )
-                mat.setShader(shuzhuCopyObj,mat.shaderType.WOOD)
                 if n!=len(purlin_pos)-1:
                     #镜像
                     utils.addModifierMirror(
@@ -965,7 +964,6 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 # 蜀柱添加角背
                 jiaobeiObj = __drawJiaobei(shuzhuCopyObj)
                 if jiaobeiObj != None:
-                    mat.setShader(jiaobeiObj,mat.shaderType.WOOD)
                     beamObjects.append(jiaobeiObj)
         
     # 合并梁架各个部件
@@ -976,6 +974,8 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
         modBevel:bpy.types.BevelModifier = \
             beamSetObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_HIGH
+        # 241119 统一刷红漆
+        mat.setShader(beamSetObj,mat.shaderType.REDPAINT)
                            
     return
 

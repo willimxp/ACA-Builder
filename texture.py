@@ -494,7 +494,7 @@ def setShader(object:bpy.types.Object,
     if shader == shaderType.ROCK:
         mat = aData.mat_rock
     if shader == shaderType.STONE:
-        mat == aData.mat_stone
+        mat = aData.mat_stone
 
     # 方砖缦地
     if shader == shaderType.BRICK1:

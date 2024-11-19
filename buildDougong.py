@@ -230,11 +230,10 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
     )
     
     # 做两山连接件(仅适用四坡顶，不适用于二坡顶)
-    if (bData.roof_style in (
+    if bData.roof_style in (
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
-            con.ROOF_LUDING)
-        or yLoc==0):
+            con.ROOF_LUDING):
         loc = (net_x[-1]- yLoc,0,zLoc)
         fangCopy = utils.copyObject(
             sourceObj = fangSourceObj,

@@ -3546,6 +3546,16 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
         xyb_range = range(len(purlin_pos))
         xyb_name = '象眼板'
 
+    # 241119 有斗拱的悬山建筑，向下延伸象眼板，封闭斗拱层的缝隙
+    if bData.use_dg and bData.roof_style in (
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG):
+        point = Vector((xyb_x,
+                        purlin_pos[0].y,
+                        - bData.dg_height))
+        xybVerts.insert(0,point*Vector((1,-1,1)))
+        xybVerts.append(point)
+
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
     # 从举架定位点做偏移
     for n in xyb_range:

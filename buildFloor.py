@@ -247,6 +247,13 @@ def __buildFangBWQ(fangObj):
             location=(bwqX,0,con.EFANG_LARGE_H * dk/2),
             rotation=(0,0,rotZ)
         )
+        # 霸王拳尺度权衡，参考马炳坚p163
+        bawangquanObj.dimensions = (
+            con.BAWANGQUAN_L*bData.piller_diameter,         # 长1D
+            con.BAWANGQUAN_Y*bData.piller_diameter,         # 厚0.5D，马炳坚定义的0.8额枋
+            con.BAWANGQUAN_H*fangObj.dimensions.z,          # 高0.8额枋
+        )
+        utils.applyTransfrom(bawangquanObj,use_scale=True)
 
 # 在柱间添加额枋
 def __buildFang(buildingObj:bpy.types.Object):

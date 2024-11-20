@@ -258,6 +258,41 @@ def __buildFang(buildingObj:bpy.types.Object):
         )
         modBevel.width = con.BEVEL_EXHIGH
         modBevel.segments=3
+        # 241120 添加霸王拳
+        # 判断是否需要添加霸王拳
+        bLeft = bRight = False
+        # 左向添加的如：西南0/0#1/0，东南x/0#x/1，东北x/y#x-1/y,西北0/y#0/y-1
+        # 右侧添加的如：东南x-1/0#x/0,东北x/y-1#x/y，西北0/y#1/y,西南0/0#0/1
+        # 将两端相加进行判断
+        # 左向：1/0,2x/1,2x-1/2y,0/2y-1
+        # 右向：2x-1/0,2x/2y-1,1/2y,0/1
+        fangStr = str(pFrom_x+pTo_x) + '/' + str(pFrom_y+pTo_y)
+        xtop = len(net_x)-1
+        ytop = len(net_y)-1
+        if fangStr in ("1/0",
+                       str(xtop*2) + '/1',                  # 2x/1
+                       str(xtop*2-1) + '/' + str(ytop*2),   # 2x-1/2y
+                       '0/' + str(ytop*2-1)                 # 0/2y-1
+                       ):
+            bLeft = True
+            bwqX = fang_length/2
+            rotZ = 0
+        if fangStr in (
+                        str(xtop*2-1) +'/0',                # 2x-1/0
+                        str(xtop*2) + '/' + str(ytop*2-1),  # 2x/2y-1
+                        '1/' + str(ytop*2),                 # 1/2y
+                        "0/1"):
+            bRight = True
+            bwqX = -fang_length/2
+            rotZ = math.radians(180)
+        if bLeft or bRight:
+            # 添加霸王拳，以大额枋为父对象，继承位置和旋转
+            bawangquanObj = utils.copyObject(
+                sourceObj=aData.bawangquan_source,
+                name='霸王拳',parentObj=bigFangObj,
+                location=(bwqX,0,con.EFANG_LARGE_H * dk/2),
+                rotation=(0,0,rotZ)
+            )
 
         # 是否需要做小额枋
         if bData.use_smallfang:

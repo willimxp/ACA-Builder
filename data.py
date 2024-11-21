@@ -836,6 +836,12 @@ class ACA_data_template(bpy.types.PropertyGroup):
             type = bpy.types.Object,
         )# type: ignore
     
+    # 雀替对象
+    queti_source : bpy.props.PointerProperty(
+            name = "雀替",
+            type = bpy.types.Object,
+        )# type: ignore
+    
     # 琉璃瓦对象
     flatTile_source:bpy.props.PointerProperty(
             name = "板瓦",

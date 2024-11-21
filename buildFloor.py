@@ -383,6 +383,20 @@ def __buildFang(buildingObj:bpy.types.Object):
             modBevel.width = con.BEVEL_HIGH
             modBevel.segments=2     
     
+        # 201121 添加雀替
+        zoffset = (con.EFANG_LARGE_H*dk/2
+                   +con.BOARD_YOUE_H*dk
+                   +con.EFANG_SMALL_H*dk)
+        quetiObj = utils.copyObject(
+            sourceObj=aData.queti_source,
+            name='雀替',
+            parentObj=bigFangObj,
+            location=(0,0,-zoffset),
+            singleUser=True
+        )
+        quetiObj.dimensions.x = fang_length-bData.piller_diameter
+        utils.applyTransfrom(quetiObj,use_scale=True)
+        
     # 聚焦到最后添加的大额枋，便于用户可以直接删除
     utils.focusObj(bigFangObj)
     return {'FINISHED'}

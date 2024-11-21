@@ -35,6 +35,7 @@
     <bofeng_source type="Object">博缝板</bofeng_source>
     <cornerbeam_source type="Object">老角梁带霸王拳</cornerbeam_source>
     <bawangquan_source type="Object">霸王拳.彩画</bawangquan_source>
+    <queti_source type="Object">雀替.自动长度</queti_source>
     <flatTile_source type="Object">板瓦</flatTile_source>
     <circularTile_source type="Object">筒瓦</circularTile_source>
     <eaveTile_source type="Object">瓦当</eaveTile_source>

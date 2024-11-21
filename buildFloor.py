@@ -229,16 +229,16 @@ def __buildFangBWQ(fangObj):
                     '0/' + str(ytop*2-1)                 # 0/2y-1
                     ):
         bLeft = True
-        bwqX = fang_length/2
-        rotZ = 0
+        bwqX = -fang_length/2
+        rotZ = math.radians(180)
     if fangStr in (
                     str(xtop*2-1) +'/0',                # 2x-1/0
                     str(xtop*2) + '/' + str(ytop*2-1),  # 2x/2y-1
                     '1/' + str(ytop*2),                 # 1/2y
                     "0/1"):
         bRight = True
-        bwqX = -fang_length/2
-        rotZ = math.radians(180)
+        bwqX = fang_length/2
+        rotZ = 0
     if bLeft or bRight:
         # 添加霸王拳，以大额枋为父对象，继承位置和旋转
         bawangquanObj = utils.copyObject(
@@ -288,32 +288,39 @@ def __buildFang(buildingObj:bpy.types.Object):
         pFrom = setting[0].split('/')
         pFrom_x = int(pFrom[0])
         pFrom_y = int(pFrom[1])
-        vFrom = Vector((net_x[pFrom_x],net_y[pFrom_y],0))
-
         pTo = setting[1].split('/')
         pTo_x = int(pTo[0])
         pTo_y = int(pTo[1])
-        vTo = Vector((net_x[pTo_x],net_y[pTo_y],0))
 
-        # 计算柱子之间的距离和定位      
-        fang_length = utils.getVectorDistance(vFrom,vTo)
-        fang_rot = utils.alignToVector(vFrom-vTo)
+        # 计算枋的坐标        
         fang_x = (net_x[pFrom_x]+net_x[pTo_x])/2
-        fang_y = (net_y[pFrom_y]+net_y[pTo_y])/2      
-        
-        # 大额枋
+        fang_y = (net_y[pFrom_y]+net_y[pTo_y])/2
+        fang_z = bData.piller_height - con.EFANG_LARGE_H*dk/2
+        bigFangLoc = Vector((fang_x,fang_y,fang_z))   
+        # 计算枋的方向，以建筑中心点，逆时针排布
+        # 参考https://math.stackexchange.com/questions/285346/why-does-cross-product-tell-us-about-clockwise-or-anti-clockwise-rotation#:~:text=We%20can%20tell%20which%20direction,are%20parallel%20to%20each%20other.
+        zAxis = Vector((0,0,1))
+        vFrom = Vector((net_x[pFrom_x],net_y[pFrom_y],0))
+        vTo = Vector((net_x[pTo_x],net_y[pTo_y],0))
+        dirValue = vFrom.cross(vTo).dot(zAxis)
+        if dirValue < 0:
+            fangDir = vFrom-vTo
+        else:
+            fangDir = vTo-vFrom
+        bigFangRot = utils.alignToVector(fangDir)
+        # 计算枋的尺寸
+        fang_length = utils.getVectorDistance(vFrom,vTo)
         bigFangScale = Vector((fang_length, 
                 con.EFANG_LARGE_Y * dk,
                 con.EFANG_LARGE_H * dk))
-        bigFangLoc = Vector((fang_x,fang_y,
-                bData.piller_height - con.EFANG_LARGE_H*dk/2))
+        # 绘制大额枋
         bigFangObj = utils.drawHexagon(
             bigFangScale,
             bigFangLoc,
             name =  "大额枋." + fangID,
             parent = floorRootObj,
             )
-        bigFangObj.rotation_euler = fang_rot
+        bigFangObj.rotation_euler = bigFangRot
         bigFangObj.ACA_data['aca_obj'] = True
         bigFangObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
         bigFangObj.ACA_data['fangID'] = fangID

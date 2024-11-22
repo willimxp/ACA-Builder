@@ -255,6 +255,118 @@ def __buildFangBWQ(fangObj):
         )
         utils.applyTransfrom(bawangquanObj,use_scale=True)
 
+# 获取开间是否有装修
+# 涉及到wall_net参数中槛墙跨越多个开间，拆分到每个开间的数据
+def __getWallRange(wallSetting):
+    # 解析wallID，例如”wall#3/0#3/3“，或”window#0/0#0/1“，或”door#0/1#0/2“
+    wallList = wallSetting.split(',')
+    wallStr = ''
+    for wallID in wallList:
+        if wallID == '': continue
+        setting = wallID.split('#')
+        # 以柱编号定位
+        # 起始柱子
+        pFrom = setting[1].split('/')
+        pFrom_x = int(pFrom[0])
+        pFrom_y = int(pFrom[1])
+        # 结束柱子
+        pTo = setting[2].split('/')
+        pTo_x = int(pTo[0])
+        pTo_y = int(pTo[1])
+
+        # 前后檐跨多间
+        if abs(pFrom_x - pTo_x) > 1:
+            if pFrom_x < pTo_x:
+                pRange = range(pFrom_x,pTo_x)
+            else:
+                pRange = range(pTo_x,pFrom_x)
+            for n in pRange:
+                wallStr += str(n) + '/' + str(pFrom_y) \
+                    + '#' + str(n+1) + '/' + str(pTo_y) + ','
+        # 两山跨多间    
+        elif abs(pFrom_y - pTo_y) > 1:
+            if pFrom_y < pTo_y:
+                pRange = range(pFrom_y,pTo_y)
+            else:
+                pRange = range(pTo_y,pFrom_y)
+            for n in pRange:
+                wallStr += str(pFrom_x) + '/' + str(n) \
+                    + '#' + str(pTo_x) + '/' + str(n+1) + ','
+        else:
+            wallStr += str(pFrom_x) + '/' + str(pFrom_y) \
+                    + '#' + str(pTo_x) + '/' + str(pTo_y) + ','
+                                
+    return wallStr
+
+# 添加雀替
+# 仅在外檐、且无装修的开间摆放
+# 以大额枋为父对象，相对大额枋进行定位
+# 已在blender中通过GN预先对不同大小的雀替和插斗进行了适配和组装
+# 根据开间大小，自动切换了长款、中款、短款
+def __buildQueti(fangObj):
+    # 基础数据
+    aData:tmpData = bpy.context.scene.ACA_temp
+    buildingObj = utils.getAcaParent(fangObj,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    # 获取开间、进深数据
+    net_x,net_y = getFloorDate(buildingObj)
+
+    # 解析枋ID
+    fangID = fangObj.ACA_data['fangID']
+    setting = fangID.split('#')
+    # 分解获取柱子编号
+    pFrom = setting[0].split('/')
+    pFrom_x = int(pFrom[0])
+    pFrom_y = int(pFrom[1])
+    vFrom = Vector((net_x[pFrom_x],net_y[pFrom_y],0))
+    pTo = setting[1].split('/')
+    pTo_x = int(pTo[0])
+    pTo_y = int(pTo[1])
+    vTo = Vector((net_x[pTo_x],net_y[pTo_y],0))
+    # 额枋长度
+    fang_length = utils.getVectorDistance(vFrom,vTo)
+    
+    # 判断仅在檐面、且无装修的开间摆放
+    isQueti = False
+    # 是否为前后檐？
+    if pFrom_x == pTo_x and pFrom_x in (0,len(net_x)-1):
+        isQueti = True
+    # 是否为两山
+    if pFrom_y == pTo_y and pFrom_y in (0,len(net_y)-1):
+        isQueti = True
+    # 是否有装修（槛墙、隔扇、槛窗等）
+    # 解析模版输入的墙体设置，格式如下
+    # "wall#3/0#3/3,wall#0/0#3/0,wall#0/3#3/3,window#0/0#0/1,window#0/2#0/3,door#0/1#0/2,"
+    wallSetting = bData.wall_net
+    wallStr = __getWallRange(wallSetting)
+    fangID_alt = setting[1] + '#' + setting[0]
+    if fangID in wallStr:
+        isQueti = False
+    if fangID_alt in wallStr:
+        isQueti = False
+    if not isQueti: return
+
+    # 雀替的尺度参考马炳坚P183，长度为净面宽的1/4，高同大额枋或小额枋，厚为檐柱的3/10
+    # 栱长1/2瓜子栱，高2斗口，厚同雀替
+    # 雀替Z坐标从大额枋中心下移半大额枋+由额垫板+小额枋
+    zoffset = con.EFANG_LARGE_H*dk/2
+    if bData.use_smallfang:
+        zoffset += (con.BOARD_YOUE_H*dk
+                +con.EFANG_SMALL_H*dk)
+    # 雀替对象在blender中用Geometry Nodes预先进行了自动拼装
+    quetiObj = utils.copyObject(
+        sourceObj=aData.queti_source,
+        name='雀替',
+        parentObj=fangObj,
+        location=(0,0,-zoffset),
+        singleUser=True
+    )
+    # 宽度适配到开间的净面宽
+    quetiObj.dimensions.x = fang_length-bData.piller_diameter
+    utils.applyTransfrom(quetiObj,use_scale=True)
+    return
+
 # 在柱间添加额枋
 def __buildFang(buildingObj:bpy.types.Object):
     # 载入数据
@@ -384,18 +496,7 @@ def __buildFang(buildingObj:bpy.types.Object):
             modBevel.segments=2     
     
         # 201121 添加雀替
-        zoffset = (con.EFANG_LARGE_H*dk/2
-                   +con.BOARD_YOUE_H*dk
-                   +con.EFANG_SMALL_H*dk)
-        quetiObj = utils.copyObject(
-            sourceObj=aData.queti_source,
-            name='雀替',
-            parentObj=bigFangObj,
-            location=(0,0,-zoffset),
-            singleUser=True
-        )
-        quetiObj.dimensions.x = fang_length-bData.piller_diameter
-        utils.applyTransfrom(quetiObj,use_scale=True)
+        __buildQueti(bigFangObj)
         
     # 聚焦到最后添加的大额枋，便于用户可以直接删除
     utils.focusObj(bigFangObj)

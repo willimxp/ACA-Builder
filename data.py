@@ -507,10 +507,14 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             #update = update_roof,
             update = update_roofstyle,
         ) # type: ignore
+    use_hallway : bpy.props.BoolProperty(
+            default=True,
+            name="做廊步架",
+        )# type: ignore 
     rafter_count : bpy.props.IntProperty(
             name="椽架数量",
             default=8,
-            min=0,max=10,
+            min=2,max=9,
             #update = update_roof,
         )# type: ignore 
     use_flyrafter :  bpy.props.BoolProperty(

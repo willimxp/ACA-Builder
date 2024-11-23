@@ -662,6 +662,17 @@ class ACA_PT_BPW(bpy.types.Panel):
 
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)
+            # 做廊步架
+            if bData.use_hallway:
+                checkbox_icon = 'CHECKBOX_HLT'
+            else:
+                checkbox_icon = 'CHECKBOX_DEHLT'
+            checkUseHallway = toolBar.column(align=True)
+            checkUseHallway.prop(
+                bData, "use_hallway",
+                text='做廊步架',
+                toggle=True,
+                icon=checkbox_icon) 
             # 是否使用飞椽
             if bData.use_flyrafter:
                 checkbox_icon = 'CHECKBOX_HLT'

@@ -105,19 +105,6 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
     if bData.juzhe == '2':
         lift_ratio = con.LIFT_RATIO_SMALL
 
-    # 2、步架宽度：进深/步架数（卷棚等减3椽）
-    # 卷棚顶：顶层桁檩间距3椽径，要从进深中减去后，平分椽架
-    if roofStyle == con.ROOF_XUANSHAN_JUANPENG:
-        rafterSpan = (bData.y_total 
-            - con.JUANPENG_SPAN*dk)/bData.rafter_count
-    # 盝顶：直接采用用户设置的参数
-    elif roofStyle == con.ROOF_LUDING:
-        rafterSpan = bData.luding_rafterspan
-    # 其他屋顶的步架宽度：按椽架数平分进深长度
-    # 包括庑殿、歇山、悬山、硬山
-    else:
-        rafterSpan = bData.y_total/bData.rafter_count
-
     # 3、起始点
     purlinWidth = bData.x_total/2
     purlinDeepth = bData.y_total/2
@@ -161,15 +148,51 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
             purlinHeight,
         )))
 
-    # 3、循环定位下金桁、上金桁、脊桁   
-    for n in range(int(bData.rafter_count/2)):
-        # a、面阔X方向的推山
-        # 硬山、悬山（卷棚）不推
+    # 3、定位下金桁、上金桁、脊桁
+    # 房屋总进深
+    roomDepth = bData.y_total
+    # 步架数量
+    rafterCount = bData.rafter_count
+    # 获取开间、进深数据
+    net_x,net_y = buildFloor.getFloorDate(buildingObj)
+    # 卷棚顶：顶层桁檩间距3椽径，要从进深中减去后，平分椽架
+    if roofStyle == con.ROOF_XUANSHAN_JUANPENG:
+        # 卷棚椽架排除“顶步架”，如果为奇数，自动扣除一步架
+        roomDepth -= con.JUANPENG_SPAN*dk
+        if rafterCount%2 != 0:
+            rafterCount -= 1
+            # 正常的奇变偶，不输出提示
+    else:
+        if rafterCount%2 != 0:
+            rafterCount -= 1
+            # 异常的奇变偶，给出提出
+            utils.outputMsg("请留意：一般屋顶椽架数量应该为偶数（卷棚为奇数），所以，椽架数量自动减少了一椽架")
+    for n in range(int(rafterCount/2)):
+        # 1、计算每层步架的进深----------------
+        # 20241123 根据尖山、卷棚、盝顶、是否做廊步架等计算每个步架长度
+        # 判断是否做廊步架(至少4步架才能做廊步架，否则忽略)
+        if bData.use_hallway and rafterCount>=4:
+            if n==0 :
+                # 廊步架宽度 = 柱网的廊间进深
+                rafterSpan = abs(net_y[1]-net_y[0])
+                roomDepth -= rafterSpan*2 # 从通进深扣除前后的两个廊步架
+            else:
+                # 其他步架平分
+                rafterSpan = roomDepth/(rafterCount-2)
+        else:
+            # 不做廊步架，则所有步架平分
+            rafterSpan = roomDepth/rafterCount
+        # 盝顶：直接采用用户设置的参数
+        if roofStyle == con.ROOF_LUDING:
+            rafterSpan = bData.luding_rafterspan
+            
+        # 2、计算每根槫子的长度，包括推山做法、收山做法的影响--------------
+        # 2.a、硬山、悬山（卷棚）不推
         if roofStyle in (con.ROOF_YINGSHAN,
                          con.ROOF_XUANSHAN,
                          con.ROOF_XUANSHAN_JUANPENG):
             pass
-        # 歇山，面阔方向，下金桁以上按收山法则
+        # 2.b、歇山，面阔方向，下金桁以上按收山法则
         elif (roofStyle == con.ROOF_XIESHAN
                 and n>0):
                 # 收山系统的选择，推荐一桁径以上，一步架以下
@@ -186,23 +209,24 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
                         - con.BOFENG_WIDTH*dk   # 推山做到博缝板外皮
                         - bData.shoushan         # 用户自定义推山尺寸
                     )
-        # 庑殿，下金桁以上，应用推山做法
+        # 2.c、庑殿，下金桁以上，应用推山做法
         elif (roofStyle == con.ROOF_WUDIAN
             and n>0): 
             purlinWidth -= bData.tuishan**(n-1)*rafterSpan
-        # 盝顶仅做到下金桁
+        # 2.4、盝顶仅做到下金桁
         elif roofStyle== con.ROOF_LUDING and n >0:
             continue
         else:
             # 面阔、进深，每次推一个步架
             purlinWidth -= rafterSpan
 
-        # b、进深Y方向的举折
+        # 3. 计算每根槫子的举折
+        # 3.a、进深Y方向的举折
         purlinDeepth -= rafterSpan
-
-        # c、举折：举架高度 = 步架 * 举架系数
+        # 3.b、举折：举架高度 = 步架 * 举架系数
         purlinHeight += rafterSpan*lift_ratio[n]
 
+        # 4、存入槫子参数集合
         purlin_pos.append(Vector((
             purlinWidth,
             purlinDeepth,

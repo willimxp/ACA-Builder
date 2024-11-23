@@ -86,8 +86,11 @@ def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
 
 # 计算举架数据
 # 1、根据不同的屋顶样式生成，自动判断了桁在檐面需要延长的长度
-# 2、根据是否带斗栱，自动判断了是否插入挑檐桁
-# 3、根据建筑面阔进深，将举架数据转换为了桁檩转角交点
+#    其中包括了举折做法，以及庑殿推山、歇山收山的做法
+# 2、支持悬山的举架计算，自动扣除一个顶步架
+# 3、支持“廊步架”做法，廊步架按柱网的廊间进深计算，其他步架再平分剩余的进深
+# 4、根据是否带斗栱，自动判断了是否插入挑檐桁
+# 5、根据建筑面阔进深，将举架数据转换为了桁檩转角交点
 def __getPurlinPos(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
@@ -95,8 +98,7 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
     pd = con.PILLER_D_EAVE * dk
     # 屋顶样式，1-庑殿，2-歇山，3-悬山，4-硬山
     roofStyle = bData.roof_style
-
-    # 1、三组举折系数，可供选择
+    # 三组举折系数，可供选择
     lift_ratio = []
     if bData.juzhe == '0':
         lift_ratio = con.LIFT_RATIO_DEFAULT
@@ -105,12 +107,14 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
     if bData.juzhe == '2':
         lift_ratio = con.LIFT_RATIO_SMALL
 
-    # 3、起始点
+    # 开始构造槫子数据
+    purlin_pos = []
+
+    # 0、槫子布局起点
     purlinWidth = bData.x_total/2
     purlinDeepth = bData.y_total/2
     # 屋顶起点root在挑檐枋下皮，所以初始即上移半桁
     purlinHeight = con.HENG_TIAOYAN_D/2*dk
-    # 0.1、起始点微调
     # 硬山桁檩：做到梁的外皮
     if roofStyle == con.ROOF_YINGSHAN:
         purlinWidth += con.BEAM_DEEPTH*pd/2
@@ -120,10 +124,7 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
             con.ROOF_XUANSHAN_JUANPENG):
         purlinWidth += con.YANCHUAN_EX*dk
 
-    # 开始构造槫子数据
-    purlin_pos = []
-
-    # 1、定位挑檐桁（仅适用于有斗栱）  
+    # 1、构造挑檐桁（仅适用于有斗栱）  
     if bData.use_dg:
         # 为了不改动起始点，另用变量计算挑檐桁
         purlinWidth_dg = purlinWidth
@@ -136,19 +137,19 @@ def __getPurlinPos(buildingObj:bpy.types.Object):
         # 插入挑檐桁等位点
         purlin_pos.append(Vector((
             purlinWidth_dg,
-            purlinDeepth+ bData.dg_extend,
+            purlinDeepth+bData.dg_extend,
             purlinHeight)))  
-        # 桁檩抬升挑檐桁举折
+        # 补偿正心桁的抬升挑檐桁举折
         purlinHeight += bData.dg_extend*lift_ratio[0]
 
-    # 2、插入正心桁
+    # 2、构造正心桁
     purlin_pos.append(Vector((
             purlinWidth,
             purlinDeepth,
             purlinHeight,
         )))
 
-    # 3、定位下金桁、上金桁、脊桁
+    # 3、构造下金桁、上金桁、脊桁
     # 房屋总进深
     roomDepth = bData.y_total
     # 步架数量

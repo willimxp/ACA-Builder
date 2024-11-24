@@ -586,7 +586,7 @@ def __setPillerHead(object:bpy.types.Object):
     if bData.use_smallfang:
         fangHeight += (con.BOARD_YOUE_H*dk
             + con.EFANG_SMALL_H*dk)
-    scale = fangHeight / bData.piller_height
+    scale = fangHeight / object.dimensions.z
     __setMatValue(
         mat=object.active_material,
         inputName='headRate',

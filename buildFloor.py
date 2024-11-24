@@ -404,10 +404,15 @@ def __buildFang(buildingObj:bpy.types.Object):
         pTo_x = int(pTo[0])
         pTo_y = int(pTo[1])
 
+        # 获取实际柱高
+        pillerName = '柱子.' + setting[0]
+        pillerFromObj = bpy.data.objects[pillerName]
+        pillerHeight = pillerFromObj.dimensions.z
+
         # 计算枋的坐标        
         fang_x = (net_x[pFrom_x]+net_x[pTo_x])/2
         fang_y = (net_y[pFrom_y]+net_y[pTo_y])/2
-        fang_z = bData.piller_height - con.EFANG_LARGE_H*dk/2
+        fang_z = pillerHeight - con.EFANG_LARGE_H*dk/2
         bigFangLoc = Vector((fang_x,fang_y,fang_z))   
         # 计算枋的方向，以建筑中心点，逆时针排布
         # 参考https://math.stackexchange.com/questions/285346/why-does-cross-product-tell-us-about-clockwise-or-anti-clockwise-rotation#:~:text=We%20can%20tell%20which%20direction,are%20parallel%20to%20each%20other.
@@ -582,6 +587,77 @@ def delFang(buildingObj:bpy.types.Object,
 
     return
 
+# 廊间金柱加高
+def __resizeJinPiller(pillerObj):
+    # 载入数据
+    buildingObj = utils.getAcaParent(pillerObj,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    pillerID = pillerObj.ACA_data['pillerID']
+    pillerIndex = pillerID.split('/')
+    x = int(pillerIndex[0])
+    y = int(pillerIndex[1])
+
+    # 判断是否需要加高
+    needResizePiller = False
+    # 如果2坡顶，则前后廊柱全部升高
+    if bData.roof_style in (
+        con.ROOF_XUANSHAN,
+        con.ROOF_XUANSHAN_JUANPENG,
+        con.ROOF_YINGSHAN,
+    ):
+        if y in (1,bData.y_rooms-1):
+            needResizePiller = True
+    # 如果4坡顶，则仅内圈廊柱升高（无论前后廊，还是周围廊）
+    if bData.roof_style in (
+        con.ROOF_LUDING,
+        con.ROOF_WUDIAN,
+        con.ROOF_XIESHAN,
+    ):
+        # 前后檐
+        if x not in (0,bData.x_rooms) \
+            and y in (1,bData.y_rooms-1):
+            needResizePiller = True
+        # 两山
+        if x in (1,bData.x_rooms-1)  \
+            and y not in (0,bData.y_rooms):
+            needResizePiller = True
+    # 如果无需加高，退出处理
+    if not needResizePiller: 
+        return pillerObj
+
+    # 计算基于檐柱需要加高的高度
+    pillerAdd = 0
+
+    # 如果有斗拱，先增高到挑檐桁底皮
+    if bData.use_dg:
+        pillerAdd += bData.dg_height
+        # 是否使用平板枋
+        if bData.use_pingbanfang:
+            pillerAdd += con.PINGBANFANG_H*dk
+
+    # 抬高廊步架
+    # 计算廊间进深+斗栱出跳
+    net_x,net_y = getFloorDate(buildingObj)
+    rafterSpan = abs(net_y[1]-net_y[0]) + bData.dg_extend
+    # 乘以举折系数
+    lift_ratio = []
+    if bData.juzhe == '0':
+        lift_ratio = con.LIFT_RATIO_DEFAULT
+    if bData.juzhe == '1':
+        lift_ratio = con.LIFT_RATIO_BIG
+    if bData.juzhe == '2':
+        lift_ratio = con.LIFT_RATIO_SMALL
+    pillerAdd += rafterSpan*lift_ratio[0]
+    # 扣除一个桁垫板高度，即到了梁底高度
+    pillerAdd -= con.BOARD_HENG_H*dk
+
+    # 调整金柱高度
+    pillerObj.dimensions.z += pillerAdd
+    utils.applyTransfrom(pillerObj,use_scale=True)
+
+    return pillerObj
+
 # 根据柱网数组，排布柱子
 # 1. 第一次按照模板生成，柱网下没有柱，一切从0开始；
 # 2. 用户调整柱网的开间、进深，需要保持柱子的高、径、样式
@@ -660,9 +736,6 @@ def buildPillers(buildingObj:bpy.types.Object):
         utils.applyTransfrom(piller_basemesh,use_scale=True)
         piller_basemesh.ACA_data['aca_obj'] = True
         piller_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
-    # 柱头贴图
-    mat.setShader(piller_basemesh,
-        mat.shaderType.PILLER,override=True,single=True)
     
     # 柱础
     pillerbase_source = aData.pillerbase_source
@@ -738,8 +811,15 @@ def buildPillers(buildingObj:bpy.types.Object):
                 sourceObj = piller_basemesh,
                 name = '柱子.'+pillerID,
                 parentObj = pillerProxy,
+                singleUser=True # 内外柱不等高，为避免打架，全部
             )
             pillerObj.ACA_data['pillerID'] = pillerID
+            # 241124 添加廊间金柱的升高处理
+            if y_rooms>=3 and bData.use_hallway:
+                pillerObj = __resizeJinPiller(pillerObj)
+            # 柱头贴图
+            mat.setShader(pillerObj,
+                mat.shaderType.PILLER,override=True,single=True)
 
             # 复制柱础
             pillerbaseObj = utils.copySimplyObject(

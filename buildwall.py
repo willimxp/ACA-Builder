@@ -79,10 +79,17 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     
     # 获取柱网数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
+    # 解析wallID，例如”wall#3/0#3/3“，或”window#0/0#0/1“，或”door#0/1#0/2“
+    setting = wallID.split('#')
+    
+    # 获取实际柱高
+    pillerName = '柱子.' + setting[1]
+    pillerFromObj = bpy.data.objects[pillerName]
+    pillerHeight = pillerFromObj.dimensions.z
 
     # 定义wallproxy尺寸
     wall_deepth = 1 # 墙线框默认尺寸，后续被隐藏显示，所以没有实际影响
-    wall_height = bData.piller_height \
+    wall_height = pillerHeight \
         - con.EFANG_LARGE_H*dk # 除去大额枋高度
     if bData.use_smallfang:
         wall_height += \
@@ -91,12 +98,8 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     if bData.wall_span != 0:
         wall_height -= bData.wall_span
 
-    # 解析wallID，例如”wall#3/0#3/3“，或”window#0/0#0/1“，或”door#0/1#0/2“
-    setting = wallID.split('#')
-    
     # 样式为墙、门、窗
     style = setting[0]
-
     # 以柱编号定位
     # 起始柱子
     pFrom = setting[1].split('/')

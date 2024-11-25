@@ -100,7 +100,6 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     else:
         pillerHeight = pillerFromHeight
 
-
     # 定义wallproxy尺寸
     wall_deepth = 1 # 墙线框默认尺寸，后续被隐藏显示，所以没有实际影响
     # 如果柱子等高，装修在额枋下，否则直接做到柱头
@@ -131,20 +130,17 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     pTo_y = int(pTo[1])
     pEnd = Vector((net_x[pTo_x],net_y[pTo_y],wall_height/2))
 
-    # 矫正墙体的内外
-    # 因为pStart,pEnd用户选择时没有顺序，只能根据坐标强行处理
-    # 矫正东墙
-    if (pStart.x == pEnd.x and pStart.x>0):
-        if pStart.y < pEnd.y:
-            pTemp = pStart
-            pStart = pEnd
-            pEnd = pTemp
-    # 矫正南墙
-    if (pStart.y == pEnd.y and pStart.y<0):
-        if pStart.x < pEnd.x:
-            pTemp = pStart
-            pStart = pEnd
-            pEnd = pTemp
+    # 计算墙体的方向，以建筑中心点，逆时针排布
+    # 参考https://math.stackexchange.com/questions/285346/why-does-cross-product-tell-us-about-clockwise-or-anti-clockwise-rotation#:~:text=We%20can%20tell%20which%20direction,are%20parallel%20to%20each%20other.
+    zAxis = Vector((0,0,1))
+    vFrom = Vector((net_x[pFrom_x],net_y[pFrom_y],0))
+    vTo = Vector((net_x[pTo_x],net_y[pTo_y],0))
+    dirValue = vFrom.cross(vTo).dot(zAxis)
+    if dirValue > 0:
+        # 交换起始柱子
+        pTemp = pStart
+        pStart = pEnd
+        pEnd = pTemp
 
     # 生成wallproxy
     wallproxy = utils.addCubeBy2Points(

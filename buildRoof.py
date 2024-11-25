@@ -3698,13 +3698,20 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
         xyb_range = range(len(purlin_pos))
         xyb_name = '象眼板'
 
-    # 241119 有斗拱的悬山建筑，向下延伸象眼板，封闭斗拱层的缝隙
-    if bData.use_dg and bData.roof_style in (
+    # 241119 有斗拱的悬山建筑，向下延伸象眼板，封闭缝隙
+    if bData.roof_style in (
             con.ROOF_XUANSHAN,
             con.ROOF_XUANSHAN_JUANPENG):
-        point = Vector((xyb_x,
-                        purlin_pos[0].y,
-                        - bData.dg_height))
+        if bData.use_dg:
+            # 有斗拱的，向下延伸：一斗栱高
+            point = Vector((xyb_x,
+                            purlin_pos[0].y,
+                            - bData.dg_height))
+        else:
+            # 无斗拱的，向下延伸：垫板高度
+            point = Vector((xyb_x,
+                            purlin_pos[0].y,
+                            - con.BOARD_HENG_H*dk))
         xybVerts.insert(0,point*Vector((1,-1,1)))
         xybVerts.append(point)
 

@@ -404,10 +404,20 @@ def __buildFang(buildingObj:bpy.types.Object):
         pTo_x = int(pTo[0])
         pTo_y = int(pTo[1])
 
-        # 获取实际柱高
-        pillerName = '柱子.' + setting[0]
-        pillerFromObj = bpy.data.objects[pillerName]
-        pillerHeight = pillerFromObj.dimensions.z
+        # 如果为2坡顶，山面额枋按檐面额枋高度摆放
+        if bData.roof_style in (
+            con.ROOF_YINGSHAN,
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG,
+        ) and pFrom_x in (0,bData.x_rooms) \
+        and pFrom_x == pTo_x:
+            pillerHeight = bData.piller_height
+        # 如果为4坡顶，额枋按起始柱子的实际高度摆放
+        else:
+            # 获取实际柱高
+            pillerName = '柱子.' + setting[0]
+            pillerFromObj = bpy.data.objects[pillerName]
+            pillerHeight = pillerFromObj.dimensions.z
 
         # 计算枋的坐标        
         fang_x = (net_x[pFrom_x]+net_x[pTo_x])/2

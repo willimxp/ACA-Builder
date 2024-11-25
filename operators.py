@@ -349,7 +349,8 @@ class ACA_OT_del_wall(bpy.types.Operator):
                 ):
             funproxy = partial(
                 buildWall.delWall,
-                object=context.object)
+                buildingObj=buildingObj,
+                walls = context.selected_objects)
             utils.fastRun(funproxy)
             self.report({'INFO'},"已删除隔断。")
         elif objData.aca_type in (

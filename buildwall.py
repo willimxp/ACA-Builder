@@ -415,24 +415,27 @@ def addWall(buildingObj:bpy.types.Object,
 
     return {'FINISHED'}
 
-# 删除隔断
-def delWall(object:bpy.types.Object):
-    # 找到wallproxy
-    objData:acaData = object.ACA_data
-    if objData['aca_type'] == con.ACA_TYPE_WALL_CHILD:
-        wallproxy = utils.getAcaParent(
-            object,con.ACA_TYPE_WALL)
-    else:
-        wallproxy = object
-    wallRootObj = utils.getAcaParent(
-        object,con.ACA_TYPE_WALL_ROOT)
-    buildingObj = utils.getAcaParent(
-        object,con.ACA_TYPE_BUILDING)
+# 删除墙体
+def delWall(buildingObj:bpy.types.Object,
+              walls:List[bpy.types.Object]):
+    # 载入数据
     bData:acaData = buildingObj.ACA_data
-    
-    # 删除实例对象
-    utils.deleteHierarchy(wallproxy,del_parent=True)
+
+    # 删除额枋对象
+    for wall in walls:
+        # 校验用户选择的对象，可能误选了其他东西，直接忽略
+        if 'aca_type' in wall.ACA_data:
+            # 如果用户选择为子墙体，自动替换为wallproxy
+            if wall.ACA_data['aca_type'] == con.ACA_TYPE_WALL_CHILD:
+                wall = utils.getAcaParent(
+                    wall,con.ACA_TYPE_WALL)
+            # 删除wallproxy
+            if wall.ACA_data['aca_type'] == con.ACA_TYPE_WALL:
+                utils.deleteHierarchy(wall,del_parent=True)
+
     # 重新生成wall_net
+    wallRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_WALL_ROOT)
     bData.wall_net = ''
     for wallproxy in wallRootObj.children:
         wallStr = wallproxy.ACA_data['wallID']

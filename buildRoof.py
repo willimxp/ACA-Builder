@@ -2587,6 +2587,9 @@ def __drawCrWangban(
     crWangbanObj.data.update()
     bm.free()
 
+    # 处理UV
+    mat.UvUnwrap(crWangbanObj,type='cube')
+
     return crWangbanObj
 
 # 营造翼角椽望板
@@ -3268,6 +3271,9 @@ def __drawCfrWangban(
     cfrWangbanObj.data.update()
     bm.free()
 
+    # 处理UV
+    mat.UvUnwrap(cfrWangbanObj,type='cube')
+
     return cfrWangbanObj
 
 # 营造翘飞椽望板
@@ -3469,9 +3475,9 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     if useWangban:
         wangbanSet = utils.joinObjects(
             wangbanObjs,newName='望板')
-        # 设置材质
-        mat.setShader(wangbanSet,
-                mat.shaderType.WANGBANRED)
+        # # 设置材质
+        # mat.setShader(wangbanSet,
+        #         mat.shaderType.WANGBANRED)
     
     # 檐椽事后处理(处理UV,添加倒角)
     # 只能放在最后加倒角，因为计算翼角椽时有取檐椽头坐标

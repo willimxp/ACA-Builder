@@ -146,13 +146,19 @@ def update_dougong(self, context:bpy.types.Context):
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
         from . import buildDougong
-        # 重新生成屋顶
+        # # 重新生成屋顶
+        # funproxy = partial(
+        #     buildDougong.buildDougong,
+        #     buildingObj=buildingObj)
+        
+        # 241125 修改斗栱时，涉及到柱高的变化，最好是全屋更新
+        from . import buildFloor
         funproxy = partial(
-            buildDougong.buildDougong,
-            buildingObj=buildingObj)
+                buildFloor.buildFloor,
+                buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
-        utils.outputMsg("updated platform failed, context.object should be buildingObj")
+        utils.outputMsg("updated dougong failed, context.object should be buildingObj")
     return
 
 # 刷新斗栱布局
@@ -460,7 +466,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     use_dg :  bpy.props.BoolProperty(
             default=False,
             name="使用斗栱",
-            update=update_roof
+            update=update_dougong,
         )# type: ignore 
     use_pingbanfang: bpy.props.BoolProperty(
             default=True,

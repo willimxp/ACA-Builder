@@ -403,6 +403,13 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 mirrorObj=dgrootObj,
                 use_axis=(False,True,False)
             )
+            # 调整桃尖梁长度:廊间进深--1/4柱径（搭接了1/4更好看）
+            gnMod:bpy.types.NodesModifier = \
+                dgPillerCopy.modifiers.get('dgPillerGN')
+            if gnMod != None:
+                # 廊间进深-1/4柱径（搭接了1/4更好看）
+                taojianLength = abs(net_y[1]-net_y[0]) - bData.piller_diameter/4
+                utils.setGN_Input(gnMod,"Length",taojianLength)
         
         # 两山的柱头斗栱，仅庑殿/歇山做两山的斗栱
         if bData.roof_style in (
@@ -424,6 +431,13 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                     mirrorObj=dgrootObj,
                     use_axis=(True,False,False)
                 )
+                # 调整桃尖梁长度:
+                gnMod:bpy.types.NodesModifier = \
+                    dgPillerCopy.modifiers.get('dgPillerGN')
+                if gnMod != None:
+                    # 廊间进深-1/4柱径（搭接了1/4更好看）
+                    taojianLength = abs(net_x[1]-net_x[0]) - bData.piller_diameter/4
+                    utils.setGN_Input(gnMod,"Length",taojianLength)
     
     # 补间斗栱/平身科
     if aData.dg_fillgap_source != '' :

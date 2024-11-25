@@ -85,18 +85,37 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     # 获取实际柱高
     pillerName = '柱子.' + setting[1]
     pillerFromObj = bpy.data.objects[pillerName]
-    pillerHeight = pillerFromObj.dimensions.z
+    pillerFromHeight = pillerFromObj.dimensions.z
+    pillerName = '柱子.' + setting[2]
+    pillerToObj = bpy.data.objects[pillerName]
+    pillerToHeight = pillerToObj.dimensions.z
+    # 判断柱子是否等高
+    if abs(pillerFromHeight - pillerToHeight) > 0.001:
+        isPillerSameHeight = False
+    else:
+        isPillerSameHeight = True
+    # 装修高度取较低的柱高
+    if pillerFromHeight > pillerToHeight:
+        pillerHeight = pillerToHeight
+    else:
+        pillerHeight = pillerFromHeight
+
 
     # 定义wallproxy尺寸
     wall_deepth = 1 # 墙线框默认尺寸，后续被隐藏显示，所以没有实际影响
-    wall_height = pillerHeight \
-        - con.EFANG_LARGE_H*dk # 除去大额枋高度
-    if bData.use_smallfang:
-        wall_height += \
-        - con.BOARD_YOUE_H*dk \
-        - con.EFANG_SMALL_H*dk # 除去小额枋、垫板高度
+    # 如果柱子等高，装修在额枋下，否则直接做到柱头
+    if isPillerSameHeight:
+        wall_height = pillerHeight \
+            - con.EFANG_LARGE_H*dk # 除去大额枋高度
+        if bData.use_smallfang:
+            wall_height += \
+            - con.BOARD_YOUE_H*dk \
+            - con.EFANG_SMALL_H*dk # 除去小额枋、垫板高度
+    else:
+        wall_height = pillerHeight
+    # 重檐时，装修不到柱头，留出走马板位置
     if bData.wall_span != 0:
-        wall_height -= bData.wall_span
+            wall_height -= bData.wall_span
 
     # 样式为墙、门、窗
     style = setting[0]

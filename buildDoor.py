@@ -248,9 +248,11 @@ def __buildKanKuang(wallproxy):
         topWinObjs = []
         # 横披窗数量：比隔扇少一扇
         window_top_num = wData.door_num - 1
-        # 横披窗宽度:(柱间距-柱径-4抱框)/3
-        window_top_width =  \
-            (frame_width - pillerD - con.BAOKUANG_WIDTH*4*pd)/window_top_num
+        # 横披窗宽度:(柱间距-柱径-抱框*(横披窗数量+1))/3
+        window_top_width = ((frame_width 
+                             - pillerD 
+                             - (window_top_num+1)*con.BAOKUANG_WIDTH*pd)
+                            /window_top_num)
         # 循环生成每一扇横披窗
         for n in range(1,window_top_num):
             # 横披间框：右抱框中心 - n*横披窗间隔 - n*横披窗宽度

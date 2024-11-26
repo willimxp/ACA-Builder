@@ -5,7 +5,7 @@
 import bpy
 import bmesh
 import math
-from mathutils import Vector,Euler
+from mathutils import Vector
 
 from . import utils
 from .const import ACA_Consts as con

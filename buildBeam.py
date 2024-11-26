@@ -5,15 +5,13 @@
 import bpy
 import bmesh
 import math
-from mathutils import Vector,Euler
+from mathutils import Vector
 
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
 from . import utils
 from . import buildFloor
-from . import buildDougong
-from . import buildRooftile
 from . import texture as mat
 
 # 设置“梁架”根节点

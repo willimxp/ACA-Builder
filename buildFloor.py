@@ -16,9 +16,7 @@ from . import utils
 from . import acaTemplate
 from . import buildWall
 from . import buildPlatform
-from . import buildDougong
 from . import buildRoof
-from . import buildRooftile
 
 # 添加建筑empty根节点，并绑定设计模版
 # 返回建筑empty根节点对象

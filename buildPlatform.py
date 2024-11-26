@@ -4,8 +4,7 @@
 #   台基的营造
 import bpy
 import math
-import bmesh
-from mathutils import Vector,Euler
+from mathutils import Vector
 from typing import List
 
 from . import utils

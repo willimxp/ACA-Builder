@@ -8,13 +8,11 @@ from functools import partial
 import time
 
 from .const import ACA_Consts as con
-from . import data
 from . import utils
 from . import buildWall
 from . import buildFloor
 from . import buildDougong
 from . import buildRoof
-from . import buildRooftile
 
 # 根据当前选中的对象，聚焦建筑根节点
 class ACA_OT_focusBuilding(bpy.types.Operator):

@@ -4,9 +4,7 @@
 #   装修布局树状结构的营造
 import bpy
 import bmesh
-import math
 from mathutils import Vector
-from functools import partial
 from typing import List
 
 from .const import ACA_Consts as con

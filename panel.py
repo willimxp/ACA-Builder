@@ -7,8 +7,6 @@ import bpy
 from . import data
 from .const import ACA_Consts as con
 from . import utils
-from .data import ACA_data_obj as acaData
-from .data import ACA_data_scene as scnData
 
 # 营造向导面板
 class ACA_PT_basic(bpy.types.Panel):

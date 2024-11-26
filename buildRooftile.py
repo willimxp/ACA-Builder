@@ -5,10 +5,9 @@
 import bpy
 import bmesh
 import math
-from mathutils import Vector,Euler,Matrix
+from mathutils import Vector,Matrix
 
 from . import utils
-from . import buildRoof
 from . import buildBeam
 from . import acaTemplate
 from .const import ACA_Consts as con

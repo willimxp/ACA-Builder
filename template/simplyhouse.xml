@@ -45,7 +45,7 @@
 		<is_showPillers type="bool">True</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
 		<is_showDougong type="bool">True</is_showDougong>
-		<is_showBPW type="bool">True</is_showBPW>
+		<is_showRafter type="bool">True</is_showRafter>
 		<is_showTiles type="bool">True</is_showTiles>
 		<tuishan type="float">0.9</tuishan>
 		<juzhe type="str">0</juzhe>
@@ -92,28 +92,28 @@
 		<dg_extend type="float">0.72</dg_extend>
 		<dg_height type="float">0.896</dg_height>
 		<dg_gap type="float">0.88</dg_gap>
-		<roof_style type="str">2</roof_style>
+		<roof_style type="str">1</roof_style>
 		<rafter_count type="int">8</rafter_count>
 		<use_flyrafter type="bool">True</use_flyrafter>
 		<use_wangban type="bool">True</use_wangban>
 		<qiqiao type="int">4</qiqiao>
 		<chong type="int">3</chong>
 		<shengqi type="int">1</shengqi>
-		<tile_width type="float">0.387</tile_width>
+		<tile_width type="float">0.39</tile_width>
 		<tile_length type="float">0.5</tile_length>
 		<aca_type type="str">building</aca_type>
 		<is_showPlatform type="bool">True</is_showPlatform>
 		<is_showPillers type="bool">True</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
-		<is_showDougong type="bool">False</is_showDougong>
-		<is_showBPW type="bool">False</is_showBPW>
-		<is_showTiles type="bool">False</is_showTiles>
+		<is_showDougong type="bool">True</is_showDougong>
+		<is_showRafter type="bool">True</is_showRafter>
+		<is_showTiles type="bool">True</is_showTiles>
 		<step_net type="str" />
 		<wall_deepth type="float">1.0</wall_deepth>
 		<wall_span type="float">0.0</wall_span>
 		<use_hallway type="bool">True</use_hallway>
 		<tuishan type="float">0.9</tuishan>
-		<shoushan type="float">1.304</shoushan>
+		<shoushan type="float">1.3</shoushan>
 		<luding_rafterspan type="float">3.0</luding_rafterspan>
 		<juzhe type="str">0</juzhe>
 		<paoshou_count type="int">6</paoshou_count>
@@ -123,6 +123,7 @@
 		<yardwall_height type="float">3.0</yardwall_height>
 		<yardwall_deepth type="float">1.0</yardwall_deepth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
+		<is_showBeam type="bool">True</is_showBeam>
 	</template>
 	<template>
 		<template_name type="str">九檩歇山前后廊</template_name>
@@ -167,7 +168,7 @@
 		<is_showPillers type="bool">True</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
 		<is_showDougong type="bool">True</is_showDougong>
-		<is_showBPW type="bool">True</is_showBPW>
+		<is_showRafter type="bool">True</is_showRafter>
 		<is_showTiles type="bool">True</is_showTiles>
 		<step_net type="str">2/0#3/0,1/0#2/0,3/0#4/0,2/3#3/3,</step_net>
 		<x_4 type="float">1.76</x_4>
@@ -396,7 +397,7 @@
 		<is_showPillers type="bool">True</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
 		<is_showDougong type="bool">False</is_showDougong>
-		<is_showBPW type="bool">False</is_showBPW>
+		<is_showRafter type="bool">False</is_showRafter>
 		<is_showTiles type="bool">False</is_showTiles>
 		<platform_height type="float">1.0</platform_height>
 		<platform_extend type="float">1.08</platform_extend>
@@ -443,7 +444,7 @@
 		<is_showPillers type="bool">True</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
 		<is_showDougong type="bool">True</is_showDougong>
-		<is_showBPW type="bool">True</is_showBPW>
+		<is_showRafter type="bool">True</is_showRafter>
 		<is_showTiles type="bool">True</is_showTiles>
 		<platform_height type="float">1.0</platform_height>
 		<platform_extend type="float">1.08</platform_extend>
@@ -493,7 +494,7 @@
 		<is_showPillers type="bool">True</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
 		<is_showDougong type="bool">True</is_showDougong>
-		<is_showBPW type="bool">True</is_showBPW>
+		<is_showRafter type="bool">True</is_showRafter>
 		<is_showTiles type="bool">True</is_showTiles>
 		<platform_height type="float">1.0</platform_height>
 		<platform_extend type="float">1.08</platform_extend>
@@ -549,7 +550,7 @@
 		<is_showPillers type="bool">True</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
 		<is_showDougong type="bool">True</is_showDougong>
-		<is_showBPW type="bool">True</is_showBPW>
+		<is_showRafter type="bool">True</is_showRafter>
 		<is_showTiles type="bool">True</is_showTiles>
 		<platform_height type="float">1.0</platform_height>
 		<platform_extend type="float">1.08</platform_extend>
@@ -605,7 +606,7 @@
 		<is_showPillers type="bool">True</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
 		<is_showDougong type="bool">True</is_showDougong>
-		<is_showBPW type="bool">True</is_showBPW>
+		<is_showRafter type="bool">True</is_showRafter>
 		<is_showTiles type="bool">True</is_showTiles>
 		<platform_height type="float">1.12</platform_height>
 		<platform_extend type="float">2.0</platform_extend>
@@ -666,7 +667,7 @@
 		<is_showPillers type="bool">True</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
 		<is_showDougong type="bool">True</is_showDougong>
-		<is_showBPW type="bool">True</is_showBPW>
+		<is_showRafter type="bool">True</is_showRafter>
 		<is_showTiles type="bool">True</is_showTiles>
 		<platform_height type="float">1.12</platform_height>
 		<platform_extend type="float">1.76</platform_extend>
@@ -727,7 +728,7 @@
 		<is_showPillers type="bool">True</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
 		<is_showDougong type="bool">True</is_showDougong>
-		<is_showBPW type="bool">True</is_showBPW>
+		<is_showRafter type="bool">True</is_showRafter>
 		<is_showTiles type="bool">True</is_showTiles>
 		<platform_height type="float">1.0</platform_height>
 		<platform_extend type="float">1.08</platform_extend>

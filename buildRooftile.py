@@ -9,6 +9,7 @@ from mathutils import Vector,Euler,Matrix
 
 from . import utils
 from . import buildRoof
+from . import buildBeam
 from . import acaTemplate
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
@@ -2181,7 +2182,7 @@ def buildTile(buildingObj: bpy.types.Object):
     )
 
     # 计算桁檩定位点
-    purlin_pos = buildRoof.__getPurlinPos(buildingObj)
+    purlin_pos = buildBeam.getPurlinPos(buildingObj)
     # 如果有斗栱，剔除挑檐桁
     # 在梁架、椽架、角梁的计算中不考虑挑檐桁
     rafter_pos = purlin_pos.copy()

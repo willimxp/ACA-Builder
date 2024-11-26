@@ -583,8 +583,8 @@ class ACA_PT_dougong(bpy.types.Panel):
                 #inputDgheight.enabled =False
                 inputDggap.enabled =False
 
-# “梁椽望属性”子面板
-class ACA_PT_BPW(bpy.types.Panel):
+# “梁架属性”子面板
+class ACA_PT_beam(bpy.types.Panel):
     # 常规属性
     bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
     bl_region_type = 'UI'           # UI代表sidebar形式
@@ -609,7 +609,7 @@ class ACA_PT_BPW(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
-        row.prop(bData, "is_showBPW",text='椽望属性')
+        row.prop(bData, "is_showBeam",text='梁架属性')
         if bData.aca_type != con.ACA_TYPE_BUILDING:
             layout.enabled = False
 
@@ -623,26 +623,18 @@ class ACA_PT_BPW(bpy.types.Panel):
             layout = self.layout
             if bData.aca_type != con.ACA_TYPE_BUILDING:
                 layout.enabled = False
-            if not bData.is_showBPW:
+            if not bData.is_showBeam:
                 layout.enabled = False
 
             box = layout.box()
             toolBox = box.column(align=True)
             toolBar = toolBox.grid_flow(
                 align=True,columns=1)
-            # 椽架数量          
+            # 步架数量          
             inputRaftercount = toolBar.column(align=True)
             inputRaftercount.prop(
                 bData, "rafter_count",
-                text='椽架数量')
-            # 出冲
-            inputChong = toolBar.column(align=True)
-            inputChong.prop(
-                bData, "chong",text='出冲(椽径)') 
-            # 起翘
-            inputQiao = toolBar.column(align=True)
-            inputQiao.prop(
-                bData, "qiqiao",text='起翘(椽径)')
+                text='步架数量')
             # 推山
             inputTuishan = toolBar.column(align=True)
             inputTuishan.prop(
@@ -672,6 +664,74 @@ class ACA_PT_BPW(bpy.types.Panel):
             droplistJuzhe.prop(
                 bData, "juzhe",text='',)
 
+            # 只有庑殿可以设置推山
+            if bData.roof_style != con.ROOF_WUDIAN:
+                inputTuishan.enabled = False
+
+            # 只有歇山可以设置收山
+            if bData.roof_style != con.ROOF_XIESHAN:
+                inputShoushan.enabled = False
+
+            # 只有盝顶可以设置步架
+            if bData.roof_style != con.ROOF_LUDING:
+                inputLudingBujia.enabled = False
+
+# “椽望属性”子面板
+class ACA_PT_rafter(bpy.types.Panel):
+    # 常规属性
+    bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
+    bl_region_type = 'UI'           # UI代表sidebar形式
+    bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
+    
+    # 自定义属性
+    bl_category = "古建营造"             # 标签页名称
+    bl_parent_id = "ACA_PT_roof_props"  # 父面板
+    bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
+    bl_label = ""                       # 面板名称，已替换为draw_header实现
+
+    # 仅在选中建筑根节点时显示该面板
+    @classmethod 
+    def poll(self, context):
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj != None:
+            return True
+        return
+    
+    # 在标题栏中添加显示/隐藏开关
+    def draw_header(self,context):
+        layout = self.layout
+        row = layout.row()
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        row.prop(bData, "is_showRafter",text='椽望属性')
+        if bData.aca_type != con.ACA_TYPE_BUILDING:
+            layout.enabled = False
+
+    def draw(self, context):
+        # 从当前场景中载入数据集
+        if context.object != None:
+            # 追溯全局属性
+            buildingObj,bData,objData = utils.getRoot(context.object)
+            if buildingObj == None: return
+
+            layout = self.layout
+            if bData.aca_type != con.ACA_TYPE_BUILDING:
+                layout.enabled = False
+            if not bData.is_showRafter:
+                layout.enabled = False
+
+            box = layout.box()
+            toolBox = box.column(align=True)
+            toolBar = toolBox.grid_flow(
+                align=True,columns=1)
+            # 出冲
+            inputChong = toolBar.column(align=True)
+            inputChong.prop(
+                bData, "chong",text='出冲(椽径)') 
+            # 起翘
+            inputQiao = toolBar.column(align=True)
+            inputQiao.prop(
+                bData, "qiqiao",text='起翘(椽径)')
+
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)
             # 是否使用飞椽
@@ -692,16 +752,16 @@ class ACA_PT_BPW(bpy.types.Panel):
             ):
                 checkboxUseflyrafter.enabled = False
 
-            # # 是否使用望板
-            # if bData.use_wangban:
-            #     checkbox_icon = 'CHECKBOX_HLT'
-            # else:
-            #     checkbox_icon = 'CHECKBOX_DEHLT'
-            # checkboxUseWangban = toolBar.column(align=True)
-            # checkboxUseWangban.prop(
-            #     bData, "use_wangban",
-            #     toggle=True,text='使用望板',
-            #     icon=checkbox_icon) 
+            # 是否使用望板
+            if bData.use_wangban:
+                checkbox_icon = 'CHECKBOX_HLT'
+            else:
+                checkbox_icon = 'CHECKBOX_DEHLT'
+            checkboxUseWangban = toolBar.column(align=True)
+            checkboxUseWangban.prop(
+                bData, "use_wangban",
+                toggle=True,text='使用望板',
+                icon=checkbox_icon) 
             
             # 只有庑殿、歇山，可以设置冲、翘
             if bData.roof_style not in (
@@ -711,18 +771,6 @@ class ACA_PT_BPW(bpy.types.Panel):
                     ):
                 inputChong.enabled = False
                 inputQiao.enabled = False
-
-            # 只有庑殿可以设置推山
-            if bData.roof_style != con.ROOF_WUDIAN:
-                inputTuishan.enabled = False
-
-            # 只有歇山可以设置收山
-            if bData.roof_style != con.ROOF_XIESHAN:
-                inputShoushan.enabled = False
-
-            # 只有盝顶可以设置步架
-            if bData.roof_style != con.ROOF_LUDING:
-                inputLudingBujia.enabled = False
 
 # “瓦作属性”子面板
 class ACA_PT_tiles(bpy.types.Panel):

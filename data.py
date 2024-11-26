@@ -228,8 +228,11 @@ def hide_walls(self, context:bpy.types.Context):
 def hide_dougong(self, context:bpy.types.Context):
     utils.hideLayer(context,'斗栱',self.is_showDougong)
 
-def hide_BPW(self, context:bpy.types.Context):
-    utils.hideLayer(context,'梁椽望',self.is_showBPW)
+def hide_beam(self, context:bpy.types.Context):
+    utils.hideLayer(context,'梁架',self.is_showBeam)
+
+def hide_rafter(self, context:bpy.types.Context):
+    utils.hideLayer(context,'椽望',self.is_showRafter)
 
 def hide_tiles(self, context:bpy.types.Context):
     utils.hideLayer(context,'瓦作',self.is_showTiles)
@@ -281,10 +284,15 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "是否显示斗栱",
             update=hide_dougong
         ) # type: ignore
-    is_showBPW: bpy.props.BoolProperty(
+    is_showBeam: bpy.props.BoolProperty(
             default = True,
-            name = "是否显示梁椽望",
-            update=hide_BPW
+            name = "是否显示梁架",
+            update=hide_beam
+        ) # type: ignore
+    is_showRafter: bpy.props.BoolProperty(
+            default = True,
+            name = "是否显示椽望",
+            update=hide_rafter
         ) # type: ignore
     is_showTiles: bpy.props.BoolProperty(
             default = True,

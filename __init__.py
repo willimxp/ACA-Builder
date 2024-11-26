@@ -36,7 +36,8 @@ classes = (
     panel.ACA_PT_pillers,
     panel.ACA_PT_wall,
     panel.ACA_PT_dougong,
-    panel.ACA_PT_BPW,
+    panel.ACA_PT_beam,
+    panel.ACA_PT_rafter,
     panel.ACA_PT_tiles,
     panel.ACA_PT_yardwall_props,
     

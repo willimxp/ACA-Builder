@@ -257,6 +257,18 @@ class ACA_PT_pillers(bpy.types.Panel):
                 col.prop(bData, "y_2")      # 次间深度
             if bData.y_rooms >= 5:
                 col.prop(bData, "y_3")      # 梢间深度
+            # 做廊步架
+            if bData.y_rooms >= 3:
+                if bData.use_hallway:
+                    checkbox_icon = 'CHECKBOX_HLT'
+                else:
+                    checkbox_icon = 'CHECKBOX_DEHLT'
+                #checkUseHallway = box.column(align=True)
+                col.prop(
+                    bData, "use_hallway",
+                    text='廊间举架做法',
+                    toggle=True,
+                    icon=checkbox_icon) 
 
             # 柱子属性
             col = box.column(align=True)
@@ -662,17 +674,6 @@ class ACA_PT_BPW(bpy.types.Panel):
 
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)
-            # 做廊步架
-            if bData.use_hallway:
-                checkbox_icon = 'CHECKBOX_HLT'
-            else:
-                checkbox_icon = 'CHECKBOX_DEHLT'
-            checkUseHallway = toolBar.column(align=True)
-            checkUseHallway.prop(
-                bData, "use_hallway",
-                text='做廊步架',
-                toggle=True,
-                icon=checkbox_icon) 
             # 是否使用飞椽
             if bData.use_flyrafter:
                 checkbox_icon = 'CHECKBOX_HLT'

@@ -516,6 +516,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     use_hallway : bpy.props.BoolProperty(
             default=True,
             name="做廊步架",
+            update = update_building,
         )# type: ignore 
     rafter_count : bpy.props.IntProperty(
             name="椽架数量",

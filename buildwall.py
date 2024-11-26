@@ -82,13 +82,12 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     # 解析wallID，例如”wall#3/0#3/3“，或”window#0/0#0/1“，或”door#0/1#0/2“
     setting = wallID.split('#')
     
-    # 获取实际柱高
-    pillerName = '柱子.' + setting[1]
-    pillerFromObj = bpy.data.objects[pillerName]
-    pillerFromHeight = pillerFromObj.dimensions.z
-    pillerName = '柱子.' + setting[2]
-    pillerToObj = bpy.data.objects[pillerName]
-    pillerToHeight = pillerToObj.dimensions.z
+    # 获取实际柱高   
+    pillerFromHeight = buildFloor.getPillerHeight(
+        buildingObj,setting[1])
+    pillerToHeight = buildFloor.getPillerHeight(
+        buildingObj,setting[2])
+
     # 判断柱子是否等高
     if abs(pillerFromHeight - pillerToHeight) > 0.001:
         isPillerSameHeight = False

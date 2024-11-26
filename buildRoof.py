@@ -827,7 +827,7 @@ def __drawJiaobei(shuzhuObj:bpy.types.Object):
     return jiaobeiObj
 
 # 营造梁架
-# 1、只做了通檐的大梁，没有做抱头梁形式
+# 自动根据是否做廊间举架，判断采用通檐大梁，或是抱头梁
 def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
@@ -868,13 +868,19 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
             beam_l = purlin_pos[n].y*2 + con.HENG_COMMON_D*dk*2
             beam_name = '梁'
             
+            # 有斗拱时，不做底层大梁（一般从桃尖梁后尾连做）
+            if (n==0 and bData.use_dg):
+                continue
+            
+            # 廊间举架，且有斗拱时，不做底层横梁（斗栱自带桃尖梁）
+            # 廊间举架，无斗栱时，做抱头梁，见下面的抱头梁处理
+            if (n==0 and bData.use_hallway 
+                and bData.use_dg):
+                continue
+
             # 脊槫不做横梁（但是卷棚顶步架有横梁）
             if n==len(purlin_pos)-1 and \
                 bData.roof_style not in (con.ROOF_XUANSHAN_JUANPENG):
-                continue
-
-            # 廊步架做法时，最下层不做横梁
-            if n==0 and bData.use_hallway:
                 continue
             
             # 歇山特殊处理：做排山梁架
@@ -912,18 +918,29 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 buildingObj=buildingObj,
                 name = beam_name
             )
+            beamCopyObj.parent= rafterRootObj
+            beamObjects.append(beamCopyObj)
             # 贴彩画
             # beamCopyObj.rotation_euler.z = math.radians(90)
             # utils.applyTransfrom(beamCopyObj,use_rotation=True)
             # mat.setShader(beamCopyObj,mat.shaderType.LIANGFANG)
             # beamCopyObj.rotation_euler.z = math.radians(-90)
             # utils.applyTransfrom(beamCopyObj,use_rotation=True)
-
-            beamCopyObj.parent= rafterRootObj
-            beamObjects.append(beamCopyObj)
-
+            
+            # 抱头梁做法
+            BaotouliangLength = 0
+            # 廊间举架，且无斗拱时，最下层做抱头梁
+            if (n==0 
+                and bData.use_hallway 
+                and not bData.use_dg):
+                # 取廊间进深
+                BaotouliangLength = (abs(net_y[1]-net_y[0])
+                                    - bData.piller_diameter/4)
             # 盝顶仅做抱头梁
             if roofStyle == con.ROOF_LUDING:
+                BaotouliangLength = (bData.luding_rafterspan
+                                     - bData.piller_diameter/4)
+            if BaotouliangLength != 0:
                 # 剪切到金柱位置
                 utils.addBisect(
                     object=beamCopyObj,
@@ -931,7 +948,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     pEnd=Vector((1,0,0)),
                     pCut=((
                         0,
-                        bData.y_total/2 - bData.luding_rafterspan,
+                        bData.y_total/2 - BaotouliangLength,
                         0)),
                     clear_inner=True,
                 )
@@ -941,67 +958,69 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     use_axis=(False,True,False),
                 )
             
-            # 开始做蜀柱和垫板 ===============
+            # 开始做蜀柱和缴背===============
+            useShuzhu = True
             # 在梁上添加蜀柱
-            # 歇山山面第一层不做蜀柱和垫板
+            # 歇山山面第一层不做蜀柱
             if (roofStyle == con.ROOF_XIESHAN 
                     and n==0 and x in (0,len(net_x)-1)):
-                continue
-            # 卷棚的脊槫处不做蜀柱和垫板
+                useShuzhu = False
+            # 卷棚的脊槫处不做蜀柱
             if (roofStyle in (con.ROOF_XUANSHAN_JUANPENG) 
                     and n==len(purlin_pos)-1):
-                continue
-            # 盝顶不做蜀柱和垫板
-            if (roofStyle in (con.ROOF_LUDING)):
-                # 卷棚的脊槫处不做蜀柱
-                continue
-
-            # 梁下皮与origin的距离
-            beamBottom_offset = (con.HENG_COMMON_D*dk/2 
-                            + con.BOARD_HENG_H*dk)
-            # 梁上皮于origin的距离
-            beamTop_offset = (con.BEAM_HEIGHT*pd 
-                            - beamBottom_offset)
-            if (n == len(purlin_pos)-2 and 
-                roofStyle not in (con.ROOF_XUANSHAN_JUANPENG)):
-                # 直接支撑到脊槫
-                shuzhu_height = (purlin_pos[n+1].z 
-                    - purlin_pos[n].z - beamTop_offset)
-            else:
-                # 支撑到上下两根梁之间
-                shuzhu_height = purlin_pos[n+1].z \
-                    - purlin_pos[n].z \
-                    - con.BEAM_HEIGHT*pd
-            shuzhu_loc = Vector((
-                beam_x,   # X向随槫交点依次排列
-                purlin_pos[n+1].y, # 对齐上一层的槫的Y位置
-                purlin_pos[n].z + shuzhu_height/2 + beamTop_offset
-            ))
-            shuzhu_dimensions = Vector((
-                con.PILLER_CHILD*dk,
-                con.PILLER_CHILD*dk,
-                shuzhu_height
-            ))                
-            shuzhuCopyObj = utils.addCube(
-                name="垫板",
-                location=shuzhu_loc,
-                dimension=shuzhu_dimensions,
-                parent=rafterRootObj,
-            )
-            if n!=len(purlin_pos)-1:
-                #镜像
-                utils.addModifierMirror(
-                    shuzhuCopyObj,
-                    mirrorObj=rafterRootObj,
-                    use_axis=(False,True,False),
-                    use_bisect=(False,True,False)
+                useShuzhu = False
+            # 做抱头梁时不做蜀柱（盝顶、廊间举架等）
+            if (roofStyle == con.ROOF_LUDING):
+                useShuzhu = False
+            if (n==0 and bData.use_hallway):
+                useShuzhu = False
+            if useShuzhu:
+                # 梁下皮与origin的距离
+                beamBottom_offset = (con.HENG_COMMON_D*dk/2 
+                                + con.BOARD_HENG_H*dk)
+                # 梁上皮于origin的距离
+                beamTop_offset = (con.BEAM_HEIGHT*pd 
+                                - beamBottom_offset)
+                if (n == len(purlin_pos)-2 and 
+                    roofStyle not in (con.ROOF_XUANSHAN_JUANPENG)):
+                    # 直接支撑到脊槫
+                    shuzhu_height = (purlin_pos[n+1].z 
+                        - purlin_pos[n].z - beamTop_offset)
+                else:
+                    # 支撑到上下两根梁之间
+                    shuzhu_height = purlin_pos[n+1].z \
+                        - purlin_pos[n].z \
+                        - con.BEAM_HEIGHT*pd
+                shuzhu_loc = Vector((
+                    beam_x,   # X向随槫交点依次排列
+                    purlin_pos[n+1].y, # 对齐上一层的槫的Y位置
+                    purlin_pos[n].z + shuzhu_height/2 + beamTop_offset
+                ))
+                shuzhu_dimensions = Vector((
+                    con.PILLER_CHILD*dk,
+                    con.PILLER_CHILD*dk,
+                    shuzhu_height
+                ))                
+                shuzhuCopyObj = utils.addCube(
+                    name="蜀柱",
+                    location=shuzhu_loc,
+                    dimension=shuzhu_dimensions,
+                    parent=rafterRootObj,
                 )
-            beamObjects.append(shuzhuCopyObj)
+                if n!=len(purlin_pos)-1:
+                    #镜像
+                    utils.addModifierMirror(
+                        shuzhuCopyObj,
+                        mirrorObj=rafterRootObj,
+                        use_axis=(False,True,False),
+                        use_bisect=(False,True,False)
+                    )
+                beamObjects.append(shuzhuCopyObj)
 
-            # 蜀柱添加角背
-            jiaobeiObj = __drawJiaobei(shuzhuCopyObj)
-            if jiaobeiObj != None:
-                beamObjects.append(jiaobeiObj)
+                # 蜀柱添加角背
+                jiaobeiObj = __drawJiaobei(shuzhuCopyObj)
+                if jiaobeiObj != None:
+                    beamObjects.append(jiaobeiObj)
         
     # 合并梁架各个部件
     # 攒尖顶时，不做梁架

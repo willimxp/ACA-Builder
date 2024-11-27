@@ -61,6 +61,8 @@
 		<shoushan type="float">2.0</shoushan>
 		<luding_rafterspan type="float">3.0</luding_rafterspan>
 		<is_4_sides type="bool">True</is_4_sides>
+		<is_showBeam type="bool">True</is_showBeam>
+		<use_hallway type="bool">False</use_hallway>
 	</template>
 	<template>
 		<template_name type="str">九檩单檐庑殿周围廊</template_name>

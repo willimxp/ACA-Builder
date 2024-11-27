@@ -713,11 +713,19 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
         # 范围：从下金桁做起
         beamRange = range(1,len(purlin_pos)-2)
 
+    # 查找山面梁架的位置
+    # 根据廊间等面阔的不同，第一幅梁架可能在第二根柱上，也可能在第三根柱子上
+    for n in range(len(net_x)):
+        beamX = abs(net_x[n])
+        # 判断梁架是否与脊槫相交
+        if (beamX < abs(purlin_pos[-1].x) ):
+            break
+
     for n in beamRange:
         # 1、趴梁定位
         loc = Vector((
-                # 取桁檩到第3根柱子的中点
-                (abs(purlin_pos[n].x)+abs(net_x[2]))/2,
+                # 取桁檩到梁架的中点
+                (abs(purlin_pos[n].x)+beamX)/2,
                 # 取上一层桁檩的Y坐标
                 purlin_pos[n+1].y,
                 # 梁下皮与本层桁檩中线平
@@ -725,14 +733,7 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
                     + con.GABELBEAM_HEIGHT*pd/2)
             ))
         # 2、趴梁定尺寸
-        # 梁下皮与桁檩中线平，
-        length = 1
-        # 梢间宽度
-        roomWidth = abs(net_x[2]-net_x[1])
-        # 当前桁到下金桁的距离（金桁直接就是0）
-        purlinOffset = abs(purlin_pos[n].x - purlin_pos[1].x)
-        # 每层趴梁的宽度
-        length = roomWidth - purlinOffset
+        length = abs(purlin_pos[n].x)-beamX
         # 趴梁高6.5dk，厚5.2dk
         dim = Vector((
             length,
@@ -974,8 +975,9 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 if jiaobeiObj != None:
                     beamObjects.append(jiaobeiObj)
     
-    # 如果为庑殿顶，添加山面梁（顺梁、趴梁）
+    # 如果为庑殿顶
     if roofStyle == con.ROOF_WUDIAN:
+        # 添加山面趴梁
         __addGabelBeam(buildingObj,purlin_pos)
 
     # # 合并梁架各个部件

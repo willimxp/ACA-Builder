@@ -401,7 +401,10 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             purlin_length_y = pCross.y * 2 + hengExtend
 
             # 241118 正心桁做彩画
-            if n==0: pass
+            if n==0: 
+                # 在前后檐做正心桁彩画时通过__buildYanHeng已经做了山面正心桁
+                # 这里就不在需要做处理了
+                pass
             else:
                 # 3、摆放桁对象
                 # 盝顶做承椽枋
@@ -451,6 +454,12 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 use_fang = False
                 if bData.use_dg:
                     use_dianban = False
+            # 4坡顶，金桁下不做枋
+            if roofStyle in (
+                    con.ROOF_WUDIAN,
+                    con.ROOF_XIESHAN,
+                    con.ROOF_LUDING,) and n==1:
+                 use_fang = False
             # 桁垫板
             if use_dianban:
                 loc = (pCross.x,0,

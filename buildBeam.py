@@ -779,6 +779,137 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
         )
     return
 
+# 绘制太平梁造型
+def __drawSaftBeam(name='太平梁',
+            location=(0,0,0),
+            rotation=(0,0,0),
+            dimension=(1,1,1),
+            parent=None):
+    safeBeam = utils.addCube(
+            name=name,
+            location=location,
+            dimension=dimension,
+            parent=parent,
+        )
+    # 挤压5和11号边
+    bpy.ops.object.mode_set(mode='EDIT')
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh(safeBeam.data)
+    bpy.ops.mesh.select_mode(type = 'EDGE')
+    bm.edges.ensure_lookup_table()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bm.edges[5].select = True
+    bm.edges[11].select = True
+    bpy.ops.mesh.bevel(affect='EDGES',
+                offset_type='OFFSET',
+                offset=dimension.z/2,
+                segments=1,
+                )
+    bmesh.update_edit_mesh(safeBeam.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+    # 处理UV
+    mat.UvUnwrap(safeBeam,type='cube')
+
+    # 添加bevel
+    modBevel:bpy.types.BevelModifier = \
+        safeBeam.modifiers.new('Bevel','BEVEL')
+    modBevel.width = con.BEVEL_HIGH
+    modBevel.offset_type = 'WIDTH'
+
+    return safeBeam
+
+# 庑殿顶添加太平梁
+def __addSafeBeam(buildingObj,purlin_pos):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    net_x,net_y = buildFloor.getFloorDate(buildingObj)
+    beamRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_BEAM_ROOT)
+    
+    # 查找山面梁架的位置
+    # 根据廊间等面阔的不同，第一幅梁架可能在第二根柱上，也可能在第三根柱子上
+    for n in range(len(net_x)):
+        beamX = abs(net_x[n])
+        # 判断梁架是否与脊槫相交
+        if (beamX < abs(purlin_pos[-1].x) ):
+            break
+    
+    # 判断是否有足够空间架设太平梁，否则就取消绘制
+    # 计算脊桁端头到梁架外皮的宽度
+    span = (purlin_pos[-1].x        # 桁交点
+            + con.HENG_EXTEND*dk/2  # 桁出梢
+            - (beamX + con.BEAM_DEPTH*pd/2))    # 梁架外皮
+    if span < con.GABELBEAM_DEPTH*pd:
+        # 取消以下绘制
+        return
+    
+    # 1、太平梁定位
+    # 取脊桁端头 + 桁檩出梢 - 半梁厚
+    x = (purlin_pos[-1].x 
+                + con.HENG_EXTEND*dk/2
+                - con.GABELBEAM_DEPTH*pd/2
+        )
+    loc = Vector((x,0,
+            # 梁下皮与下层桁檩中线平
+            (purlin_pos[-2].z 
+                + con.GABELBEAM_HEIGHT*pd/2)
+        ))
+    # 2、太平梁定尺寸
+    length = purlin_pos[-2].y * 2
+    # 趴梁高6.5dk，厚5.2dk
+    dim = Vector((
+        con.GABELBEAM_DEPTH*pd,
+        length,
+        con.GABELBEAM_HEIGHT*pd
+    ))
+    # 3、创建太平梁
+    safeBeam = __drawSaftBeam(
+        name="太平梁",
+        location=loc,
+        dimension=dim,
+        parent=beamRootObj,
+    )
+    utils.addModifierMirror(
+            object=safeBeam,
+            mirrorObj=beamRootObj,
+            use_axis=(True,False,False)
+        )
+    # 4、立坨橔/蜀柱
+    tuodunHeight = (purlin_pos[-1].z - purlin_pos[-2].z
+                  - con.GABELBEAM_HEIGHT*pd)       
+    tuodunLoc = Vector((
+        x,
+        0,
+        purlin_pos[-1].z - tuodunHeight/2
+    )) 
+    tuodunDim = Vector((
+        con.GABELBEAM_DEPTH*pd,
+        con.GABELBEAM_DEPTH*pd,
+        tuodunHeight
+    ))
+    tuodunObj = utils.addCube(
+        name='坨橔',
+        location=tuodunLoc,
+        dimension=tuodunDim,
+        parent=beamRootObj,
+    )
+    # 添加bevel
+    modBevel:bpy.types.BevelModifier = \
+        tuodunObj.modifiers.new('Bevel','BEVEL')
+    modBevel.width = con.BEVEL_HIGH
+    modBevel.offset_type = 'WIDTH'
+    utils.addModifierMirror(
+        object=tuodunObj,
+        mirrorObj=beamRootObj,
+        use_axis=(True,False,False)
+    )
+
+    return 
+
 # 营造梁架
 # 自动根据是否做廊间举架，判断采用通檐大梁，或是抱头梁
 def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
@@ -979,6 +1110,8 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     if roofStyle == con.ROOF_WUDIAN:
         # 添加山面趴梁
         __addGabelBeam(buildingObj,purlin_pos)
+        # 添加太平梁
+        __addSafeBeam(buildingObj,purlin_pos)
 
     # # 合并梁架各个部件
     # # 攒尖顶时，不做梁架

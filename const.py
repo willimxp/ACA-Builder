@@ -149,8 +149,8 @@ class ACA_Consts(object):
     BOFENG_HEIGHT = 8       # 博缝板高(DK)
     XYB_WIDTH = 1.2         # 象眼板厚(DK)
     JIAOBEI_WIDTH = 2       # 角背厚度(DK)
-    GABELBEAM_HEIGHT = 1.2  # 趴梁高(PD),小式做法，马炳坚p12
-    GABELBEAM_DEPTH = 1     # 趴梁厚(PD)
+    GABELBEAM_HEIGHT = 6.5  # 趴梁高(DK),马炳坚p9
+    GABELBEAM_DEPTH = 5.2     # 趴梁厚(DK)
 
     # 椽飞类
     YANCHUAN_EX = 14            # 檐椽平出(DK)

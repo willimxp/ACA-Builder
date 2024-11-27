@@ -678,7 +678,7 @@ def __drawGabelBeam(name='趴梁',
     bm.edges[8].select = True
     bpy.ops.mesh.bevel(affect='EDGES',
                 offset_type='OFFSET',
-                offset=dimension.z/2,
+                offset=dimension.z*0.75,
                 segments=1,
                 )
     bmesh.update_edit_mesh(gabelBeam.data ) 
@@ -730,15 +730,15 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
                 purlin_pos[n+1].y,
                 # 梁下皮与本层桁檩中线平
                 (purlin_pos[n].z 
-                    + con.GABELBEAM_HEIGHT*pd/2)
+                    + con.GABELBEAM_HEIGHT*dk/2)
             ))
         # 2、趴梁定尺寸
         length = abs(purlin_pos[n].x)-beamX
         # 趴梁高6.5dk，厚5.2dk
         dim = Vector((
             length,
-            con.GABELBEAM_DEPTH*pd,
-            con.GABELBEAM_HEIGHT*pd
+            con.GABELBEAM_DEPTH*dk,
+            con.GABELBEAM_HEIGHT*dk
         ))
         # 3、创建趴梁
         gabelBeam = __drawGabelBeam(
@@ -754,11 +754,11 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
         )
         # 4、创建坨橔
         tuodunHeight = (purlin_pos[n+1].z - purlin_pos[n].z
-                  - con.GABELBEAM_HEIGHT*pd)       
+                  - con.GABELBEAM_HEIGHT*dk)       
         tuodunLoc = purlin_pos[n+1] - Vector((0,0,tuodunHeight/2))
         tuodunDim = Vector((
-            con.GABELBEAM_DEPTH*pd,
-            con.GABELBEAM_DEPTH*pd,
+            con.GABELBEAM_DEPTH*dk,
+            con.GABELBEAM_DEPTH*dk,
             tuodunHeight
         ))
         tuodunObj = utils.addCube(
@@ -802,7 +802,7 @@ def __drawSaftBeam(name='太平梁',
     bm.edges[11].select = True
     bpy.ops.mesh.bevel(affect='EDGES',
                 offset_type='OFFSET',
-                offset=dimension.z/2,
+                offset=dimension.z*0.75,
                 segments=1,
                 )
     bmesh.update_edit_mesh(safeBeam.data ) 
@@ -843,7 +843,7 @@ def __addSafeBeam(buildingObj,purlin_pos):
     span = (purlin_pos[-1].x        # 桁交点
             + con.HENG_EXTEND*dk/2  # 桁出梢
             - (beamX + con.BEAM_DEPTH*pd/2))    # 梁架外皮
-    if span < con.GABELBEAM_DEPTH*pd:
+    if span < con.GABELBEAM_DEPTH*dk:
         # 取消以下绘制
         return
     
@@ -851,20 +851,20 @@ def __addSafeBeam(buildingObj,purlin_pos):
     # 取脊桁端头 + 桁檩出梢 - 半梁厚
     x = (purlin_pos[-1].x 
                 + con.HENG_EXTEND*dk/2
-                - con.GABELBEAM_DEPTH*pd/2
+                - con.GABELBEAM_DEPTH*dk/2
         )
     loc = Vector((x,0,
             # 梁下皮与下层桁檩中线平
             (purlin_pos[-2].z 
-                + con.GABELBEAM_HEIGHT*pd/2)
+                + con.GABELBEAM_HEIGHT*dk/2)
         ))
     # 2、太平梁定尺寸
     length = purlin_pos[-2].y * 2
     # 趴梁高6.5dk，厚5.2dk
     dim = Vector((
-        con.GABELBEAM_DEPTH*pd,
+        con.GABELBEAM_DEPTH*dk,
         length,
-        con.GABELBEAM_HEIGHT*pd
+        con.GABELBEAM_HEIGHT*dk
     ))
     # 3、创建太平梁
     safeBeam = __drawSaftBeam(
@@ -880,15 +880,15 @@ def __addSafeBeam(buildingObj,purlin_pos):
         )
     # 4、立坨橔/蜀柱
     tuodunHeight = (purlin_pos[-1].z - purlin_pos[-2].z
-                  - con.GABELBEAM_HEIGHT*pd)       
+                  - con.GABELBEAM_HEIGHT*dk)       
     tuodunLoc = Vector((
         x,
         0,
         purlin_pos[-1].z - tuodunHeight/2
     )) 
     tuodunDim = Vector((
-        con.GABELBEAM_DEPTH*pd,
-        con.GABELBEAM_DEPTH*pd,
+        con.GABELBEAM_DEPTH*dk,
+        con.GABELBEAM_DEPTH*dk,
         tuodunHeight
     ))
     tuodunObj = utils.addCube(

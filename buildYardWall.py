@@ -312,11 +312,11 @@ def buildYardWall(buildingObj:bpy.types.Object):
 
     # 院子参数
     yardWidth = bData.yard_width
-    yardDeepth = bData.yard_deepth
+    yardDeepth = bData.yard_depth
 
     # 院墙参数
     wallHeight = bData.yardwall_height
-    wallDeepth = bData.yardwall_deepth
+    wallDeepth = bData.yardwall_depth
     # 退花碱厚度
     bodyShrink = con.WALL_SHRINK
     # 瓦顶斜率

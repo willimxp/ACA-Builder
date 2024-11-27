@@ -433,7 +433,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("3","槛窗",""),
             ],
         ) # type: ignore
-    wall_deepth : bpy.props.FloatProperty(
+    wall_depth : bpy.props.FloatProperty(
             name="墙厚度",
             default=1.0,
             min=0.1,
@@ -633,7 +633,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=1,
             update=update_yardwall,
         )# type: ignore 
-    yard_deepth :bpy.props.FloatProperty(
+    yard_depth :bpy.props.FloatProperty(
             name="庭院进深",
             default=30,
             min=1,
@@ -645,7 +645,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=1,
             update=update_yardwall,
         )# type: ignore
-    yardwall_deepth:bpy.props.FloatProperty(
+    yardwall_depth:bpy.props.FloatProperty(
             name="院墙厚度",
             default=1,
             min=0.5,

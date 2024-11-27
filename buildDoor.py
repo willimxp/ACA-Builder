@@ -128,7 +128,7 @@ def __buildKanKuang(wallproxy):
     use_KanWall = wData.use_KanWall
     pillerD = bData.piller_diameter
     # 分解槛框的长、宽、高
-    frame_width,frame_deepth,frame_height = wallproxy.dimensions
+    frame_width,frame_depth,frame_height = wallproxy.dimensions
 
     KankuangObjs = []
 
@@ -137,7 +137,7 @@ def __buildKanKuang(wallproxy):
     if not use_KanWall:
         KanDownLoc = Vector((0,0,con.KAN_DOWN_HEIGHT*pd/2))
         KanDownScale = Vector((frame_width, # 长度随面宽
-                    con.KAN_DOWN_DEEPTH * pd, # 厚0.3D
+                    con.KAN_DOWN_DEPTH * pd, # 厚0.3D
                     con.KAN_DOWN_HEIGHT * pd, # 高0.8D
                     ))
         KanDownObj = utils.addCube(
@@ -152,7 +152,7 @@ def __buildKanKuang(wallproxy):
     KanUpLoc = Vector((0,0,
             frame_height - con.KAN_UP_HEIGHT*pd/2))
     KanUpScale = Vector((frame_width, # 长度随面宽
-                con.KAN_UP_DEEPTH * pd, # 厚0.3D
+                con.KAN_UP_DEPTH * pd, # 厚0.3D
                 con.KAN_UP_HEIGHT * pd, # 高0.8D
                 ))
     KanTopObj = utils.addCube(
@@ -182,7 +182,7 @@ def __buildKanKuang(wallproxy):
     BaoKuangDownLoc = Vector((BaoKuangDown_x,0,BaoKuangDown_z))
     BaoKuangDownScale = Vector((
                 con.BAOKUANG_WIDTH * pd, # 宽0.66D
-                con.BAOKUANG_DEEPTH * pd, # 厚0.3D
+                con.BAOKUANG_DEPTH * pd, # 厚0.3D
                 BaoKuangDownHeight, 
                 ))
     BaoKuangDownObj = utils.addCube(
@@ -203,7 +203,7 @@ def __buildKanKuang(wallproxy):
         # 1、中槛
         KanMidLoc = Vector((0,0,wData.door_height))
         KanMidScale = Vector((frame_width, # 长度随面宽
-                con.KAN_MID_DEEPTH * pd, # 厚0.3D
+                con.KAN_MID_DEPTH * pd, # 厚0.3D
                 con.KAN_MID_HEIGHT * pd, # 高0.8D
                 ))
         KanMidObj = utils.addCube(
@@ -228,7 +228,7 @@ def __buildKanKuang(wallproxy):
         BaoKuangUpLoc = Vector((BaoKuangUp_x,0,BaoKuangUp_z))
         BaoKuangUpScale = Vector((
                     con.BAOKUANG_WIDTH * pd, # 宽0.66D
-                    con.BAOKUANG_DEEPTH * pd, # 厚0.3D
+                    con.BAOKUANG_DEPTH * pd, # 厚0.3D
                     BaoKuangUpHeight, 
                     ))
         BaoKuangUpObj = utils.addCube(
@@ -268,7 +268,7 @@ def __buildKanKuang(wallproxy):
             KankuangObjs.append(hengKuangObj)
         # 横披窗尺寸
         WindowTopScale = Vector((window_top_width, # 宽度取横披窗宽度
-                    con.ZIBIAN_DEEPTH*pd,
+                    con.ZIBIAN_DEPTH*pd,
                 BaoKuangUpHeight # 高度与上抱框相同
         ))
         # 填充棂心
@@ -285,7 +285,7 @@ def __buildKanKuang(wallproxy):
         kuangWidth = (frame_width 
             - pillerD - con.BAOKUANG_WIDTH*pd*2)
         dim = Vector((con.MENYIN_WIDTH*pd,
-                    con.MENYIN_DEEPTH*pd,
+                    con.MENYIN_DEPTH*pd,
                     con.MENYIN_HEIGHT*pd))
         for n in range(geshan_num):
             # 仅做奇数，不做偶数
@@ -293,7 +293,7 @@ def __buildKanKuang(wallproxy):
             # 横坐标，平均分配每扇隔扇的中点
             x = -kuangWidth/2 + n*kuangWidth/geshan_num
             # 与下槛内皮相平
-            y = con.KAN_DOWN_DEEPTH * pd/2
+            y = con.KAN_DOWN_DEPTH * pd/2
 
             if wData.use_topwin:
                 # 上门楹与中槛垂直居中
@@ -351,19 +351,19 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     geshan_root:bpy.types.Object = bpy.context.object
     geshan_root.name = name
     geshan_root.location = location
-    geshan_width,geshan_deepth,geshan_height = scale
+    geshan_width,geshan_depth,geshan_height = scale
     geshan_root.parent = wallproxy  # 绑定到外框父对象    
 
     # 2.边梃/抹头宽（看面）: 1/10隔扇宽（或1/5D）
     border_width = con.BORDER_WIDTH * pd
     # 边梃/抹头厚(进深)：1.5倍宽或0.3D，这里直接取了抱框厚度
-    border_deepth = con.BORDER_DEEPTH * pd
+    border_depth = con.BORDER_DEPTH * pd
 
     # 3.构件抹头
     # 抹头上下
     loc = (0,0,geshan_height/2-border_width/2)
     motou_width = geshan_width-border_width*2
-    scale = (motou_width,border_deepth,border_width)
+    scale = (motou_width,border_depth,border_width)
     motouObj = utils.addCube(
         name="抹头.上下",
         location=loc,
@@ -391,7 +391,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             heartHeight = geshan_height - border_width *2
             # 扇心：抹二上推半扇心
             loc1 = Vector((0,0,0))
-            scale = Vector((motou_width,border_deepth,heartHeight))
+            scale = Vector((motou_width,border_depth,heartHeight))
             __buildShanxin(geshan_root,scale,loc1)
     if gap_num == 3:
         # 三抹：扇心、裙板按6:4分
@@ -399,7 +399,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         heartHeight = (geshan_height - border_width *3)*0.6
         loc2 = Vector((0,0,
             geshan_height/2-heartHeight-border_width*1.5))
-        scale = Vector((motou_width,border_deepth,border_width))
+        scale = Vector((motou_width,border_depth,border_width))
         motouObj = utils.addCube(
             name="抹头.二",
             location=loc2,
@@ -408,7 +408,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         )
         # 扇心：抹二上推半扇心
         loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
-        scale = Vector((motou_width,border_deepth,heartHeight))
+        scale = Vector((motou_width,border_depth,heartHeight))
         __buildShanxin(geshan_root,scale,loc8)
         if use_KanWall:
                 # 计算窗台高度:抹二下皮
@@ -416,7 +416,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         else:
             # 裙板，抹二下方
             loc3 = loc2-Vector((0,0,heartHeight*2/6+border_width/2))
-            scale = Vector((motou_width,border_deepth/3,heartHeight*4/6))
+            scale = Vector((motou_width,border_depth/3,heartHeight*4/6))
             qunbanObj = utils.addCube(
                 name="裙板",
                 location=loc3,
@@ -430,7 +430,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         # 抹二
         loc2 = Vector((0,0,
             geshan_height/2-heartHeight-border_width*1.5))
-        scale = (motou_width,border_deepth,border_width)
+        scale = (motou_width,border_depth,border_width)
         motouObj = utils.addCube(
                 name="抹头.二",
                 location=loc2,
@@ -439,7 +439,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             ) 
         # 抹三
         loc3 = loc2 - Vector((0,0,border_width*3))
-        scale = (motou_width,border_deepth,border_width)
+        scale = (motou_width,border_depth,border_width)
         motouObj = utils.addCube(
                 name="抹头.三",
                 location=loc3,
@@ -448,7 +448,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             )
         # 绦环板
         loc4 = (loc2+loc3)/2
-        scale = (motou_width,border_deepth/3,border_width*2)
+        scale = (motou_width,border_depth/3,border_width*2)
         taohuanObj = utils.addCube(
                 name="绦环板",
                 location=loc4,
@@ -458,7 +458,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         taohuanList.append(taohuanObj)
         # 扇心：抹二上推半扇心
         loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
-        scale = Vector((motou_width,border_deepth,heartHeight))
+        scale = Vector((motou_width,border_depth,heartHeight))
         __buildShanxin(geshan_root,scale,loc8)
         if use_KanWall:
             # 计算窗台高度:抹三下皮
@@ -466,7 +466,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         else:
             # 裙板，抹三下方
             loc5 = loc3-Vector((0,0,heartHeight*2/6+border_width/2))
-            scale = (motou_width,border_deepth/3,heartHeight*4/6)
+            scale = (motou_width,border_depth/3,heartHeight*4/6)
             qunbanObj = utils.addCube(
                 name="裙板",
                 location=loc5,
@@ -479,7 +479,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         # 抹二
         loc2 = Vector((0,0,
             geshan_height/2-heartHeight-border_width*1.5))
-        scale = (motou_width,border_deepth,border_width)
+        scale = (motou_width,border_depth,border_width)
         motouObj = utils.addCube(
                 name="抹头.二",
                 location=loc2,
@@ -488,7 +488,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             ) 
         # 抹三，抹二向下一块绦环板
         loc3 = loc2 - Vector((0,0,border_width*3))
-        scale = (motou_width,border_deepth,border_width)
+        scale = (motou_width,border_depth,border_width)
         motouObj = utils.addCube(
                 name="抹头.三",
                 location=loc3,
@@ -497,7 +497,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             ) 
         # 绦环板一
         loc5 = (loc2+loc3)/2
-        scale = (motou_width,border_deepth/3,border_width*2)
+        scale = (motou_width,border_depth/3,border_width*2)
         taohuanObj = utils.addCube(
                 name="绦环板一",
                 location=loc5,
@@ -507,7 +507,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         taohuanList.append(taohuanObj)
         # 扇心：抹二上推半扇心
         loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
-        scale = Vector((motou_width,border_deepth,heartHeight))
+        scale = Vector((motou_width,border_depth,heartHeight))
         __buildShanxin(geshan_root,scale,loc8)
         if use_KanWall:
             # 计算窗台高度:抹三下皮
@@ -516,7 +516,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             # 抹四，底边向上一块绦环板
             loc4 = Vector((0,0,
                 -geshan_height/2+border_width*3.5))
-            scale = (motou_width,border_deepth,border_width)
+            scale = (motou_width,border_depth,border_width)
             motouObj = utils.addCube(
                 name="抹头.四",
                 location=loc4,
@@ -525,7 +525,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             ) 
             # 绦环板二
             loc6 = loc4 - Vector((0,0,border_width*1.5))
-            scale = (motou_width,border_deepth/3,border_width*2)
+            scale = (motou_width,border_depth/3,border_width*2)
             taohuanObj = utils.addCube(
                 name="绦环板二",
                 location=loc6,
@@ -535,7 +535,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             taohuanList.append(taohuanObj)
             # 裙板
             loc7 = (loc3+loc4)/2
-            scale = (motou_width,border_deepth/3,heartHeight*4/6)
+            scale = (motou_width,border_depth/3,heartHeight*4/6)
             qunbanObj = utils.addCube(
                 name="裙板",
                 location=loc7,
@@ -548,7 +548,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         # 抹二，固定向下1.5抹+绦环板（2抹）
         loc2 = Vector((0,0,
             geshan_height/2-border_width*3.5))
-        scale = (motou_width,border_deepth,border_width)
+        scale = (motou_width,border_depth,border_width)
         motouObj = utils.addCube(
                 name="抹头.二",
                 location=loc2,
@@ -557,7 +557,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             ) 
         # 抹三, 向下一个扇心+抹头
         loc3 = loc2 - Vector((0,0,heartHeight+border_width))
-        scale = (motou_width,border_deepth,border_width)
+        scale = (motou_width,border_depth,border_width)
         motouObj = utils.addCube(
                 name="抹头.三",
                 location=loc3,
@@ -566,7 +566,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             ) 
         # 抹四，向下一块绦环板
         loc4 = loc3 - Vector((0,0,border_width*3))
-        scale = (motou_width,border_deepth,border_width)
+        scale = (motou_width,border_depth,border_width)
         motouObj = utils.addCube(
                 name="抹头.四",
                 location=loc4,
@@ -575,7 +575,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             ) 
         # 绦环板一，抹二反推
         loc6 = loc2+Vector((0,0,border_width*1.5))
-        scale = (motou_width,border_deepth/3,border_width*2)
+        scale = (motou_width,border_depth/3,border_width*2)
         taohuanObj = utils.addCube(
                 name="绦环板一",
                 location=loc6,
@@ -585,7 +585,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         taohuanList.append(taohuanObj)
         # 绦环板二，抹三抹四之间
         loc7 = (loc3+loc4)/2
-        scale = (motou_width,border_deepth/3,border_width*2)
+        scale = (motou_width,border_depth/3,border_width*2)
         taohuanObj = utils.addCube(
                 name="绦环板二",
                 location=loc7,
@@ -595,7 +595,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         taohuanList.append(taohuanObj)
         # 扇心：抹二和抹三之间
         loc8 = (loc2+loc3)/2
-        scale = Vector((motou_width,border_deepth,heartHeight))
+        scale = Vector((motou_width,border_depth,heartHeight))
         __buildShanxin(geshan_root,scale,loc8)
         if use_KanWall:
             # 计算窗台高度:抹四下皮
@@ -605,7 +605,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             loc5 = Vector((
                 0,0,-geshan_height/2+border_width*3.5
             ))
-            scale = (motou_width,border_deepth,border_width)
+            scale = (motou_width,border_depth,border_width)
             motouObj = utils.addCube(
                 name="抹头.五",
                 location=loc5,
@@ -614,7 +614,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             ) 
             # 裙板，抹四抹五之间
             loc8 = (loc4+loc5)/2
-            scale = (motou_width,border_deepth/3,heartHeight*4/6)
+            scale = (motou_width,border_depth/3,heartHeight*4/6)
             qunbanObj = utils.addCube(
                 name="裙板",
                 location=loc8,
@@ -623,7 +623,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             ) 
             # 绦环板三，底边反推
             loc9 = Vector((0,0,-geshan_height/2+border_width*2))
-            scale = (motou_width,border_deepth/3,border_width*2)
+            scale = (motou_width,border_depth/3,border_width*2)
             taohuanObj = utils.addCube(
                 name="绦环板三",
                 location=loc9,
@@ -647,7 +647,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         )
     else:
         loc = (geshan_width/2-border_width/2,0,0)
-    scale = (border_width,border_deepth,final_height)
+    scale = (border_width,border_depth,final_height)
     geshanObj = utils.addCube(
                 name="边梃",
                 location=loc,
@@ -668,7 +668,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     else:
         x = geshan_width/2 - con.MENZHOU_R*pd
     # 门轴外皮与隔扇相切（实际应该是做成一体的）
-    y = con.BORDER_DEEPTH * pd/2 + con.MENZHOU_R * pd
+    y = con.BORDER_DEPTH * pd/2 + con.MENZHOU_R * pd
     # 门轴与隔扇垂直对齐
     if not use_KanWall:
         # 隔扇与门轴居中对齐
@@ -738,14 +738,14 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     pillerD = bData.piller_diameter
     use_KanWall = wData.use_KanWall
     # 分解槛框的长、宽、高
-    frame_width,frame_deepth,frame_height = wallproxy.dimensions
+    frame_width,frame_depth,frame_height = wallproxy.dimensions
 
     kanQiangObjs = []
 
     # 风槛
     scl1 = Vector((
         dimension.x,
-        con.KAN_WIND_DEEPTH*pd,
+        con.KAN_WIND_DEPTH*pd,
         con.KAN_WIND_HEIGHT*pd
     ))
     loc1 = Vector((
@@ -762,7 +762,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     # 榻板
     scl2 = Vector((
         dimension.x+con.TABAN_EX,
-        con.TABAN_DEEPTH*pd+con.TABAN_EX,
+        con.TABAN_DEPTH*pd+con.TABAN_EX,
         con.TABAN_HEIGHT*pd
     ))
     loc2 = Vector((
@@ -779,7 +779,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     # 槛墙
     scl3 = Vector((
         dimension.x,
-        con.TABAN_DEEPTH*pd,
+        con.TABAN_DEPTH*pd,
         dimension.z-scl1.z-scl2.z
     ))
     loc3 = Vector((
@@ -800,7 +800,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     kuangWidth = (frame_width 
         - pillerD - con.BAOKUANG_WIDTH*pd*2)
     dim = Vector((con.MENYIN_WIDTH*pd,
-                con.MENYIN_DEEPTH*pd,
+                con.MENYIN_DEPTH*pd,
                 con.MENYIN_HEIGHT*pd))
     for n in range(geshan_num):
         # 仅做奇数，不做偶数
@@ -808,7 +808,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
         # 横坐标，平均分配每扇隔扇的中点
         x = -kuangWidth/2 + n*kuangWidth/geshan_num
         # 与下槛内皮相平
-        y = con.KAN_DOWN_DEEPTH * pd/2
+        y = con.KAN_DOWN_DEPTH * pd/2
         
         if wData.use_topwin:
             # 上窗楹与中槛垂直居中
@@ -862,7 +862,7 @@ def buildDoor(wallproxy:bpy.types.Object):
     pd = con.PILLER_D_EAVE * dk
     pillerD = bData.piller_diameter
     # 分解槛框的长、宽、高
-    frame_width,frame_deepth,frame_height = wallproxy.dimensions
+    frame_width,frame_depth,frame_height = wallproxy.dimensions
 
     # 清理之前的子对象
     utils.deleteHierarchy(wallproxy)
@@ -894,7 +894,7 @@ def buildDoor(wallproxy:bpy.types.Object):
     # 与下抱框等高，参考buildKankuang函数的返回对象
     geshan_height = BaoKuangDownObj.dimensions.z
     scale = Vector((geshan_width-con.GESHAN_GAP,
-                con.BAOKUANG_DEEPTH * pd,
+                con.BAOKUANG_DEPTH * pd,
                 geshan_height-con.GESHAN_GAP))
     for n in range(geshan_num):
         # 位置

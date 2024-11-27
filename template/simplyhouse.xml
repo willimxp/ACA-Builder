@@ -50,12 +50,12 @@
 		<tuishan type="float">0.9</tuishan>
 		<juzhe type="str">0</juzhe>
 		<yard_width type="float">10.0</yard_width>
-		<yard_deepth type="float">10.0</yard_deepth>
+		<yard_depth type="float">10.0</yard_depth>
 		<yardwall_height type="float">3.0</yardwall_height>
-		<yardwall_deepth type="float">1.0</yardwall_deepth>
+		<yardwall_depth type="float">1.0</yardwall_depth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
 		<step_net type="str">1/0#2/0,</step_net>
-		<wall_deepth type="float">1.0</wall_deepth>
+		<wall_depth type="float">1.0</wall_depth>
 		<wall_span type="float">0.0</wall_span>
 		<dg_fillgap_alt_source type="NoneType">None</dg_fillgap_alt_source>
 		<shoushan type="float">2.0</shoushan>
@@ -109,7 +109,7 @@
 		<is_showRafter type="bool">True</is_showRafter>
 		<is_showTiles type="bool">True</is_showTiles>
 		<step_net type="str" />
-		<wall_deepth type="float">1.0</wall_deepth>
+		<wall_depth type="float">1.0</wall_depth>
 		<wall_span type="float">0.0</wall_span>
 		<use_hallway type="bool">True</use_hallway>
 		<tuishan type="float">0.9</tuishan>
@@ -119,9 +119,9 @@
 		<paoshou_count type="int">6</paoshou_count>
 		<is_4_sides type="bool">True</is_4_sides>
 		<yard_width type="float">40.0</yard_width>
-		<yard_deepth type="float">30.0</yard_deepth>
+		<yard_depth type="float">30.0</yard_depth>
 		<yardwall_height type="float">3.0</yardwall_height>
-		<yardwall_deepth type="float">1.0</yardwall_deepth>
+		<yardwall_depth type="float">1.0</yardwall_depth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
 		<is_showBeam type="bool">True</is_showBeam>
 	</template>
@@ -172,7 +172,7 @@
 		<is_showTiles type="bool">True</is_showTiles>
 		<step_net type="str">2/0#3/0,1/0#2/0,3/0#4/0,2/3#3/3,</step_net>
 		<x_4 type="float">1.76</x_4>
-		<wall_deepth type="float">1.0</wall_deepth>
+		<wall_depth type="float">1.0</wall_depth>
 		<wall_span type="float">0.0</wall_span>
 		<tuishan type="float">0.9</tuishan>
 		<shoushan type="float">1.145</shoushan>
@@ -181,9 +181,9 @@
 		<paoshou_count type="int">6</paoshou_count>
 		<is_4_sides type="bool">True</is_4_sides>
 		<yard_width type="float">40.0</yard_width>
-		<yard_deepth type="float">30.0</yard_deepth>
+		<yard_depth type="float">30.0</yard_depth>
 		<yardwall_height type="float">3.0</yardwall_height>
-		<yardwall_deepth type="float">1.0</yardwall_deepth>
+		<yardwall_depth type="float">1.0</yardwall_depth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
 	</template>
 	<template>
@@ -537,9 +537,9 @@
 		<paoshou_count type="int">7</paoshou_count>
 		<is_4_sides type="bool">False</is_4_sides>
 		<yard_width type="float">40.0</yard_width>
-		<yard_deepth type="float">30.0</yard_deepth>
+		<yard_depth type="float">30.0</yard_depth>
 		<yardwall_height type="float">3.0</yardwall_height>
-		<yardwall_deepth type="float">1.0</yardwall_deepth>
+		<yardwall_depth type="float">1.0</yardwall_depth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
 	</template>
 	<template>
@@ -593,9 +593,9 @@
 		<paoshou_count type="int">7</paoshou_count>
 		<is_4_sides type="bool">True</is_4_sides>
 		<yard_width type="float">40.0</yard_width>
-		<yard_deepth type="float">80.0</yard_deepth>
+		<yard_depth type="float">80.0</yard_depth>
 		<yardwall_height type="float">3.0</yardwall_height>
-		<yardwall_deepth type="float">1.0</yardwall_deepth>
+		<yardwall_depth type="float">1.0</yardwall_depth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
 	</template>
 	<template>
@@ -649,12 +649,12 @@
 		<paoshou_count type="int">6</paoshou_count>
 		<is_4_sides type="bool">True</is_4_sides>
 		<yard_width type="float">40.0</yard_width>
-		<yard_deepth type="float">30.0</yard_deepth>
+		<yard_depth type="float">30.0</yard_depth>
 		<yardwall_height type="float">3.0</yardwall_height>
-		<yardwall_deepth type="float">1.0</yardwall_deepth>
+		<yardwall_depth type="float">1.0</yardwall_depth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
 		<step_net type="str">2/0#3/0,3/0#4/0,4/0#5/0,7/2#7/3,2/5#3/5,3/5#4/5,4/5#5/5,0/2#0/3,</step_net>
-		<wall_deepth type="float">1.0</wall_deepth>
+		<wall_depth type="float">1.0</wall_depth>
 		<shoushan type="float">2.0</shoushan>
 		<luding_rafterspan type="float">1.76</luding_rafterspan>
 		<wall_span type="float">0.0</wall_span>
@@ -710,11 +710,11 @@
 		<paoshou_count type="int">6</paoshou_count>
 		<is_4_sides type="bool">True</is_4_sides>
 		<yard_width type="float">40.0</yard_width>
-		<yard_deepth type="float">30.0</yard_deepth>
+		<yard_depth type="float">30.0</yard_depth>
 		<yardwall_height type="float">3.0</yardwall_height>
-		<yardwall_deepth type="float">1.0</yardwall_deepth>
+		<yardwall_depth type="float">1.0</yardwall_depth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
-		<wall_deepth type="float">0.5</wall_deepth>
+		<wall_depth type="float">0.5</wall_depth>
 		<step_net type="str" />
 		<shoushan type="float">0.1</shoushan>
 		<wall_span type="float">1.7</wall_span>
@@ -748,7 +748,7 @@
 		<piller_height type="float">4.93</piller_height>
 		<piller_diameter type="float">0.45</piller_diameter>
 		<use_smallfang type="bool">True</use_smallfang>
-		<wall_deepth type="float">1.0</wall_deepth>
+		<wall_depth type="float">1.0</wall_depth>
 		<wall_span type="float">0.0</wall_span>
 		<door_height type="float">3.36</door_height>
 		<door_num type="int">4</door_num>
@@ -776,9 +776,9 @@
 		<paoshou_count type="int">7</paoshou_count>
 		<is_4_sides type="bool">True</is_4_sides>
 		<yard_width type="float">10.0</yard_width>
-		<yard_deepth type="float">10.0</yard_deepth>
+		<yard_depth type="float">10.0</yard_depth>
 		<yardwall_height type="float">3.0</yardwall_height>
-		<yardwall_deepth type="float">1.0</yardwall_deepth>
+		<yardwall_depth type="float">1.0</yardwall_depth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
 		<use_hallway type="bool">True</use_hallway>
 	</template>

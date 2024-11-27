@@ -104,32 +104,32 @@ class ACA_Consts(object):
     BOARD_HENG_Y = 1.5      # 金脊桁檩垫板厚(DK)
 
     # 门窗（马炳坚数据）
-    WALL_DEEPTH = 1.5           # 槛墙厚度(PD)
+    WALL_DEPTH = 1.5           # 槛墙厚度(PD)
     WALL_BOTTOM_RATE = 1/3      # 墙体下碱的高度比例
     WALL_BOTTOM_LIMIT = 1.5     # 墙体下碱限高(m)
     WALL_SHRINK = 0.015         # 墙体退花碱厚度(m)
     KAN_DOWN_HEIGHT = 0.8       # 下槛高度(PD)
-    KAN_DOWN_DEEPTH = 0.3       # 下槛深度(PD)，梁思成实际使用的为0.4
+    KAN_DOWN_DEPTH = 0.3       # 下槛深度(PD)，梁思成实际使用的为0.4
     KAN_MID_HEIGHT = 0.66       # 中槛高度(PD)(汤崇平书p20中定为0.64)
-    KAN_MID_DEEPTH = 0.3        # 中槛深度(PD)
+    KAN_MID_DEPTH = 0.3        # 中槛深度(PD)
     KAN_UP_HEIGHT = 0.5         # 上槛高度(PD)
-    KAN_UP_DEEPTH = 0.3         # 上槛深度(PD)
+    KAN_UP_DEPTH = 0.3         # 上槛深度(PD)
     KAN_WIND_HEIGHT = 0.5       # 风槛高度(PD)
-    KAN_WIND_DEEPTH = 0.3       # 风槛深度(PD)
+    KAN_WIND_DEPTH = 0.3       # 风槛深度(PD)
     BAOKUANG_WIDTH = 0.66       # 抱框宽度(PD)
-    BAOKUANG_DEEPTH = 0.3       # 抱框深度(PD)
+    BAOKUANG_DEPTH = 0.3       # 抱框深度(PD)
     BORDER_WIDTH = 0.2          # 边梃、抹头宽(PD)
-    BORDER_DEEPTH = BAOKUANG_DEEPTH         # 边梃、抹头厚(PD)
+    BORDER_DEPTH = BAOKUANG_DEPTH         # 边梃、抹头厚(PD)
     ZIBIAN_WIDTH = BORDER_WIDTH*0.5         # 仔边宽(PD)
-    ZIBIAN_DEEPTH = BORDER_WIDTH*0.5        # 仔边厚(PD)
-    TABAN_DEEPTH = 1.5          # 榻板宽(PD)
+    ZIBIAN_DEPTH = BORDER_WIDTH*0.5        # 仔边厚(PD)
+    TABAN_DEPTH = 1.5          # 榻板宽(PD)
     TABAN_HEIGHT = 3/8          # 榻板高(PD)
     TABAN_EX = 0.1              # 榻板金边(米)
     GESHAN_GAP = 0.02           # 隔扇的间距/门缝(米)
     DOUGONG_SPAN = 11           # 斗栱攒距(DK)
-    MENYIN_DEEPTH = KAN_DOWN_DEEPTH*1.8     # 门楹/窗楹厚(PD)
+    MENYIN_DEPTH = KAN_DOWN_DEPTH*1.8     # 门楹/窗楹厚(PD)
     MENYIN_HEIGHT = KAN_DOWN_HEIGHT*0.5     # 门楹/窗楹高(PD)
-    MENYIN_WIDTH = MENYIN_DEEPTH*2          # 门楹/窗楹宽(PD)
+    MENYIN_WIDTH = MENYIN_DEPTH*2          # 门楹/窗楹宽(PD)
     MENZHOU_R = BORDER_WIDTH/2              # 门轴(PD)
 
     # 桁檩
@@ -144,11 +144,13 @@ class ACA_Consts(object):
 
     # 梁架
     BEAM_HEIGHT = 1.4       # 梁高(PD)
-    BEAM_DEEPTH = 1.1       # 梁厚(PD)
+    BEAM_DEPTH = 1.1        # 梁厚(PD)
     BOFENG_WIDTH = 1.2      # 博缝板厚(DK)
     BOFENG_HEIGHT = 8       # 博缝板高(DK)
     XYB_WIDTH = 1.2         # 象眼板厚(DK)
     JIAOBEI_WIDTH = 2       # 角背厚度(DK)
+    GABELBEAM_HEIGHT = 1.2  # 趴梁高(PD),小式做法，马炳坚p12
+    GABELBEAM_DEPTH = 1     # 趴梁厚(PD)
 
     # 椽飞类
     YANCHUAN_EX = 14            # 檐椽平出(DK)

@@ -494,7 +494,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
         wangbanObj = utils.addCubeBy2Points(
             start_point=pstart,
             end_point=pend,
-            deepth=width,
+            depth=width,
             height=con.WANGBAN_H*dk,
             name="望板",
             root_obj=rafterRootObj,
@@ -670,7 +670,7 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
         wangbanObj = utils.addCubeBy2Points(
             start_point=pstart,
             end_point=pend,
-            deepth=width,
+            depth=width,
             height=con.WANGBAN_H*dk,
             name="望板",
             root_obj=rafterRootObj,
@@ -1215,7 +1215,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
         CornerBeamObj = utils.addCubeBy2Points(
             start_point=pStart,
             end_point=pEnd,
-            deepth=con.JIAOLIANG_Y*dk,
+            depth=con.JIAOLIANG_Y*dk,
             height=con.JIAOLIANG_H*dk,
             name=CornerBeamName,
             root_obj=rafterRootObj,
@@ -2886,7 +2886,7 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
     ridge_x = purlin_pos[-1].x
     # 硬山调整一个山墙宽度
     if bData.roof_style ==con.ROOF_YINGSHAN:
-        ridge_x += con.SHANQIANG_WIDTH * dk - con.BEAM_DEEPTH * pd/2
+        ridge_x += con.SHANQIANG_WIDTH * dk - con.BEAM_DEPTH * pd/2
 
     # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
     # 如果做飞椽，以大连檐定位，否则以小连檐（里口木）定位

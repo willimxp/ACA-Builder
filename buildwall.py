@@ -98,7 +98,7 @@ def buildWallproxy(buildingObj:bpy.types.Object,
         pillerHeight = pillerFromHeight
 
     # 定义wallproxy尺寸
-    wall_deepth = 1 # 墙线框默认尺寸，后续被隐藏显示，所以没有实际影响
+    wall_depth = 1 # 墙线框默认尺寸，后续被隐藏显示，所以没有实际影响
     # 如果柱子等高，装修在额枋下，否则直接做到柱头
     if isPillerSameHeight:
         wall_height = pillerHeight \
@@ -143,7 +143,7 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     wallproxy = utils.addCubeBy2Points(
                 start_point = pStart,
                 end_point = pEnd,
-                deepth = wall_deepth,
+                depth = wall_depth,
                 height = wall_height,
                 name = "wallproxy",
                 root_obj = wallrootObj,
@@ -166,7 +166,7 @@ def buildWallproxy(buildingObj:bpy.types.Object,
         wData['wall_style'] = 3
         wData['use_KanWall'] = True
         wallproxy.name = '槛窗proxy'
-    wData['wall_deepth'] = bData.wall_deepth
+    wData['wall_depth'] = bData.wall_depth
     wData['wall_span'] = bData.wall_span
     wData['door_height'] = bData.door_height
     wData['door_num'] = bData.door_num
@@ -183,7 +183,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     dk = bData.DK
     (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
     # 覆盖墙体厚度
-    wallDeepth = con.WALL_DEEPTH * bData.piller_diameter
+    wallDeepth = con.WALL_DEPTH * bData.piller_diameter
     # 退花碱厚度
     bodyShrink = con.WALL_SHRINK
 
@@ -295,7 +295,7 @@ def updateWallLayout(buildingObj:bpy.types.Object):
 
     # 一、批量更新wallproxy尺寸
     # a、默认尺寸
-    wall_deepth = 1 # 墙线框尺寸
+    wall_depth = 1 # 墙线框尺寸
     pillerObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PILLER)
     wall_height = pillerObj.dimensions.z   
     # b、计算布局数据
@@ -339,7 +339,7 @@ def updateWallLayout(buildingObj:bpy.types.Object):
             # enumProperty赋值很奇怪
             if bData.wall_style != "":
                 wData['wall_style'] = int(bData.wall_style) 
-            wData['wall_deepth'] = bData.wall_deepth
+            wData['wall_depth'] = bData.wall_depth
             wData['wall_span'] = bData.wall_span
             wData['door_height'] = bData.door_height
             wData['door_num'] = bData.door_num

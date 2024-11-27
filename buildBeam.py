@@ -75,7 +75,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
     purlinHeight = con.HENG_TIAOYAN_D/2*dk
     # 硬山桁檩：做到梁的外皮
     if roofStyle == con.ROOF_YINGSHAN:
-        purlinWidth += con.BEAM_DEEPTH*pd/2
+        purlinWidth += con.BEAM_DEPTH*pd/2
     # 悬山（卷棚）：从山柱中加檐出（14斗口）
     if roofStyle in (
             con.ROOF_XUANSHAN,
@@ -160,7 +160,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
                     rafterSpan              # 步架
                     - con.BOFENG_WIDTH*dk   # 博缝板
                     - con.XYB_WIDTH*dk      # 山花板
-                    - con.BEAM_DEEPTH*pd/2  # 梁架中线
+                    - con.BEAM_DEPTH*pd/2  # 梁架中线
                     )
                 if bData.shoushan > shoushanLimit:
                     bData['shoushan'] = shoushanLimit
@@ -307,11 +307,18 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             loc = (0,pCross.y,
                 (pCross.z - con.HENG_COMMON_D*dk/2
                     - con.BOARD_HENG_H*dk/2))
-            dim = (purlin_length_x,
+            # 桁垫板长度
+            if (bData.roof_style in (con.ROOF_WUDIAN)
+                and n!=len(purlin_pos)-1):
+                # 庑殿的桁垫板不出梢（由顺趴梁坨橔围合）
+                dianbanL = purlin_length_x - hengExtend
+            else:
+                dianbanL = purlin_length_x
+            dim = (dianbanL,
                 con.BOARD_HENG_Y*dk,
                 con.BOARD_HENG_H*dk)
             dianbanObj = utils.addCube(
-                name="垫板",
+                name="桁垫板",
                 location=loc,
                 dimension=dim,
                 parent=beamRootObj,
@@ -351,7 +358,14 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 (pCross.z - con.HENG_COMMON_D*dk/2
                     - con.BOARD_HENG_H*dk
                     - con.HENGFANG_H*dk/2))
-            dim = (purlin_length_x,
+            # 桁枋长度
+            if (bData.roof_style in (con.ROOF_WUDIAN)
+                and n != (len(purlin_pos)-1)):
+                # 庑殿的桁垫板不出梢（由顺趴梁坨橔围合）
+                hengfangL = purlin_length_x - hengExtend
+            else:
+                hengfangL = purlin_length_x
+            dim = (hengfangL,
                 con.HENGFANG_Y*dk,
                 con.HENGFANG_H*dk)
             hengfangObj = utils.addCube(
@@ -465,7 +479,13 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 loc = (pCross.x,0,
                     (pCross.z - con.HENG_COMMON_D*dk/2
                         - con.BOARD_HENG_H*dk/2))
-                dim = (purlin_length_y,
+                # 桁垫板长度
+                if bData.roof_style in (con.ROOF_WUDIAN):
+                    # 庑殿的桁垫板不出梢（由顺趴梁坨橔围合）
+                    dianbanL = purlin_length_y - hengExtend
+                else:
+                    dianbanL = purlin_length_y
+                dim = (dianbanL,
                     con.BOARD_HENG_Y*dk,
                     con.BOARD_HENG_H*dk)
                 dianbanObj = utils.addCube(
@@ -491,7 +511,14 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     (pCross.z - con.HENG_COMMON_D*dk/2
                         - con.BOARD_HENG_H*dk
                         - con.HENGFANG_H*dk/2))
-                dim = (purlin_length_y,
+                # 桁枋长度
+                if (bData.roof_style in (con.ROOF_WUDIAN)
+                    and n != (len(purlin_pos)-1)):
+                    # 庑殿的桁垫板不出梢（由顺趴梁坨橔围合）
+                    hengfangL = purlin_length_y - hengExtend
+                else:
+                    hengfangL = purlin_length_y
+                dim = (hengfangL,
                     con.HENGFANG_Y*dk,
                     con.HENGFANG_H*dk)
                 hengfangObj = utils.addCube(
@@ -511,8 +538,6 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 modBevel:bpy.types.BevelModifier = \
                     hengfangObj.modifiers.new('Bevel','BEVEL')
                 modBevel.width = con.BEVEL_LOW
-
-            # 4、添加镜像
                  
     return
 
@@ -631,6 +656,128 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
     
     return
 
+# 绘制趴梁造型
+def __drawGabelBeam(name='趴梁',
+            location=(0,0,0),
+            rotation=(0,0,0),
+            dimension=(1,1,1),
+            parent=None):
+    gabelBeam = utils.addCube(
+            name=name,
+            location=location,
+            dimension=dimension,
+            parent=parent,
+        )
+    # 挤压8号边
+    bpy.ops.object.mode_set(mode='EDIT')
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh(gabelBeam.data)
+    bpy.ops.mesh.select_mode(type = 'EDGE')
+    bm.edges.ensure_lookup_table()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    bm.edges[8].select = True
+    bpy.ops.mesh.bevel(affect='EDGES',
+                offset_type='OFFSET',
+                offset=dimension.z/2,
+                segments=1,
+                )
+    bmesh.update_edit_mesh(gabelBeam.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+    # 处理UV
+    mat.UvUnwrap(gabelBeam,type='cube')
+
+    # 添加bevel
+    modBevel:bpy.types.BevelModifier = \
+        gabelBeam.modifiers.new('Bevel','BEVEL')
+    modBevel.width = con.BEVEL_HIGH
+    modBevel.offset_type = 'WIDTH'
+
+    return gabelBeam
+
+# 添加庑殿顶山面的顺趴梁
+def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    beamRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_BEAM_ROOT)
+    net_x,net_y = buildFloor.getFloorDate(buildingObj)
+    
+    # 六架以上，才能做顺趴梁
+    if bData.rafter_count < 6:
+        return
+    else:
+        # 范围：从下金桁做起
+        beamRange = range(1,len(purlin_pos)-2)
+
+    for n in beamRange:
+        # 1、趴梁定位
+        loc = Vector((
+                # 取桁檩到第3根柱子的中点
+                (abs(purlin_pos[n].x)+abs(net_x[2]))/2,
+                # 取上一层桁檩的Y坐标
+                purlin_pos[n+1].y,
+                # 梁下皮与本层桁檩中线平
+                (purlin_pos[n].z 
+                    + con.GABELBEAM_HEIGHT*pd/2)
+            ))
+        # 2、趴梁定尺寸
+        # 梁下皮与桁檩中线平，
+        length = 1
+        # 梢间宽度
+        roomWidth = abs(net_x[2]-net_x[1])
+        # 当前桁到下金桁的距离（金桁直接就是0）
+        purlinOffset = abs(purlin_pos[n].x - purlin_pos[1].x)
+        # 每层趴梁的宽度
+        length = roomWidth - purlinOffset
+        # 趴梁高6.5dk，厚5.2dk
+        dim = Vector((
+            length,
+            con.GABELBEAM_DEPTH*pd,
+            con.GABELBEAM_HEIGHT*pd
+        ))
+        # 3、创建趴梁
+        gabelBeam = __drawGabelBeam(
+            name="趴梁",
+            location=loc,
+            dimension=dim,
+            parent=beamRootObj,
+        )
+        utils.addModifierMirror(
+            object=gabelBeam,
+            mirrorObj=beamRootObj,
+            use_axis=(True,True,False)
+        )
+        # 4、创建坨橔
+        tuodunHeight = (purlin_pos[n+1].z - purlin_pos[n].z
+                  - con.GABELBEAM_HEIGHT*pd)       
+        tuodunLoc = purlin_pos[n+1] - Vector((0,0,tuodunHeight/2))
+        tuodunDim = Vector((
+            con.GABELBEAM_DEPTH*pd,
+            con.GABELBEAM_DEPTH*pd,
+            tuodunHeight
+        ))
+        tuodunObj = utils.addCube(
+            name='坨橔',
+            location=tuodunLoc,
+            dimension=tuodunDim,
+            parent=beamRootObj,
+        )
+        # 添加bevel
+        modBevel:bpy.types.BevelModifier = \
+            tuodunObj.modifiers.new('Bevel','BEVEL')
+        modBevel.width = con.BEVEL_HIGH
+        modBevel.offset_type = 'WIDTH'
+        utils.addModifierMirror(
+            object=tuodunObj,
+            mirrorObj=beamRootObj,
+            use_axis=(True,True,False)
+        )
+    return
+
 # 营造梁架
 # 自动根据是否做廊间举架，判断采用通檐大梁，或是抱头梁
 def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
@@ -712,7 +859,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
             # 梁定位
             beam_loc = Vector((beam_x,0,beam_z))
             beam_dim = Vector((
-                con.BEAM_DEEPTH*pd,
+                con.BEAM_DEPTH*pd,
                 beam_l,
                 con.BEAM_HEIGHT*pd
             ))
@@ -826,17 +973,21 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 jiaobeiObj = __drawJiaobei(shuzhuCopyObj)
                 if jiaobeiObj != None:
                     beamObjects.append(jiaobeiObj)
-        
-    # 合并梁架各个部件
-    # 攒尖顶时，不做梁架
-    if beamObjects != []:
-        beamSetObj = utils.joinObjects(
-            beamObjects,newName='梁架')
-        modBevel:bpy.types.BevelModifier = \
-            beamSetObj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = con.BEVEL_HIGH
-        # 241119 统一刷红漆
-        mat.setShader(beamSetObj,mat.shaderType.REDPAINT)
+    
+    # 如果为庑殿顶，添加山面梁（顺梁、趴梁）
+    if roofStyle == con.ROOF_WUDIAN:
+        __addGabelBeam(buildingObj,purlin_pos)
+
+    # # 合并梁架各个部件
+    # # 攒尖顶时，不做梁架
+    # if beamObjects != []:
+    #     beamSetObj = utils.joinObjects(
+    #         beamObjects,newName='梁架')
+    #     modBevel:bpy.types.BevelModifier = \
+    #         beamSetObj.modifiers.new('Bevel','BEVEL')
+    #     modBevel.width = con.BEVEL_HIGH
+    #     # 241119 统一刷红漆
+    #     mat.setShader(beamSetObj,mat.shaderType.REDPAINT)
                            
     return
 

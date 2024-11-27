@@ -426,7 +426,7 @@ def addCube(name='Cube',
 # 长度在X轴方向
 def addCubeBy2Points(start_point:Vector,
                      end_point:Vector,
-                     deepth:float,
+                     depth:float,
                      height:float,
                      name:str,
                      root_obj:bpy.types.Object,
@@ -444,7 +444,7 @@ def addCubeBy2Points(start_point:Vector,
         name=name,
         location=origin_point,
         rotation=rotation,
-        dimension=(length,deepth,height),
+        dimension=(length,depth,height),
         parent=root_obj,
     )
 

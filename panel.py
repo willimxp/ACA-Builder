@@ -406,7 +406,7 @@ class ACA_PT_wall(bpy.types.Panel):
             # # 墙体厚度
             # inputWallDeepth = toolBar.column(align=True)
             # inputWallDeepth.prop(
-            #     dataSource, "wall_deepth",text='墙体厚度')
+            #     dataSource, "wall_depth",text='墙体厚度')
             # 隔扇数量
             inputDoorNum = toolBar.column(align=True)
             inputDoorNum.prop(
@@ -868,7 +868,7 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
                     icon=checkbox_icon)
                 # 院墙进深
                 inputYardDeepth = toolBar.column(align=True)
-                inputYardDeepth.prop(bData,'yard_deepth',
+                inputYardDeepth.prop(bData,'yard_depth',
                     text='院墙进深')
                 if not bData.is_4_sides:
                     inputYardDeepth.enabled = False
@@ -884,7 +884,7 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
                 # 院墙厚度
                 inputYardwallDeepth = toolBar.column(align=True)
                 inputYardwallDeepth.prop(bData,
-                    'yardwall_deepth',
+                    'yardwall_depth',
                     text='院墙厚度')
                 # 帽瓦斜率
                 inputYardtileAngle = toolBar.column(align=True)

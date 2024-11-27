@@ -1163,7 +1163,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     # 硬山建筑，向外移动一个山墙
     if bData.roof_style ==con.ROOF_YINGSHAN:
         ridge_x += (con.SHANQIANG_WIDTH * dk 
-            - con.BEAM_DEEPTH * pd/2) # 山墙内还包了半边梁、柱
+            - con.BEAM_DEPTH * pd/2) # 山墙内还包了半边梁、柱
 
     # 垂脊纵坐标定位
     # P1:硬山、悬山的垂脊从檐口做起
@@ -1283,7 +1283,7 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
     ridge_x = purlin_pos[-1].x - bData.tile_width_real/2
     # 硬山建筑，向外移动一个山墙
     if bData.roof_style ==con.ROOF_YINGSHAN:
-        ridge_x += con.SHANQIANG_WIDTH * dk - con.BEAM_DEEPTH * pd/2
+        ridge_x += con.SHANQIANG_WIDTH * dk - con.BEAM_DEPTH * pd/2
 
     # 硬山、悬山的垂脊从檐口做起
     if bData.roof_style in (

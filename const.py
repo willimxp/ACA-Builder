@@ -96,6 +96,8 @@ class ACA_Consts(object):
     BAWANGQUAN_H = 0.8      # 霸王拳高：额枋的4/5,参考马炳坚p163
     BAWANGQUAN_Y = 0.5      # 霸王拳厚：0.5D,参考马炳坚p163,本来是0.8额枋，但感觉太厚了
     BAWANGQUAN_L = 1        # 霸王拳长：1D,参考马炳坚p163
+    CCFANG_H = 4            # 穿插枋高(DK)，马炳坚p167
+    CCFANG_Y = 3.2          # 穿插枋厚(DK)
 
     # 垫板
     BOARD_YOUE_H = 2        # 由额垫板高(DK)

@@ -413,7 +413,8 @@ def __buildCCFang(buildingObj:bpy.types.Object):
                             % (px,py,px+1,py))
 
     # 循环生成穿插枋
-    ccfangOffset = 0.5
+    # 从柱头向下一个大额枋
+    ccfangOffset = con.EFANG_LARGE_H*dk
     for ccfang in ccfangList:
         jinPiller,yanPiller = ccfang.split('#')
         # 起点檐柱
@@ -432,8 +433,8 @@ def __buildCCFang(buildingObj:bpy.types.Object):
         ccFangProxy = utils.addCubeBy2Points(
             start_point=pStart,
             end_point=pEnd,
-            depth=con.EFANG_SMALL_Y*dk,
-            height=con.EFANG_SMALL_H*dk,
+            depth=con.CCFANG_Y*dk,  # 高4斗口，厚3.2斗口
+            height=con.CCFANG_H*dk,
             name='穿插枋proxy',
             root_obj=floorRootObj
         )
@@ -451,8 +452,10 @@ def __buildCCFang(buildingObj:bpy.types.Object):
         # 调整柱头伸出，一个柱径
         gnMod:bpy.types.NodesModifier = \
             ccFangObj.modifiers.get('ccFang')
+        # 强制每个对象的node group为单一用户
+        gnMod.node_group = gnMod.node_group.copy()
         if gnMod != None:
-            utils.setGN_Input(gnMod,"pd",bData.piller_diameter/2+1)
+            utils.setGN_Input(gnMod,"pd",bData.piller_diameter/2+0.1)
 
     return
 

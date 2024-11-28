@@ -861,6 +861,12 @@ class ACA_data_template(bpy.types.PropertyGroup):
             type = bpy.types.Object,
         )# type: ignore
     
+    # 穿插枋对象
+    ccfang_source : bpy.props.PointerProperty(
+            name = "穿插枋",
+            type = bpy.types.Object,
+        )# type: ignore
+    
     # 琉璃瓦对象
     flatTile_source:bpy.props.PointerProperty(
             name = "板瓦",

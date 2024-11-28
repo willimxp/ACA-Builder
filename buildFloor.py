@@ -365,6 +365,97 @@ def __buildQueti(fangObj):
     utils.applyTransfrom(quetiObj,use_scale=True)
     return
 
+# 添加穿插枋
+# 适用于采用了廊间做法的
+def __buildCCFang(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    aData:tmpData = bpy.context.scene.ACA_temp
+    # 查找或新建地盘根节点
+    floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
+    # 获取开间、进深数据
+    net_x,net_y = getFloorDate(buildingObj)
+    # 穿插枋列表
+    ccfangList = []
+
+    # 循环所有的柱子
+    # 解析piller_net,如：
+    pillerList = bData.piller_net.split(',')
+    for pillerID in pillerList:
+        if pillerID == '' : continue
+        px,py = pillerID.split('/')
+        px = int(px)
+        py = int(py)
+
+        # 判断柱子是否为金柱，并向相邻的檐柱做穿插枋
+        # 前后檐
+        if (py in (1,bData.y_rooms-1)
+             and px not in (0, bData.x_rooms) ):
+            if net_y[py] < 0:
+                # 南面
+                ccfangList.append("%d/%d#%d/%d" 
+                            % (px,py,px,py-1))
+            else:
+                # 北面
+                ccfangList.append("%d/%d#%d/%d" 
+                            % (px,py,px,py+1))
+        # 两山
+        if (px in (1, bData.x_rooms-1) 
+             and py not in (0,bData.y_rooms)):
+            if net_x[px] < 0:
+                # 西面
+                ccfangList.append("%d/%d#%d/%d" 
+                            % (px,py,px-1,py))
+            else:
+                # 东面
+                ccfangList.append("%d/%d#%d/%d" 
+                            % (px,py,px+1,py))
+
+    # 循环生成穿插枋
+    ccfangOffset = 0.5
+    for ccfang in ccfangList:
+        jinPiller,yanPiller = ccfang.split('#')
+        # 起点檐柱
+        px1,py1 = yanPiller.split('/')
+        pStart = Vector((
+            net_x[int(px1)],net_y[int(py1)],
+            bData.piller_height-ccfangOffset
+        ))
+        # 终点金柱
+        px2,py2 = jinPiller.split('/')
+        pEnd = Vector((
+            net_x[int(px2)],net_y[int(py2)],
+            bData.piller_height-ccfangOffset
+        ))
+        # 做穿插枋proxy，定下尺寸、位置、大小
+        ccFangProxy = utils.addCubeBy2Points(
+            start_point=pStart,
+            end_point=pEnd,
+            depth=con.EFANG_SMALL_Y*dk,
+            height=con.EFANG_SMALL_H*dk,
+            name='穿插枋proxy',
+            root_obj=floorRootObj
+        )
+        utils.hideObj(ccFangProxy)
+        # 引入穿插枋资源，与proxy适配
+        ccFangObj = utils.copyObject(
+            sourceObj=aData.ccfang_source,
+            name='穿插枋',
+            parentObj=ccFangProxy,
+            location=(0,0,0),
+            singleUser=True
+        )
+        ccFangObj.dimensions = ccFangProxy.dimensions
+        utils.applyTransfrom(ccFangObj,use_scale=True)
+        # 调整柱头伸出，一个柱径
+        gnMod:bpy.types.NodesModifier = \
+            ccFangObj.modifiers.get('ccFang')
+        if gnMod != None:
+            utils.setGN_Input(gnMod,"pd",bData.piller_diameter/2+1)
+
+    return
+
 # 在柱间添加额枋
 def __buildFang(buildingObj:bpy.types.Object):
     # 载入数据
@@ -859,10 +950,23 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 清理临时柱子
     utils.deleteHierarchy(pillerProxy_basemesh,True)
 
+    # 重新生成柱网配置
+    floorChildren:List[bpy.types.Object] = floorRootObj.children
+    bData.piller_net = ''
+    for piller in floorChildren:
+        if 'aca_type' in piller.ACA_data:
+            if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER_ROOT:
+                pillerID = piller.ACA_data['pillerID']
+                bData.piller_net += pillerID + ','
+
     # 添加柱间的额枋
     # 重设柱网时，可能清除fang_net数据，而导致异常
     if bData.fang_net != '':
         __buildFang(buildingObj)
+
+    # 做廊间举架时，添加穿插枋
+    if bData.use_hallway:
+        __buildCCFang(buildingObj)
 
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

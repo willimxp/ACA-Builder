@@ -200,7 +200,8 @@ def __setTexture(
         ):
         UvUnwrap(object,uvType.SCALE)
         # 设置槫头坐龙
-        if object.name.startswith('挑檐桁'):
+        if (object.name.startswith('挑檐桁')
+            or object.name.startswith('正心桁')):
             __setTuanHead(object)
 
     # 垫板.公母草

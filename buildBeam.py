@@ -570,13 +570,16 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
         # 硬山为了承托斗栱，也做了出梢
         # 241118 无论是否有斗拱都应该出梢
         hengExtend += con.HENG_EXTEND*dk /2
-    # 四坡顶用斗拱时，增加斗栱出跳
+    # 四坡顶用斗拱时，如果是挑檐桁增加斗栱出跳
     if bData.roof_style in (
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
             con.ROOF_LUDING):
+        # 是否用斗栱
         if bData.use_dg:
-            hengExtend += bData.dg_extend
+            # 是否为挑檐桁
+            if abs(purlin_cross.x) - abs(net_x[0]) > 0.001:
+                hengExtend += bData.dg_extend
 
     # 前后檐排布
     # 计算明间的序号，从0开始

@@ -723,6 +723,7 @@ def getPillerHeight(buildingObj,pillerID):
         con.ROOF_LUDING,
         con.ROOF_WUDIAN,
         con.ROOF_XIESHAN,
+        con.ROOF_XIESHAN_JUANPENG,
     ):
         # 前后檐
         if x not in (0,bData.x_rooms) \

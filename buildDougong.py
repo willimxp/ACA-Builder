@@ -195,6 +195,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         and bData.roof_style in (
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,
             con.ROOF_LUDING)):
         # 配合斗栱，做出跳
         extendLength += abs(yLoc)*2
@@ -235,6 +236,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
     if bData.roof_style in (
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,
             con.ROOF_LUDING):
         loc = (net_x[-1]- yLoc,0,zLoc)
         fangCopy = utils.copyObject(
@@ -296,6 +298,7 @@ def __buildDGFangbyRoom(
     if bData.roof_style in (
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,
             con.ROOF_LUDING):
         for n in range(len(net_y)-1):
             length = net_y[n+1] - net_y[n]
@@ -358,6 +361,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
     if (bData.roof_style in (
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
+                con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING,)
             and aData.dg_corner_source != None):
         # 四个角柱坐标
@@ -384,6 +388,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
         if bData.roof_style in (
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
+                con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING,):
             # 庑殿/歇山有转角斗栱，所以四角柱头不做斗栱
             dgRange = range(1,len(net_x)-1) 
@@ -417,6 +422,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
         if bData.roof_style in (
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
+                con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING,):
             for n in range(len(net_y)-2) : 
                 dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
@@ -486,6 +492,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
         if bData.roof_style in (
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
+                con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING,):
             for n in range(len(net_y)-1) : 
                 # 求平身科攒数

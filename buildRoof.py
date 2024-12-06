@@ -222,7 +222,9 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             utils.applyTransfrom(fbRafterObj,use_scale=True) # 便于后续做望板时获取真实长度
 
         # 4、歇山顶在山花处再加一层檐椽
-        if bData.roof_style == con.ROOF_XIESHAN and n==0:
+        if (bData.roof_style in (con.ROOF_XIESHAN,
+                                 con.ROOF_XIESHAN_JUANPENG)
+            and n==0):
             # 复制檐椽
             tympanumRafter:bpy.types.Object = fbRafterObj.copy()
             tympanumRafter.data = fbRafterObj.data.copy()
@@ -255,7 +257,8 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
         # 4.1、卷棚顶的最后一个椽架上，再添加一层罗锅椽
         if (bData.roof_style in (
                 con.ROOF_XUANSHAN_JUANPENG,
-                con.ROOF_YINGSHAN_JUANPENG)
+                con.ROOF_YINGSHAN_JUANPENG,
+                con.ROOF_XIESHAN_JUANPENG,)
             and n==len(purlin_pos)-2):
             # p0点从上金桁檩开始（投影到X中心）
             p0 = purlin_pos[n] * Vector((0,1,1))
@@ -391,7 +394,8 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
         
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
-        if bData.roof_style == con.ROOF_XIESHAN: 
+        if bData.roof_style in (con.ROOF_XIESHAN,
+                                con.ROOF_XIESHAN_JUANPENG): 
             if n > 0: continue  # 歇山山面仅做一层椽架
         # 1.逐层定位椽子，直接连接上下层的桁檩(槫子)
         rafter_offset = Vector((0,con.YUANCHUAN_D*dk,0))
@@ -486,7 +490,9 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
         else: # 其他椽架平铺到下层桁交点，然后切割
             width = purlin_pos[n].x
         # 歇山的望板统一取脊槫宽度
-        if bData.roof_style==con.ROOF_XIESHAN and n>0:
+        if (bData.roof_style in (con.ROOF_XIESHAN,
+                                 con.ROOF_XIESHAN_JUANPENG)
+            and n>0):
             width = purlin_pos[-1].x
         # 起点在上层桁檩
         pstart = purlin_pos[n+1].copy()
@@ -556,7 +562,9 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
         wangbanObjs.append(wangbanObj)
 
         # 歇山顶的山花处，再补一小块望板
-        if bData.roof_style == con.ROOF_XIESHAN and n ==0:
+        if (bData.roof_style in (con.ROOF_XIESHAN,
+                                 con.ROOF_XIESHAN_JUANPENG)
+            and n ==0):
             tympanumWangban:bpy.types.Object = wangbanObj.copy()
             tympanumWangban.data = wangbanObj.data.copy()
             tympanumWangban.name = '山花补齐望板'
@@ -585,7 +593,8 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
         if (n == len(purlin_pos)-2 and 
             bData.roof_style in (
                 con.ROOF_XUANSHAN_JUANPENG,
-                con.ROOF_YINGSHAN_JUANPENG,)):
+                con.ROOF_YINGSHAN_JUANPENG,
+                con.ROOF_XIESHAN_JUANPENG,)):
             # p0点从上金桁檩开始（投影到X中心）
             p0 = purlin_pos[n] * Vector((0,1,1))
             # p1点从脊檩开始（投影到X中心）
@@ -660,7 +669,10 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
         # 歇山的山面只做一层望板
-        if bData.roof_style == con.ROOF_XIESHAN and n>0: continue
+        if (bData.roof_style in (con.ROOF_XIESHAN,
+                                 con.ROOF_XIESHAN_JUANPENG) 
+            and n>0):
+            continue
         # 望板宽度
         if n==0: # 平铺到上层桁交点     
             width = purlin_pos[n+1].y
@@ -1207,8 +1219,9 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             cb_collection.append((pStart,pEnd,'老角梁'))
         else:
             # 歇山只有老角梁，没有由戗
-            if bData.roof_style == con.ROOF_XIESHAN : continue
-
+            if bData.roof_style in (con.ROOF_XIESHAN,
+                                    con.ROOF_XIESHAN_JUANPENG) : 
+                continue
             # 其他角梁为压金做法，都压在桁之上
             pStart = Vector(purlin_pos[n]) \
                 + Vector((0,0,con.JIAOLIANG_H*dk*con.YOUQIANG_YAJIN))
@@ -2442,6 +2455,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     if roofStyle in (
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,
             con.ROOF_LUDING):
         # 营造角梁
         utils.outputMsg("Building Corner Beam...")
@@ -2764,7 +2778,8 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     xybVerts = []
 
     # 象眼板横坐标
-    if bData.roof_style == con.ROOF_XIESHAN:
+    if bData.roof_style in (con.ROOF_XIESHAN,
+                            con.ROOF_XIESHAN_JUANPENG,):
         # 歇山的象眼板在金桁交点处（加出梢）
         xyb_x = (purlin_pos[-1].x       # 桁檩定位点
                  - con.XYB_WIDTH*dk/2   # 移到外皮位置
@@ -2874,7 +2889,8 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
         # 悬山用石材封堵
         mat.setShader(xybObj,
             mat.shaderType.STONE)
-    elif bData.roof_style == con.ROOF_XIESHAN:
+    elif bData.roof_style in (con.ROOF_XIESHAN,
+                              con.ROOF_XIESHAN_JUANPENG,):
         # 歇山刷红漆
         mat.setShader(xybObj,
             mat.shaderType.SHANHUA,override=True)
@@ -2928,7 +2944,8 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
     # 卷棚顶的曲线调整,最后一点囊相调整，再加两个平滑点
     if bData.roof_style in (
             con.ROOF_XUANSHAN_JUANPENG,
-            con.ROOF_YINGSHAN_JUANPENG,):
+            con.ROOF_YINGSHAN_JUANPENG,
+            con.ROOF_XIESHAN_JUANPENG,):
         ridgeCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
                 con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
@@ -3130,7 +3147,8 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     )
 
     # 歇山的博缝板沿金桁高度裁剪
-    if bData.roof_style == con.ROOF_XIESHAN:
+    if bData.roof_style in (con.ROOF_XIESHAN,
+                            con.ROOF_XIESHAN_JUANPENG,):
         utils.addBisect(
             object=bofengObj,
             pStart=Vector((0,1,0)),
@@ -3291,7 +3309,7 @@ def __buildRafterFrame(buildingObj:bpy.types.Object):
     # 营造山墙，仅适用于硬山
     if bData.roof_style in (
             con.ROOF_YINGSHAN,
-            con.ROOF_YINGSHAN_JUANPENG
+            con.ROOF_YINGSHAN_JUANPENG,
             ):
         __buildShanWall(buildingObj,rafter_pos)
     # 营造象眼板，适用于悬山（卷棚）
@@ -3301,7 +3319,8 @@ def __buildRafterFrame(buildingObj:bpy.types.Object):
         __buildXiangyanBan(buildingObj,rafter_pos)
     # 营造山花板，适用于歇山
     if bData.roof_style in (
-            con.ROOF_XIESHAN):
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,):
         __buildShanhuaBan(buildingObj,rafter_pos)
     # 营造博缝板，适用于歇山、悬山(卷棚)、硬山
     if bData.roof_style in (
@@ -3309,7 +3328,8 @@ def __buildRafterFrame(buildingObj:bpy.types.Object):
             con.ROOF_XUANSHAN,
             con.ROOF_YINGSHAN,
             con.ROOF_XUANSHAN_JUANPENG,
-            con.ROOF_YINGSHAN_JUANPENG,):
+            con.ROOF_YINGSHAN_JUANPENG,
+            con.ROOF_XIESHAN_JUANPENG,):
         __buildBofeng(buildingObj,rafter_pos)
 
     # 设置材质，原木色

@@ -197,6 +197,7 @@ def update_roofstyle(self, context:bpy.types.Context):
     if bData.roof_style in (
         con.ROOF_WUDIAN,
         con.ROOF_XIESHAN,
+        con.ROOF_XIESHAN_JUANPENG,
         con.ROOF_LUDING,
     ):
         bData['use_flyrafter'] = True

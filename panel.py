@@ -667,7 +667,9 @@ class ACA_PT_beam(bpy.types.Panel):
                 inputTuishan.enabled = False
 
             # 只有歇山可以设置收山
-            if bData.roof_style != con.ROOF_XIESHAN:
+            if bData.roof_style not in (
+                    con.ROOF_XIESHAN,
+                    con.ROOF_XIESHAN_JUANPENG,):
                 inputShoushan.enabled = False
 
             # 只有盝顶可以设置步架
@@ -746,6 +748,7 @@ class ACA_PT_rafter(bpy.types.Panel):
             if bData.roof_style in (
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
+                con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING,
             ):
                 checkboxUseflyrafter.enabled = False
@@ -765,6 +768,7 @@ class ACA_PT_rafter(bpy.types.Panel):
             if bData.roof_style not in (
                     con.ROOF_WUDIAN,
                     con.ROOF_XIESHAN,
+                    con.ROOF_XIESHAN_JUANPENG,
                     con.ROOF_LUDING,
                     ):
                 inputChong.enabled = False

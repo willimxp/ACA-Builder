@@ -74,7 +74,9 @@ def getPurlinPos(buildingObj:bpy.types.Object):
     # 屋顶起点root在挑檐枋下皮，所以初始即上移半桁
     purlinHeight = con.HENG_TIAOYAN_D/2*dk
     # 硬山桁檩：做到梁的外皮
-    if roofStyle == con.ROOF_YINGSHAN:
+    if roofStyle in (
+            con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG):
         purlinWidth += con.BEAM_DEPTH*pd/2
     # 悬山（卷棚）：从山柱中加檐出（14斗口）
     if roofStyle in (
@@ -115,7 +117,10 @@ def getPurlinPos(buildingObj:bpy.types.Object):
     # 获取开间、进深数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
     # 卷棚顶：顶层桁檩间距3椽径，要从进深中减去后，平分椽架
-    if roofStyle == con.ROOF_XUANSHAN_JUANPENG:
+    if roofStyle in (
+            con.ROOF_XUANSHAN_JUANPENG,
+            con.ROOF_YINGSHAN_JUANPENG
+        ):
         # 卷棚椽架排除“顶步架”，如果为奇数，自动扣除一步架
         roomDepth -= con.JUANPENG_SPAN*dk
         if rafterCount%2 != 0:
@@ -148,6 +153,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
         # 2、计算每根槫子的长度，包括推山做法、收山做法的影响--------------
         # 2.a、硬山、悬山（卷棚）不推
         if roofStyle in (con.ROOF_YINGSHAN,
+                         con.ROOF_YINGSHAN_JUANPENG,
                          con.ROOF_XUANSHAN,
                          con.ROOF_XUANSHAN_JUANPENG):
             pass
@@ -219,6 +225,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     if roofStyle in (
             con.ROOF_XUANSHAN,
             con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG,
             con.ROOF_XUANSHAN_JUANPENG):
         # 硬山、悬山桁不做出梢
         hengExtend = 0
@@ -273,7 +280,11 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     n!=len(purlin_pos)-1            
                     # 卷棚最后一根为脊桁，应该做前后的镜像
                     or (n==len(purlin_pos)-1 and    
-                        bData.roof_style==con.ROOF_XUANSHAN_JUANPENG)
+                        bData.roof_style in (
+                            con.ROOF_XUANSHAN_JUANPENG,
+                            con.ROOF_YINGSHAN_JUANPENG
+                         )
+                     )
                     # 盝顶最后一根为承椽枋，应该做前后镜像
                     or (n==len(purlin_pos)-1 and    
                         bData.roof_style==con.ROOF_LUDING)
@@ -329,7 +340,11 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     n!=len(purlin_pos)-1  
                     # 或者卷棚的脊桁          
                     or (n==len(purlin_pos)-1 and    
-                        bData.roof_style==con.ROOF_XUANSHAN_JUANPENG)
+                        bData.roof_style in (
+                            con.ROOF_XUANSHAN_JUANPENG,
+                            con.ROOF_YINGSHAN_JUANPENG,
+                         )
+                     )
                     # 或者盝顶的下金桁
                     or (n==len(purlin_pos)-1 and    
                         bData.roof_style==con.ROOF_LUDING)
@@ -380,7 +395,11 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     n!=len(purlin_pos)-1  
                     # 或者卷棚的脊桁          
                     or (n==len(purlin_pos)-1 and    
-                        bData.roof_style==con.ROOF_XUANSHAN_JUANPENG)
+                        bData.roof_style in (
+                            con.ROOF_XUANSHAN_JUANPENG,
+                            con.ROOF_YINGSHAN_JUANPENG,
+                         )
+                     )
                     # 或者盝顶的下金桁
                     or (n==len(purlin_pos)-1 and    
                         bData.roof_style==con.ROOF_LUDING)
@@ -967,7 +986,9 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
 
             # 脊槫不做横梁（但是卷棚顶步架有横梁）
             if n==len(purlin_pos)-1 and \
-                bData.roof_style not in (con.ROOF_XUANSHAN_JUANPENG):
+                bData.roof_style not in (
+                    con.ROOF_XUANSHAN_JUANPENG,
+                    con.ROOF_YINGSHAN_JUANPENG):
                 continue
             
             # 歇山特殊处理：做排山梁架
@@ -1053,7 +1074,10 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     and n==0 and x in (0,len(net_x)-1)):
                 useShuzhu = False
             # 卷棚的脊槫处不做蜀柱
-            if (roofStyle in (con.ROOF_XUANSHAN_JUANPENG) 
+            if (roofStyle in (
+                        con.ROOF_XUANSHAN_JUANPENG,
+                        con.ROOF_YINGSHAN_JUANPENG
+                    ) 
                     and n==len(purlin_pos)-1):
                 useShuzhu = False
             # 做抱头梁时不做蜀柱（盝顶、廊间举架等）
@@ -1069,7 +1093,11 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 beamTop_offset = (con.BEAM_HEIGHT*pd 
                                 - beamBottom_offset)
                 if (n == len(purlin_pos)-2 and 
-                    roofStyle not in (con.ROOF_XUANSHAN_JUANPENG)):
+                        roofStyle not in (
+                            con.ROOF_XUANSHAN_JUANPENG,
+                            con.ROOF_YINGSHAN_JUANPENG
+                        )
+                    ):
                     # 直接支撑到脊槫
                     shuzhu_height = (purlin_pos[n+1].z 
                         - purlin_pos[n].z - beamTop_offset)

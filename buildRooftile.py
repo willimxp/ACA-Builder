@@ -122,7 +122,9 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
         tileCurveVerts.append(point)
 
     # 卷棚的前后坡，增加辅助点
-    if bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG):
+    if bData.roof_style in (
+            con.ROOF_XUANSHAN_JUANPENG,
+            con.ROOF_YINGSHAN_JUANPENG,):
         tileCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
                 con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
@@ -202,6 +204,7 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     # 硬山悬山
     if bData.roof_style in (con.ROOF_XUANSHAN,
                             con.ROOF_YINGSHAN,
+                            con.ROOF_YINGSHAN_JUANPENG,
                             con.ROOF_XUANSHAN_JUANPENG):    
         # 硬山和悬山铺瓦到大连檐外侧
         # 大连檐的定位中，自动判断了硬山山墙延伸的需求
@@ -234,7 +237,9 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
             sideCurveVerts.append(point)
     
     # 卷棚的前后坡，增加辅助点
-    if bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG):
+    if bData.roof_style in (
+            con.ROOF_XUANSHAN_JUANPENG,
+            con.ROOF_YINGSHAN_JUANPENG,):
         sideCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
                 con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
@@ -407,6 +412,7 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     # 硬山，悬山（卷棚）檐口平直
     if bData.roof_style in (con.ROOF_XUANSHAN,
                             con.ROOF_YINGSHAN,
+                            con.ROOF_YINGSHAN_JUANPENG,
                             con.ROOF_XUANSHAN_JUANPENG):
         # 绘制檐口线
         CurvePoints = utils.setEaveCurvePoint(p1,p2,direction)
@@ -486,6 +492,7 @@ def __getTileCols(buildingObj:bpy.types.Object,direction='X'):
     ''' 大连檐计算长度时，自动包括了硬山的山墙 '''
     if (bData.roof_style in (con.ROOF_XUANSHAN,
                              con.ROOF_YINGSHAN,
+                             con.ROOF_YINGSHAN_JUANPENG,
                              con.ROOF_XUANSHAN_JUANPENG) 
         and direction=='X'):
         # 硬山、悬山的山面不出跳（檐面正常出跳）
@@ -876,6 +883,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 # 硬山、悬山（卷棚）最后一个滴水做斜切
                 if bData.roof_style in (
                             con.ROOF_YINGSHAN,
+                            con.ROOF_YINGSHAN_JUANPENG,
                             con.ROOF_XUANSHAN,
                             con.ROOF_XUANSHAN_JUANPENG
                         ):
@@ -988,7 +996,10 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     
     # 横向平铺
     # 硬山正脊做到垂脊中线，即山墙向内半垄瓦
-    if bData.roof_style == con.ROOF_YINGSHAN:
+    if bData.roof_style in (
+            con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG
+            ):
         zhengji_length = bData.x_total/2 \
             + con.SHANQIANG_WIDTH*dk \
             - bData.tile_width_real/2
@@ -1161,7 +1172,10 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
                + con.EAVETILE_EX*dk 
                - bData.tile_width_real)
     # 硬山建筑，向外移动一个山墙
-    if bData.roof_style ==con.ROOF_YINGSHAN:
+    if bData.roof_style in (
+            con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG
+            ):
         ridge_x += (con.SHANQIANG_WIDTH * dk 
             - con.BEAM_DEPTH * pd/2) # 山墙内还包了半边梁、柱
 
@@ -1170,6 +1184,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     # （歇山从正心桁做，所以不需要此点）
     if bData.roof_style in (
             con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG,
             con.ROOF_XUANSHAN,
             con.ROOF_XUANSHAN_JUANPENG):
         # 大连檐中心
@@ -1207,7 +1222,9 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
         ridgeCurveVerts.append(point)
 
     # 卷棚顶的曲线调整,最后一点囊相调整，再加两个平滑点
-    if bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG):
+    if bData.roof_style in (
+            con.ROOF_XUANSHAN_JUANPENG,
+            con.ROOF_YINGSHAN_JUANPENG,):
         ridgeCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
                 con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
@@ -1253,6 +1270,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     # todo：添加了八字拐弯后，屋脊不再垂直，只能手工矫正，暂时没有啥好办法
     if bData.roof_style in (
             con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG,
             con.ROOF_XUANSHAN,
             con.ROOF_XUANSHAN_JUANPENG):
         curve_points = ridgeCurve.data.splines[0].points
@@ -1282,12 +1300,16 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
     # 垂脊横坐标，向内一垄
     ridge_x = purlin_pos[-1].x - bData.tile_width_real/2
     # 硬山建筑，向外移动一个山墙
-    if bData.roof_style ==con.ROOF_YINGSHAN:
+    if bData.roof_style in (
+            con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG
+            ):
         ridge_x += con.SHANQIANG_WIDTH * dk - con.BEAM_DEPTH * pd/2
 
     # 硬山、悬山的垂脊从檐口做起
     if bData.roof_style in (
             con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG,
             con.ROOF_XUANSHAN,
             con.ROOF_XUANSHAN_JUANPENG):
         # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
@@ -1313,7 +1335,9 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
         ridgeCurveVerts.append(point)
     
     # 卷棚顶的曲线调整,最后一点囊相调整，再加两个平滑点
-    if bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG):
+    if bData.roof_style in (
+            con.ROOF_XUANSHAN_JUANPENG,
+            con.ROOF_YINGSHAN_JUANPENG,):
         ridgeCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
                 con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
@@ -1610,6 +1634,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     if (
             bData.roof_style in (
                 con.ROOF_YINGSHAN,
+                con.ROOF_YINGSHAN_JUANPENG,
                 con.ROOF_XUANSHAN,
                 con.ROOF_XUANSHAN_JUANPENG,
                 ) 
@@ -1768,6 +1793,7 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     if bData.roof_style in (
             con.ROOF_XUANSHAN,
             con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG,
             con.ROOF_XUANSHAN_JUANPENG):
         # 第一片滴水裁剪
         utils.addBisect(
@@ -2131,6 +2157,7 @@ def __buildRidge(buildingObj: bpy.types.Object,
     # 营造顶部正脊
     if bData.roof_style not in (
         con.ROOF_XUANSHAN_JUANPENG,
+        con.ROOF_YINGSHAN_JUANPENG,
         con.ROOF_LUDING,):
          __buildTopRidge(buildingObj,rafter_pos)
     

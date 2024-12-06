@@ -185,7 +185,9 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
             if bData.use_dg:
                 extendLength += con.HENG_EXTEND*dk
     # 硬山也为了承托斗栱，做了出梢
-    if bData.roof_style in (con.ROOF_YINGSHAN):
+    if bData.roof_style in (
+        con.ROOF_YINGSHAN,
+        con.ROOF_YINGSHAN_JUANPENG):
         if bData.use_dg:
             extendLength += con.HENG_EXTEND*dk        
     # 四坡顶的转角按Y向出跳

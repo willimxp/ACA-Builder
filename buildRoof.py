@@ -253,7 +253,9 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             )
 
         # 4.1、卷棚顶的最后一个椽架上，再添加一层罗锅椽
-        if (bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG)
+        if (bData.roof_style in (
+                con.ROOF_XUANSHAN_JUANPENG,
+                con.ROOF_YINGSHAN_JUANPENG)
             and n==len(purlin_pos)-2):
             # p0点从上金桁檩开始（投影到X中心）
             p0 = purlin_pos[n] * Vector((0,1,1))
@@ -324,7 +326,9 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
         if bData.roof_style == con.ROOF_WUDIAN and n != 0:
             # 庑殿的椽架需要延伸到下层宽度，以便后续做45度裁剪
             rafter_tile_x = purlin_pos[n].x
-        elif bData.roof_style == con.ROOF_YINGSHAN:
+        elif bData.roof_style in (
+                con.ROOF_YINGSHAN,
+                con.ROOF_YINGSHAN_JUANPENG):
             # 硬山的椽架只做到山柱中线，避免与山墙打架
             rafter_tile_x = bData.x_total/2
         else:
@@ -579,7 +583,9 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
 
         # 另做卷棚望板
         if (n == len(purlin_pos)-2 and 
-            bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG)):
+            bData.roof_style in (
+                con.ROOF_XUANSHAN_JUANPENG,
+                con.ROOF_YINGSHAN_JUANPENG,)):
             # p0点从上金桁檩开始（投影到X中心）
             p0 = purlin_pos[n] * Vector((0,1,1))
             # p1点从脊檩开始（投影到X中心）
@@ -972,7 +978,10 @@ def __buildDLY(buildingObj,purlin_pos,direction):
         DLY_scale = (jinhengPos.x * 2,  
             con.DALIANYAN_H*dk,
             con.DALIANYAN_Y*dk)
-        if bData.roof_style==con.ROOF_YINGSHAN:
+        if bData.roof_style in (
+                con.ROOF_YINGSHAN,
+                con.ROOF_YINGSHAN_JUANPENG
+            ):
             # 硬山建筑的大连檐做到山墙边
             DLY_scale = (bData.x_total + con.SHANQIANG_WIDTH*dk*2,  
                 con.DALIANYAN_H*dk,
@@ -2885,7 +2894,9 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
     # 垂脊横坐标
     ridge_x = purlin_pos[-1].x
     # 硬山调整一个山墙宽度
-    if bData.roof_style ==con.ROOF_YINGSHAN:
+    if bData.roof_style in (
+            con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG):
         ridge_x += con.SHANQIANG_WIDTH * dk - con.BEAM_DEPTH * pd/2
 
     # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
@@ -2915,7 +2926,9 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
         ridgeCurveVerts.append(point)
     
     # 卷棚顶的曲线调整,最后一点囊相调整，再加两个平滑点
-    if bData.roof_style in (con.ROOF_XUANSHAN_JUANPENG):
+    if bData.roof_style in (
+            con.ROOF_XUANSHAN_JUANPENG,
+            con.ROOF_YINGSHAN_JUANPENG,):
         ridgeCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
                 con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
@@ -3276,7 +3289,10 @@ def __buildRafterFrame(buildingObj:bpy.types.Object):
     __buildRafterForAll(buildingObj,rafter_pos)
 
     # 营造山墙，仅适用于硬山
-    if bData.roof_style == con.ROOF_YINGSHAN:
+    if bData.roof_style in (
+            con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG
+            ):
         __buildShanWall(buildingObj,rafter_pos)
     # 营造象眼板，适用于悬山（卷棚）
     if bData.roof_style in (
@@ -3292,7 +3308,8 @@ def __buildRafterFrame(buildingObj:bpy.types.Object):
             con.ROOF_XIESHAN,
             con.ROOF_XUANSHAN,
             con.ROOF_YINGSHAN,
-            con.ROOF_XUANSHAN_JUANPENG):
+            con.ROOF_XUANSHAN_JUANPENG,
+            con.ROOF_YINGSHAN_JUANPENG,):
         __buildBofeng(buildingObj,rafter_pos)
 
     # 设置材质，原木色

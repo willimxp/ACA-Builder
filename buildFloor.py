@@ -499,6 +499,7 @@ def __buildFang(buildingObj:bpy.types.Object):
         # 如果为2坡顶，山面额枋按檐面额枋高度摆放
         if bData.roof_style in (
             con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG,
             con.ROOF_XUANSHAN,
             con.ROOF_XUANSHAN_JUANPENG,
         ) and pFrom_x in (0,bData.x_rooms) \
@@ -713,6 +714,7 @@ def getPillerHeight(buildingObj,pillerID):
         con.ROOF_XUANSHAN,
         con.ROOF_XUANSHAN_JUANPENG,
         con.ROOF_YINGSHAN,
+        con.ROOF_YINGSHAN_JUANPENG,
     ):
         if y in (1,bData.y_rooms-1):
             needResizePiller = True

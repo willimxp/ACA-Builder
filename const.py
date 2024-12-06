@@ -52,8 +52,10 @@ class ACA_Consts(object):
     ROOF_XIESHAN = '2'
     ROOF_XUANSHAN = '3'
     ROOF_YINGSHAN = '4'
-    ROOF_XUANSHAN_JUANPENG = '5'
-    ROOF_LUDING = '6'
+    ROOF_LUDING = '5'
+    ROOF_XUANSHAN_JUANPENG = '6'
+    ROOF_YINGSHAN_JUANPENG = '7'
+    ROOF_XIESHAN_JUANPENG = '8'
 
     # 台基
     PLATFORM_HEIGHT = 2         # 台基默认高度(PD)

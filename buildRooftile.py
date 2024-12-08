@@ -1722,6 +1722,7 @@ def __buildSideTile(buildingObj: bpy.types.Object,
                  rafter_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
     aData:tmpData = bpy.context.scene.ACA_temp
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
@@ -1844,14 +1845,19 @@ def __buildSideTile(buildingObj: bpy.types.Object,
         use_bisect=(False,True,False)
     )
 
-    # 歇山屋顶的排山勾滴仅做到山花高度
+    # 歇山屋顶的排山勾滴裁剪
+    # 与山花板类似，裁剪到博脊上皮
+    # 即，从金桁中心+半桁+博脊高
+    cutPoint = rafter_pos[1] \
+        + Vector((0,0,con.HENG_COMMON_D/4*dk)) \
+        + Vector((0,0,aData.ridgeFront_source.dimensions.z))
     if bData.roof_style in (con.ROOF_XIESHAN,
                             con.ROOF_XIESHAN_JUANPENG):
         utils.addBisect(
             object=eaveTileObj,
             pStart=Vector((0,1,0)),
             pEnd=Vector((0,-1,0)),
-            pCut=tileRootObj.matrix_world @ rafter_pos[1],
+            pCut=tileRootObj.matrix_world @ cutPoint,
             clear_outer=True,
             direction='Y'
         )
@@ -1859,7 +1865,7 @@ def __buildSideTile(buildingObj: bpy.types.Object,
             object=dripTileObj,
             pStart=Vector((0,1,0)),
             pEnd=Vector((0,-1,0)),
-            pCut=tileRootObj.matrix_world @ rafter_pos[1],
+            pCut=tileRootObj.matrix_world @ cutPoint,
             clear_outer=True,
             direction='Y'
         )

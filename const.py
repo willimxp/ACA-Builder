@@ -192,7 +192,7 @@ class ACA_Consts(object):
     # 屋瓦灰背层高度，用于计算铺瓦的高度
     # 一般20cm，北方官式建筑可以达到30cm
     # 其实也考虑了算法中从桁中线垂直向上找点，没有顺着坡面加斜，从而导致的误差
-    ROOFMUD_H = 3           # 灰背层高度(DK)
+    ROOFMUD_H = 3.75        # 灰背层高度(DK)
     EAVETILE_EX = 2         # 瓦当、滴水出檐长度(DK)
     SHANQIANG_WIDTH = 9     # 山墙厚度(DK)，即1.5柱径
     SHANQIANG_EX = 11       # 山墙墀头延伸(DK)，约1.8柱径

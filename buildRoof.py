@@ -2668,6 +2668,8 @@ def __buildShanhuaBan(buildingObj: bpy.types.Object,
 
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
     for n in range(1,len(purlin_pos)): # 歇山从金桁以上做起
+        # 让山花板的边缘与博缝板的边缘拼接
+        # 在每根槫子的Z坐标上计算博缝板的Z偏移
         # 博缝板的高度调整，参考__buildBofeng()中的处理
         bofeng_height= (con.HENG_COMMON_D + con.YUANCHUAN_D*4
                    + con.WANGBAN_H + con.ROOFMUD_H)*dk
@@ -2681,6 +2683,14 @@ def __buildShanhuaBan(buildingObj: bpy.types.Object,
         p2= purlin_pos[n]
         ang = math.atan((p2.z-p1.z)/(p2.y-p1.y))
         h = l/math.cos(ang)
+
+        # 歇山卷棚的山花板的手工调整
+        # 因为悬山卷棚顶步的在槫子后有一段平推，不能再用上面的三角函数计算
+        if (n==(len(purlin_pos)-1)
+            and bData.roof_style == con.ROOF_XIESHAN_JUANPENG):
+            # 根据实际情况，只下移了半槫
+            # 这个计算不严格
+            h = con.HENG_COMMON_D*dk
 
         point:Vector = purlin_pos[n].copy()
         point.x = shb_x
@@ -2764,7 +2774,7 @@ def __buildShanhuaBan(buildingObj: bpy.types.Object,
 
     return shbObj
 
-# 营造象眼板
+# 营造象眼板，仅适用于悬山（和悬山卷棚）
 def __buildXiangyanBan(buildingObj: bpy.types.Object,
                  purlin_pos):
     # 载入数据
@@ -2776,25 +2786,8 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
 
     # 绘制象眼板上沿曲线
     xybVerts = []
-
-    # 象眼板横坐标
-    if bData.roof_style in (con.ROOF_XIESHAN,
-                            con.ROOF_XIESHAN_JUANPENG,):
-        # 歇山的象眼板在金桁交点处（加出梢）
-        xyb_x = (purlin_pos[-1].x       # 桁檩定位点
-                 - con.XYB_WIDTH*dk/2   # 移到外皮位置
-                 + 0.01)                # 防止与檩头交叠
-        # 歇山从金桁以上做起
-        xyb_range = range(1,len(purlin_pos))
-        xyb_name = '山花板'
-    if bData.roof_style in (
-            con.ROOF_XUANSHAN,
-            con.ROOF_XUANSHAN_JUANPENG):
-        # 悬山的象眼板在山柱中线处
-        xyb_x = bData.x_total/2
-        # 悬山从正心桁做起
-        xyb_range = range(len(purlin_pos))
-        xyb_name = '象眼板'
+    # 悬山的象眼板在山柱中线处
+    xyb_x = bData.x_total/2
 
     # 241119 有斗拱的悬山建筑，向下延伸象眼板，封闭缝隙
     if bData.roof_style in (
@@ -2814,8 +2807,9 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
         xybVerts.append(point)
 
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
+    # 悬山从正心桁做起
     # 从举架定位点做偏移
-    for n in xyb_range:
+    for n in range(len(purlin_pos)):
         # 向上位移:半桁径+椽径+望板高+灰泥层高
         point:Vector = purlin_pos[n].copy()
         point.x = xyb_x
@@ -2828,8 +2822,8 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
         location=(0,0,0)
     )
     xybObj = bpy.context.object
-    xybObj.name = xyb_name
-    xybObj.data.name = xyb_name
+    xybObj.name = '象眼板'
+    xybObj.data.name = '象眼板'
     xybObj.parent = rafterRootObj
 
     # 创建bmesh

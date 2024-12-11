@@ -64,8 +64,6 @@ def __drawPlatform(platformObj:bpy.types.Object):
         ),
         parent=platformObj
     )
-    # UV处理
-    mat.UvUnwrap(brickObj,type='cube')
     # 方砖缦地
     mat.setShader(brickObj,
         mat.shaderType.BRICK1)
@@ -440,8 +438,6 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
     # 识别对象类型
     taduoSet.ACA_data['aca_type'] = con.ACA_TYPE_STEP
     taduoSet.ACA_data['stepID'] = stepProxy.ACA_data['stepID'] 
-    # UV处理
-    mat.UvUnwrap(taduoSet,type='cube')
 
     # # 绑定到上一层
     # taduoSet.parent = stepProxy.parent
@@ -591,8 +587,6 @@ def __addSanshui(pfProxy:bpy.types.Object,
 
     # 应用boolean modifier
     utils.applyAllModifer(joinBaseObj)
-    # UV处理
-    mat.UvUnwrap(joinBaseObj,type='cube')
     # 条砖竖铺
     mat.setShader(joinBaseObj,mat.shaderType.BRICK2)
 

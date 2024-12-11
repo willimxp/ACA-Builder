@@ -60,8 +60,6 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     zibianObj.data.bevel_depth = con.ZIBIAN_WIDTH/2  # 仔边宽度
     # 转为mesh
     bpy.ops.object.convert(target='MESH')
-    # 设置UV
-    mat.UvUnwrap(zibianObj,type='cube')
 
     # # 填充棂心
     # lingxinObj = aData.lingxin_source
@@ -93,8 +91,6 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     # mod_cols.constant_offset_displace[0] = col_span
     # # 应用array modifier
     # utils.applyAllModifer(lingxin)
-    # # 设置UV
-    # mat.UvUnwrap(lingxin,type='cube')
 
     # 添加简化版的棂心（平面贴图方式）
     bpy.ops.mesh.primitive_plane_add(location=location,size=1)

@@ -725,9 +725,6 @@ def __drawGabelBeam(name='趴梁',
     bm.free() 
     bpy.ops.object.mode_set( mode = 'OBJECT' )
 
-    # 处理UV
-    mat.UvUnwrap(gabelBeam,type='cube')
-
     # 添加bevel
     modBevel:bpy.types.BevelModifier = \
         gabelBeam.modifiers.new('Bevel','BEVEL')
@@ -848,9 +845,6 @@ def __drawSaftBeam(name='太平梁',
     bmesh.update_edit_mesh(safeBeam.data ) 
     bm.free() 
     bpy.ops.object.mode_set( mode = 'OBJECT' )
-
-    # 处理UV
-    mat.UvUnwrap(safeBeam,type='cube')
 
     # 添加bevel
     modBevel:bpy.types.BevelModifier = \
@@ -1307,9 +1301,6 @@ def __drawBeam(
     beamObj.data.update()
     bm.free()
 
-    # 处理UV
-    mat.UvUnwrap(beamObj,type='cube')
-
     return beamObj
 
 # 绘制角背
@@ -1369,9 +1360,6 @@ def __drawJiaobei(shuzhuObj:bpy.types.Object):
     bmesh.update_edit_mesh(bpy.context.object.data ) 
     bm.free() 
     bpy.ops.object.mode_set( mode = 'OBJECT' )
-
-    # 处理UV
-    mat.UvUnwrap(jiaobeiObj,type='cube')
 
     utils.copyModifiers(
         from_0bj=shuzhuObj,

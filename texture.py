@@ -86,7 +86,7 @@ def UvUnwrap(object:bpy.types.Object,
     # 普通材质的cube project，保证贴图缩放的一致性
     elif type == uvType.CUBE:
         bpy.ops.uv.cube_project(
-            cube_size=10,
+            cube_size=2,
         )
     # 窗棂比例较小
     elif type == uvType.WIN:
@@ -189,8 +189,8 @@ def __setTexture(
         aData.mat_brick_3,      # 条砖横铺
         aData.mat_dust_red,     # 抹灰.红
     ):
-        # 依赖几何体默认生成的UV，不再重新生成
-        # UvUnwrap(object,uvType.CUBE)
+        # 平铺类材质可以简单的使用Cube Projection
+        UvUnwrap(object,uvType.CUBE)
         pass  
     
     # 梁枋彩画

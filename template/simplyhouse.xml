@@ -30,7 +30,7 @@
 		<dg_extend type="float">0.72</dg_extend>
 		<dg_height type="float">0.896</dg_height>
 		<dg_gap type="float">0.88</dg_gap>
-		<roof_style type="str">7</roof_style>
+		<roof_style type="str">3</roof_style>
 		<rafter_count type="int">6</rafter_count>
 		<use_flyrafter type="bool">True</use_flyrafter>
 		<use_wangban type="bool">True</use_wangban>

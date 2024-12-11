@@ -416,10 +416,6 @@ def addCube(name='Cube',
     # 应用缩放
     applyTransfrom(cube,use_scale=True)
     
-    # UV处理
-    from . import texture
-    texture.UvUnwrap(cube,type='cube')
-    
     return cube
 
 # 根据起始点，创建连接的矩形
@@ -484,9 +480,6 @@ def addSphere(
     sphereObj.parent = parent
 
     shaderSmooth(sphereObj)
-    # UV处理
-    from . import texture
-    texture.UvUnwrap(sphereObj,type='cube')
     return sphereObj
 
 # 获取对象的原始尺寸
@@ -610,10 +603,6 @@ def drawHexagon(dimensions:Vector,
     if parent != None:
         obj.parent = parent
 
-    # UV处理
-    from . import texture
-    texture.UvUnwrap(obj,type='cube')
-
     return obj
 
 # 快速执行bpy.ops执行
@@ -711,10 +700,6 @@ def addCylinder(radius,depth,name,root_obj,
         bpy.ops.mesh.select_all(action = 'SELECT')
         bpy.ops.transform.translate(value=(0,0,depth/2))
         bpy.ops.object.mode_set(mode = 'OBJECT')    
-
-    # 处理UV
-    from . import texture
-    texture.UvUnwrap(cylinderObj,type='cube')
 
     return cylinderObj
 

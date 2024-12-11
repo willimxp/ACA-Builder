@@ -224,7 +224,7 @@ def hide_pillers(self, context:bpy.types.Context):
     utils.hideLayer(context,'柱网',self.is_showPillers)
 
 def hide_walls(self, context:bpy.types.Context):
-    utils.hideLayer(context,'墙体',self.is_showWalls)
+    utils.hideLayer(context,'装修',self.is_showWalls)
 
 def hide_dougong(self, context:bpy.types.Context):
     utils.hideLayer(context,'斗栱',self.is_showDougong)

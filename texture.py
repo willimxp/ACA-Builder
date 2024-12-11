@@ -61,7 +61,7 @@ def UvUnwrap(object:bpy.types.Object,
              pivot=(0,0),
              rotate=None,
              fitIndex=None,
-             ):
+             ):   
     # 聚焦对象
     utils.focusObj(object)
 
@@ -72,6 +72,15 @@ def UvUnwrap(object:bpy.types.Object,
     bpy.ops.object.mode_set(mode = 'EDIT') 
     bpy.ops.mesh.select_mode(type = 'FACE')
     bpy.ops.mesh.select_all(action='SELECT')
+
+    # 验证对象是否可以展UV，至少应该有一个以上的面
+    bm = bmesh.new()
+    bm.from_mesh(object.data)
+    faceCount= len(bm.faces)
+    bm.free()
+    if faceCount == 0 : 
+        bpy.ops.object.mode_set(mode = 'OBJECT')
+        return
     
     if type == None:
         # 默认采用smart project

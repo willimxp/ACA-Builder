@@ -54,6 +54,13 @@ class ACA_OT_add_building(bpy.types.Operator):
             self.report(
                 {'INFO'},"新建筑营造完成！(%.1f秒)" 
                 % (timeEnd-timeStart))
+            
+        
+        message = "新建筑营造完成！(%.1f秒)" % (timeEnd-timeStart)
+        bpy.ops.aca.show_message_box('INVOKE_DEFAULT', 
+            message=message, 
+            icon="INFO", 
+            centre=True)
         return {'FINISHED'}
 
 # 更新建筑
@@ -551,6 +558,44 @@ class ACA_OT_default_ludingRafterSpan(bpy.types.Operator):
 
         return {'FINISHED'}
 
+# 模态提示框
+class ACA_OT_Show_Message_Box(bpy.types.Operator):
+    bl_idname = "aca.show_message_box"
+    bl_label = ""
+ 
+    from bpy.props import StringProperty, BoolProperty
+    message: StringProperty()               # type: ignore 
+    icon: StringProperty(default="INFO")    # type: ignore 
+    centre: BoolProperty(default=False)     # type: ignore 
+    
+    def execute(self, context):
+        return {'FINISHED'}
+ 
+    def invoke(self, context, event):
+        self.restored = False
+        if self.centre:
+            self.orig_x = event.mouse_x
+            self.orig_y = event.mouse_y
+            
+            w = int(context.window.width/2)
+            h = int(context.window.height/2)
+            h = h + (20*len(self.message.split("|")))
+            context.window.cursor_warp(w, h)
+        
+        return context.window_manager.invoke_props_dialog(self, width = 400)
+ 
+    def draw(self, context):
+        self.layout.label(text="古建营造", icon=self.icon)
+        message_list = self.message.split("|")
+        for li in message_list:
+            row=self.layout.row()
+            row.scale_y = 0.8
+            row.alignment = 'CENTER'
+            row.label(text=li)
+        if not self.restored and self.centre:
+            context.window.cursor_warp(self.orig_x, self.orig_y)
+            self.restored = True
+
 # 测试
 class ACA_OT_test(bpy.types.Operator):
     bl_idname="aca.test"
@@ -572,4 +617,6 @@ class ACA_OT_test(bpy.types.Operator):
                 % (timeEnd-timeStart))
 
         return {'FINISHED'}
+    
+
     

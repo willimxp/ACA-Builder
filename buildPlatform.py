@@ -216,24 +216,6 @@ def __drawPlatform(platformObj:bpy.types.Object):
     )
     jtsObjs.append(brickObj)
 
-    # 第三层，土衬石，从水平露明，并外扩金边
-    tuchenObj = utils.addCube(
-        name='土衬',
-        location=(
-            0,0,
-            (-pHeight/2
-             +con.GROUND_BORDER/2)
-        ),
-        dimension=(
-            pWidth+con.GROUND_BORDER*2,             # 与阶条石同宽
-            pDeepth+con.GROUND_BORDER*2,             # 与阶条石同宽
-            con.GROUND_BORDER
-        ),
-        parent=platformObj
-    )
-    mat.setShader(tuchenObj,
-        mat.shaderType.ROCK)
-
     # 统一设置
     for obj in jtsObjs:
         # 添加bevel
@@ -249,7 +231,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
         jtsObjs,newName='台明'
         )
 
-    return platformSet,tuchenObj
+    return platformSet
 
 # 绘制踏跺对象
 def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
@@ -272,35 +254,14 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
     # 收集待合并对象
     taduoObjs = []
 
-    # # 阶条石宽度，取下出-半个柱顶石（柱顶石为2pd，这里直接减1pd）
+    # 阶条石宽度，取下出-半个柱顶石（柱顶石为2pd，这里直接减1pd）
     stoneWidth = bData.platform_extend \
                     -bData.piller_diameter
-    # 20240625 修改垂带为柱间距的1/10，可以适应更短的开间
-    # stoneWidth = pWidth * con.STEP_SIDE_WIDTH
     # 垂带/象眼石的位置
     # 中间踏跺做左侧，向右镜像
     # 左右两侧踏跺不做镜像，仅做左侧或右侧
     # 241115 垂带与柱对齐
-    chuidaiX = -pWidth/2  # + stoneWidth/2
-
-    # 1、土衬
-    # 宽度：柱间距+金边+台阶石出头（垂带中与柱中对齐）
-    tuchenWidth = pWidth +con.GROUND_BORDER*2+stoneWidth
-    tuchenObj = utils.addCube(
-        name='土衬',
-        location=(
-            0,0,
-            (-pHeight/2
-             +con.GROUND_BORDER/2)
-        ),
-        dimension=(
-            tuchenWidth,
-            pDeepth+con.GROUND_BORDER*2,    
-            con.GROUND_BORDER
-        ),
-        parent=stepProxy
-    )
-    #taduoObjs.append(tuchenObj)
+    chuidaiX = -pWidth/2
 
     # 3、象眼石
     brickObj = utils.addCube(
@@ -446,7 +407,7 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
     # # 移除proxy
     # bpy.data.objects.remove(stepProxy)
 
-    return taduoSet,tuchenObj
+    return taduoSet
 
 # 根据踏跺配置参数stepID，生成踏跺proxy
 def __addStepProxy(buildingObj:bpy.types.Object,
@@ -539,61 +500,109 @@ def __addStepProxy(buildingObj:bpy.types.Object,
     return stepProxy
 
 # 添加散水，根据台基proxy、踏跺proxy进行生成，并合并
-def __addSanshui(pfProxy:bpy.types.Object,
-                 sanshuiRefList):
+def __addPlatformExpand(pfProxy:bpy.types.Object,
+                 stepProxyList,
+                 type):
     # 载入数据
     buildingObj = utils.getAcaParent(
         pfProxy,con.ACA_TYPE_BUILDING
     )
     bData:acaData = buildingObj.ACA_data
-    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
 
-    sanshuiObjs = []
-    # 依据台基proxy、踏跺proxy生成新的散水对象
-    for n in range(len(sanshuiRefList)):
-        if n == 0:
-            height = con.SANSHUI_HEIGHT + 0.01
-        else:
-            height = con.SANSHUI_HEIGHT 
-        obj:bpy.types.Object = sanshuiRefList[n]
-        sanshuiObj = utils.addCube(
-            name='散水',
+    # 1、分别定义土衬和散水在扩展时的不同参数设置
+    if type == 'tuchen':
+        name = '土衬'
+        # 台明拓展
+        pfExpand = con.GROUND_BORDER*2
+        # 踏跺拓展
+        stepExpand_x = (con.GROUND_BORDER*2
+                    +bData.platform_extend
+                    -bData.piller_diameter)
+        stepExpand_y = con.GROUND_BORDER*2
+        # 位置
+        loc_z = -bData.platform_height/2 + con.GROUND_BORDER/2
+        # 高度
+        height = con.GROUND_BORDER
+        # 材质
+        pfeMat = mat.shaderType.ROCK
+    if type == 'sanshui':
+        name = '散水' 
+        # 台明拓展
+        pfExpand = con.SANSHUI_WIDTH*dk*2
+        # 踏跺拓展
+        stepExpand_x = con.SANSHUI_WIDTH*dk*2
+        stepExpand_y = con.SANSHUI_WIDTH*dk*2
+        # 位置
+        loc_z = -bData.platform_height/2
+        # 高度
+        height = con.SANSHUI_HEIGHT 
+        # 材质
+        pfeMat = mat.shaderType.BRICK2
+
+    # 2、台明拓展，做为后续合并踏跺扩展的本体
+    baseExpandObj = utils.addCube(
+            name= name,
             location=(
-                obj.location.x,
-                obj.location.y,
-                -bData.platform_height/2,
+                pfProxy.location.x,
+                pfProxy.location.y,
+                loc_z,
             ),
             dimension=(
-                    obj.dimensions.x + con.SANSHUI_WIDTH*dk*2,
-                    obj.dimensions.y + con.SANSHUI_WIDTH*dk*2,
+                    pfProxy.dimensions.x + pfExpand,
+                    pfProxy.dimensions.y + pfExpand,
                     height
             ),
-            rotation= obj.rotation_euler,
+            rotation= pfProxy.rotation_euler,
             parent=pfProxy
         )
-        sanshuiObjs.append(sanshuiObj)
+
+    # 3、踏跺拓展
+    stepExpandList = []
+    # 依据台基proxy、踏跺proxy生成新的散水对象
+    for n in range(len(stepProxyList)):
+        stepProxy:bpy.types.Object = stepProxyList[n]
+        stepExpandObj = utils.addCube(
+            name= name,
+            location=(
+                stepProxy.location.x,
+                stepProxy.location.y,
+                loc_z,
+            ),
+            dimension=(
+                    stepProxy.dimensions.x + stepExpand_x,
+                    stepProxy.dimensions.y + stepExpand_y,
+                    height
+            ),
+            rotation= stepProxy.rotation_euler,
+            parent=pfProxy
+        )
+        stepExpandList.append(stepExpandObj)
     
-    # 合并各个散水对象
-    # 以第一个散水对象上叠加boolean modifier
-    joinBaseObj:bpy.types.Object = sanshuiObjs[0]
-    for n in range(1,len(sanshuiObjs)):
+    # 在台明扩展本体上，添加踏跺拓展对象
+    for stepExpandObj in stepExpandList:
         modBool:bpy.types.BooleanModifier = \
-            joinBaseObj.modifiers.new('合并','BOOLEAN')
-        modBool.object = sanshuiObjs[n]
+            baseExpandObj.modifiers.new('合并','BOOLEAN')
+        modBool.object = stepExpandObj
         modBool.solver = 'EXACT'
         modBool.operation = 'UNION'
-        utils.hideObj(sanshuiObjs[n])
-
     # 应用boolean modifier
-    utils.applyAllModifer(joinBaseObj)
-    # 条砖竖铺
-    mat.setShader(joinBaseObj,mat.shaderType.BRICK2)
+    utils.applyAllModifer(baseExpandObj)
+    # 删除已被合并的踏跺扩展对象
+    for stepExpandObj in stepExpandList:
+        bpy.data.objects.remove(stepExpandObj)
+    
+    # 设置材质
+    mat.setShader(baseExpandObj,pfeMat)
 
-    # 清理无用的散水对象
-    for n in range(1,len(sanshuiObjs)):
-        bpy.data.objects.remove(sanshuiObjs[n])
-    return joinBaseObj
+    # 添加导角
+    modBevel:bpy.types.BevelModifier = \
+            baseExpandObj.modifiers.new('Bevel','BEVEL')
+    modBevel.width = con.BEVEL_HIGH
+    modBevel.offset_type = 'WIDTH'
+    modBevel.use_clamp_overlap = False
+
+    return baseExpandObj
 
 # 添加踏跺
 def addStep(buildingObj:bpy.types.Object,
@@ -739,51 +748,32 @@ def buildPlatform(buildingObj:bpy.types.Object):
 
     # 生成台基框线
     pfProxy = __addPlatformProxy(buildingObj)
-    # 构造台基细节，单独返回了台明和土衬
-    platformObj,tuchenObj = __drawPlatform(pfProxy)
-
-    # 散水参考对象
-    sanshuiRefList = [pfProxy]
+    # 构造台基细节
+    platformObj = __drawPlatform(pfProxy)
 
     # 构造台基踏跺
     # 解析模版输入的墙体设置，格式如下
     # "3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
     stepStr = bData.step_net
     stepList = stepStr.split(',')
+    stepProxyList = []
     for stepID in stepList:
         if stepID == '': continue
         # 根据stepID生成踏跺（如，’3/0#4/0‘）
         stepProxy = __addStepProxy(
             buildingObj,stepID)
+        stepProxyList.append(stepProxy)
         # 生成踏跺对象
         # 241115 判断相邻踏跺，只做单边
         hasNextStep = __checkNextStep(stepList,stepID)
-        stepObj,stepTuchenObj = __drawStep(stepProxy,hasNextStep)
-        # 241115 合并土衬对象
-        # 添加boolean
-        modBool:bpy.types.BooleanModifier = \
-        tuchenObj.modifiers.new('合并','BOOLEAN')
-        modBool.object = stepTuchenObj
-        modBool.solver = 'EXACT'
-        modBool.operation = 'UNION'
-        # 应用
-        utils.applyAllModifer(tuchenObj)
-        # 删除已合并对象
-        bpy.data.objects.remove(stepTuchenObj)
-
-        # 收集散水参考对象
-        sanshuiRefList.append(stepProxy)
-
-    # 土衬处理
-    # 添加导角
-    modBevel:bpy.types.BevelModifier = \
-            tuchenObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_HIGH
-    modBevel.offset_type = 'WIDTH'
-    modBevel.use_clamp_overlap = False
-
+        stepObj = __drawStep(stepProxy,hasNextStep)
+        
+    # 生成土衬
+    tuchenObj = __addPlatformExpand(pfProxy,stepProxyList,
+                             type='tuchen')
     # 生成散水
-    sanshuiObj = __addSanshui(pfProxy,sanshuiRefList)
+    sanshuiObj = __addPlatformExpand(pfProxy,stepProxyList,
+                              type='sanshui')
 
      # 更新建筑框大小
     buildingObj.empty_display_size = math.sqrt(

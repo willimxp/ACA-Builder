@@ -94,7 +94,7 @@ class ACA_OT_del_building(bpy.types.Operator):
             build.delBuilding(buildingObj)
             message = "%s-建筑已删除！" \
                         % (buildingName)
-            utils.popMessageBox(message)
+            self.report({'INFO'},message)
 
         return {'FINISHED'}
 

@@ -63,6 +63,15 @@ def showMessageBox(message = "", title = "Message Box", icon = 'INFO'):
         self.layout.label(text=message)
     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
+# 弹出模态提示框
+# 实际调用的是operator.py中的ACA_OT_Show_Message_Box
+# 因为使用了模态对话框，必须按照blender的operator声明，并在init中注册绑定
+def popMessageBox(message = "", icon = 'INFO'):
+    bpy.ops.aca.show_message_box('INVOKE_DEFAULT', 
+        message=message, 
+        icon=icon, 
+        center=True)
+
 # 递归查询，并选择collection，似乎没有找到更好的办法
 # Recursivly transverse layer_collection for a particular name
 # https://blender.stackexchange.com/questions/127403/change-active-collection

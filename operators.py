@@ -50,17 +50,11 @@ class ACA_OT_add_building(bpy.types.Operator):
         result = utils.fastRun(funproxy)
 
         if 'FINISHED' in result:
-            timeEnd = time.time()
-            self.report(
-                {'INFO'},"新建筑营造完成！(%.1f秒)" 
-                % (timeEnd-timeStart))
-            
-        
-        message = "新建筑营造完成！(%.1f秒)" % (timeEnd-timeStart)
-        bpy.ops.aca.show_message_box('INVOKE_DEFAULT', 
-            message=message, 
-            icon="INFO", 
-            centre=True)
+            templateName = bpy.context.scene.ACA_data.template
+            runTime = time.time() - timeStart
+            message = "参数化营造完成！(%s , %.1f秒)" \
+                        % (templateName,runTime)
+            utils.popMessageBox(message)
         return {'FINISHED'}
 
 # 更新建筑
@@ -72,16 +66,17 @@ class ACA_OT_update_building(bpy.types.Operator):
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
+        buildingName = buildingObj.name
         # 更新新建筑
         timeStart = time.time()
         funproxy = partial(buildFloor.buildFloor,
                     buildingObj=buildingObj)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-            timeEnd = time.time()
-            self.report(
-                {'INFO'},"建筑更新完成！(%.1f秒)" 
-                % (timeEnd-timeStart))
+            runTime = time.time() - timeStart
+            message = "更新建筑完成！(%s , %.1f秒)" \
+                        % (buildingName,runTime)
+            utils.popMessageBox(message)
         return {'FINISHED'}
     
 # 删除建筑
@@ -93,15 +88,17 @@ class ACA_OT_del_building(bpy.types.Operator):
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
+        buildingName = buildingObj.name
         if buildingObj != None:
             from . import build
             build.delBuilding(buildingObj)
-            self.report(
-                {'INFO'},"建筑已删除！")
+            message = "%s-建筑已删除！" \
+                        % (buildingName)
+            utils.popMessageBox(message)
 
         return {'FINISHED'}
 
-# 重新生成建筑
+# 重新生成柱网
 class ACA_OT_reset_floor(bpy.types.Operator):
     bl_idname="aca.reset_floor"
     bl_label = "重设柱网"
@@ -115,7 +112,7 @@ class ACA_OT_reset_floor(bpy.types.Operator):
                         buildingObj=buildingObj)
             result = utils.fastRun(funproxy)
             if 'FINISHED' in result:
-                self.report({'INFO'},"建筑已重新营造！")
+                self.report({'INFO'},"柱网已重新营造！")
         else:
             self.report({'ERROR'},"找不到根节点！")
         return {'FINISHED'}
@@ -566,14 +563,14 @@ class ACA_OT_Show_Message_Box(bpy.types.Operator):
     from bpy.props import StringProperty, BoolProperty
     message: StringProperty()               # type: ignore 
     icon: StringProperty(default="INFO")    # type: ignore 
-    centre: BoolProperty(default=False)     # type: ignore 
+    center: BoolProperty(default=False)     # type: ignore 
     
     def execute(self, context):
         return {'FINISHED'}
  
     def invoke(self, context, event):
         self.restored = False
-        if self.centre:
+        if self.center:
             self.orig_x = event.mouse_x
             self.orig_y = event.mouse_y
             
@@ -585,14 +582,14 @@ class ACA_OT_Show_Message_Box(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self, width = 400)
  
     def draw(self, context):
-        self.layout.label(text="古建营造", icon=self.icon)
+        panelTitle = "ACA Blender Addon"
+        self.layout.label(text=panelTitle)
         message_list = self.message.split("|")
         for li in message_list:
             row=self.layout.row()
-            row.scale_y = 0.8
-            row.alignment = 'CENTER'
-            row.label(text=li)
-        if not self.restored and self.centre:
+            row.scale_y = 2
+            row.label(text=li, icon=self.icon)
+        if not self.restored and self.center:
             context.window.cursor_warp(self.orig_x, self.orig_y)
             self.restored = True
 

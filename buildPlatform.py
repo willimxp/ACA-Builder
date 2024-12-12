@@ -509,17 +509,13 @@ def __addPlatformExpand(pfProxy:bpy.types.Object,
     )
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
+    pd = bData.piller_diameter
 
     # 1、分别定义土衬和散水在扩展时的不同参数设置
     if type == 'tuchen':
         name = '土衬'
-        # 台明拓展
+        # 拓展尺寸
         pfExpand = con.GROUND_BORDER*2
-        # 踏跺拓展
-        stepExpand_x = (con.GROUND_BORDER*2
-                    +bData.platform_extend
-                    -bData.piller_diameter)
-        stepExpand_y = con.GROUND_BORDER*2
         # 位置
         loc_z = -bData.platform_height/2 + con.GROUND_BORDER/2
         # 高度
@@ -528,11 +524,8 @@ def __addPlatformExpand(pfProxy:bpy.types.Object,
         pfeMat = mat.shaderType.ROCK
     if type == 'sanshui':
         name = '散水' 
-        # 台明拓展
+        # 拓展尺寸
         pfExpand = con.SANSHUI_WIDTH*dk*2
-        # 踏跺拓展
-        stepExpand_x = con.SANSHUI_WIDTH*dk*2
-        stepExpand_y = con.SANSHUI_WIDTH*dk*2
         # 位置
         loc_z = -bData.platform_height/2
         # 高度
@@ -560,6 +553,10 @@ def __addPlatformExpand(pfProxy:bpy.types.Object,
     # 3、踏跺拓展
     stepExpandList = []
     # 依据台基proxy、踏跺proxy生成新的散水对象
+    # 计算踏跺的两侧扩展
+    # stepProxy是按照两柱间距创建的，而垂带对柱中对齐，使得踏跺垂带超出柱中
+    # 垂带的宽度与阶条石同宽：取台基下出-半个柱顶石
+    stepSideExpand = bData.platform_extend - con.PILLERBASE_WIDTH*pd/2
     for n in range(len(stepProxyList)):
         stepProxy:bpy.types.Object = stepProxyList[n]
         stepExpandObj = utils.addCube(
@@ -570,8 +567,10 @@ def __addPlatformExpand(pfProxy:bpy.types.Object,
                 loc_z,
             ),
             dimension=(
-                    stepProxy.dimensions.x + stepExpand_x,
-                    stepProxy.dimensions.y + stepExpand_y,
+                    (stepProxy.dimensions.x 
+                     + stepSideExpand
+                     + pfExpand),
+                    stepProxy.dimensions.y + pfExpand,
                     height
             ),
             rotation= stepProxy.rotation_euler,
@@ -579,7 +578,7 @@ def __addPlatformExpand(pfProxy:bpy.types.Object,
         )
         stepExpandList.append(stepExpandObj)
     
-    # 在台明扩展本体上，添加踏跺拓展对象
+    # 4、在台明扩展本体上，添加踏跺拓展对象
     for stepExpandObj in stepExpandList:
         modBool:bpy.types.BooleanModifier = \
             baseExpandObj.modifiers.new('合并','BOOLEAN')
@@ -592,10 +591,10 @@ def __addPlatformExpand(pfProxy:bpy.types.Object,
     for stepExpandObj in stepExpandList:
         bpy.data.objects.remove(stepExpandObj)
     
-    # 设置材质
+    # 5、设置材质
     mat.setShader(baseExpandObj,pfeMat)
 
-    # 添加导角
+    # 6、添加导角
     modBevel:bpy.types.BevelModifier = \
             baseExpandObj.modifiers.new('Bevel','BEVEL')
     modBevel.width = con.BEVEL_HIGH

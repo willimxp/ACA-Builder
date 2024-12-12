@@ -85,6 +85,7 @@ class ACA_Consts(object):
     PILLER_H_EAVE = 57      # 檐柱高(DK)
     PILLER_D_JIN = 6.6      # 金柱直径(DK)
     PILLER_CHILD = 5.2      # 蜀柱边长(DK)
+    PILLERBASE_WIDTH = 2    # 柱顶石边长(PD)
 
     # 枋类
     EFANG_LARGE_H = 6       # 大额枋高(DK)

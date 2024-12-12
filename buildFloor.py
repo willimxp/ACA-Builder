@@ -782,6 +782,8 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
+    pd = bData.piller_diameter
+    ph = bData.piller_height
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]
@@ -819,11 +821,7 @@ def buildPillers(buildingObj:bpy.types.Object):
 
     # 柱子父节点框线
     pillerProxy_basemesh = utils.addCube(
-        dimension=(
-            bData.piller_diameter,
-            bData.piller_diameter,
-            bData.piller_height,
-        ),
+        dimension=(pd,pd,ph),
         parent=floorRootObj
     )
     utils.setOrigin(pillerProxy_basemesh,
@@ -839,9 +837,9 @@ def buildPillers(buildingObj:bpy.types.Object):
             sourceObj=piller_source,
             location=(0,0,0),
             scale=(
-                    bData.piller_diameter/piller_source.dimensions.x,
-                    bData.piller_diameter/piller_source.dimensions.y,
-                    bData.piller_height/piller_source.dimensions.z
+                    pd/piller_source.dimensions.x,
+                    pd/piller_source.dimensions.y,
+                    ph/piller_source.dimensions.z
                 ),
             parentObj=pillerProxy_basemesh,
             singleUser=True
@@ -859,9 +857,9 @@ def buildPillers(buildingObj:bpy.types.Object):
             sourceObj=pillerbase_source,
             location=(0,0,0),
             scale=(
-                    bData.piller_diameter/piller_source.dimensions.x,
-                    bData.piller_diameter/piller_source.dimensions.y,
-                    bData.piller_diameter/piller_source.dimensions.x,
+                    pd/piller_source.dimensions.x,
+                    pd/piller_source.dimensions.y,
+                    pd/piller_source.dimensions.x,
                 ),
             parentObj=pillerProxy_basemesh,
             singleUser=True
@@ -874,7 +872,7 @@ def buildPillers(buildingObj:bpy.types.Object):
     pillerBase_h = 0.3
     pillerBase_popup = 0.02
     # 柱顶石边长（为了防止与方砖缦地交叠，做了1/10000的放大）
-    pillerBase_size = 2*bData.piller_diameter * 1.0001
+    pillerBase_size = con.PILLERBASE_WIDTH*pd * 1.0001
     pillerBottom_basemesh = utils.addCube(
         location=(0,0,
                     (- pillerBase_h/2

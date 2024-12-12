@@ -410,12 +410,17 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 mirrorObj=dgrootObj,
                 use_axis=(False,True,False)
             )
-            # 调整桃尖梁长度:廊间进深--1/4柱径（搭接了1/4更好看）
+            # 调整前后檐桃尖梁长度
             gnMod:bpy.types.NodesModifier = \
                 dgPillerCopy.modifiers.get('dgPillerGN')
             if gnMod != None:
-                # 廊间进深-1/4柱径（搭接了1/4更好看）
-                taojianLength = abs(net_y[1]-net_y[0]) - bData.piller_diameter/4
+                # 如果为廊间举架，桃尖梁做廊间进深-1/4柱径（搭接了1/4更好看）
+                if bData.use_hallway:
+                    # 廊间进深-1/4柱径（搭接了1/4更好看）
+                    taojianLength = abs(net_y[1]-net_y[0]) - bData.piller_diameter/4
+                # 否则桃尖梁做前后通檐
+                else:
+                    taojianLength = bData.y_total / 2
                 utils.setGN_Input(gnMod,"Length",taojianLength)
         
         # 两山的柱头斗栱，仅庑殿/歇山做两山的斗栱
@@ -439,7 +444,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                     mirrorObj=dgrootObj,
                     use_axis=(True,False,False)
                 )
-                # 调整桃尖梁长度:
+                # 调整两山桃尖梁长度:
                 gnMod:bpy.types.NodesModifier = \
                     dgPillerCopy.modifiers.get('dgPillerGN')
                 if gnMod != None:

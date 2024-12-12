@@ -690,13 +690,30 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         # 其中槛窗的窗台为石质，并不会被覆盖
         mat.setShader(ob,mat.shaderType.REDPAINT)
     
+    # 隔扇导角大小
+    geshan_bevel = con.BEVEL_LOW
+
     # 绦环板着色
     for taohuan in taohuanList:
+        # 绦环板做大一圈，插入边框，同时隐藏bevel
+        taohuan.dimensions = (
+            taohuan.dimensions.x + geshan_bevel*2,
+            taohuan.dimensions.y,
+            taohuan.dimensions.z + geshan_bevel*2,
+        )
+        utils.applyTransfrom(taohuan,use_scale=True)
         mat.setShader(taohuan,
-            mat.shaderType.DOORRING,override=True)
+            mat.shaderType.DOORRING,override=True) 
 
     # 设置裙板材质
     if qunbanObj != None:
+        # 绦环板做大一圈，插入边框，同时隐藏bevel
+        qunbanObj.dimensions = (
+            qunbanObj.dimensions.x + geshan_bevel*2,
+            qunbanObj.dimensions.y,
+            qunbanObj.dimensions.z + geshan_bevel*2,
+        )
+        utils.applyTransfrom(qunbanObj,use_scale=True)
         mat.setShader(qunbanObj,
             mat.shaderType.DOOR,override=True)
 
@@ -714,7 +731,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     # 添加整体bevel
     modBevel:bpy.types.BevelModifier = \
         geshanObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_LOW
+    modBevel.width = geshan_bevel
 
     return windowsill_height
     

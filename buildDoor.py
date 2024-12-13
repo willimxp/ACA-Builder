@@ -26,6 +26,8 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
+    # 收集扇心对象
+    linxingList = []
 
     # 扇心高度校验，以免出现row=0的异常
     linxingHeight = scale.z- con.ZIBIAN_WIDTH*2*pd
@@ -60,6 +62,9 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     zibianObj.data.bevel_depth = con.ZIBIAN_WIDTH/2  # 仔边宽度
     # 转为mesh
     bpy.ops.object.convert(target='MESH')
+    zibianObj = bpy.context.object
+    mat.setShader(zibianObj,mat.shaderType.REDPAINT)
+    linxingList.append(bpy.context.object)
 
     # # 填充棂心
     # lingxinObj = aData.lingxin_source
@@ -105,12 +110,17 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     # apply
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     mat.setShader(plane,mat.shaderType.GESHANXIN)
+    linxingList.append(plane)
 
-    return # linxinObj
+    # 合并扇心
+    linxingObj = utils.joinObjects(linxingList)
+
+    return linxingObj
 
 # 构建槛框
 # 基于输入的槛框线框对象
-def __buildKanKuang(wallproxy):
+# 依赖于隔扇抹头计算出来的窗台高度
+def __buildKanKuang(wallproxy,windowsillHeight):
     # 载入数据
     buildingObj,bData,wData = utils.getRoot(wallproxy)
     if buildingObj == None:
@@ -161,18 +171,36 @@ def __buildKanKuang(wallproxy):
 
     # 3、下抱框 ---------------------
     if wData.use_topwin:
-        # 有横披窗时，下抱框从中槛下皮到下槛上皮
-        BaoKuangDownHeight = \
-            (wData.door_height - con.KAN_MID_HEIGHT*pd/2) \
-            - con.KAN_DOWN_HEIGHT*pd
+        # 有横披窗、有槛墙：从中槛下皮到窗台上皮
+        if use_KanWall:
+            BaoKuangDownHeight = (
+                wData.door_height - con.KAN_MID_HEIGHT*pd/2
+                - windowsillHeight)
+        # 有横披窗、无槛墙：从中槛下皮到下槛上皮
+        else:        
+            BaoKuangDownHeight = (
+                wData.door_height - con.KAN_MID_HEIGHT*pd/2
+                - con.KAN_DOWN_HEIGHT*pd)
     else:
-        # 无横披窗时，下抱框从上槛下皮到下槛上皮
-        BaoKuangDownHeight = \
-            frame_height - con.KAN_UP_HEIGHT*pd \
-            - con.KAN_DOWN_HEIGHT*pd
-    # 位置Z：从下槛+一半高度
-    BaoKuangDown_z = con.KAN_DOWN_HEIGHT*pd \
-                        + BaoKuangDownHeight/2
+        # 无横披窗、有槛墙：从窗台到上槛下皮
+        if use_KanWall:
+            BaoKuangDownHeight = (
+                frame_height - con.KAN_UP_HEIGHT*pd 
+                - windowsillHeight)
+        # 无横披窗、无槛墙：从下抱框从上槛下皮到下槛上皮
+        else:
+            BaoKuangDownHeight = (
+                frame_height - con.KAN_UP_HEIGHT*pd 
+                - con.KAN_DOWN_HEIGHT*pd)
+    # 位置Z：
+    if use_KanWall:
+        # 从窗台 + 半下抱框高
+        BaoKuangDown_z = (
+            windowsillHeight + BaoKuangDownHeight/2)
+    else:
+        # 从下槛 + 半下抱框高
+        BaoKuangDown_z = (
+            con.KAN_DOWN_HEIGHT*pd + BaoKuangDownHeight/2)
     # 位置X：半柱间距 - 半柱径 - 半抱框宽度
     BaoKuangDown_x = frame_width/2 - pillerD/2 - con.BAOKUANG_WIDTH*pd/2
     BaoKuangDownLoc = Vector((BaoKuangDown_x,0,BaoKuangDown_z))
@@ -274,6 +302,7 @@ def __buildKanKuang(wallproxy):
             WindowTopLoc =  Vector((windowTop_x,0,BaoKuangUp_z))
             linxinObj = __buildShanxin(
                 wallproxy,WindowTopScale,WindowTopLoc)
+            KankuangObjs.append(linxinObj)
     
     # 门楹
     if not use_KanWall:
@@ -318,15 +347,16 @@ def __buildKanKuang(wallproxy):
                 parent=wallproxy
                 )
             KankuangObjs.append(menyinObj)
-            
-    # 统一添加bevel
-    for obj in KankuangObjs:
-        modBevel:bpy.types.BevelModifier = \
-            obj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = con.BEVEL_HIGH
+
+    # 合并槛框
+    kankuangObj = utils.joinObjects(KankuangObjs,'槛框')     
+    # 添加bevel
+    modBevel:bpy.types.BevelModifier = \
+        kankuangObj.modifiers.new('Bevel','BEVEL')
+    modBevel.width = con.BEVEL_HIGH
 
     # 输出下抱框，做为隔扇生成的参考
-    return BaoKuangDownObj
+    return kankuangObj
 
 # 构造隔扇数据
 def __getGeshanData(
@@ -581,7 +611,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         geshanObj.modifiers.new('Bevel','BEVEL')
     modBevel.width = geshan_bevel
 
-    return windowsillZ
+    return geshanObj,windowsillZ
     
 # 构建槛墙
 # 槛墙定位要与隔扇裙板上抹对齐，所以要根据隔扇的尺寸进行定位
@@ -652,7 +682,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
         name='槛墙',
         parent = wallproxy,
         )
-    # 设置材质
+    # 设置材质：石材
     mat.setShader(kanqiangObj,mat.shaderType.ROCK)
     kanQiangObjs.append(kanqiangObj)
 
@@ -702,13 +732,18 @@ def __buildKanqiang(wallproxy:bpy.types.Object
             )
         kanQiangObjs.append(menyinObj)
 
-    # 统一添加bevel
+    # 设置材质
     for obj in kanQiangObjs:
-        modBevel:bpy.types.BevelModifier = \
-            obj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = con.BEVEL_HIGH
+        mat.setShader(obj,mat.shaderType.REDPAINT)
 
-    return
+    # 合并构件
+    kangqiangObj = utils.joinObjects(kanQiangObjs,'槛墙')
+    # 设置bevel
+    modBevel:bpy.types.BevelModifier = \
+            kangqiangObj.modifiers.new('Bevel','BEVEL')
+    modBevel.width = con.BEVEL_HIGH
+
+    return kangqiangObj
 
 # 构建完整的隔扇
 def buildDoor(wallproxy:bpy.types.Object):       
@@ -728,7 +763,61 @@ def buildDoor(wallproxy:bpy.types.Object):
     # 清理之前的子对象
     utils.deleteHierarchy(wallproxy)
 
-    # 针对重檐，装修不一定做到柱头，用走马板填充
+    # 收集槛框对象
+    kankuangList = []
+
+    # 1、构建槛框内的每一扇隔扇
+    # 注意：先做隔扇是因为考虑到槛窗模式下，窗台高度依赖于隔扇抹头的计算结果
+    # 隔扇数量
+    geshan_num = wData.door_num
+    geshan_total_width = frame_width - pillerD - con.BAOKUANG_WIDTH*pd*2
+    # 隔扇宽度：抱框宽度 / 隔扇数量
+    geshan_width = geshan_total_width/geshan_num
+    # 隔扇高度
+    if wData.use_topwin:
+        # 有横披窗时，下抱框从中槛下皮到下槛上皮
+        geshan_height = \
+            (wData.door_height - con.KAN_MID_HEIGHT*pd/2) \
+            - con.KAN_DOWN_HEIGHT*pd
+    else:
+        # 无横披窗时，下抱框从上槛下皮到下槛上皮
+        geshan_height = \
+            frame_height - con.KAN_UP_HEIGHT*pd \
+            - con.KAN_DOWN_HEIGHT*pd
+    scale = Vector((geshan_width-con.GESHAN_GAP,
+                con.BAOKUANG_DEPTH * pd,
+                geshan_height-con.GESHAN_GAP))
+    # 隔扇z坐标
+    geshanZ = con.KAN_DOWN_HEIGHT*pd + geshan_height/2
+    for n in range(geshan_num):
+        # 位置
+        location = Vector((geshan_width*(geshan_num/2-n-0.5),   #向右半扇
+                    0,geshanZ))
+        # 左开还是右开
+        if n%2 == 0: dir = 'L'
+        else: dir = 'R'
+        geshanObj,windowsillZ = __buildGeshan(
+            '隔扇',wallproxy,scale,location,dir)
+        
+    # 2、构建槛墙
+    windowsillHeight = windowsillZ + geshanZ # 将窗台坐标从隔扇proxy转换到wallproxy
+    windowsillHeight -= con.GESHAN_GAP/2 # 留出窗缝
+    if wData.use_KanWall :
+        # 窗台高度
+        scale = Vector((
+            wallproxy.dimensions.x,
+            wallproxy.dimensions.y,
+            windowsillHeight
+        ))
+        # 添加槛墙
+        kanqiangObj = __buildKanqiang(wallproxy,scale)
+        kankuangList.append(kanqiangObj)
+    
+    # 3、构建槛框，基于隔扇计算的窗台高度
+    kankuangObj = __buildKanKuang(wallproxy,windowsillHeight)
+    kankuangList.append(kankuangObj)
+
+    # 4、构建走马板：针对重檐，装修不一定做到柱头，用走马板填充
     if bData.wall_span != 0 :
         wallHeadBoard = utils.addCube(
                 name = "走马板",
@@ -741,55 +830,7 @@ def buildDoor(wallproxy:bpy.types.Object):
                 parent=wallproxy,
             )
         mat.setShader(wallHeadBoard,mat.shaderType.WOOD)
-    
-    # 1、构建槛框
-    # 返回的是下抱框，做为隔扇生成的参考  
-    BaoKuangDownObj = __buildKanKuang(wallproxy)
-
-    # 3、构建槛框内的每一扇隔扇
-    # 隔扇数量
-    geshan_num = wData.door_num
-    geshan_total_width = frame_width - pillerD - con.BAOKUANG_WIDTH*pd*2
-    # 每个隔扇宽度：抱框位置 / 隔扇数量
-    geshan_width = geshan_total_width/geshan_num
-    # 与下抱框等高，参考buildKankuang函数的返回对象
-    geshan_height = BaoKuangDownObj.dimensions.z
-    scale = Vector((geshan_width-con.GESHAN_GAP,
-                con.BAOKUANG_DEPTH * pd,
-                geshan_height-con.GESHAN_GAP))
-    for n in range(geshan_num):
-        # 位置
-        location = Vector((geshan_width*(geshan_num/2-n-0.5),   #向右半扇
-                    0,
-                    BaoKuangDownObj.location.z    #与抱框平齐
-                    ))
-        # 左开还是右开
-        if n%2 == 0:
-            dir = 'L'
-        else:
-            dir = 'R'
-        windowsill_height = __buildGeshan(
-            '隔扇',wallproxy,scale,location,dir)
-
-    # 4、添加槛墙
-    use_KanWall = wData.use_KanWall
-    if use_KanWall :
-        # 窗台高度
-        windowsill_z = windowsill_height + BaoKuangDownObj.location.z
-        scale = Vector((
-            wallproxy.dimensions.x,
-            wallproxy.dimensions.y,
-            windowsill_z
-        ))
-        # 下抱框长度
-        newLength = \
-            BaoKuangDownObj.dimensions.z/2 - windowsill_height
-        BaoKuangDownObj.dimensions.z = newLength
-        # 下抱框位置
-        BaoKuangDownObj.location.z = BaoKuangDownObj.location.z + geshan_height/2-newLength/2
-        utils.applyTransfrom(BaoKuangDownObj,use_scale=True)
-        # 添加槛墙
-        __buildKanqiang(wallproxy,scale)
+        kankuangList.append(wallHeadBoard)
 
     # 5、批量设置所有子对象材质
     for ob in wallproxy.children:
@@ -797,4 +838,9 @@ def buildDoor(wallproxy:bpy.types.Object):
         # 其中槛窗的窗台为石质，并不会被覆盖
         mat.setShader(ob,mat.shaderType.REDPAINT)
 
+    # 合并槛框
+    kankuangObj = utils.joinObjects(kankuangList,'槛框')
+
     utils.focusObj(wallproxy)
+
+    return {'FINISHED'}

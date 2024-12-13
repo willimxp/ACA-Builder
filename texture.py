@@ -219,7 +219,6 @@ def __setTexture(
 
     # 柱头贴图
     if mat == aData.mat_paint_pillerhead:
-        UvUnwrap(object,uvType.CYLINDER)
         # 设置材质属性
         __setPillerHead(object)
 
@@ -588,23 +587,66 @@ def setShader(object:bpy.types.Object,
 
 # 计算柱头贴图的高度
 # 依据大额枋、由额垫板、小额枋的高度计算
-# 不判断是否做双重额枋
-def __setPillerHead(object:bpy.types.Object):
+def __setPillerHead(pillerObj:bpy.types.Object):
     buildingObj = utils.getAcaParent(
-        object,con.ACA_TYPE_BUILDING)
+        pillerObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
+    aData:tmpData = bpy.context.scene.ACA_temp
 
-    # 缩放柱头贴图尺寸，与大小额枋及垫板的高度计算
+    # 为了使用静态的PBR贴图的同时，动态的控制柱头贴图高度
+    # 将柱子本体与柱头做为两个对象
+    # 柱子本体仍使用默认的红漆
+    __copyMaterial(aData.mat_red,pillerObj,True)
+    
+    # 另创建柱头对象
+    pillerHeadObj = utils.copySimplyObject(
+        pillerObj,singleUser=True)
+    # 刷新，否则出现柱头计算错误
+    utils.updateScene()
+    # 计算柱头高度（大额枋/小额枋下皮）
     fangHeight = con.EFANG_LARGE_H*dk
     if bData.use_smallfang:
         fangHeight += (con.BOARD_YOUE_H*dk
             + con.EFANG_SMALL_H*dk)
-    scale = fangHeight / object.dimensions.z
-    __setMatValue(
-        mat=object.active_material,
-        inputName='headRate',
-        value=scale)
+    # 裁切柱头
+    pCut = pillerObj.matrix_world @ Vector((
+        0,0,pillerObj.dimensions.z-fangHeight))
+    utils.addBisect(
+        object=pillerHeadObj,
+        pStart=Vector((0,1,0)),
+        pEnd=Vector((0,-1,0)),
+        pCut=pCut,
+        clear_outer=True,
+        direction='Y',
+        use_fill=False,
+    )
+    # 裁切柱顶（剪掉顶面，只保留圆筒形状，做贴图）
+    pCut = pillerObj.matrix_world @ Vector((
+        0,0,pillerObj.dimensions.z-0.02))
+    utils.addBisect(
+        object=pillerHeadObj,
+        pStart=Vector((0,1,0)),
+        pEnd=Vector((0,-1,0)),
+        pCut=pCut,
+        clear_inner=True,
+        direction='Y',
+        use_fill=False,
+    )
+    # 绑定柱头材质
+    __copyMaterial(aData.mat_paint_pillerhead,
+                   pillerHeadObj,True)
+    # 重新展UV
+    UvUnwrap(pillerHeadObj,uvType.CYLINDER)   
+    # 略微放大，包住柱头
+    pillerHeadObj.scale =(1.001,1.001,1)
+    # 旋转45度，让金龙面对前方
+    pillerHeadObj.rotation_euler.z = math.radians(45)
+    # 表面平滑
+    utils.shaderSmooth(pillerHeadObj)
+    
+    return
+
 
 # 设置垫拱板的重复次数，根据斗栱攒数计算
 def __setDgCount(object:bpy.types.Object):

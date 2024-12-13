@@ -1305,7 +1305,8 @@ def setGN_Input(mod:bpy.types.NodesModifier,
 # https://blender.stackexchange.com/questions/13986/how-to-join-objects-with-python
 # https://docs.blender.org/api/current/bpy.ops.html#overriding-context
 def joinObjects(objList:List[bpy.types.Object],
-                newName=None):
+                newName=None,
+                baseObj=None,):
     if newName==None:
         newName = objList[0].name
     # timeStart = time.time()
@@ -1319,7 +1320,11 @@ def joinObjects(objList:List[bpy.types.Object],
         # 将对象的mesh数据single化，避免影响场景中其他对象
         if ob.data.users > 1:
             ob.data = ob.data.copy()
-    bpy.context.view_layer.objects.active = objList[0]
+    # 合并的Origin基准
+    if baseObj == None:
+        bpy.context.view_layer.objects.active = objList[0]
+    else:
+        bpy.context.view_layer.objects.active = baseObj
     # 预处理，可以将Curve转为mesh，还同时应用了所有的modifier
     bpy.ops.object.convert(target='MESH')
     

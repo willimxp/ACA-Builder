@@ -328,399 +328,247 @@ def __buildKanKuang(wallproxy):
     # 输出下抱框，做为隔扇生成的参考
     return BaoKuangDownObj
 
-# 构建隔扇
-# 采用故宫王璞子书的做法，马炳坚的做法不够协调
-# 参见汤崇平书“木装修”分册的p43
+# 构造隔扇数据
+def __getGeshanData(
+        wallproxy,
+        scale,      # 隔扇尺寸
+        gapNum,     # 抹头数量
+        useKanwall, # 是否做槛墙
+        dir='L'     # 隔扇方向：左开/右开
+        ):
+    # 载入数据
+    buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    # 考虑到柱的艺术夸张可能性，隔扇按6dk计算
+    pd = con.PILLER_D_EAVE * dk
+    # 输入的隔扇三维尺寸
+    geshan_width,geshan_depth,geshan_height = scale
+    # 边梃/抹头宽（看面）: 1/10隔扇宽（或1/5D）
+    border_width = con.BORDER_WIDTH * pd
+    # 边梃/抹头厚(进深)：1.5倍宽或0.3D，这里直接取了抱框厚度
+    border_depth = con.BORDER_DEPTH * pd
+    # 隔扇部件数据集合
+    geshanParts = []  
+    
+    # 1-预布局：根据抹头数量，排布扇心、裙板、绦环
+    motouData = {'name':'抹头',}
+    taohuanData = {'name':'绦环'}
+    shanxinData = {'name':'扇心'}    
+    qunbanData = {'name':'裙板'} 
+    # 二抹：0-抹头，1-扇心，2-抹头
+    if gapNum >= 2:
+        geshanParts.append(motouData.copy())
+        geshanParts.append(shanxinData.copy())
+        geshanParts.append(motouData.copy())
+        if gapNum==2 and useKanwall:
+            # 槛窗不做2抹，按3抹做，继续进入下一个判断
+            gapNum=3
+    # 三抹：0-抹头，1-扇心，2-抹头，【3-裙板，4-抹头】
+    if gapNum >= 3:
+        if not useKanwall:
+            # 扇心下增加裙板
+            geshanParts.append(qunbanData.copy())
+            geshanParts.append(motouData.copy())
+    # 四抹：0-抹头，1-扇心，2-抹头，【3-绦环，4，抹头】，
+    # 5-裙板，6-抹头
+    if gapNum >= 4:
+        # 扇心和裙板之间加绦环
+        geshanParts.insert(3,taohuanData.copy())
+        geshanParts.insert(4,motouData.copy())
+    # 五抹：0-抹头，1-扇心，2-抹头，3-绦环，4，抹头，
+    # 5-裙板，6-抹头，【7-绦环，8-抹头】
+    if gapNum >= 5:
+        if not useKanwall:
+            # 底部增加绦环
+            geshanParts.append(taohuanData.copy())
+            geshanParts.append(motouData.copy())
+    # 六抹：【0-抹头，1-绦环】，2-抹头，3-扇心，4-抹头，
+    # 5-绦环，6，抹头，7-裙板，8-抹头，9-绦环，10-抹头
+    if gapNum >= 6:
+        # 顶步增加绦环
+        geshanParts.insert(0,motouData.copy())
+        geshanParts.insert(1,taohuanData.copy())
+    
+    # 2-计算各部件的尺寸、位置
+    width = geshan_width-border_width*2
+    # 2.1，计算扇心高度，采用故宫王璞子书的做法
+    # 参见汤崇平书“木装修”分册的p43
+    if gapNum == 2:
+        # 扇心做满
+        heartHeight = geshan_height - border_width*2
+    if gapNum == 3:
+        # 扇心、裙板按6:4分
+        heartHeight = (geshan_height - border_width*3)*0.6
+    if gapNum == 4:
+        # 减去4根抹头厚+绦环板(2抹高)
+        heartHeight = (geshan_height - border_width*6)*0.6
+    if gapNum == 5:
+        # 减去5根抹头厚+2绦环板(4抹高)
+        heartHeight = (geshan_height - border_width*9)*0.6
+    if gapNum == 6:
+        # 减去6根抹头厚+3绦环板(6抹高)
+        heartHeight = (geshan_height - border_width*12)*0.6
+    # 2.2，计算裙板高度
+    qunbanHeight = heartHeight*4/6
+    # 2.3, 依次推理抹头定位
+    # Z坐标从上向下依次推理
+    locZ = geshan_height/2
+    for part in geshanParts:
+        if part['name'] == '抹头':
+            # 抹头的高度、厚度与边梃相同
+            height = depth = border_width
+        if part['name'] == '绦环':
+            # 绦环板按1/3边梃厚
+            depth = border_depth/3
+            # 绦环板按2边梃高
+            height = border_width*2
+        if part['name'] == '扇心':
+            # 扇心厚度同边梃厚
+            depth = border_depth
+            height = heartHeight
+        if part['name'] == '裙板':
+            # 裙板板按1/3边梃厚
+            depth = border_depth/3
+            height = qunbanHeight
+        # 尺寸
+        part['size'] = Vector((width,depth,height))
+        # 定位
+        part['loc'] = Vector((0,0,locZ-height/2))
+        # 下一步定位推理
+        locZ -= height
+
+    # 3、计算边梃
+    # 根据是否有槛窗，计算边梃尺寸
+    if not useKanwall:
+        # 边梃高度做到底部
+        biantingHeight = geshan_height
+    else:
+        # 边梃高度仅做到窗台
+        # 取上文中推理得到的locZ
+        biantingHeight = (geshan_height/2 - locZ)
+    scale = Vector((border_width,border_depth,biantingHeight))
+    loc = Vector((-geshan_width/2+border_width/2,0,
+            (geshan_height - biantingHeight)/2) ) 
+    biantingDataL = {
+        'name' : '边梃',
+        'loc' : loc,
+        'size': scale,
+    }
+    biantingDataR = {
+        'name' : '边梃',
+        'loc' : loc * Vector((-1,1,1)),
+        'size': scale,
+    }
+    geshanParts.append(biantingDataL)
+    geshanParts.append(biantingDataR)
+
+    # 4、计算门轴
+    # 门轴长度，比隔扇延长2个门楹长度（粗略）
+    menzhouHeight = biantingHeight + con.MENYIN_HEIGHT*pd*2
+    # 门轴位置分左开，右开
+    if dir=='L':
+        menzhouX = -geshan_width/2 + con.MENZHOU_R*pd
+    else:
+        menzhouX = geshan_width/2 - con.MENZHOU_R*pd
+    # 门轴外皮与隔扇相切（实际应该是做成一体的）
+    menzhouY = con.BORDER_DEPTH * pd/2 + con.MENZHOU_R * pd
+    # 门轴与隔扇垂直对齐
+    if not useKanwall:
+        # 隔扇与门轴居中对齐
+        menzhouZ = 0
+    else:
+        # 槛窗与门轴对齐
+        menzhouZ = (geshan_height - biantingHeight)/2
+    menzhouData = {
+        'name':'门轴',
+        'loc':Vector((menzhouX,menzhouY,menzhouZ)),
+        'size': Vector((con.MENZHOU_R*pd,
+                        con.MENZHOU_R*pd,
+                        menzhouHeight)),
+    }
+    geshanParts.append(menzhouData)
+
+    return geshanParts,locZ
+
+# 构件隔扇，重构241213
 def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     # 载入数据
     buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
     wData:acaData = wallproxy.ACA_data
-    # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
-    # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
-    use_KanWall = wData.use_KanWall
+    # 隔扇导角大小
+    geshan_bevel = con.BEVEL_LOW
 
-    # 1.隔扇根对象
+    # 1、隔扇根对象
     bpy.ops.object.empty_add(type='PLAIN_AXES')
     geshan_root:bpy.types.Object = bpy.context.object
     geshan_root.name = name
     geshan_root.location = location
-    geshan_width,geshan_depth,geshan_height = scale
-    geshan_root.parent = wallproxy  # 绑定到外框父对象    
-
-    # 2.边梃/抹头宽（看面）: 1/10隔扇宽（或1/5D）
-    border_width = con.BORDER_WIDTH * pd
-    # 边梃/抹头厚(进深)：1.5倍宽或0.3D，这里直接取了抱框厚度
-    border_depth = con.BORDER_DEPTH * pd
-
-    # 3.构件抹头
-    # 抹头上下
-    loc = (0,0,geshan_height/2-border_width/2)
-    motou_width = geshan_width-border_width*2
-    scale = (motou_width,border_depth,border_width)
-    motouObj = utils.addCube(
-        name="抹头.上下",
-        location=loc,
-        dimension=scale,
-        parent=geshan_root,
+    geshan_root.parent = wallproxy  # 绑定到外框父对象
+    # 隐藏隔扇根节点
+    utils.hideObj(geshan_root)  
+    
+    # 2、构造隔扇数据
+    geshanData,windowsillZ = __getGeshanData(
+        wallproxy=wallproxy,
+        scale=scale,
+        gapNum=wData.gap_num,
+        useKanwall=wData.use_KanWall,
+        dir=dir
     )
-    if not use_KanWall:
-        # 添加mirror
-        mod = bpy.context.object.modifiers.new(name='mirror', type='MIRROR')
-        mod.use_axis[0] = False
-        mod.use_axis[2] = True
-        mod.mirror_object = geshan_root
 
-    # 4. 分割棂心、裙板、绦环板
-    gap_num = wData.gap_num   # 抹头数量
-    qunbanObj = None    # 裙板对象
-    taohuanList = []    # 收集绦环板对象
-    windowsill_height = -geshan_height/2       # 窗台高度，在需要做槛墙的槛框中定位
-    if gap_num == 2:
-        if use_KanWall:
-            # 槛窗不做2抹，直接按3抹做
-            gap_num=3
-        else:
-            # 满铺扇心
-            heartHeight = geshan_height - border_width *2
-            # 扇心：抹二上推半扇心
-            loc1 = Vector((0,0,0))
-            scale = Vector((motou_width,border_depth,heartHeight))
-            __buildShanxin(geshan_root,scale,loc1)
-    if gap_num == 3:
-        # 三抹：扇心、裙板按6:4分
-        # 隔扇心高度
-        heartHeight = (geshan_height - border_width *3)*0.6
-        loc2 = Vector((0,0,
-            geshan_height/2-heartHeight-border_width*1.5))
-        scale = Vector((motou_width,border_depth,border_width))
-        motouObj = utils.addCube(
-            name="抹头.二",
-            location=loc2,
-            dimension=scale,
-            parent=geshan_root,
-        )
-        # 扇心：抹二上推半扇心
-        loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
-        scale = Vector((motou_width,border_depth,heartHeight))
-        __buildShanxin(geshan_root,scale,loc8)
-        if use_KanWall:
-                # 计算窗台高度:抹二下皮
-            windowsill_height = loc2.z - border_width/2
-        else:
-            # 裙板，抹二下方
-            loc3 = loc2-Vector((0,0,heartHeight*2/6+border_width/2))
-            scale = Vector((motou_width,border_depth/3,heartHeight*4/6))
-            qunbanObj = utils.addCube(
-                name="裙板",
-                location=loc3,
-                dimension=scale,
+    # 3、构造隔扇mesh
+    for part in geshanData:
+        # 绦环和裙板尺寸扩大，避免bevel的穿帮
+        if part['name'] in ('裙板','绦环'):
+            part['size'] += Vector((
+                geshan_bevel*2,0,geshan_bevel*2))
+        if part['name'] in ('抹头','绦环','裙板','边梃'):
+            # 简单的构造立方体
+            partObj = utils.addCube(
+                    name=part['name'],
+                    location=part['loc'],
+                    dimension=part['size'],
+                    parent=geshan_root,
+                )
+        if part['name'] == '扇心':
+            # 构造扇心
+            __buildShanxin(
                 parent=geshan_root,
-            )          
-    if gap_num == 4:
-        # 四抹：一块绦环板
-        # 减去4根抹头厚+绦环板(2抹高)，扇心裙板6/4分
-        heartHeight = (geshan_height - border_width*6)*0.6
-        # 抹二
-        loc2 = Vector((0,0,
-            geshan_height/2-heartHeight-border_width*1.5))
-        scale = (motou_width,border_depth,border_width)
-        motouObj = utils.addCube(
-                name="抹头.二",
-                location=loc2,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-        # 抹三
-        loc3 = loc2 - Vector((0,0,border_width*3))
-        scale = (motou_width,border_depth,border_width)
-        motouObj = utils.addCube(
-                name="抹头.三",
-                location=loc3,
-                dimension=scale,
-                parent=geshan_root,
+                scale=part['size'],
+                location=part['loc'],
             )
-        # 绦环板
-        loc4 = (loc2+loc3)/2
-        scale = (motou_width,border_depth/3,border_width*2)
-        taohuanObj = utils.addCube(
-                name="绦环板",
-                location=loc4,
-                dimension=scale,
-                parent=geshan_root,
-            )
-        taohuanList.append(taohuanObj)
-        # 扇心：抹二上推半扇心
-        loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
-        scale = Vector((motou_width,border_depth,heartHeight))
-        __buildShanxin(geshan_root,scale,loc8)
-        if use_KanWall:
-            # 计算窗台高度:抹三下皮
-            windowsill_height = loc3.z - border_width/2
-        else:
-            # 裙板，抹三下方
-            loc5 = loc3-Vector((0,0,heartHeight*2/6+border_width/2))
-            scale = (motou_width,border_depth/3,heartHeight*4/6)
-            qunbanObj = utils.addCube(
-                name="裙板",
-                location=loc5,
-                dimension=scale,
-                parent=geshan_root,
-            )           
-    if gap_num == 5:
-        # 五抹：减去5根抹头厚+2绦环板(4抹高)，扇心裙板6/4分
-        heartHeight = (geshan_height - border_width*9)*0.6
-        # 抹二
-        loc2 = Vector((0,0,
-            geshan_height/2-heartHeight-border_width*1.5))
-        scale = (motou_width,border_depth,border_width)
-        motouObj = utils.addCube(
-                name="抹头.二",
-                location=loc2,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-        # 抹三，抹二向下一块绦环板
-        loc3 = loc2 - Vector((0,0,border_width*3))
-        scale = (motou_width,border_depth,border_width)
-        motouObj = utils.addCube(
-                name="抹头.三",
-                location=loc3,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-        # 绦环板一
-        loc5 = (loc2+loc3)/2
-        scale = (motou_width,border_depth/3,border_width*2)
-        taohuanObj = utils.addCube(
-                name="绦环板一",
-                location=loc5,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-        taohuanList.append(taohuanObj)
-        # 扇心：抹二上推半扇心
-        loc8 = loc2+Vector((0,0,heartHeight/2+border_width/2))
-        scale = Vector((motou_width,border_depth,heartHeight))
-        __buildShanxin(geshan_root,scale,loc8)
-        if use_KanWall:
-            # 计算窗台高度:抹三下皮
-            windowsill_height = loc3.z - border_width/2
-        else:
-            # 抹四，底边向上一块绦环板
-            loc4 = Vector((0,0,
-                -geshan_height/2+border_width*3.5))
-            scale = (motou_width,border_depth,border_width)
-            motouObj = utils.addCube(
-                name="抹头.四",
-                location=loc4,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-            # 绦环板二
-            loc6 = loc4 - Vector((0,0,border_width*1.5))
-            scale = (motou_width,border_depth/3,border_width*2)
-            taohuanObj = utils.addCube(
-                name="绦环板二",
-                location=loc6,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-            taohuanList.append(taohuanObj)
-            # 裙板
-            loc7 = (loc3+loc4)/2
-            scale = (motou_width,border_depth/3,heartHeight*4/6)
-            qunbanObj = utils.addCube(
-                name="裙板",
-                location=loc7,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-    if gap_num == 6:
-        # 六抹：减去6根抹头厚+3绦环板(6抹高)，扇心裙板6/4分
-        heartHeight = (geshan_height-border_width*12)*0.6
-        # 抹二，固定向下1.5抹+绦环板（2抹）
-        loc2 = Vector((0,0,
-            geshan_height/2-border_width*3.5))
-        scale = (motou_width,border_depth,border_width)
-        motouObj = utils.addCube(
-                name="抹头.二",
-                location=loc2,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-        # 抹三, 向下一个扇心+抹头
-        loc3 = loc2 - Vector((0,0,heartHeight+border_width))
-        scale = (motou_width,border_depth,border_width)
-        motouObj = utils.addCube(
-                name="抹头.三",
-                location=loc3,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-        # 抹四，向下一块绦环板
-        loc4 = loc3 - Vector((0,0,border_width*3))
-        scale = (motou_width,border_depth,border_width)
-        motouObj = utils.addCube(
-                name="抹头.四",
-                location=loc4,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-        # 绦环板一，抹二反推
-        loc6 = loc2+Vector((0,0,border_width*1.5))
-        scale = (motou_width,border_depth/3,border_width*2)
-        taohuanObj = utils.addCube(
-                name="绦环板一",
-                location=loc6,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-        taohuanList.append(taohuanObj)
-        # 绦环板二，抹三抹四之间
-        loc7 = (loc3+loc4)/2
-        scale = (motou_width,border_depth/3,border_width*2)
-        taohuanObj = utils.addCube(
-                name="绦环板二",
-                location=loc7,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-        taohuanList.append(taohuanObj)
-        # 扇心：抹二和抹三之间
-        loc8 = (loc2+loc3)/2
-        scale = Vector((motou_width,border_depth,heartHeight))
-        __buildShanxin(geshan_root,scale,loc8)
-        if use_KanWall:
-            # 计算窗台高度:抹四下皮
-            windowsill_height = loc4.z - border_width/2
-        else:
-            # 抹五，底边反推一绦环板
-            loc5 = Vector((
-                0,0,-geshan_height/2+border_width*3.5
-            ))
-            scale = (motou_width,border_depth,border_width)
-            motouObj = utils.addCube(
-                name="抹头.五",
-                location=loc5,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-            # 裙板，抹四抹五之间
-            loc8 = (loc4+loc5)/2
-            scale = (motou_width,border_depth/3,heartHeight*4/6)
-            qunbanObj = utils.addCube(
-                name="裙板",
-                location=loc8,
-                dimension=scale,
-                parent=geshan_root,
-            ) 
-            # 绦环板三，底边反推
-            loc9 = Vector((0,0,-geshan_height/2+border_width*2))
-            scale = (motou_width,border_depth/3,border_width*2)
-            taohuanObj = utils.addCube(
-                name="绦环板三",
-                location=loc9,
-                dimension=scale,
-                parent=geshan_root,
-            )  
-            taohuanList.append(taohuanObj)     
-        
-    # 留出窗缝
-    windowsill_height -= con.GESHAN_GAP/2
-
-    # 边梃
-    final_height = geshan_height
-    if use_KanWall:
-        # 边梃高度依赖于槛窗的高度
-        final_height = (geshan_height/2 
-            - windowsill_height 
-            - con.GESHAN_GAP/2)
-        loc = (geshan_width/2-border_width/2,0,
-            geshan_height/2 - final_height/2    
-        )
-    else:
-        loc = (geshan_width/2-border_width/2,0,0)
-    scale = (border_width,border_depth,final_height)
-    geshanObj = utils.addCube(
-                name="边梃",
-                location=loc,
-                dimension=scale,
-                parent=geshan_root,
-            )    
-    # 添加mirror
-    mod = bpy.context.object.modifiers.new(name='mirror', type='MIRROR')
-    mod.use_axis[0] = True
-    mod.mirror_object = geshan_root
-
-    # 门轴 ========================
-    # 门轴长度，比隔扇延长2个门楹长度（粗略）
-    menzhou_height = final_height+con.MENYIN_HEIGHT*pd*2
-    # 门轴位置分左开，右开
-    if dir=='L':
-        x = -geshan_width/2 + con.MENZHOU_R*pd
-    else:
-        x = geshan_width/2 - con.MENZHOU_R*pd
-    # 门轴外皮与隔扇相切（实际应该是做成一体的）
-    y = con.BORDER_DEPTH * pd/2 + con.MENZHOU_R * pd
-    # 门轴与隔扇垂直对齐
-    if not use_KanWall:
-        # 隔扇与门轴居中对齐
-        z = 0
-    else:
-        # 槛窗与门轴对齐
-        z = (geshan_height/2+windowsill_height)/2
-        
-    menzhouObj = utils.addCylinder(
-                radius = con.MENZHOU_R*pd,
-                depth = menzhou_height,
-                location=(x,y,z),
-                name="门轴",
+        if part['name'] == '门轴':
+            # 构造门轴
+            menzhouObj = utils.addCylinder(
+                radius = part['size'].x,
+                depth = part['size'].z,
+                location=part['loc'],
+                name=part['name'],
                 root_obj=geshan_root,  # 挂接在柱网节点下
             )
 
-    # 隐藏隔扇根节点
-    utils.hideObj(geshan_root)
-
-    # 隔扇着色
-    for ob in geshan_root.children:
-        # 全部设置为朱漆材质
-        # 其中槛窗的窗台为石质，并不会被覆盖
-        mat.setShader(ob,mat.shaderType.REDPAINT)
-    
-    # 隔扇导角大小
-    geshan_bevel = con.BEVEL_LOW
-
-    # 绦环板着色
-    for taohuan in taohuanList:
-        # 绦环板做大一圈，插入边框，同时隐藏bevel
-        taohuan.dimensions = (
-            taohuan.dimensions.x + geshan_bevel*2,
-            taohuan.dimensions.y,
-            taohuan.dimensions.z + geshan_bevel*2,
-        )
-        utils.applyTransfrom(taohuan,use_scale=True)
-        mat.setShader(taohuan,
-            mat.shaderType.DOORRING,override=True) 
-
-    # 设置裙板材质
-    if qunbanObj != None:
-        # 绦环板做大一圈，插入边框，同时隐藏bevel
-        qunbanObj.dimensions = (
-            qunbanObj.dimensions.x + geshan_bevel*2,
-            qunbanObj.dimensions.y,
-            qunbanObj.dimensions.z + geshan_bevel*2,
-        )
-        utils.applyTransfrom(qunbanObj,use_scale=True)
-        mat.setShader(qunbanObj,
-            mat.shaderType.DOOR,override=True)
-
+        # 设置材质
+        if part['name'] == '绦环':
+            mat.setShader(partObj,
+                mat.shaderType.DOORRING,
+                override=True)             
+        elif part['name'] == '裙板':
+            mat.setShader(partObj,
+                mat.shaderType.DOOR,
+                override=True)
+        else:
+            mat.setShader(partObj,
+                mat.shaderType.REDPAINT)
+            
     # 隔扇子对象合并
     geshanObj = utils.joinObjects(
         geshan_root.children,
-        newName='隔扇门')
+        newName='隔扇门',
+        baseObj=menzhouObj)
     geshanObj.parent = wallproxy
     geshanObj.location += geshan_root.location
     bpy.data.objects.remove(geshan_root)
@@ -733,7 +581,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         geshanObj.modifiers.new('Bevel','BEVEL')
     modBevel.width = geshan_bevel
 
-    return windowsill_height
+    return windowsillZ
     
 # 构建槛墙
 # 槛墙定位要与隔扇裙板上抹对齐，所以要根据隔扇的尺寸进行定位

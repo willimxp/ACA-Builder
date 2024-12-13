@@ -169,7 +169,7 @@ class uvType:
 def __copyMaterial(fromObj:bpy.types.Object,
                  toObj:bpy.types.Object,
                  single=False):
-    if type(fromObj) == bpy.types.Object:
+    if toObj.type in ('MESH','CURVE'):
         toObj.data.materials.clear()
         for mat in fromObj.data.materials:
             if single:
@@ -477,6 +477,10 @@ def setShader(object:bpy.types.Object,
               shader:str,
               override=False,
               single=False):
+    # 非mesh对象直接跳过
+    if object.type not in ('MESH','CURVE'):
+        return
+    
     # 如果已经有材质，且未声明override，则不做材质
     if object.active_material != None \
         and not override:

@@ -131,8 +131,7 @@ def buildSingleWall(
     )
 
     # 赋材质
-    mat.setShader(bottomObj,
-            mat.shaderType.ROCK)
+    mat.setMat(bottomObj,aData.mat_rock)
 
     # 2、创建上身对象
     bodyObj = utils.addCube(
@@ -145,8 +144,7 @@ def buildSingleWall(
     )
 
     # 赋材质
-    mat.setShader(bodyObj,
-            mat.shaderType.REDDUST)
+    mat.setMat(bodyObj,aData.mat_dust_red)
 
     # 3、瓦顶
     # 瓦件缩放

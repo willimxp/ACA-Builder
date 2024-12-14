@@ -63,7 +63,8 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     # 转为mesh
     bpy.ops.object.convert(target='MESH')
     zibianObj = bpy.context.object
-    mat.setShader(zibianObj,mat.shaderType.REDPAINT)
+    # 仔边刷红漆
+    mat.setMat(zibianObj,aData.mat_red)
     linxingList.append(bpy.context.object)
 
     # # 填充棂心
@@ -99,18 +100,19 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
 
     # 添加简化版的棂心（平面贴图方式）
     bpy.ops.mesh.primitive_plane_add(location=location,size=1)
-    plane = bpy.context.object
-    plane.name = '棂心'
-    plane.data.name = '棂心'
-    plane.parent = parent
-    plane.scale = (scale.x- con.ZIBIAN_WIDTH*2*pd,
+    linxinObj = bpy.context.object
+    linxinObj.name = '棂心'
+    linxinObj.data.name = '棂心'
+    linxinObj.parent = parent
+    linxinObj.scale = (scale.x- con.ZIBIAN_WIDTH*2*pd,
                    scale.z- con.ZIBIAN_WIDTH*2*pd,
                    1)
-    plane.rotation_euler.x = math.radians(90)
+    linxinObj.rotation_euler.x = math.radians(90)
     # apply
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-    mat.setShader(plane,mat.shaderType.GESHANXIN)
-    linxingList.append(plane)
+    # 棂心贴图（三交六椀）
+    mat.setMat(linxinObj,aData.mat_geshanxin)
+    linxingList.append(linxinObj)
 
     # 合并扇心
     linxingObj = utils.joinObjects(linxingList)
@@ -526,6 +528,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     # 载入数据
     buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     wData:acaData = wallproxy.ACA_data
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
@@ -582,17 +585,14 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
             )
 
         # 设置材质
+        partMat = None
         if part['name'] == '绦环':
-            mat.setShader(partObj,
-                mat.shaderType.DOORRING,
-                override=True)             
+            partMat = aData.mat_paint_doorring
         elif part['name'] == '裙板':
-            mat.setShader(partObj,
-                mat.shaderType.DOOR,
-                override=True)
+            partMat = aData.mat_paint_door
         else:
-            mat.setShader(partObj,
-                mat.shaderType.REDPAINT)
+            partMat = aData.mat_red
+        mat.setMat(partObj,partMat)
             
     # 隔扇子对象合并
     geshanObj = utils.joinObjects(
@@ -683,7 +683,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
         parent = wallproxy,
         )
     # 设置材质：石材
-    mat.setShader(kanqiangObj,mat.shaderType.ROCK)
+    mat.setMat(kanqiangObj,aData.mat_rock)
     kanQiangObjs.append(kanqiangObj)
 
     # 窗楹
@@ -734,7 +734,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
 
     # 设置材质
     for obj in kanQiangObjs:
-        mat.setShader(obj,mat.shaderType.REDPAINT)
+        mat.setMat(obj,aData.mat_red)
 
     # 合并构件
     kangqiangObj = utils.joinObjects(kanQiangObjs,'槛墙')
@@ -829,14 +829,15 @@ def buildDoor(wallproxy:bpy.types.Object):
                            bData.wall_span),
                 parent=wallproxy,
             )
-        mat.setShader(wallHeadBoard,mat.shaderType.WOOD)
+        mat.setMat(wallHeadBoard,aData.mat_wood)
         kankuangList.append(wallHeadBoard)
 
     # 5、批量设置所有子对象材质
     for ob in wallproxy.children:
         # 全部设置为朱漆材质
         # 其中槛窗的窗台为石质，并不会被覆盖
-        mat.setShader(ob,mat.shaderType.REDPAINT)
+        mat.setMat(ob,aData.mat_red)
+        
 
     # 合并槛框
     kankuangObj = utils.joinObjects(kankuangList,'槛框')

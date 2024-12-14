@@ -182,13 +182,15 @@ def __copyMaterial(fromObj:bpy.types.Object,
 def __setTileMat(
         object:bpy.types.Object,
         mat:bpy.types.Object,
-        single=False
+        single=False,
+        uvType=uvType.CUBE,
 ):
     # 绑定材质
     __copyMaterial(mat,object,single)
 
-    # 平铺类材质可以简单的使用Cube Projection
-    UvUnwrap(object,uvType.CUBE)
+    # 平铺类材质默认使用Cube Projection
+    # 也可以传入希望的uv方式
+    UvUnwrap(object,uvType)
     
     return
     
@@ -501,13 +503,37 @@ def setMat(object:bpy.types.Object,
         aData.mat_dust_red,     # 抹灰.红
     ):
         __setTileMat(object,mat)
-
+    
+    # 拉伸填充的材质
+    if mat in (
+        aData.mat_paint_doorring,   # 隔扇绦环
+        aData.mat_paint_door,       # 隔扇壶门
+        aData.mat_paint_grasscouple,# 由额垫板公母草
+    ):
+        __setTileMat(object,mat,uvType=uvType.SCALE)
+    
     # 梁枋彩画
     if mat in (
         aData.mat_paint_beam_big,
         aData.mat_paint_beam_small,
     ):
         __setFangMat(object,mat)
+
+    # 三交六椀隔心
+    if mat == aData.mat_geshanxin:
+        __setTileMat(object,mat,uvType=uvType.WIN)
+
+    # 柱头贴图
+    if mat == aData.mat_paint_pillerhead:
+        # 设置材质属性
+        __setPillerHead(object)
+
+    
+    
+    
+    
+
+    
 
     return
 

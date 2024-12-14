@@ -530,8 +530,7 @@ def __buildFang(buildingObj:bpy.types.Object):
             dianbanObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             dianbanObj.ACA_data['fangID'] = fangID
             # 设置材质
-            mat.setShader(dianbanObj,
-                mat.shaderType.YOUEDIANBAN)
+            mat.setMat(dianbanObj,aData.mat_paint_grasscouple)
             
             # 小额枋
             smallFangScale = Vector( (fang_length, 
@@ -815,9 +814,8 @@ def buildPillers(buildingObj:bpy.types.Object):
             parentObj=pillerProxy_basemesh,
             singleUser=True
         )
-    # 材质
-    mat.setShader(pillerbase_basemesh,
-        mat.shaderType.PILLERBASE,override=True)
+    # 柱础材质：石头
+    mat.setMat(pillerbase_basemesh,aData.mat_stone)
     
     # 生成柱顶石
     pillerBase_h = 0.3
@@ -833,9 +831,8 @@ def buildPillers(buildingObj:bpy.types.Object):
                 pillerBase_h),
         parent=pillerProxy_basemesh,
     )
-    # 材质
-    mat.setShader(pillerBottom_basemesh,
-        mat.shaderType.PILLERBASE)
+    # 柱顶石材质：石头
+    mat.setMat(pillerBottom_basemesh,aData.mat_stone)
     utils.lockObj(pillerBottom_basemesh)
     # 添加bevel
     modBevel:bpy.types.BevelModifier = \
@@ -883,8 +880,8 @@ def buildPillers(buildingObj:bpy.types.Object):
                     buildingObj,pillerID)
                 utils.applyTransfrom(pillerObj,use_scale=True)
             # 柱头贴图
-            mat.setShader(pillerObj,
-                mat.shaderType.PILLER,override=True,single=True)
+            mat.setMat(pillerObj,aData.mat_paint_pillerhead,
+                       override=True)
 
             # 复制柱础
             pillerbaseObj = utils.copySimplyObject(

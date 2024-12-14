@@ -199,8 +199,7 @@ def __drawWall(wallProxy:bpy.types.Object):
                            bData.wall_span),
                 parent=wallProxy,
             )
-        mat.setShader(wallHeadBoard,
-            mat.shaderType.WOOD)
+        mat.setMat(wallHeadBoard,aData.mat_wood)
 
     # 1、创建下碱对象
     # 下碱一般取墙体高度的1/3
@@ -217,8 +216,7 @@ def __drawWall(wallProxy:bpy.types.Object):
         parent=wallProxy,
     )
     # 赋材质
-    mat.setShader(bottomObj,
-            mat.shaderType.ROCK)
+    mat.setMat(bottomObj,aData.mat_rock)
 
     # 2、创建上身对象
     extrudeHeight = wallHeight/10
@@ -250,8 +248,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     bm.free() 
 
     # 赋材质
-    mat.setShader(bodyObj,
-            mat.shaderType.REDDUST)
+    mat.setMat(bodyObj,aData.mat_dust_red)
     
     # 合并
     wallObj = utils.joinObjects([bottomObj,bodyObj],'墙体')

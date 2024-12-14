@@ -178,6 +178,21 @@ def __copyMaterial(fromObj:bpy.types.Object,
 
     return
 
+# 平铺材质
+def __setTileMat(
+        object:bpy.types.Object,
+        mat:bpy.types.Object,
+        single=False
+):
+    # 绑定材质
+    __copyMaterial(mat,object,single)
+
+    # 平铺类材质可以简单的使用Cube Projection
+    UvUnwrap(object,uvType.CUBE)
+    
+    return
+    
+
 # 根据制定的材质，展UV，并调用材质属性设置
 def __setTexture(
         object:bpy.types.Object,
@@ -201,17 +216,6 @@ def __setTexture(
         # 平铺类材质可以简单的使用Cube Projection
         UvUnwrap(object,uvType.CUBE)
         pass  
-    
-    # 梁枋彩画
-    if mat in (
-            aData.mat_paint_beam, 
-            aData.mat_paint_beam_alt,
-        ):
-        UvUnwrap(object,uvType.SCALE)
-        # 设置槫头坐龙
-        if (object.name.startswith('挑檐桁')
-            or object.name.startswith('正心桁')):
-            __setTuanHead(object)
 
     # 垫板.公母草
     if mat == aData.mat_paint_grasscouple:
@@ -457,8 +461,6 @@ class shaderType:
     PILLERBASE = '柱础'
     PINGBANFANG = '平板枋'
     GONGDIANBAN = '栱垫板'
-    LIANGFANG = '梁枋'
-    LIANGFANG_ALT = '梁枋异色'
     YOUEDIANBAN = '由额垫板'
     RAFTER = '檐椽'
     FLYRAFTER = '飞椽'
@@ -469,6 +471,32 @@ class shaderType:
     DOORRING = '绦环板'
     SHANHUA = '山花板'
     GESHANXIN = '三交六椀隔心'
+
+# 设置材质，并进行相应几何处理
+def setMat(object:bpy.types.Object,
+              mat:bpy.types.Object,
+              override=False,
+              single=False):
+    # 非mesh对象直接跳过
+    if object.type not in ('MESH','CURVE'):
+        return
+    
+    # 如果已经有材质，且未声明override，则不做材质
+    if object.active_material != None \
+        and not override:
+        # 不做任何改变
+        return
+    
+    aData:tmpData = bpy.context.scene.ACA_temp
+
+    # 梁枋彩画
+    if mat in (
+        aData.mat_paint_beam_big,
+        aData.mat_paint_beam_small,
+    ):
+        __setFangMat(object,mat)
+
+    return
 
 # 映射对象与材质的关系
 # 便于后续统一的在“酱油配色”，“清官式彩画”等配色方案间切换
@@ -524,12 +552,6 @@ def setShader(object:bpy.types.Object,
     # 柱头彩画，坐龙
     if shader == shaderType.PILLER:
         mat = aData.mat_paint_pillerhead
-    
-    # 梁枋彩画，双龙和玺
-    if shader == shaderType.LIANGFANG:
-        mat = aData.mat_paint_beam
-    if shader == shaderType.LIANGFANG_ALT:
-        mat = aData.mat_paint_beam_alt
 
     # 平板枋，行龙彩画
     if shader == shaderType.PINGBANFANG:
@@ -647,7 +669,6 @@ def __setPillerHead(pillerObj:bpy.types.Object):
     
     return
 
-
 # 设置垫拱板的重复次数，根据斗栱攒数计算
 def __setDgCount(object:bpy.types.Object):
     # 载入数据
@@ -662,3 +683,79 @@ def __setDgCount(object:bpy.types.Object):
         mat=object.active_material,
         inputName='count',
         value=count)
+    
+# 判断枋子使用的AB配色
+def __setFangMat(fangObj:bpy.types.Object,
+                 mat:bpy.types.Object):
+    # 根据开间位置的尺寸，选择不同的matID
+    # 0-XL、1-L、2-M、3-S、4-异色XL、5-异色L、6-异色M、7-异色S
+    matID = 0
+    
+    # 分解获取柱子编号
+    fangID = fangObj.ACA_data['fangID']
+    setting = fangID.split('#')
+    pFrom = setting[0].split('/')
+    pFrom_x = int(pFrom[0])
+    pFrom_y = int(pFrom[1])
+    pTo = setting[1].split('/')
+    pTo_x = int(pTo[0])
+    pTo_y = int(pTo[1])
+
+    # 计算为第几间？
+    buildingObj = utils.getAcaParent(fangObj,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    # 前后檐
+    if pFrom_y == pTo_y:
+        roomIndex = (pFrom_x+pTo_x-1)/2
+        n = int((bData.x_rooms+1)/2)%2
+    # 两山
+    elif pFrom_x == pTo_x:
+        roomIndex = (pFrom_y+pTo_y-1)/2
+        n = int((bData.y_rooms+1)/2)%2
+
+    ''' 根据n来判断是否是明间,比如，
+    5间时,奇数间(1,3,5)应该用正色
+    7间时,偶数间(2,4,6)应该用正色'''
+    if roomIndex%2 == n:
+        matID = 4
+    else:
+        matID = 0
+
+    # 判断额枋长度
+    fangLength = fangObj.dimensions.x
+    if fangLength < 1.8:
+        # 超短款
+        matID += 3
+    elif fangLength < 2.8:
+        # 短款
+        matID += 2
+    elif fangLength < 5:
+        # 中款
+        matID += 1
+
+    # 绑定材质
+    __copyMaterial(fromObj=mat,toObj=fangObj)
+    # 选择slot
+    __setMatByID(fangObj,matID)
+    # 展UV
+    UvUnwrap(fangObj,uvType.SCALE)
+
+    # 设置槫头坐龙
+    if (fangObj.name.startswith('挑檐桁')
+        or fangObj.name.startswith('正心桁')):
+        __setTuanHead(fangObj)
+    
+    return
+
+# 设置对象使用的材质编号
+def __setMatByID(
+        object:bpy.types.Object,
+        id=0,
+):
+    bm = bmesh.new()
+    bm.from_mesh(object.data)
+    for face in bm.faces:
+        face.material_index = id
+    bm.to_mesh(object.data)
+    bm.free()
+    return

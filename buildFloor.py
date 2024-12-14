@@ -137,55 +137,6 @@ def getFloorDate(buildingObj:bpy.types.Object):
 
     return net_x,net_y
 
-# 判断枋子使用的AB配色
-# 传入fangType：1-大额枋，2-小额枋
-def __setFangMat(fangObj:bpy.types.Object,
-                 fangID,
-                 fangType=1):
-    # 载入数据
-    aData:tmpData = bpy.context.scene.ACA_temp
-    wData:acaData = fangObj.ACA_data
-    # 获取开间、进深数据
-    buildingObj = utils.getAcaParent(fangObj,con.ACA_TYPE_BUILDING)
-    bData:acaData = buildingObj.ACA_data
-
-    # 分解获取柱子编号
-    setting = fangID.split('#')
-    pFrom = setting[0].split('/')
-    pFrom_x = int(pFrom[0])
-    pFrom_y = int(pFrom[1])
-    pTo = setting[1].split('/')
-    pTo_x = int(pTo[0])
-    pTo_y = int(pTo[1])
-
-    # 计算为第几间？
-    # 前后檐
-    if pFrom_y == pTo_y:
-        roomIndex = (pFrom_x+pTo_x-1)/2
-        n = int((bData.x_rooms+1)/2)%2
-    # 两山
-    elif pFrom_x == pTo_x:
-        roomIndex = (pFrom_y+pTo_y-1)/2
-        n = int((bData.y_rooms+1)/2)%2
-
-    ''' 根据n来判断是否是明间,比如，
-    5间时,奇数间(1,3,5)应该用正色
-    7间时,偶数间(2,4,6)应该用正色'''
-
-    if (
-            # 大额枋的次间用异色
-            (roomIndex%2 == n and fangType == 1)
-            # 小额枋的明间用异色
-            or (roomIndex%2 != n and fangType == 2)
-    ) :
-        mat.setShader(fangObj,
-            mat.shaderType.LIANGFANG_ALT)
-    else:
-        mat.setShader(fangObj,
-            mat.shaderType.LIANGFANG)
-
-    return
-
 # 在四角的大额枋外，添加霸王拳
 def __buildFangBWQ(fangObj):    
     # 基础数据
@@ -550,7 +501,7 @@ def __buildFang(buildingObj:bpy.types.Object):
         bigFangObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
         bigFangObj.ACA_data['fangID'] = fangID
         # 设置梁枋彩画
-        __setFangMat(bigFangObj,fangID,1)
+        mat.setMat(bigFangObj,aData.mat_paint_beam_big)
         # 添加边缘导角
         modBevel:bpy.types.BevelModifier=bigFangObj.modifiers.new(
             "Bevel",'BEVEL'
@@ -600,7 +551,7 @@ def __buildFang(buildingObj:bpy.types.Object):
             smallFangObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             smallFangObj.ACA_data['fangID'] = fangID
             # 设置梁枋彩画
-            __setFangMat(smallFangObj,fangID,2)
+            mat.setMat(smallFangObj,aData.mat_paint_beam_small)
             # 添加边缘导角
             modBevel:bpy.types.BevelModifier=smallFangObj.modifiers.new(
                 "Bevel",'BEVEL'

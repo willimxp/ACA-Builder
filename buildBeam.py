@@ -618,8 +618,6 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
                 hengExtend += bData.dg_extend
 
     # 前后檐排布
-    # 计算明间的序号，从0开始
-    centerRoomIndex = int((len(net_x))/2)-1
     for n in range(len(net_x)-1):
         length = net_x[n+1] - net_x[n]
         loc = Vector(((net_x[n+1] + net_x[n])/2,
@@ -630,25 +628,22 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
             length += hengExtend
             sign = utils.getSign(net_x[n])
             loc += Vector((hengExtend/2*sign,0,0))
-        # 判断异色
-        if n%2 == centerRoomIndex%2:
-            isAlt = True
-        else:
-            isAlt = False
+        # 类似做大小额枋，也在挑檐桁上做ID
+        fangID = "%s/%s#%s/%s" % (n,0,n+1,0)
         purlinList.append(
             {'len':length,
              'loc':loc,
              'rot':(0,0,math.radians(180)),
-             'alt':isAlt,
-             'mirror':(False,True,False)})
+             'mirror':(False,True,False),
+             'id': fangID,
+             })
+             
     # 两山排布(仅庑殿、歇山、盝顶，不适用硬山、悬山、卷棚)
     if bData.roof_style in (
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
             con.ROOF_XIESHAN_JUANPENG,
             con.ROOF_LUDING):
-        # 计算明间的序号，从0开始
-        centerRoomIndex = int((len(net_y))/2)-1
         for n in range(len(net_y)-1):
             length = net_y[n+1] - net_y[n]
             loc = Vector((purlin_cross.x,
@@ -659,17 +654,14 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
                 length += hengExtend
                 sign = utils.getSign(net_y[n])
                 loc += Vector((0,hengExtend/2*sign,0))
-            # 判断异色
-            if n%2 == centerRoomIndex%2:
-                isAlt = True
-            else:
-                isAlt = False
+            # 类似做大小额枋，也在挑檐桁上做ID
+            fangID = "%s/%s#%s/%s" % (0,n,0,n+1)
             purlinList.append(
                 {'len':length,
                 'loc':loc,
-                'alt':isAlt,
                 'rot':(0,0,math.radians(90)),
-                'mirror':(True,False,False)
+                'mirror':(True,False,False),
+                'id': fangID,
                 })
     
     # 生成所有的挑檐桁
@@ -682,11 +674,10 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
             name = purlin_name,
             root_obj = rafterRootObj,
         )
+        # 传入id，便于后续做彩画时判断异色
+        hengObj.ACA_data['fangID'] = purlin['id']
         # 设置梁枋彩画
-        if purlin['alt']:
-            mat.setShader(hengObj,mat.shaderType.LIANGFANG_ALT)
-        else:
-            mat.setShader(hengObj,mat.shaderType.LIANGFANG)
+        mat.setMat(hengObj,aData.mat_paint_beam_small)
         # 设置对称
         utils.addModifierMirror(
             object=hengObj,

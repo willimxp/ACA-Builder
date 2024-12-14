@@ -738,12 +738,12 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "抹灰.红",
             type = bpy.types.Object,
         )# type: ignore 
-    mat_paint_beam :bpy.props.PointerProperty(
-            name = "梁枋彩画",
+    mat_paint_beam_big :bpy.props.PointerProperty(
+            name = "梁枋彩画.大额枋",
             type = bpy.types.Object,
         )# type: ignore 
-    mat_paint_beam_alt :bpy.props.PointerProperty(
-            name = "梁枋彩画.异色",
+    mat_paint_beam_small :bpy.props.PointerProperty(
+            name = "梁枋彩画.小额枋",
             type = bpy.types.Object,
         )# type: ignore 
     mat_paint_pillerhead :bpy.props.PointerProperty(

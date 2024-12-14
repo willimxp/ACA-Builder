@@ -489,6 +489,19 @@ def setMat(object:bpy.types.Object,
     
     aData:tmpData = bpy.context.scene.ACA_temp
 
+    # 简单平铺的材质
+    if mat in (
+        aData.mat_wood,         # 木材材质
+        aData.mat_rock,         # 石材材质
+        aData.mat_stone,        # 石头材质
+        aData.mat_red,          # 漆.土朱材质
+        aData.mat_brick_1,      # 方砖缦地
+        aData.mat_brick_2,      # 条砖竖铺
+        aData.mat_brick_3,      # 条砖横铺
+        aData.mat_dust_red,     # 抹灰.红
+    ):
+        __setTileMat(object,mat)
+
     # 梁枋彩画
     if mat in (
         aData.mat_paint_beam_big,
@@ -666,6 +679,9 @@ def __setPillerHead(pillerObj:bpy.types.Object):
     pillerHeadObj.rotation_euler.z = math.radians(45)
     # 表面平滑
     utils.shaderSmooth(pillerHeadObj)
+
+    # 柱身、柱头合并
+    utils.joinObjects([pillerObj,pillerHeadObj])
     
     return
 

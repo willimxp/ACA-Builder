@@ -48,9 +48,10 @@ def __drawPlatform(platformObj:bpy.types.Object):
     (pWidth,pDeepth,pHeight) = platformObj.dimensions
     # 计算柱网数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
+    # 收集待合并的台明构件
+    taimingList = []    
 
-    # 台基第一层
-    # 方砖缦地
+    # 1、方砖缦地
     brickObj = utils.addCube(
         name='方砖缦地',
         location=(
@@ -65,15 +66,14 @@ def __drawPlatform(platformObj:bpy.types.Object):
         parent=platformObj
     )
     # 方砖缦地
-    mat.setShader(brickObj,
-        mat.shaderType.BRICK1)
+    mat.setMat(brickObj,aData.mat_brick_1)
+    taimingList.append(brickObj)
 
-    # 阶条石
-    jtsObjs = []    # 收集待合并的阶条石
+    # 2、做阶条石
     # 阶条石宽度，从台基边缘做到柱顶石边缘
     stoneWidth = bData.platform_extend-bData.piller_diameter
 
-    # 前后檐面阶条石，两头置好头石，尽间为去除好头石长度，明间(次间)对齐
+    # 2.1、前后檐面阶条石，两头置好头石，尽间为去除好头石长度，明间(次间)对齐
     # 插入第一点，到台明两山尽头（从角柱延伸台基下出长度）
     firstRoomWidth = net_x[1]-net_x[0]    # 尽间宽度
     net_x.insert(0,net_x[0]-bData.platform_extend)
@@ -107,9 +107,9 @@ def __drawPlatform(platformObj:bpy.types.Object):
             mirrorObj=platformObj,
             use_axis=(False,True,False)
         )
-        jtsObjs.append(brickObj)
+        taimingList.append(brickObj)
 
-    # 两山阶条石
+    # 2.2、两山阶条石
     # 延长尽间阶条石，与好头石相接
     net_y[0] -= bData.piller_diameter
     net_y[-1] += bData.piller_diameter
@@ -135,9 +135,9 @@ def __drawPlatform(platformObj:bpy.types.Object):
             mirrorObj=platformObj,
             use_axis=(True,False,False)
         )
-        jtsObjs.append(brickObj)
+        taimingList.append(brickObj)
 
-    # 埋头角柱
+    # 2.3、埋头角柱
     # 角柱高度：台基总高度 - 阶条石 - 土衬
     cornerPillerH = (pHeight 
             - con.STEP_HEIGHT 
@@ -164,9 +164,9 @@ def __drawPlatform(platformObj:bpy.types.Object):
         mirrorObj=platformObj,
         use_axis=(True,True,False)
     )
-    jtsObjs.append(brickObj)
+    taimingList.append(brickObj)
 
-    # 第二层，陡板
+    # 2.4、陡板
     h = pHeight - con.STEP_HEIGHT - con.GROUND_BORDER
     brickObj = utils.addCube(
         name='陡板-前后檐',
@@ -182,16 +182,15 @@ def __drawPlatform(platformObj:bpy.types.Object):
         parent=platformObj
     )
     # 方砖横铺
-    mat.setShader(brickObj,
-        mat.shaderType.BRICK3)
-
+    mat.setMat(brickObj,aData.mat_brick_3)
     utils.addModifierMirror(
         object=brickObj,
         mirrorObj=platformObj,
         use_axis=(False,True,False)
     )
-    jtsObjs.append(brickObj)
+    taimingList.append(brickObj)
     
+    # 2.4.2、陡板两山
     brickObj = utils.addCube(
         name='陡板-两山',
         location=(
@@ -207,28 +206,26 @@ def __drawPlatform(platformObj:bpy.types.Object):
         parent=platformObj
     )
     # 方砖横铺
-    mat.setShader(brickObj,
-        mat.shaderType.BRICK3)
+    mat.setMat(brickObj,aData.mat_brick_3)
     utils.addModifierMirror(
         object=brickObj,
         mirrorObj=platformObj,
         use_axis=(True,False,False)
     )
-    jtsObjs.append(brickObj)
+    taimingList.append(brickObj)
 
     # 统一设置
-    for obj in jtsObjs:
+    for obj in taimingList:
         # 添加bevel
         modBevel:bpy.types.BevelModifier = \
             obj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_EXHIGH
         # 设置材质
-        mat.setShader(obj,
-            mat.shaderType.ROCK)
+        mat.setMat(obj,aData.mat_rock)
     
     # 合并台基
     platformSet = utils.joinObjects(
-        jtsObjs,newName='台明'
+        taimingList,newName='台明'
         )
 
     return platformSet
@@ -289,7 +286,7 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
             use_axis=(True,False,False)
         )
     # 方砖横铺
-    mat.setShader(brickObj,mat.shaderType.BRICK3)
+    mat.setMat(brickObj,aData.mat_brick_3)
     taduoObjs.append(brickObj)
 
     # 4、垂带
@@ -391,7 +388,7 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
         modBevel.offset_type = 'WIDTH'
         modBevel.use_clamp_overlap = False
         # 设置材质
-        mat.setShader(obj,mat.shaderType.ROCK)
+        mat.setMat(obj,aData.mat_rock)
 
     # 合并对象
     taduoSet = utils.joinObjects(
@@ -508,6 +505,7 @@ def __addPlatformExpand(pfProxy:bpy.types.Object,
         pfProxy,con.ACA_TYPE_BUILDING
     )
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     pd = bData.piller_diameter
 
@@ -521,7 +519,7 @@ def __addPlatformExpand(pfProxy:bpy.types.Object,
         # 高度
         height = con.GROUND_BORDER
         # 材质
-        pfeMat = mat.shaderType.ROCK
+        pfeMat = aData.mat_rock
     if type == 'sanshui':
         name = '散水' 
         # 拓展尺寸
@@ -531,7 +529,7 @@ def __addPlatformExpand(pfProxy:bpy.types.Object,
         # 高度
         height = con.SANSHUI_HEIGHT 
         # 材质
-        pfeMat = mat.shaderType.BRICK2
+        pfeMat = aData.mat_brick_2
 
     # 2、台明拓展，做为后续合并踏跺扩展的本体
     baseExpandObj = utils.addCube(
@@ -592,7 +590,7 @@ def __addPlatformExpand(pfProxy:bpy.types.Object,
         bpy.data.objects.remove(stepExpandObj)
     
     # 5、设置材质
-    mat.setShader(baseExpandObj,pfeMat)
+    mat.setMat(baseExpandObj,pfeMat)
 
     # 6、添加导角
     modBevel:bpy.types.BevelModifier = \
@@ -745,10 +743,14 @@ def buildPlatform(buildingObj:bpy.types.Object):
     buildingColl = buildingObj.users_collection[0]
     utils.setCollection('台基',parentColl=buildingColl)
 
+    # 收集待合并的部件
+    platformList = []
+
     # 生成台基框线
     pfProxy = __addPlatformProxy(buildingObj)
     # 构造台基细节
     platformObj = __drawPlatform(pfProxy)
+    platformList.append(platformObj)
 
     # 构造台基踏跺
     # 解析模版输入的墙体设置，格式如下
@@ -766,13 +768,23 @@ def buildPlatform(buildingObj:bpy.types.Object):
         # 241115 判断相邻踏跺，只做单边
         hasNextStep = __checkNextStep(stepList,stepID)
         stepObj = __drawStep(stepProxy,hasNextStep)
+        platformList.append(stepObj)
         
     # 生成土衬
     tuchenObj = __addPlatformExpand(pfProxy,stepProxyList,
                              type='tuchen')
+    platformList.append(tuchenObj)
+
     # 生成散水
     sanshuiObj = __addPlatformExpand(pfProxy,stepProxyList,
                               type='sanshui')
+    platformList.append(sanshuiObj)
+
+    # 合并构件
+    platformObj = utils.joinObjects(platformList)
+    # 删除踏跺proxy
+    for stepProxy in stepProxyList:
+        bpy.data.objects.remove(stepProxy)
 
      # 更新建筑框大小
     buildingObj.empty_display_size = math.sqrt(

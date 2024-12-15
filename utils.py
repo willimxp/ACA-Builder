@@ -1338,13 +1338,6 @@ def joinObjects(objList:List[bpy.types.Object],
     joinedObj.name = newName
     joinedObj.data.name = newName
 
-    # 重置Origin
-    if baseObj == None:
-        applyTransfrom(joinedObj,
-                       use_location=True,
-                       use_rotation=True,
-                       use_scale=True)
-
     # 清理垃圾数据
     delOrphan()
 

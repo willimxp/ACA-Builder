@@ -62,6 +62,12 @@ def UvUnwrap(object:bpy.types.Object,
              rotate=None,
              fitIndex=None,
              ):   
+    # 隐藏对象不重新展UV
+    if (object.hide_viewport 
+        or object.hide_get()
+        ):
+        return
+
     # 聚焦对象
     utils.focusObj(object)
 

@@ -1877,7 +1877,7 @@ def __buildSideTile(buildingObj: bpy.types.Object,
 # 营造戗脊（庑殿垂脊）曲线
 def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
                     purlin_pos,name='戗脊线'):
-# 载入数据
+    # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     tileRootObj = utils.getAcaChild(

@@ -687,16 +687,19 @@ def __drawTileBool(
             # 上金桁、脊桁不做裁剪点，直接跳过
             if n > 1: 
                 continue   
-        # 庑殿特殊处理
-        if bData.roof_style == con.ROOF_WUDIAN: 
-            if direction == 'Y':
-                # 退让两山的瓦面
-                # 以免在夸张的推山系数（如，0.5）时，
-                # 过于陡峭的坡面，裁剪出现的穿模
-                cutPoint += Vector((
-                    con.JIAOLIANG_Y/2*dk,
-                    -con.JIAOLIANG_Y/2*dk,
-                    0))
+        # # 庑殿特殊处理
+        # if bData.roof_style == con.ROOF_WUDIAN: 
+        #     if direction == 'Y':
+        #         # 退让两山的瓦面
+        #         # 以免在夸张的推山系数（如，0.5）时，
+        #         # 过于陡峭的坡面，裁剪出现的穿模
+        #         cutPoint += Vector((
+        #             con.JIAOLIANG_Y/2*dk,
+        #             -con.JIAOLIANG_Y/2*dk,
+        #             0))
+        #         # 避免在Y=0的中点过度退让
+        #         if cutPoint.y < 0:
+        #             cutPoint.y = 0
         
         # 纵坐标与起始点对齐
         cutPoint.z = p0.z         

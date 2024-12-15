@@ -250,7 +250,19 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
         # 1、桁交点
         pCross = purlin_pos[n]
         # 2、计算桁的长度
-        purlin_length_x = pCross.x * 2 + hengExtend
+        # 桁交圈出梢
+        isJuanpeng = bData.roof_style in (
+                            con.ROOF_XUANSHAN_JUANPENG,
+                            con.ROOF_YINGSHAN_JUANPENG,
+                            con.ROOF_XIESHAN_JUANPENG,
+                         )
+        # 尖山（非卷棚）的脊槫不做交圈出梢
+        if n == len(purlin_pos)-1 and not isJuanpeng:
+            purlin_length_x = pCross.x * 2 
+        # 其他情况都做交圈出梢
+        else:
+            purlin_length_x = pCross.x * 2 + hengExtend
+            
 
         # 241118 正心桁也做彩画
         if n==0:

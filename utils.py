@@ -1316,6 +1316,9 @@ def joinObjects(objList:List[bpy.types.Object],
     # todo：也可以用临时context来解决
     bpy.ops.object.select_all(action='DESELECT')
     for ob in objList:
+        if ob == None: 
+            objList.remove(ob)
+            continue
         ob.select_set(True)
         # 将对象的mesh数据single化，避免影响场景中其他对象
         if ob.data.users > 1:

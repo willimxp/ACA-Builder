@@ -769,18 +769,34 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
     if bData.rafter_count < 6:
         return
     else:
-        # 范围：从下金桁做起
-        beamRange = range(1,len(purlin_pos)-2)
+        # 庑殿的趴梁
+        if bData.roof_style == con.ROOF_WUDIAN:
+            # 如果做廊间举架，下金桁则无需做趴梁
+            if bData.use_hallway:
+                rangeStart = 1
+            else:
+                rangeStart = 0
+            beamRange = range(rangeStart,len(purlin_pos)-2)
+        # 歇山的趴梁只从正心桁向上做一根
+        if bData.roof_style in (con.ROOF_XIESHAN,
+                     con.ROOF_XIESHAN_JUANPENG):
+            beamRange = range(1)
 
     # 查找山面梁架的位置
     # 根据廊间等面阔的不同，第一幅梁架可能在第二根柱上，也可能在第三根柱子上
+    beamX = 0
     for n in range(len(net_x)):
-        beamX = abs(net_x[n])
+        px = abs(net_x[n])
         # 判断梁架是否与脊槫相交
-        if (beamX < abs(purlin_pos[-1].x) ):
+        if (px < abs(purlin_pos[-1].x) ):
+            beamX = px
             break
-
+    
+    gabelBeamList = []
     for n in beamRange:
+        # 如果找不到梁架，极端情况可能没有，取上层槫子坐标
+        if beamX == 0:
+            beamX = purlin_pos[n+1].x
         # 1、趴梁定位
         loc = Vector((
                 # 取桁檩到梁架的中点
@@ -806,6 +822,7 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
             dimension=dim,
             parent=beamRootObj,
         )
+        gabelBeamList.append(gabelBeam)
         utils.addModifierMirror(
             object=gabelBeam,
             mirrorObj=beamRootObj,
@@ -826,6 +843,7 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
             dimension=tuodunDim,
             parent=beamRootObj,
         )
+        gabelBeamList.append(tuodunObj)
         # 添加bevel
         modBevel:bpy.types.BevelModifier = \
             tuodunObj.modifiers.new('Bevel','BEVEL')
@@ -836,7 +854,12 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
             mirrorObj=beamRootObj,
             use_axis=(True,True,False)
         )
-    return
+    
+    # 合并趴梁
+    gabelBeamJoined = utils.joinObjects(
+        gabelBeamList,'趴梁')
+    
+    return gabelBeamJoined
 
 # 绘制太平梁造型
 def __drawSaftBeam(name='太平梁',
@@ -885,23 +908,27 @@ def __addSafeBeam(buildingObj,purlin_pos):
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
     beamRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_BEAM_ROOT)
+    saftBeamList = []
     
     # 查找山面梁架的位置
     # 根据廊间等面阔的不同，第一幅梁架可能在第二根柱上，也可能在第三根柱子上
+    beamX = 0
     for n in range(len(net_x)):
-        beamX = abs(net_x[n])
+        px = abs(net_x[n])
         # 判断梁架是否与脊槫相交
-        if (beamX < abs(purlin_pos[-1].x) ):
+        if (px < abs(purlin_pos[-1].x) ):
+            beamX = px
             break
     
-    # 判断是否有足够空间架设太平梁，否则就取消绘制
-    # 计算脊桁端头到梁架外皮的宽度
-    span = (purlin_pos[-1].x        # 桁交点
-            + con.HENG_EXTEND*dk/2  # 桁出梢
-            - (beamX + con.BEAM_DEPTH*pd/2))    # 梁架外皮
-    if span < con.GABELBEAM_DEPTH*dk:
-        # 取消以下绘制
-        return
+    if beamX != 0:
+        # 判断是否有足够空间架设太平梁，否则就取消绘制
+        # 计算脊桁端头到梁架外皮的宽度
+        span = (purlin_pos[-1].x        # 桁交点
+                + con.HENG_EXTEND*dk/2  # 桁出梢
+                - (beamX + con.BEAM_DEPTH*pd/2))    # 梁架外皮
+        if span < con.GABELBEAM_DEPTH*dk:
+            # 取消以下绘制
+            return
     
     # 1、太平梁定位
     # 取脊桁端头 + 桁檩出梢 - 半梁厚
@@ -929,6 +956,7 @@ def __addSafeBeam(buildingObj,purlin_pos):
         dimension=dim,
         parent=beamRootObj,
     )
+    saftBeamList.append(safeBeam)
     utils.addModifierMirror(
             object=safeBeam,
             mirrorObj=beamRootObj,
@@ -953,6 +981,7 @@ def __addSafeBeam(buildingObj,purlin_pos):
         dimension=tuodunDim,
         parent=beamRootObj,
     )
+    saftBeamList.append(tuodunObj)
     # 添加bevel
     modBevel:bpy.types.BevelModifier = \
         tuodunObj.modifiers.new('Bevel','BEVEL')
@@ -964,7 +993,10 @@ def __addSafeBeam(buildingObj,purlin_pos):
         use_axis=(True,False,False)
     )
 
-    return 
+    # 合并太平梁
+    safeBeamJoined = utils.joinObjects(saftBeamList,'太平梁')
+
+    return safeBeamJoined
 
 # 营造梁架
 # 自动根据是否做廊间举架，判断采用通檐大梁，或是抱头梁
@@ -1198,9 +1230,18 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     # 如果为庑殿顶
     if roofStyle == con.ROOF_WUDIAN:
         # 添加山面趴梁
-        __addGabelBeam(buildingObj,purlin_pos)
+        gabelBeamObj = __addGabelBeam(buildingObj,purlin_pos)
+        beamObjects.append(gabelBeamObj)
         # 添加太平梁
-        __addSafeBeam(buildingObj,purlin_pos)
+        safeBeamObj = __addSafeBeam(buildingObj,purlin_pos)
+        beamObjects.append(safeBeamObj)
+
+    # 如果为歇山顶
+    if roofStyle in (con.ROOF_XIESHAN,
+                     con.ROOF_XIESHAN_JUANPENG):
+        # 添加山面趴梁
+        gabelBeamObj = __addGabelBeam(buildingObj,purlin_pos)
+        beamObjects.append(gabelBeamObj)
 
     # 攒尖顶时，没有做梁架
     if beamObjects != []:

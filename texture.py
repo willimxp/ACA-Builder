@@ -477,6 +477,7 @@ def setMat(object:bpy.types.Object,
               override=False,
               single=False):
     # 非mesh对象直接跳过
+    if object == None: return
     if object.type not in ('MESH','CURVE'):
         return
     

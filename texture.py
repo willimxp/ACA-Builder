@@ -287,6 +287,7 @@ def __setTuanHead(tuan:bpy.types.Object):
     aData:tmpData = bpy.context.scene.ACA_temp
     matHeadDragon = aData.mat_paint_tuanend.active_material
     tuan.data.materials.append(matHeadDragon)
+    matIndex = len(tuan.material_slots)-1
 
     # 找到左右两个端头，并绑定新材质
     bm = bmesh.new()
@@ -300,13 +301,9 @@ def __setTuanHead(tuan:bpy.types.Object):
     # 选择法线类似的所有面，0.1是在blender里尝试的经验值
     for face in bm.faces:
         right:Vector = face.normal - rightNormal
-        if right.length < 1:
-            face.material_index = 1
-            face.select = True
         left:Vector = face.normal - leftNormal
-        if left.length < 1:
-            face.material_index = 1
-            face.select = True
+        if right.length < 1 or left.length < 1:
+            face.material_index = matIndex
     bm.to_mesh(tuan.data)
     bm.free()
 
@@ -527,13 +524,6 @@ def setMat(object:bpy.types.Object,
     if mat == aData.mat_paint_pillerhead:
         # 设置材质属性
         __setPillerHead(object)
-
-    
-    
-    
-    
-
-    
 
     return
 

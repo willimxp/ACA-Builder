@@ -28,7 +28,7 @@ def __addBeamRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
         bpy.ops.object.empty_add(
             type='PLAIN_AXES',location=(0,0,0))
         beamRootObj = bpy.context.object
-        beamRootObj.name = "梁架"
+        beamRootObj.name = "梁架层"
         beamRootObj.ACA_data['aca_obj'] = True
         beamRootObj.ACA_data['aca_type'] = con.ACA_TYPE_BEAM_ROOT
         # 绑定在屋顶根节点下
@@ -210,17 +210,23 @@ def getPurlinPos(buildingObj:bpy.types.Object):
 def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     # 一、载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     # 屋顶样式，1-庑殿，2-歇山，3-悬山，4-硬山
     roofStyle = bData.roof_style
     beamRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_BEAM_ROOT)
     
-    # 檐桁为了便于彩画贴图，按开间逐一生成
+    # 收集桁架对象
+    purlinFrameList = []
+    
+    # 挑檐桁为了便于彩画贴图，按开间逐一生成
     if bData.use_dg:
-        __buildYanHeng(beamRootObj,
-                       purlin_cross=purlin_pos[0],
-                       purlin_name='挑檐桁')
+        tiaoyanhengObj = __buildYanHeng(
+                        beamRootObj,
+                        purlin_cross=purlin_pos[0],
+                        purlin_name='挑檐桁')
+        purlinFrameList.append(tiaoyanhengObj)
         # 删除挑檐桁数据
         del purlin_pos[0]
     # 其他的桁为了效率，还是贯通整做成一根
@@ -248,9 +254,11 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
 
         # 241118 正心桁也做彩画
         if n==0:
-            __buildYanHeng(beamRootObj,
-                           purlin_cross=purlin_pos[0],
-                           purlin_name='正心桁')
+            zhengxinhengObj = __buildYanHeng(
+                            beamRootObj,
+                            purlin_cross=purlin_pos[0],
+                            purlin_name='正心桁')
+            purlinFrameList.append(zhengxinhengObj)
         else:
             # 歇山檐面的下金桁延长，与上层对齐
             if roofStyle in (
@@ -281,6 +289,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                         name = "桁-前后",
                         root_obj = beamRootObj
                     )
+            purlinFrameList.append(hengFB)
             # 前后镜像
             if (
                     # 一般情况最后一根为脊桁，不做镜像
@@ -316,6 +325,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                         root_obj = beamRootObj,
                         edge_num =6
                     )
+                purlinFrameList.append(fujimuObj)
             modBevel:bpy.types.BevelModifier = \
                 hengFB.modifiers.new('Bevel','BEVEL')
             modBevel.width = con.BEVEL_LOW
@@ -342,7 +352,11 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 dimension=dim,
                 parent=beamRootObj,
             )
-            mat.setShader(dianbanObj,mat.shaderType.REDPAINT)
+            purlinFrameList.append(dianbanObj)
+            # 无斗拱，第一层垫板刷红漆
+            if n==0 and not bData.use_dg:
+                mat.setMat(dianbanObj,aData.mat_red)
+            # 添加镜像
             if (
                     # 除了脊桁
                     n!=len(purlin_pos)-1  
@@ -363,6 +377,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     mirrorObj=beamRootObj,
                     use_axis=(False,True,False)
                 )
+            # 导角
             utils.applyTransfrom(dianbanObj,use_scale=True)
             modBevel:bpy.types.BevelModifier = \
                 dianbanObj.modifiers.new('Bevel','BEVEL')
@@ -398,7 +413,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 dimension=dim,
                 parent=beamRootObj,
             )
-            mat.setShader(hengfangObj,mat.shaderType.REDPAINT)
+            purlinFrameList.append(hengfangObj)
             if (
                     # 除了脊桁
                     n!=len(purlin_pos)-1  
@@ -474,6 +489,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                             name = "桁-两山",
                             root_obj = beamRootObj
                         )
+                purlinFrameList.append(hengLR)
                 utils.addModifierMirror(
                         object=hengLR,
                         mirrorObj=beamRootObj,
@@ -530,12 +546,17 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     rotation=Vector((0, 0, math.radians(90))),
                     parent=beamRootObj,
                 )
-                mat.setShader(dianbanObj,mat.shaderType.REDPAINT)
+                purlinFrameList.append(dianbanObj)
+                # 无斗拱，第一层垫板刷红漆
+                if n==0 and not bData.use_dg:
+                    mat.setMat(dianbanObj,aData.mat_red)
+                # 镜像
                 utils.addModifierMirror(
                     object=dianbanObj,
                     mirrorObj=beamRootObj,
                     use_axis=(True,False,False)
                 )
+                # 导角
                 utils.applyTransfrom(dianbanObj,use_scale=True)
                 modBevel:bpy.types.BevelModifier = \
                     dianbanObj.modifiers.new('Bevel','BEVEL')
@@ -563,7 +584,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     dimension=dim,
                     parent=beamRootObj,
                 )
-                mat.setShader(hengfangObj,mat.shaderType.REDPAINT)
+                purlinFrameList.append(hengfangObj)
                 utils.addModifierMirror(
                     object=hengfangObj,
                     mirrorObj=beamRootObj,
@@ -573,7 +594,12 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 modBevel:bpy.types.BevelModifier = \
                     hengfangObj.modifiers.new('Bevel','BEVEL')
                 modBevel.width = con.BEVEL_LOW
-                 
+
+    # 设置材质
+    for obj in purlinFrameList:
+        mat.setMat(obj,aData.mat_wood)
+    # 合并桁对象
+    purlinFrameObj = utils.joinObjects(purlinFrameList,'桁架')      
     return
 
 # 檐桁为了便于彩画贴图，按开间逐一生成
@@ -665,6 +691,7 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
                 })
     
     # 生成所有的挑檐桁
+    purlinObjs = []
     for purlin in purlinList:
         hengObj = utils.addCylinderHorizontal(
             radius= con.HENG_COMMON_D / 2 * dk,
@@ -674,6 +701,7 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
             name = purlin_name,
             root_obj = rafterRootObj,
         )
+        purlinObjs.append(hengObj)
         # 传入id，便于后续做彩画时判断异色
         hengObj.ACA_data['fangID'] = purlin['id']
         # 设置梁枋彩画
@@ -684,8 +712,11 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
             mirrorObj=rafterRootObj,
             use_axis=purlin['mirror']
         )
+
+    # 合并檐桁
+    yanhengObj = utils.joinObjects(purlinObjs)
     
-    return
+    return yanhengObj
 
 # 绘制趴梁造型
 def __drawGabelBeam(name='趴梁',
@@ -940,6 +971,7 @@ def __addSafeBeam(buildingObj,purlin_pos):
 def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
@@ -1037,16 +1069,9 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 )
                 beamCopyObj.parent= beamRootObj
                 beamObjects.append(beamCopyObj)
-                # 无斗拱的首层梁刷红漆
-                if (not bData.use_dg
-                    and n==0):
-                    mat.setShader(beamCopyObj,mat.shaderType.REDPAINT)
-                # 贴彩画
-                # beamCopyObj.rotation_euler.z = math.radians(90)
-                # utils.applyTransfrom(beamCopyObj,use_rotation=True)
-                # mat.setShader(beamCopyObj,mat.shaderType.LIANGFANG)
-                # beamCopyObj.rotation_euler.z = math.radians(-90)
-                # utils.applyTransfrom(beamCopyObj,use_rotation=True)
+                # 无斗拱的首层梁刷红漆，否则做木色
+                if not bData.use_dg and n==0:
+                    mat.setMat(beamCopyObj,aData.mat_red)
                 
                 # 抱头梁做法
                 BaotouliangLength = 0
@@ -1177,18 +1202,20 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
         # 添加太平梁
         __addSafeBeam(buildingObj,purlin_pos)
 
-    # # 合并梁架各个部件
-    # # 攒尖顶时，不做梁架
-    # if beamObjects != []:
-    #     beamSetObj = utils.joinObjects(
-    #         beamObjects,newName='梁架')
-    #     modBevel:bpy.types.BevelModifier = \
-    #         beamSetObj.modifiers.new('Bevel','BEVEL')
-    #     modBevel.width = con.BEVEL_HIGH
-    #     # 241119 统一刷红漆
-    #     mat.setShader(beamSetObj,mat.shaderType.REDPAINT)
+    # 攒尖顶时，没有做梁架
+    if beamObjects != []:
+        # 设置材质
+        for beamobj in beamObjects:
+            mat.setMat(beamobj,aData.mat_wood)
+        # 合并
+        beamSetObj = utils.joinObjects(
+            beamObjects,newName='梁架')
+        # 导角
+        modBevel:bpy.types.BevelModifier = \
+            beamSetObj.modifiers.new('Bevel','BEVEL')
+        modBevel.width = con.BEVEL_HIGH
                            
-    return
+    return beamSetObj
 
 # 营造梁架层，包括桁檩、梁架
 def buildBeamFrame(buildingObj:bpy.types.Object):
@@ -1218,11 +1245,6 @@ def buildBeamFrame(buildingObj:bpy.types.Object):
     # 摆放梁架
     utils.outputMsg("Building Beam...")
     __buildBeam(buildingObj,rafter_pos)
-
-    # 设置材质，原木色
-    for obj in beamRootObj.children:
-        mat.setShader(obj,
-            mat.shaderType.WOOD)
         
     return
 

@@ -657,9 +657,21 @@ def __setPillerHead(pillerObj:bpy.types.Object):
     # 柱子本体仍使用默认的红漆
     __copyMaterial(aData.mat_red,pillerObj,True)
     
-    # 另创建柱头对象
+    # 将柱子分为上中下分别裁切、拼接    
+    # 柱头对象
     pillerHeadObj = utils.copySimplyObject(
         pillerObj,singleUser=True)
+    # 柱身对象
+    pillerBodyObj = utils.copySimplyObject(
+        pillerObj,singleUser=True)
+    # 柱顶对象
+    pillerTopObj = utils.copySimplyObject(
+        pillerObj,singleUser=True)
+    pillerParts=[]
+    pillerParts.append(pillerBodyObj)
+    pillerParts.append(pillerHeadObj)
+    pillerParts.append(pillerTopObj)
+
     # 刷新，否则出现柱头计算错误
     utils.updateScene()
     # 计算柱头高度（大额枋/小额枋下皮）
@@ -670,6 +682,15 @@ def __setPillerHead(pillerObj:bpy.types.Object):
     # 裁切柱头
     pCut = pillerObj.matrix_world @ Vector((
         0,0,pillerObj.dimensions.z-fangHeight))
+    utils.addBisect(
+        object=pillerBodyObj,
+        pStart=Vector((0,1,0)),
+        pEnd=Vector((0,-1,0)),
+        pCut=pCut,
+        clear_inner=True,
+        direction='Y',
+        use_fill=False,
+    )
     utils.addBisect(
         object=pillerHeadObj,
         pStart=Vector((0,1,0)),
@@ -683,6 +704,15 @@ def __setPillerHead(pillerObj:bpy.types.Object):
     pCut = pillerObj.matrix_world @ Vector((
         0,0,pillerObj.dimensions.z-0.02))
     utils.addBisect(
+        object=pillerTopObj,
+        pStart=Vector((0,1,0)),
+        pEnd=Vector((0,-1,0)),
+        pCut=pCut,
+        clear_outer=True,
+        direction='Y',
+        use_fill=False,
+    )
+    utils.addBisect(
         object=pillerHeadObj,
         pStart=Vector((0,1,0)),
         pEnd=Vector((0,-1,0)),
@@ -691,20 +721,23 @@ def __setPillerHead(pillerObj:bpy.types.Object):
         direction='Y',
         use_fill=False,
     )
+
+    
     # 绑定柱头材质
     __copyMaterial(aData.mat_paint_pillerhead,
                    pillerHeadObj,True)
     # 重新展UV
     UvUnwrap(pillerHeadObj,uvType.CYLINDER)   
-    # 略微放大，包住柱头
-    pillerHeadObj.scale =(1.001,1.001,1)
     # 旋转45度，让金龙面对前方
     pillerHeadObj.rotation_euler.z = math.radians(45)
-    # 表面平滑
-    utils.shaderSmooth(pillerHeadObj)
 
+    # 表面平滑
+    for part in pillerParts:
+        utils.shaderSmooth(part)
     # 柱身、柱头合并
-    utils.joinObjects([pillerObj,pillerHeadObj])
+    utils.joinObjects(pillerParts,cleanup=True)
+    # 移除原有的柱身
+    bpy.data.objects.remove(pillerObj)
     
     return
 

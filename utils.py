@@ -1306,7 +1306,8 @@ def setGN_Input(mod:bpy.types.NodesModifier,
 # https://docs.blender.org/api/current/bpy.ops.html#overriding-context
 def joinObjects(objList:List[bpy.types.Object],
                 newName=None,
-                baseObj=None,):
+                baseObj=None,
+                cleanup=False):
     if newName==None:
         newName = objList[0].name
     # timeStart = time.time()
@@ -1337,6 +1338,13 @@ def joinObjects(objList:List[bpy.types.Object],
     
     joinedObj.name = newName
     joinedObj.data.name = newName
+
+    # 合并顶点
+    if cleanup:
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action = 'SELECT')
+        bpy.ops.mesh.remove_doubles()
+        bpy.ops.object.mode_set( mode = 'OBJECT' )
 
     # 清理垃圾数据
     delOrphan()

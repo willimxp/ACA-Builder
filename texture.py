@@ -32,8 +32,11 @@ def __Scale2D( v, s, p ):
     return ( p[0] + s[0]*(v[0] - p[0]), p[1] + s[1]*(v[1] - p[1]) )     
 
 # UV的缩放
-def __ScaleUV( uvMap, scale, pivot ):
+def __ScaleUV( uvMap, scale, pivot, fixcenter=False):
     for uvIndex in range( len(uvMap.data) ):
+        if fixcenter:
+            if uvMap.data[uvIndex].uv[0] > - 0.0001 and uvMap.data[uvIndex].uv[0]< 1.0001:
+                continue
         uvMap.data[uvIndex].uv = __Scale2D( uvMap.data[uvIndex].uv, scale, pivot )
 
 # 二维点阵的旋转
@@ -512,7 +515,6 @@ def setMat(object:bpy.types.Object,
     if mat in (
         aData.mat_paint_doorring,   # 隔扇绦环
         aData.mat_paint_door,       # 隔扇壶门
-        aData.mat_paint_grasscouple,# 由额垫板公母草
     ):
         __setTileMat(object,mat,uvType=uvType.SCALE)
     
@@ -522,6 +524,10 @@ def setMat(object:bpy.types.Object,
         aData.mat_paint_beam_small,
     ):
         __setFangMat(object,mat)
+
+    # 由额垫板，公母草贴图
+    if mat == aData.mat_paint_grasscouple:
+        __setYOUE(object,mat)
 
     # 三交六椀隔心
     if mat == aData.mat_geshanxin:
@@ -830,4 +836,45 @@ def __setMatByID(
         face.material_index = id
     bm.to_mesh(object.data)
     bm.free()
+    return
+
+# 设置由额垫板公母草贴图
+# 由额垫板贴图采用三段式，中间为横向平铺的公母草，两端为箍头
+    # 按照箍头、公母草贴图的XY比例，计算公母草的横向平铺次数
+def __setYOUE(youeObj:bpy.types.Object,
+              mat:bpy.types.Object):
+    # 使用垫板模版替换原对象
+    youeNewObj = utils.copyObject(mat,singleUser=True)
+    utils.replaceObject(youeObj,youeNewObj)
+    
+    # 2、选择中段
+    utils.focusObj(youeNewObj)
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='DESELECT')
+    # 选择中段中段控制采用了对象的vertex group
+    youeNewObj.vertex_groups.active = \
+        youeNewObj.vertex_groups['body']
+    bpy.ops.object.vertex_group_select()
+
+    # 3、中段尺寸缩放
+    a = 0.463       # 箍头长度
+    l1 = mat.dimensions.x
+    l2 = youeNewObj.dimensions.x
+    x1 = l1 - a*2
+    x2 = l2 - a*2
+    scale = (x2/l2)/(x1/l1)
+    bpy.ops.transform.resize(
+        value=(scale,1,1))
+    
+    # 5、完成
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
+    # 4、中段UV缩放
+    b = 1.737
+    c = 3
+    scale = round(x2/b) /c
+    uvMap = youeNewObj.data.uv_layers['UVMap']
+    __ScaleUV(uvMap,scale=(scale,1),pivot=(0.5,0.5),fixcenter=True)
+
+    
     return

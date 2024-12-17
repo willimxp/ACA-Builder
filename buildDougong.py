@@ -278,6 +278,7 @@ def __buildDGFangbyRoom(
     buildingObj = utils.getAcaParent(
         dgrootObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
+    aData : tmpData = bpy.context.scene.ACA_temp
     # 获取开间、进深数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
 
@@ -329,17 +330,17 @@ def __buildDGFangbyRoom(
         utils.applyTransfrom(fangCopy,use_scale=True)
         # 根据拉伸，更新UV平铺
         mat.UvUnwrap(fangCopy,mat.uvType.CUBE)
-        # 栱垫板材质
-        if fangSourceObj.name == '栱垫板':
-            # 设置栱垫板彩画
-            mat.setShader(fangCopy,
-                mat.shaderType.GONGDIANBAN,override=True,single=True)
         # 设置对称
         utils.addModifierMirror(
             object=fangCopy,
             mirrorObj=dgrootObj,
             use_axis=fang['mirror']
         )
+        # 栱垫板材质
+        if fangSourceObj.name.startswith('栱垫板'):
+            mat.setMat(fangCopy,
+                       aData.mat_paint_dgfillboard,
+                       override=True)
             
     return
 

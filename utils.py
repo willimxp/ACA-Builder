@@ -187,6 +187,8 @@ def copySimplyObject(
         rotation=None,
         scale=None,
         singleUser=False,):
+    if sourceObj == None:
+        outputMsg("copySimplyObject Failed: sourceObj is None.")
     # 复制基本信息
     newObj:bpy.types.Object = sourceObj.copy()
     if singleUser :
@@ -1486,7 +1488,7 @@ def replaceObject(
     # 传递旧对象的位置、旋转、尺寸、名称、父子关系、修改器
     toObj.location = fromObj.location
     toObj.rotation_euler = fromObj.rotation_euler
-    toObj.dimensions = fromObj.dimensions
+    toObj.dimensions = getMeshDims(fromObj) # 排除modifier的尺寸
     applyTransfrom(toObj,use_scale=True)
     toObj.name = fromObj.name
     toObj.parent = fromObj.parent

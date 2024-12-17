@@ -242,11 +242,11 @@ def __setTexture(
         # 对前后面做fit方式，保证能够铺满这个材质
         UvUnwrap(object,uvType.FIT,fitIndex=[1,3])
 
-    # 栱垫板
-    if mat == aData.mat_paint_dgfillboard:
-        UvUnwrap(object,uvType.SCALE)
-        # 设置材质属性
-        __setDgCount(object)
+    # # 栱垫板
+    # if mat == aData.mat_paint_dgfillboard:
+    #     UvUnwrap(object,uvType.SCALE)
+    #     # 设置材质属性
+    #     __setDgCount(object)
 
     # 檐椽
     if mat == aData.mat_paint_rafter:
@@ -535,8 +535,11 @@ def setMat(object:bpy.types.Object,
 
     # 柱头贴图
     if mat == aData.mat_paint_pillerhead:
-        # 设置材质属性
-        __setPillerHead(object)
+        __setPillerHead(object,mat)
+
+    # 栱垫板
+    if mat == aData.mat_paint_dgfillboard:
+        __setDgBoard(object,mat)
 
     return
 
@@ -651,24 +654,21 @@ def setShader(object:bpy.types.Object,
 
 # 计算柱头贴图的高度
 # 依据大额枋、由额垫板、小额枋的高度计算
-def __setPillerHead(pillerObj:bpy.types.Object):
+def __setPillerHead(pillerObj:bpy.types.Object,
+                    mat:bpy.types.Object):
     buildingObj = utils.getAcaParent(
         pillerObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     aData:tmpData = bpy.context.scene.ACA_temp
 
-    # 为了使用静态的PBR贴图的同时，动态的控制柱头贴图高度
-    # 将柱子本体与柱头做为两个对象
-    # 柱子本体仍使用默认的红漆
-    __copyMaterial(aData.mat_red,pillerObj,True)
-    
+    # 为了使用静态的PBR贴图的同时，动态的控制柱头贴图高度    
     # 将柱子分为上中下分别裁切、拼接    
-    # 柱头对象
-    pillerHeadObj = utils.copySimplyObject(
-        pillerObj,singleUser=True)
     # 柱身对象
     pillerBodyObj = utils.copySimplyObject(
+        pillerObj,singleUser=True)
+    # 柱头对象
+    pillerHeadObj = utils.copySimplyObject(
         pillerObj,singleUser=True)
     # 柱顶对象
     pillerTopObj = utils.copySimplyObject(
@@ -677,9 +677,10 @@ def __setPillerHead(pillerObj:bpy.types.Object):
     pillerParts.append(pillerBodyObj)
     pillerParts.append(pillerHeadObj)
     pillerParts.append(pillerTopObj)
-
+    
     # 刷新，否则出现柱头计算错误
     utils.updateScene()
+
     # 计算柱头高度（大额枋/小额枋下皮）
     fangHeight = con.EFANG_LARGE_H*dk
     if bData.use_smallfang:
@@ -706,6 +707,7 @@ def __setPillerHead(pillerObj:bpy.types.Object):
         direction='Y',
         use_fill=False,
     )
+
     # 裁切柱顶（剪掉顶面，只保留圆筒形状，做贴图）
     pCut = pillerObj.matrix_world @ Vector((
         0,0,pillerObj.dimensions.z-0.02))
@@ -728,10 +730,8 @@ def __setPillerHead(pillerObj:bpy.types.Object):
         use_fill=False,
     )
 
-    
     # 绑定柱头材质
-    __copyMaterial(aData.mat_paint_pillerhead,
-                   pillerHeadObj,True)
+    __copyMaterial(mat,pillerHeadObj,True)
     # 重新展UV
     UvUnwrap(pillerHeadObj,uvType.CYLINDER)   
     # 旋转45度，让金龙面对前方
@@ -747,20 +747,21 @@ def __setPillerHead(pillerObj:bpy.types.Object):
     
     return
 
-# 设置垫拱板的重复次数，根据斗栱攒数计算
-def __setDgCount(object:bpy.types.Object):
-    # 载入数据
-    buildingObj = utils.getAcaParent(
-        object,con.ACA_TYPE_BUILDING)
-    bData:acaData = buildingObj.ACA_data
+# 已废弃，栱垫板改为PBR模式，改用__setDgBoard方法
+# # 设置垫拱板的重复次数，根据斗栱攒数计算
+# def __setDgCount(object:bpy.types.Object):
+#     # 载入数据
+#     buildingObj = utils.getAcaParent(
+#         object,con.ACA_TYPE_BUILDING)
+#     bData:acaData = buildingObj.ACA_data
 
-    # 设置材质中的斗栱攒数
-    fang_length = object.dimensions.x
-    count = round(fang_length / bData.dg_gap)
-    __setMatValue(
-        mat=object.active_material,
-        inputName='count',
-        value=count)
+#     # 设置材质中的斗栱攒数
+#     fang_length = object.dimensions.x
+#     count = round(fang_length / bData.dg_gap)
+#     __setMatValue(
+#         mat=object.active_material,
+#         inputName='count',
+#         value=count)
     
 # 判断枋子使用的AB配色
 def __setFangMat(fangObj:bpy.types.Object,
@@ -881,3 +882,40 @@ def __setYOUE(youeObj:bpy.types.Object,
     __ScaleUV(uvMap,scale=(scale,1),pivot=(0.5,0.5),fixcenter=True)
     
     return
+
+# 栱垫板贴图
+def __setDgBoard(dgBoardObj:bpy.types.Object,
+                 mat:bpy.types.Object):
+    # 载入数据
+    buildingObj = utils.getAcaParent(
+        dgBoardObj,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    
+    # 计算斗栱攒数
+    totalLength = dgBoardObj.dimensions.x
+    count = round(totalLength/bData.dg_gap)
+    boardLength = totalLength/count
+
+    # 在每攒斗栱之间摆放栱垫板
+    newDgBoardList = []
+    for n in range(count):
+        newDgBoard = utils.copySimplyObject(mat)
+        newDgBoard.dimensions.x = boardLength
+        # 后续会将新的栱垫板替换旧的栱垫板
+        # 所以location应该是相对旧的栱垫板的定位
+        # 所以y=z=0
+        newDgBoard.location.x = (
+            (n+0.5)*boardLength-totalLength/2)
+        newDgBoard.location.y = 0
+        newDgBoard.location.z = 0
+        newDgBoardList.append(newDgBoard)
+
+    # 合并栱垫板
+    joinedDgBoard = utils.joinObjects(newDgBoardList)
+    utils.applyTransfrom(joinedDgBoard,use_location=True)
+    utils.replaceObject(
+        dgBoardObj,
+        joinedDgBoard,
+        delete=True)
+
+    return 

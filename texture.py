@@ -840,23 +840,24 @@ def __setMatByID(
 
 # 设置由额垫板公母草贴图
 # 由额垫板贴图采用三段式，中间为横向平铺的公母草，两端为箍头
-    # 按照箍头、公母草贴图的XY比例，计算公母草的横向平铺次数
+# 按照箍头、公母草贴图的XY比例，计算公母草的横向平铺次数
 def __setYOUE(youeObj:bpy.types.Object,
               mat:bpy.types.Object):
     # 使用垫板模版替换原对象
     youeNewObj = utils.copyObject(mat,singleUser=True)
-    utils.replaceObject(youeObj,youeNewObj)
+    utils.replaceObject(youeObj,youeNewObj,delete=True)
     
     # 2、选择中段
     utils.focusObj(youeNewObj)
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='DESELECT')
     # 选择中段中段控制采用了对象的vertex group
+    vertex_group_name = 'body'  # 在模版中预定义的vertex group名称
     youeNewObj.vertex_groups.active = \
-        youeNewObj.vertex_groups['body']
+        youeNewObj.vertex_groups[vertex_group_name]
     bpy.ops.object.vertex_group_select()
 
-    # 3、中段尺寸缩放
+    # 3、中段的mesh缩放
     a = 0.463       # 箍头长度
     l1 = mat.dimensions.x
     l2 = youeNewObj.dimensions.x
@@ -866,15 +867,17 @@ def __setYOUE(youeObj:bpy.types.Object,
     bpy.ops.transform.resize(
         value=(scale,1,1))
     
-    # 5、完成
+    # 4、退出编辑状态，以便后续获取uvmap
     bpy.ops.object.mode_set(mode='OBJECT')
     
-    # 4、中段UV缩放
-    b = 1.737
-    c = 3
-    scale = round(x2/b) /c
+    # 5、中段的UV缩放
+    b = 1.737       # 中段长度
+    c = 3           # 模版中的默认重复次数
+    scale = round(x2/b)/c
     uvMap = youeNewObj.data.uv_layers['UVMap']
+    # 这里用fixcenter的方式，避免影响箍头的uv（箍头UV预定义为满铺）
+    # vertex group无法直接传递给uvmap，因为uvmap对应到面（faceloop）
+    # 一个vertex可能对应对个uv
     __ScaleUV(uvMap,scale=(scale,1),pivot=(0.5,0.5),fixcenter=True)
-
     
     return

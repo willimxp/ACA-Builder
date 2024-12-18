@@ -89,6 +89,8 @@ def UvUnwrap(object:bpy.types.Object,
              rotate=None,
              fitIndex=None,
              cubesize=2,
+             correctAspect = True,
+             scaleToBounds = False,
              ):   
     # 隐藏对象不重新展UV
     if (object.hide_viewport 
@@ -130,11 +132,8 @@ def UvUnwrap(object:bpy.types.Object,
     elif type == uvType.CUBE:
         bpy.ops.uv.cube_project(
             cube_size=cubesize,
-        )
-    # 系统默认的cube project，在梁枋的六棱柱上效果更好
-    elif type == uvType.SCALE:
-        bpy.ops.uv.cube_project(
-            scale_to_bounds=True
+            correct_aspect=correctAspect,
+            scale_to_bounds=scaleToBounds,
         )
     # 精确适配
     # 先所有面一起做加权分uv，然后针对需要特殊处理的面，进行二次适配
@@ -233,7 +232,8 @@ def setMat(object:bpy.types.Object,
     ):
         __setTileMat(object,
                      mat,
-                     uvType=uvType.SCALE)
+                     uvType=uvType.CUBE,
+                     scaleToBounds=True)
     
     # 梁枋彩画
     if mat in (
@@ -330,13 +330,19 @@ def __setTileMat(
         single=False,
         uvType=uvType.CUBE,
         cubesize=2,
+        correctAspect = True,
+        scaleToBounds = False,
 ):
     # 绑定材质
     __copyMaterial(mat,object,single)
 
     # 平铺类材质默认使用Cube Projection
     # 也可以传入希望的uv方式
-    UvUnwrap(object,uvType,cubesize=cubesize)
+    UvUnwrap(object,
+             uvType,
+             cubesize=cubesize,
+             correctAspect=correctAspect,
+             scaleToBounds=scaleToBounds)
     
     return
 
@@ -588,7 +594,9 @@ def __setFangMat(fangObj:bpy.types.Object,
     # 选择slot
     __setMatByID(fangObj,matID)
     # 展UV
-    UvUnwrap(fangObj,uvType.SCALE)
+    UvUnwrap(fangObj,
+             uvType.CUBE,
+             scaleToBounds=True)
 
     # 设置槫头坐龙
     if (fangObj.name.startswith('挑檐桁')
@@ -731,25 +739,19 @@ def __setBoardFang(fangObj:bpy.types.Object,
 # 望板材质，底面刷红
 def __setWangban(wangban:bpy.types.Object,
                  mat:bpy.types.Object):
-    # 添加原木和红漆材质
-    aData:tmpData = bpy.context.scene.ACA_temp
-    matWood = aData.mat_wood.active_material
-    wangban.data.materials.append(matWood)
-    matRed = aData.mat_red.active_material
-    wangban.data.materials.append(matRed)
+    __copyMaterial(mat,wangban)
 
     # 找到所有的底面
     bm = bmesh.new()
     bm.from_mesh(wangban.data)
-
-    # 以底面可确定的0号面为参考
-    # bm.faces.ensure_lookup_table()
-    # baseNormal = bm.faces[0].normal
-    baseNormal = Vector((0,0,-1))
+    # -Z轴为向量比较基准
+    negZ = Vector((0,0,-1))
     # 选择法线类似的所有面，0.1是在blender里尝试的经验值
     for face in bm.faces:
-        threshold:Vector = face.normal - baseNormal
-        if threshold.length < 1:
+        # 根据向量的点积判断方向，正为同向，0为垂直，负为反向
+        dir = face.normal.dot(negZ)
+        if dir > 0:
+            # 设置为slot1的红漆
             face.material_index = 1
     bm.to_mesh(wangban.data)
     bm.free()
@@ -762,5 +764,27 @@ def __setWangban(wangban:bpy.types.Object,
 def __setCCB(ccbObj:bpy.types.Object,
              mat:bpy.types.Object):
     __copyMaterial(mat,ccbObj)
-    UvUnwrap(ccbObj,uvType.RESET)
+
+    # 找到所有的底面
+    bm = bmesh.new()
+    bm.from_mesh(ccbObj.data)
+    # -Z轴为向量比较基准
+    negZ = Vector((0,0,-1))
+    # 选择法线类似的所有面，0.1是在blender里尝试的经验值
+    for face in bm.faces:
+        # 根据向量的点积判断方向，正为同向，0为垂直，负为反向
+        dir = face.normal.dot(negZ)
+        if dir > 0.5:
+            # 设置为slot1的红漆
+            face.material_index = 1
+    bm.to_mesh(ccbObj.data)
+    bm.free()
+
+    # 展uv
+    # 适配仔角梁宽度
+    ccbWidth = utils.getMeshDims(ccbObj).y
+    UvUnwrap(ccbObj,
+             uvType.CUBE,
+             cubesize=ccbWidth,
+             correctAspect=False)
     return

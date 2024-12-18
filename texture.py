@@ -694,14 +694,21 @@ def __setDgBoard(dgBoardObj:bpy.types.Object,
     
     # 计算斗栱攒数
     totalLength = dgBoardObj.dimensions.x
-    count = round(totalLength/bData.dg_gap)
+    # 补偿float精度
+    totalLength += 0.001
+    # 向下取整，宜疏不宜密（与builddougong.__buildDougong方法统一）
+    count = math.floor(totalLength/bData.dg_gap)
     boardLength = totalLength/count
 
     # 在每攒斗栱之间摆放栱垫板
     newDgBoardList = []
     for n in range(count):
         newDgBoard = utils.copySimplyObject(mat)
-        newDgBoard.dimensions.x = boardLength
+        # 适配原栱垫板的尺寸（可能斗口不同）
+        newDgBoard.dimensions = (
+            boardLength,
+            dgBoardObj.dimensions.y,
+            dgBoardObj.dimensions.z)
         # 后续会将新的栱垫板替换旧的栱垫板
         # 所以location应该是相对旧的栱垫板的定位
         # 所以y=z=0
@@ -709,6 +716,7 @@ def __setDgBoard(dgBoardObj:bpy.types.Object,
             (n+0.5)*boardLength-totalLength/2)
         newDgBoard.location.y = 0
         newDgBoard.location.z = 0
+        utils.applyTransfrom(newDgBoard,use_scale=True)
         newDgBoardList.append(newDgBoard)
 
     # 合并栱垫板
@@ -717,7 +725,7 @@ def __setDgBoard(dgBoardObj:bpy.types.Object,
     utils.replaceObject(
         dgBoardObj,
         joinedDgBoard,
-        delete=True)
+        delete=False)
 
     return 
 

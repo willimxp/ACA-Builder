@@ -109,10 +109,6 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
             dimension=dimensions,
             parent=dgrootObj,
         ) 
-    # 设置材质
-    mat.setShader(pingbanfangObj,
-        mat.shaderType.PINGBANFANG)
-
     # 添加倒角
     modBevel:bpy.types.BevelModifier = \
         pingbanfangObj.modifiers.new('Bevel','BEVEL')
@@ -124,6 +120,9 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
         mirrorObj=dgrootObj,
         use_axis=(False,True,False)
     )
+    # 设置材质:平板枋走龙
+    mat.setMat(pingbanfangObj,
+        aData.mat_paint_walkdragon)
 
     # 山面平板枋
     loc = (net_x[0],0,-con.PINGBANFANG_H*dk/2)
@@ -139,9 +138,6 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
             rotation=(0,0,math.radians(90)),
             parent=dgrootObj,
         ) 
-    # 设置材质
-    mat.setShader(pingbanfangObj,
-        mat.shaderType.PINGBANFANG)
     # 设置倒角
     modBevel:bpy.types.BevelModifier = \
         pingbanfangObj.modifiers.new('Bevel','BEVEL')
@@ -152,7 +148,10 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
         object=pingbanfangObj,
         mirrorObj=dgrootObj,
         use_axis=(True,False,False)
-    )      
+    )
+    # 设置材质:平板枋走龙
+    mat.setMat(pingbanfangObj,
+        aData.mat_paint_walkdragon)
     return
 
 # 生成连接枋
@@ -163,6 +162,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
     buildingObj = utils.getAcaParent(
         dgrootObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
+    aData : tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
 
     # 获取开间、进深数据
@@ -216,21 +216,21 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
     utils.updateScene()
     fangCopy.dimensions.x = bData.x_total + extendLength
     utils.applyTransfrom(fangCopy,use_scale=True)
-
-    # 设置材质
-    if fangSourceObj.name == '挑檐枋':
-        # 设置工王云
-        mat.setShader(fangCopy,
-            mat.shaderType.CLOUD,override=True)
-    else:
-        # 根据缩放，更新UV
-        mat.UvUnwrap(fangCopy,type='cube')
     # 镜像
     utils.addModifierMirror(
         object=fangCopy,
         mirrorObj=dgrootObj,
         use_axis=(False,True,False)
     )
+    # 设置材质
+    if fangSourceObj.name == '挑檐枋':
+        # 设置工王云
+        mat.setMat(fangCopy,
+                   aData.mat_paint_cloud,
+                   override=True)
+    else:
+        # 根据缩放，更新UV
+        mat.UvUnwrap(fangCopy,type='cube')
     
     # 做两山连接件(仅适用四坡顶，不适用于二坡顶)
     if bData.roof_style in (
@@ -251,20 +251,21 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         fangCopy.dimensions.x = bData.y_total + extendLength
         utils.applyTransfrom(fangCopy,use_scale=True)
         fangCopy.rotation_euler.z = math.radians(90)
-        # 设置材质
-        if fangSourceObj.name == '挑檐枋':
-            # 设置工王云
-            mat.setShader(fangCopy,
-                mat.shaderType.CLOUD,override=True)
-        else:
-            # 根据缩放，更新UV
-            mat.UvUnwrap(fangCopy,type='cube')
         # 镜像
         utils.addModifierMirror(
             object=fangCopy,
             mirrorObj=dgrootObj,
             use_axis=(True,False,False)
         )
+        # 设置材质
+        if fangSourceObj.name == '挑檐枋':
+            # 设置工王云
+            mat.setMat(fangCopy,
+                   aData.mat_paint_cloud,
+                   override=True)
+        else:
+            # 根据缩放，更新UV
+            mat.UvUnwrap(fangCopy,type='cube')
     return
 
 # 生成连接枋
@@ -337,6 +338,7 @@ def __buildDGFangbyRoom(
             use_axis=fang['mirror']
         )
         # 栱垫板材质
+        # 务必放在最后操作，该方法会删除原有的垫拱板，替换为新的mesh
         if fangSourceObj.name.startswith('栱垫板'):
             mat.setMat(fangCopy,
                        aData.mat_paint_dgfillboard,

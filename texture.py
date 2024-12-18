@@ -91,6 +91,7 @@ def UvUnwrap(object:bpy.types.Object,
              cubesize=2,
              correctAspect = True,
              scaleToBounds = False,
+             remainSelect = False
              ):   
     # 隐藏对象不重新展UV
     if (object.hide_viewport 
@@ -107,7 +108,8 @@ def UvUnwrap(object:bpy.types.Object,
     # 进入编辑模式
     bpy.ops.object.mode_set(mode = 'EDIT') 
     bpy.ops.mesh.select_mode(type = 'FACE')
-    bpy.ops.mesh.select_all(action='SELECT')
+    if not remainSelect:
+        bpy.ops.mesh.select_all(action='SELECT')
 
     # 验证对象是否可以展UV，至少应该有一个以上的面
     bm = bmesh.new()
@@ -279,7 +281,7 @@ def setMat(object:bpy.types.Object,
 
     # 山花板
     if mat == aData.mat_paint_shanhua:
-        __copyMaterial(mat,object)
+        __setShanhua(object,mat)
         pass
 
     return object
@@ -787,4 +789,32 @@ def __setCCB(ccbObj:bpy.types.Object,
              uvType.CUBE,
              cubesize=ccbWidth,
              correctAspect=False)
+    return
+
+# 设置山花板
+def __setShanhua(shanhuaObj:bpy.types.Object,
+             mat:bpy.types.Object):
+    __copyMaterial(mat,shanhuaObj)
+
+    # 找到所有的底面
+    bm = bmesh.new()
+    bm.from_mesh(shanhuaObj.data)
+    # X轴为向量比较基准
+    negZ = Vector((1,0,0))
+    # 选择法线类似的所有面，0.1是在blender里尝试的经验值
+    for face in bm.faces:
+        # 根据向量的点积判断方向，正为同向，0为垂直，负为反向
+        dir = face.normal.dot(negZ)
+        if abs(dir) > 0.5:
+            # 设置为slot1的山花贴图
+            face.material_index = 1
+            face.select = True
+    bm.to_mesh(shanhuaObj.data)
+    bm.free()
+
+    # 展uv,满铺拉伸
+    UvUnwrap(shanhuaObj,
+             uvType.CUBE,
+             scaleToBounds=True,
+             remainSelect=True)
     return

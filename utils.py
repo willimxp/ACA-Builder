@@ -1488,7 +1488,8 @@ def separateObject(objArray:bpy.types.Object):
 def replaceObject(
         fromObj:bpy.types.Object,
         toObj:bpy.types.Object,
-        delete=False):
+        delete=False,
+        replaceModifier=True):
     # 传递旧对象的位置、旋转、尺寸、名称、父子关系、修改器
     toObj.location = fromObj.location
     toObj.rotation_euler = fromObj.rotation_euler
@@ -1496,7 +1497,8 @@ def replaceObject(
     applyTransfrom(toObj,use_scale=True)
     toObj.name = fromObj.name
     toObj.parent = fromObj.parent
-    copyModifiers(fromObj,toObj)
+    if replaceModifier:
+        copyModifiers(fromObj,toObj)
 
     if delete:
         # 删除原对象

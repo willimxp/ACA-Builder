@@ -246,7 +246,7 @@ def setMat(object:bpy.types.Object,
 
     # 由额垫板，公母草贴图
     if mat == aData.mat_paint_grasscouple:
-        __setYOUE(object,mat)
+        object = __setYOUE(object,mat)
 
     # 三交六椀隔心
     if mat == aData.mat_geshanxin:
@@ -261,7 +261,7 @@ def setMat(object:bpy.types.Object,
 
     # 栱垫板
     if mat == aData.mat_paint_dgfillboard:
-        __setDgBoard(object,mat)
+        object = __setDgBoard(object,mat)
 
     # 檐椽
     if mat == aData.mat_paint_rafter:
@@ -682,7 +682,7 @@ def __setYOUE(youeObj:bpy.types.Object,
     # 一个vertex可能对应对个uv
     __ScaleUV(uvMap,scale=(scale,1),pivot=(0.5,0.5),fixcenter=True)
     
-    return
+    return youeNewObj
 
 # 栱垫板贴图
 def __setDgBoard(dgBoardObj:bpy.types.Object,
@@ -727,7 +727,7 @@ def __setDgBoard(dgBoardObj:bpy.types.Object,
         joinedDgBoard,
         delete=False)
 
-    return 
+    return joinedDgBoard
 
 # 设置挑檐枋工王云、平板枋走龙贴图
 def __setBoardFang(fangObj:bpy.types.Object,

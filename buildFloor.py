@@ -314,7 +314,7 @@ def __buildQueti(fangObj):
     # 宽度适配到开间的净面宽
     quetiObj.dimensions.x = fang_length-bData.piller_diameter
     utils.applyTransfrom(quetiObj,use_scale=True)
-    return
+    return quetiObj
 
 # 添加穿插枋
 # 适用于采用了廊间做法的
@@ -386,27 +386,29 @@ def __buildCCFang(buildingObj:bpy.types.Object):
             end_point=pEnd,
             depth=con.CCFANG_Y*dk,  # 高4斗口，厚3.2斗口
             height=con.CCFANG_H*dk,
-            name='穿插枋proxy',
+            name='穿插枋.'+ccfang,
             root_obj=floorRootObj
         )
-        utils.hideObj(ccFangProxy)
         # 引入穿插枋资源，与proxy适配
         ccFangObj = utils.copyObject(
             sourceObj=aData.ccfang_source,
-            name='穿插枋',
-            parentObj=ccFangProxy,
-            location=(0,0,0),
             singleUser=True
         )
-        ccFangObj.dimensions = ccFangProxy.dimensions
-        utils.applyTransfrom(ccFangObj,use_scale=True)
-        # 调整柱头伸出，一个柱径
-        gnMod:bpy.types.NodesModifier = \
-            ccFangObj.modifiers.get('ccFang')
-        # 强制每个对象的node group为单一用户
-        gnMod.node_group = gnMod.node_group.copy()
-        if gnMod != None:
-            utils.setGN_Input(gnMod,"pd",bData.piller_diameter/2+0.1)
+        # 将proxy定位数据传递给穿插枋
+        utils.replaceObject(
+            fromObj=ccFangProxy,
+            toObj=ccFangObj,
+            delete=True,
+            replaceModifier=False
+        )
+        utils.applyAllModifer(ccFangObj)
+        # # 调整柱头伸出，一个柱径
+        # gnMod:bpy.types.NodesModifier = \
+        #     ccFangObj.modifiers.get('ccFang')
+        # # 强制每个对象的node group为单一用户
+        # gnMod.node_group = gnMod.node_group.copy()
+        # if gnMod != None:
+        #     utils.setGN_Input(gnMod,"pd",bData.piller_diameter/2+0.1)
 
     return
 
@@ -438,6 +440,10 @@ def __buildFang(buildingObj:bpy.types.Object):
     fangID_List = fangStr.split(',')
     for fangID in fangID_List:
         if fangID == '': continue
+
+        # 合并大小额枋、由额垫板
+        fangPart = []
+
         setting = fangID.split('#')
         # 分解获取柱子编号
         pFrom = setting[0].split('/')
@@ -493,7 +499,7 @@ def __buildFang(buildingObj:bpy.types.Object):
         bigFangObj = utils.drawHexagon(
             bigFangScale,
             bigFangLoc,
-            name =  "大额枋." + fangID,
+            name =  "额枋." + fangID,
             parent = floorRootObj,
             )
         bigFangObj.rotation_euler = bigFangRot
@@ -508,6 +514,7 @@ def __buildFang(buildingObj:bpy.types.Object):
         )
         modBevel.width = con.BEVEL_EXHIGH
         modBevel.segments=3
+        fangPart.append(bigFangObj)
         # 241120 添加霸王拳
         __buildFangBWQ(bigFangObj)
 
@@ -529,8 +536,9 @@ def __buildFang(buildingObj:bpy.types.Object):
             dianbanObj.ACA_data['aca_obj'] = True
             dianbanObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             dianbanObj.ACA_data['fangID'] = fangID
-            # 设置材质
-            mat.setMat(dianbanObj,aData.mat_paint_grasscouple)
+            # 设置公母草，注意对象被替换
+            newDianbanObj = mat.setMat(dianbanObj,aData.mat_paint_grasscouple)
+            fangPart.append(newDianbanObj)
             
             # 小额枋
             smallFangScale = Vector( (fang_length, 
@@ -556,10 +564,18 @@ def __buildFang(buildingObj:bpy.types.Object):
                 "Bevel",'BEVEL'
             )
             modBevel.width = con.BEVEL_HIGH
-            modBevel.segments=2     
+            modBevel.segments=2
+            fangPart.append(smallFangObj)
     
         # 201121 添加雀替
-        __buildQueti(bigFangObj)
+        quetiObj = __buildQueti(bigFangObj)
+        if quetiObj != None:
+            fangPart.append(quetiObj)
+
+        # 合并大小额枋、由额垫板
+        if len(fangPart) > 1:
+            fangJoined = utils.joinObjects(fangPart,newName='额枋.'+ fangID)
+            bigFangObj = fangJoined
         
     # 聚焦到最后添加的大额枋，便于用户可以直接删除
     utils.focusObj(bigFangObj)
@@ -768,6 +784,7 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 柱顶石边长（为了防止与方砖缦地交叠，做了1/10000的放大）
     pillerBase_size = con.PILLERBASE_WIDTH*pd * 1.0001
     pillerBottom_basemesh = utils.addCube(
+        name='柱顶石',
         location=(0,0,
                     (- pillerBase_h/2
                     +pillerBase_popup)),
@@ -840,7 +857,6 @@ def buildPillers(buildingObj:bpy.types.Object):
             
             # 复制柱顶石
             pillerBottomObj = utils.copySimplyObject(
-                name='柱顶石',
                 sourceObj=pillerBottom_basemesh,
                 parentObj=newPillerObj
             )

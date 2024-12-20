@@ -744,8 +744,8 @@ def __drawTileBool(
     tileboolObj.data.update()
     bm.free()
 
-    # 添加细分
-    utils.subdivideObject(tileboolObj)
+    # 添加细分，可以减少裁剪瓦片时出现的异常毛刺点
+    utils.subdivideObject(tileboolObj,level=3)
 
     # 添加镜像
     mod = tileboolObj.modifiers.new(name='mirror', type='MIRROR')

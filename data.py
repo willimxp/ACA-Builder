@@ -525,7 +525,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_roofstyle,
         ) # type: ignore
     use_hallway : bpy.props.BoolProperty(
-            default=True,
+            default=False,
             name="做廊步架",
             update = update_building,
         )# type: ignore 

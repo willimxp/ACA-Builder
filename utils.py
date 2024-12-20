@@ -1502,3 +1502,12 @@ def replaceObject(
         # 隐藏原对象
         hideObj(fromObj)
     return
+
+# 为对象增加细分
+def subdivideObject(object:bpy.types.Object):
+    focusObj(object)
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.subdivide()
+    bpy.ops.object.mode_set(mode="OBJECT")
+    return object

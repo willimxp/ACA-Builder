@@ -725,6 +725,8 @@
 		<shoushan type="float">0.1</shoushan>
 		<wall_span type="float">1.7</wall_span>
 		<luding_rafterspan type="float">3.0</luding_rafterspan>
+		<is_showBeam type="bool">True</is_showBeam>
+		<use_hallway type="bool">True</use_hallway>
 	</template>
 	<template>
 		<aca_type type="str">building</aca_type>

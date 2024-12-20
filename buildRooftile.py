@@ -744,6 +744,9 @@ def __drawTileBool(
     tileboolObj.data.update()
     bm.free()
 
+    # 添加细分
+    utils.subdivideObject(tileboolObj)
+
     # 添加镜像
     mod = tileboolObj.modifiers.new(name='mirror', type='MIRROR')
     mod.use_axis[0] = True

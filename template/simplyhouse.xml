@@ -639,7 +639,7 @@
 		<dg_extend type="float">0.72</dg_extend>
 		<dg_height type="float">0.896</dg_height>
 		<dg_gap type="float">0.88</dg_gap>
-		<roof_style type="str">6</roof_style>
+		<roof_style type="str">5</roof_style>
 		<rafter_count type="int">8</rafter_count>
 		<use_flyrafter type="bool">True</use_flyrafter>
 		<use_wangban type="bool">True</use_wangban>
@@ -648,7 +648,7 @@
 		<shengqi type="int">1</shengqi>
 		<tuishan type="float">0.9</tuishan>
 		<juzhe type="str">0</juzhe>
-		<tile_width type="float">0.387</tile_width>
+		<tile_width type="float">0.39</tile_width>
 		<tile_length type="float">0.5</tile_length>
 		<paoshou_count type="int">6</paoshou_count>
 		<is_4_sides type="bool">True</is_4_sides>
@@ -662,6 +662,8 @@
 		<shoushan type="float">2.0</shoushan>
 		<luding_rafterspan type="float">1.76</luding_rafterspan>
 		<wall_span type="float">0.0</wall_span>
+		<is_showBeam type="bool">True</is_showBeam>
+		<use_hallway type="bool">False</use_hallway>
 	</template>
 	<template>
 		<aca_type type="str">building</aca_type>

@@ -1267,6 +1267,8 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
         modBevel:bpy.types.BevelModifier = \
             beamSetObj.modifiers.new('Bevel','BEVEL')
         modBevel.width = con.BEVEL_HIGH
+    else:
+        beamSetObj = None
                            
     return beamSetObj
 

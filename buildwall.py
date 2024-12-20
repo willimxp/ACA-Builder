@@ -20,7 +20,7 @@ def __addWallrootNode(buildingObj:bpy.types.Object):
     # 创建新地盘对象（empty）
     bpy.ops.object.empty_add(type='PLAIN_AXES')
     wallrootObj = bpy.context.object
-    wallrootObj.name = "装修布局"
+    wallrootObj.name = "装修层"
     wallrootObj.parent = buildingObj  # 挂接在对应建筑节点下
     wallrootObj.ACA_data['aca_obj'] = True
     wallrootObj.ACA_data['aca_type'] = con.ACA_TYPE_WALL_ROOT

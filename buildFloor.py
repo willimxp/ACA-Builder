@@ -762,62 +762,7 @@ def buildPillers(buildingObj:bpy.types.Object):
         # 清空地盘下所有的柱子、柱础
         utils.deleteHierarchy(floorRootObj)
 
-    # 2、生成一个柱子实例piller_basemesh
-    # 从当前场景中载入数据集
-    bData:acaData = buildingObj.ACA_data
-
-    # 创建临时引用，便于在本建筑内复用，但各建筑间可以隔离
-    # 在最后会被删除
-
-    # 柱子父节点框线
-    pillerProxy_basemesh = utils.addCube(
-        dimension=(pd,pd,ph),
-        parent=floorRootObj
-    )
-    utils.setOrigin(pillerProxy_basemesh,
-        Vector((0,0,-bData.piller_height/2)))
-    pillerProxy_basemesh.ACA_data['aca_obj'] = True
-    pillerProxy_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER_ROOT
-
-    # 柱身
-    piller_source = aData.piller_source
-    if piller_source != None:
-        # 已设置柱样式，根据设计参数实例化
-        piller_basemesh:bpy.types.Object = utils.copyObject(
-            sourceObj=piller_source,
-            location=(0,0,0),
-            scale=(
-                    pd/piller_source.dimensions.x,
-                    pd/piller_source.dimensions.y,
-                    ph/piller_source.dimensions.z
-                ),
-            parentObj=pillerProxy_basemesh,
-            singleUser=True
-        )
-        # 应用拉伸
-        utils.applyTransfrom(piller_basemesh,use_scale=True)
-        piller_basemesh.ACA_data['aca_obj'] = True
-        piller_basemesh.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
-    
-    # 柱础
-    pillerbase_source = aData.pillerbase_source
-    if pillerbase_source != None:
-        # 已设置柱样式，根据设计参数实例化
-        pillerbase_basemesh:bpy.types.Object = utils.copyObject(
-            sourceObj=pillerbase_source,
-            location=(0,0,0),
-            scale=(
-                    pd/piller_source.dimensions.x,
-                    pd/piller_source.dimensions.y,
-                    pd/piller_source.dimensions.x,
-                ),
-            parentObj=pillerProxy_basemesh,
-            singleUser=True
-        )
-    # 柱础材质：石头
-    mat.setMat(pillerbase_basemesh,aData.mat_stone)
-    
-    # 生成柱顶石
+    # 2、生成柱顶石模版，因为是简单立方体，就不做模版导入了
     pillerBase_h = 0.3
     pillerBase_popup = 0.02
     # 柱顶石边长（为了防止与方砖缦地交叠，做了1/10000的放大）
@@ -829,7 +774,6 @@ def buildPillers(buildingObj:bpy.types.Object):
         dimension=(pillerBase_size,
                 pillerBase_size,
                 pillerBase_h),
-        parent=pillerProxy_basemesh,
     )
     # 柱顶石材质：石头
     mat.setMat(pillerBottom_basemesh,aData.mat_stone)
@@ -844,6 +788,7 @@ def buildPillers(buildingObj:bpy.types.Object):
     net_x,net_y = getFloorDate(buildingObj)
     x_rooms = bData.x_rooms   # 面阔几间
     y_rooms = bData.y_rooms   # 进深几间
+    piller_source = aData.piller_source
     for y in range(y_rooms + 1):
         for x in range(x_rooms + 1):
             # 统一命名为“柱.x/y”，以免更换不同柱形时，减柱设置失效
@@ -854,60 +799,62 @@ def buildPillers(buildingObj:bpy.types.Object):
             if pillerID not in piller_list_str \
                     and piller_list_str != "" :
                 continue    # 结束本次循环
-            
-            # 添加柱子父节点
-            pillerProxy = utils.copySimplyObject(
-                name='柱proxy' + pillerID,
-                sourceObj=pillerProxy_basemesh,
-                location=(net_x[x],
-                          net_y[y],
-                          0),
-            )
-            pillerProxy.ACA_data['pillerID'] = pillerID
-            utils.hideObj(pillerProxy)
 
             # 复制柱子，仅instance，包含modifier
-            pillerObj = utils.copySimplyObject(
-                sourceObj = piller_basemesh,
+            pillerObj = utils.copyObject(
+                sourceObj = piller_source,
                 name = '柱子.'+pillerID,
-                parentObj = pillerProxy,
+                location=(net_x[x],net_y[y],0),
+                dimensions=(pd,pd,ph),
+                parentObj = floorRootObj,
                 singleUser=True # 内外柱不等高，为避免打架，全部
             )
+            pillerObj.ACA_data['aca_obj'] = True
+            pillerObj.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
             pillerObj.ACA_data['pillerID'] = pillerID
             # 241124 添加廊间金柱的升高处理
             if y_rooms>=3 and bData.use_hallway:
                 pillerObj.dimensions.z = getPillerHeight(
                     buildingObj,pillerID)
-                utils.applyTransfrom(pillerObj,use_scale=True)
-            # 柱头贴图
-            mat.setMat(pillerObj,aData.mat_paint_pillerhead,
+            # 应用拉伸
+            utils.applyTransfrom(pillerObj,use_scale=True)
+
+            # 柱头贴图，注意此方法会破坏原有柱对象，并返回新对象
+            newPillerObj = mat.setMat(pillerObj,aData.mat_paint_pillerhead,
                        override=True)
 
             # 复制柱础
-            pillerbaseObj = utils.copySimplyObject(
-                sourceObj= pillerbase_basemesh,
-                parentObj=pillerProxy
+            pillerbase_basemesh:bpy.types.Object = utils.copySimplyObject(
+                sourceObj=aData.pillerbase_source,
+                location=(0,0,0),
+                scale=(
+                        pd/piller_source.dimensions.x,
+                        pd/piller_source.dimensions.y,
+                        pd/piller_source.dimensions.x,
+                    ),
+                parentObj=newPillerObj
             )
-            utils.lockObj(pillerbaseObj)
-
+            utils.lockObj(pillerbase_basemesh)
+            # 柱础材质：石头
+            mat.setMat(pillerbase_basemesh,aData.mat_stone)
+            
             # 复制柱顶石
             pillerBottomObj = utils.copySimplyObject(
                 name='柱顶石',
                 sourceObj=pillerBottom_basemesh,
-                parentObj=pillerProxy
+                parentObj=newPillerObj
             )
-            utils.lockObj(pillerbaseObj)
-            
+            utils.lockObj(pillerBottomObj)
 
-    # 清理临时柱子
-    utils.deleteHierarchy(pillerProxy_basemesh,True)
+    # 移除柱顶石模版    
+    bpy.data.objects.remove(pillerBottom_basemesh)
 
     # 重新生成柱网配置
     floorChildren:List[bpy.types.Object] = floorRootObj.children
     bData.piller_net = ''
     for piller in floorChildren:
         if 'aca_type' in piller.ACA_data:
-            if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER_ROOT:
+            if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER:
                 pillerID = piller.ACA_data['pillerID']
                 bData.piller_net += pillerID + ','
 
@@ -943,11 +890,9 @@ def delPiller(buildingObj:bpy.types.Object,
             # 柱身向上查找柱proxy
             if piller.ACA_data['aca_type'] == \
                     con.ACA_TYPE_PILLER:
-                pillerProxy = utils.getAcaParent(
-                    piller,con.ACA_TYPE_PILLER_ROOT)
                 # 验证柱proxy没有重复
-                if pillerProxy.name not in delPillerNames:
-                    delPillerNames.append(pillerProxy.name)    
+                if piller.name not in delPillerNames:
+                    delPillerNames.append(piller.name)    
     
     # 批量删除所有的柱proxy
     for name in delPillerNames:
@@ -962,7 +907,7 @@ def delPiller(buildingObj:bpy.types.Object,
     bData.piller_net = ''
     for piller in floorChildren:
         if 'aca_type' in piller.ACA_data:
-            if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER_ROOT:
+            if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER:
                 pillerID = piller.ACA_data['pillerID']
                 bData.piller_net += pillerID + ','
 

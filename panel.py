@@ -838,6 +838,7 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
     # 自定义属性
     bl_category = "古建营造"         # 标签页名称
     bl_label = "院墙参数"            # 面板名称，显示为可折叠的箭头后
+    bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
 
     def draw(self, context):
         # 从当前场景中载入数据集

@@ -71,7 +71,7 @@ def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
         bpy.ops.object.empty_add(
             type='PLAIN_AXES',location=(0,0,0))
         rafterRootObj = bpy.context.object
-        rafterRootObj.name = "椽望"
+        rafterRootObj.name = "椽望层"
         rafterRootObj.ACA_data['aca_obj'] = True
         rafterRootObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER_ROOT
         # 绑定在屋顶根节点下

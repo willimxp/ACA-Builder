@@ -16,7 +16,6 @@ class ACA_Consts(object):
     ACA_TYPE_PLATFORM = 'platform'              # ACA类型：台基
     ACA_TYPE_STEP = 'step'                      # ACA类型：踏跺
     ACA_TYPE_FLOOR_ROOT = 'floor'               # ACA类型：柱网
-    ACA_TYPE_PILLER_ROOT = 'piller_root'        # ACA类型：柱子Proxy
     ACA_TYPE_PILLER = 'piller'                  # ACA类型：柱子
     ACA_TYPE_FANG = 'fang'                      # ACA类型：枋
     ACA_TYPE_WALL_ROOT = 'wall_root'            # ACA类型：装修布局，墙体的父节点

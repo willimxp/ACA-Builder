@@ -216,6 +216,7 @@ def copyObject(
         parentObj:bpy.types.Object = None, 
         location=None,
         rotation=None,
+        dimensions=None,
         scale=None,
         singleUser=False)->bpy.types.Object:
     # 强制原对象不能隐藏
@@ -240,6 +241,8 @@ def copyObject(
         newObj.rotation_euler = Euler(rotation,'XYZ')
     if scale != None:
         newObj.scale = scale
+    if dimensions != None:
+        newObj.dimensions = dimensions
     if parentObj != None:
         newObj.parent = parentObj
     bpy.context.collection.objects.link(newObj) 

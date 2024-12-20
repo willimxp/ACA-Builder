@@ -215,6 +215,9 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
     # 设置插件属性
     taimingJoined.ACA_data['aca_obj'] = True
     taimingJoined.ACA_data['aca_type'] = con.ACA_TYPE_PLATFORM
+    # origin回归baseRootObj
+    utils.applyTransfrom(
+        taimingJoined,use_location=True)
 
     return taimingJoined
 

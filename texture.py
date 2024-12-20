@@ -257,7 +257,7 @@ def setMat(object:bpy.types.Object,
 
     # 柱头贴图
     if mat == aData.mat_paint_pillerhead:
-        __setPillerHead(object,mat)
+        object = __setPillerHead(object,mat)
 
     # 栱垫板
     if mat == aData.mat_paint_dgfillboard:
@@ -520,11 +520,11 @@ def __setPillerHead(pillerObj:bpy.types.Object,
     for part in pillerParts:
         utils.shaderSmooth(part)
     # 柱身、柱头合并
-    utils.joinObjects(pillerParts,cleanup=True)
+    newPiller = utils.joinObjects(pillerParts,cleanup=True)
     # 移除原有的柱身
     bpy.data.objects.remove(pillerObj)
     
-    return
+    return newPiller
 
 # 已废弃，栱垫板改为PBR模式，改用__setDgBoard方法
 # # 设置垫拱板的重复次数，根据斗栱攒数计算

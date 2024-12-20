@@ -14,45 +14,31 @@ from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
 from . import texture as mat
 
-# 生成台基Proxy
-def __addPlatformProxy(buildingObj:bpy.types.Object):
-    bData : acaData = buildingObj.ACA_data
+# 营造台基的各个结构
+def __buildTaiming(baseRootObj:bpy.types.Object):
+    # 1、数据准备
+    buildingObj = utils.getAcaParent(
+        baseRootObj,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
+    dk = bData.DK
+    # 构造台明三维
     # 载入模板配置
     platform_height = bData.platform_height
     platform_extend = bData.platform_extend
     # 构造cube三维
-    height = platform_height
-    width = platform_extend * 2 + bData.x_total
-    length = platform_extend * 2 + bData.y_total
-    pfProxy = utils.addCube(
-        name='台基proxy',
-        location=(0,0,height/2),
-        dimension=(width,length,height),
-        parent=buildingObj
-    )
-    # 设置插件属性
-    pfProxy.ACA_data['aca_obj'] = True
-    pfProxy.ACA_data['aca_type'] = con.ACA_TYPE_PLATFORM
-    utils.hideObj(pfProxy)
-    return pfProxy
-
-# 构造台基的几何细节
-def __drawPlatform(platformObj:bpy.types.Object):
-    # 载入数据
-    buildingObj = utils.getAcaParent(
-        platformObj,con.ACA_TYPE_BUILDING
-    )
-    bData:acaData = buildingObj.ACA_data
-    aData:tmpData = bpy.context.scene.ACA_temp
-    dk = bData.DK
-    (pWidth,pDeepth,pHeight) = platformObj.dimensions
+    pHeight = platform_height
+    pWidth = platform_extend * 2 + bData.x_total
+    pDeepth = platform_extend * 2 + bData.y_total
     # 计算柱网数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
+
+    #2、营造台明结构
     # 收集待合并的台明构件
     taimingList = []    
 
-    # 1、方砖缦地
-    brickObj = utils.addCube(
+    # 2.1、方砖缦地
+    floorInsideObj = utils.addCube(
         name='方砖缦地',
         location=(
             0,0,
@@ -63,17 +49,16 @@ def __drawPlatform(platformObj:bpy.types.Object):
             bData.y_total+bData.piller_diameter*2,
             con.STEP_HEIGHT
         ),
-        parent=platformObj
+        parent=baseRootObj
     )
-    # 方砖缦地
-    mat.setMat(brickObj,aData.mat_brick_1)
-    taimingList.append(brickObj)
+    # 设置材质：方砖缦地
+    mat.setMat(floorInsideObj,aData.mat_brick_1)
+    taimingList.append(floorInsideObj)
 
-    # 2、做阶条石
+    # 2.2、阶条石
     # 阶条石宽度，从台基边缘做到柱顶石边缘
     stoneWidth = bData.platform_extend-bData.piller_diameter
-
-    # 2.1、前后檐面阶条石，两头置好头石，尽间为去除好头石长度，明间(次间)对齐
+    # 2.2.1、前后檐面阶条石，两头置好头石，尽间为去除好头石长度，明间(次间)对齐
     # 插入第一点，到台明两山尽头（从角柱延伸台基下出长度）
     firstRoomWidth = net_x[1]-net_x[0]    # 尽间宽度
     net_x.insert(0,net_x[0]-bData.platform_extend)
@@ -87,7 +72,7 @@ def __drawPlatform(platformObj:bpy.types.Object):
                 * con.FIRST_LENGTH)
     # 依次做出前后檐阶条石
     for n in range((len(net_x)-1)):
-        brickObj = utils.addCube(
+        sidebrickObj = utils.addCube(
             name='阶条石',
             location=(
                 (net_x[n+1]+net_x[n])/2,
@@ -99,23 +84,23 @@ def __drawPlatform(platformObj:bpy.types.Object):
                 stoneWidth,
                 con.STEP_HEIGHT
             ),
-            parent=platformObj
+            parent=baseRootObj
         )
         # 上下镜像
         utils.addModifierMirror(
-            object=brickObj,
-            mirrorObj=platformObj,
+            object=sidebrickObj,
+            mirrorObj=baseRootObj,
             use_axis=(False,True,False)
         )
-        taimingList.append(brickObj)
+        taimingList.append(sidebrickObj)
 
-    # 2.2、两山阶条石
+    # 2.2.2、两山阶条石
     # 延长尽间阶条石，与好头石相接
     net_y[0] -= bData.piller_diameter
     net_y[-1] += bData.piller_diameter
     # 依次做出前后檐阶条石
     for n in range((len(net_y)-1)):
-        brickObj = utils.addCube(
+        sidebrickObj = utils.addCube(
             name='阶条石',
             location=(
                 pWidth/2-stoneWidth/2,
@@ -127,22 +112,22 @@ def __drawPlatform(platformObj:bpy.types.Object):
                 net_y[n+1]-net_y[n],
                 con.STEP_HEIGHT
             ),
-            parent=platformObj
+            parent=baseRootObj
         )
         # 上下镜像
         utils.addModifierMirror(
-            object=brickObj,
-            mirrorObj=platformObj,
+            object=sidebrickObj,
+            mirrorObj=baseRootObj,
             use_axis=(True,False,False)
         )
-        taimingList.append(brickObj)
+        taimingList.append(sidebrickObj)
 
     # 2.3、埋头角柱
     # 角柱高度：台基总高度 - 阶条石 - 土衬
     cornerPillerH = (pHeight 
             - con.STEP_HEIGHT 
              - con.GROUND_BORDER) 
-    brickObj = utils.addCube(
+    conrnerPillerObj = utils.addCube(
         name='埋头角柱',
         location=(
             pWidth/2-stoneWidth/2,
@@ -156,19 +141,19 @@ def __drawPlatform(platformObj:bpy.types.Object):
             stoneWidth,             # 与阶条石同宽
             cornerPillerH
         ),
-        parent=platformObj
+        parent=baseRootObj
     )
     # 四面镜像
     utils.addModifierMirror(
-        object=brickObj,
-        mirrorObj=platformObj,
+        object=conrnerPillerObj,
+        mirrorObj=baseRootObj,
         use_axis=(True,True,False)
     )
-    taimingList.append(brickObj)
+    taimingList.append(conrnerPillerObj)
 
     # 2.4、陡板
     h = pHeight - con.STEP_HEIGHT - con.GROUND_BORDER
-    brickObj = utils.addCube(
+    aroundbrickObj = utils.addCube(
         name='陡板-前后檐',
         location=(
             0,pDeepth/2- con.STEP_HEIGHT/2,
@@ -179,19 +164,19 @@ def __drawPlatform(platformObj:bpy.types.Object):
             con.STEP_HEIGHT,             # 与阶条石同宽
             h
         ),
-        parent=platformObj
+        parent=baseRootObj
     )
     # 方砖横铺
-    mat.setMat(brickObj,aData.mat_brick_3)
+    mat.setMat(aroundbrickObj,aData.mat_brick_3)
     utils.addModifierMirror(
-        object=brickObj,
-        mirrorObj=platformObj,
+        object=aroundbrickObj,
+        mirrorObj=baseRootObj,
         use_axis=(False,True,False)
     )
-    taimingList.append(brickObj)
+    taimingList.append(aroundbrickObj)
     
     # 2.4.2、陡板两山
-    brickObj = utils.addCube(
+    aroundbrickObj = utils.addCube(
         name='陡板-两山',
         location=(
             pWidth/2- con.STEP_HEIGHT/2,
@@ -203,16 +188,16 @@ def __drawPlatform(platformObj:bpy.types.Object):
             pDeepth - stoneWidth*2,    # 台基宽度 - 两头的角柱（与阶条石同宽）
             h
         ),
-        parent=platformObj
+        parent=baseRootObj
     )
     # 方砖横铺
-    mat.setMat(brickObj,aData.mat_brick_3)
+    mat.setMat(aroundbrickObj,aData.mat_brick_3)
     utils.addModifierMirror(
-        object=brickObj,
-        mirrorObj=platformObj,
+        object=aroundbrickObj,
+        mirrorObj=baseRootObj,
         use_axis=(True,False,False)
     )
-    taimingList.append(brickObj)
+    taimingList.append(aroundbrickObj)
 
     # 统一设置
     for obj in taimingList:
@@ -224,33 +209,196 @@ def __drawPlatform(platformObj:bpy.types.Object):
         mat.setMat(obj,aData.mat_rock)
     
     # 合并台基
-    platformSet = utils.joinObjects(
+    taimingJoined = utils.joinObjects(
         taimingList,newName='台明'
         )
+    # 设置插件属性
+    taimingJoined.ACA_data['aca_obj'] = True
+    taimingJoined.ACA_data['aca_type'] = con.ACA_TYPE_PLATFORM
 
-    return platformSet
+    return taimingJoined
 
-# 绘制踏跺对象
-def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
+# 营造踏跺
+# 根据step_net定义，可以构造多个台明
+def __buildSteps(baseRootObj:bpy.types.Object):
     # 载入数据
     buildingObj = utils.getAcaParent(
-        stepProxy,con.ACA_TYPE_BUILDING
+        baseRootObj,con.ACA_TYPE_BUILDING
+    )
+    bData:acaData = buildingObj.ACA_data
+    stepObjList = []
+
+    # 解析模版输入的踏跺设置，格式如下
+    # "3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
+    stepStr = bData.step_net
+    stepList = stepStr.split(',')
+    for stepID in stepList:
+        if stepID == '': continue
+        # 生成踏跺对象
+        stepObj = __drawStep(baseRootObj,stepID)
+        stepObjList.append(stepObj)
+
+    return stepObjList
+
+# 241115 判断踏跺是否有相邻需要绘制
+# StepList的样式如"3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
+def __checkNextStep(baseRootObj:bpy.types.Object,
+                    stepID):
+    buildingObj = utils.getAcaParent(
+        baseRootObj,con.ACA_TYPE_BUILDING
+    )
+    bData:acaData = buildingObj.ACA_data
+    stepStr = bData.step_net
+    stepList = stepStr.split(',')
+    hasNextStep= False
+
+    # 解析踏跺配置参数
+    setting = stepID.split('#')
+    # 起始柱子
+    pFrom = setting[0].split('/')
+    pFrom_x = int(pFrom[0])
+    pFrom_y = int(pFrom[1])
+    # 结束柱子
+    pTo = setting[1].split('/')
+    pTo_x = int(pTo[0])
+    pTo_y = int(pTo[1])
+
+    # 区分方向
+    if pFrom_y == pTo_y and pFrom_y == 0 and pTo_y == 0:
+        # 南向，stepID向右查看
+        pFrom_x += 1
+        pTo_x += 1
+    if pFrom_y == pTo_y and pFrom_y != 0 and pTo_y != 0:
+        # 北向，stepID向左查看
+        pFrom_x -= 1
+        pTo_x -= 1
+    if pFrom_x == pTo_x and pFrom_x == 0 and pTo_x == 0:
+        # 西向，stepID向下查看
+        pFrom_y -= 1
+        pTo_y -= 1
+    if pFrom_x == pTo_x and pFrom_x != 0 and pTo_x != 0:
+        # 东向，stepID向上查看
+        pFrom_y += 1
+        pTo_y += 1
+    NextStepID = str(pFrom_x) + '/' + str(pFrom_y) \
+            + '#' + str(pTo_x) + '/' + str(pTo_y)
+    if NextStepID in stepList:
+        hasNextStep = True
+    return hasNextStep
+
+# 根据踏跺配置参数stepID，生成踏跺proxy
+def __addStepProxy(baseRootObj:bpy.types.Object,
+                   stepID:str):
+    # 载入数据
+    buildingObj = utils.getAcaParent(
+        baseRootObj,con.ACA_TYPE_BUILDING
+    )
+    bData:acaData = buildingObj.ACA_data
+    # 计算柱网数据
+    net_x,net_y = buildFloor.getFloorDate(buildingObj)
+
+    # 解析踏跺配置参数
+    setting = stepID.split('#')
+    # 起始柱子
+    pFrom = setting[0].split('/')
+    pFrom_x = int(pFrom[0])
+    pFrom_y = int(pFrom[1])
+    # 结束柱子
+    pTo = setting[1].split('/')
+    pTo_x = int(pTo[0])
+    pTo_y = int(pTo[1])
+
+    # 判断台阶朝向
+    step_dir = None   
+    roomEndX = len(net_x)-1
+    roomEndY = len(net_y)-1
+    # 西门
+    if pFrom_x == 0 and pTo_x == 0:
+        step_dir = 'W'
+    # 东门
+    if pFrom_x == roomEndX and pTo_x == roomEndX:
+        step_dir = 'E'
+    # 南门
+    if pFrom_y == 0 and pTo_y == 0:
+        step_dir = 'S'
+    # 北门
+    if pFrom_y == roomEndY and pTo_y == roomEndY:
+        step_dir = 'N'
+
+    if step_dir == None:
+        utils.outputMsg('无法生成踏跺，id='+stepID)
+        # 退出
+        return
+    
+    # 计算踏跺尺度，生成proxy，逐一生成
+    # 踏跺与台基同高
+    stepHeight = bData.platform_height
+    # 踏跺进深取固定的2.5倍高
+    stepDeepth = stepHeight * con.STEP_RATIO
+    # 踏跺几何中心：柱头+台基下出+半踏跺
+    offset = bData.platform_extend+stepDeepth/2
+    if step_dir in ('N','S'):
+        stepWidth = abs(net_x[pTo_x] - net_x[pFrom_x])
+        # 横坐标对齐两柱连线的中间点
+        x = (net_x[pTo_x] + net_x[pFrom_x])/2
+        # 北门
+        if step_dir == 'N':
+            # 纵坐标与台基边缘对齐
+            y = bData.y_total/2 + offset
+            rot = (0,0,math.radians(180))
+        # 南门
+        if step_dir == 'S':
+            # 纵坐标与台基边缘对齐
+            y = -bData.y_total/2 - offset
+            rot = (0,0,0)
+    if step_dir in ('W','E'):
+        stepWidth = abs(net_y[pTo_y] - net_y[pFrom_y])
+        if step_dir == 'W':
+            # 横坐标与台基边缘对齐
+            x = -bData.x_total/2 - offset
+            rot = (0,0,math.radians(270))
+        if step_dir == 'E':
+            # 横坐标与台基边缘对齐
+            x = bData.x_total/2 + offset
+            rot = (0,0,math.radians(90))
+        # 纵坐标对齐两柱连线的中间点
+        y = (net_y[pTo_y] + net_y[pFrom_y])/2
+    stepProxy = utils.addCube(
+        name='踏跺proxy',
+        location=(x,y,0),
+        dimension=(stepWidth,stepDeepth,stepHeight),
+        rotation=rot,
+    )
+    stepProxy.parent = baseRootObj
+    stepProxy.ACA_data['stepID'] = stepID
+    stepProxy.ACA_data['aca_type'] = con.ACA_TYPE_STEP
+    utils.hideObj(stepProxy)
+    utils.lockObj(stepProxy)
+
+    return stepProxy
+
+# 绘制踏跺对象
+def __drawStep(
+        baseRootObj:bpy.types.Object,
+        stepID):
+    # 0、载入数据
+    buildingObj = utils.getAcaParent(
+        baseRootObj,con.ACA_TYPE_BUILDING
     )
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
-
-    dk = bData.DK
-    (pWidth,pDeepth,pHeight) = stepProxy.dimensions
-    bevel = con.BEVEL_HIGH
-    # 计算柱网数据
-    net_x,net_y = buildFloor.getFloorDate(buildingObj)
     # 固定在台基目录中
     buildingColl = buildingObj.users_collection[0]
     utils.setCollection('台基',parentColl=buildingColl)
 
-    # 收集待合并对象
-    taduoObjs = []
-
+    bevel = con.BEVEL_HIGH
+    # 根据stepID生成踏跺（如，’3/0#4/0‘）
+    stepProxy = __addStepProxy(
+        baseRootObj,stepID)
+    (pWidth,pDeepth,pHeight) = stepProxy.dimensions
+    # 判断相邻踏跺，只做单边
+    isOnlyLeft = __checkNextStep(
+        baseRootObj,stepID)
     # 阶条石宽度，取下出-半个柱顶石（柱顶石为2pd，这里直接减1pd）
     stoneWidth = bData.platform_extend \
                     -bData.piller_diameter
@@ -259,8 +407,13 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
     # 左右两侧踏跺不做镜像，仅做左侧或右侧
     # 241115 垂带与柱对齐
     chuidaiX = -pWidth/2
+    
 
-    # 3、象眼石
+    # 营造踏跺结构=======================
+    # 收集待合并对象
+    taduoObjs = []
+
+    # 1、象眼石
     brickObj = utils.addCube(
         name='象眼石',
         location=(
@@ -285,11 +438,11 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
             mirrorObj=stepProxy,
             use_axis=(True,False,False)
         )
-    # 方砖横铺
+    # 设置材质：方砖横铺
     mat.setMat(brickObj,aData.mat_brick_3)
     taduoObjs.append(brickObj)
 
-    # 4、垂带
+    # 2、垂带
     brickObj = utils.addCube(
         name='垂带',
         location=(
@@ -350,7 +503,7 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
             use_axis=(True,False,False))
     taduoObjs.append(brickObj)
 
-    # 5、台阶（上基石、中基石，也叫踏跺心子）
+    # 3、台阶（上基石、中基石，也叫踏跺心子）
     # 计算台阶数量，每个台阶不超过基石的最大高度（15cm）
     count = math.ceil(
         (pHeight-con.GROUND_BORDER)
@@ -391,123 +544,38 @@ def __drawStep(stepProxy:bpy.types.Object, isOnlyLeft=False):
         mat.setMat(obj,aData.mat_rock)
 
     # 合并对象
-    taduoSet = utils.joinObjects(
-        taduoObjs,newName='踏跺')
+    stepJoined = utils.joinObjects(
+        taduoObjs,newName='踏跺.'+stepID)
     # 识别对象类型
-    taduoSet.ACA_data['aca_type'] = con.ACA_TYPE_STEP
-    taduoSet.ACA_data['stepID'] = stepProxy.ACA_data['stepID'] 
+    stepJoined.ACA_data['aca_type'] = con.ACA_TYPE_STEP
+    stepJoined.ACA_data['stepID'] = stepID
+    # origin更新到stepProxy中心
+    utils.applyTransfrom(stepJoined,use_location=True)
 
-    # # 绑定到上一层
-    # taduoSet.parent = stepProxy.parent
-    # taduoSet.location = stepProxy.matrix_local @ taduoSet.location
-    # taduoSet.rotation_euler = stepProxy.rotation_euler
-    # # 移除proxy
-    # bpy.data.objects.remove(stepProxy)
+    # 绑定到上一层
+    stepJoined.parent = stepProxy.parent
+    stepJoined.location = stepProxy.matrix_local @ stepJoined.location
+    stepJoined.rotation_euler = stepProxy.rotation_euler
+    # 移除proxy
+    bpy.data.objects.remove(stepProxy)
 
-    return taduoSet
-
-# 根据踏跺配置参数stepID，生成踏跺proxy
-def __addStepProxy(buildingObj:bpy.types.Object,
-                   stepID:str):
-    # 载入数据
-    platformObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_PLATFORM)
-    bData:acaData = buildingObj.ACA_data
-    # 计算柱网数据
-    net_x,net_y = buildFloor.getFloorDate(buildingObj)
-
-    # 解析踏跺配置参数
-    setting = stepID.split('#')
-    # 起始柱子
-    pFrom = setting[0].split('/')
-    pFrom_x = int(pFrom[0])
-    pFrom_y = int(pFrom[1])
-    # 结束柱子
-    pTo = setting[1].split('/')
-    pTo_x = int(pTo[0])
-    pTo_y = int(pTo[1])
-
-    # 判断台阶朝向
-    step_dir = None   
-    roomEndX = len(net_x)-1
-    roomEndY = len(net_y)-1
-    # 西门
-    if pFrom_x == 0 and pTo_x == 0:
-        step_dir = 'W'
-    # 东门
-    if pFrom_x == roomEndX and pTo_x == roomEndX:
-        step_dir = 'E'
-    # 南门
-    if pFrom_y == 0 and pTo_y == 0:
-        step_dir = 'S'
-    # 北门
-    if pFrom_y == roomEndY and pTo_y == roomEndY:
-        step_dir = 'N'
-
-    if step_dir == None:
-        utils.outputMsg('无法生成踏跺，id='+stepID)
-        # 退出
-        return
-    
-    # 计算踏跺尺度，生成proxy，逐一生成
-    # 踏跺与台基同高
-    stepHeight = platformObj.dimensions.z
-    # 踏跺进深取固定的2.5倍高
-    stepDeepth = stepHeight * con.STEP_RATIO
-    # 踏跺几何中心：柱头+台基下出+半踏跺
-    offset = bData.platform_extend+stepDeepth/2
-    if step_dir in ('N','S'):
-        stepWidth = abs(net_x[pTo_x] - net_x[pFrom_x])
-        # 横坐标对齐两柱连线的中间点
-        x = (net_x[pTo_x] + net_x[pFrom_x])/2
-        # 北门
-        if step_dir == 'N':
-            # 纵坐标与台基边缘对齐
-            y = bData.y_total/2 + offset
-            rot = (0,0,math.radians(180))
-        # 南门
-        if step_dir == 'S':
-            # 纵坐标与台基边缘对齐
-            y = -bData.y_total/2 - offset
-            rot = (0,0,0)
-    if step_dir in ('W','E'):
-        stepWidth = abs(net_y[pTo_y] - net_y[pFrom_y])
-        if step_dir == 'W':
-            # 横坐标与台基边缘对齐
-            x = -bData.x_total/2 - offset
-            rot = (0,0,math.radians(270))
-        if step_dir == 'E':
-            # 横坐标与台基边缘对齐
-            x = bData.x_total/2 + offset
-            rot = (0,0,math.radians(90))
-        # 纵坐标对齐两柱连线的中间点
-        y = (net_y[pTo_y] + net_y[pFrom_y])/2
-    stepProxy = utils.addCube(
-        name='踏跺proxy',
-        location=(x,y,0),
-        dimension=(stepWidth,stepDeepth,stepHeight),
-        rotation=rot,
-    )
-    stepProxy.parent = platformObj
-    stepProxy.ACA_data['stepID'] = stepID
-    stepProxy.ACA_data['aca_type'] = con.ACA_TYPE_STEP
-    utils.hideObj(stepProxy)
-    utils.lockObj(stepProxy)
-
-    return stepProxy
+    return stepJoined
 
 # 添加散水，根据台基proxy、踏跺proxy进行生成，并合并
-def __addPlatformExpand(pfProxy:bpy.types.Object,
-                 stepProxyList,
-                 type):
+def __addPlatformExpand(
+        taimingObj:bpy.types.Object,
+        stepList,
+        type):
     # 载入数据
     buildingObj = utils.getAcaParent(
-        pfProxy,con.ACA_TYPE_BUILDING
+        taimingObj,con.ACA_TYPE_BUILDING
+    )
+    baseRootObj = utils.getAcaParent(
+        taimingObj,con.ACA_TYPE_BASE_ROOT
     )
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
-    pd = bData.piller_diameter
 
     # 1、分别定义土衬和散水在扩展时的不同参数设置
     if type == 'tuchen':
@@ -533,46 +601,40 @@ def __addPlatformExpand(pfProxy:bpy.types.Object,
 
     # 2、台明拓展，做为后续合并踏跺扩展的本体
     baseExpandObj = utils.addCube(
-            name= name,
-            location=(
-                pfProxy.location.x,
-                pfProxy.location.y,
+            name = name,
+            location = (
+                taimingObj.location.x,
+                taimingObj.location.y,
                 loc_z,
             ),
-            dimension=(
-                    pfProxy.dimensions.x + pfExpand,
-                    pfProxy.dimensions.y + pfExpand,
+            dimension = (
+                    taimingObj.dimensions.x + pfExpand,
+                    taimingObj.dimensions.y + pfExpand,
                     height
             ),
-            rotation= pfProxy.rotation_euler,
-            parent=pfProxy
+            rotation = taimingObj.rotation_euler,
+            parent = baseRootObj
         )
 
     # 3、踏跺拓展
     stepExpandList = []
     # 依据台基proxy、踏跺proxy生成新的散水对象
-    # 计算踏跺的两侧扩展
-    # stepProxy是按照两柱间距创建的，而垂带对柱中对齐，使得踏跺垂带超出柱中
-    # 垂带的宽度与阶条石同宽：取台基下出-半个柱顶石
-    stepSideExpand = bData.platform_extend - con.PILLERBASE_WIDTH*pd/2
-    for n in range(len(stepProxyList)):
-        stepProxy:bpy.types.Object = stepProxyList[n]
+    for n in range(len(stepList)):
+        stepObj:bpy.types.Object = stepList[n]
         stepExpandObj = utils.addCube(
-            name= name,
-            location=(
-                stepProxy.location.x,
-                stepProxy.location.y,
+            name = name,
+            location = (
+                stepObj.location.x,
+                stepObj.location.y,
                 loc_z,
             ),
-            dimension=(
-                    (stepProxy.dimensions.x 
-                     + stepSideExpand
-                     + pfExpand),
-                    stepProxy.dimensions.y + pfExpand,
-                    height
+            dimension = (
+                    (stepObj.dimensions.x + pfExpand),
+                     stepObj.dimensions.y + pfExpand,
+                     height
             ),
-            rotation= stepProxy.rotation_euler,
-            parent=pfProxy
+            rotation = stepObj.rotation_euler,
+            parent = baseRootObj
         )
         stepExpandList.append(stepExpandObj)
     
@@ -665,15 +727,12 @@ def delStep(buildingObj:bpy.types.Object,
         if 'aca_type' in step.ACA_data:
             if step.ACA_data['aca_type'] \
                     == con.ACA_TYPE_STEP:
-                # 将step转换为stepProxy
-                stepProxy = step.parent
-                utils.deleteHierarchy(stepProxy,del_parent=True)
+                utils.deleteHierarchy(step,del_parent=True)
 
     # 重新生成柱网配置
-    pfRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_PLATFORM
-    )    
-    pfChildren:List[bpy.types.Object] = pfRootObj.children
+    baseRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_BASE_ROOT)
+    pfChildren:List[bpy.types.Object] = baseRootObj.children
     bData.step_net = ''
     for step in pfChildren:
         if 'aca_type' in step.ACA_data:
@@ -687,114 +746,64 @@ def delStep(buildingObj:bpy.types.Object,
     utils.focusObj(buildingObj)
     return {'FINISHED'}
 
-# 241115 判断踏跺是否有相邻需要绘制
-# StepList的样式如"3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
-def __checkNextStep(StepList,stepID):
-    hasNextStep= False
-
-    # 解析踏跺配置参数
-    setting = stepID.split('#')
-    # 起始柱子
-    pFrom = setting[0].split('/')
-    pFrom_x = int(pFrom[0])
-    pFrom_y = int(pFrom[1])
-    # 结束柱子
-    pTo = setting[1].split('/')
-    pTo_x = int(pTo[0])
-    pTo_y = int(pTo[1])
-
-    # 区分方向
-    if pFrom_y == pTo_y and pFrom_y == 0 and pTo_y == 0:
-        # 南向，stepID向右查看
-        pFrom_x += 1
-        pTo_x += 1
-    if pFrom_y == pTo_y and pFrom_y != 0 and pTo_y != 0:
-        # 北向，stepID向左查看
-        pFrom_x -= 1
-        pTo_x -= 1
-    if pFrom_x == pTo_x and pFrom_x == 0 and pTo_x == 0:
-        # 西向，stepID向下查看
-        pFrom_y -= 1
-        pTo_y -= 1
-    if pFrom_x == pTo_x and pFrom_x != 0 and pTo_x != 0:
-        # 东向，stepID向上查看
-        pFrom_y += 1
-        pTo_y += 1
-    NextStepID = str(pFrom_x) + '/' + str(pFrom_y) \
-            + '#' + str(pTo_x) + '/' + str(pTo_y)
-    if NextStepID in StepList:
-        hasNextStep = True
-    return hasNextStep
-
 # 根据固定模板，创建新的台基
 def buildPlatform(buildingObj:bpy.types.Object):
+    # 0、准备
+    # 载入数据
     bData : acaData = buildingObj.ACA_data
-    # 创建地基
-    # 如果已有，先删除
-    pfProxy = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_PLATFORM)
-    if pfProxy != None:
-        utils.deleteHierarchy(pfProxy,del_parent=True)
-
+    # 预校验
     # 台基可以跳过不做
     if bData.platform_height <= 0.01: return 
-
     # 固定在台基目录中
     buildingColl = buildingObj.users_collection[0]
     utils.setCollection('台基',parentColl=buildingColl)
 
+    # 1、查找或新建台基根节点
+    baseRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_BASE_ROOT)
+    if baseRootObj == None:        
+        # 创建新台基对象（empty）===========================================================
+        bpy.ops.object.empty_add(type='PLAIN_AXES')
+        baseRootObj = bpy.context.object
+        baseRootObj.name = "台基层"
+        baseRootObj.parent = buildingObj  # 挂接在对应建筑节点下
+        baseRootObj.ACA_data['aca_obj'] = True
+        baseRootObj.ACA_data['aca_type'] = con.ACA_TYPE_BASE_ROOT
+        #以台基几何中心为origin
+        baseRootObj.location = (0,0,bData.platform_height/2)
+    else:
+        # 清空台基下属的台明、踏跺
+        utils.deleteHierarchy(baseRootObj)
+    
+    # 2、开始构建台基
     # 收集待合并的部件
-    platformList = []
-
-    # 生成台基框线
-    pfProxy = __addPlatformProxy(buildingObj)
-    # 构造台基细节
-    platformObj = __drawPlatform(pfProxy)
-    platformList.append(platformObj)
-
-    # 构造台基踏跺
-    # 解析模版输入的墙体设置，格式如下
-    # "3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
-    stepStr = bData.step_net
-    stepList = stepStr.split(',')
-    stepProxyList = []
-    for stepID in stepList:
-        if stepID == '': continue
-        # 根据stepID生成踏跺（如，’3/0#4/0‘）
-        stepProxy = __addStepProxy(
-            buildingObj,stepID)
-        stepProxyList.append(stepProxy)
-        # 生成踏跺对象
-        # 241115 判断相邻踏跺，只做单边
-        hasNextStep = __checkNextStep(stepList,stepID)
-        stepObj = __drawStep(stepProxy,hasNextStep)
-        platformList.append(stepObj)
-        
-    # 生成土衬
-    tuchenObj = __addPlatformExpand(pfProxy,stepProxyList,
+    basePartList = []
+    # 2.1、营造台明
+    taimingObj = __buildTaiming(baseRootObj)
+    basePartList.append(taimingObj)
+    # 2.2、营造踏跺
+    stepList = __buildSteps(baseRootObj)
+    # 2.3、生成土衬
+    tuchenObj = __addPlatformExpand(taimingObj,stepList,
                              type='tuchen')
-    platformList.append(tuchenObj)
-
-    # 生成散水
-    sanshuiObj = __addPlatformExpand(pfProxy,stepProxyList,
+    basePartList.append(tuchenObj)
+    # 2.4、生成散水
+    sanshuiObj = __addPlatformExpand(taimingObj,stepList,
                               type='sanshui')
-    platformList.append(sanshuiObj)
-
-    # 合并构件
-    platformObj = utils.joinObjects(platformList)
-    # 删除踏跺proxy
-    for stepProxy in stepProxyList:
-        bpy.data.objects.remove(stepProxy)
+    basePartList.append(sanshuiObj)
+    # 3、合并构件
+    baseJoined = utils.joinObjects(basePartList)
 
      # 更新建筑框大小
     buildingObj.empty_display_size = math.sqrt(
-            pfProxy.dimensions.x * pfProxy.dimensions.x
-            + pfProxy.dimensions.y * pfProxy.dimensions.y
+            taimingObj.dimensions.x * taimingObj.dimensions.x
+            + taimingObj.dimensions.y * taimingObj.dimensions.y
         ) / 2
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
-    return pfProxy
+
+    return {'FINISHED'}
 
 # 根据插件面板的台基高度、下出等参数变化，更新台基外观
 # 绑定于data.py中update_platform回调

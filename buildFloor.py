@@ -751,7 +751,7 @@ def buildPillers(buildingObj:bpy.types.Object):
         # 创建新地盘对象（empty）===========================================================
         bpy.ops.object.empty_add(type='PLAIN_AXES')
         floorRootObj = bpy.context.object
-        floorRootObj.name = "柱网"
+        floorRootObj.name = "柱网层"
         floorRootObj.parent = buildingObj  # 挂接在对应建筑节点下
         floorRootObj.ACA_data['aca_obj'] = True
         floorRootObj.ACA_data['aca_type'] = con.ACA_TYPE_FLOOR_ROOT

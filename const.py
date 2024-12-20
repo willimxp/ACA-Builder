@@ -10,8 +10,9 @@ class ACA_Consts(object):
 
     # 系统参数
     ROOT_COLL_NAME = 'ACA古建营造'               # 根目录名称
-    PLATFORM_NAME = '台基'                       # 台基名称
+    PLATFORM_NAME = '台基'                      # 台基名称
     ACA_TYPE_BUILDING = 'building'              # ACA类型：建筑根节点
+    ACA_TYPE_BASE_ROOT = 'base_root'            # ACA类型：台基根节点
     ACA_TYPE_PLATFORM = 'platform'              # ACA类型：台基
     ACA_TYPE_STEP = 'step'                      # ACA类型：踏跺
     ACA_TYPE_FLOOR_ROOT = 'floor'               # ACA类型：柱网

@@ -57,7 +57,6 @@
 		<step_net type="str">1/0#2/0,</step_net>
 		<wall_depth type="float">1.0</wall_depth>
 		<wall_span type="float">0.0</wall_span>
-		<dg_fillgap_alt_source type="NoneType">None</dg_fillgap_alt_source>
 		<shoushan type="float">2.0</shoushan>
 		<luding_rafterspan type="float">3.0</luding_rafterspan>
 		<is_4_sides type="bool">True</is_4_sides>

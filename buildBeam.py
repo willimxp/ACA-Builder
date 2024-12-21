@@ -1380,13 +1380,14 @@ def __drawBeam(
     # 确保face normal朝向
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
 
-    # 任意添加一个对象，具体几何数据在bmesh中建立
     # 原点在对应桁檩的Z高度，X一般对应到柱头，Y一般为0
+    # 新建mesh
     mesh = bpy.data.meshes.new(name)
-    beamObj = bpy.data.objects.new(name, mesh)
-    bpy.context.collection.objects.link(beamObj) 
     bm.to_mesh(mesh)
     bm.free()
+    # 新建Object
+    beamObj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(beamObj) 
     beamObj.location = location
 
     return beamObj

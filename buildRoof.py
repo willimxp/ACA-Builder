@@ -752,7 +752,8 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
 
 # 根据檐椽，绘制对应飞椽
 # 基于“一飞二尾五”的原则计算
-def __drawFlyrafter(yanRafterObj:bpy.types.Object)->bpy.types.Object:
+def __drawFlyrafter(yanRafterObj:bpy.types.Object,
+                    flyrafterName='飞椽')->bpy.types.Object:
     # 载入数据
     buildingObj = utils.getAcaParent(yanRafterObj,con.ACA_TYPE_BUILDING)
     bData : acaData = buildingObj.ACA_data
@@ -842,6 +843,14 @@ def __drawFlyrafter(yanRafterObj:bpy.types.Object)->bpy.types.Object:
 
     #=============================
     # 将Mesh绑定到Object上
+    # 新建Mesh
+    mesh = bpy.data.meshes.new(flyrafterName)
+    bm.to_mesh(mesh)
+    bm.free()
+    # 新建Object
+    flyrafterObj = bpy.data.objects.new(flyrafterName, mesh)
+    bpy.context.collection.objects.link(flyrafterObj) 
+
     # 对齐檐椽位置
     yanchuan_head_co = utils.getObjectHeadPoint(yanRafterObj,
             is_symmetry=(True,True,False))
@@ -849,17 +858,10 @@ def __drawFlyrafter(yanRafterObj:bpy.types.Object)->bpy.types.Object:
     offset_z = (con.YUANCHUAN_D/2+con.WANGBAN_H)*dk
     offset_z = offset_z / math.cos(yanRafterObj.rotation_euler.y)
     loc = yanchuan_head_co + Vector((0,0,offset_z))
-    # 任意添加一个对象，具体几何数据在bmesh中建立
-    bpy.ops.mesh.primitive_cube_add(
-        location=loc
-    )
-    flyrafterObj = bpy.context.object
+    # 位置
+    flyrafterObj.location = loc
     # 对齐檐椽角度
-    flyrafterObj.rotation_euler = yanRafterObj.rotation_euler 
-    # 填充bmesh数据
-    bm.to_mesh(flyrafterObj.data)
-    flyrafterObj.data.update()
-    bm.free()
+    flyrafterObj.rotation_euler = yanRafterObj.rotation_euler
 
     # 重设Origin：把原点放在椽尾，方便后续计算椽头坐标
     utils.setOrigin(flyrafterObj,v2)
@@ -891,9 +893,7 @@ def __buildFlyrafter(buildingObj,direction):
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,rafterType)
 
-    flyrafterObj = __drawFlyrafter(yanRafterObj)
-    flyrafterObj.name = flyrafterName
-    flyrafterObj.data.name = flyrafterName
+    flyrafterObj = __drawFlyrafter(yanRafterObj,flyrafterName)
     flyrafterObj.parent = rafterRootObj
     flyrafterObj.ACA_data['aca_obj'] = True
     flyrafterObj.ACA_data['aca_type'] = flyrafterType
@@ -1056,7 +1056,8 @@ def __buildFlyrafterAll(buildingObj:bpy.types.Object,purlinPos,direction):
 # 根据老角梁，绘制对应子角梁
 # 基于“冲三翘四”的原则计算
 # 硬山、悬山不涉及
-def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object):
+def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object,
+                          ccbName='仔角梁'):
     # 载入数据
     buildingObj = utils.getAcaParent(
         cornerBeamObj,
@@ -1074,11 +1075,12 @@ def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object):
     offset.rotate(cornerBeamObj.rotation_euler)
     cornerBeam_head_co += offset
     
-    # 任意添加一个对象，具体几何数据在bmesh中建立
-    bpy.ops.mesh.primitive_cube_add(
-        location=cornerBeam_head_co
-    )
-    smallCornerBeamObj = bpy.context.object
+    # 新建mesh
+    mesh = bpy.data.meshes.new(ccbName)
+    # 新建Object
+    smallCornerBeamObj = bpy.data.objects.new(ccbName, mesh)
+    bpy.context.collection.objects.link(smallCornerBeamObj) 
+    smallCornerBeamObj.location = cornerBeam_head_co
     smallCornerBeamObj.rotation_euler = cornerBeamObj.rotation_euler # 将飞椽与檐椽对齐旋转角度
 
     # 创建bmesh
@@ -1284,11 +1286,9 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             if bData.use_flyrafter:
                 # 绘制子角梁
                 cbcObj:bpy.types.Object = \
-                    __drawCornerBeamChild(CornerBeamObj)
+                    __drawCornerBeamChild(CornerBeamObj,'仔角梁')
                 # 设置材质
                 mat.setMat(cbcObj,aData.mat_paint_ccb)
-                cbcObj.name = '仔角梁'
-                cbcObj.data.name = '仔角梁'
                 cbcObj.parent = rafterRootObj
                 cbcObj.ACA_data['aca_obj'] = True
                 cbcObj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_BEAM_CHILD
@@ -1715,7 +1715,6 @@ def __buildCrWangban(buildingObj:bpy.types.Object
         crCollection = cornerRafterColl,
         root_obj = rafterRootObj,
     )
-    crWangban.name = '翼角椽望板'
     # 裁剪，沿角梁裁剪，以免穿模
     utils.addBisect(
             object=crWangban,

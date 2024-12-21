@@ -409,29 +409,6 @@ def alignToVector(vector) -> Vector:
     euler = quaternion.to_euler('XYZ')
     return euler
 
-# # 封装立方体的构造
-# def addCube(name='Cube',
-#             location=(0,0,0),
-#             rotation=(0,0,0),
-#             dimension=(1,1,1),
-#             parent=None):
-#     bpy.ops.mesh.primitive_cube_add(
-#                 size=1.0, 
-#                 location = location, 
-#                 rotation = rotation, 
-#                 scale=dimension)
-#     cube = bpy.context.object
-#     cube.name = name
-#     cube.data.name = name
-    
-#     if parent != None:
-#         cube.parent = parent
-
-#     # 应用缩放
-#     applyTransfrom(cube,use_scale=True)
-    
-#     return cube
-
 # low level cube create
 # https://blender.stackexchange.com/questions/305262/low-level-fast-way-to-create-cube
 # 特别是避免了applyTransform中updateScene导致的性能影响

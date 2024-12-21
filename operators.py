@@ -600,30 +600,31 @@ class ACA_OT_test(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        import cProfile
-        import pstats  
-        import io 
+        # import cProfile
+        # import pstats  
+        # import io 
 
-        # Create a profiler object  
-        pr = cProfile.Profile()  
-        pr.enable()  # Start profiling  
+        # # Create a profiler object  
+        # pr = cProfile.Profile()  
+        # pr.enable()  # Start profiling  
 
+        # # Call the function you want to profile  
+        # from . import build
+        # funproxy = partial(build.build)
+        # result = utils.fastRun(funproxy)
 
-        # Call the function you want to profile  
-        from . import build
-        funproxy = partial(build.build)
-        result = utils.fastRun(funproxy)
+        # pr.disable()  # Stop profiling  
 
-        pr.disable()  # Stop profiling  
+        # # Create a stream to hold the stats  
+        # s = io.StringIO()  
+        # sortby = pstats.SortKey.CUMULATIVE  
+        # ps = pstats.Stats(pr, stream=s).sort_stats(sortby)  
+        # ps.print_stats()  
 
-        # Create a stream to hold the stats  
-        s = io.StringIO()  
-        sortby = pstats.SortKey.CUMULATIVE  
-        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)  
-        ps.print_stats()  
+        # # Print the profiling results to the Blender console  
+        # print(s.getvalue())  
 
-        # Print the profiling results to the Blender console  
-        print(s.getvalue())  
+        utils.addCube('testing')
 
         return {'FINISHED'}
     

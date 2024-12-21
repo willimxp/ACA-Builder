@@ -1382,16 +1382,12 @@ def __drawBeam(
 
     # 任意添加一个对象，具体几何数据在bmesh中建立
     # 原点在对应桁檩的Z高度，X一般对应到柱头，Y一般为0
-    bpy.ops.mesh.primitive_cube_add(
-        location=location
-    )
-    beamObj = bpy.context.object
-    beamObj.name = name
-
-    # 填充bmesh数据
-    bm.to_mesh(beamObj.data)
-    beamObj.data.update()
+    mesh = bpy.data.meshes.new(name)
+    beamObj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(beamObj) 
+    bm.to_mesh(mesh)
     bm.free()
+    beamObj.location = location
 
     return beamObj
 

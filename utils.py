@@ -444,19 +444,40 @@ def addCube(name='Cube',
     x = dimension[0] / 2
     y = dimension[1] / 2
     z = dimension[2] / 2
-    vertices = [(x, y, z),
-                (x, y, -z),
-                (x, -y, z),
-                (x, -y, -z),
-                (-x, y, z),
-                (-x, y, -z),
+    # 按照blender的primitive cube的vertex顺序
+    vertices = [
+                (-x, -y, -z),
                 (-x, -y, z),
-                (-x, -y, -z)]
-    faces = [(0, 2, 3, 1), (0, 1, 5, 4), (2, 0, 4, 6), (1, 3, 7, 5), (3, 2, 6, 7), (4, 5, 7, 6)]
+                (-x, y, -z),
+                (-x, y, z),
+                (x, -y, -z),
+                (x, -y, z),
+                (x, y, -z),
+                (x, y, z),
+    ]
+    # 所有的编号应该按逆时针排列，否则会导致面朝向错误
+    faces = [
+                (0,1,3,2),   # 左
+                (2,3,7,6),   # 后
+                (6,7,5,4),   # 右
+                (4,5,1,0),   # 前
+                (2,6,4,0),   # 下
+                (7,3,1,5),   # 上
+    ]
 
     # Create a new mesh and set generated data
     mesh = bpy.data.meshes.new(name)
     mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    
+    # 当以上的面数组顺序调整正确后，就没有出现错误的面朝向了
+    # # 重新计算Normal
+    # bm = bmesh.new()
+    # bm.from_mesh(mesh)
+    # bm.edges.ensure_lookup_table()
+    # bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    # bm.to_mesh(mesh)
+    # bm.free()
 
     # Create a new object to hold the mesh and set its location
     cube = bpy.data.objects.new(name, mesh)
@@ -648,7 +669,6 @@ def drawHexagon(dimensions:Vector,
     bpy.context.collection.objects.link(obj) 
     bm.to_mesh(mesh)
     bm.free()
-
     obj.location = location
     if parent != None:
         obj.parent = parent

@@ -660,7 +660,7 @@ def __addPlatformExpand(
     # 6、添加导角
     modBevel:bpy.types.BevelModifier = \
             baseExpandObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_HIGH
+    modBevel.width = con.BEVEL_LOW
     modBevel.offset_type = 'WIDTH'
     modBevel.use_clamp_overlap = False
 

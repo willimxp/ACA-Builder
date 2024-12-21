@@ -255,18 +255,6 @@ class ACA_PT_pillers(bpy.types.Panel):
                 col.prop(bData, "y_2")      # 次间深度
             if bData.y_rooms >= 5:
                 col.prop(bData, "y_3")      # 梢间深度
-            # 做廊步架
-            if bData.y_rooms >= 3:
-                if bData.use_hallway:
-                    checkbox_icon = 'CHECKBOX_HLT'
-                else:
-                    checkbox_icon = 'CHECKBOX_DEHLT'
-                #checkUseHallway = box.column(align=True)
-                col.prop(
-                    bData, "use_hallway",
-                    text='廊间举架做法',
-                    toggle=True,
-                    icon=checkbox_icon) 
 
             # 柱子属性
             col = box.column(align=True)
@@ -628,6 +616,10 @@ class ACA_PT_beam(bpy.types.Panel):
             toolBox = box.column(align=True)
             toolBar = toolBox.grid_flow(
                 align=True,columns=1)
+            # 举折系数
+            droplistJuzhe = toolBar.column(align=True)
+            droplistJuzhe.prop(
+                bData, "juzhe",text='',)
             # 步架数量          
             inputRaftercount = toolBar.column(align=True)
             inputRaftercount.prop(
@@ -636,31 +628,41 @@ class ACA_PT_beam(bpy.types.Panel):
             # 推山
             inputTuishan = toolBar.column(align=True)
             inputTuishan.prop(
-                bData, "tuishan",text='推山系数',slider=True)
+                bData, "tuishan",text='庑殿推山系数',slider=True)
             # 收山
             inputShoushan = toolBar.column(align=True)
             inputShoushan.prop(
-                bData, "shoushan",text='收山尺寸(m)')
+                bData, "shoushan",text='歇山收山尺寸')
             
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)
             # 盝顶步架宽度
             inputLudingBujia = toolBar.column(align=True)
             inputLudingBujia.prop(
-                bData, "luding_rafterspan",text='盝顶步架')
+                bData, "luding_rafterspan",text='盝顶檐步架宽')
             buttonDefaultLDBJ = toolBar.column(align=True)
             buttonDefaultLDBJ.operator(
                 operator='aca.default_luding_rafterspan',
                 text='',
                 icon='SHADERFX',
             )
-
+            
             toolBar = toolBox.grid_flow(
                 align=True,columns=1)
-            # 举折系数
-            droplistJuzhe = toolBar.column(align=True)
-            droplistJuzhe.prop(
-                bData, "juzhe",text='',)
+
+            # 做廊步架
+            inputJujia= toolBar.column(align=True)
+            if bData.y_rooms >= 3:
+                if bData.use_hallway:
+                    checkbox_icon = 'CHECKBOX_HLT'
+                else:
+                    checkbox_icon = 'CHECKBOX_DEHLT'
+                #checkUseHallway = box.column(align=True)
+                inputJujia.prop(
+                    bData, "use_hallway",
+                    text='廊间举架做法',
+                    toggle=True,
+                    icon=checkbox_icon) 
 
             # 只有庑殿可以设置推山
             if bData.roof_style != con.ROOF_WUDIAN:

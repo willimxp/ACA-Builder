@@ -811,11 +811,12 @@ def buildPillers(buildingObj:bpy.types.Object):
             # 统一命名为“柱.x/y”，以免更换不同柱形时，减柱设置失效
             pillerID = str(x) + '/' + str(y)
             
-            # 减柱验证
-            piller_list_str = bData.piller_net
-            if pillerID not in piller_list_str \
-                    and piller_list_str != "" :
-                continue    # 结束本次循环
+            # 减柱验证（廊间举架时恢复所有柱体）
+            if not bData.use_hallway:
+                piller_list_str = bData.piller_net
+                if pillerID not in piller_list_str \
+                        and piller_list_str != "" :
+                    continue    # 结束本次循环
 
             # 复制柱子，仅instance，包含modifier
             pillerObj = utils.copyObject(

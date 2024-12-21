@@ -742,7 +742,6 @@ def __drawGabelBeam(name='趴梁',
             dimension=dimension,
             parent=parent,
         )
-    utils.focusObj(gabelBeam)
     # 挤压8号边
     bpy.ops.object.mode_set(mode='EDIT')
     bm = bmesh.new()
@@ -1422,7 +1421,6 @@ def __drawJiaobei(shuzhuObj:bpy.types.Object):
         rafterSpan,
         height,
     ))
-
     # 位置
     loc = (shuzhuObj.location.x,
         shuzhuObj.location.y, # 对齐上一层的槫的Y位置
@@ -1434,7 +1432,6 @@ def __drawJiaobei(shuzhuObj:bpy.types.Object):
         dimension=dim,
         parent=shuzhuObj.parent,
     )
-    utils.focusObj(jiaobeiObj)
     # 挤压两个角
     bpy.ops.object.mode_set(mode='EDIT')
     bm = bmesh.new()

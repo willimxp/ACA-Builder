@@ -464,9 +464,11 @@ def addCube(name='Cube',
     cube.rotation_euler = rotation
     if parent != None:
         cube.parent = parent
-
-    # Link the object to the active collection to be able to see it in the scene
     bpy.context.collection.objects.link(cube)
+
+    # 强制聚焦在cube上，以免后续bpy.ops的操作找错对象
+    # bpy.ops.mesh.primitive_cube_add原来直接返回了context.object
+    focusObj(cube)
     return cube
 
 # 根据起始点，创建连接的矩形
@@ -641,16 +643,13 @@ def drawHexagon(dimensions:Vector,
     # 确保face normal朝向
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
 
-    # 任意添加一个对象，具体几何数据在bmesh中建立
-    bpy.ops.mesh.primitive_cube_add(
-        location=location)
-    obj = bpy.context.object
-    bm.to_mesh(obj.data)
-    obj.data.update()
+    mesh = bpy.data.meshes.new(name)
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj) 
+    bm.to_mesh(mesh)
     bm.free()
 
-    obj.name = name
-    obj.data.name = name
+    obj.location = location
     if parent != None:
         obj.parent = parent
 

@@ -409,27 +409,64 @@ def alignToVector(vector) -> Vector:
     euler = quaternion.to_euler('XYZ')
     return euler
 
-# 封装立方体的构造
+# # 封装立方体的构造
+# def addCube(name='Cube',
+#             location=(0,0,0),
+#             rotation=(0,0,0),
+#             dimension=(1,1,1),
+#             parent=None):
+#     bpy.ops.mesh.primitive_cube_add(
+#                 size=1.0, 
+#                 location = location, 
+#                 rotation = rotation, 
+#                 scale=dimension)
+#     cube = bpy.context.object
+#     cube.name = name
+#     cube.data.name = name
+    
+#     if parent != None:
+#         cube.parent = parent
+
+#     # 应用缩放
+#     applyTransfrom(cube,use_scale=True)
+    
+#     return cube
+
+# low level cube create
+# https://blender.stackexchange.com/questions/305262/low-level-fast-way-to-create-cube
+# 特别是避免了applyTransform中updateScene导致的性能影响
 def addCube(name='Cube',
             location=(0,0,0),
             rotation=(0,0,0),
             dimension=(1,1,1),
             parent=None):
-    bpy.ops.mesh.primitive_cube_add(
-                size=1.0, 
-                location = location, 
-                rotation = rotation, 
-                scale=dimension)
-    cube = bpy.context.object
-    cube.name = name
-    cube.data.name = name
-    
+    # Generate the vertices and faces, edges are inferred from the polygons
+    x = dimension[0] / 2
+    y = dimension[1] / 2
+    z = dimension[2] / 2
+    vertices = [(x, y, z),
+                (x, y, -z),
+                (x, -y, z),
+                (x, -y, -z),
+                (-x, y, z),
+                (-x, y, -z),
+                (-x, -y, z),
+                (-x, -y, -z)]
+    faces = [(0, 2, 3, 1), (0, 1, 5, 4), (2, 0, 4, 6), (1, 3, 7, 5), (3, 2, 6, 7), (4, 5, 7, 6)]
+
+    # Create a new mesh and set generated data
+    mesh = bpy.data.meshes.new(name)
+    mesh.from_pydata(vertices, [], faces)
+
+    # Create a new object to hold the mesh and set its location
+    cube = bpy.data.objects.new(name, mesh)
+    cube.location = location
+    cube.rotation_euler = rotation
     if parent != None:
         cube.parent = parent
 
-    # 应用缩放
-    applyTransfrom(cube,use_scale=True)
-    
+    # Link the object to the active collection to be able to see it in the scene
+    bpy.context.collection.objects.link(cube)
     return cube
 
 # 根据起始点，创建连接的矩形

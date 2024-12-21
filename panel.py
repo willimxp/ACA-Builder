@@ -96,9 +96,9 @@ class ACA_PT_basic(bpy.types.Panel):
                 depress=True,text='删除建筑'
             )
         
-        # # 测试按钮
-        # row = layout.row()
-        # row.operator("aca.test",icon='HOME')
+        # 测试按钮
+        row = layout.row()
+        row.operator("aca.test",icon='HOME')
 
         return
 

@@ -5,7 +5,7 @@
 
 import bpy
 from functools import partial
-import time
+import time 
 
 from .const import ACA_Consts as con
 from . import utils
@@ -600,18 +600,30 @@ class ACA_OT_test(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        timeStart = time.time()
-        buildingObj,bData,objData = utils.getRoot(context.object)
-        from . import buildPlatform
-        funproxy = partial(
-            buildPlatform.buildPlatform,
-            buildingObj=buildingObj)
-        utils.fastRun(funproxy)
+        import cProfile
+        import pstats  
+        import io 
 
-        timeEnd = time.time()
-        self.report(
-                {'INFO'},"完成：(%.2f秒)" 
-                % (timeEnd-timeStart))
+        # Create a profiler object  
+        pr = cProfile.Profile()  
+        pr.enable()  # Start profiling  
+
+
+        # Call the function you want to profile  
+        from . import build
+        funproxy = partial(build.build)
+        result = utils.fastRun(funproxy)
+
+        pr.disable()  # Stop profiling  
+
+        # Create a stream to hold the stats  
+        s = io.StringIO()  
+        sortby = pstats.SortKey.CUMULATIVE  
+        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)  
+        ps.print_stats()  
+
+        # Print the profiling results to the Blender console  
+        print(s.getvalue())  
 
         return {'FINISHED'}
     

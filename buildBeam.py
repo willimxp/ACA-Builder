@@ -742,6 +742,7 @@ def __drawGabelBeam(name='趴梁',
             dimension=dimension,
             parent=parent,
         )
+    utils.focusObj(gabelBeam)
     # 挤压8号边
     bpy.ops.object.mode_set(mode='EDIT')
     bm = bmesh.new()
@@ -1427,14 +1428,13 @@ def __drawJiaobei(shuzhuObj:bpy.types.Object):
         shuzhuObj.location.y, # 对齐上一层的槫的Y位置
         (shuzhuObj.location.z-shuzhu_height/2
             + height/2))
-    bpy.ops.mesh.primitive_cube_add(
-        location = loc
+    jiaobeiObj = utils.addCube(
+        name='角背',
+        location=loc,
+        dimension=dim,
+        parent=shuzhuObj.parent,
     )
-    jiaobeiObj = bpy.context.object
-    jiaobeiObj.name = '角背'
-    jiaobeiObj.parent = shuzhuObj.parent
-    jiaobeiObj.dimensions = dim
-    utils.applyTransfrom(jiaobeiObj,use_scale=True)
+    utils.focusObj(jiaobeiObj)
     # 挤压两个角
     bpy.ops.object.mode_set(mode='EDIT')
     bm = bmesh.new()

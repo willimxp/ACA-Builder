@@ -346,7 +346,6 @@ class ACA_OT_del_wall(bpy.types.Operator):
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
         if objData.aca_type in (
-                con.ACA_TYPE_WALL_CHILD,
                 con.ACA_TYPE_WALL, 
                 ):
             funproxy = partial(

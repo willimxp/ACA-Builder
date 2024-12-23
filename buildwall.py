@@ -64,7 +64,7 @@ def __getWallData(buildingObj:bpy.types.Object,net_x,net_y):
 
 # 构造wallproxy
 # 根据wallID，实现wallproxy的大小、位置、属性的构造
-def buildWallproxy(buildingObj:bpy.types.Object,
+def __tempWallproxy(buildingObj:bpy.types.Object,
                    wallID:str):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
@@ -79,36 +79,57 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
     # 解析wallID，例如”wall#3/0#3/3“，或”window#0/0#0/1“，或”door#0/1#0/2“
     setting = wallID.split('#')
+
+    # 对象命名
+    wallType = setting[0]
+    if wallType == con.ACA_WALLTYPE_WALL:
+        wallName = '墙体'
+    elif wallType == con.ACA_WALLTYPE_WINDOW:
+        wallName = '槛窗'
+    elif wallType == con.ACA_WALLTYPE_DOOR:
+        wallName = '隔扇'
+    wallName = "%s.%s#%s" % (wallName,setting[1],setting[2])
+
+    # # 如果柱子等高，装修在额枋下，否则直接做到柱头
+    # # 获取实际柱高   
+    # pillerFromHeight = buildFloor.getPillerHeight(
+    #     buildingObj,setting[1])
+    # pillerToHeight = buildFloor.getPillerHeight(
+    #     buildingObj,setting[2])
+    # # 判断柱子是否等高
+    # if abs(pillerFromHeight - pillerToHeight) > 0.001:
+    #     isPillerSameHeight = False
+    # else:
+    #     isPillerSameHeight = True
+    # # 装修高度取较低的柱高
+    # if pillerFromHeight > pillerToHeight:
+    #     pillerHeight = pillerToHeight
+    # else:
+    #     pillerHeight = pillerFromHeight
+    # # # 如果柱子等高，装修在额枋下，否则直接做到柱头
+    # if isPillerSameHeight:
+    #     wall_height = pillerHeight \
+    #         - con.EFANG_LARGE_H*dk # 除去大额枋高度
+    #     if bData.use_smallfang:
+    #         wall_height += \
+    #         - con.BOARD_YOUE_H*dk \
+    #         - con.EFANG_SMALL_H*dk # 除去小额枋、垫板高度
+    # else:
+    #     wall_height = pillerHeight
     
-    # 获取实际柱高   
-    pillerFromHeight = buildFloor.getPillerHeight(
-        buildingObj,setting[1])
-    pillerToHeight = buildFloor.getPillerHeight(
-        buildingObj,setting[2])
-
-    # 判断柱子是否等高
-    if abs(pillerFromHeight - pillerToHeight) > 0.001:
-        isPillerSameHeight = False
-    else:
-        isPillerSameHeight = True
-    # 装修高度取较低的柱高
-    if pillerFromHeight > pillerToHeight:
-        pillerHeight = pillerToHeight
-    else:
-        pillerHeight = pillerFromHeight
-
+    # 241223 以上逻辑考虑不周
+    # 在比如歇山前后廊的廊间隔扇，梁思成的图纸的确做到了柱头（没有加额枋）
+    # 但这不是常规状态，如，歇山无廊的山面隔扇，其实都应该做到额枋之下
+    # 所以这里暂时全部按做了额枋的方式处理
+    wall_height = (bData.piller_height 
+            - con.EFANG_LARGE_H*dk) # 除去大额枋高度
+    if bData.use_smallfang:
+        wall_height += (
+        - con.BOARD_YOUE_H*dk 
+        - con.EFANG_SMALL_H*dk) # 除去小额枋、垫板高度
+    
     # 定义wallproxy尺寸
     wall_depth = 1 # 墙线框默认尺寸，后续被隐藏显示，所以没有实际影响
-    # 如果柱子等高，装修在额枋下，否则直接做到柱头
-    if isPillerSameHeight:
-        wall_height = pillerHeight \
-            - con.EFANG_LARGE_H*dk # 除去大额枋高度
-        if bData.use_smallfang:
-            wall_height += \
-            - con.BOARD_YOUE_H*dk \
-            - con.EFANG_SMALL_H*dk # 除去小额枋、垫板高度
-    else:
-        wall_height = pillerHeight
     # 重檐时，装修不到柱头，留出走马板位置
     if bData.wall_span != 0:
             wall_height -= bData.wall_span
@@ -145,7 +166,7 @@ def buildWallproxy(buildingObj:bpy.types.Object,
                 end_point = pEnd,
                 depth = wall_depth,
                 height = wall_height,
-                name = "wallproxy",
+                name = wallName,
                 root_obj = wallrootObj,
                 origin_at_bottom = True
             )
@@ -157,15 +178,12 @@ def buildWallproxy(buildingObj:bpy.types.Object,
     wData['wallID'] = wallID
     if style == con.ACA_WALLTYPE_WALL:
         wData['wall_style'] = 1
-        wallproxy.name = '墙体proxy'
     if style == con.ACA_WALLTYPE_DOOR:
         wData['wall_style'] = 2
         wData['use_KanWall'] = False
-        wallproxy.name = '隔扇proxy'
     if style == con.ACA_WALLTYPE_WINDOW:
         wData['wall_style'] = 3
         wData['use_KanWall'] = True
-        wallproxy.name = '槛窗proxy'
     wData['wall_depth'] = bData.wall_depth
     wData['wall_span'] = bData.wall_span
     wData['door_height'] = bData.door_height
@@ -187,6 +205,8 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 退花碱厚度
     bodyShrink = con.WALL_SHRINK
 
+    wallParts = []
+
     # 针对重檐，装修不一定做到柱头，用走马板填充
     if bData.wall_span != 0 :
         wallHeadBoard = utils.addCube(
@@ -200,6 +220,7 @@ def __drawWall(wallProxy:bpy.types.Object):
                 parent=wallProxy,
             )
         mat.setMat(wallHeadBoard,aData.mat_wood)
+        wallParts.append(wallHeadBoard)
 
     # 1、创建下碱对象
     # 下碱一般取墙体高度的1/3
@@ -217,6 +238,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     )
     # 赋材质
     mat.setMat(bottomObj,aData.mat_rock)
+    wallParts.append(bottomObj)
 
     # 2、创建上身对象
     extrudeHeight = wallHeight/10
@@ -249,12 +271,10 @@ def __drawWall(wallProxy:bpy.types.Object):
 
     # 赋材质
     mat.setMat(bodyObj,aData.mat_dust_red)
+    wallParts.append(bodyObj)
     
     # 合并
-    wallObj = utils.joinObjects([bottomObj,bodyObj],'墙体')
-    wData : acaData = wallObj.ACA_data
-    wData['aca_obj'] = True
-    wData['aca_type'] = con.ACA_TYPE_WALL_CHILD
+    wallObj = utils.joinObjects(wallParts,'墙体')
     # 导角
     modBevel:bpy.types.BevelModifier = \
         wallObj.modifiers.new('Bevel','BEVEL')
@@ -264,91 +284,79 @@ def __drawWall(wallProxy:bpy.types.Object):
 
 # 个性化设置一个墙体
 # 传入wallproxy
-def buildSingleWall(wallproxy:bpy.types.Object):
-    # 清空框线
-    utils.deleteHierarchy(wallproxy)
+def buildSingleWall(
+        buildingObj:bpy.types.Object,
+        wallID='',
+    ):
+    # 0、判断新增还是修改
+    isNew = False
+    inputObjType = buildingObj.ACA_data['aca_type']
+    if inputObjType == con.ACA_TYPE_BUILDING:
+        # 生成wallproxy，做为墙体生成的数据参考
+        isNew = True
+        wallproxy = __tempWallproxy(buildingObj,wallID)
+    elif inputObjType == con.ACA_TYPE_WALL:
+        # 不重新生成wallproxy
+        # 此时传入的buildingObj实际是选中的wallObj
+        # 以该wallObj做为wallproxy使用（可能略有出入，待观察）
+        wallproxy = buildingObj
+        wallID = wallproxy.ACA_data['wallID']
+    else:
+        utils.outputMsg(
+            'Can not build wall by ' 
+            + buildingObj.name)
+        return        
 
-    # 载入数据
-    wData:acaData = wallproxy.ACA_data
+    wallType = wallID.split('#')[0]
+    wallObj = None
+    # 营造槛墙
+    if wallType == con.ACA_WALLTYPE_WALL:
+        wallObj = __drawWall(wallproxy)
+    # 营造隔扇、槛窗
+    if wallType in (con.ACA_WALLTYPE_WINDOW,
+                    con.ACA_WALLTYPE_DOOR):
+        wallObj = buildDoor.buildDoor(wallproxy)
     
-    if wData.wall_style == "1":   #槛墙
-        wallChildObj = __drawWall(wallproxy)
+    if wallObj != None:
+        # 替换wallproxy
+        utils.applyTransfrom(wallObj,
+                            use_location=True,
+                            use_rotation=True,
+                            use_scale=True)
+        utils.replaceObject(wallproxy,wallObj)
+        
+        # 整理数据
+        wData:acaData = wallObj.ACA_data
+        wData['aca_obj'] = True
+        wData['aca_type'] = con.ACA_TYPE_WALL
+        wData['wallID'] = wallID
+        if wallType == con.ACA_WALLTYPE_WALL:
+            wData['wall_style'] = 1
+        if wallType == con.ACA_WALLTYPE_DOOR:
+            wData['wall_style'] = 2
+            wData['use_KanWall'] = False
+        if wallType == con.ACA_WALLTYPE_WINDOW:
+            wData['wall_style'] = 3
+            wData['use_KanWall'] = True
+        # 需留意：
+        # 新建时buildingObj是建筑根节点，数据为全局参数
+        # 但更新时buildingObj传入了wallObj，数据为个体参数
+        bData:acaData = buildingObj.ACA_data
+        wData['wall_depth'] = bData.wall_depth
+        wData['wall_span'] = bData.wall_span
+        wData['door_height'] = bData.door_height
+        wData['door_num'] = bData.door_num
+        wData['gap_num'] = bData.gap_num
+        wData['use_topwin'] = bData.use_topwin
+        
+        # 删除原对象(以及可能存在的隔扇等子对象)
+        utils.deleteHierarchy(wallproxy,del_parent=True)
 
-    if wData.wall_style in ("2","3"): # 2-隔扇，3-槛墙
-        utils.focusObj(wallproxy)
-        buildDoor.buildDoor(wallproxy)
+        utils.outputMsg("Wall: " + wallObj.name)
 
-    utils.hideObjFace(wallproxy)
-    utils.outputMsg("Wallproxy: " + wallproxy.name)
+    utils.focusObj(wallObj)
 
-    return
-
-# 更新墙布局
-# 墙体数量不变，仅更新墙体尺寸、样式等
-# 可以保持用户的个性化设置不丢失
-def updateWallLayout(buildingObj:bpy.types.Object):
-    # 获取墙布局根节点，并清空
-    wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
-
-    # 一、批量更新wallproxy尺寸
-    # a、默认尺寸
-    wall_depth = 1 # 墙线框尺寸
-    pillerObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_PILLER)
-    wall_height = pillerObj.dimensions.z   
-    # b、计算布局数据
-    net_x,net_y = buildFloor.getFloorDate(buildingObj)
-    row,col,rowRange,colRange = \
-        __getWallData(buildingObj,net_x,net_y)  
-    wallcounter = 0       
-    # c、缩放横向墙体
-    for r in row: 
-        for c in colRange:
-            pStart = Vector((net_x[c],net_y[r],0))
-            pEnd = Vector((net_x[c+1],net_y[r],0))
-            length = utils.getVectorDistance(pStart,pEnd)
-            origin_point = (pStart+pEnd)/2
-            wallobj = wallrootObj.children[wallcounter]
-            wallobj.dimensions.x = length
-            wallobj.location = origin_point
-            utils.applyScale(wallobj)
-            wallcounter += 1
-    # d、缩放纵向墙体
-    for c in col: 
-        for r in rowRange:
-            pStart = Vector((net_x[c],net_y[r],0))
-            pEnd = Vector((net_x[c],net_y[r+1],0))
-            length = utils.getVectorDistance(pStart,pEnd)
-            origin_point = (pStart+pEnd)/2
-            wallobj = wallrootObj.children[wallcounter]
-            wallobj.dimensions.x = length
-            wallobj.location = origin_point
-            utils.applyScale(wallobj)
-            wallcounter += 1
-
-    # 二、检查wallproxy属性是否未初始化
-    # 比如，新建建筑时，可能wallproxy属性仍为空
-    # 批量更新wallproxy属性，以全局参数填入
-    bData :acaData = buildingObj.ACA_data
-    for wallproxy in wallrootObj.children:
-        # 填充wallproxy的数据
-        wData :acaData = wallproxy.ACA_data
-        if wData.wall_style == '':
-            # enumProperty赋值很奇怪
-            if bData.wall_style != "":
-                wData['wall_style'] = int(bData.wall_style) 
-            wData['wall_depth'] = bData.wall_depth
-            wData['wall_span'] = bData.wall_span
-            wData['door_height'] = bData.door_height
-            wData['door_num'] = bData.door_num
-            wData['gap_num'] = bData.gap_num
-            wData['use_topwin'] = bData.use_topwin
-
-    # 三、批量绑定墙体构件
-    for wallproxy in wallrootObj.children:
-        buildSingleWall(wallproxy)
-    
-    # 重新聚焦建筑根节点
-    utils.focusObj(buildingObj)
+    return wallObj
 
 # 手工添加隔断
 def addWall(buildingObj:bpy.types.Object,
@@ -392,20 +400,19 @@ def addWall(buildingObj:bpy.types.Object,
                     if wallID in wall_net or wallID_alt in wall_net:
                         print(wallID + " is in wall_net:" + wall_net)
                         continue
-                    wallStr = wallType+'#'+wallID
+                    wallID = wallType+'#'+wallID
                     
                     # 生成墙体
-                    wallproxy = buildWallproxy(buildingObj,wallStr)
-                    buildSingleWall(wallproxy)
+                    wallObj = buildSingleWall(buildingObj,wallID)
 
                     # 将墙体加入整体布局中
-                    bData.wall_net += wallStr + ','            
+                    bData.wall_net += wallID + ','            
 
                     # 将柱子交换，为下一次循环做准备
                     pFrom = piller
 
     # 聚焦在创建的门上
-    utils.focusObj(wallproxy)
+    utils.focusObj(wallObj)
 
     return {'FINISHED'}
 
@@ -415,15 +422,11 @@ def delWall(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
 
-    # 删除额枋对象
+    # 删除装修对象
     for wall in walls:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
         if 'aca_type' in wall.ACA_data:
-            # 如果用户选择为子墙体，自动替换为wallproxy
-            if wall.ACA_data['aca_type'] == con.ACA_TYPE_WALL_CHILD:
-                wall = utils.getAcaParent(
-                    wall,con.ACA_TYPE_WALL)
-            # 删除wallproxy
+            # 删除wall
             if wall.ACA_data['aca_type'] == con.ACA_TYPE_WALL:
                 utils.deleteHierarchy(wall,del_parent=True)
 
@@ -431,9 +434,10 @@ def delWall(buildingObj:bpy.types.Object,
     wallRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_WALL_ROOT)
     bData.wall_net = ''
-    for wallproxy in wallRootObj.children:
-        wallStr = wallproxy.ACA_data['wallID']
-        bData.wall_net += wallStr + ','
+    for wall in wallRootObj.children:
+        if 'wallID' in wall.ACA_data:
+            wallStr = wall.ACA_data['wallID']
+            bData.wall_net += wallStr + ','
 
     utils.focusObj(buildingObj)
 
@@ -471,9 +475,7 @@ def buildWallLayout(buildingObj:bpy.types.Object):
     wallList = wallSetting.split(',')
     for wallID in wallList:
         if wallID == '': continue
-        wallproxy = buildWallproxy(
-            buildingObj,wallID)
-        buildSingleWall(wallproxy)
+        buildSingleWall(buildingObj,wallID)
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

@@ -746,9 +746,9 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     return kangqiangObj
 
 # 构建完整的隔扇
-def buildDoor(wallproxy:bpy.types.Object):       
+def buildDoor(wallProxy:bpy.types.Object):       
     # 载入设计数据
-    buildingObj,bData,wData = utils.getRoot(wallproxy)
+    buildingObj,bData,wData = utils.getRoot(wallProxy)
     aData:tmpData = bpy.context.scene.ACA_temp
     if buildingObj == None:
         utils.showMessageBox(
@@ -758,13 +758,16 @@ def buildDoor(wallproxy:bpy.types.Object):
     pd = con.PILLER_D_EAVE * dk
     pillerD = bData.piller_diameter
     # 分解槛框的长、宽、高
-    frame_width,frame_depth,frame_height = wallproxy.dimensions
+    frame_width,frame_depth,frame_height = wallProxy.dimensions
+    # wallID
+    wallID = wallProxy.ACA_data['wallID']
 
     # 清理之前的子对象
-    utils.deleteHierarchy(wallproxy)
+    utils.deleteHierarchy(wallProxy)
 
     # 收集槛框对象
     kankuangList = []
+    geshanList = []
 
     # 1、构建槛框内的每一扇隔扇
     # 注意：先做隔扇是因为考虑到槛窗模式下，窗台高度依赖于隔扇抹头的计算结果
@@ -797,7 +800,8 @@ def buildDoor(wallproxy:bpy.types.Object):
         if n%2 == 0: dir = 'L'
         else: dir = 'R'
         geshanObj,windowsillZ = __buildGeshan(
-            '隔扇',wallproxy,scale,location,dir)
+            '隔扇',wallProxy,scale,location,dir)
+        geshanList.append(geshanObj)
         
     # 2、构建槛墙
     windowsillHeight = windowsillZ + geshanZ # 将窗台坐标从隔扇proxy转换到wallproxy
@@ -805,16 +809,16 @@ def buildDoor(wallproxy:bpy.types.Object):
     if wData.use_KanWall :
         # 窗台高度
         scale = Vector((
-            wallproxy.dimensions.x,
-            wallproxy.dimensions.y,
+            wallProxy.dimensions.x,
+            wallProxy.dimensions.y,
             windowsillHeight
         ))
         # 添加槛墙
-        kanqiangObj = __buildKanqiang(wallproxy,scale)
+        kanqiangObj = __buildKanqiang(wallProxy,scale)
         kankuangList.append(kanqiangObj)
     
     # 3、构建槛框，基于隔扇计算的窗台高度
-    kankuangObj = __buildKanKuang(wallproxy,windowsillHeight)
+    kankuangObj = __buildKanKuang(wallProxy,windowsillHeight)
     kankuangList.append(kankuangObj)
 
     # 4、构建走马板：针对重檐，装修不一定做到柱头，用走马板填充
@@ -827,21 +831,26 @@ def buildDoor(wallproxy:bpy.types.Object):
                 dimension=(frame_width,
                            con.BOARD_YOUE_Y*dk,
                            bData.wall_span),
-                parent=wallproxy,
+                parent=wallProxy,
             )
         mat.setMat(wallHeadBoard,aData.mat_wood)
         kankuangList.append(wallHeadBoard)
 
     # 5、批量设置所有子对象材质
-    for ob in wallproxy.children:
+    for ob in wallProxy.children:
         # 全部设置为朱漆材质
         # 其中槛窗的窗台为石质，并不会被覆盖
         mat.setMat(ob,aData.mat_red)
-        
 
     # 合并槛框
     kankuangObj = utils.joinObjects(kankuangList,'槛框')
+    # 将隔扇挂入槛框父节点
+    for geshan in geshanList:
+        geshan.parent = kankuangObj
+        geshan.location = (kankuangObj.matrix_world.inverted() 
+                           @ wallProxy.matrix_world 
+                           @ geshan.location)
 
-    utils.focusObj(wallproxy)
+    utils.focusObj(kankuangObj)
 
-    return {'FINISHED'}
+    return kankuangObj

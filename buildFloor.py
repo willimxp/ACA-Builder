@@ -661,8 +661,8 @@ def delFang(buildingObj:bpy.types.Object,
 
     return
 
-# 计算柱子的高度
-# 根据pill二ID在当前buildingObj中计算柱子高度
+# 计算收到廊间举架影响的柱子高度
+# 根据pillerID在当前buildingObj中计算柱子高度
 # 檐柱用输入的柱高
 # 金柱根据是否做廊间举架，判断是否要自动升高
 def getPillerHeight(buildingObj,pillerID):
@@ -675,30 +675,32 @@ def getPillerHeight(buildingObj,pillerID):
 
     # 判断是否需要加高
     needResizePiller = False
-    # 如果2坡顶，则前后廊柱全部升高
-    if bData.roof_style in (
-        con.ROOF_XUANSHAN,
-        con.ROOF_XUANSHAN_JUANPENG,
-        con.ROOF_YINGSHAN,
-        con.ROOF_YINGSHAN_JUANPENG,
-    ):
-        if y in (1,bData.y_rooms-1):
-            needResizePiller = True
-    # 如果4坡顶，则仅内圈廊柱升高（无论前后廊，还是周围廊）
-    if bData.roof_style in (
-        con.ROOF_LUDING,
-        con.ROOF_WUDIAN,
-        con.ROOF_XIESHAN,
-        con.ROOF_XIESHAN_JUANPENG,
-    ):
-        # 前后檐
-        if x not in (0,bData.x_rooms) \
-            and y in (1,bData.y_rooms-1):
-            needResizePiller = True
-        # 两山
-        if x in (1,bData.x_rooms-1)  \
-            and y not in (0,bData.y_rooms):
-            needResizePiller = True
+    if bData.y_rooms>=3 and bData.use_hallway:
+        # 如果2坡顶，则前后廊柱全部升高
+        if bData.roof_style in (
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG,
+            con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG,
+        ):
+            if y in (1,bData.y_rooms-1):
+                needResizePiller = True
+        # 如果4坡顶，则仅内圈廊柱升高（无论前后廊，还是周围廊）
+        if bData.roof_style in (
+            con.ROOF_LUDING,
+            con.ROOF_WUDIAN,
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,
+        ):
+            # 前后檐
+            if x not in (0,bData.x_rooms) \
+                and y in (1,bData.y_rooms-1):
+                needResizePiller = True
+            # 两山
+            if x in (1,bData.x_rooms-1)  \
+                and y not in (0,bData.y_rooms):
+                needResizePiller = True
+    
     # 如果无需加高，直接返回檐柱高度
     if not needResizePiller: 
         return bData.piller_height

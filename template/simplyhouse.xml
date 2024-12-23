@@ -162,8 +162,8 @@
 		<qiqiao type="int">4</qiqiao>
 		<chong type="int">3</chong>
 		<shengqi type="int">1</shengqi>
-		<tile_width type="float">0.465</tile_width>
-		<tile_length type="float">0.6</tile_length>
+		<tile_width type="float">0.484</tile_width>
+		<tile_length type="float">0.625</tile_length>
 		<aca_type type="str">building</aca_type>
 		<is_showPlatform type="bool">True</is_showPlatform>
 		<is_showPillers type="bool">True</is_showPillers>
@@ -176,7 +176,7 @@
 		<wall_depth type="float">1.0</wall_depth>
 		<wall_span type="float">0.0</wall_span>
 		<tuishan type="float">0.9</tuishan>
-		<shoushan type="float">1.013</shoushan>
+		<shoushan type="float">1.01</shoushan>
 		<luding_rafterspan type="float">3.0</luding_rafterspan>
 		<juzhe type="str">0</juzhe>
 		<paoshou_count type="int">6</paoshou_count>

@@ -184,11 +184,11 @@ def openTemplate(buildingObj:bpy.types.Object,
                 # 斗口
                 dk = template.find('dk')
                 if dk != None: 
-                    bData['DK'] = float(dk.text)
+                    bData['DK'] = round(float(dk.text),3)
                 # 柱径
                 pd = template.find('piller_diameter')
                 if pd != None:
-                    bData['piller_diameter'] = float(pd.text)
+                    bData['piller_diameter'] = round(float(pd.text),3)
                 # 刷新bData默认值
                 bData = __loadDefaultData(buildingObj)
 
@@ -205,7 +205,7 @@ def openTemplate(buildingObj:bpy.types.Object,
                                    'juzhe'):
                             bData[tag] = int(value)
                     elif type == 'float':
-                        bData[tag] = round(float(value),2)
+                        bData[tag] = round(float(value),3)
                     elif type == 'int':
                         bData[tag] = int(value)
                     elif type == 'bool':
@@ -281,7 +281,7 @@ def saveTemplate(buildingObj:bpy.types.Object):
         # 以当前建筑名称覆盖模版名称
         if key == 'template_name':
             value = templateName
-        # 浮点数取2位精度
+        # 浮点数取3位精度
         if keyType == 'float':
             value = round(value,3)
         if keyType == 'Object':

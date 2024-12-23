@@ -193,7 +193,6 @@ class ACA_PT_platform(bpy.types.Panel):
             if not bData.is_showPlatform:
                 layout.enabled = False
                 
-
 # “柱网属性”子面板
 class ACA_PT_pillers(bpy.types.Panel):
     # 常规属性
@@ -315,12 +314,12 @@ class ACA_PT_wall(bpy.types.Panel):
         if buildingObj == None: return
         if bData.aca_type != con.ACA_TYPE_BUILDING:
             layout.enabled = False
-        if objData.aca_type == con.ACA_TYPE_WALL:
-            col = row.column()
-            col.label(text='[个体]',icon='KEYTYPE_JITTER_VEC')
-        else:
-            col = row.column()
-            col.label(text='[全局]',icon='KEYTYPE_KEYFRAME_VEC')
+        # if objData.aca_type == con.ACA_TYPE_WALL:
+        #     col = row.column()
+        #     col.label(text='['+context.object.name+']',icon='KEYTYPE_JITTER_VEC')
+        # else:
+        #     col = row.column()
+        #     col.label(text='[全局]',icon='KEYTYPE_KEYFRAME_VEC')
 
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -375,7 +374,6 @@ class ACA_PT_wall(bpy.types.Panel):
             # 删除按钮，是否选中个隔断对象
             if objData.aca_type not in (
                 con.ACA_TYPE_FANG,          # 枋对象
-                con.ACA_TYPE_WALL_CHILD,    # 槛墙对象
                 con.ACA_TYPE_WALL,          # wallProxy
                 ):
                 buttonDel.enabled = False
@@ -390,6 +388,12 @@ class ACA_PT_wall(bpy.types.Panel):
                 dataSource = bData    
             
             toolBar = toolBox.grid_flow(align=True,columns=1)
+            # 当前选择范围
+            selectRange = toolBar.column(align=True)
+            if objData.aca_type == con.ACA_TYPE_WALL: 
+                selectRange.label(text='['+context.object.name+']',icon='KEYTYPE_JITTER_VEC')
+            else:
+                selectRange.label(text='[全局]',icon='KEYTYPE_KEYFRAME_VEC')
             # 暂时隐藏了该设置项，墙体全部默认用1.5D作为厚度
             # # 墙体厚度
             # inputWallDeepth = toolBar.column(align=True)

@@ -20,6 +20,7 @@ class ACA_Consts(object):
     ACA_TYPE_FANG = 'fang'                      # ACA类型：枋
     ACA_TYPE_WALL_ROOT = 'wall_root'            # ACA类型：装修布局，墙体的父节点
     ACA_TYPE_WALL = 'wall'                      # ACA类型：墙体
+    ACA_TYPE_WALL_CHILD = 'wall_child'          # ACA类型：墙体子对象
     ACA_TYPE_DG_ROOT ='dg_root'                 # ACA类型：斗栱根节点
     ACA_TYPE_ROOF_ROOT ='roof_root'             # ACA类型：屋顶根节点
     ACA_TYPE_BEAM_ROOT = 'beam_root'            # ACA类型：梁架根节点

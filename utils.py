@@ -1522,17 +1522,22 @@ def replaceObject(
         fromObj:bpy.types.Object,
         toObj:bpy.types.Object,
         delete=False,
-        replaceModifier=True,
-        replaceName=True):
+        use_Modifier=True,
+        use_Name=True,
+        use_Dimension=True):
     # 传递旧对象的位置、旋转、尺寸、名称、父子关系、修改器
     toObj.location = fromObj.location
     toObj.rotation_euler = fromObj.rotation_euler
-    toObj.dimensions = getMeshDims(fromObj) # 排除modifier的尺寸
-    applyTransfrom(toObj,use_scale=True)
     toObj.parent = fromObj.parent
-    if replaceModifier:
+
+    if use_Dimension:
+        toObj.dimensions = getMeshDims(fromObj) # 排除modifier的尺寸
+        applyTransfrom(toObj,use_scale=True)
+    
+    if use_Modifier:
         copyModifiers(fromObj,toObj)
-    if replaceName:
+
+    if use_Name:
         # 先释放原对象名称，以免被添加.001后缀
         fromName = fromObj.name
         fromObj.name += '.backup'

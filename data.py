@@ -124,12 +124,25 @@ def update_wall(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
+        refObj = None
         if odata.aca_type == con.ACA_TYPE_WALL:
+            refObj = context.object
+        elif odata.aca_type == con.ACA_TYPE_WALL_CHILD:
+            refObj = context.object.parent
+        else:
+            refObj = buildingObj
+
+        from . import buildWall
+        if refObj != buildingObj:
             # 此对象为已生成的wall对象，做个体更新
-            from . import buildWall
             funproxy = partial(buildWall.buildSingleWall,
-                            buildingObj=context.object)
-            utils.fastRun(funproxy)
+                            buildingObj=refObj)
+        else:
+            # 全局更新
+            funproxy = partial(buildWall.buildWallLayout,
+                            buildingObj=refObj)
+        utils.fastRun(funproxy)
+            
 
     else:
         utils.outputMsg("updated platform failed, context.object should be buildingObj")

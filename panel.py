@@ -384,16 +384,23 @@ class ACA_PT_wall(bpy.types.Panel):
                 # 如果用户选中了wallProxy
                 # 仅设置个体参数，取objData
                 dataSource = objData
+            elif objData.aca_type == con.ACA_TYPE_WALL_CHILD:
+                dataSource = context.object.parent.ACA_data
             else:
                 dataSource = bData    
             
             toolBar = toolBox.grid_flow(align=True,columns=1)
             # 当前选择范围
             selectRange = toolBar.column(align=True)
-            if objData.aca_type == con.ACA_TYPE_WALL: 
-                selectRange.label(text='['+context.object.name+']',icon='KEYTYPE_JITTER_VEC')
+            if objData.aca_type in (
+                con.ACA_TYPE_WALL,con.ACA_TYPE_WALL_CHILD): 
+                selectRange.label(
+                    text='['+context.object.name+']',
+                    icon='KEYTYPE_JITTER_VEC')
             else:
-                selectRange.label(text='[全局]',icon='KEYTYPE_KEYFRAME_VEC')
+                selectRange.label(
+                    text='[全局]',
+                    icon='KEYTYPE_KEYFRAME_VEC')
             # 暂时隐藏了该设置项，墙体全部默认用1.5D作为厚度
             # # 墙体厚度
             # inputWallDeepth = toolBar.column(align=True)

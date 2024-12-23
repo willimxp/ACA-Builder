@@ -288,6 +288,10 @@ def buildSingleWall(
         buildingObj:bpy.types.Object,
         wallID='',
     ):
+    # 锁定操作目录
+    buildingColl = buildingObj.users_collection[0]
+    utils.setCollection('装修',parentColl=buildingColl)
+
     # 0、判断新增还是修改
     isNew = False
     inputObjType = buildingObj.ACA_data['aca_type']
@@ -318,37 +322,44 @@ def buildSingleWall(
         wallObj = buildDoor.buildDoor(wallproxy)
     
     if wallObj != None:
+        # 整理数据，包括槛框中的隔扇子对象
+        dataObj = (wallObj,)
+        if len(wallObj.children) > 0:
+            dataObj += wallObj.children
+        for obj in dataObj:
+            wData:acaData = obj.ACA_data
+            wData['aca_obj'] = True
+            wData['wallID'] = wallID
+            if obj.parent == wallproxy:
+                wData['aca_type'] = con.ACA_TYPE_WALL
+            else:
+                wData['aca_type'] = con.ACA_TYPE_WALL_CHILD            
+            if wallType == con.ACA_WALLTYPE_WALL:
+                wData['wall_style'] = 1
+            if wallType == con.ACA_WALLTYPE_DOOR:
+                wData['wall_style'] = 2
+                wData['use_KanWall'] = False
+            if wallType == con.ACA_WALLTYPE_WINDOW:
+                wData['wall_style'] = 3
+                wData['use_KanWall'] = True
+            # 需留意：
+            # 新建时buildingObj是建筑根节点，数据为全局参数
+            # 但更新时buildingObj传入了wallObj，数据为个体参数
+            bData:acaData = buildingObj.ACA_data
+            wData['wall_depth'] = bData.wall_depth
+            wData['wall_span'] = bData.wall_span
+            wData['door_height'] = bData.door_height
+            wData['door_num'] = bData.door_num
+            wData['gap_num'] = bData.gap_num
+            wData['use_topwin'] = bData.use_topwin
+        
         # 替换wallproxy
         utils.applyTransfrom(wallObj,
                             use_location=True,
                             use_rotation=True,
                             use_scale=True)
-        utils.replaceObject(wallproxy,wallObj)
-        
-        # 整理数据
-        wData:acaData = wallObj.ACA_data
-        wData['aca_obj'] = True
-        wData['aca_type'] = con.ACA_TYPE_WALL
-        wData['wallID'] = wallID
-        if wallType == con.ACA_WALLTYPE_WALL:
-            wData['wall_style'] = 1
-        if wallType == con.ACA_WALLTYPE_DOOR:
-            wData['wall_style'] = 2
-            wData['use_KanWall'] = False
-        if wallType == con.ACA_WALLTYPE_WINDOW:
-            wData['wall_style'] = 3
-            wData['use_KanWall'] = True
-        # 需留意：
-        # 新建时buildingObj是建筑根节点，数据为全局参数
-        # 但更新时buildingObj传入了wallObj，数据为个体参数
-        bData:acaData = buildingObj.ACA_data
-        wData['wall_depth'] = bData.wall_depth
-        wData['wall_span'] = bData.wall_span
-        wData['door_height'] = bData.door_height
-        wData['door_num'] = bData.door_num
-        wData['gap_num'] = bData.gap_num
-        wData['use_topwin'] = bData.use_topwin
-        
+        utils.replaceObject(wallproxy,wallObj,
+                            use_Dimension=False)        
         # 删除原对象(以及可能存在的隔扇等子对象)
         utils.deleteHierarchy(wallproxy,del_parent=True)
 

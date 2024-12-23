@@ -399,7 +399,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
             fromObj=ccFangProxy,
             toObj=ccFangObj,
             delete=True,
-            replaceModifier=False
+            use_Modifier=False
         )
         utils.applyAllModifer(ccFangObj)
         # # 调整柱头伸出，一个柱径

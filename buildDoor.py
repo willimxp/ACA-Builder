@@ -595,9 +595,13 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         mat.setMat(partObj,partMat)
             
     # 隔扇子对象合并
+    if bData.use_KanWall:
+        newName = '隔扇窗'
+    else:
+        newName = '隔扇门'
     geshanObj = utils.joinObjects(
         geshan_root.children,
-        newName='隔扇门',
+        newName=newName,
         baseObj=menzhouObj)
     geshanObj.parent = wallproxy
     geshanObj.location += geshan_root.location
@@ -843,14 +847,14 @@ def buildDoor(wallProxy:bpy.types.Object):
         mat.setMat(ob,aData.mat_red)
 
     # 合并槛框
-    kankuangObj = utils.joinObjects(kankuangList,'槛框')
+    kankuangJoined = utils.joinObjects(kankuangList,'槛框')
     # 将隔扇挂入槛框父节点
     for geshan in geshanList:
-        geshan.parent = kankuangObj
-        geshan.location = (kankuangObj.matrix_world.inverted() 
+        geshan.parent = kankuangJoined
+        geshan.location = (kankuangJoined.matrix_world.inverted() 
                            @ wallProxy.matrix_world 
                            @ geshan.location)
 
-    utils.focusObj(kankuangObj)
+    utils.focusObj(kankuangJoined)
 
-    return kankuangObj
+    return kankuangJoined

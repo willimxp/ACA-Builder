@@ -1522,16 +1522,23 @@ def replaceObject(
         fromObj:bpy.types.Object,
         toObj:bpy.types.Object,
         delete=False,
-        replaceModifier=True):
+        replaceModifier=True,
+        replaceName=True):
     # 传递旧对象的位置、旋转、尺寸、名称、父子关系、修改器
     toObj.location = fromObj.location
     toObj.rotation_euler = fromObj.rotation_euler
     toObj.dimensions = getMeshDims(fromObj) # 排除modifier的尺寸
     applyTransfrom(toObj,use_scale=True)
-    toObj.name = fromObj.name
     toObj.parent = fromObj.parent
     if replaceModifier:
         copyModifiers(fromObj,toObj)
+    if replaceName:
+        # 先释放原对象名称，以免被添加.001后缀
+        fromName = fromObj.name
+        fromObj.name += '.backup'
+        fromObj.data.name += '.backup'
+        toObj.name = fromName
+        toObj.data.name = fromName
 
     if delete:
         # 删除原对象
@@ -1550,3 +1557,8 @@ def subdivideObject(object:bpy.types.Object,level=1):
         bpy.ops.mesh.subdivide()
     bpy.ops.object.mode_set(mode="OBJECT")
     return object
+
+# 封装对象删除
+def delObject(object:bpy.types.Object):
+    bpy.data.objects.remove(object)
+    return

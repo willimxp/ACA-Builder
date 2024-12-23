@@ -519,10 +519,11 @@ def __setPillerHead(pillerObj:bpy.types.Object,
     # 表面平滑
     for part in pillerParts:
         utils.shaderSmooth(part)
-    # 柱身、柱头合并
-    newPiller = utils.joinObjects(pillerParts,cleanup=True)
-    # 移除原有的柱身
+    # 移除原有的柱身，并将柱名称让给新对象
+    pillerName = pillerObj.name
     bpy.data.objects.remove(pillerObj)
+    # 柱身、柱头合并
+    newPiller = utils.joinObjects(pillerParts,pillerName,cleanup=True)
     
     return newPiller
 

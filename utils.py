@@ -256,6 +256,10 @@ def copyObject(
                 location=child.location,
                 singleUser=singleUser) 
 
+    if dimensions != None:
+        # 缩放后需要更新数据，以便生效
+        updateScene()
+
     # 恢复原对象的隐藏属性
     sourceObj.hide_set(IsHideEye)
     sourceObj.hide_viewport = IsHideViewport

@@ -473,7 +473,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
             roomWidth = abs(pEnd - pStart)
             # 补偿float精度
             roomWidth += 0.001
-            # 向下取整，宜疏不宜密
+            # 向下取整，宜疏不宜密(攒当数，实际的补间斗栱数要-1)
             dougong_count =  math.floor(roomWidth/ bData.dg_gap) 
             # 如果间距过大，可能无需补间斗栱
             if dougong_count == 0 : continue
@@ -481,13 +481,22 @@ def __buildDougong(dgrootObj:bpy.types.Object):
             dougong_span = abs(pEnd - pStart) / dougong_count
             for m in range(1,dougong_count):
                 # 补间斗栱异色判断
+                # 柱头斗栱始终为绿，补间斗拱的颜色穿插反色，如，绿|蓝|绿|蓝|绿
                 dgFillSource = None
                 if (aData.dg_fillgap_alt_source != None
                             and m%2 == 0):
                         dgFillSource = aData.dg_fillgap_alt_source
                 else:
                     dgFillSource = aData.dg_fillgap_source
-                
+                # 但如果补间攒当数为奇数(补间斗栱为偶数)，则中间两攒同色
+                # 如，绿|蓝|绿|【蓝|蓝】|绿|蓝|绿
+                if dougong_count%2 !=0 and m>= dougong_count/2:
+                    if (aData.dg_fillgap_alt_source != None
+                                and m%2 == 0):
+                            dgFillSource = aData.dg_fillgap_source
+                    else:
+                        dgFillSource = aData.dg_fillgap_alt_source
+                # 摆放斗栱
                 dgFillCopy:bpy.types.Object = utils.copySimplyObject(
                     sourceObj = dgFillSource,
                     name = "补间斗栱",

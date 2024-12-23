@@ -554,6 +554,11 @@ def __drawStep(
     stepJoined.ACA_data['stepID'] = stepID
     # origin更新到stepProxy中心
     utils.applyTransfrom(stepJoined,use_location=True)
+    # 对于单边垂带的对象（防止与相邻踏跺垂带交叠），将origin偏移半垂带
+    # 这样可以在生成土衬时，自动对齐到单边垂带的边缘
+    if isOnlyLeft:
+        utils.setOrigin(stepJoined,
+            Vector((-stoneWidth/2,0,0)))
 
     # 绑定到上一层
     stepJoined.parent = stepProxy.parent

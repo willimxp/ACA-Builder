@@ -1448,6 +1448,11 @@ def hideLayer(context,name,isShow):
 def dissolveEdge(object:bpy.types.Object,
                  index:List):
     focusObj(object)
+    # 强制一次刷新
+    # 发现在垂带生成的过程中，出现无法裁剪生效的问题
+    # 最终发现在这里刷新一次就好了
+    # cube建立的时候没有刷新，这里来还债，性能上更合算
+    updateScene()
     bpy.ops.object.mode_set(mode='EDIT')
     bm = bmesh.new()
     bm = bmesh.from_edit_mesh(object.data)

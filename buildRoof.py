@@ -1273,7 +1273,8 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             # 替换老角梁造型
             if aData.cornerbeam_source != None:
                 cbNewObj = utils.copyObject(
-                    sourceObj=aData.cornerbeam_source
+                    sourceObj=aData.cornerbeam_source,
+                    singleUser=True
                 )
                 # 传递老角梁属性
                 utils.replaceObject(CornerBeamObj,cbNewObj)

@@ -69,6 +69,7 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
     # 墙体根节点
     wallrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_WALL_ROOT)
@@ -90,43 +91,23 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
         wallName = '隔扇'
     wallName = "%s.%s#%s" % (wallName,setting[1],setting[2])
 
-    # # 如果柱子等高，装修在额枋下，否则直接做到柱头
-    # # 获取实际柱高   
-    # pillerFromHeight = buildFloor.getPillerHeight(
-    #     buildingObj,setting[1])
-    # pillerToHeight = buildFloor.getPillerHeight(
-    #     buildingObj,setting[2])
-    # # 判断柱子是否等高
-    # if abs(pillerFromHeight - pillerToHeight) > 0.001:
-    #     isPillerSameHeight = False
-    # else:
-    #     isPillerSameHeight = True
-    # # 装修高度取较低的柱高
-    # if pillerFromHeight > pillerToHeight:
-    #     pillerHeight = pillerToHeight
-    # else:
-    #     pillerHeight = pillerFromHeight
-    # # # 如果柱子等高，装修在额枋下，否则直接做到柱头
-    # if isPillerSameHeight:
-    #     wall_height = pillerHeight \
-    #         - con.EFANG_LARGE_H*dk # 除去大额枋高度
-    #     if bData.use_smallfang:
-    #         wall_height += \
-    #         - con.BOARD_YOUE_H*dk \
-    #         - con.EFANG_SMALL_H*dk # 除去小额枋、垫板高度
-    # else:
-    #     wall_height = pillerHeight
-    
-    # 241223 以上逻辑考虑不周
-    # 在比如歇山前后廊的廊间隔扇，梁思成的图纸的确做到了柱头（没有加额枋）
-    # 但这不是常规状态，如，歇山无廊的山面隔扇，其实都应该做到额枋之下
-    # 所以这里暂时全部按做了额枋的方式处理
-    wall_height = (bData.piller_height 
-            - con.EFANG_LARGE_H*dk) # 除去大额枋高度
+    # 获取实际柱高   
+    pillerFromHeight = buildFloor.getPillerHeight(
+        buildingObj,setting[1])
+    pillerToHeight = buildFloor.getPillerHeight(
+        buildingObj,setting[2])
+    # 装修高度取较低的柱高
+    if pillerFromHeight > pillerToHeight:
+        pillerHeight = pillerToHeight
+    else:
+        pillerHeight = pillerFromHeight
+    # 装修在额枋下
+    wall_height = pillerHeight \
+        - con.EFANG_LARGE_H*dk # 除去大额枋高度
     if bData.use_smallfang:
-        wall_height += (
-        - con.BOARD_YOUE_H*dk 
-        - con.EFANG_SMALL_H*dk) # 除去小额枋、垫板高度
+        wall_height += \
+        - con.BOARD_YOUE_H*dk \
+        - con.EFANG_SMALL_H*dk # 除去小额枋、垫板高度
     
     # 定义wallproxy尺寸
     wall_depth = 1 # 墙线框默认尺寸，后续被隐藏显示，所以没有实际影响
@@ -189,7 +170,15 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     wData['door_height'] = bData.door_height
     wData['door_num'] = bData.door_num
     wData['gap_num'] = bData.gap_num
-    wData['use_topwin'] = bData.use_topwin
+    wData['use_smallfang'] = bData.use_smallfang
+
+    # 验证是否做横披窗
+    # 如果中槛高度高于整个槛框高度，则不做横披窗
+    if (bData.use_topwin 
+        and wall_height > bData.door_height+con.KAN_MID_HEIGHT*pd):
+        wData['use_topwin'] = True
+    else:
+        wData['use_topwin'] = False
     return wallproxy
 
 # 绘制墙体
@@ -345,13 +334,14 @@ def buildSingleWall(
             # 需留意：
             # 新建时buildingObj是建筑根节点，数据为全局参数
             # 但更新时buildingObj传入了wallObj，数据为个体参数
-            bData:acaData = buildingObj.ACA_data
+            bData:acaData = wallproxy.ACA_data
             wData['wall_depth'] = bData.wall_depth
             wData['wall_span'] = bData.wall_span
             wData['door_height'] = bData.door_height
             wData['door_num'] = bData.door_num
             wData['gap_num'] = bData.gap_num
             wData['use_topwin'] = bData.use_topwin
+            wData['use_smallfang'] = bData.use_smallfang
         
         # 替换wallproxy
         utils.applyTransfrom(wallObj,

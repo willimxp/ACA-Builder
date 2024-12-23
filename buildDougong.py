@@ -424,6 +424,10 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 # 否则桃尖梁做前后通檐
                 else:
                     taojianLength = bData.y_total / 2
+                # 考虑到斗口不同，斗栱有缩放，所以还原到缩放前
+                taojianLength = taojianLength / dgPillerCopy.scale.y
+                # 强制每个对象的node group为单一用户
+                gnMod.node_group = gnMod.node_group.copy()
                 utils.setGN_Input(gnMod,"Length",taojianLength)
         
         # 两山的柱头斗栱，仅庑殿/歇山做两山的斗栱
@@ -453,6 +457,10 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 if gnMod != None:
                     # 廊间进深-1/4柱径（搭接了1/4更好看）
                     taojianLength = abs(net_x[1]-net_x[0]) - bData.piller_diameter/4
+                    # 考虑到斗口不同，斗栱有缩放，所以还原到缩放前
+                    taojianLength = taojianLength / dgPillerCopy.scale.y
+                    # 强制每个对象的node group为单一用户
+                    gnMod.node_group = gnMod.node_group.copy()
                     utils.setGN_Input(gnMod,"Length",taojianLength)
     
     # 补间斗栱/平身科

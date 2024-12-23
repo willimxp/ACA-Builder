@@ -394,6 +394,13 @@ def __buildCCFang(buildingObj:bpy.types.Object):
             sourceObj=aData.ccfang_source,
             singleUser=True
         )
+        # 调整柱头伸出，一个柱径
+        gnMod:bpy.types.NodesModifier = \
+            ccFangObj.modifiers.get('ccFang')
+        # 强制每个对象的node group为单一用户
+        gnMod.node_group = gnMod.node_group.copy()
+        if gnMod != None:
+            utils.setGN_Input(gnMod,"pd",bData.piller_diameter/2+0.1)
         # 将proxy定位数据传递给穿插枋
         utils.replaceObject(
             fromObj=ccFangProxy,
@@ -402,13 +409,6 @@ def __buildCCFang(buildingObj:bpy.types.Object):
             use_Modifier=False
         )
         utils.applyAllModifer(ccFangObj)
-        # # 调整柱头伸出，一个柱径
-        # gnMod:bpy.types.NodesModifier = \
-        #     ccFangObj.modifiers.get('ccFang')
-        # # 强制每个对象的node group为单一用户
-        # gnMod.node_group = gnMod.node_group.copy()
-        # if gnMod != None:
-        #     utils.setGN_Input(gnMod,"pd",bData.piller_diameter/2+0.1)
 
     return
 

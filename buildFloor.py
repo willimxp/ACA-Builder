@@ -140,10 +140,7 @@ def getFloorDate(buildingObj:bpy.types.Object):
 # 在四角的大额枋外，添加霸王拳
 def __buildFangBWQ(fangObj):    
     # 基础数据
-    aData:tmpData = bpy.context.scene.ACA_temp
     buildingObj = utils.getAcaParent(fangObj,con.ACA_TYPE_BUILDING)
-    bData:acaData = buildingObj.ACA_data
-    dk = bData.DK
     # 获取开间、进深数据
     net_x,net_y = getFloorDate(buildingObj)
 
@@ -163,12 +160,9 @@ def __buildFangBWQ(fangObj):
     fang_length = utils.getVectorDistance(vFrom,vTo)
     
     # 判断是否需要添加霸王拳
-    bLeft = bRight = False
+    # 注意：对于只有一开间的小建筑，可能在同一根枋上做左右两头的霸王拳
     # 左向添加的如：西南0/0#1/0，东南x/0#x/1，东北x/y#x-1/y,西北0/y#0/y-1
-    # 右侧添加的如：东南x-1/0#x/0,东北x/y-1#x/y，西北0/y#1/y,西南0/0#0/1
-    # 将两端相加进行判断
-    # 左向：1/0,2x/1,2x-1/2y,0/2y-1
-    # 右向：2x-1/0,2x/2y-1,1/2y,0/1
+    # 将两端相加进行判断，左向：1/0,2x/1,2x-1/2y,0/2y-1
     fangStr = str(pFrom_x+pTo_x) + '/' + str(pFrom_y+pTo_y)
     xtop = len(net_x)-1
     ytop = len(net_y)-1
@@ -177,32 +171,46 @@ def __buildFangBWQ(fangObj):
                     str(xtop*2-1) + '/' + str(ytop*2),   # 2x-1/2y
                     '0/' + str(ytop*2-1)                 # 0/2y-1
                     ):
-        bLeft = True
         bwqX = -fang_length/2
         rotZ = math.radians(180)
+        __drawBWQ(fangObj,bwqX,rotZ)
+    # 右侧添加的如：东南x-1/0#x/0,东北x/y-1#x/y，西北0/y#1/y,西南0/0#0/1
+    # 将两端相加进行判断，右向：2x-1/0,2x/2y-1,1/2y,0/1
     if fangStr in (
                     str(xtop*2-1) +'/0',                # 2x-1/0
                     str(xtop*2) + '/' + str(ytop*2-1),  # 2x/2y-1
                     '1/' + str(ytop*2),                 # 1/2y
                     "0/1"):
-        bRight = True
         bwqX = fang_length/2
         rotZ = 0
-    if bLeft or bRight:
-        # 添加霸王拳，以大额枋为父对象，继承位置和旋转
-        bawangquanObj = utils.copyObject(
-            sourceObj=aData.bawangquan_source,
-            name='霸王拳',parentObj=fangObj,
-            location=(bwqX,0,con.EFANG_LARGE_H * dk/2),
-            rotation=(0,0,rotZ)
-        )
-        # 霸王拳尺度权衡，参考马炳坚p163
-        bawangquanObj.dimensions = (
-            con.BAWANGQUAN_L*bData.piller_diameter,         # 长1D
-            con.BAWANGQUAN_Y*bData.piller_diameter,         # 厚0.5D，马炳坚定义的0.8额枋
-            con.BAWANGQUAN_H*fangObj.dimensions.z,          # 高0.8额枋
-        )
-        utils.applyTransfrom(bawangquanObj,use_scale=True)
+        __drawBWQ(fangObj,bwqX,rotZ)
+    
+    return
+        
+
+# 绘制霸王拳
+def __drawBWQ(fangObj:bpy.types.Object,
+              bwqX,
+              rotZ,):
+    buildingObj = utils.getAcaParent(fangObj,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
+    dk = bData.DK
+    # 添加霸王拳，以大额枋为父对象，继承位置和旋转
+    bawangquanObj = utils.copyObject(
+        sourceObj=aData.bawangquan_source,
+        name='霸王拳',parentObj=fangObj,
+        location=(bwqX,0,con.EFANG_LARGE_H * dk/2),
+        rotation=(0,0,rotZ)
+    )
+    # 霸王拳尺度权衡，参考马炳坚p163
+    bawangquanObj.dimensions = (
+        con.BAWANGQUAN_L*bData.piller_diameter,         # 长1D
+        con.BAWANGQUAN_Y*bData.piller_diameter,         # 厚0.5D，马炳坚定义的0.8额枋
+        con.BAWANGQUAN_H*bData.piller_diameter,          # 厚0.5D，马炳坚定义的高0.8额枋
+    )
+    utils.applyTransfrom(bawangquanObj,use_scale=True)
+    return
 
 # 获取开间是否有装修
 # 涉及到wall_net参数中槛墙跨越多个开间，拆分到每个开间的数据

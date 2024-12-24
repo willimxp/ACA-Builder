@@ -1854,9 +1854,13 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     # 歇山屋顶的排山勾滴裁剪
     # 与山花板类似，裁剪到博脊上皮
     # 即，从金桁中心+半桁+博脊高
+    ridgeObj:bpy.types.Object = aData.ridgeFront_source
+    ridgeHeight = ridgeObj.dimensions.z * dk/con.DEFAULT_DK
     cutPoint = rafter_pos[1] \
-        + Vector((0,0,con.HENG_COMMON_D/4*dk)) \
-        + Vector((0,0,aData.ridgeFront_source.dimensions.z))
+        + Vector((0,0,
+            - con.HENG_COMMON_D*dk  # 博脊相对金桁下移了1桁径
+            + bData.shoushan/2      # 收山的五举加斜
+            + ridgeHeight))         # 取到博脊上皮
     if bData.roof_style in (con.ROOF_XIESHAN,
                             con.ROOF_XIESHAN_JUANPENG):
         utils.addBisect(
@@ -2139,30 +2143,49 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
     ridgeObj:bpy.types.Object = aData.ridgeFront_source
+    ridgeLength = ridgeObj.dimensions.x * dk/con.DEFAULT_DK
+    
+    # 博脊定位
+    # X坐标：从山花中线，向外山花板厚度
+    shanPoint = rafter_pos[-1]
+    x = shanPoint.x + con.BOFENG_WIDTH*dk
 
+    # Y坐标：在金桁交点附近，找到脊筒的整数倍
+    jinPoint = rafter_pos[1]
+    y = ((round(jinPoint.y / ridgeLength)+1)
+        * ridgeLength)
+    # 从金桁交点瓦面的计算
+    y = (jinPoint.y 
+         + con.HENG_COMMON_D*dk/2   # 半桁径
+         + con.YUANCHUAN_D*dk       # 椽径
+         + con.WANGBAN_H*dk         # 望板
+         + con.ROOFMUD_H*dk)        # 灰泥
+    # 收山调整：收山引起的前后檐垂脊间距的变化
+    y -= bData.shoushan
+    # 取整，以便后续与挂尖收尾进行衔接
+    y = ((round(y/ridgeLength)+1)
+        * ridgeLength)
+    
+    # Z坐标：博脊下皮对齐金桁下皮
+    z = jinPoint.z - con.HENG_COMMON_D*dk
+    # 歇山收山而随着瓦面向上滑动，以免始终压住瓦面
+    # 按檐步架五举斜率计算
+    z += bData.shoushan/2
+    
     # 绘制博脊曲线
     sideRidgeVerts = []
-    # 横坐标从金桁交点，外移博缝板，外移半脊筒
-    x = rafter_pos[-1].x \
-        + ridgeObj.dimensions.y/2
-    # 纵坐标在金桁交点附近，找到脊筒的整数倍
-    y = math.ceil(rafter_pos[1].y 
-            /ridgeObj.dimensions.x) \
-        * ridgeObj.dimensions.x
-    # 241119 博脊定位异常
-    z = rafter_pos[1].z + con.HENG_COMMON_D*dk/2
     # 垂脊中点
     p0 = Vector((x,0,z))
     sideRidgeVerts.append(p0)
-    # 垂脊转折点
+
+    # 垂脊终点
     p1 = Vector((x,y,z))
     sideRidgeVerts.append(p1)
-    # 垂脊终点
-    p2 = p1 + Vector((  
-        0,
-        ridgeObj.dimensions.x,
-        0))
+
+    # 垂脊挂尖的头部，外延一脊筒
+    p2 = p1 + Vector((0,ridgeLength,0))
     sideRidgeVerts.append(p2)
+
     sideRidgeCurve = utils.addCurveByPoints(
         CurvePoints=sideRidgeVerts,
         name='博脊线',
@@ -2170,8 +2193,8 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
         resolution=64,
         order_u=2,
     )
-    endCurve:bpy.types.Curve = sideRidgeCurve.data
-    endCurvePoint = endCurve.splines[0].points[2]
+    CurveData:bpy.types.Curve = sideRidgeCurve.data
+    endCurvePoint = CurveData.splines[0].points[2]
     endCurvePoint.radius = 0
     utils.setOrigin(sideRidgeCurve,p0)
 

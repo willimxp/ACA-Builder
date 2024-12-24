@@ -163,6 +163,7 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
             )
     # 设置origin
     utils.setOrigin(tileCurve,curve_p1)
+    utils.hideObj(tileCurve)
     return tileCurve
 
 # 绘制侧边瓦垄线，决定了瓦面的宽度、翼角瓦面的曲率
@@ -393,7 +394,7 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     )
     
     if direction == 'X':
-        eaveCurve_name = "前后檐口瓦线"
+        eaveCurve_name = "前后檐瓦口线"
         if bData.use_flyrafter:
             dly_type = con.ACA_TYPE_RAFTER_DLY_FB
         else:
@@ -402,7 +403,7 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
         # 闪避1/4角梁
         shift = Vector((-con.JIAOLIANG_Y/4*dk * math.sqrt(2),0,0))
     else:
-        eaveCurve_name = "两山檐口瓦线"
+        eaveCurve_name = "两山檐瓦口线"
         if bData.use_flyrafter:
             dly_type = con.ACA_TYPE_RAFTER_DLY_LR
         else:
@@ -493,6 +494,7 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     offset.rotate(dlyObj.rotation_euler)
     eaveCurve.location += offset
 
+    utils.hideObj(eaveCurve)
     return eaveCurve
 
 # 计算瓦垄的数量
@@ -1307,7 +1309,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     # 原点设置在檐口
     utils.setOrigin(ridgeCurve,ridgeCurveVerts[0])
     # 默认隐藏
-    # utils.hideObj(ridgeCurve)
+    utils.hideObj(ridgeCurve)
     return ridgeCurve
 
 # 绘制排山勾滴曲线(专为排山勾滴的布局使用)
@@ -1985,7 +1987,7 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
             )
     utils.setOrigin(ridgeCurve,ridgeCurveVerts[0])
-    #utils.hideObj(ridgeCurve)
+    utils.hideObj(ridgeCurve)
     return ridgeCurve
 
 # 营造四角的戗脊
@@ -2316,5 +2318,6 @@ def buildTile(buildingObj: bpy.types.Object):
 
     # 重新聚焦根节点
     utils.focusObj(buildingObj)
-    utils.outputMsg("Building Tiles down.")
+
+    return
     

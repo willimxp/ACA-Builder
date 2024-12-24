@@ -97,8 +97,8 @@ class ACA_PT_basic(bpy.types.Panel):
             )
         
         # 测试按钮
-        row = layout.row()
-        row.operator("aca.test",icon='HOME')
+        # row = layout.row()
+        # row.operator("aca.test",icon='HOME')
 
         return
 

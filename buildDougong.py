@@ -569,9 +569,6 @@ def buildDougong(buildingObj:bpy.types.Object):
 
     # 如果不使用斗栱，以下直接跳过
     if not bData.use_dg: return
-    # 椽望定位依赖斗栱，强制生成
-    if bData.is_showRafter or bData.is_showBeam : 
-        bData['is_showDougong'] = True
 
     # 添加根节点以及目录
     dgrootObj = __addDougongRoot(buildingObj)

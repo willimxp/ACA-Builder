@@ -1280,15 +1280,11 @@ def buildBeamFrame(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
-    # 屋瓦依赖于椽望，强制生成
-    if bData.is_showTiles : 
-        bData['is_showBeam']=True
 
     # 计算桁檩定位点
     purlin_pos = getPurlinPos(buildingObj)
     
-    # 摆放桁檩
-    utils.outputMsg("Building Purlin...")
+    # 摆放桁架
     __buildPurlin(buildingObj,purlin_pos.copy())
     
     # 如果有斗栱，剔除挑檐桁
@@ -1298,7 +1294,6 @@ def buildBeamFrame(buildingObj:bpy.types.Object):
         del rafter_pos[0]
 
     # 摆放梁架
-    utils.outputMsg("Building Beam...")
     __buildBeam(buildingObj,rafter_pos)
         
     return

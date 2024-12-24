@@ -1024,7 +1024,6 @@ def buildFloor(buildingObj:bpy.types.Object):
         buildWall.buildWallLayout(buildingObj)
     
     # 生成屋顶
-    utils.outputMsg("Building Roof...")
     buildRoof.buildRoof(buildingObj)
 
     # 重新聚焦回根节点

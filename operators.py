@@ -417,7 +417,6 @@ class ACA_OT_build_roof(bpy.types.Operator):
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj != None:
             # 生成屋顶
-            utils.outputMsg("Building Roof...")
             funproxy = partial(
                 buildRoof.buildRoof,
                 buildingObj=buildingObj)

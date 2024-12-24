@@ -225,7 +225,7 @@ def setMat(object:bpy.types.Object,
         aData.mat_paint_cloud,      # 挑檐枋工王云
         aData.mat_paint_walkdragon, # 平板枋走龙
     ):
-        __setBoardFang(object,mat)
+        object = __setBoardFang(object,mat)
     
     # 拉伸填充的材质
     if mat in (
@@ -726,7 +726,7 @@ def __setDgBoard(dgBoardObj:bpy.types.Object,
     utils.replaceObject(
         dgBoardObj,
         joinedDgBoard,
-        delete=False)
+        delete=True)
 
     return joinedDgBoard
 
@@ -745,7 +745,7 @@ def __setBoardFang(fangObj:bpy.types.Object,
     UvUnwrap(newFangObj,
              type=uvType.CUBE,
              cubesize=cubeHeight)
-    return
+    return newFangObj
 
 # 望板材质，底面刷红
 def __setWangban(wangban:bpy.types.Object,

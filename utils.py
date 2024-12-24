@@ -1579,3 +1579,28 @@ def subdivideObject(object:bpy.types.Object,level=1):
 def delObject(object:bpy.types.Object):
     bpy.data.objects.remove(object)
     return
+
+# 更换对象的父节点
+def changeParent(object:bpy.types.Object,
+                 newParent:bpy.types.Object):
+    preParent = object.parent
+    if preParent == None:
+        outputMsg("Can't change Parent of " + object.name )
+        return
+    
+    # 应用所有transform
+    applyTransfrom(
+        object,
+        use_location=True,
+        use_rotation=True,
+        use_scale=True,
+    )
+    # 转换坐标矩阵
+    object.location = (
+        newParent.matrix_world.inverted()
+        @ preParent.matrix_world
+        @ object.location
+    )
+    # 应用新父节点
+    object.parent = newParent
+    return

@@ -850,10 +850,7 @@ def buildDoor(wallProxy:bpy.types.Object):
     kankuangJoined = utils.joinObjects(kankuangList,'槛框')
     # 将隔扇挂入槛框父节点
     for geshan in geshanList:
-        geshan.parent = kankuangJoined
-        geshan.location = (kankuangJoined.matrix_world.inverted() 
-                           @ wallProxy.matrix_world 
-                           @ geshan.location)
+        utils.changeParent(geshan,kankuangJoined)
 
     utils.focusObj(kankuangJoined)
 

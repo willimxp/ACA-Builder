@@ -2749,11 +2749,8 @@ def __buildShanhuaBan(buildingObj: bpy.types.Object,
     shbObj.data.update()
     bm.free()
 
-    # 山花板板沿金桁高度裁剪
-    # 裁剪高度从金桁中心+半桁+博脊高
-    cutPoint = purlin_pos[1] \
-        + Vector((0,0,con.HENG_COMMON_D/4*dk)) \
-        + Vector((0,0,aData.ridgeFront_source.dimensions.z))
+    # 山花板板沿金桁高度裁剪，与博缝板对齐
+    cutPoint = purlin_pos[1]
     utils.addBisect(
         object=shbObj,
         pStart=Vector((0,1,0)),
@@ -2762,6 +2759,8 @@ def __buildShanhuaBan(buildingObj: bpy.types.Object,
         clear_outer=True,
         direction='Y'
     )
+    # 将origin放在山花板下檐，方便后续贴图时的计算
+    utils.setOrigin(shbObj,cutPoint*Vector((1,0,1)))
 
     # 应用镜像
     utils.addModifierMirror(

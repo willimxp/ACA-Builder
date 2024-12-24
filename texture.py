@@ -803,11 +803,39 @@ def __setCCB(ccbObj:bpy.types.Object,
 # 设置山花板
 def __setShanhua(shanhuaObj:bpy.types.Object,
              mat:bpy.types.Object):
+    # 绑定材质，默认在slot0上，即红漆木板
     __copyMaterial(mat,shanhuaObj)
+
+    # 对山花进行分割，博脊之上做彩画，博脊之下仍为纯红漆木材
+    shanghuaTopObj = utils.copySimplyObject(
+        shanhuaObj,singleUser=True
+    )
+    # 裁切
+    buildingObj = utils.getAcaParent(
+        shanhuaObj,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
+    dk = bData.DK
+    scale = dk / con.DEFAULT_DK
+    rdigeHeight = aData.ridgeFront_source.dimensions.z * scale
+    # 裁剪一个博脊高度，并调整1/4桁径
+    offset = (rdigeHeight + con.HENG_COMMON_D/4*dk )
+    # 裁剪点
+    pCut = shanhuaObj.matrix_world @ Vector((
+        0,0,offset))
+    utils.addBisect(
+        object=shanghuaTopObj,
+        pStart=Vector((0,1,0)),
+        pEnd=Vector((0,-1,0)),
+        pCut=pCut,
+        clear_outer=True,
+        direction='Y',
+        use_fill=False,
+    )
 
     # 找到所有的底面
     bm = bmesh.new()
-    bm.from_mesh(shanhuaObj.data)
+    bm.from_mesh(shanghuaTopObj.data)
     # X轴为向量比较基准
     negZ = Vector((1,0,0))
     # 选择法线类似的所有面，0.1是在blender里尝试的经验值
@@ -818,12 +846,27 @@ def __setShanhua(shanhuaObj:bpy.types.Object,
             # 设置为slot1的山花贴图
             face.material_index = 1
             face.select = True
-    bm.to_mesh(shanhuaObj.data)
+    bm.to_mesh(shanghuaTopObj.data)
     bm.free()
 
     # 展uv,满铺拉伸
-    UvUnwrap(shanhuaObj,
+    UvUnwrap(shanghuaTopObj,
              uvType.CUBE,
              scaleToBounds=True,
              remainSelect=True)
+    
+    # 裁剪下侧
+    utils.addBisect(
+        object=shanhuaObj,
+        pStart=Vector((0,1,0)),
+        pEnd=Vector((0,-1,0)),
+        pCut=pCut,
+        clear_inner=True,
+        direction='Y',
+        use_fill=False,
+    )
+    
+    # 合并
+    utils.joinObjects([shanhuaObj,shanghuaTopObj],
+                      cleanup=True)
     return

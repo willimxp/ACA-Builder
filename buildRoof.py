@@ -2749,8 +2749,17 @@ def __buildShanhuaBan(buildingObj: bpy.types.Object,
     shbObj.data.update()
     bm.free()
 
-    # 山花板板沿金桁高度裁剪，与博缝板对齐
-    cutPoint = purlin_pos[1]
+    # 山花板板做到椽架
+    # 从正心桁做收山加斜，再上移半桁+1椽
+    cutPoint = purlin_pos[0] + Vector((
+        0,0,
+        ( bData.shoushan/2          # 收山加斜
+         + con.XYB_WIDTH*dk/2       # 山花厚度加斜
+         + con.WANGBAN_H*dk         # 望板
+         + con.HENG_COMMON_D*dk/2   # 半桁径
+         + con.YUANCHUAN_D*dk       # 椽径
+        )
+    ))
     utils.addBisect(
         object=shbObj,
         pStart=Vector((0,1,0)),
@@ -3140,14 +3149,23 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         use_bisect=(False,True,False)
     )
 
-    # 歇山的博缝板沿金桁高度裁剪
+    # 歇山的博缝板做到椽架
+    # 从正心桁做收山加斜，再上移半桁+1椽
     if bData.roof_style in (con.ROOF_XIESHAN,
                             con.ROOF_XIESHAN_JUANPENG,):
+        cutPoint = rafter_pos[0] + Vector((
+            0,0,
+            ( bData.shoushan/2         # 收山加斜
+            + con.WANGBAN_H*dk         # 望板
+            + con.HENG_COMMON_D*dk/2   # 半桁径
+            + con.YUANCHUAN_D*dk       # 椽径
+            )
+        ))
         utils.addBisect(
             object=bofengObj,
             pStart=Vector((0,1,0)),
             pEnd=Vector((0,-1,0)),
-            pCut=rafterRootObj.matrix_world @ (rafter_pos[1]),
+            pCut=rafterRootObj.matrix_world @ cutPoint,
             clear_outer=True,
             direction='Y'
         )

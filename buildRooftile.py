@@ -1853,13 +1853,16 @@ def __buildSideTile(buildingObj: bpy.types.Object,
 
     # 歇山屋顶的排山勾滴裁剪
     # 与山花板类似，裁剪到博脊上皮
-    # 即，从金桁中心+半桁+博脊高
+    # 即，从正心桁上推瓦面+收山加斜+博脊高
     ridgeObj:bpy.types.Object = aData.ridgeFront_source
     ridgeHeight = ridgeObj.dimensions.z * dk/con.DEFAULT_DK
-    cutPoint = rafter_pos[1] \
+    cutPoint = rafter_pos[0] \
         + Vector((0,0,
-            - con.HENG_COMMON_D*dk  # 博脊相对金桁下移了1桁径
-            + bData.shoushan/2      # 收山的五举加斜
+            + bData.shoushan/2         # 收山按五举加斜
+            + con.HENG_COMMON_D*dk/2   # 半桁径
+            + con.YUANCHUAN_D*dk       # 椽径
+            + con.WANGBAN_H*dk         # 望板
+            + con.ROOFMUD_H*dk         # 灰泥
             + ridgeHeight))         # 取到博脊上皮
     if bData.roof_style in (con.ROOF_XIESHAN,
                             con.ROOF_XIESHAN_JUANPENG):
@@ -2150,27 +2153,24 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
     shanPoint = rafter_pos[-1]
     x = shanPoint.x + con.BOFENG_WIDTH*dk
 
-    # Y坐标：在金桁交点附近，找到脊筒的整数倍
-    jinPoint = rafter_pos[1]
-    y = ((round(jinPoint.y / ridgeLength)+1)
-        * ridgeLength)
+    # Y坐标：从正心桁加上推山进行计算    
+    zhengxinPoint = rafter_pos[0]
     # 从金桁交点瓦面的计算
-    y = (jinPoint.y 
+    y = (zhengxinPoint.y 
+         - bData.shoushan           # 收山影响
+         - ridgeLength              # 留出一个挂尖长度
+    )
+    # 取整，以便后续与挂尖收尾进行衔接
+    y = round(y/ridgeLength)* ridgeLength
+    
+    # Z坐标：从正心桁上推到瓦面，再添加推山影响
+    z = (zhengxinPoint.z 
+         + bData.shoushan/2         # 收山按五举加斜
          + con.HENG_COMMON_D*dk/2   # 半桁径
          + con.YUANCHUAN_D*dk       # 椽径
          + con.WANGBAN_H*dk         # 望板
-         + con.ROOFMUD_H*dk)        # 灰泥
-    # 收山调整：收山引起的前后檐垂脊间距的变化
-    y -= bData.shoushan
-    # 取整，以便后续与挂尖收尾进行衔接
-    y = ((round(y/ridgeLength)+1)
-        * ridgeLength)
-    
-    # Z坐标：博脊下皮对齐金桁下皮
-    z = jinPoint.z - con.HENG_COMMON_D*dk
-    # 歇山收山而随着瓦面向上滑动，以免始终压住瓦面
-    # 按檐步架五举斜率计算
-    z += bData.shoushan/2
+         + con.ROOFMUD_H*dk         # 灰泥
+    )
     
     # 绘制博脊曲线
     sideRidgeVerts = []

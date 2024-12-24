@@ -819,9 +819,11 @@ def __setShanhua(shanhuaObj:bpy.types.Object,
     scale = dk / con.DEFAULT_DK
     ridgeHeight = aData.ridgeFront_source.dimensions.z * scale
     # 裁剪一个博脊高度，并调整1/4桁径
-    offset = (- con.HENG_COMMON_D*dk  # 博脊相对金桁下移了1桁径
-            + bData.shoushan/2      # 收山的五举加斜
-            + ridgeHeight)         # 取到博脊上皮)
+    offset = (
+            con.ROOFMUD_H*dk      # 灰泥
+            + ridgeHeight         # 取到博脊上皮
+            - con.XYB_WIDTH*dk/2  # 山花厚度加斜
+    )
     # 裁剪点
     pCut = shanhuaObj.matrix_world @ Vector((
         0,0,offset))

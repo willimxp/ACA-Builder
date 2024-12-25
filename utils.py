@@ -194,6 +194,7 @@ def copySimplyObject(
     newObj:bpy.types.Object = sourceObj.copy()
     if singleUser :
         newObj.data = sourceObj.data.copy()
+    bpy.context.collection.objects.link(newObj)  
     if name == None:
         newObj.name = sourceObj.name
     else:
@@ -210,7 +211,6 @@ def copySimplyObject(
         updateScene()
     if parentObj != None:
         newObj.parent = parentObj
-    bpy.context.collection.objects.link(newObj)     
     showObj(newObj)
     return newObj
 
@@ -236,6 +236,7 @@ def copyObject(
     newObj:bpy.types.Object = sourceObj.copy()
     if singleUser :
         newObj.data = sourceObj.data.copy()
+    bpy.context.collection.objects.link(newObj) 
     if name == None:
         newObj.name = sourceObj.name
     else:
@@ -252,7 +253,6 @@ def copyObject(
         updateScene()
     if parentObj != None:
         newObj.parent = parentObj
-    bpy.context.collection.objects.link(newObj) 
     # 复制子对象
     if len(sourceObj.children) > 0 :
         for child in sourceObj.children:

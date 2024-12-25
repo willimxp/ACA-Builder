@@ -804,7 +804,6 @@ def buildPillers(buildingObj:bpy.types.Object):
     )
     # 柱顶石材质：石头
     mat.setMat(pillerBottom_basemesh,aData.mat_stone)
-    utils.lockObj(pillerBottom_basemesh)
     # 添加bevel
     modBevel:bpy.types.BevelModifier = \
         pillerBottom_basemesh.modifiers.new('Bevel','BEVEL')
@@ -862,7 +861,6 @@ def buildPillers(buildingObj:bpy.types.Object):
                     ),
                 parentObj=newPillerObj
             )
-            utils.lockObj(pillerbase_basemesh)
             # 柱础材质：石头
             mat.setMat(pillerbase_basemesh,aData.mat_stone)
             
@@ -871,7 +869,6 @@ def buildPillers(buildingObj:bpy.types.Object):
                 sourceObj=pillerBottom_basemesh,
                 parentObj=newPillerObj
             )
-            utils.lockObj(pillerBottomObj)
 
     # 移除柱顶石模版    
     bpy.data.objects.remove(pillerBottom_basemesh)

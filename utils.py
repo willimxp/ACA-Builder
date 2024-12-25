@@ -185,6 +185,7 @@ def copySimplyObject(
         parentObj:bpy.types.Object = None, 
         location=None,
         rotation=None,
+        dimensions=None,
         scale=None,
         singleUser=False,):
     if sourceObj == None:
@@ -203,6 +204,10 @@ def copySimplyObject(
         newObj.rotation_euler = rotation
     if scale != None:
         newObj.scale = scale
+    if dimensions != None:
+        newObj.dimensions = dimensions
+        # 缩放后需要更新数据，以便生效
+        updateScene()
     if parentObj != None:
         newObj.parent = parentObj
     bpy.context.collection.objects.link(newObj)     
@@ -243,6 +248,8 @@ def copyObject(
         newObj.scale = scale
     if dimensions != None:
         newObj.dimensions = dimensions
+        # 缩放后需要更新数据，以便生效
+        updateScene()
     if parentObj != None:
         newObj.parent = parentObj
     bpy.context.collection.objects.link(newObj) 
@@ -255,11 +262,7 @@ def copyObject(
                 parentObj=newObj, 
                 location=child.location,
                 singleUser=singleUser) 
-
-    if dimensions != None:
-        # 缩放后需要更新数据，以便生效
-        updateScene()
-
+            
     # 恢复原对象的隐藏属性
     sourceObj.hide_set(IsHideEye)
     sourceObj.hide_viewport = IsHideViewport
@@ -720,7 +723,10 @@ def showObj(object:bpy.types.Object) :
     object.hide_render = False      # “相机”，渲染
 
 # 创建一个基本圆柱体，可用于柱等直立构件
-def addCylinder(radius,depth,name,root_obj,
+def addCylinder(radius=0.5,
+                depth=1,
+                name='cylinder',
+                root_obj=None,
                 location=(0,0,0),
                 rotation=(0,0,0),
                 edge_num = 16,
@@ -747,10 +753,11 @@ def addCylinder(radius,depth,name,root_obj,
 
     # 将Origin置于底部
     if origin_at_bottom :
-        bpy.ops.object.mode_set(mode = 'EDIT')
-        bpy.ops.mesh.select_all(action = 'SELECT')
-        bpy.ops.transform.translate(value=(0,0,depth/2))
-        bpy.ops.object.mode_set(mode = 'OBJECT')    
+        # bpy.ops.object.mode_set(mode = 'EDIT')
+        # bpy.ops.mesh.select_all(action = 'SELECT')
+        # bpy.ops.transform.translate(value=(0,0,depth/2))
+        # bpy.ops.object.mode_set(mode = 'OBJECT')    
+        setOrigin(cylinderObj,Vector((0,0,-depth/2)))
 
     return cylinderObj
 

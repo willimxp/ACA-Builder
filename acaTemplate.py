@@ -151,6 +151,12 @@ def openAssets():
         type = node.attrib['type']
         value = node.text
         if type == 'Object':
+            # 241224 为了解决以下报错，做的安全性验证
+            # 似乎是4.2中做了一个Breaking changes：Statically Typed IDProperties
+            # https://developer.blender.org/docs/release_notes/4.2/python_api/#statically-typed-idproperties
+            # TypeError: Cannot assign a 'Object' value to the existing 'mat_wood' Group IDProperty
+            if tag in aData:  
+                del aData[tag]  
             aData[tag] = loadAssets(value)
     
     return

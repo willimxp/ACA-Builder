@@ -439,6 +439,7 @@ def __setPillerHead(pillerObj:bpy.types.Object,
     buildingObj = utils.getAcaParent(
         pillerObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
 
     # 为了使用静态的PBR贴图的同时，动态的控制柱头贴图高度    
@@ -511,6 +512,8 @@ def __setPillerHead(pillerObj:bpy.types.Object,
 
     # 绑定柱头材质
     __copyMaterial(mat,pillerHeadObj)
+    __copyMaterial(aData.mat_red,pillerBodyObj)
+    __copyMaterial(aData.mat_red,pillerTopObj)
     # 重新展UV
     UvUnwrap(pillerHeadObj,uvType.CYLINDER)   
     # 旋转45度，让金龙面对前方

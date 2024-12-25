@@ -66,6 +66,8 @@ classes = (
     operators.ACA_OT_build_yardwall,
     operators.ACA_OT_default_ludingRafterSpan,
     operators.ACA_OT_Show_Message_Box,
+    operators.ACA_OT_PROFILE,
+    operators.ACA_OT_EXPORT,
 )
 
 def register():   

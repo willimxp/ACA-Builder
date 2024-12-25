@@ -59,3 +59,7 @@ def delBuilding(buildingObj:bpy.types.Object):
     # 清理垃圾  
     utils.delOrphan()
     return
+
+# 导出建筑
+def exportBuilding(buildingObj:bpy.types.Object):
+    return

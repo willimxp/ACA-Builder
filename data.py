@@ -668,7 +668,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0,
             max=45,
             update=update_yardwall,
-        )# type: ignore
+        )# type: ignore  
 
 # 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据
 # https://docs.blender.org/api/current/bpy.props.html
@@ -704,6 +704,12 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             description = "模板列表",
             items = getTemplateList,
             options = {"ANIMATABLE"},
+        ) # type: ignore
+    export_path : bpy.props.StringProperty(
+            name = "导出路径",
+            default = "",
+            description = "请选择导出的目录",
+            subtype = 'FILE_PATH'
         ) # type: ignore
 
 # 全局共用的模版信息，各个建筑都进行引用

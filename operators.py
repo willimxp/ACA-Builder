@@ -6,6 +6,7 @@
 import bpy
 from functools import partial
 import time 
+from . import data
 
 from .const import ACA_Consts as con
 from . import utils
@@ -592,6 +593,95 @@ class ACA_OT_Show_Message_Box(bpy.types.Operator):
             context.window.cursor_warp(self.orig_x, self.orig_y)
             self.restored = True
 
+# 通过执行建造过程，分析性能数据
+class ACA_OT_PROFILE(bpy.types.Operator):
+    bl_idname="aca.profile"
+    bl_label = "性能分析"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        import cProfile
+        import pstats  
+        import io 
+
+        # Create a profiler object  
+        pr = cProfile.Profile()  
+        pr.enable()  # Start profiling  
+
+        # Call the function you want to profile  
+        from . import build
+        funproxy = partial(build.build)
+        result = utils.fastRun(funproxy)
+
+        pr.disable()  # Stop profiling  
+
+        # Create a stream to hold the stats  
+        s = io.StringIO()  
+        sortby = pstats.SortKey.CUMULATIVE  
+        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)  
+        ps.print_stats()  
+
+        # Print the profiling results to the Blender console  
+        print(s.getvalue())  
+
+        return {'FINISHED'}
+    
+# 导出模型
+class ACA_OT_EXPORT(bpy.types.Operator):
+    bl_idname="aca.export"
+    bl_label = "导出模型"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        # 预处理
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        
+        # 验证是否选中了建筑
+        if buildingObj == None:
+            # 没有可删除的对象
+            return
+        
+        # 选择所有下级层次对象
+        partObjList = []
+        def addChild(buildingObj):
+            for childObj in buildingObj.children:
+                useObj = True
+                # 仅处理可见的实体对象
+                if childObj.type not in ('MESH','CURVE'):
+                    useObj = False
+                if childObj.hide_viewport or childObj.hide_render:
+                    useObj = False
+                # 记录对象名称
+                if useObj:
+                    partObjList.append(childObj)
+                # 次级递归
+                if childObj.children:
+                    addChild(childObj)
+        addChild(buildingObj)
+        
+        # 合并对象
+        if len(partObjList) > 0 :
+            joinedModel = utils.joinObjects(
+                partObjList,
+                buildingObj.name+'合并导出')
+            utils.changeParent(joinedModel,buildingObj)
+            utils.applyTransfrom(joinedModel,use_location=True)
+
+        # 导出fbx
+        utils.focusObj(joinedModel)
+        scnData : data.ACA_data_scene = context.scene.ACA_data
+        filePath = scnData.export_path
+        absPath = bpy.path.abspath(filePath)
+        bpy.ops.export_scene.fbx(
+            filepath = absPath, 
+            use_selection = True,
+            mesh_smooth_type = 'FACE',
+            path_mode = 'COPY',
+            embed_textures = True,
+        )
+
+        return {'FINISHED'}
+
 # 测试
 class ACA_OT_test(bpy.types.Operator):
     bl_idname="aca.test"
@@ -626,6 +716,5 @@ class ACA_OT_test(bpy.types.Operator):
         utils.addCube('testing')
 
         return {'FINISHED'}
-    
 
     

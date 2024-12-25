@@ -1367,7 +1367,11 @@ def joinObjects(objList:List[bpy.types.Object],
     # todo：也可以用临时context来解决
     bpy.ops.object.select_all(action='DESELECT')
     for ob in objList:
+        # 不能为空对象
         if ob == None: continue
+        # 只处理实体对象，不考虑empty,camera,light等
+        if ob.type not in ('MESH','CURVE'):
+            continue
         try:
             ob.select_set(True)
         except ReferenceError:

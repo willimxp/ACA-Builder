@@ -95,6 +95,24 @@ class ACA_PT_basic(bpy.types.Panel):
                 "aca.del_building",icon='TRASH',
                 depress=True,text='删除建筑'
             )
+
+            box = layout.box()
+
+            # 导出按钮
+            row = box.row()
+            row.prop(
+                data=bpy.context.scene.ACA_data,
+                property='export_path',
+                text=''
+            )
+            row = box.row()
+            row.operator("aca.export",icon='EXPORT')
+        
+        
+
+        # 性能分析按钮
+        # row = layout.row()
+        # row.operator("aca.profile",icon='HOME')
         
         # 测试按钮
         # row = layout.row()

@@ -166,6 +166,22 @@ def __buildLKM(buildingObj:bpy.types.Object,
     mat.setMat(LKMObj,aData.mat_red)
     return
 
+# 椽名称
+def __getRafterName(count):
+    names = []
+    if count > 1:
+        names.append('檐椽')
+    if count > 2:
+        names.append('脑椽')
+    if count > 3:
+        names.insert(1,'花架椽')
+    if count > 4:
+        names[1] = '下花架椽'
+        names.insert(2,'上花架椽')
+    if count > 5:
+        names.insert(2,'中花架椽')
+    return names
+
 # 营造前后檐椽子
 # 庑殿、歇山可自动裁切
 def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
@@ -181,6 +197,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
     rafter_gap_x = __getRafterGap(buildingObj,
         rafter_tile_width=(jinhengPos.x-con.YUANCHUAN_D*dk))
     
+    rafterNames = __getRafterName(len(purlin_pos))
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
         # 1.逐层定位椽子，直接连接上下层的桁檩(槫子)
@@ -196,11 +213,9 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             radius = con.YUANCHUAN_D/2*dk,
             start_point = rafter_start,
             end_point = rafter_end,
-            name="檐椽.前后",
+            name="前后檐.%d-%s" % (n+1,rafterNames[n]),
             root_obj = rafterRootObj
         )
-        fbRafterObj.ACA_data['aca_obj'] = True
-        fbRafterObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER_FB
         
         # 2. 各层椽子都上移，与桁檩上皮相切
         bpy.ops.transform.translate(
@@ -210,6 +225,8 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
         
         # 3. 仅檐椽延长，按檐总平出加斜计算
         if n == 0:
+            fbRafterObj.ACA_data['aca_obj'] = True
+            fbRafterObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER_FB
             # 檐椽斜率（圆柱体默认转90度）
             yan_rafter_angle = math.cos(fbRafterObj.rotation_euler.y)
             # 斗栱平出+14斗口檐椽平出
@@ -391,7 +408,8 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
     # 计算山面椽当
     rafter_gap_y = __getRafterGap(buildingObj,
         rafter_tile_width=(jinhengPos.y-con.YUANCHUAN_D*dk))     
-        
+    
+    rafterNames = __getRafterName(len(purlin_pos))
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
         if bData.roof_style in (con.ROOF_XIESHAN,
@@ -405,11 +423,9 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
             radius = con.YUANCHUAN_D/2*dk,
             start_point = rafter_start,
             end_point = rafter_end,
-            name="檐椽.两山",
+            name="两山.%d-%s" % (n+1,rafterNames[n]),
             root_obj = rafterRootObj
         )
-        lrRafterObj.ACA_data['aca_obj'] = True
-        lrRafterObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER_LR
         # 上移，与桁檩上皮相切
         bpy.ops.transform.translate(
             value = (0,0,(con.HENG_COMMON_D+con.YUANCHUAN_D)*dk/2),
@@ -418,6 +434,8 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
         
         # 檐面和山面的檐椽延长，按檐总平出加斜计算
         if n == 0:
+            lrRafterObj.ACA_data['aca_obj'] = True
+            lrRafterObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER_LR
             # 檐椽斜率（圆柱体默认转90度）
             yan_rafter_angle = math.cos(lrRafterObj.rotation_euler.y)
             # 檐总平出=斗栱平出+14斗口檐椽平出（暂不考虑7斗口的飞椽平出）
@@ -1491,6 +1509,7 @@ def __buildCornerRafterCurve(buildingObj:bpy.types.Object):
         ) 
     rafterCurve_obj.ACA_data['aca_obj'] = True
     rafterCurve_obj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_RAFTER_CURVE
+    utils.hideObj(rafterCurve_obj)
     return rafterCurve_obj
 
 # 营造翼角椽(Corner Rafter,缩写CR)
@@ -1866,6 +1885,7 @@ def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
         ) 
     flyrafterCurve_obj.ACA_data['aca_obj'] = True
     flyrafterCurve_obj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_FLYRAFTER_CURVE
+    utils.hideObj(flyrafterCurve_obj)
     return flyrafterCurve_obj
 
 # 绘制一根翘飞椽

@@ -12,7 +12,8 @@ from . import acaTemplate
 # 开始新的营造
 def build():
     # 创建或锁定根目录（ACA古建营造）
-    utils.setCollection(con.ROOT_COLL_NAME,isRoot=True)
+    utils.setCollection(con.ROOT_COLL_NAME,
+                        isRoot=True,colorTag=2)
 
     # 待营造的模板，来自用户界面上的选择
     templateName = bpy.context.scene.ACA_data.template

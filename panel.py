@@ -64,52 +64,52 @@ class ACA_PT_basic(bpy.types.Panel):
             if objData.aca_type == con.ACA_TYPE_BUILDING:
                 col.enabled = False
             # 斗口值
-            row = box.row(align=True)
-            col = row.column(align=True)
             if bData!= None:
+                row = box.row(align=True)
+                col = row.column(align=True)
                 col.prop(bData,'DK')
-            # 计算默认斗口值
-            col = row.column(align=True)
-            col.operator("aca.default_dk",icon='SHADERFX',text='')
+                # 计算默认斗口值
+                col = row.column(align=True)
+                col.operator("aca.default_dk",icon='SHADERFX',text='')
 
+            
             # 更新建筑
             row = box.row(align=True)
-            col = row.column(align=True)
-            col.operator(
-                "aca.update_building",icon='PLAY',
-                depress=True,text='更新建筑'
-            )
             # 自动更新
             col = row.column(align=True)
             col.prop(
                 data=bpy.context.scene.ACA_data,
                 property='is_auto_rebuild',
                 toggle=True,
-                icon='FF',
+                icon='PLAY',
                 text=''
             )
-
-            row = box.row(align=True)
+            col = row.column(align=True)
+            col.operator(
+                "aca.update_building",
+                depress=True,text='更新建筑'
+            )
+            #row = box.row(align=True)
             col = row.column(align=True)
             col.operator(
                 "aca.del_building",icon='TRASH',
-                depress=True,text='删除建筑'
+                text='删除建筑'
             )
 
+            # 导出功能
             box = layout.box()
-
+            toolBox = box.column(align=True)
+            # 合并按钮
+            toolBar = toolBox.grid_flow(columns=1, align=True)
+            col = toolBar.column(align=True)
+            col.operator("aca.join",icon='PACKAGE')
             # 导出按钮
-            row = box.row()
-            row.prop(
-                data=bpy.context.scene.ACA_data,
-                property='export_path',
-                text=''
-            )
-            row = box.row()
-            row.operator("aca.export",icon='EXPORT')
+            toolBar = toolBox.grid_flow(columns=2, align=True)
+            col = toolBar.column(align=True)
+            col.operator("aca.export_fbx",icon='EXPORT')
+            col = toolBar.column(align=True)
+            col.operator("aca.export_glb",icon='EXPORT')
         
-        
-
         # 性能分析按钮
         # row = layout.row()
         # row.operator("aca.profile",icon='HOME')

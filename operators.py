@@ -625,21 +625,20 @@ class ACA_OT_PROFILE(bpy.types.Operator):
         print(s.getvalue())  
 
         return {'FINISHED'}
-    
-# 导出模型
-class ACA_OT_EXPORT(bpy.types.Operator):
-    bl_idname="aca.export"
-    bl_label = "导出模型"
+
+class ACA_OT_JOIN(bpy.types.Operator):
+    bl_idname="aca.join"
+    bl_label = "合并模型"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
         # 预处理
         buildingObj,bData,objData = utils.getRoot(context.object)
-        
         # 验证是否选中了建筑
         if buildingObj == None:
-            # 没有可删除的对象
-            return
+            # 没有可合并的对象
+            self.report({'INFO'},'合并失败，请选择一个建筑。')
+            return {'CANCELLED'}
         
         # 选择所有下级层次对象
         partObjList = []
@@ -663,25 +662,132 @@ class ACA_OT_EXPORT(bpy.types.Operator):
         if len(partObjList) > 0 :
             joinedModel = utils.joinObjects(
                 partObjList,
-                buildingObj.name+'合并导出')
-            utils.changeParent(joinedModel,buildingObj)
-            utils.applyTransfrom(joinedModel,use_location=True)
+                buildingObj.name+'.joined')
+            
+        # 移到导出目录
+        joinedModel.parent = None
+        utils.applyTransfrom(joinedModel,use_location=True)
+        joinedModel.location = buildingObj.location
+        coll:bpy.types.Collection = utils.setCollection(
+            'ACA古建.合并',isRoot=True,colorTag=3)
+        coll.objects.link(joinedModel)
 
-        # 导出fbx
+        # 删除原目录
+        from . import build
+        build.delBuilding(buildingObj)
+
+        # 聚焦
         utils.focusObj(joinedModel)
-        scnData : data.ACA_data_scene = context.scene.ACA_data
-        filePath = scnData.export_path
+
+        return {'FINISHED'}
+
+# 导出FBX模型
+# https://docs.blender.org/api/current/bpy.ops.export_scene.html#module-bpy.ops.export_scene
+class ACA_OT_EXPORT_FBX(bpy.types.Operator):
+    bl_idname="aca.export_fbx"
+    bl_label = "导出FBX"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    filter_glob: bpy.props.StringProperty(
+        default = '*.fbx',
+        options = {'HIDDEN'}) # type: ignore
+    filepath: bpy.props.StringProperty(
+        subtype="FILE_PATH")# type: ignore
+
+    def execute(self, context):  
+        # 预处理
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        
+        # 验证是否建筑已经过合并
+        is_joined = False
+        if buildingObj == None:
+            is_joined = True
+            buildingObj = context.object
+
+        # 未合并的建筑，先执行合并
+        if not is_joined:
+            result = bpy.ops.aca.join()
+            if 'FINISHED' not in result:
+                return {'CANCELLED'}
+        
+        # 导出fbx
+        filePath = self.filepath
         absPath = bpy.path.abspath(filePath)
         bpy.ops.export_scene.fbx(
             filepath = absPath, 
+            check_existing=True,
             use_selection = True,
             mesh_smooth_type = 'FACE',
             path_mode = 'COPY',
             embed_textures = True,
+            colors_type='NONE'
         )
 
         return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)        
+        return {'RUNNING_MODAL'}
 
+# 导出GLB模型
+# https://docs.blender.org/api/current/bpy.ops.export_scene.html#module-bpy.ops.export_scene
+class ACA_OT_EXPORT_GLB(bpy.types.Operator):
+    bl_idname="aca.export_glb"
+    bl_label = "导出GLB"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    filter_glob: bpy.props.StringProperty(
+        default = '*.glb',
+        options = {'HIDDEN'}) # type: ignore
+    filepath: bpy.props.StringProperty(
+        subtype="FILE_PATH")# type: ignore
+
+    def execute(self, context):  
+        # 预处理
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        
+        # 验证是否建筑已经过合并
+        is_joined = False
+        if buildingObj == None:
+            is_joined = True
+            buildingObj = context.object
+
+        # 未合并的建筑，先执行合并
+        if not is_joined:
+            result = bpy.ops.aca.join()
+            if 'FINISHED' not in result:
+                return {'CANCELLED'}
+        
+        # 导出fbx
+        filePath = self.filepath
+        absPath = bpy.path.abspath(filePath)
+        bpy.ops.export_scene.gltf(
+            filepath=absPath, 
+            check_existing=True, 
+            use_selection=True,         # only select
+            use_visible=True,           # only visible
+            use_renderable=True,        # only renderable
+            export_apply=True,          # apply modifiers
+            export_animations=False,    # not export ani
+            export_skins=False,         # not export skin
+            export_morph=False,         # not export shapekey 
+            # not sure
+            # export_gn_mesh=False,     # Geometry Nodes Instances (Experimental), Export Geometry nodes instance meshes
+            # export_original_specular=False,  # Export original PBR Specular, Export original glTF PBR Specular, instead of Blender Principled Shader Specular
+        )
+
+        return {'FINISHED'}
+    
+    def invoke(self, context, event):        
+        # 弹出文件选择框
+        context.window_manager.fileselect_add(self)   
+
+        # 设置默认文件名
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj == None:buildingObj = context.object
+        self.filepath = buildingObj.name + '.glb'     
+        return {'RUNNING_MODAL'}
+    
 # 测试
 class ACA_OT_test(bpy.types.Operator):
     bl_idname="aca.test"

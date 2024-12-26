@@ -979,7 +979,8 @@ def resetFloor(buildingObj:bpy.types.Object):
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
 def buildFloor(buildingObj:bpy.types.Object):
     # 定位到collection，如果没有则新建
-    utils.setCollection(con.ROOT_COLL_NAME,isRoot=True)
+    utils.setCollection(con.ROOT_COLL_NAME,
+                        isRoot=True,colorTag=2)
 
     # 新建还是刷新？
     if buildingObj == None:

@@ -705,12 +705,6 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             items = getTemplateList,
             options = {"ANIMATABLE"},
         ) # type: ignore
-    export_path : bpy.props.StringProperty(
-            name = "导出路径",
-            default = "",
-            description = "请选择导出的目录",
-            subtype = 'FILE_PATH'
-        ) # type: ignore
 
 # 全局共用的模版信息，各个建筑都进行引用
 # 包括资产库资产引用等    

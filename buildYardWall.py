@@ -288,7 +288,8 @@ def buildSingleWall(
 
 def buildYardWall(buildingObj:bpy.types.Object):
     # 定位到根目录，如果没有则新建
-    utils.setCollection(con.ROOT_COLL_NAME,isRoot=True)
+    utils.setCollection(con.ROOT_COLL_NAME,
+                        isRoot=True,colorTag=2)
 
     # 新建还是刷新？
     if buildingObj == None:

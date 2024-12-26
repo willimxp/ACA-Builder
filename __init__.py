@@ -67,7 +67,9 @@ classes = (
     operators.ACA_OT_default_ludingRafterSpan,
     operators.ACA_OT_Show_Message_Box,
     operators.ACA_OT_PROFILE,
-    operators.ACA_OT_EXPORT,
+    operators.ACA_OT_EXPORT_FBX,
+    operators.ACA_OT_EXPORT_GLB,
+    operators.ACA_OT_JOIN,
 )
 
 def register():   

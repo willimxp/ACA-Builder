@@ -137,8 +137,11 @@ def focusCollByObj(obj:bpy.types.Object):
 
 # 新建或聚焦当前场景下的目录
 # 所有对象建立在插件目录下，以免与用户自建的内容冲突
-def setCollection(name:str, IsClear=False,isRoot=False,
-                  parentColl:bpy.types.Collection=None):
+def setCollection(name:str, 
+                  IsClear=False,
+                  isRoot=False,
+                  parentColl:bpy.types.Collection=None,
+                  colorTag=None):
     coll_name = name  # 在大纲中的目录名称
     coll_found = False
     coll = bpy.types.Collection
@@ -175,6 +178,8 @@ def setCollection(name:str, IsClear=False,isRoot=False,
         # 选中目录，防止用户手工选择其他目录而导致的失焦
         focusCollection(coll_name)
     
+    if colorTag != None:
+        coll.color_tag = 'COLOR_0' + str(colorTag)
     # 返回目录的对象
     return coll
 

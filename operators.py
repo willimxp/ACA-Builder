@@ -664,10 +664,15 @@ class ACA_OT_JOIN(bpy.types.Operator):
                 partObjList,
                 buildingObj.name+'.joined')
             
-        # 移到导出目录
+        # 摆脱buildingObj父节点
+        # location归零
+        joinedModel.location = (
+            joinedModel.parent.matrix_world 
+            @ joinedModel.location)
         joinedModel.parent = None
         utils.applyTransfrom(joinedModel,use_location=True)
-        joinedModel.location = buildingObj.location
+
+        # 移到导出目录
         coll:bpy.types.Collection = utils.setCollection(
             'ACA古建.合并',isRoot=True,colorTag=3)
         coll.objects.link(joinedModel)
@@ -695,20 +700,20 @@ class ACA_OT_EXPORT_FBX(bpy.types.Operator):
         subtype="FILE_PATH")# type: ignore
 
     def execute(self, context):  
-        # 预处理
-        buildingObj,bData,objData = utils.getRoot(context.object)
+        # # 预处理
+        # buildingObj,bData,objData = utils.getRoot(context.object)
         
-        # 验证是否建筑已经过合并
-        is_joined = False
-        if buildingObj == None:
-            is_joined = True
-            buildingObj = context.object
+        # # 验证是否建筑已经过合并
+        # is_joined = False
+        # if buildingObj == None:
+        #     is_joined = True
+        #     buildingObj = context.object
 
-        # 未合并的建筑，先执行合并
-        if not is_joined:
-            result = bpy.ops.aca.join()
-            if 'FINISHED' not in result:
-                return {'CANCELLED'}
+        # # 未合并的建筑，先执行合并
+        # if not is_joined:
+        #     result = bpy.ops.aca.join()
+        #     if 'FINISHED' not in result:
+        #         return {'CANCELLED'}
         
         # 导出fbx
         filePath = self.filepath
@@ -743,20 +748,20 @@ class ACA_OT_EXPORT_GLB(bpy.types.Operator):
         subtype="FILE_PATH")# type: ignore
 
     def execute(self, context):  
-        # 预处理
-        buildingObj,bData,objData = utils.getRoot(context.object)
+        # # 预处理
+        # buildingObj,bData,objData = utils.getRoot(context.object)
         
-        # 验证是否建筑已经过合并
-        is_joined = False
-        if buildingObj == None:
-            is_joined = True
-            buildingObj = context.object
+        # # 验证是否建筑已经过合并
+        # is_joined = False
+        # if buildingObj == None:
+        #     is_joined = True
+        #     buildingObj = context.object
 
-        # 未合并的建筑，先执行合并
-        if not is_joined:
-            result = bpy.ops.aca.join()
-            if 'FINISHED' not in result:
-                return {'CANCELLED'}
+        # # 未合并的建筑，先执行合并
+        # if not is_joined:
+        #     result = bpy.ops.aca.join()
+        #     if 'FINISHED' not in result:
+        #         return {'CANCELLED'}
         
         # 导出fbx
         filePath = self.filepath

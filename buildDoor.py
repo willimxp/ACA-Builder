@@ -350,6 +350,13 @@ def __buildKanKuang(wallproxy,windowsillHeight):
                 )
             KankuangObjs.append(menyinObj)
 
+    # 5、批量设置所有子对象材质
+    aData:tmpData = bpy.context.scene.ACA_temp
+    for ob in KankuangObjs:
+        # 全部设置为朱漆材质
+        # 其中槛窗的窗台为石质，并不会被覆盖
+        mat.setMat(ob,aData.mat_red)
+    
     # 合并槛框
     kankuangObj = utils.joinObjects(KankuangObjs,'槛框')     
     # 添加bevel
@@ -839,12 +846,6 @@ def buildDoor(wallProxy:bpy.types.Object):
             )
         mat.setMat(wallHeadBoard,aData.mat_wood)
         kankuangList.append(wallHeadBoard)
-
-    # 5、批量设置所有子对象材质
-    for ob in wallProxy.children:
-        # 全部设置为朱漆材质
-        # 其中槛窗的窗台为石质，并不会被覆盖
-        mat.setMat(ob,aData.mat_red)
 
     # 合并槛框
     kankuangJoined = utils.joinObjects(kankuangList,'槛框')

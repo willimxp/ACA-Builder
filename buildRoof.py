@@ -157,14 +157,17 @@ def __buildLKM(buildingObj:bpy.types.Object,
             )
     LKMObj.ACA_data['aca_obj'] = True
     LKMObj.ACA_data['aca_type'] = LKM_type
+    # 设置材质，刷红漆
+    mat.setMat(LKMObj,aData.mat_red)
+
+    # 镜像
     utils.addModifierMirror(
         object=LKMObj,
         mirrorObj=rafterRootObj,
         use_axis=LKM_mirrorAxis
     )
-    # 设置材质，刷红漆
-    mat.setMat(LKMObj,aData.mat_red)
-    return
+    
+    return LKMObj
 
 # 椽名称
 def __getRafterName(count):
@@ -1039,6 +1042,8 @@ def __buildDLY(buildingObj,purlin_pos,direction):
     )
     DLY_Obj.ACA_data['aca_obj'] = True
     DLY_Obj.ACA_data['aca_type'] = DLY_type
+    # 设置材质，刷红漆
+    mat.setMat(DLY_Obj,aData.mat_red)
 
     # 添加镜像
     utils.addModifierMirror(
@@ -1046,8 +1051,9 @@ def __buildDLY(buildingObj,purlin_pos,direction):
         mirrorObj=rafterRootObj,
         use_axis=DLY_mirrorAxis
     )
-    # 设置材质，刷红漆
-    mat.setMat(DLY_Obj,aData.mat_red)
+
+    return DLY_Obj
+    
 
 # 营造飞椽（以及里口木、压飞望板、大连檐等附属构件)
 # 小式建筑中，可以不使用飞椽

@@ -346,6 +346,49 @@ def __buildDGFangbyRoom(
             
     return
 
+# 放置柱头斗栱
+def __buildPillerDG(name = '柱头斗栱',
+                    location = (0,0,0),
+                    scale = (1,1,1),
+                    rotation = (0,0,0),
+                    parent = None,
+                    mirror = (False,False,False),
+                    tailExtend = 0
+                    ):
+    # 数据准备
+    aData:tmpData = bpy.context.scene.ACA_temp
+    
+    # 复制对象
+    dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
+        sourceObj = aData.dg_piller_source,
+        name = name,
+        location=location,
+        scale= scale,
+        rotation=rotation,
+        parentObj = parent,
+        singleUser=True
+        )
+    dgPillerCopy.rotation_euler.z = math.radians(0)
+    
+    # 调整前后檐桃尖梁长度
+    extendLength = tailExtend/scale[1]  # 考虑到斗口不同的缩放，还原到缩放前
+    gnMod:bpy.types.NodesModifier = \
+        dgPillerCopy.modifiers.get('dgPillerGN')
+    if gnMod != None:
+        # 强制每个对象的node group为单一用户
+        gnMod.node_group = gnMod.node_group.copy()
+        utils.setGN_Input(gnMod,"Length",extendLength)
+    # UV 矫正
+    mat.UvUnwrap(dgPillerCopy,type=mat.uvType.CUBE)
+    
+    # 镜像
+    utils.addModifierMirror(
+        object=dgPillerCopy,
+        mirrorObj=parent,
+        use_axis=mirror
+    )
+    return dgPillerCopy
+
 # 排布斗栱
 # 包括转角斗栱、柱头斗栱、补间斗栱
 # 其中自动判断了屋顶类型，如，硬山、悬山，不做山面斗栱
@@ -399,36 +442,23 @@ def __buildDougong(dgrootObj:bpy.types.Object):
             # 硬山/悬山做到最后一个柱头
             dgRange = range(len(net_x)) 
         for n in dgRange : 
-            dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
-                sourceObj = aData.dg_piller_source,
-                name = "柱头斗栱",
+            # 如果为廊间举架，桃尖梁做廊间进深-1/4柱径（搭接了1/4更好看）
+            if bData.use_hallway:
+                # 廊间进深-1/4柱径（搭接了1/4更好看）
+                taojianLength = (abs(net_y[1]-net_y[0]) 
+                                 - bData.piller_diameter/4)
+            # 否则桃尖梁做前后通檐
+            else:
+                taojianLength = bData.y_total / 2
+            
+            dgPillerCopy = __buildPillerDG(
                 location=(net_x[n],net_y[0],0),
-                scale= bData.dg_scale,
-                parentObj = dgrootObj,
-                singleUser=True
-                )
-            dgPillerCopy.rotation_euler.z = math.radians(0)
-            utils.addModifierMirror(
-                object=dgPillerCopy,
-                mirrorObj=dgrootObj,
-                use_axis=(False,True,False)
+                scale=bData.dg_scale,
+                rotation=(0,0,0),
+                parent=dgrootObj,
+                mirror=(False,True,False),
+                tailExtend=taojianLength
             )
-            # 调整前后檐桃尖梁长度
-            gnMod:bpy.types.NodesModifier = \
-                dgPillerCopy.modifiers.get('dgPillerGN')
-            if gnMod != None:
-                # 如果为廊间举架，桃尖梁做廊间进深-1/4柱径（搭接了1/4更好看）
-                if bData.use_hallway:
-                    # 廊间进深-1/4柱径（搭接了1/4更好看）
-                    taojianLength = abs(net_y[1]-net_y[0]) - bData.piller_diameter/4
-                # 否则桃尖梁做前后通檐
-                else:
-                    taojianLength = bData.y_total / 2
-                # 考虑到斗口不同，斗栱有缩放，所以还原到缩放前
-                taojianLength = taojianLength / dgPillerCopy.scale.y
-                # 强制每个对象的node group为单一用户
-                gnMod.node_group = gnMod.node_group.copy()
-                utils.setGN_Input(gnMod,"Length",taojianLength)
         
         # 两山的柱头斗栱，仅庑殿/歇山做两山的斗栱
         if bData.roof_style in (
@@ -437,31 +467,18 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING,):
             for n in range(len(net_y)-2) : 
-                dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
-                    sourceObj = aData.dg_piller_source,
-                    name = "柱头斗栱",
+                # 廊间进深-1/4柱径（搭接了1/4更好看）
+                taojianLength = (abs(net_x[1]-net_x[0]) 
+                                 - bData.piller_diameter/4)
+
+                dgPillerCopy = __buildPillerDG(
                     location=(net_x[-1],net_y[n+1],0),
-                    scale= bData.dg_scale,
-                    parentObj = dgrootObj,
-                    singleUser=True
-                    )
-                dgPillerCopy.rotation_euler.z = math.radians(90)
-                utils.addModifierMirror(
-                    object=dgPillerCopy,
-                    mirrorObj=dgrootObj,
-                    use_axis=(True,False,False)
+                    scale=bData.dg_scale,
+                    rotation=(0,0,math.radians(90)),
+                    parent=dgrootObj,
+                    mirror=(True,False,False),
+                    tailExtend=taojianLength
                 )
-                # 调整两山桃尖梁长度:
-                gnMod:bpy.types.NodesModifier = \
-                    dgPillerCopy.modifiers.get('dgPillerGN')
-                if gnMod != None:
-                    # 廊间进深-1/4柱径（搭接了1/4更好看）
-                    taojianLength = abs(net_x[1]-net_x[0]) - bData.piller_diameter/4
-                    # 考虑到斗口不同，斗栱有缩放，所以还原到缩放前
-                    taojianLength = taojianLength / dgPillerCopy.scale.y
-                    # 强制每个对象的node group为单一用户
-                    gnMod.node_group = gnMod.node_group.copy()
-                    utils.setGN_Input(gnMod,"Length",taojianLength)
     
     # 补间斗栱/平身科
     if aData.dg_fillgap_source != '' :

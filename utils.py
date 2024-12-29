@@ -1598,18 +1598,20 @@ def delObject(object:bpy.types.Object):
 
 # 更换对象的父节点
 def changeParent(object:bpy.types.Object,
-                 newParent:bpy.types.Object):
+                 newParent:bpy.types.Object,
+                 resetOrigin=True):
     preParent = object.parent
     if preParent == None:
         outputMsg("Can't change Parent of " + object.name )
         return
     
     # 应用所有transform
-    applyTransfrom(
-        object,
-        use_location=True,
-        use_rotation=True,
-        use_scale=True,
+    if resetOrigin:
+        applyTransfrom(
+            object,
+            use_location=True,
+            use_rotation=True,
+            use_scale=True,
     )
     # 转换坐标矩阵
     object.location = (

@@ -235,7 +235,7 @@ def __drawWall(wallProxy:bpy.types.Object):
         name='上身',
         dimensions=Vector((wallLength-bodyShrink*2,
                wallDeepth-bodyShrink*2,
-               wallHeight-bodyShrink*2-extrudeHeight)),
+               wallHeight-extrudeHeight)),
         location=Vector((0,0,wallHeight/2-extrudeHeight/2)),
         parent=wallProxy,
     )

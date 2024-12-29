@@ -515,7 +515,9 @@ def __setPillerHead(pillerObj:bpy.types.Object,
     __copyMaterial(aData.mat_red,pillerBodyObj)
     __copyMaterial(aData.mat_red,pillerTopObj)
     # 重新展UV
-    UvUnwrap(pillerHeadObj,uvType.CYLINDER)   
+    UvUnwrap(pillerHeadObj,uvType.CYLINDER)
+    UvUnwrap(pillerBodyObj,uvType.CUBE,cubesize=2)
+    UvUnwrap(pillerTopObj,uvType.CUBE,cubesize=2)
     # 旋转45度，让金龙面对前方
     pillerHeadObj.rotation_euler.z = math.radians(45)
 

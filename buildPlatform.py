@@ -629,6 +629,9 @@ def __addPlatformExpand(
     # 依据台基proxy、踏跺proxy生成新的散水对象
     for n in range(len(stepList)):
         stepObj:bpy.types.Object = stepList[n]
+        # 削减0.1mm，改善后续boolean的毛刺
+        import random
+        offset = random.random()/1000
         stepExpandObj = utils.addCube(
             name = name,
             location = (
@@ -639,7 +642,7 @@ def __addPlatformExpand(
             dimension = (
                     (stepObj.dimensions.x + pfExpand),
                      stepObj.dimensions.y + pfExpand,
-                     height
+                     height - offset   
             ),
             rotation = stepObj.rotation_euler,
             parent = baseRootObj
@@ -662,12 +665,12 @@ def __addPlatformExpand(
     # 5、设置材质
     mat.setMat(baseExpandObj,pfeMat)
 
-    # 6、添加导角
-    modBevel:bpy.types.BevelModifier = \
-            baseExpandObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_LOW
-    modBevel.offset_type = 'WIDTH'
-    modBevel.use_clamp_overlap = False
+    # # 6、添加导角
+    # modBevel:bpy.types.BevelModifier = \
+    #         baseExpandObj.modifiers.new('Bevel','BEVEL')
+    # modBevel.width = con.BEVEL_LOW
+    # modBevel.offset_type = 'WIDTH'
+    # modBevel.use_clamp_overlap = False
 
     return baseExpandObj
 

@@ -1614,10 +1614,10 @@ def changeParent(object:bpy.types.Object,
             use_scale=True,
     )
     # 转换坐标矩阵
-    object.location = (
+    object.matrix_local = (
         newParent.matrix_world.inverted()
         @ preParent.matrix_world
-        @ object.location
+        @ object.matrix_local
     )
     # 应用新父节点
     object.parent = newParent

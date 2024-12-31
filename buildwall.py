@@ -281,6 +281,12 @@ def buildSingleWall(
     buildingColl = buildingObj.users_collection[0]
     utils.setCollection('装修',parentColl=buildingColl)
 
+    # 查找装修布局节点
+    wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
+    # 如果找不到“装修布局”根节点，重新创建
+    if wallrootObj == None:        
+        wallrootObj = __addWallrootNode(buildingObj)
+
     # 0、判断新增还是修改
     isNew = False
     inputObjType = buildingObj.ACA_data['aca_type']
@@ -343,15 +349,20 @@ def buildSingleWall(
             wData['use_topwin'] = bData.use_topwin
             wData['use_smallfang'] = bData.use_smallfang
         
-        # 替换wallproxy
-        utils.applyTransfrom(wallObj,
-                            use_location=True,
-                            use_rotation=True,
-                            use_scale=True)
-        utils.replaceObject(wallproxy,wallObj,
-                            use_Dimension=False)        
-        # 删除原对象(以及可能存在的隔扇等子对象)
-        utils.deleteHierarchy(wallproxy,del_parent=True)
+        # # 替换wallproxy
+        # utils.applyTransfrom(wallObj,
+        #                     use_location=True,
+        #                     use_rotation=True,
+        #                     use_scale=True)
+        # utils.replaceObject(wallproxy,wallObj,
+        #                     use_Dimension=False)        
+        # # 删除原对象(以及可能存在的隔扇等子对象)
+        # utils.deleteHierarchy(wallproxy,del_parent=True)
+
+        # 挂入根节点
+        utils.changeParent(wallObj,wallrootObj,resetOrigin=False)
+        # 删除wallproxy
+        utils.delObject(wallproxy)
 
         utils.outputMsg("Wall: " + wallObj.name)
 

@@ -368,7 +368,6 @@ def __buildPillerDG(name = '柱头斗栱',
         parentObj = parent,
         singleUser=True
         )
-    dgPillerCopy.rotation_euler.z = math.radians(0)
     
     # 调整前后檐桃尖梁长度
     extendLength = tailExtend/scale[1]  # 考虑到斗口不同的缩放，还原到缩放前

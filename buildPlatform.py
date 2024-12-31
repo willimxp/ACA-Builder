@@ -780,11 +780,12 @@ def buildPlatform(buildingObj:bpy.types.Object):
         baseRootObj.parent = buildingObj  # 挂接在对应建筑节点下
         baseRootObj.ACA_data['aca_obj'] = True
         baseRootObj.ACA_data['aca_type'] = con.ACA_TYPE_BASE_ROOT
-        #以台基几何中心为origin
-        baseRootObj.location = (0,0,bData.platform_height/2)
     else:
         # 清空台基下属的台明、踏跺
         utils.deleteHierarchy(baseRootObj)
+    
+    #以台基几何中心为origin
+    baseRootObj.location = (0,0,bData.platform_height/2)
     
     # 2、开始构建台基
     # 收集待合并的部件

@@ -242,8 +242,6 @@ def saveTemplate(buildingObj:bpy.types.Object):
     ignoreKeys = {
         # 辅助参数，无需处理
         'aca_obj',
-        'x_total',
-        'y_total',
         'wall_layout',
         'wall_style',
         'roof_qiao_point',

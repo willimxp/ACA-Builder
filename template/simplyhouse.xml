@@ -942,7 +942,7 @@
 		<template_name type="str">月台</template_name>
 		<DK type="float">0.08</DK>
 		<is_showPlatform type="bool">True</is_showPlatform>
-		<is_showPillers type="bool">True</is_showPillers>
+		<is_showPillers type="bool">False</is_showPillers>
 		<is_showWalls type="bool">False</is_showWalls>
 		<is_showDougong type="bool">False</is_showDougong>
 		<is_showBeam type="bool">False</is_showBeam>
@@ -999,6 +999,8 @@
 		<yardwall_height type="float">3.0</yardwall_height>
 		<yardwall_depth type="float">1.0</yardwall_depth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
+		<x_total type="float">12.76</x_total>
+		<y_total type="float">3.2</y_total>
 	</template>
 	<template>
 		<aca_type type="str">building</aca_type>

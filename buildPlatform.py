@@ -26,12 +26,12 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
     # 载入模板配置
     platform_height = bData.platform_height
     platform_extend = bData.platform_extend
+    # 计算柱网数据
+    net_x,net_y = buildFloor.getFloorDate(buildingObj)
     # 构造cube三维
     pHeight = platform_height
     pWidth = platform_extend * 2 + bData.x_total
     pDeepth = platform_extend * 2 + bData.y_total
-    # 计算柱网数据
-    net_x,net_y = buildFloor.getFloorDate(buildingObj)
 
     #2、营造台明结构
     # 收集待合并的台明构件

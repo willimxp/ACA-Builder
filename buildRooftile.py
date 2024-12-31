@@ -1639,10 +1639,11 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
                         sourceObj=aData.ridgeBack_source,
                         ridgeCurve=frontRidgeCurve,
                         ridgeName='垂脊兽后')
-        # 垂脊兽后退后一个脊筒，摆放垂兽
+        # 获取脊筒长度
         ridgeObj:bpy.types.Object = aData.ridgeBack_source
         ridgeLength = ridgeObj.dimensions.x * (bData.DK/con.DEFAULT_DK)
-        frontRidgeAfterObj.location.x += ridgeLength
+        # 垂脊兽后退后一个脊筒，摆放垂兽
+        #frontRidgeAfterObj.location.x += ridgeLength
         # 摆放垂兽
         chuishouObj = utils.copyObject(
             sourceObj=aData.chuishou_source,
@@ -1650,6 +1651,8 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
             parentObj=tileRootObj,
             location=frontRidgeCurve.location,
             singleUser=True)
+        # 垂兽向檐口排列一脊筒，后尾对齐正心桁中线
+        chuishouObj.location.x -= ridgeLength
         # 根据斗口调整尺度
         utils.resizeObj(chuishouObj,
             bData.DK / con.DEFAULT_DK)

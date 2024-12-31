@@ -799,9 +799,9 @@ def buildPlatform(buildingObj:bpy.types.Object):
                              type='tuchen')
     basePartList.append(tuchenObj)
     # 2.4、生成散水
-    sanshuiObj = __addPlatformExpand(taimingObj,stepList,
-                              type='sanshui')
-    basePartList.append(sanshuiObj)
+    # sanshuiObj = __addPlatformExpand(taimingObj,stepList,
+    #                           type='sanshui')
+    # basePartList.append(sanshuiObj)
     # 3、合并构件
     baseJoined = utils.joinObjects(basePartList)
 

@@ -577,6 +577,10 @@ class ACA_PT_dougong(bpy.types.Panel):
 
             # 斗栱出跳
             toolBar = toolBox.grid_flow(align=True,columns=1)
+            inputDgStyle = toolBar.column(align=True)
+            inputDgStyle.prop(
+                bData, "dg_style",
+                text='斗栱类型') 
             inputDgextend = toolBar.column(align=True)
             inputDgextend.prop(
                 bData, "dg_extend",

@@ -151,18 +151,17 @@ def update_wall(self, context:bpy.types.Context):
 # 刷新斗栱布局
 def update_dougong(self, context:bpy.types.Context):
     # 确认选中为building节点
-    buildingObj,bdata,odata = utils.getRoot(context.object)
+    buildingObj,bData,odata = utils.getRoot(context.object)
     if buildingObj != None:
-        from . import buildDougong
         # # 重新生成屋顶
         # funproxy = partial(
         #     buildDougong.buildDougong,
         #     buildingObj=buildingObj)
         
         # 241125 修改斗栱时，涉及到柱高的变化，最好是全屋更新
-        from . import buildFloor
+        from . import buildDougong
         funproxy = partial(
-                buildFloor.buildFloor,
+                buildDougong.updateDGStyle,
                 buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
@@ -170,14 +169,14 @@ def update_dougong(self, context:bpy.types.Context):
     return
 
 # 刷新斗栱布局
-def update_dgHeight(self, context:bpy.types.Context):
+def scale_dougong(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
         from . import buildDougong
         # 重新生成屋顶
         funproxy = partial(
-            buildDougong.update_dgHeight,
+            buildDougong.scaleDougong,
             buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
@@ -245,6 +244,20 @@ def hide_rafter(self, context:bpy.types.Context):
 
 def hide_tiles(self, context:bpy.types.Context):
     utils.hideLayer(context,'瓦作',self.is_showTiles)
+
+# 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据
+# https://docs.blender.org/api/current/bpy.props.html
+# Warning
+# There is a known bug with using a callback, 
+# Python must keep a reference to the strings 
+# returned by the callback or Blender will 
+# misbehave or even crash.
+dougongList = []
+def getDougongList(self, context):
+    from . import acaTemplate
+    global dougongList
+    dougongList = acaTemplate.getDougongList()
+    return dougongList
 
 # 对象范围的数据
 # 可绑定面板参数属性
@@ -490,12 +503,19 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name="使用平板枋",
             update=update_roof
         )# type: ignore 
+    dg_style : bpy.props.EnumProperty(
+            name = "斗栱类型",
+            description = "斗栱的出踩和出跳",
+            items = getDougongList,
+            options = {"ANIMATABLE"},
+            update=update_dougong,
+        ) # type: ignore
     dg_extend : bpy.props.FloatProperty(
             name="斗栱挑檐",    # 令拱出跳距离
             default=0.45,
             min=0.01,
             precision=3,
-            update = update_dgHeight,
+            update = scale_dougong,
         )# type: ignore 
     dg_height : bpy.props.FloatProperty(
             name="斗栱高度",    # 取挑檐桁下皮高度

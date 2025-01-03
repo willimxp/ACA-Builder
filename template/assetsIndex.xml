@@ -29,10 +29,26 @@
     <piller_source type="Object">直柱</piller_source>
     <pillerbase_source type="Object">素平柱础</pillerbase_source>
     <lingxin_source type="Object">棂心.正搭斜交</lingxin_source>
-    <dg_piller_source type="Object">柱头科</dg_piller_source>
-    <dg_fillgap_source type="Object">平身科.A</dg_fillgap_source>
-    <dg_fillgap_alt_source type="Object">平身科.B</dg_fillgap_alt_source>
-    <dg_corner_source type="Object">角科</dg_corner_source>
+    <dg_piller_source type="List" key='dg_style'>
+        <item type='Object' style='斗口单昂' index='0'>斗口单昂.柱头科</item>
+        <item type='Object' style='斗口重昂' index='1'>斗口重昂.柱头科</item>
+        <item type='Object' style='单翘重昂' index='2'>单翘重昂.柱头科</item>
+    </dg_piller_source>
+    <dg_fillgap_source type="List" key='dg_style'>
+        <item type='Object' style='斗口单昂' index='0'>斗口单昂.平身科</item>
+        <item type='Object' style='斗口重昂' index='1'>斗口重昂.平身科</item>
+        <item type='Object' style='单翘重昂' index='2'>单翘重昂.平身科</item>
+    </dg_fillgap_source>
+    <dg_fillgap_alt_source type="List" key='dg_style'>
+        <item type='Object' style='斗口单昂' index='0'>斗口单昂.平身科.异色</item>
+        <item type='Object' style='斗口重昂' index='1'>斗口重昂.平身科.异色</item>
+        <item type='Object' style='单翘重昂' index='2'>单翘重昂.平身科.异色</item>
+    </dg_fillgap_alt_source>
+    <dg_corner_source type="List" key='dg_style'>
+        <item type='Object' style='斗口单昂' index='0'>斗口单昂.角科</item>
+        <item type='Object' style='斗口重昂' index='1'>斗口重昂.角科</item>
+        <item type='Object' style='单翘重昂' index='2'>单翘重昂.角科</item>
+    </dg_corner_source>
     <bofeng_source type="Object">博缝板</bofeng_source>
     <cornerbeam_source type="Object">老角梁带霸王拳</cornerbeam_source>
     <bawangquan_source type="Object">霸王拳.彩画</bawangquan_source>

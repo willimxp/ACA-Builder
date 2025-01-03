@@ -14,6 +14,57 @@ from . import buildFloor
 from . import buildRoof
 from . import texture as mat
 
+# 读取模版中的斗栱对象，将默认值填入bData
+def updateDGStyle(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
+    if bData.aca_type != con.ACA_TYPE_BUILDING:
+        utils.showMessageBox("错误，输入的不是建筑根节点")
+        return
+    
+    # 1、更新aData中的斗栱样式
+    from . import acaTemplate
+    acaTemplate.updateAssetStyle(
+        'dg_piller_source',bData.dg_style)
+    acaTemplate.updateAssetStyle(
+        'dg_fillgap_source',bData.dg_style)
+    acaTemplate.updateAssetStyle(
+        'dg_fillgap_alt_source',bData.dg_style)
+    acaTemplate.updateAssetStyle(
+        'dg_corner_source',bData.dg_style)
+    if (aData.dg_piller_source == None
+            or aData.dg_fillgap_source == None
+            or aData.dg_fillgap_alt_source == None
+            or aData.dg_corner_source == None):
+            utils.outputMsg("斗栱配置不完整，请检查")
+            return
+    
+    # 防止无法载入斗栱时的崩溃
+    if aData.dg_piller_source == None:
+        utils.outputMsg('无法读取斗栱挑高和出跳数据')
+        return
+
+    # 2、更新bData中的斗栱参数
+    # 斗栱自动缩放，根据斗栱资产，更新建筑的bData设置
+    # 读取斗栱资产自定义属性dgHeight,dgExtend（需要在blender中定义）
+    if 'dgHeight' in aData.dg_piller_source:
+        bData['dg_height'] = aData.dg_piller_source['dgHeight']
+    else:
+        utils.outputMsg("斗栱未定义默认高度")
+    if 'dgExtend' in aData.dg_piller_source:
+        bData['dg_extend'] = aData.dg_piller_source['dgExtend']
+    else:
+        utils.outputMsg("斗栱未定义默认出跳")
+    # 暂存缩放比例，后续排布斗栱时使用
+    bData['dg_scale'] = (1,1,1)
+
+    # 3、重新生成建筑
+    # 斗栱的变化，可能影响台基下出，屋顶高度定位等
+    buildFloor.buildFloor(buildingObj)
+
+    return
+
 # 刷新斗栱设定
 # 为了避免配置文件中dgExtend,dgHeight,dgScale不匹配（如，清式、宋式斗栱的替换）
 # 仅仅以配置文件中的dgExtend为基准，以资源文件中的斗栱参数，自动计算dgHeight，dgScale
@@ -26,6 +77,11 @@ def updateDGdata(buildingObj:bpy.types.Object):
         utils.showMessageBox("错误，输入的不是建筑根节点")
         return
     
+    # 防止无法载入斗栱时的崩溃
+    if aData.dg_piller_source == None:
+        utils.outputMsg('无法读取斗栱挑高和出跳数据')
+        return
+
     # 斗栱自动缩放，根据斗栱资产，更新建筑的bData设置
     # 读取斗栱资产自定义属性dgHeight,dgExtend（需要在blender中定义）
     if 'dgHeight' in aData.dg_piller_source:
@@ -44,6 +100,16 @@ def updateDGdata(buildingObj:bpy.types.Object):
     bData['dg_height'] = originHeight * scale
     # 暂存缩放比例，后续排布斗栱时使用
     bData['dg_scale'] = (scale,scale,scale)
+    return
+
+# 更新斗栱高度
+# 根据用户输入的斗栱出跳，转换斗栱挑高
+def scaleDougong(buildingObj:bpy.types.Object):
+    # 更新斗栱缩放数据
+    updateDGdata(buildingObj)
+
+    # 重新生成
+    buildRoof.buildRoof(buildingObj)
     return
 
 # 添加斗栱根节点
@@ -177,13 +243,15 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
     if bData.roof_style in (
             con.ROOF_XUANSHAN,
             con.ROOF_XUANSHAN_JUANPENG):
-        # 挑檐桁下，配合檐桁延长到悬出长度
-        if (yLoc + bData.dg_extend)<0.001:
-            extendLength += con.YANCHUAN_EX*dk*2
-        # 其他连接件，如果有斗栱，做出梢
-        else:
-            if bData.use_dg:
-                extendLength += con.HENG_EXTEND*dk
+        # # 挑檐桁下，配合檐桁延长到悬出长度
+        # if (yLoc + bData.dg_extend)<0.001:
+        #     extendLength += con.YANCHUAN_EX*dk*2
+        # # 其他连接件，如果有斗栱，做出梢
+        # else:
+        #     if bData.use_dg:
+        #         extendLength += con.HENG_EXTEND*dk
+        #250103 悬山统一出梢到2椽径
+        extendLength += con.YANCHUAN_EX*dk*2
     # 硬山也为了承托斗栱，做了出梢
     if bData.roof_style in (
         con.ROOF_YINGSHAN,
@@ -223,7 +291,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         use_axis=(False,True,False)
     )
     # 设置材质
-    if fangSourceObj.name == '挑檐枋':
+    if '挑檐枋' in fangSourceObj.name:
         # 设置工王云
         mat.setMat(fangCopy,
                    aData.mat_paint_cloud,
@@ -258,7 +326,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
             use_axis=(True,False,False)
         )
         # 设置材质
-        if fangSourceObj.name == '挑檐枋':
+        if '挑檐枋' in fangSourceObj.name:
             # 设置工王云
             mat.setMat(fangCopy,
                    aData.mat_paint_cloud,
@@ -339,7 +407,7 @@ def __buildDGFangbyRoom(
         )
         # 栱垫板材质
         # 务必放在最后操作，该方法会删除原有的垫拱板，替换为新的mesh
-        if fangSourceObj.name.startswith('栱垫板'):
+        if '栱垫板' in fangSourceObj.name:
             mat.setMat(fangCopy,
                        aData.mat_paint_dgfillboard,
                        override=True)
@@ -600,7 +668,7 @@ def buildDougong(buildingObj:bpy.types.Object):
     # 3、排布斗栱间的枋子
     # 循环处理各个连接件
     for fangObj in aData.dg_piller_source.children:
-        if fangObj.name in ('栱垫板'):
+        if '栱垫板' in fangObj.name:
             __buildDGFangbyRoom(dgrootObj,fangObj)
         else:
             __buildDGFangbyBuilding(dgrootObj,fangObj)
@@ -609,32 +677,3 @@ def buildDougong(buildingObj:bpy.types.Object):
     utils.focusObj(buildingObj)
     return {'FINISHED'}
 
-# 更新斗栱高度
-# 根据用户输入的斗栱出跳，转换斗栱挑高
-def update_dgHeight(buildingObj:bpy.types.Object):
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
-    aData:tmpData = bpy.context.scene.ACA_temp
-    
-    # 原始比例
-    if 'dgHeight' in aData.dg_piller_source:
-        originHeight = aData.dg_piller_source['dgHeight']
-    else:
-        originHeight = bData.dg_height
-        utils.outputMsg("斗栱未定义该属性")
-    if 'dgExtend' in aData.dg_piller_source:
-        originExtend = aData.dg_piller_source['dgExtend']
-    else:
-        originExtend = bData.dg_extend
-        utils.outputMsg("斗栱未定义该属性")
-
-    # 以用户定义的出跳，计算缩放
-    scale = bData.dg_extend / originExtend
-    # 斗栱高度，根据出跳缩放联动
-    bData['dg_height'] = originHeight * scale
-    # 暂存缩放比例，后续排布斗栱时使用
-    bData['dg_scale'] = (scale,scale,scale)
-
-    # 重新生成
-    buildRoof.buildRoof(buildingObj)
-    return

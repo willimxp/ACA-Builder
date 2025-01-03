@@ -27,8 +27,8 @@
 		<use_KanWall type="bool">True</use_KanWall>
 		<use_dg type="bool">True</use_dg>
 		<use_pingbanfang type="bool">False</use_pingbanfang>
-		<dg_extend type="float">0.72</dg_extend>
-		<dg_height type="float">0.896</dg_height>
+		<dg_extend type="float">0.24</dg_extend>
+		<dg_height type="float">0.576</dg_height>
 		<dg_gap type="float">0.88</dg_gap>
 		<roof_style type="str">3</roof_style>
 		<rafter_count type="int">6</rafter_count>
@@ -62,6 +62,9 @@
 		<is_4_sides type="bool">True</is_4_sides>
 		<is_showBeam type="bool">True</is_showBeam>
 		<use_hallway type="bool">False</use_hallway>
+		<x_total type="float">16.72</x_total>
+		<y_total type="float">10.56</y_total>
+		<dg_style type="str">0</dg_style>
 	</template>
 	<template>
 		<template_name type="str">九檩单檐庑殿周围廊</template_name>

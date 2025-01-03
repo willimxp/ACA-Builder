@@ -48,6 +48,61 @@ def getTemplateList(onlyname=False):
             
     return template_list
 
+# 解析XML，获取斗栱样式列表
+# 配置如下
+# <dg_piller_source type="List">
+#     <item type='Object' style='斗口单昂'>斗口单昂.柱头科</item>
+#     <item type='Object' style='斗口重昂'>斗口重昂.柱头科</item>
+#     <item type='Object' style='单翘重昂'>单翘重昂.柱头科</item>
+# </dg_piller_source>
+def getDougongList(onlyname=False):
+    dougong_list = []
+
+    # 载入XML
+    path = __getPath(assetsFileName)
+    tree = ET.parse(path)
+    # 根节点<assets>
+    root = tree.getroot()
+    # 查找“柱头科”配置
+    dgPillerNode = root.find('dg_piller_source')
+    if dgPillerNode != None:
+        # 判断type属性
+        type = dgPillerNode.attrib['type']
+        if type == 'List':
+            # 查找“item”子节点
+            items = dgPillerNode.findall('item')
+            for item in items:
+                dgStyle = item.attrib['style']
+                styleIndex = item.attrib['index']
+                dougong_list.append(
+                    (styleIndex,dgStyle,dgStyle)
+                )
+            
+    return dougong_list
+
+# 更新资产样式
+def updateAssetStyle(assetName='',
+                     assetStyle=''):   
+    # 载入XML
+    path = __getPath(assetsFileName)
+    tree = ET.parse(path)
+    # 根节点<assets>
+    root = tree.getroot()
+    # 查找配置
+    assetNode = root.find(assetName)
+    if assetNode != None:
+        # 判断type属性
+        type = assetNode.attrib['type']
+        if type == 'List':
+            # 查找“item”子节点
+            items = assetNode.findall('item')
+            for item in items:
+                dgStyleIndex = item.attrib['index']
+                if dgStyleIndex == str(assetStyle):
+                    aData : tmpData = bpy.context.scene.ACA_temp
+                    aData[assetName] = loadAssets(item.text)
+    return
+
 # 载入Blender中的资产
 # 参考教程：https://b3d.interplanety.org/en/appending-all-objects-from-the-external-blend-file-to-the-scene-with-blender-python-api/
 # 参考文档：https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html
@@ -136,8 +191,9 @@ def __loadDefaultData(buildingObj:bpy.types.Object):
     return bData
 
 # 填充资产库对象索引
-def openAssets():
+def openAssets(buildingObj:bpy.types.Object):
     # 载入数据
+    bData:acaData = buildingObj.ACA_data
     aData : tmpData = bpy.context.scene.ACA_temp
 
     # 解析XML配置模版
@@ -150,6 +206,23 @@ def openAssets():
         tag = node.tag
         type = node.attrib['type']
         value = node.text
+        # 处理多样式的资产
+        if type == 'List':
+            # 获取样式定义，是指bData中定义的变量名称
+            styleKey = node.attrib['key']
+            # styleValue为了样式下拉框能自动选中，
+            # 在载入样式时自动转为了int，这里要转为str与xml比较
+            styleValue = str(bData[styleKey])   
+            # 载入所有样式
+            items = node.findall('item')
+            for item in items:
+                if item.attrib['type'] == 'Object':
+                    if item.attrib['index'] == styleValue:
+                        # 更新判断类型为Object，进入下一个判断
+                        type = 'Object'
+                        # 获取资产样式
+                        value = item.text
+        
         if type == 'Object':
             # 241224 为了解决以下报错，做的安全性验证
             # 似乎是4.2中做了一个Breaking changes：Statically Typed IDProperties
@@ -208,7 +281,8 @@ def openTemplate(buildingObj:bpy.types.Object,
                         bData[tag] = value
                         # 特殊处理下拉框
                         if tag in ('roof_style',
-                                   'juzhe'):
+                                   'juzhe',
+                                   'dg_style'):
                             bData[tag] = int(value)
                     elif type == 'float':
                         bData[tag] = round(float(value),3)
@@ -221,13 +295,11 @@ def openTemplate(buildingObj:bpy.types.Object,
                             bData[tag] = True
                         if value == 'False':
                             bData[tag] = False
-                    elif type == 'Object':
-                        bData[tag] = loadAssets(value)
                     else:
                         print("can't convert:",node.tag, node.attrib['type'],node.text)
 
     # 填充资产库对象索引
-    openAssets()
+    openAssets(buildingObj)
     
     return
 

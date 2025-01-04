@@ -30,11 +30,12 @@ def build():
     buildingObj.name = templateName         
     buildingObj.empty_display_type = 'SPHERE'
 
-    # 在buildingObj中填充模版数据
-    acaTemplate.openTemplate(buildingObj,templateName)
-
-    # 载入数据
+    # 初始化bData
     bData:acaData = buildingObj.ACA_data
+    bData['template_name'] = templateName
+    # 在buildingObj中填充模版数据
+    # 其中填充bData后，还继续填充了aData
+    acaTemplate.loadTemplate(buildingObj)
 
     # 根据模版类型调用不同的入口
     if bData.aca_type == con.ACA_TYPE_BUILDING:

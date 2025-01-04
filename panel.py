@@ -585,6 +585,7 @@ class ACA_PT_dougong(bpy.types.Panel):
             inputDgextend.prop(
                 bData, "dg_extend",
                 text='斗栱出跳') 
+            inputDgextend.enabled =False
             # # 斗栱高度
             # inputDgheight = toolBar.column(align=True)
             # inputDgheight.prop(

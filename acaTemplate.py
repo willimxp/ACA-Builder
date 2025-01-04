@@ -80,9 +80,70 @@ def getDougongList(onlyname=False):
             
     return dougong_list
 
+# 动态初始化斗栱属性和样式
+# 根据当前建筑所定义的斗栱样式进行更新
+# 在建筑新建、重新生成屋顶、单独生成斗栱层时，都应该使用此方法
+def updateDougongData(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
+    if bData.aca_type != con.ACA_TYPE_BUILDING:
+        utils.showMessageBox("错误，输入的不是建筑根节点")
+        return
+    
+    # 1、根据斗栱样式，更新对应斗栱资产模版
+    # 1.1、验证斗栱样式非空，否则默认取第一个
+    if 'dg_style' not in bData:
+        bData['dg_style'] = 0
+    
+    # 1.2、更新aData中的斗栱样式
+    __updateAssetStyle(
+        buildingObj,'dg_piller_source')
+    __updateAssetStyle(
+        buildingObj,'dg_fillgap_source')
+    __updateAssetStyle(
+        buildingObj,'dg_fillgap_alt_source')
+    __updateAssetStyle(
+        buildingObj,'dg_corner_source')
+    if (aData.dg_piller_source == None
+            or aData.dg_fillgap_source == None
+            or aData.dg_fillgap_alt_source == None
+            or aData.dg_corner_source == None):
+        utils.outputMsg("斗栱配置不完整，请检查")
+        return
+    
+    # 2、更新bData中的斗栱配置参数
+    # 包括dg_height,dg_extend,dgScale
+
+    # 2.1、dg_scale: 根据斗口设置进行缩放，参考斗口为二寸五0.08cm
+    dgScale = bData.DK / con.DEFAULT_DK
+    bData['dg_scale'] = (dgScale,dgScale,dgScale)
+
+    # 2.2、dg_height,dg_extend
+    # 仅以柱头斗栱为依据，
+    # 在blender中应该提前给柱头斗栱定义好dgHeight和dgExtend属性
+    dgObj = aData.dg_piller_source
+    # 防止无法载入斗栱时的崩溃
+    if dgObj == None:
+        utils.outputMsg('无法读取斗栱挑高和出跳数据')
+        return
+    if 'dgHeight' in dgObj:
+        bData['dg_height'] = dgObj['dgHeight']*dgScale
+    else:
+        utils.outputMsg("斗栱未定义默认高度")
+    if 'dgExtend' in dgObj:
+        bData['dg_extend'] = dgObj['dgExtend']*dgScale
+    else:
+        utils.outputMsg("斗栱未定义默认出跳")
+
+    return
+
 # 更新资产样式
-def updateAssetStyle(assetName='',
-                     assetStyle=''):   
+def __updateAssetStyle(buildingObj:bpy.types.Object,
+                     assetName=''): 
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data  
+    aData : tmpData = bpy.context.scene.ACA_temp
     # 载入XML
     path = __getPath(assetsFileName)
     tree = ET.parse(path)
@@ -94,13 +155,25 @@ def updateAssetStyle(assetName='',
         # 判断type属性
         type = assetNode.attrib['type']
         if type == 'List':
-            # 查找“item”子节点
-            items = assetNode.findall('item')
-            for item in items:
-                dgStyleIndex = item.attrib['index']
-                if dgStyleIndex == str(assetStyle):
-                    aData : tmpData = bpy.context.scene.ACA_temp
-                    aData[assetName] = loadAssets(item.text)
+            # 获取样式定义，是指bData中定义的变量名称
+            styleKey = assetNode.attrib['key']
+            # 有些配置可能太老，导致部分styleKey缺失
+            if styleKey in bData:
+                # styleValue为了样式下拉框能自动选中，
+                # 在载入样式时自动转为了int，这里要转为str与xml比较
+                styleValue = str(bData[styleKey])   
+                # 查找“item”子节点
+                items = assetNode.findall('item')
+                for item in items:
+                    dgStyleIndex = item.attrib['index']
+                    if dgStyleIndex == styleValue:
+                        # 250104 为了解决以下报错，做的安全性验证
+                        # 似乎是4.2中做了一个Breaking changes：Statically Typed IDProperties
+                        # https://developer.blender.org/docs/release_notes/4.2/python_api/#statically-typed-idproperties
+                        # TypeError: Cannot assign a 'Object' value to the existing 'dg_piller_source' Group IDProperty
+                        if assetName in aData:  
+                            del aData[assetName] 
+                        aData[assetName] = loadAssets(item.text)
     return
 
 # 载入Blender中的资产
@@ -190,8 +263,12 @@ def __loadDefaultData(buildingObj:bpy.types.Object):
     bData['door_height'] = 0.6*bData['piller_height']
     return bData
 
-# 填充资产库对象索引
-def openAssets(buildingObj:bpy.types.Object):
+# 填充资产对象的引用aData
+# aData中仅为对模版xx.blend文件中对象的引用
+# aData根据bData中定义的dgStyle等属性的不同而动态改变
+# aData绑定在Blender的Scene场景中，未做建筑间隔离
+# 在更新斗栱时，修改了aData中涉及斗栱的属性
+def __loadAssetByBuilding(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     aData : tmpData = bpy.context.scene.ACA_temp
@@ -206,23 +283,9 @@ def openAssets(buildingObj:bpy.types.Object):
         tag = node.tag
         type = node.attrib['type']
         value = node.text
-        # 处理多样式的资产
-        if type == 'List':
-            # 获取样式定义，是指bData中定义的变量名称
-            styleKey = node.attrib['key']
-            # styleValue为了样式下拉框能自动选中，
-            # 在载入样式时自动转为了int，这里要转为str与xml比较
-            styleValue = str(bData[styleKey])   
-            # 载入所有样式
-            items = node.findall('item')
-            for item in items:
-                if item.attrib['type'] == 'Object':
-                    if item.attrib['index'] == styleValue:
-                        # 更新判断类型为Object，进入下一个判断
-                        type = 'Object'
-                        # 获取资产样式
-                        value = item.text
-        
+        # 静态的模版对象声明为Object
+        # 动态的模版对象声明为List，
+        # 不在这里处理，而拆分到类似updateDougongData的定制方法中处理
         if type == 'Object':
             # 241224 为了解决以下报错，做的安全性验证
             # 似乎是4.2中做了一个Breaking changes：Statically Typed IDProperties
@@ -231,15 +294,18 @@ def openAssets(buildingObj:bpy.types.Object):
             if tag in aData:  
                 del aData[tag]  
             aData[tag] = loadAssets(value)
+
+    # 3、其他个性化处理
+    # 提取斗栱自定义属性，填充入bData
+    # 如，bData.dg_height，bData.dg_extend，bData.dg_scale
+    updateDougongData(buildingObj)
     
     return
-    
 
 # 载入模版
 # 直接将XML填充入bData
 # 注意，所有的属性都为选填，所以要做好空值的检查
-def openTemplate(buildingObj:bpy.types.Object,
-                 templateName:str):
+def loadTemplate(buildingObj:bpy.types.Object):
     # 解析XML配置模版
     path = __getPath(xmlFileName)
     tree = ET.parse(path)
@@ -251,6 +317,7 @@ def openTemplate(buildingObj:bpy.types.Object,
     
     # 载入数据
     bData:acaData = buildingObj.ACA_data
+    templateName = bData.template_name
     
     # 在XML中查找对应名称的那个模版
     for template in templates:
@@ -298,8 +365,8 @@ def openTemplate(buildingObj:bpy.types.Object,
                     else:
                         print("can't convert:",node.tag, node.attrib['type'],node.text)
 
-    # 填充资产库对象索引
-    openAssets(buildingObj)
+    # 填充建筑使用的资产对象，根据其中的dg_style等不同，载入不同的资产样式
+    __loadAssetByBuilding(buildingObj)
     
     return
 

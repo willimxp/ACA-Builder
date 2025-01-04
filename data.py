@@ -159,28 +159,13 @@ def update_dougong(self, context:bpy.types.Context):
         #     buildingObj=buildingObj)
         
         # 241125 修改斗栱时，涉及到柱高的变化，最好是全屋更新
-        from . import buildDougong
+        from . import buildRoof
         funproxy = partial(
-                buildDougong.updateDGStyle,
+                buildRoof.buildRoof,
                 buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated dougong failed, context.object should be buildingObj")
-    return
-
-# 刷新斗栱布局
-def scale_dougong(self, context:bpy.types.Context):
-    # 确认选中为building节点
-    buildingObj,bdata,odata = utils.getRoot(context.object)
-    if buildingObj != None:
-        from . import buildDougong
-        # 重新生成屋顶
-        funproxy = partial(
-            buildDougong.scaleDougong,
-            buildingObj=buildingObj)
-        utils.fastRun(funproxy)
-    else:
-        utils.outputMsg("updated platform failed, context.object should be buildingObj")
     return
 
 def update_roof(self, context:bpy.types.Context):
@@ -509,13 +494,14 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             items = getDougongList,
             options = {"ANIMATABLE"},
             update=update_dougong,
+            default=0,
         ) # type: ignore
     dg_extend : bpy.props.FloatProperty(
             name="斗栱挑檐",    # 令拱出跳距离
             default=0.45,
+            description = "斗栱出跳由斗栱模版预先定义，不可修改",
             min=0.01,
             precision=3,
-            update = scale_dougong,
         )# type: ignore 
     dg_height : bpy.props.FloatProperty(
             name="斗栱高度",    # 取挑檐桁下皮高度
@@ -529,6 +515,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     dg_gap:bpy.props.FloatProperty(
             name="斗栱间距",    # 斗栱间距
+            description = "斗栱间距建议不小于11斗口，可以根据需要适当增大",
             default=0.99,
             precision=3,
             min=0.1,

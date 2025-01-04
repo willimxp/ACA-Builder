@@ -22,8 +22,11 @@ def __addRoofRoot(buildingObj:bpy.types.Object):
     buildingColl = buildingObj.users_collection[0]
     utils.focusCollection(buildingColl.name)
 
-    # 刷新斗栱数据
-    buildDougong.updateDGdata(buildingObj)
+    # 因为aData在Scene中跨建筑共用，在多建筑修改时，每次更新建筑对应的斗栱样式等个性化设置
+    # 在buildingObj中填充模版数据
+    # 其中填充bData后，还继续填充了aData
+    from . import acaTemplate
+    acaTemplate.loadTemplate(buildingObj)
 
     # 设置根节点
     roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT) 

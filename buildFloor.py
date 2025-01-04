@@ -18,25 +18,6 @@ from . import buildWall
 from . import buildPlatform
 from . import buildRoof
 
-# 添加建筑empty根节点，并绑定设计模版
-# 返回建筑empty根节点对象
-# 被ACA_OT_add_newbuilding类调用
-def __addBuildingRoot(templateName):
-    # 创建或锁定根目录
-    coll = utils.setCollection(templateName)
-    
-    # 创建buildObj根节点
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
-    buildingObj = bpy.context.object
-    buildingObj.location = bpy.context.scene.cursor.location   # 原点摆放在3D Cursor位置
-    buildingObj.name = templateName   # 系统遇到重名会自动添加00x的后缀       
-    buildingObj.empty_display_type = 'SPHERE'
-
-    # 在buildingObj中填充模版数据
-    acaTemplate.openTemplate(buildingObj,templateName)
-    
-    return buildingObj
-
 # 返回柱网数据
 # 非内部函数，在墙体、斗栱、屋顶制作时都有公开调用
 # 将panel中设置的面宽、进深，组合成柱网数组
@@ -978,33 +959,15 @@ def resetFloor(buildingObj:bpy.types.Object):
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
 def buildFloor(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    
     # 定位到collection，如果没有则新建
     utils.setCollection(con.ROOT_COLL_NAME,
                         isRoot=True,colorTag=2)
 
-    # 新建还是刷新？
-    if buildingObj == None:
-        utils.outputMsg("创建新建筑...")
-        # 获取panel上选择的模版
-        templateName = bpy.context.scene.ACA_data.template
-        # 添加建筑根节点，同时载入模版
-        buildingObj = __addBuildingRoot(templateName)
-    else:
-        # # 删除屋顶，柱网变化必然引起屋顶重构
-        # roofRoot = utils.getAcaChild(
-        #     buildingObj,con.ACA_TYPE_ROOF_ROOT)
-        # utils.deleteHierarchy(roofRoot)
-        # # 删除墙体，柱网变化必然引起墙体重构
-        # wallRoot = utils.getAcaChild(
-        #     buildingObj,con.ACA_TYPE_WALL_ROOT)
-        # utils.deleteHierarchy(wallRoot)
-
-        # 20240616 简单粗暴的全部删除
-        # todo：wallproxy的个性化设置丢失了
-        utils.deleteHierarchy(buildingObj)
-
-     # 载入数据
-    bData:acaData = buildingObj.ACA_data
+    # 清空，重建
+    utils.deleteHierarchy(buildingObj)
 
     # 生成柱网
     if bData.is_showPillers:

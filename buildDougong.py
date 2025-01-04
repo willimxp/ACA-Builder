@@ -22,7 +22,7 @@ def __addDougongRoot(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data # 载入数据
 
-    # 初始化斗栱数据
+    # 初始化斗栱数据，避免跨建筑时公用的aData干扰
     from . import acaTemplate
     acaTemplate.updateDougongData(buildingObj)
 

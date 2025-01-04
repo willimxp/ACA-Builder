@@ -94,7 +94,7 @@ def updateDougongData(buildingObj:bpy.types.Object):
     # 1、根据斗栱样式，更新对应斗栱资产模版
     # 1.1、验证斗栱样式非空，否则默认取第一个
     if 'dg_style' not in bData:
-        bData['dg_style'] = 0
+        bData['dg_style'] = '0'
     
     # 1.2、更新aData中的斗栱样式
     __updateAssetStyle(
@@ -345,12 +345,13 @@ def loadTemplate(buildingObj:bpy.types.Object):
                     value = node.text
                     # 类型转换
                     if type == 'str':
-                        bData[tag] = value
                         # 特殊处理下拉框
                         if tag in ('roof_style',
                                    'juzhe',
                                    'dg_style'):
                             bData[tag] = int(value)
+                        else:
+                            bData[tag] = value
                     elif type == 'float':
                         bData[tag] = round(float(value),3)
                     elif type == 'int':

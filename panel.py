@@ -711,6 +711,7 @@ class ACA_PT_beam(bpy.types.Panel):
             # 只有盝顶可以设置步架
             if bData.roof_style != con.ROOF_LUDING:
                 inputLudingBujia.enabled = False
+                buttonDefaultLDBJ.enabled = False
 
 # “椽望属性”子面板
 class ACA_PT_rafter(bpy.types.Panel):

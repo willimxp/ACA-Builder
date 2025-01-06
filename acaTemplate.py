@@ -90,6 +90,8 @@ def updateDougongData(buildingObj:bpy.types.Object):
     if bData.aca_type != con.ACA_TYPE_BUILDING:
         utils.showMessageBox("错误，输入的不是建筑根节点")
         return
+    dgrootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_DG_ROOT)
     
     # 1、根据斗栱样式，更新对应斗栱资产模版
     # 1.1、验证斗栱样式非空，否则默认取第一个
@@ -98,13 +100,17 @@ def updateDougongData(buildingObj:bpy.types.Object):
     
     # 1.2、更新aData中的斗栱样式
     __updateAssetStyle(
-        buildingObj,'dg_piller_source')
+        buildingObj,'dg_piller_source',
+        parent=dgrootObj)
     __updateAssetStyle(
-        buildingObj,'dg_fillgap_source')
+        buildingObj,'dg_fillgap_source',
+        parent=dgrootObj)
     __updateAssetStyle(
-        buildingObj,'dg_fillgap_alt_source')
+        buildingObj,'dg_fillgap_alt_source',
+        parent=dgrootObj)
     __updateAssetStyle(
-        buildingObj,'dg_corner_source')
+        buildingObj,'dg_corner_source',
+        parent=dgrootObj)
     if (aData.dg_piller_source == None
             or aData.dg_fillgap_source == None
             or aData.dg_fillgap_alt_source == None
@@ -140,7 +146,8 @@ def updateDougongData(buildingObj:bpy.types.Object):
 
 # 更新资产样式
 def __updateAssetStyle(buildingObj:bpy.types.Object,
-                     assetName=''): 
+                     assetName='',
+                     parent=None): 
     # 载入数据
     bData:acaData = buildingObj.ACA_data  
     aData : tmpData = bpy.context.scene.ACA_temp
@@ -172,8 +179,10 @@ def __updateAssetStyle(buildingObj:bpy.types.Object,
                         # https://developer.blender.org/docs/release_notes/4.2/python_api/#statically-typed-idproperties
                         # TypeError: Cannot assign a 'Object' value to the existing 'dg_piller_source' Group IDProperty
                         if assetName in aData:  
-                            del aData[assetName] 
-                        aData[assetName] = loadAssets(item.text)
+                            del aData[assetName]
+                        # 个性化样式资产，不采用link方式，而是复制到各个建筑内
+                        aData[assetName] = loadAssets(
+                            item.text,link=False,parent=parent)
     return
 
 # 载入Blender中的资产
@@ -187,7 +196,7 @@ def loadAssets(assetName : str,
     filepath = __getPath(blenderFileName)
 
     # 简化做法，效率更高，但没有关联子对象
-    with bpy.data.libraries.load(filepath,link=True) as (data_from, data_to):
+    with bpy.data.libraries.load(filepath,link=link) as (data_from, data_to):
         data_to.objects = [name for name in data_from.objects if name==assetName]
     # 验证找到的资产是否唯一
     if len(data_to.objects) == 0:
@@ -295,10 +304,10 @@ def __loadAssetByBuilding(buildingObj:bpy.types.Object):
                 del aData[tag]  
             aData[tag] = loadAssets(value)
 
-    # 3、其他个性化处理
-    # 提取斗栱自定义属性，填充入bData
-    # 如，bData.dg_height，bData.dg_extend，bData.dg_scale
-    updateDougongData(buildingObj)
+    # # 3、其他个性化处理
+    # # 提取斗栱自定义属性，填充入bData
+    # # 如，bData.dg_height，bData.dg_extend，bData.dg_scale
+    # updateDougongData(buildingObj)
     
     return
 

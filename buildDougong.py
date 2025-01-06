@@ -22,10 +22,6 @@ def __addDougongRoot(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data # 载入数据
 
-    # 初始化斗栱数据，避免跨建筑时公用的aData干扰
-    from . import acaTemplate
-    acaTemplate.updateDougongData(buildingObj)
-
     # 新建或清空根节点
     dgrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_DG_ROOT)
@@ -368,6 +364,10 @@ def __buildDougong(dgrootObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
+
+    # 初始化斗栱数据，避免跨建筑时公用的aData干扰
+    from . import acaTemplate
+    acaTemplate.updateDougongData(buildingObj)
 
     # 获取开间、进深数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)

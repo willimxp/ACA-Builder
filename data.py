@@ -312,13 +312,15 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "台基高度",
             min = 0.01, 
             precision=3,
-            update = update_platform # 绑定回调
+            update = update_platform, # 绑定回调
+            description="一般为柱高的1/5，或2柱径",
         ) # type: ignore
     platform_extend : bpy.props.FloatProperty(
             name = "台基下出",
             precision=3,
             min = 0.01, 
-            update = update_platform    # 绑定回调
+            update = update_platform,    # 绑定回调
+            description="檐柱的2.4倍，或上出檐的3/4~4/5",
         ) # type: ignore
     step_net : bpy.props.StringProperty(
             name = "保存的踏跺列表"
@@ -401,6 +403,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min = 0.01, 
             precision=3,
             update = update_building,
+            description="面阔一丈，柱高八尺",
         )# type: ignore
     piller_diameter : bpy.props.FloatProperty(
             name = "柱径",
@@ -409,6 +412,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             precision=3,
             # update = update_piller
             update = update_building,
+            description="柱高：柱径可以取11:1",
         )# type: ignore
     use_smallfang: bpy.props.BoolProperty(
             default=False,

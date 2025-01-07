@@ -738,19 +738,31 @@ def __setDgBoard(dgBoardObj:bpy.types.Object,
 # 设置挑檐枋工王云、平板枋走龙贴图
 def __setBoardFang(fangObj:bpy.types.Object,
                    mat:bpy.types.Object):
-    # 替换对象
-    newFangObj = utils.copySimplyObject(mat,singleUser=True)
-    utils.replaceObject(
-        fangObj,
-        newFangObj,
-        delete=True)
-    
-    # 更新UV
-    cubeHeight = newFangObj.dimensions.z
-    UvUnwrap(newFangObj,
+    # 复制材质库中的工王云，走龙贴图
+    # 这些贴图的slot0为彩画，slot1为纯色大青
+    __copyMaterial(mat,fangObj)
+
+    # 找到顶面和底面，做材质slot1的大青
+    bm = bmesh.new()
+    bm.from_mesh(fangObj.data)
+    # -Z轴为向量比较基准
+    negZ = Vector((0,0,-1))
+    # 选择法线类似的所有面，0.1是在blender里尝试的经验值
+    for face in bm.faces:
+        # 根据向量的点积判断方向，正为同向，0为垂直，负为反向
+        dir = face.normal.dot(negZ)
+        if abs(dir) > 0:
+            # 设置为slot1的大青
+            face.material_index = 1
+    bm.to_mesh(fangObj.data)
+    bm.free()
+
+    # 更新UV，适配对象高度的满铺
+    cubeHeight = fangObj.dimensions.z
+    UvUnwrap(fangObj,
              type=uvType.CUBE,
              cubesize=cubeHeight)
-    return newFangObj
+    return fangObj
 
 # 望板材质，底面刷红
 def __setWangban(wangban:bpy.types.Object,

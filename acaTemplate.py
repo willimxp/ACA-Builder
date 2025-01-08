@@ -55,7 +55,7 @@ def getTemplateList(onlyname=False):
 #     <item type='Object' style='斗口重昂'>斗口重昂.柱头科</item>
 #     <item type='Object' style='单翘重昂'>单翘重昂.柱头科</item>
 # </dg_piller_source>
-def getDougongList(onlyname=False):
+def getDougongList():
     dougong_list = []
 
     # 载入XML
@@ -71,11 +71,10 @@ def getDougongList(onlyname=False):
         if type == 'List':
             # 查找“item”子节点
             items = dgPillerNode.findall('item')
-            for item in items:
+            for n,item in enumerate(items):
                 dgStyle = item.attrib['style']
-                styleIndex = item.attrib['index']
                 dougong_list.append(
-                    (styleIndex,dgStyle,dgStyle)
+                    (str(n),dgStyle,dgStyle)
                 )
             
     return dougong_list
@@ -168,12 +167,11 @@ def __updateAssetStyle(buildingObj:bpy.types.Object,
             if styleKey in bData:
                 # styleValue为了样式下拉框能自动选中，
                 # 在载入样式时自动转为了int，这里要转为str与xml比较
-                styleValue = str(bData[styleKey])   
+                styleValue = bData[styleKey]   
                 # 查找“item”子节点
                 items = assetNode.findall('item')
-                for item in items:
-                    dgStyleIndex = item.attrib['index']
-                    if dgStyleIndex == styleValue:
+                for n,item in enumerate(items):
+                    if n == styleValue:
                         # 250104 为了解决以下报错，做的安全性验证
                         # 似乎是4.2中做了一个Breaking changes：Statically Typed IDProperties
                         # https://developer.blender.org/docs/release_notes/4.2/python_api/#statically-typed-idproperties

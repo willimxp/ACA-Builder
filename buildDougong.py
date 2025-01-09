@@ -27,10 +27,11 @@ def __addDougongRoot(buildingObj:bpy.types.Object):
         buildingObj,con.ACA_TYPE_DG_ROOT)
     if dgrootObj == None:
         # 创建根对象（empty）===========================================================
-        # 相对于屋顶层根节点（挑檐桁下皮）
-        root_z = -bData.dg_height
+        # 250108 屋顶层原点改为柱头，斗栱层原点也改为柱头
+        # # 相对于屋顶层根节点（挑檐桁下皮）
+        # root_z = -bData.dg_height
         bpy.ops.object.empty_add(
-            type='PLAIN_AXES',location=(0,0,root_z))
+            type='PLAIN_AXES',location=(0,0,0))
         dgrootObj = bpy.context.object
         dgrootObj.name = "斗栱层"
         dgrootObj.ACA_data['aca_obj'] = True
@@ -61,7 +62,7 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
     # 平板枋，在根节点平面之下，便于整体控制
     extendLength = bData.piller_diameter*2
     # 檐面平板枋
-    loc = (0,net_y[0],-con.PINGBANFANG_H*dk/2)
+    loc = (0,net_y[0],con.PINGBANFANG_H*dk/2)
     dimensions =(
         bData.x_total + extendLength,
         con.PINGBANFANG_Y*dk,
@@ -89,7 +90,7 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
         aData.mat_paint_walkdragon)
 
     # 山面平板枋
-    loc = (net_x[0],0,-con.PINGBANFANG_H*dk/2)
+    loc = (net_x[0],0,con.PINGBANFANG_H*dk/2)
     dimensions =(
         bData.y_total + extendLength,
         con.PINGBANFANG_Y*dk,
@@ -131,10 +132,15 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
 
     # 获取开间、进深数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
-
+    
     # 定位连接件
     yLoc = fangSourceObj.location.y * bData.dg_scale[1]
-    zLoc = fangSourceObj.location.z * bData.dg_scale[2]
+    # 斗栱高度，考虑平板枋的抬升
+    dgZ = 0
+    if bData.use_pingbanfang:
+        dgZ = con.PINGBANFANG_H * dk
+    zLoc = dgZ + fangSourceObj.location.z * bData.dg_scale[2]
+    
     # 转角出头的处理
     extendLength = 0
     # 悬山
@@ -245,18 +251,23 @@ def __buildDGFangbyRoom(
     buildingObj = utils.getAcaParent(
         dgrootObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
     aData : tmpData = bpy.context.scene.ACA_temp
     # 获取开间、进深数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
 
     # 收集待生成的连接枋
     fangList = []
+    # 斗栱高度，考虑平板枋的抬升
+    dgZ = 0
+    if bData.use_pingbanfang:
+        dgZ = con.PINGBANFANG_H * dk
     # 前后檐排布
     for n in range(len(net_x)-1):
         length = net_x[n+1] - net_x[n]
         loc = Vector(((net_x[n+1] + net_x[n])/2,
                net_y[0] + fangSourceObj.location.y * bData.dg_scale[1],
-               fangSourceObj.location.z * bData.dg_scale[2]))
+               dgZ + fangSourceObj.location.z * bData.dg_scale[2]))
         fangList.append(
             {'len':length,
              'loc':loc,
@@ -273,7 +284,7 @@ def __buildDGFangbyRoom(
             loc = Vector((
                 net_x[0] + fangSourceObj.location.x * bData.dg_scale[0],
                 (net_y[n+1] + net_y[n])/2,
-                fangSourceObj.location.z * bData.dg_scale[2]))
+                dgZ + fangSourceObj.location.z * bData.dg_scale[2]))
             fangList.append(
                 {'len':length,
                 'loc':loc,
@@ -371,7 +382,12 @@ def __buildDougong(dgrootObj:bpy.types.Object):
 
     # 获取开间、进深数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
-    
+
+    # 斗栱高度，考虑平板枋的抬升
+    dgZ = 0
+    if bData.use_pingbanfang:
+        dgZ = con.PINGBANFANG_H * dk
+
     # 转角斗栱，仅用于庑殿/歇山
     if (bData.roof_style in (
                 con.ROOF_WUDIAN,
@@ -381,10 +397,10 @@ def __buildDougong(dgrootObj:bpy.types.Object):
             and aData.dg_corner_source != None):
         # 四个角柱坐标
         dgCornerArray = (
-            (net_x[-1], net_y[0],0),
-            (net_x[-1], net_y[-1],0),
-            (net_x[0], net_y[-1],0),
-            (net_x[0], net_y[0],0)
+            (net_x[-1], net_y[0],dgZ),
+            (net_x[-1], net_y[-1],dgZ),
+            (net_x[0], net_y[-1],dgZ),
+            (net_x[0], net_y[0],dgZ)
         )
         for n in range(len(dgCornerArray)) :
             dgCornerCopy:bpy.types.Object = utils.copyObject(
@@ -421,7 +437,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 taojianLength = bData.y_total / 2
             
             dgPillerCopy = __buildPillerDG(
-                location=(net_x[n],net_y[0],0),
+                location=(net_x[n],net_y[0],dgZ),
                 scale=bData.dg_scale,
                 rotation=(0,0,0),
                 parent=dgrootObj,
@@ -441,7 +457,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                                  - bData.piller_diameter/4)
 
                 dgPillerCopy = __buildPillerDG(
-                    location=(net_x[-1],net_y[n+1],0),
+                    location=(net_x[-1],net_y[n+1],dgZ),
                     scale=bData.dg_scale,
                     rotation=(0,0,math.radians(90)),
                     parent=dgrootObj,
@@ -487,7 +503,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                     sourceObj = dgFillSource,
                     name = "补间斗栱",
                     location=(net_x[n] + dougong_span * m,
-                                net_y[-1],0),
+                                net_y[-1],dgZ),
                     scale= bData.dg_scale,            
                     parentObj = dgrootObj,
                     singleUser=True
@@ -530,7 +546,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                         sourceObj = dgFillSource,
                         name = "补间斗栱",
                         location=(net_x[0],
-                            net_y[n] + dougong_span * m,0),
+                            net_y[n] + dougong_span * m,dgZ),
                         scale= bData.dg_scale,
                         parentObj = dgrootObj,
                         singleUser=True

@@ -40,6 +40,21 @@ def __addBeamRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
         utils.deleteHierarchy(beamRootObj)
         utils.focusCollByObj(beamRootObj)
 
+    # 250108 屋顶层原点改为柱头，椽望层相应抬高到斗栱高度
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    zLoc = 0
+    # 如果有斗栱，抬高斗栱高度
+    if bData.use_dg:
+        zLoc += bData.dg_height
+        # 是否使用平板枋
+        if bData.use_pingbanfang:
+            zLoc += con.PINGBANFANG_H*dk
+    else:
+        # 以大梁抬升金桁垫板高度，即为挑檐桁下皮位置
+        zLoc += con.BOARD_HENG_H*dk
+    beamRootObj.location.z = zLoc
+
     return beamRootObj
 
 # 计算举架数据
@@ -84,8 +99,10 @@ def getPurlinPos(buildingObj:bpy.types.Object):
             con.ROOF_XUANSHAN_JUANPENG):
         purlinWidth += con.YANCHUAN_EX*dk
 
-    # 1、构造挑檐桁（仅适用于有斗栱）  
-    if bData.use_dg:
+    # 1、构造挑檐桁
+    if (bData.use_dg                # 不使用斗栱的不用挑檐桁
+        and bData.dg_extend > 0     # 一斗三升这种无出跳的，不用挑檐桁
+        ):
         # 为了不改动起始点，另用变量计算挑檐桁
         purlinWidth_dg = purlinWidth
         # 庑殿、歇山、盝顶，做两山斗栱出跳
@@ -221,7 +238,9 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     purlinFrameList = []
     
     # 挑檐桁为了便于彩画贴图，按开间逐一生成
-    if bData.use_dg:
+    if (bData.use_dg                # 不使用斗栱的不用挑檐桁
+        and bData.dg_extend > 0     # 一斗三升这种无出跳的，不用挑檐桁
+        ):
         tiaoyanhengObj = __buildYanHeng(
                         beamRootObj,
                         purlin_cross=purlin_pos[0],
@@ -238,7 +257,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             con.ROOF_YINGSHAN_JUANPENG,
             con.ROOF_XUANSHAN_JUANPENG):
         # 硬山、悬山桁不做出梢
-        hengExtend = 0
+        hengExtend = 0.02
     else:
         # 庑殿和歇山为了便于垂直交扣，做一桁径的出梢
         hengExtend = con.HENG_EXTEND * dk
@@ -1025,6 +1044,12 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     # 收集所有梁架，便于后续合并
     beamObjects = []
 
+    # 在梁架的计算中不考虑挑檐桁
+    if (bData.use_dg                # 不使用斗栱的不用挑檐桁
+        and bData.dg_extend > 0     # 一斗三升这种无出跳的，不用挑檐桁
+        ):
+        del purlin_pos[0]
+
     # 横向循环每一幅梁架
     roofStyle = bData.roof_style
     for x in range(len(net_x)):
@@ -1286,15 +1311,9 @@ def buildBeamFrame(buildingObj:bpy.types.Object):
     
     # 摆放桁架
     __buildPurlin(buildingObj,purlin_pos.copy())
-    
-    # 如果有斗栱，剔除挑檐桁
-    # 在梁架的计算中不考虑挑檐桁
-    rafter_pos = purlin_pos.copy()
-    if bData.use_dg:
-        del rafter_pos[0]
 
     # 摆放梁架
-    __buildBeam(buildingObj,rafter_pos)
+    __buildBeam(buildingObj,purlin_pos.copy())
         
     return
 

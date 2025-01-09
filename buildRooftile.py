@@ -39,6 +39,21 @@ def __setTileRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     else:
         utils.deleteHierarchy(tileRootObj)
         utils.focusCollByObj(tileRootObj)
+    
+    # 250108 屋顶层原点改为柱头，椽望层相应抬高到斗栱高度
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    zLoc = 0
+    # 如果有斗栱，抬高斗栱高度
+    if bData.use_dg:
+        zLoc += bData.dg_height
+        # 是否使用平板枋
+        if bData.use_pingbanfang:
+            zLoc += con.PINGBANFANG_H*dk
+    else:
+        # 以大梁抬升金桁垫板高度，即为挑檐桁下皮位置
+        zLoc += con.BOARD_HENG_H*dk
+    tileRootObj.location.z = zLoc
         
     return tileRootObj
 
@@ -2286,7 +2301,9 @@ def buildTile(buildingObj: bpy.types.Object):
     # 如果有斗栱，剔除挑檐桁
     # 在梁架、椽架、角梁的计算中不考虑挑檐桁
     rafter_pos = purlin_pos.copy()
-    if bData.use_dg:
+    if (bData.use_dg                # 不使用斗栱的不用挑檐桁
+        and bData.dg_extend > 0     # 一斗三升这种无出跳的，不用挑檐桁
+        ):
         del rafter_pos[0]
 
     utils.outputMsg("Building Tiles Front/Back...")

@@ -35,20 +35,11 @@ def __addRoofRoot(buildingObj:bpy.types.Object):
         roofRootObj.ACA_data['aca_obj'] = True
         roofRootObj.ACA_data['aca_type'] = con.ACA_TYPE_ROOF_ROOT
 
-    # 以挑檐桁下皮为起始点
+    # 250108 以柱头为屋顶层的起始点
+    # 台基高度 + 柱高
     bData : acaData = buildingObj.ACA_data # 载入数据
-    dk = bData.DK
     tile_base = bData.platform_height \
                 + bData.piller_height
-    # 如果有斗栱，抬高斗栱高度
-    if bData.use_dg:
-        tile_base += bData.dg_height
-        # 是否使用平板枋
-        if bData.use_pingbanfang:
-            tile_base += con.PINGBANFANG_H*dk
-    else:
-        # 以大梁抬升金桁垫板高度，即为挑檐桁下皮位置
-        tile_base += con.BOARD_HENG_H*dk
     
     roofRootObj.location = (0,0,tile_base)       
 
@@ -78,6 +69,21 @@ def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     else:
         utils.deleteHierarchy(rafterRootObj)
         utils.focusCollByObj(rafterRootObj)
+
+    # 250108 屋顶层原点改为柱头，椽望层相应抬高到斗栱高度
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    zLoc = 0
+    # 如果有斗栱，抬高斗栱高度
+    if bData.use_dg:
+        zLoc += bData.dg_height
+        # 是否使用平板枋
+        if bData.use_pingbanfang:
+            zLoc += con.PINGBANFANG_H*dk
+    else:
+        # 以大梁抬升金桁垫板高度，即为挑檐桁下皮位置
+        zLoc += con.BOARD_HENG_H*dk
+    rafterRootObj.location.z = zLoc
 
     return rafterRootObj
 
@@ -3319,7 +3325,9 @@ def __buildRafterFrame(buildingObj:bpy.types.Object):
     # 如果有斗栱，剔除挑檐桁
     # 在椽架、角梁的计算中不考虑挑檐桁
     rafter_pos = purlin_pos.copy()
-    if bData.use_dg:
+    if (bData.use_dg                # 不使用斗栱的不用挑檐桁
+        and bData.dg_extend > 0     # 一斗三升这种无出跳的，不用挑檐桁
+        ):
         del rafter_pos[0]
 
     # 摆放椽架（包括角梁、檐椽、望板、飞椽、里口木、大连檐等）

@@ -220,12 +220,17 @@ def setMat(object:bpy.types.Object,
                      uvType=uvType.CUBE,
                      cubesize=2)
 
-    # 看面平铺的材质
+    # 挑檐枋工王云，仅在前后两面做彩画
     if mat in (
-        aData.mat_paint_cloud,      # 挑檐枋工王云
-        aData.mat_paint_walkdragon, # 平板枋走龙
+        aData.mat_paint_cloud,
     ):
-        object = __setBoardFang(object,mat)
+        object = __paintFrontBack(object,mat)
+
+    # 看平板枋走龙，在前后左右四面做彩画
+    if mat in (
+        aData.mat_paint_walkdragon, 
+    ):
+        object = __paintAround(object,mat)
     
     # 拉伸填充的材质
     if mat in (
@@ -697,6 +702,10 @@ def __setDgBoard(dgBoardObj:bpy.types.Object,
     buildingObj = utils.getAcaParent(
         dgBoardObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
+
+    # 250108 一斗三升的栱垫板暂未绘制，所以跳过
+    if bData.dg_extend == 0 :
+        return dgBoardObj
     
     # 计算斗栱攒数
     totalLength = dgBoardObj.dimensions.x
@@ -735,24 +744,55 @@ def __setDgBoard(dgBoardObj:bpy.types.Object,
 
     return joinedDgBoard
 
-# 设置挑檐枋工王云、平板枋走龙贴图
-def __setBoardFang(fangObj:bpy.types.Object,
+# 前后两面做slot1的材质
+# 如，挑檐枋工王云
+def __paintFrontBack(paintObj:bpy.types.Object,
                    mat:bpy.types.Object):
-    # 复制材质库中的工王云，走龙贴图
-    # 这些贴图的slot0为彩画，slot1为纯色大青
-    __copyMaterial(mat,fangObj)
+    # 复制所有的材质
+    # 默认所有面应用slot0的材质（大青）
+    __copyMaterial(mat,paintObj)
 
-    # 找到顶面和底面，做材质slot1的大青
+    # 找到前后面，做材质slot1的彩画
     bm = bmesh.new()
-    bm.from_mesh(fangObj.data)
-    # -Z轴为向量比较基准
-    negZ = Vector((0,0,-1))
+    bm.from_mesh(paintObj.data)
+    # Z轴为向量比较基准
+    axisY = Vector((0,1,0))
     # 选择法线类似的所有面，0.1是在blender里尝试的经验值
     for face in bm.faces:
         # 根据向量的点积判断方向，正为同向，0为垂直，负为反向
-        dir = face.normal.dot(negZ)
+        dir = face.normal.dot(axisY)
         if abs(dir) > 0:
-            # 设置为slot1的大青
+            # 设置为slot1的彩画
+            face.material_index = 1
+    bm.to_mesh(paintObj.data)
+    bm.free()
+
+    # 更新UV，适配对象高度的满铺
+    cubeHeight = paintObj.dimensions.z
+    UvUnwrap(paintObj,
+             type=uvType.CUBE,
+             cubesize=cubeHeight)
+    return paintObj
+
+# 四周做彩画
+# 如，挑檐枋工王云贴图
+def __paintAround(fangObj:bpy.types.Object,
+                   mat:bpy.types.Object):
+    # 复制所有的材质
+    # 默认所有面应用slot0的材质（大青）
+    __copyMaterial(mat,fangObj)
+
+    # 找到前后左右四面，做材质slot1（彩画）
+    bm = bmesh.new()
+    bm.from_mesh(fangObj.data)
+    # Z轴为向量比较基准
+    axisZ = Vector((0,0,1))
+    # 选择法线类似的所有面，0.1是在blender里尝试的经验值
+    for face in bm.faces:
+        # 根据向量的点积判断方向，正为同向，0为垂直，负为反向
+        dir = face.normal.dot(axisZ)
+        if abs(dir) == 0:
+            # 设置为slot1的彩画
             face.material_index = 1
     bm.to_mesh(fangObj.data)
     bm.free()

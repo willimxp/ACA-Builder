@@ -953,6 +953,8 @@ def resetFloor(buildingObj:bpy.types.Object):
     bData.piller_net = ''
     bData.fang_net = ''
     bData.wall_net = ''
+    # 20150109 踏跺数据未重置，导致开间变化后，错误的踏跺无法生成而崩溃
+    bData.step_net = ''
     result = buildFloor(buildingObj)
     return result
 

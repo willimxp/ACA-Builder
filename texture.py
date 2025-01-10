@@ -476,20 +476,16 @@ def __setPillerHead(pillerObj:bpy.types.Object,
         0,0,pillerObj.dimensions.z-fangHeight))
     utils.addBisect(
         object=pillerBodyObj,
-        pStart=Vector((0,1,0)),
-        pEnd=Vector((0,-1,0)),
         pCut=pCut,
         clear_inner=True,
-        direction='Y',
+        direction='V',
         use_fill=False,
     )
     utils.addBisect(
         object=pillerHeadObj,
-        pStart=Vector((0,1,0)),
-        pEnd=Vector((0,-1,0)),
         pCut=pCut,
         clear_outer=True,
-        direction='Y',
+        direction='V',
         use_fill=False,
     )
 
@@ -498,20 +494,16 @@ def __setPillerHead(pillerObj:bpy.types.Object,
         0,0,pillerObj.dimensions.z-0.02))
     utils.addBisect(
         object=pillerTopObj,
-        pStart=Vector((0,1,0)),
-        pEnd=Vector((0,-1,0)),
         pCut=pCut,
         clear_outer=True,
-        direction='Y',
+        direction='V',
         use_fill=False,
     )
     utils.addBisect(
         object=pillerHeadObj,
-        pStart=Vector((0,1,0)),
-        pEnd=Vector((0,-1,0)),
         pCut=pCut,
         clear_inner=True,
-        direction='Y',
+        direction='V',
         use_fill=False,
     )
 
@@ -886,11 +878,9 @@ def __setShanhua(shanhuaObj:bpy.types.Object,
         0,0,offset))
     utils.addBisect(
         object=shanghuaTopObj,
-        pStart=Vector((0,1,0)),
-        pEnd=Vector((0,-1,0)),
         pCut=pCut,
         clear_outer=True,
-        direction='Y',
+        direction='V',
         use_fill=False,
     )
 
@@ -919,11 +909,9 @@ def __setShanhua(shanhuaObj:bpy.types.Object,
     # 裁剪下侧
     utils.addBisect(
         object=shanhuaObj,
-        pStart=Vector((0,1,0)),
-        pEnd=Vector((0,-1,0)),
         pCut=pCut,
         clear_inner=True,
-        direction='Y',
+        direction='V',
         use_fill=False,
     )
     

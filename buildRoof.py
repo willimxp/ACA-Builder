@@ -318,10 +318,12 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             pCut = (rafterRootObj.matrix_world @ 
                     purlin_pos[n+1]
                     +Vector((0,0,con.HENG_COMMON_D*dk/2)))
+            pStart = rafterRootObj.matrix_world @ Vector((0,0,0))
+            pEnd = rafterRootObj.matrix_world @ Vector((0,1,1))
             utils.addBisect(
                 object=curveRafter,
-                pStart=Vector((0,0,0)),
-                pEnd=Vector((0,1,1)),   #近似按45度斜切，其实有误差
+                pStart=pStart,
+                pEnd=pEnd,   #近似按45度斜切，其实有误差
                 pCut=pCut,
                 clear_inner=True,
                 direction='Y'
@@ -600,8 +602,8 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             # 裁剪
             utils.addBisect(
                     object=tympanumWangban,
-                    pStart=Vector((0,0,0)),
-                    pEnd=Vector((-1,-1,0)),
+                    pStart=buildingObj.matrix_world @ Vector((0,0,0)),
+                    pEnd=buildingObj.matrix_world @ Vector((-1,-1,0)),
                     pCut=buildingObj.matrix_world @ purlin_pos[0],
                     clear_inner=True
             )
@@ -655,8 +657,8 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
                     +Vector((0,0,con.HENG_COMMON_D*dk/2)))
             utils.addBisect(
                 object=curveRafter,
-                pStart=Vector((0,0,0)),
-                pEnd=Vector((0,1,1)),   #近似按45度斜切，其实有误差
+                pStart=rafterRootObj.matrix_world @Vector((0,0,0)),
+                pEnd=rafterRootObj.matrix_world @Vector((0,1,1)),   #近似按45度斜切，其实有误差
                 pCut=pCut,
                 clear_inner=True,
                 direction='Y'
@@ -2778,11 +2780,9 @@ def __buildShanhuaBan(buildingObj: bpy.types.Object,
     ))
     utils.addBisect(
         object=shbObj,
-        pStart=Vector((0,1,0)),
-        pEnd=Vector((0,-1,0)),
         pCut=rafterRootObj.matrix_world @ cutPoint,
         clear_outer=True,
-        direction='Y'
+        direction='V'
     )
     # 将origin放在山花板下檐，方便后续贴图时的计算
     utils.setOrigin(shbObj,cutPoint*Vector((1,0,1)))
@@ -3179,11 +3179,9 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         ))
         utils.addBisect(
             object=bofengObj,
-            pStart=Vector((0,1,0)),
-            pEnd=Vector((0,-1,0)),
             pCut=rafterRootObj.matrix_world @ cutPoint,
             clear_outer=True,
-            direction='Y'
+            direction='V'
         )
     modBevel:bpy.types.BevelModifier = \
         bofengObj.modifiers.new('Bevel','BEVEL')

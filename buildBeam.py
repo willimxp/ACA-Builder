@@ -1157,14 +1157,18 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                                         - bData.piller_diameter/4)
                 if BaotouliangLength != 0:
                     # 剪切到金柱位置
-                    utils.addBisect(
-                        object=beamCopyObj,
-                        pStart=Vector((0,0,0)),
-                        pEnd=Vector((1,0,0)),
-                        pCut=((
+                    # 20250109 添加坐标全局转换
+                    pStart = beamRootObj.matrix_world @ Vector((0,0,0))
+                    pEnd = beamRootObj.matrix_world @ Vector((1,0,0))
+                    pCut = beamRootObj.matrix_world @ Vector((
                             0,
                             bData.y_total/2 - BaotouliangLength,
-                            0)),
+                            0))
+                    utils.addBisect(
+                        object=beamCopyObj,
+                        pStart=pStart,
+                        pEnd=pEnd,
+                        pCut=pCut,
                         clear_inner=True,
                     )
                     utils.addModifierMirror(

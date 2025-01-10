@@ -931,8 +931,8 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                     if f.index%GridCols == GridCols-1:
                         utils.addBisect(
                             object=tileObj,
-                            pStart=Vector((0,0,0)),
-                            pEnd=Vector((1,1,0)),
+                            pStart=tileGrid.matrix_world @ Vector((0,0,0)),
+                            pEnd=tileGrid.matrix_world @ Vector((1,1,0)),
                             pCut=tileGrid.matrix_world @ f.calc_center_median(),
                             clear_inner=True
                         )
@@ -1852,8 +1852,8 @@ def __buildSideTile(buildingObj: bpy.types.Object,
         # 第一片滴水裁剪
         utils.addBisect(
             object=dripTileObj,
-            pStart=Vector((0,0,0)),
-            pEnd=Vector((1,1,0)),
+            pStart=tileRootObj.matrix_world @ Vector((0,0,0)),
+            pEnd=tileRootObj.matrix_world @ Vector((1,1,0)),
             pCut=tileRootObj.matrix_world @ sideRidgeCurve.location+Vector((0,-bData.tile_length,0)),
             clear_outer=True
         )
@@ -1894,19 +1894,15 @@ def __buildSideTile(buildingObj: bpy.types.Object,
                             con.ROOF_XIESHAN_JUANPENG):
         utils.addBisect(
             object=eaveTileObj,
-            pStart=Vector((0,1,0)),
-            pEnd=Vector((0,-1,0)),
             pCut=tileRootObj.matrix_world @ cutPoint,
             clear_outer=True,
-            direction='Y'
+            direction='V'
         )
         utils.addBisect(
             object=dripTileObj,
-            pStart=Vector((0,1,0)),
-            pEnd=Vector((0,-1,0)),
             pCut=tileRootObj.matrix_world @ cutPoint,
             clear_outer=True,
-            direction='Y'
+            direction='V'
         )
 
     # 平滑处理
@@ -2128,8 +2124,8 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
         pcut += Vector((-bData.tile_width_real/2,0,0))
         utils.addBisect(
             object=cornerRidgeBeforeObj,
-            pStart=Vector((0,-1,0)),
-            pEnd=Vector((0,1,0)),
+            pStart=tileRootObj.matrix_world @ Vector((0,-1,0)),
+            pEnd=tileRootObj.matrix_world @ Vector((0,1,0)),
             pCut=pcut,
             clear_outer=True,
             direction='Z'
@@ -2137,8 +2133,8 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
         if bData.paoshou_count > 0:
             utils.addBisect(
                 object=cornerRidgeAfterObj,
-                pStart=Vector((0,-1,0)),
-                pEnd=Vector((0,1,0)),
+                pStart=tileRootObj.matrix_world @ Vector((0,-1,0)),
+                pEnd=tileRootObj.matrix_world @ Vector((0,1,0)),
                 pCut=pcut,
                 clear_outer=True,
                 direction='Z'

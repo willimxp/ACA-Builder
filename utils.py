@@ -864,9 +864,9 @@ def flipNormal(object:bpy.types.Object):
 
 # 基于面的裁切
 def addBisect(object:bpy.types.Object,
-              pStart:Vector,
-              pEnd:Vector,
-              pCut:Vector,
+              pStart=Vector((0,0,0)),
+              pEnd=Vector((0,0,0)),
+              pCut=Vector((0,0,0)),
               clear_outer=False,
               clear_inner=False,
               direction  = 'Z',
@@ -892,6 +892,10 @@ def addBisect(object:bpy.types.Object,
         pend_project = Vector((pEnd.x,0,pEnd.z))
         bisect_normal = Vector(pend_project-pstart_project)
         bisect_normal.rotate(Euler((0,math.radians(90),0),'XYZ'))
+    elif direction == 'V':
+        # 250110 建筑旋转90度后，以上normal算法错误
+        # 实际的需求就是做水平横切，所以强制把normal置为Z轴方向
+        bisect_normal = Vector((0,0,-1))
     bisect_normal = Vector(bisect_normal).normalized() # normal必须normalized,注意不是normalize
 
     # 2、选中并裁切

@@ -13,6 +13,7 @@ from . import acaTemplate
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
+from . import texture as mat
 
 # 创建瓦作层根节点
 # 如果已存在根节点，则一概清空重建
@@ -789,6 +790,9 @@ def __setTile(
     TileCopy.matrix_local = Matrix
     offset.rotate(TileCopy.rotation_euler)
     TileCopy.location += offset
+
+    # 250110 新增琉璃颜色切换
+    mat.setGlazeStyle(TileCopy)
     return TileCopy   
 
 # 在网格上平铺瓦片
@@ -979,7 +983,11 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         use_axis=(True,True,False),
         use_bisect=(True,True,False),
     )
-        
+    # 250110 重展UV
+    # 实际在__setTile中已经做了setGlazeStyle，但仅基于单个瓦片
+    # 这里在modifier的平铺范围上做全局的UV平铺
+    mat.setGlazeUV(tileSet)
+
     # 隐藏辅助对象
     utils.hideObj(tile_bool_obj)
     utils.hideObj(tileGrid)
@@ -1058,9 +1066,8 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     # 歇山、悬山正脊内皮与垂脊相交
     else:
         # 与垂脊相交，从金交点偏移半垄
-        zhengji_length = rafter_pos[-1].x \
-            - bData.tile_width_real/2
-        
+        zhengji_length = rafter_pos[-1].x
+            #- bData.tile_width_real/2        
     # 横向平铺
     modArray:bpy.types.ArrayModifier = \
         roofRidgeObj.modifiers.new('横向平铺','ARRAY')
@@ -1074,6 +1081,9 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     mod.mirror_object = tileRootObj
     mod.use_axis = (True,False,False)
     mod.use_bisect_axis = (True,False,False)
+
+    # 250113 设置正脊材质
+    mat.setGlazeStyle(roofRidgeObj)
 
     # 摆放螭吻
     chiwenObj = utils.copyObject(
@@ -1170,6 +1180,9 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     mod.use_axis = (True,True,False)
     mod.use_bisect_axis = (True,True,False)
 
+    # 250113 设置材质
+    mat.setGlazeStyle(roofRidgeObj)
+
     # 摆放螭吻
     chiwenObj = utils.copyObject(
         sourceObj=aData.chiwen_source,
@@ -1195,6 +1208,41 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
 
     return
 
+# 获取瓦垄坐标
+def __getTileCoord(buildingObj:bpy.types.Object,
+                   tileCoord):
+    tileGrid = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_GRID
+    )
+    
+    diff = 9999
+    newTileCoord = None
+    tileSpan = 0
+    pretile = 0
+    bm = bmesh.new()
+    bm.from_mesh(tileGrid.data)
+    for vert in bm.verts:
+        # 当前点到瓦垄的距离n
+        n = abs(vert.co.x - tileCoord)
+        # 备份相对较小的值到m，便于下次比较
+        if n < diff:
+            diff = n
+            newTileCoord = vert.co.x
+
+            # 计算最近的垄距
+            tilex = vert.co.x
+            if tilex - pretile > 0:
+                tileSpan = tilex - pretile
+        pretile = vert.co.x
+
+    bm.free()
+
+    # 偏移半垄，让垂脊坐垄中
+    bData:acaData = buildingObj.ACA_data
+    newTileCoord += tileSpan
+
+    return newTileCoord
+
 # 绘制前后檐垂脊曲线
 # 适用于歇山、悬山、硬山（不涉及庑殿）
 # 自动判断歇山，只做到正心桁
@@ -1219,6 +1267,14 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     ridge_x = (purlin_pos[-1].x 
                + con.EAVETILE_EX*dk 
                - bData.tile_width_real)
+    # 250114 瓦垄取整，让垂脊与瓦垄对齐(仅适用歇山顶)
+    # 因为歇山瓦面受飞檐影响，瓦垄宽度不相等，
+    # 只能通过瓦面bmesh轮询face坐标定位
+    if bData.roof_style in (
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG
+            ):
+        ridge_x = __getTileCoord(buildingObj,ridge_x)
     # 硬山建筑，向外移动一个山墙
     if bData.roof_style in (
             con.ROOF_YINGSHAN,
@@ -1624,6 +1680,9 @@ def __buildPaoshou(buildingObj: bpy.types.Object,
             mirrorObj=tileRootObj,
             use_axis=(True,True,False),
         )
+
+        # 250113 跑兽材质
+        mat.setGlazeStyle(shouObj,resetUV=False)
     return
 
 # 营造前后檐垂脊
@@ -1646,6 +1705,14 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     # 硬山悬山做到檐口位置
     frontRidgeCurve = __drawFrontRidgeCurve(
         buildingObj,rafter_pos)
+    # 垂脊兽后
+    frontRidgeAfterObj = None
+    # 垂脊兽前
+    frontRidgeBeforeObj = None
+    # 端头盘子
+    ridgeEndObj=None
+    # 垂兽
+    chuishouObj=None
     
     # 构造垂脊兽后，歇山、悬山、硬山共用
     # 如果不做跑兽，也不做垂兽和垂脊兽后
@@ -1657,8 +1724,6 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         # 获取脊筒长度
         ridgeObj:bpy.types.Object = aData.ridgeBack_source
         ridgeLength = ridgeObj.dimensions.x * (bData.DK/con.DEFAULT_DK)
-        # 垂脊兽后退后一个脊筒，摆放垂兽
-        #frontRidgeAfterObj.location.x += ridgeLength
         # 摆放垂兽
         chuishouObj = utils.copyObject(
             sourceObj=aData.chuishou_source,
@@ -1666,8 +1731,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
             parentObj=tileRootObj,
             location=frontRidgeCurve.location,
             singleUser=True)
-        # 垂兽向檐口排列一脊筒，后尾对齐正心桁中线
-        chuishouObj.location.x -= ridgeLength
+        
         # 根据斗口调整尺度
         utils.resizeObj(chuishouObj,
             bData.DK / con.DEFAULT_DK)
@@ -1681,6 +1745,15 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
             mirrorObj=tileRootObj,
             use_axis=(True,True,False)
         )
+        if bData.roof_style in (con.ROOF_YINGSHAN,
+                                con.ROOF_YINGSHAN_JUANPENG,
+                                con.ROOF_XUANSHAN,
+                                con.ROOF_XUANSHAN_JUANPENG,) :
+            # 硬山悬山，垂脊兽后退后一个脊筒，摆放垂兽，与跑兽间隔开
+            frontRidgeAfterObj.location.x += ridgeLength
+        else:
+            # 歇山垂兽做头，后尾对齐正心桁中线，向檐口位移一脊筒
+            chuishouObj.location.x -= ridgeLength
 
     # 硬山、悬山：做垂脊兽前、端头盘子、跑兽
     # 歇山不做脊兽时，做垂脊兽前和端头盘子
@@ -1746,6 +1819,18 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
                 + ridgeUnit_Length * bData.paoshou_count)
             frontRidgeAfterObj.location.x += paoLength
             chuishouObj.location.x += paoLength
+    
+    # 250110 设置材质，务必放在最后，以免modifier过早被应用，导致错误
+    if frontRidgeAfterObj != None:
+        mat.setGlazeStyle(frontRidgeAfterObj)
+        utils.shaderSmooth(frontRidgeAfterObj)
+    if frontRidgeBeforeObj != None:
+        mat.setGlazeStyle(frontRidgeBeforeObj)
+        utils.shaderSmooth(frontRidgeBeforeObj)
+    if ridgeEndObj != None:
+        mat.setGlazeStyle(ridgeEndObj)
+    if chuishouObj != None:
+        mat.setGlazeStyle(chuishouObj)
 
     return {'FINISHED'}
 
@@ -1909,6 +1994,14 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     utils.shaderSmooth(eaveTileObj)
     utils.shaderSmooth(dripTileObj)
 
+    # 250113 设置材质
+    mat.setGlazeStyle(eaveTileCenterObj)
+    mat.setGlazeStyle(eaveTileObj)
+    mat.setGlazeStyle(dripTileObj)
+
+
+    return
+
 # 营造戗脊（庑殿垂脊）曲线
 def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
                     purlin_pos,name='戗脊线'):
@@ -2017,6 +2110,9 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
+    cornerRidgeBeforeObj = None
+    cornerRidgeAfterObj = None
+    ridgeEndObj = None
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
@@ -2115,6 +2211,8 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
             mirrorObj=tileRootObj,
             use_axis=(True,True,False)
         )
+        # 设置垂兽材质
+        mat.setGlazeStyle(chuishouObj)
 
     # 歇山戗脊，沿垂脊裁剪
     if bData.roof_style in (con.ROOF_XIESHAN,
@@ -2151,6 +2249,16 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
                 mirrorObj=tileRootObj,
                 use_axis=(True,False,False)
             )   
+    
+    # 250110 设置材质
+    if cornerRidgeBeforeObj != None:
+        mat.setGlazeStyle(cornerRidgeBeforeObj)
+        utils.shaderSmooth(cornerRidgeBeforeObj)
+    if cornerRidgeAfterObj != None:
+        mat.setGlazeStyle(cornerRidgeAfterObj)
+        utils.shaderSmooth(cornerRidgeAfterObj)
+    if ridgeEndObj != None:
+        mat.setGlazeStyle(ridgeEndObj)
 
     # 放置套兽
     __buildTaoshou(buildingObj)
@@ -2221,12 +2329,15 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
     utils.setOrigin(sideRidgeCurve,p0)
 
     # 平铺脊筒
-    __arrayRidgeByCurve(
+    sideRidgeObj = __arrayRidgeByCurve(
         buildingObj=buildingObj,
         sourceObj=aData.ridgeFront_source,
         ridgeCurve=sideRidgeCurve,
         ridgeName='博脊'
     )
+
+    # 250113 设置琉璃材质
+    mat.setGlazeStyle(sideRidgeObj)
 
     return
 
@@ -2242,7 +2353,7 @@ def __buildRidge(buildingObj: bpy.types.Object,
         con.ROOF_YINGSHAN_JUANPENG,
         con.ROOF_XIESHAN_JUANPENG,
         con.ROOF_LUDING,):
-         __buildTopRidge(buildingObj,rafter_pos)
+        __buildTopRidge(buildingObj,rafter_pos)
     
     # 营造前后垂脊（不涉及庑殿，自动判断硬山/悬山、歇山做法的不同）
     if bData.roof_style not in (
@@ -2308,6 +2419,9 @@ def buildTile(buildingObj: bpy.types.Object):
         buildingObj,
         rafter_pos,
         direction='X')
+    # 250114 标记前后檐瓦面，后续在做垂脊定位时，可以精确判断瓦垄位置
+    oData : acaData = tileGrid.ACA_data
+    oData['aca_type'] = con.ACA_TYPE_TILE_GRID
     # 在网格上铺瓦
     __arrayTileGrid(
         buildingObj,

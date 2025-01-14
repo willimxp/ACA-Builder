@@ -39,6 +39,7 @@ class ACA_Consts(object):
     ACA_TYPE_CORNER_FLYRAFTER_CURVE = 'corner_flyfater_curve'    # 翘飞椽定位线
     ACA_TYPE_TILE_ROOT = 'tile_root'            # ACA类型：屋瓦层
     ACA_TYPE_ASSET_ROOT ='asset_root'           # ACA类型：斗栱根节点
+    ACA_TYPE_TILE_GRID ='tile_grid'             # ACA类型：前后檐瓦面
     ACA_TYPE_YARDWALL = 'yard_wall'             # ACA类型：院墙
     ACA_WALLTYPE_WALL = 'wall'                  # 隔断属性-墙
     ACA_WALLTYPE_WINDOW = 'window'              # 隔断属性-槛窗

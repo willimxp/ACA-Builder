@@ -618,6 +618,22 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     
     # 瓦作属性
+    tile_color : bpy.props.EnumProperty(
+            name = "瓦面颜色",
+            items = [
+                ("0","黄琉璃",""),
+                ("1","绿琉璃",""),
+                ("2","紫琉璃",""),
+            ],
+        ) # type: ignore
+    tile_alt_color : bpy.props.EnumProperty(
+            name = "瓦面剪边颜色",
+            items = [
+                ("0","黄琉璃",""),
+                ("1","绿琉璃",""),
+                ("2","紫琉璃",""),
+            ],
+        ) # type: ignore
     tile_width : bpy.props.FloatProperty(
             name="瓦垄宽度", 
             default=0.4,
@@ -820,8 +836,7 @@ class ACA_data_template(bpy.types.PropertyGroup):
     mat_geshanxin : bpy.props.PointerProperty(
             name = "三交六椀隔心",
             type = bpy.types.Object,
-        )# type: ignore
-    
+        )# type: ignore    
     
     # 柱对象
     piller_source : bpy.props.PointerProperty(

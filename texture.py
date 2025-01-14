@@ -91,7 +91,8 @@ def UvUnwrap(object:bpy.types.Object,
              cubesize=2,
              correctAspect = True,
              scaleToBounds = False,
-             remainSelect = False
+             remainSelect = False,
+             onlyActiveMat = False,
              ):   
     # 隐藏对象不重新展UV
     if (object.hide_viewport 
@@ -99,27 +100,39 @@ def UvUnwrap(object:bpy.types.Object,
         ):
         return
 
-    # 聚焦对象
-    utils.focusObj(object)
-
-    # 应用modifier
-    utils.applyAllModifer(object)
-
-    # 进入编辑模式
-    bpy.ops.object.mode_set(mode = 'EDIT') 
-    bpy.ops.mesh.select_mode(type = 'FACE')
-    if not remainSelect:
-        bpy.ops.mesh.select_all(action='SELECT')
-
     # 验证对象是否可以展UV，至少应该有一个以上的面
     bm = bmesh.new()
     bm.from_mesh(object.data)
     faceCount= len(bm.faces)
     bm.free()
     if faceCount == 0 : 
-        bpy.ops.object.mode_set(mode = 'OBJECT')
+        utils.outputMsg("展UV异常，该对象不存在几何面")
         return
     
+    # 聚焦对象
+    utils.focusObj(object)
+
+    # 应用modifier
+    utils.applyAllModifer(object)
+
+    # 仅针对活跃材质active material
+    if onlyActiveMat:
+        bm = bmesh.new()
+        bm.from_mesh(object.data)
+        for face in bm.faces:
+            face.select = False
+            if face.material_index == object.active_material_index:
+                face.select = True
+        bm.to_mesh(object.data)
+        bm.free()
+
+    # 进入编辑模式
+    bpy.ops.object.mode_set(mode = 'EDIT') 
+    bpy.ops.mesh.select_mode(type = 'FACE')
+    if (not remainSelect
+        and not onlyActiveMat):
+        bpy.ops.mesh.select_all(action='SELECT')
+
     if type == None:
         # 默认采用smart project
         bpy.ops.uv.smart_project(
@@ -918,4 +931,98 @@ def __setShanhua(shanhuaObj:bpy.types.Object,
     # 合并
     utils.joinObjects([shanhuaObj,shanghuaTopObj],
                       cleanup=True)
+    return
+
+# 切换材质slot
+def __replaceSlot(obj:bpy.types.Object,
+                  fromSlot=0,
+                  toSlot=0,):
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    for face in bm.faces:
+        if face.material_index == fromSlot:
+            face.material_index = toSlot
+    bm.to_mesh(obj.data)
+    bm.free()
+    return
+
+# 根据琉璃瓦作配色
+# 根据用户从panel上选择的bData.tile_style，切换obj的材质slot
+# 0-黄琉璃
+# 1-黄琉璃绿剪边
+# 2-绿琉璃
+# 3-绿琉璃黄剪边
+def setGlazeStyle(paintObj:bpy.types.Object,
+                  resetUV=True):
+    # 载入数据
+    aData:tmpData = bpy.context.scene.ACA_temp
+    buildingObj,bData,objData = utils.getRoot(paintObj)
+    paintName = paintObj.data.name
+
+    # 1、瓦面（筒瓦/板瓦）颜色
+    tileColorIndex = int(bData.tile_color) 
+    glazeMain = [
+        aData.flatTile_source,      # 板瓦
+        aData.circularTile_source,  # 筒瓦
+    ]
+    for obj in glazeMain:
+        if obj.data.name in paintName:
+            # 配色从slot0切换到slot1
+            __replaceSlot(paintObj,0,tileColorIndex)
+            paintObj.active_material_index = tileColorIndex
+
+    # 2、剪边/屋脊的颜色
+    # 2.1、单一材质
+    tileAltColorIndex = int(bData.tile_alt_color)
+    glazeList1 = [
+        aData.ridgeTop_source,      # 正脊
+        aData.ridgeBack_source,     # 垂脊兽后
+        aData.ridgeFront_source,    # 垂脊兽前
+        aData.paoshou_0_source,     # 跑兽
+        aData.paoshou_1_source,     # 跑兽
+        aData.paoshou_2_source,     # 跑兽
+        aData.paoshou_3_source,     # 跑兽
+        aData.paoshou_4_source,     # 跑兽
+        aData.paoshou_5_source,     # 跑兽
+        aData.paoshou_6_source,     # 跑兽
+        aData.paoshou_7_source,     # 跑兽
+        aData.paoshou_8_source,     # 跑兽
+        aData.paoshou_9_source,     # 跑兽
+        aData.paoshou_10_source,     # 跑兽
+    ] 
+    for obj in glazeList1:
+        if obj.data.name in paintName:
+            # 配色从slot0切换到slot1
+            __replaceSlot(
+                paintObj,0,tileAltColorIndex)
+            paintObj.active_material_index = tileAltColorIndex
+    # 2.2、两个材质
+    glazeList2 = [
+        aData.dripTile_source,      # 滴水
+        aData.eaveTile_source,      # 勾头
+        aData.ridgeEnd_source,      # 端头盘子
+        aData.chuishou_source,      # 垂兽
+    ]
+    for obj in glazeList2:
+        if obj.data.name in paintName:
+            # 两个材质切换到绿色
+            __replaceSlot(
+                paintObj,0,tileAltColorIndex*2)
+            __replaceSlot(
+                paintObj,1,tileAltColorIndex*2+1)
+            paintObj.active_material_index = tileAltColorIndex*2
+
+    # 重新展UV，在modifier的基础上平铺
+    if resetUV:
+        setGlazeUV(paintObj)
+    return
+
+# 对琉璃对象重展开UV
+# 在对象应用了modifier的基础上，进行材质的平铺
+def setGlazeUV(paintObj:bpy.types.Object):
+    UvUnwrap(
+        object=paintObj,
+        type=uvType.CUBE,
+        cubesize=200,
+        onlyActiveMat=True)
     return

@@ -99,6 +99,10 @@ def UvUnwrap(object:bpy.types.Object,
         or object.hide_get()
         ):
         return
+    
+    # 非Mesh对象不能展UV
+    if object.type not in ('MESH'):
+        return
 
     # 验证对象是否可以展UV，至少应该有一个以上的面
     bm = bmesh.new()
@@ -978,6 +982,8 @@ def setGlazeStyle(paintObj:bpy.types.Object,
         aData.ridgeTop_source,      # 正脊
         aData.ridgeBack_source,     # 垂脊兽后
         aData.ridgeFront_source,    # 垂脊兽前
+        aData.chiwen_source,        # 螭吻
+        aData.taoshou_source,       # 套兽
         aData.paoshou_0_source,     # 跑兽
         aData.paoshou_1_source,     # 跑兽
         aData.paoshou_2_source,     # 跑兽
@@ -988,7 +994,7 @@ def setGlazeStyle(paintObj:bpy.types.Object,
         aData.paoshou_7_source,     # 跑兽
         aData.paoshou_8_source,     # 跑兽
         aData.paoshou_9_source,     # 跑兽
-        aData.paoshou_10_source,     # 跑兽
+        aData.paoshou_10_source,    # 跑兽
     ] 
     for obj in glazeList1:
         if obj.data.name in paintName:

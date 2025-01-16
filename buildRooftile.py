@@ -572,13 +572,22 @@ def __drawTileGrid(
             direction='X'):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
+    
     # 瓦垄宽度
     tileWidth = bData.tile_width
-    # 瓦片长度
-    tileLength = bData.tile_length
+    # 250116 不再以用户输入瓦垄长，以筒瓦为依据
+    # # 瓦片长度
+    # tileLength = bData.tile_length
+    tileLength = (aData.circularTile_source.dimensions.y 
+                  * bData.DK 
+                  / con.DEFAULT_DK)
+    tileHeight = (aData.circularTile_source.dimensions.z 
+                  * bData.DK 
+                  / con.DEFAULT_DK)
 
     # 计算瓦垄的数量（包括居中列板瓦的半幅屋面列数）
     tileCols = __getTileCols(buildingObj,direction)
@@ -608,7 +617,7 @@ def __drawTileGrid(
     # https://docs.blender.org/api/current/bpy.types.Spline.html#bpy.types.Spline.calc_length
     roofLength = TileCurve.data.splines[0].calc_length()
     # 瓦层数
-    tileRows = math.ceil(roofLength /tileLength)+1
+    tileRows = round(roofLength /tileLength)+1
 
     # 2、生成瓦面网格
     # 这里采用几何节点实现，利用了resample curve节点，可以生成均匀分布的网格
@@ -618,6 +627,8 @@ def __drawTileGrid(
         "瓦面",tileRootObj,hide=False,link=False)
     # 瓦面要与辅助线重合，并上移一个大连檐高度
     tileGrid.location = TileCurve.location
+    # 250116 瓦面上移一个筒瓦高，以便卷棚顶筒瓦能够紧密结合
+    tileGrid.location.z += tileHeight
     tileGrid.name = tileGrid_name
     # 输入修改器参数
     gnMod:bpy.types.NodesModifier = \
@@ -837,8 +848,15 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
 
     # 瓦垄宽度
     tileWidth = bData.tile_width
-    # 瓦片长度
-    tileLength = bData.tile_length
+    # 250116 不再以用户输入瓦垄长，以筒瓦为依据
+    # # 瓦片长度
+    # tileLength = bData.tile_length
+    tileLength = (aData.circularTile_source.dimensions.y 
+                  * bData.DK 
+                  / con.DEFAULT_DK)
+    tileHeight = (aData.circularTile_source.dimensions.z 
+                  * bData.DK 
+                  / con.DEFAULT_DK)
     # 计算瓦垄的数量
     tileCols = __getTileCols(buildingObj,direction)
     #GridCols = tileCols*2+1
@@ -849,29 +867,25 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     # 因为推山导致的由戗角度交叉，使得三个bisect面也有交叉，导致上下被裁剪的过多
     tile_bool_obj = __drawTileBool(
         buildingObj,rafter_pos,direction=direction)
-
+    
     # 檐面与山面的差异
     if direction=='X':
         # boolean用difference，向外切
         isBoolInside=False
         # 瓦片走向取第一条边
         dir_index = 0
-        offset_aside = Vector((bData.tile_width_real/4,-tileLength/2,0))
-        offset_head = Vector((bData.tile_width_real/4,tileLength/2,0))
     else:
         tileGrid = utils.flipNormal(tileGrid)
         # boolean用intersec，向内切
         isBoolInside=True
         # 瓦片走向取第二条边
         dir_index = 1
-        offset_aside = Vector((-bData.tile_width_real/4,-tileLength/2,0))
-        offset_head = Vector((-bData.tile_width_real/4,tileLength/2,0))
 
     # 在瓦面网格上依次排布瓦片
     bm = bmesh.new()   # create an empty BMesh
     bm.from_mesh(tileGrid.data)   # fill it in from a Mesh
     tileList = []
-    for f in bm.faces:                
+    for f in bm.faces:
         # 基于edge，构造Matrix变换矩阵，用于瓦片的定位
         # https://blender.stackexchange.com/questions/177218/make-bone-roll-match-a-face-vertex-normal/177331#177331
         # 取面上第一条边（沿着坡面）
@@ -885,7 +899,38 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         x = y.cross(z)
         # 坐标系转置（行列互换，以复合blender的坐标系要求）
         M = Matrix((x, y, z)).transposed().to_4x4()
+        # 250116 按照网格长度缩放筒板瓦
+        tileLength = aData.circularTile_source.dimensions.y 
+        tileLength = tileLength * bData.DK / con.DEFAULT_DK
+        cellLength = e.calc_length()
+        scale_factor = cellLength/tileLength
+        if direction=='X':
+            M = Matrix.Diagonal((1,scale_factor,1)).to_4x4() @ M
+        else:
+            M = Matrix.Diagonal((scale_factor,1,1)).to_4x4() @ M
+        # 坐标系原点放在几何面的中心
         M.translation = f.calc_center_median()
+    
+        # 250116 瓦片布在网格几何中心，
+        # 并对齐筒瓦顶面，以避免卷棚顶筒瓦的间隙
+        if direction=='X':
+            offset_aside = Vector((
+                bData.tile_width_real/4,
+                -cellLength/2,
+                -tileHeight))
+            offset_head = Vector((
+                bData.tile_width_real/4,
+                cellLength/2,
+                -tileHeight))
+        else:
+            offset_aside = Vector((
+                -bData.tile_width_real/4,
+                -cellLength/2,
+                -tileHeight))
+            offset_head = Vector((
+                -bData.tile_width_real/4,
+                cellLength/2,
+                -tileHeight)) 
         
         # 241113 修正bug：原来的筒板瓦排布时从檐口的瓦面face开始计算，
         # 实际上第一行应该是勾头滴水的normal，筒板瓦应该从第二行的face开始计算
@@ -983,8 +1028,11 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         use_axis=(True,True,False),
         use_bisect=(True,True,False),
     )
+
     # 250110 重展UV
     # 实际在__setTile中已经做了setGlazeStyle，但仅基于单个瓦片
+    # 将active_material落在筒板瓦的瓦面上
+    tileSet.active_material_index = int(bData.tile_color)
     # 这里在modifier的平铺范围上做全局的UV平铺
     mat.setGlazeUV(tileSet)
 
@@ -1100,6 +1148,8 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         mirrorObj=tileRootObj,
         use_axis=(True,False,False)
     )
+    # 设置材质
+    mat.setGlazeStyle(chiwenObj,resetUV=False)
     return
 
 # 营造盝顶的围脊
@@ -1205,6 +1255,8 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
         mirrorObj=tileRootObj,
         use_axis=(True,True,False)
     )
+    # 设置材质
+    mat.setGlazeStyle(chiwenObj,resetUV=False)
 
     return
 
@@ -1620,6 +1672,8 @@ def __buildTaoshou(buildingObj: bpy.types.Object):
         mirrorObj=tileRootObj,
         use_axis=(True,True,False)
     )
+    # 设置材质
+    mat.setGlazeStyle(taoshouObj,resetUV=False)
     return
 
 # 摆放跑兽

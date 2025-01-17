@@ -281,8 +281,9 @@ def setMat(object:bpy.types.Object,
     if mat == aData.mat_paint_pillerhead:
         object = __setPillerHead(object,mat)
 
-    # 栱垫板
-    if mat == aData.mat_paint_dgfillboard:
+    # 栱垫板(小号和普通版)
+    if mat in (aData.mat_paint_dgfillboard,
+               aData.mat_paint_dgfillboard_s):
         object = __setDgBoard(object,mat)
 
     # 檐椽
@@ -711,10 +712,6 @@ def __setDgBoard(dgBoardObj:bpy.types.Object,
     buildingObj = utils.getAcaParent(
         dgBoardObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
-
-    # 250108 一斗三升的栱垫板暂未绘制，所以跳过
-    if bData.dg_extend == 0 :
-        return dgBoardObj
     
     # 计算斗栱攒数
     totalLength = dgBoardObj.dimensions.x

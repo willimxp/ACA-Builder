@@ -317,9 +317,16 @@ def __buildDGFangbyRoom(
         # 栱垫板材质
         # 务必放在最后操作，该方法会删除原有的垫拱板，替换为新的mesh
         if '栱垫板' in fangSourceObj.name:
-            mat.setMat(fangCopy,
-                       aData.mat_paint_dgfillboard,
-                       override=True)
+            if bData.dg_extend == 0 :
+                # 一斗三升使用小号的栱垫板，只有一层正心瓜栱
+                mat.setMat(fangCopy,
+                        aData.mat_paint_dgfillboard_s,
+                        override=True)
+            else:
+                # 普通的栱垫板有一层正心瓜栱，一层正心厢栱
+                mat.setMat(fangCopy,
+                        aData.mat_paint_dgfillboard,
+                        override=True)
             
     return
 

@@ -369,7 +369,7 @@ class ACA_PT_wall(bpy.types.Panel):
             # 按钮：加墙
             buttonWall = toolBar.column(align=True)
             buttonWall.operator(
-                "aca.add_wall",icon='MOD_BUILD',text='槛墙')
+                "aca.add_wall",icon='MOD_BUILD',text='墙体')
             # 按钮：加窗
             buttonWin = toolBar.column(align=True)
             buttonWin.operator(

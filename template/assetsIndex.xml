@@ -16,6 +16,7 @@
     <mat_paint_walkdragon type="Object">平板枋.行龙</mat_paint_walkdragon>
     <mat_paint_grasscouple type="Object">垫板.公母草</mat_paint_grasscouple>
     <mat_paint_dgfillboard type="Object">材质.栱垫板</mat_paint_dgfillboard>
+    <mat_paint_dgfillboard_s type="Object">材质.栱垫板.小</mat_paint_dgfillboard_s>
     <mat_paint_rafter type="Object">檐椽</mat_paint_rafter>
     <mat_paint_flyrafter type="Object">飞椽</mat_paint_flyrafter>
     <mat_paint_wangban type="Object">木.底面红漆</mat_paint_wangban>

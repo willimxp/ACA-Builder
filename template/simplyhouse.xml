@@ -1073,7 +1073,9 @@
 		<yardwall_height type="float">3.0</yardwall_height>
 		<yardwall_depth type="float">1.0</yardwall_depth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
-		<dg_style type="str">0</dg_style>
+		<dg_style type="str">1</dg_style>
+		<tile_color type="str">0</tile_color>
+		<tile_alt_color type="str">0</tile_alt_color>
 	</template>
 	<template>
 		<aca_type type="str">building</aca_type>

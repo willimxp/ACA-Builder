@@ -21,31 +21,17 @@ def build():
     # 创建或锁定根目录（建筑名称）
     utils.setCollection(templateName)
 
-    # 创建buildObj根节点
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
-    buildingObj = bpy.context.object
-    # 原点摆放在3D Cursor位置
-    buildingObj.location = bpy.context.scene.cursor.location 
-    # 系统遇到重名会自动添加00x的后缀   
-    buildingObj.name = templateName         
-    buildingObj.empty_display_type = 'SPHERE'
-
-    # 初始化bData
-    bData:acaData = buildingObj.ACA_data
-    bData['template_name'] = templateName
-    # 在buildingObj中填充模版数据
-    # 其中填充bData后，还继续填充了aData
-    acaTemplate.loadTemplate(buildingObj)
+    acaType = acaTemplate.getBuildingType(templateName)
 
     # 根据模版类型调用不同的入口
-    if bData.aca_type == con.ACA_TYPE_BUILDING:
+    if acaType == con.ACA_TYPE_BUILDING:
         from . import buildFloor
-        buildFloor.buildFloor(buildingObj)
-    elif bData.aca_type == con.ACA_TYPE_YARDWALL:
+        buildFloor.buildFloor(None)
+    elif acaType == con.ACA_TYPE_YARDWALL:
         from . import buildYardWall
-        buildYardWall.buildYardWall(buildingObj)
+        buildYardWall.buildYardWall(None)
     else:
-        utils.outputMsg("无法创建该类型的建筑：" + bData.aca_type)
+        utils.outputMsg("无法创建该类型的建筑：" + templateName)
 
     return {'FINISHED'}
 

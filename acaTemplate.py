@@ -48,6 +48,30 @@ def getTemplateList(onlyname=False):
             
     return template_list
 
+# 根据选择的模版，获取模版类型（房屋、院墙）
+def getBuildingType(templateName):
+    # 载入XML
+    # 这个结果打包发布后出现错误，改为绝对路径
+    # path = os.path.join(templateFolder, xmlFileName)
+    path = __getPath(xmlFileName)
+    tree = ET.parse(path)
+    root = tree.getroot()
+    templates = root.findall('template')
+
+    # 有些模版没有这个类型值，默认置为普通building
+    typeName = con.ACA_TYPE_BUILDING
+
+    template_list = []
+    for template in templates:
+        tname = template.find('template_name')
+        if  tname.text == templateName:
+            typeNode = template.find('aca_type')
+            if typeNode != None:
+                typeName = typeNode.text
+            break
+            
+    return typeName
+
 # 解析XML，获取斗栱样式列表
 # 配置如下
 # <dg_piller_source type="List">

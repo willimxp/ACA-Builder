@@ -27,8 +27,8 @@ def __addBuildingRoot(templateName):
     buildingObj.name = templateName   # 系统遇到重名会自动添加00x的后缀       
     buildingObj.empty_display_type = 'SPHERE'
 
-    # 在buildingObj中填充模版数据
-    acaTemplate.loadTemplate(buildingObj,templateName)
+    bData:acaData = buildingObj.ACA_data
+    bData['template_name'] = templateName
     
     return buildingObj
 
@@ -301,6 +301,11 @@ def buildYardWall(buildingObj:bpy.types.Object):
     else:
         # 简单粗暴的全部删除
         utils.deleteHierarchy(buildingObj)
+
+    # 在buildingObj中填充模版数据
+    # 无论是新建还是刷新，都重新载入一次模版
+    # 便于资产库更新后，建筑可以重新应用
+    acaTemplate.loadTemplate(buildingObj)
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]

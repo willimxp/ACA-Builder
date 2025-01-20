@@ -298,14 +298,13 @@ def buildYardWall(buildingObj:bpy.types.Object):
         templateName = bpy.context.scene.ACA_data.template
         # 添加建筑根节点，同时载入模版
         buildingObj = __addBuildingRoot(templateName)
+        # 在buldingObj上绑定模版bData和资产库aData
+        acaTemplate.loadTemplate(buildingObj)
     else:
         # 简单粗暴的全部删除
         utils.deleteHierarchy(buildingObj)
-
-    # 在buildingObj中填充模版数据
-    # 无论是新建还是刷新，都重新载入一次模版
-    # 便于资产库更新后，建筑可以重新应用
-    acaTemplate.loadTemplate(buildingObj)
+        # 刷新buildingObj中绑定的资产库aData
+        acaTemplate.loadAssetByBuilding(buildingObj) 
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]

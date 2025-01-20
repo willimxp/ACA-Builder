@@ -110,43 +110,44 @@ class ACA_Consts(object):
     BOARD_HENG_Y = 1.5      # 金脊桁檩垫板厚(DK)
 
     # 门窗（马炳坚数据）
-    WALL_DEPTH = 1.5           # 槛墙厚度(PD)
-    WALL_BOTTOM_RATE = 1/3      # 墙体下碱的高度比例
-    WALL_BOTTOM_LIMIT = 1.5     # 墙体下碱限高(m)
-    WALL_SHRINK = 0.015         # 墙体退花碱厚度(m)
-    KAN_DOWN_HEIGHT = 0.8       # 下槛高度(PD)
-    KAN_DOWN_DEPTH = 0.3       # 下槛深度(PD)，梁思成实际使用的为0.4
-    KAN_MID_HEIGHT = 0.66       # 中槛高度(PD)(汤崇平书p20中定为0.64)
-    KAN_MID_DEPTH = 0.3        # 中槛深度(PD)
-    KAN_UP_HEIGHT = 0.5         # 上槛高度(PD)
-    KAN_UP_DEPTH = 0.3         # 上槛深度(PD)
-    KAN_WIND_HEIGHT = 0.5       # 风槛高度(PD)
-    KAN_WIND_DEPTH = 0.3       # 风槛深度(PD)
-    BAOKUANG_WIDTH = 0.66       # 抱框宽度(PD)
-    BAOKUANG_DEPTH = 0.3       # 抱框深度(PD)
-    BORDER_WIDTH = 0.2          # 边梃、抹头宽(PD)
-    BORDER_DEPTH = BAOKUANG_DEPTH         # 边梃、抹头厚(PD)
-    ZIBIAN_WIDTH = BORDER_WIDTH*0.5         # 仔边宽(PD)
-    ZIBIAN_DEPTH = BORDER_WIDTH*0.5        # 仔边厚(PD)
-    TABAN_DEPTH = 1.5          # 榻板宽(PD)
-    TABAN_HEIGHT = 3/8          # 榻板高(PD)
-    TABAN_EX = 0.1              # 榻板金边(米)
-    GESHAN_GAP = 0.02           # 隔扇的间距/门缝(米)
-    DOUGONG_SPAN = 11           # 斗栱攒距(DK)
-    MENYIN_DEPTH = KAN_DOWN_DEPTH*1.8     # 门楹/窗楹厚(PD)
-    MENYIN_HEIGHT = KAN_DOWN_HEIGHT*0.5     # 门楹/窗楹高(PD)
-    MENYIN_WIDTH = MENYIN_DEPTH*2          # 门楹/窗楹宽(PD)
-    MENZHOU_R = BORDER_WIDTH/2              # 门轴(PD)
+    WALL_DEPTH = 1.5                    # 槛墙厚度(PD)
+    WALL_BOTTOM_RATE = 1/3              # 墙体下碱的高度比例
+    WALL_BOTTOM_LIMIT = 1.5             # 墙体下碱限高(m)
+    WALL_SHRINK = 0.015                 # 墙体退花碱厚度(m)
+    KAN_DOWN_HEIGHT = 0.8               # 下槛高度(PD)
+    KAN_DOWN_DEPTH = 0.3                # 下槛深度(PD)，梁思成实际使用的为0.4
+    KAN_MID_HEIGHT = 0.66               # 中槛高度(PD)(汤崇平书p20中定为0.64)
+    KAN_MID_DEPTH = 0.3                 # 中槛深度(PD)
+    KAN_UP_HEIGHT = 0.5                 # 上槛高度(PD)
+    KAN_UP_DEPTH = 0.3                  # 上槛深度(PD)
+    KAN_WIND_HEIGHT = 0.5               # 风槛高度(PD)
+    KAN_WIND_DEPTH = 0.3                # 风槛深度(PD)
+    BAOKUANG_WIDTH = 0.66               # 抱框宽度(PD)
+    BAOKUANG_DEPTH = 0.3                # 抱框深度(PD)
+    BORDER_WIDTH = 0.2                  # 边梃、抹头宽(PD)
+    BORDER_DEPTH = BAOKUANG_DEPTH       # 边梃、抹头厚(PD)
+    ZIBIAN_WIDTH = BORDER_WIDTH*0.5     # 仔边宽(PD)
+    ZIBIAN_DEPTH = BORDER_WIDTH*0.5     # 仔边厚(PD)
+    TABAN_DEPTH = 1.5                   # 榻板宽(PD)
+    TABAN_HEIGHT = 3/8                  # 榻板高(PD)
+    TABAN_EX = 0.1                      # 榻板金边(米)
+    GESHAN_GAP = 0.02                   # 隔扇的间距/门缝(米)
+    DOUGONG_SPAN = 11                   # 斗栱攒距(DK)
+    MENYIN_DEPTH = KAN_DOWN_DEPTH*1.8   # 门楹/窗楹厚(PD)
+    MENYIN_HEIGHT = KAN_DOWN_HEIGHT*0.5 # 门楹/窗楹高(PD)
+    MENYIN_WIDTH = MENYIN_DEPTH*2       # 门楹/窗楹宽(PD)
+    MENZHOU_R = BORDER_WIDTH/2          # 门轴(PD)
 
     # 桁檩
-    HENG_TIAOYAN_D = 4                  # 挑檐桁直径(DK)，梁思成数据
-    HENG_COMMON_D = 4                   # 正心桁直径(DK)，梁思成数据
-    HENG_EXTEND = HENG_COMMON_D * 2.6     # 桁檩出梢(DK)
-    FUJIMU_D = 4                        # 伏脊木直径(DK)
+    HENG_TIAOYAN_D = 4                          # 挑檐桁直径(DK)，梁思成数据
+    HENG_COMMON_D = 4                           # 正心桁直径(DK)，梁思成数据
+    HENG_EXTEND = HENG_COMMON_D * 2.6           # 桁檩出梢(DK)
+    FUJIMU_D = 4                                # 伏脊木直径(DK)
     LIFT_RATIO_DEFAULT = [0.5,0.7,0.8,0.9]      # 梁思成图纸中采用的系数，可以进行比较
     LIFT_RATIO_BIG = [0.5,1,1.5,2]              # 尝试在亭子上使用
     LIFT_RATIO_SMALL = [0.5,0.65,0.75,0.9]      # 清工程做法则例的推荐系数
-    JUANPENG_SPAN = HENG_COMMON_D * 3   # 卷棚顶的两根脊桁间距(DK)
+    LIFT_RATIO_FLAT = [1,1,1,1]                 # 全部做45度坡面
+    JUANPENG_SPAN = HENG_COMMON_D * 3           # 卷棚顶的两根脊桁间距(DK)
 
     # 梁架
     BEAM_HEIGHT = 1.4       # 梁高(PD)
@@ -156,29 +157,29 @@ class ACA_Consts(object):
     XYB_WIDTH = 1.2         # 象眼板厚(DK)
     JIAOBEI_WIDTH = 2       # 角背厚度(DK)
     GABELBEAM_HEIGHT = 6.5  # 趴梁高(DK),马炳坚p9
-    GABELBEAM_DEPTH = 5.2     # 趴梁厚(DK)
+    GABELBEAM_DEPTH = 5.2   # 趴梁厚(DK)
 
     # 椽飞类
-    YANCHUAN_EX = 14            # 檐椽平出(DK)
-    FLYRAFTER_EX = 7            # 飞椽平出(DK)
-    YUANCHUAN_D = 1.5           # 圆椽直径(DK)
-    FLYRAFTER_H = 1.5           # 飞椽、方椽高(DK)
-    FLYRAFTER_Y = 1.5           # 飞椽、方椽厚(DK)
-    WANGBAN_H = 0.5             # 望板厚(DK)
-    LIKOUMU_H =  FLYRAFTER_H + WANGBAN_H        # 里口木高度(DK)，一飞椽+一望板
-    LIKOUMU_Y = FLYRAFTER_H     # 里口木厚度(DK)
-    # DALIANYAN_H = YUANCHUAN_D     # 大连檐(DK)，高同椽径
-    DALIANYAN_H = YUANCHUAN_D*2     # 大连檐(DK)，叠加了“瓦口”高度（瓦口定义为1/2椽径或更高，见马炳坚书p179）
-    DALIANYAN_Y = YUANCHUAN_D       # 大连檐(DK)，宽1.1-1.2椽径
-    FLYRAFTER_HEAD_TILE_RATIO = 1/2.5        # 飞椽头身比，默认一飞二尾五
-    QUETAI = YUANCHUAN_D*0.2        # 雀台长度(DK)，(通常1/5~1/3椽径)
+    YANCHUAN_EX = 14                        # 檐椽平出(DK)
+    FLYRAFTER_EX = 7                        # 飞椽平出(DK)
+    YUANCHUAN_D = 1.5                       # 圆椽直径(DK)
+    FLYRAFTER_H = 1.5                       # 飞椽、方椽高(DK)
+    FLYRAFTER_Y = 1.5                       # 飞椽、方椽厚(DK)
+    WANGBAN_H = 0.5                         # 望板厚(DK)
+    LIKOUMU_H =  FLYRAFTER_H + WANGBAN_H    # 里口木高度(DK)，一飞椽+一望板
+    LIKOUMU_Y = FLYRAFTER_H                 # 里口木厚度(DK)
+    # DALIANYAN_H = YUANCHUAN_D             # 大连檐(DK)，高同椽径
+    DALIANYAN_H = YUANCHUAN_D*2             # 大连檐(DK)，叠加了“瓦口”高度（瓦口定义为1/2椽径或更高，见马炳坚书p179）
+    DALIANYAN_Y = YUANCHUAN_D               # 大连檐(DK)，宽1.1-1.2椽径
+    FLYRAFTER_HEAD_TILE_RATIO = 1/2.5       # 飞椽头身比，默认一飞二尾五
+    QUETAI = YUANCHUAN_D*0.2                # 雀台长度(DK)，(通常1/5~1/3椽径)
     
     # 角梁
-    JIAOLIANG_H = 4.5               # 角梁高(DK)，老角梁和子角梁
-    JIAOLIANG_Y = 3                 # 角梁厚(DK)，老角梁和子角梁
-    JIAOLIANG_WEI_KOUJIN = 0.2      # 角梁尾的扣金系数，则例没有明说，这个值越小，约陡峭
-    JIAOLIANG_HEAD_YAJIN = 0.5      # 角梁头的压金系数，则例没有明说，这个值越小，约陡峭
-    YOUQIANG_YAJIN = 1-JIAOLIANG_WEI_KOUJIN           #由戗压金系数
+    JIAOLIANG_H = 4.5                       # 角梁高(DK)，老角梁和子角梁
+    JIAOLIANG_Y = 3                         # 角梁厚(DK)，老角梁和子角梁
+    JIAOLIANG_WEI_KOUJIN = 0.2              # 角梁尾的扣金系数，则例没有明说，这个值越小，约陡峭
+    JIAOLIANG_HEAD_YAJIN = 0.2 # 0.5              # 角梁头的压金系数，则例没有明说，这个值越小，约陡峭
+    YOUQIANG_YAJIN = 1-JIAOLIANG_WEI_KOUJIN #由戗压金系数
 
     # 其他
     OFFSET_ORIENTATION = 'GLOBAL'       # 'GLOBAL'  'LOCAL' #上下层叠构件的错开方式，一般绘图是垂直位移，但其实相对方向的位移更好看

@@ -299,7 +299,7 @@ def __loadDefaultData(buildingObj:bpy.types.Object):
 # aData根据bData中定义的dgStyle等属性的不同而动态改变
 # aData绑定在Blender的Scene场景中，未做建筑间隔离
 # 在更新斗栱时，修改了aData中涉及斗栱的属性
-def __loadAssetByBuilding(buildingObj:bpy.types.Object):
+def loadAssetByBuilding(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     aData : tmpData = bpy.context.scene.ACA_temp
@@ -398,7 +398,7 @@ def loadTemplate(buildingObj:bpy.types.Object):
                         print("can't convert:",node.tag, node.attrib['type'],node.text)
 
     # 填充建筑使用的资产对象，根据其中的dg_style等不同，载入不同的资产样式
-    __loadAssetByBuilding(buildingObj)
+    loadAssetByBuilding(buildingObj)
     
     return
 

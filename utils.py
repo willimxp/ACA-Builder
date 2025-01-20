@@ -1371,7 +1371,7 @@ def joinObjects(objList:List[bpy.types.Object],
         newName = objList[0].name
     # timeStart = time.time()
     
-    # 开始合并
+    # 1、选择可以合并的对象，抛弃None,empty等
     # 与上面的循环要做分开，否则context的选择状态会打架
     # todo：也可以用临时context来解决
     bpy.ops.object.select_all(action='DESELECT')
@@ -1390,22 +1390,27 @@ def joinObjects(objList:List[bpy.types.Object],
         # 将对象的mesh数据single化，避免影响场景中其他对象
         if ob.data.users > 1:
             ob.data = ob.data.copy()
-    # 合并的Origin基准
+    if len(bpy.context.selected_objects) ==0:
+        outputMsg("没有可以合并的对象")
+        return None
+
+    # 2、设置合并的Origin基准
     if baseObj == None:
         bpy.context.view_layer.objects.active = objList[0]
     else:
         bpy.context.view_layer.objects.active = baseObj
-    # 预处理，可以将Curve转为mesh，还同时应用了所有的modifier
+
+    # 3、应用了所有的modifier
     bpy.ops.object.convert(target='MESH')
     
-    # 合并对象
+    # 4、合并对象
     bpy.ops.object.join()
     joinedObj = bpy.context.object
     
     joinedObj.name = newName
     joinedObj.data.name = newName
 
-    # 合并顶点
+    # 5、合并顶点
     if cleanup:
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action = 'SELECT')

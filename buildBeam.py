@@ -1272,17 +1272,20 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     if roofStyle == con.ROOF_WUDIAN:
         # 添加山面趴梁
         gabelBeamObj = __addGabelBeam(buildingObj,purlin_pos)
-        beamObjects.append(gabelBeamObj)
+        if gabelBeamObj != None:
+            beamObjects.append(gabelBeamObj)
         # 添加太平梁
         safeBeamObj = __addSafeBeam(buildingObj,purlin_pos)
-        beamObjects.append(safeBeamObj)
+        if safeBeamObj != None:
+            beamObjects.append(safeBeamObj)
 
     # 如果为歇山顶
     if roofStyle in (con.ROOF_XIESHAN,
                      con.ROOF_XIESHAN_JUANPENG):
         # 添加山面趴梁
         gabelBeamObj = __addGabelBeam(buildingObj,purlin_pos)
-        beamObjects.append(gabelBeamObj)
+        if gabelBeamObj != None:
+            beamObjects.append(gabelBeamObj)
 
     # 攒尖顶时，没有做梁架
     if beamObjects != []:

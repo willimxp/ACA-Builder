@@ -740,6 +740,8 @@ def getPillerHeight(buildingObj,pillerID):
         lift_ratio = con.LIFT_RATIO_BIG
     if bData.juzhe == '2':
         lift_ratio = con.LIFT_RATIO_SMALL
+    if bData.juzhe == '3':
+        lift_ratio = con.LIFT_RATIO_FLAT
     pillerHeight += rafterSpan*lift_ratio[0]
     
     # 3、向下扣除一个桁垫板高度，即到了梁底高度
@@ -990,14 +992,13 @@ def buildFloor(buildingObj:bpy.types.Object):
         templateName = bpy.context.scene.ACA_data.template
         # 添加建筑根节点，同时载入模版
         buildingObj = __addBuildingRoot(templateName)
+        # 在buldingObj上绑定模版bData和资产库aData
+        acaTemplate.loadTemplate(buildingObj)
     else:
         # 简单粗暴的全部删除
         utils.deleteHierarchy(buildingObj)
-
-    # 在buildingObj中填充模版数据
-    # 无论是新建还是刷新，都重新载入一次模版
-    # 便于资产库更新后，建筑可以重新应用
-    acaTemplate.loadTemplate(buildingObj)
+        # 刷新buildingObj中绑定的资产库aData
+        acaTemplate.loadAssetByBuilding(buildingObj)   
 
     # 载入数据
     bData:acaData = buildingObj.ACA_data

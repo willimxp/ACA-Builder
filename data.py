@@ -264,7 +264,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     DK: bpy.props.FloatProperty(
             name = "斗口",
             default=0.0,
-            min=0.03,
+            min=0.016,
             max=0.18,
             step=0.01,
             precision=3,
@@ -609,6 +609,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("0","   举折系数：默认","[0.5,0.7,0.8,0.9]"),
                 ("1","   举折系数：陡峭","[0.5,1,1.5,2]，慎用，一般用于亭子等建筑"),
                 ("2","   举折系数：平缓","[0.5,0.65,0.75,0.9]"),
+                ("3","   举折系数：45度","[1,1,1,1]"),
             ],
         ) # type: ignore
     roof_qiao_point : bpy.props.FloatVectorProperty(

@@ -1238,8 +1238,12 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                 pEnd = Vector(purlin_pos[n+1]) \
                     - Vector((0,0,con.JIAOLIANG_H*dk*con.JIAOLIANG_WEI_KOUJIN))
                 # 计算老角梁头先放在正心桁交点上，后续根据檐出、冲出延长
+                # pStart = Vector(purlin_pos[n]) \
+                #     + Vector((0,0,con.JIAOLIANG_H*dk*con.JIAOLIANG_HEAD_YAJIN))
+                # 250120 为了防止在步架过短时，仔角梁出现反弓
+                # 允许用户手工调整老角梁头与挑檐桁的交错位置
                 pStart = Vector(purlin_pos[n]) \
-                    + Vector((0,0,con.JIAOLIANG_H*dk*con.JIAOLIANG_HEAD_YAJIN))
+                    + Vector((0,0,con.JIAOLIANG_H*dk*bData.liangtou))
             else:
                 # 老角梁用扣金做法，压在槫子之上
                 pEnd = Vector(purlin_pos[n+1]) \

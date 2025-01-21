@@ -768,6 +768,10 @@ class ACA_PT_rafter(bpy.types.Panel):
             inputQiao = toolBar.column(align=True)
             inputQiao.prop(
                 bData, "qiqiao",text='起翘(椽径)')
+            # 梁头系数
+            inputLiangtou = toolBar.column(align=True)
+            inputLiangtou.prop(
+                bData, "liangtou",text='梁头系数')
 
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)

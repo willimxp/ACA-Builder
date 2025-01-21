@@ -1354,9 +1354,9 @@
 	<template>
 		<aca_type type="str">building</aca_type>
 		<template_name type="str">门房</template_name>
-		<DK type="float">0.024</DK>
+		<DK type="float">0.048</DK>
 		<is_showPlatform type="bool">True</is_showPlatform>
-		<is_showPillers type="bool">True</is_showPillers>
+		<is_showPillers type="bool">False</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
 		<is_showDougong type="bool">True</is_showDougong>
 		<is_showBeam type="bool">True</is_showBeam>
@@ -1365,11 +1365,11 @@
 		<platform_height type="float">0.456</platform_height>
 		<platform_extend type="float">0.672</platform_extend>
 		<step_net type="str">1/0#2/0,1/2#2/2,</step_net>
-		<x_total type="float">5.632</x_total>
+		<x_total type="float">6.1</x_total>
 		<y_total type="float">2.112</y_total>
 		<x_rooms type="int">3</x_rooms>
-		<x_1 type="float">3.52</x_1>
-		<x_2 type="float">1.056</x_2>
+		<x_1 type="float">3.5</x_1>
+		<x_2 type="float">1.3</x_2>
 		<x_3 type="float">5.28</x_3>
 		<x_4 type="float">1.76</x_4>
 		<y_rooms type="int">2</y_rooms>
@@ -1377,11 +1377,11 @@
 		<y_2 type="float">3.52</y_2>
 		<y_3 type="float">1.76</y_3>
 		<piller_net type="str">0/0,0/1,0/2,1/0,1/1,1/2,2/0,2/1,2/2,3/0,3/1,3/2,</piller_net>
-		<wall_net type="str">wall#0/0#1/0,wall#1/0#1/2,wall#2/0#2/2,wall#2/0#3/0,wall#3/0#3/2,wall#0/0#0/2,wall#0/2#1/2,wall#2/2#3/2,door#1/1#2/1,</wall_net>
-		<fang_net type="str">0/2#1/2,1/2#2/2,2/2#3/2,0/0#1/0,1/0#2/0,2/0#3/0,0/0#0/1,0/1#0/2,3/0#3/1,3/1#3/2,2/0#2/1,2/1#2/2,1/0#1/1,1/1#1/2,1/1#2/1,</fang_net>
+		<wall_net type="str" />
+		<fang_net type="str" />
 		<piller_height type="float">4.08</piller_height>
 		<piller_diameter type="float">0.24</piller_diameter>
-		<use_smallfang type="bool">False</use_smallfang>
+		<use_smallfang type="bool">True</use_smallfang>
 		<wall_depth type="float">1.0</wall_depth>
 		<wall_span type="float">0.0</wall_span>
 		<door_height type="float">3.36</door_height>
@@ -1392,9 +1392,9 @@
 		<use_dg type="bool">True</use_dg>
 		<use_pingbanfang type="bool">False</use_pingbanfang>
 		<dg_style type="str">2</dg_style>
-		<dg_extend type="float">0.144</dg_extend>
-		<dg_height type="float">0.221</dg_height>
-		<dg_gap type="float">0.264</dg_gap>
+		<dg_extend type="float">0.288</dg_extend>
+		<dg_height type="float">0.442</dg_height>
+		<dg_gap type="float">0.528</dg_gap>
 		<roof_style type="str">2</roof_style>
 		<use_hallway type="bool">False</use_hallway>
 		<rafter_count type="int">4</rafter_count>
@@ -1409,8 +1409,8 @@
 		<juzhe type="str">0</juzhe>
 		<tile_color type="str">0</tile_color>
 		<tile_alt_color type="str">0</tile_alt_color>
-		<tile_width type="float">0.116</tile_width>
-		<tile_length type="float">0.15</tile_length>
+		<tile_width type="float">0.232</tile_width>
+		<tile_length type="float">0.3</tile_length>
 		<paoshou_count type="int">4</paoshou_count>
 		<is_4_sides type="bool">True</is_4_sides>
 		<yard_width type="float">10.0</yard_width>
@@ -1418,11 +1418,12 @@
 		<yardwall_height type="float">3.0</yardwall_height>
 		<yardwall_depth type="float">1.0</yardwall_depth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
+		<liangtou type="float">0.2</liangtou>
 	</template>
 	<template>
 		<aca_type type="str">building</aca_type>
-		<template_name type="str">门房.2</template_name>
-		<DK type="float">0.024</DK>
+		<template_name type="str">侧门房</template_name>
+		<DK type="float">0.028</DK>
 		<is_showPlatform type="bool">False</is_showPlatform>
 		<is_showPillers type="bool">False</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
@@ -1447,7 +1448,7 @@
 		<piller_net type="str">0/0,0/1,0/2,1/0,1/1,1/2,</piller_net>
 		<wall_net type="str" />
 		<fang_net type="str" />
-		<piller_height type="float">2.78</piller_height>
+		<piller_height type="float">3.13</piller_height>
 		<piller_diameter type="float">0.24</piller_diameter>
 		<use_smallfang type="bool">False</use_smallfang>
 		<wall_depth type="float">1.0</wall_depth>
@@ -1460,9 +1461,9 @@
 		<use_dg type="bool">True</use_dg>
 		<use_pingbanfang type="bool">False</use_pingbanfang>
 		<dg_style type="str">2</dg_style>
-		<dg_extend type="float">0.144</dg_extend>
-		<dg_height type="float">0.221</dg_height>
-		<dg_gap type="float">0.44</dg_gap>
+		<dg_extend type="float">0.168</dg_extend>
+		<dg_height type="float">0.258</dg_height>
+		<dg_gap type="float">0.308</dg_gap>
 		<roof_style type="str">1</roof_style>
 		<use_hallway type="bool">False</use_hallway>
 		<rafter_count type="int">2</rafter_count>
@@ -1471,14 +1472,15 @@
 		<qiqiao type="int">4</qiqiao>
 		<chong type="int">3</chong>
 		<shengqi type="int">1</shengqi>
+		<liangtou type="float">0.4</liangtou>
 		<tuishan type="float">0.9</tuishan>
 		<shoushan type="float">0.0</shoushan>
 		<luding_rafterspan type="float">3.0</luding_rafterspan>
 		<juzhe type="str">0</juzhe>
 		<tile_color type="str">0</tile_color>
 		<tile_alt_color type="str">0</tile_alt_color>
-		<tile_width type="float">0.116</tile_width>
-		<tile_length type="float">0.15</tile_length>
+		<tile_width type="float">0.136</tile_width>
+		<tile_length type="float">0.175</tile_length>
 		<paoshou_count type="int">4</paoshou_count>
 		<is_4_sides type="bool">True</is_4_sides>
 		<yard_width type="float">10.0</yard_width>

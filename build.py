@@ -35,6 +35,22 @@ def build():
 
     return {'FINISHED'}
 
+def updateBuilding(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+
+    if bData.aca_type == con.ACA_TYPE_BUILDING:
+        from . import buildFloor
+        buildFloor.buildFloor(buildingObj)
+    elif bData.aca_type == con.ACA_TYPE_YARDWALL:
+        from . import buildYardWall
+        buildYardWall.buildYardWall(buildingObj)
+    else:
+        utils.outputMsg("无法创建该类型的建筑：" + bData.aca_type)
+    return
+
+
+
 # 删除建筑
 def delBuilding(buildingObj:bpy.types.Object):
     # 找到对应的目录

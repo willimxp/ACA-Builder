@@ -48,9 +48,9 @@ def update_building(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
-        from . import buildFloor
+        from . import build
         funproxy = partial(
-                buildFloor.buildFloor,
+                build.updateBuilding,
                 buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
@@ -579,6 +579,14 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=1, 
             #update=update_roof
         )# type: ignore 
+    liangtou: bpy.props.FloatProperty(
+            name="梁头位置", 
+            default=0.4,
+            min=0,
+            max=1.0,
+            precision=3,
+            description="老梁头压挑檐桁的尺度，建议在0.5左右，可根据起翘形态适当调整"
+        )# type: ignore
     tuishan: bpy.props.FloatProperty(
             name="推山系数", 
             default=0.9,
@@ -609,7 +617,6 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("0","   举折系数：默认","[0.5,0.7,0.8,0.9]"),
                 ("1","   举折系数：陡峭","[0.5,1,1.5,2]，慎用，一般用于亭子等建筑"),
                 ("2","   举折系数：平缓","[0.5,0.65,0.75,0.9]"),
-                ("3","   举折系数：45度","[1,1,1,1]"),
             ],
         ) # type: ignore
     roof_qiao_point : bpy.props.FloatVectorProperty(

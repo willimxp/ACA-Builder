@@ -18,9 +18,7 @@ def build():
     # 待营造的模板，来自用户界面上的选择
     templateName = bpy.context.scene.ACA_data.template
 
-    # 创建或锁定根目录（建筑名称）
-    utils.setCollection(templateName)
-
+    # 获取模版类型，建筑或院墙
     acaType = acaTemplate.getBuildingType(templateName)
 
     # 根据模版类型调用不同的入口

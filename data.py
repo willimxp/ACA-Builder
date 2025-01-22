@@ -1036,3 +1036,8 @@ class ACA_data_template(bpy.types.PropertyGroup):
             type = bpy.types.Object,
             poll = p_filter
         )# type: ignore     
+    walleave:bpy.props.PointerProperty(
+            name = "墙檐",
+            type = bpy.types.Object,
+            poll = p_filter
+        )# type: ignore     

@@ -70,7 +70,8 @@ class ACA_OT_update_building(bpy.types.Operator):
         buildingName = buildingObj.name
         # 更新新建筑
         timeStart = time.time()
-        funproxy = partial(buildFloor.buildFloor,
+        from . import build
+        funproxy = partial(build.updateBuilding,
                     buildingObj=buildingObj)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:

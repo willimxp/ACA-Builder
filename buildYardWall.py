@@ -241,9 +241,12 @@ def buildSingleWall(
         bData.DK / con.DEFAULT_DK)
     # 脊筒在正脊长度上整数排布，微调其长度
     ridgeWidth = ridgeObj.dimensions.x
-    ridgeNum = math.floor(ridgeLength/ridgeWidth)
-    ridgeWidth = ridgeLength / ridgeNum
-    ridgeObj.dimensions.x = ridgeWidth
+    # 计算墙的长度，至少铺几片正脊
+    count = math.floor(ridgeLength/ridgeWidth)
+    # 每段平铺长度
+    span = ridgeLength / count
+    # 缩放墙檐宽度
+    ridgeObj.dimensions.x = span
     utils.applyTransfrom(ridgeObj,use_scale=True)
     # 定位正脊排布起点
     ridgeObj.location = (
@@ -251,14 +254,49 @@ def buildSingleWall(
         0,
         wallHeight/2 + ridgeHeight)
     # 平铺
-    modArray:bpy.types.ArrayModifier = \
-        ridgeObj.modifiers.new('横向平铺','ARRAY')
-    modArray.use_relative_offset = True
-    modArray.relative_offset_displace = (1,0,0)
-    modArray.fit_type = 'FIT_LENGTH' 
-    modArray.fit_length = ridgeLength
+    utils.addModifierArray(
+        object=ridgeObj,
+        count=count,
+        offset=(span,0,0)
+    )
 
-    # 6、做裁剪
+    # 6、墙檐
+    walleaveObj = utils.copyObject(
+        sourceObj=aData.walleave,
+        name="墙檐",
+        parentObj=wallProxy,
+        singleUser=True)
+    walleaveWidth = walleaveObj.dimensions.x
+    # 墙檐宽度默认按1米厚度制作的模版asset，这里根据墙厚度缩放
+    walleaveObj.scale.y = bData.yardwall_depth
+    # 墙檐定位，从墙顶部，下移一个瓦当取斜，再下移一个墙檐
+    eaveTileOffset = (
+        aData.eaveTile_source.dimensions.y
+        * bData.DK / con.DEFAULT_DK) * math.sin(tileAngle)
+    walleaveZ = (wallHeight/2 
+                 - eaveTileOffset
+                 - walleaveObj.dimensions.z)
+    # 计算平铺
+    # 计算墙的长度，至少铺几片墙檐
+    count = math.floor(wallLength/walleaveWidth)
+    # 每段平铺长度
+    span = wallLength/count
+    # 缩放墙檐宽度
+    walleaveObj.dimensions.x = span*0.99    #留出一些间隙
+    utils.applyTransfrom(walleaveObj,use_scale=True)
+    # 根据缩放结果，摆放起始位置
+    walleaveObj.location = (
+        -wallLength/2+ span/2, 
+        0,
+        walleaveZ)
+    utils.addModifierArray(
+        object=walleaveObj,
+        count=count,
+        offset=(span,0,0)
+    )
+
+
+    # 7、做裁剪
     if use_cut:
         # 合并子对象
         wallObj = utils.joinObjects(

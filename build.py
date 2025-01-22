@@ -45,7 +45,7 @@ def updateBuilding(buildingObj:bpy.types.Object):
         buildYardWall.buildYardWall(buildingObj)
     else:
         utils.outputMsg("无法创建该类型的建筑：" + bData.aca_type)
-    return
+    return {'FINISHED'}
 
 
 

@@ -685,6 +685,9 @@ def fastRun(func):
     finally:
         _BPyOpsSubModOp._view_layer_update = view_layer_update
     
+    # 清理重复的材质
+    cleanDupMat()
+    
     # 再次清理数据
     delOrphan()
 
@@ -1067,6 +1070,7 @@ def delOrphan():
     #         bpy.data.node_groups.remove(block)
 
     # bpy.data.orphans_purge()
+    return
 
 # 获取对象的几何中心
 # 已经在代码中使用评估对象，可以抗阻塞 
@@ -1630,4 +1634,16 @@ def changeParent(object:bpy.types.Object,
     )
     # 应用新父节点
     object.parent = newParent
+    return
+
+# 清理重复的材质
+# https://blender.stackexchange.com/questions/55233/disable-material-duplication
+def cleanDupMat():
+    # 清理重复的材质
+    mats = bpy.data.materials
+    for obj in bpy.data.objects:
+        for slt in obj.material_slots:
+            part = slt.name.rpartition('.')
+            if part[2].isnumeric() and part[0] in mats:
+                slt.material = mats.get(part[0])
     return

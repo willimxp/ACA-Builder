@@ -295,12 +295,11 @@ def buildSingleWall(
         offset=(span,0,0)
     )
 
-
     # 7、做裁剪
+    # 合并子对象
+    wallObj = utils.joinObjects(
+        wallProxy.children,newName=wallProxy.name)
     if use_cut:
-        # 合并子对象
-        wallObj = utils.joinObjects(
-            wallProxy.children,newName='院墙')
         # 左侧剪切
         utils.addBisect(
             object=wallObj,
@@ -321,6 +320,10 @@ def buildSingleWall(
             clear_inner=True,
             use_fill=False,
         )
+    # 挂入根节点
+    utils.changeParent(wallObj,buildingObj,resetOrigin=False)
+    # 删除wallproxy
+    utils.delObject(wallProxy)
 
     return
 
@@ -343,10 +346,6 @@ def buildYardWall(buildingObj:bpy.types.Object):
         utils.deleteHierarchy(buildingObj)
         # 刷新buildingObj中绑定的资产库aData
         acaTemplate.loadAssetByBuilding(buildingObj) 
-
-    # 锁定操作目录
-    buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('院墙',parentColl=buildingColl)
 
     # 载入数据
     bData:acaData = buildingObj.ACA_data
@@ -374,6 +373,7 @@ def buildYardWall(buildingObj:bpy.types.Object):
                     wallHeight)),
             'loc': (0,0,wallHeight/2),
             'rot': (0,0,0),
+            'name': '院墙',
         }
         wallGroup.append(wallItem)
         # 四角不做剪切
@@ -386,6 +386,7 @@ def buildYardWall(buildingObj:bpy.types.Object):
                     wallHeight)),
             'loc': (0,-yardDeepth/2,wallHeight/2),
             'rot': (0,0,0),
+            'name': '南院墙',
         }
         wallGroup.append(wallItem)
         # 北墙
@@ -395,6 +396,7 @@ def buildYardWall(buildingObj:bpy.types.Object):
                     wallHeight)),
             'loc': (0,yardDeepth/2,wallHeight/2),
             'rot': (0,0,math.radians(180)),
+            'name': '北院墙',
         }
         wallGroup.append(wallItem)
         # 西墙
@@ -404,6 +406,7 @@ def buildYardWall(buildingObj:bpy.types.Object):
                     wallHeight)),
             'loc': (-yardWidth/2,0,wallHeight/2),
             'rot': (0,0,math.radians(270)),
+            'name': '西院墙',
         }
         wallGroup.append(wallItem)
         # 东墙
@@ -413,6 +416,7 @@ def buildYardWall(buildingObj:bpy.types.Object):
                     wallHeight)),
             'loc': (yardWidth/2,0,wallHeight/2),
             'rot': (0,0,math.radians(90)),
+            'name': '东院墙',
         }
         wallGroup.append(wallItem)
 
@@ -420,7 +424,7 @@ def buildYardWall(buildingObj:bpy.types.Object):
     for wallItem in wallGroup:        
         # 构造院墙proxy
         wallProxy = utils.addCube(
-            name='wallProxy',
+            name=wallItem['name'],
             dimension=wallItem['dim'],
             location=wallItem['loc'],
             rotation=wallItem['rot'],

@@ -517,7 +517,7 @@
 	<template>
 		<aca_type type="str">yard_wall</aca_type>
 		<template_name type="str">院墙.单面</template_name>
-		<DK type="float">0.05</DK>
+		<DK type="float">0.048</DK>
 		<is_showPlatform type="bool">True</is_showPlatform>
 		<is_showPillers type="bool">True</is_showPillers>
 		<is_showWalls type="bool">True</is_showWalls>
@@ -564,11 +564,24 @@
 		<tile_length type="float">0.31</tile_length>
 		<paoshou_count type="int">7</paoshou_count>
 		<is_4_sides type="bool">False</is_4_sides>
-		<yard_width type="float">40.0</yard_width>
+		<yard_width type="float">50.0</yard_width>
 		<yard_depth type="float">30.0</yard_depth>
 		<yardwall_height type="float">3.0</yardwall_height>
 		<yardwall_depth type="float">1.0</yardwall_depth>
 		<yardwall_angle type="float">30.0</yardwall_angle>
+		<is_showBeam type="bool">True</is_showBeam>
+		<step_net type="str" />
+		<x_total type="float">0.0</x_total>
+		<y_total type="float">0.0</y_total>
+		<wall_depth type="float">1.0</wall_depth>
+		<wall_span type="float">0.0</wall_span>
+		<dg_style type="str">0</dg_style>
+		<use_hallway type="bool">False</use_hallway>
+		<liangtou type="float">0.4</liangtou>
+		<shoushan type="float">2.0</shoushan>
+		<luding_rafterspan type="float">3.0</luding_rafterspan>
+		<tile_color type="str">0</tile_color>
+		<tile_alt_color type="str">0</tile_alt_color>
 	</template>
 	<template>
 		<aca_type type="str">yard_wall</aca_type>

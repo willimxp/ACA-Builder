@@ -3301,11 +3301,45 @@ def __buildShanWall(
 
     # 设置材质
     mat.setMat(shanWallObj,
-            aData.mat_rock)
+            aData.mat_brick_3)
+    
+    # 2、创建下碱对象
+    # 下碱一般取柱高度的1/3
+    bottomheight = bData.piller_height * con.WALL_BOTTOM_RATE
+    # 但最高不超过1.5m
+    if bottomheight > con.WALL_BOTTOM_LIMIT:
+        bottomheight = con.WALL_BOTTOM_LIMIT
+    # 下碱长度：通进深 + 墀头 + 下碱延伸
+    bottomLength = (
+        bData.y_total 
+        + con.SHANQIANG_EX*dk*2
+        + con.WALL_SHRINK*2
+    )
+    # 下碱宽度：山墙9DK+出碱
+    bottomWidth = (
+        con.SHANQIANG_WIDTH*dk
+        + con.WALL_SHRINK*2
+    )
+    bottomObj = utils.addCube(
+        name='下碱',
+        dimension=(bottomWidth,
+               bottomLength,
+               bottomheight),
+        location=(
+            bData.x_total/2+bottomWidth/2-con.WALL_SHRINK,
+            0,
+            bottomheight/2-tile_base),
+        parent=shanWallObj,
+    )
+    # 赋材质
+    mat.setMat(bottomObj,aData.mat_rock)
+
+    # 合并山墙和下碱
+    shanwallJoin = utils.joinObjects([shanWallObj,bottomObj])
     
     # 添加镜像
     utils.addModifierMirror(
-        object=shanWallObj,
+        object=shanwallJoin,
         mirrorObj=rafterRootObj,
         use_axis=(True,False,False)
     )

@@ -523,7 +523,14 @@ def __buildFang(buildingObj:bpy.types.Object):
         modBevel.segments=3
         fangPart.append(bigFangObj)
         # 241120 添加霸王拳
-        __buildFangBWQ(bigFangObj)
+        # 仅对四坡顶做霸王拳，硬山、悬山等不做霸王拳
+        if bData.roof_style in (
+            con.ROOF_WUDIAN,
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,
+            con.ROOF_LUDING,
+        ):
+            __buildFangBWQ(bigFangObj)
 
         # 是否需要做小额枋
         if bData.use_smallfang:

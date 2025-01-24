@@ -81,7 +81,7 @@ class ACA_PT_basic(bpy.types.Panel):
                 data=bpy.context.scene.ACA_data,
                 property='is_auto_rebuild',
                 toggle=True,
-                icon='PLAY',
+                icon='FILE_REFRESH',
                 text=''
             )
             col = row.column(align=True)

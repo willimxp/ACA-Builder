@@ -67,6 +67,12 @@ class ACA_OT_update_building(bpy.types.Operator):
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj == None:
+            utils.showMessageBox(
+                "此对象并非插件生成，或已经合并，无法操作。",
+                title="更新建筑",
+            )
+            return {'FINISHED'}
         buildingName = buildingObj.name
         # 更新新建筑
         timeStart = time.time()
@@ -90,6 +96,12 @@ class ACA_OT_del_building(bpy.types.Operator):
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj == None:
+            utils.showMessageBox(
+                "此对象并非插件生成，或已经合并，无法操作。",
+                title="删除建筑",
+            )
+            return {'FINISHED'}
         buildingName = buildingObj.name
         if buildingObj != None:
             from . import build
@@ -109,6 +121,12 @@ class ACA_OT_reset_floor(bpy.types.Operator):
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj == None:
+            utils.showMessageBox(
+                "此对象并非插件生成，或已经合并，无法操作。",
+                title="生成柱网",
+            )
+            return {'FINISHED'}
         if buildingObj != None:
             funproxy = partial(buildFloor.resetFloor,
                         buildingObj=buildingObj)
@@ -417,7 +435,13 @@ class ACA_OT_build_roof(bpy.types.Operator):
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj != None:
+        if buildingObj == None:
+            utils.showMessageBox(
+                "此对象并非插件生成，或已经合并，无法操作。",
+                title="生成屋顶",
+            )
+            return {'FINISHED'}
+        else:
             # 生成屋顶
             funproxy = partial(
                 buildRoof.buildRoof,
@@ -425,8 +449,6 @@ class ACA_OT_build_roof(bpy.types.Operator):
             result = utils.fastRun(funproxy)
             if 'FINISHED' in result:
                 self.report({'INFO'},"屋顶已重新营造！")
-        else:
-            self.report({'ERROR'},"找不到根节点！")
 
         return {'FINISHED'}
     
@@ -451,7 +473,11 @@ class ACA_OT_default_dk(bpy.types.Operator):
                 buildingObj=buildingObj)
             utils.fastRun(funproxy)
         else:
-            self.report({'ERROR'},"找不到根节点！")
+            utils.showMessageBox(
+                "此对象并非插件生成，或已经合并，无法操作。",
+                title="生成斗口",
+            )
+            return {'FINISHED'}
 
         return {'FINISHED'}
 
@@ -469,7 +495,11 @@ class ACA_OT_save_template(bpy.types.Operator):
             if 'FINISHED' in result:
                 self.report({'INFO'},"模版修改已保存。")
         else:
-            self.report({'ERROR'},"找不到根节点！")
+            utils.showMessageBox(
+                "此对象并非插件生成，或已经合并，无法操作。",
+                title="保存模版",
+            )
+            return {'FINISHED'}
 
         return {'FINISHED'}
     

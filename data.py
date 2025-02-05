@@ -59,10 +59,11 @@ def update_building(self, context:bpy.types.Context):
     
 # 更新建筑，但不重设柱网
 def reset_building(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
+    # 这里是重要修改，无论自动开关是否开启，都应该立即执行
+    # # 判断自动重建开关
+    # isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    # if not isRebuild:
+    #     return
 
     # 直接调用operator，并且调用invoke，弹出确认提示
     # https://docs.blender.org/api/current/bpy.types.Operator.html#invoke-function

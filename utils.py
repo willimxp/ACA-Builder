@@ -914,7 +914,8 @@ def addBisect(object:bpy.types.Object,
     )
     bpy.ops.mesh.select_all(action='DESELECT')
     bpy.ops.object.editmode_toggle()  
-    bpy.ops.object.shade_flat()
+    # 250124 之前这里将对象做了平面化，为什么？没有理解，先注释掉观察看看
+    # bpy.ops.object.shade_flat()
 
 # 寻找对象最外侧（远离原点）的面的中心点
 # 注意，返回的坐标基于root_obj为parent的local坐标系

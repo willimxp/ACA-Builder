@@ -658,6 +658,15 @@ def __addPlatformExpand(
         modBool.operation = 'UNION'
     # 应用boolean modifier
     utils.applyAllModifer(baseExpandObj)
+
+    # 散水优化，效果不佳，暂时弃用
+    # if type == 'sanshui':
+    #     utils.unionProject(
+    #         projectNormal=Vector((0,0,1)),
+    #         projectCenter=Vector((0,0,0)),
+    #         objectList=[baseExpandObj],
+    #         insetThickness=con.SANSHUI_WIDTH*dk)
+
     # 删除已被合并的踏跺扩展对象
     for stepExpandObj in stepExpandList:
         bpy.data.objects.remove(stepExpandObj)

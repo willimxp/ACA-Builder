@@ -1648,3 +1648,139 @@ def cleanDupMat():
             if part[2].isnumeric() and part[0] in mats:
                 slt.material = mats.get(part[0])
     return
+
+# 将点投影到平面上
+# param point: 点的坐标，格式为 (x0, y0, z0)
+# param plane_coeffs: 平面的系数，格式为 (A, B, C, D)
+# return: 投影点的坐标
+def project_point_to_plane(point, plane_coeffs):
+    x0, y0, z0 = point
+    A, B, C, D = plane_coeffs
+    
+    # 计算法向量的模的平方
+    normal_length_squared = A**2 + B**2 + C**2
+    
+    # 计算点到平面的距离
+    distance = (A * x0 + B * y0 + C * z0 + D) / normal_length_squared
+    
+    # 计算投影点的坐标
+    x_proj = x0 - distance * A
+    y_proj = y0 - distance * B
+    z_proj = z0 - distance * C
+
+    newPoint = Vector((x_proj,y_proj,z_proj))
+    
+    return newPoint
+
+# 将点按相对于参考点的极角排序
+# param points: 点的列表，每个点是一个元组 (x, y)
+# param reference_point: 参考点 (x0, y0)
+# return: 按极角排序后的点列表
+def polar_angle_sort(points, reference_point):
+    
+    # 计算每个点相对于参考点的极角
+    def calculate_angle(point):
+        x, y = point
+        x0, y0 = reference_point
+        return np.arctan2(y - y0, x - x0)
+    
+    # 按极角排序
+    sorted_points = sorted(points, key=calculate_angle)
+    return sorted_points
+
+
+# 根据距离阈值合并点
+# param points: 点的列表，每个点是一个元组 (x, y, z)
+# param threshold: 合并的距离阈值
+# return: 合并后的点列表
+def merge_points(points, threshold):
+    merged_points = []
+    for point in points:
+        merged = False
+        for i, merged_point in enumerate(merged_points):
+            # 计算当前点与已合并点的距离
+            distance = np.linalg.norm(np.array(point) - np.array(merged_point))
+            if distance < threshold:
+                # 如果距离小于阈值，则合并
+                merged_points[i] = tuple((np.array(point) + np.array(merged_point)) / 2)
+                merged = True
+                break
+        if not merged:
+            # 如果没有合并，则将当前点加入合并后的点列表
+            merged_points.append(point)
+    return merged_points
+
+# 将一组实体投影到一个平面，并返回组合的轮廓
+def unionProject(
+        name = 'projectObj',
+        projectNormal = Vector((0,0,1)),
+        projectCenter = Vector((0,0,0)),
+        objectList = [bpy.types.Object],
+        insetThickness = 0,
+):
+    # 定义投影面Ax+By+Cz+D=0
+    A,B,C = projectNormal
+    # 常量为向量与原点做点积
+    D = -projectNormal.dot(projectCenter)
+    plane_coeffs = (A,B,C,D)
+
+    # 收集实体的坐标点
+    vertices = []
+    
+    for obj in objectList:
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        for v in bm.verts:
+            # 复制点，避免bm.free后v失效
+            updateScene()
+            vWorld = obj.matrix_world @ v.co
+            vertices.append(vWorld.copy())
+        bm.free() 
+
+    # 投影到切面
+    vOnPlane = []
+    for v in vertices:
+        vNew = project_point_to_plane(
+            v,plane_coeffs)
+        v2D = ((vNew.x,vNew.y))
+        vOnPlane.append(v2D)
+
+    # 点清理
+    vMerged = merge_points(
+        points=vOnPlane,
+        threshold=0.001)
+
+    # 点排序
+    reference_point = (projectCenter.x,projectCenter.y)
+    vSorted = polar_angle_sort(vMerged,reference_point)
+
+    # 创建平面
+    bm = bmesh.new()
+    # 3D坐标转换
+    verts3D = []
+    for v in vSorted:
+        v3D = bm.verts.new(Vector((v[0],v[1],0)))
+        verts3D.append(v3D)
+    # 创建面
+    face = bm.faces.new((verts3D[:]))
+    # 创建内缩
+    bm.normal_update()  # 试了很多次，发现必须做这一步，否则无法内缩
+    if insetThickness != 0:
+        insetFaces=bmesh.ops.inset_region(
+            bm,
+            faces=bm.faces[:],
+            thickness=insetThickness,
+            depth=.0,
+            use_boundary=True,
+            use_even_offset=True,
+        )
+    # 新建mesh
+    mesh = bpy.data.meshes.new(name)
+    bm.to_mesh(mesh)
+    bm.free()
+    # 新建Object
+    projectObj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(projectObj) 
+
+
+    return

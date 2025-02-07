@@ -166,7 +166,7 @@ class ACA_Consts(object):
     FLYRAFTER_H = 1.5                       # 飞椽、方椽高(DK)
     FLYRAFTER_Y = 1.5                       # 飞椽、方椽厚(DK)
     WANGBAN_H = 0.5                         # 望板厚(DK)
-    LIKOUMU_H =  FLYRAFTER_H + WANGBAN_H    # 里口木高度(DK)，一飞椽+一望板
+    LIKOUMU_H =  1.8                        # 里口木高度(DK)，一飞椽+一望板，略作减少，以免穿模
     LIKOUMU_Y = FLYRAFTER_H                 # 里口木厚度(DK)
     # DALIANYAN_H = YUANCHUAN_D             # 大连檐(DK)，高同椽径
     DALIANYAN_H = YUANCHUAN_D*2             # 大连檐(DK)，叠加了“瓦口”高度（瓦口定义为1/2椽径或更高，见马炳坚书p179）

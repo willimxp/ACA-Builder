@@ -675,7 +675,7 @@ def delFang(buildingObj:bpy.types.Object,
 
     return
 
-# 计算收到廊间举架影响的柱子高度
+# 计算受到廊间举架影响的柱子高度
 # 根据pillerID在当前buildingObj中计算柱子高度
 # 檐柱用输入的柱高
 # 金柱根据是否做廊间举架，判断是否要自动升高

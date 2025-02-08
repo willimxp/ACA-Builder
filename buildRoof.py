@@ -1814,17 +1814,22 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object):
     # 斗栱平出
     if bData.use_dg:
         ex += bData.dg_extend
-    # 冲出，大连檐仅冲1椽
+    # 冲出
     ex += bData.chong * con.YUANCHUAN_D * dk
     # # 避让角梁，向内1/4角梁，见汤崇平书籍的p196
     # shift = - con.JIAOLIANG_Y/4*dk * math.sqrt(2)
-    # 延伸，以便后续做45度相交裁剪
-    shift = -con.JIAOLIANG_H*dk/2
-    pEnd_x = bData.x_total/2 + ex - shift
+    pEnd_x = bData.x_total/2 + ex
     pEnd_y = bData.y_total/2 + ex
     qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
     pEnd_z = dlyObj.location.z + qiqiao
     pEnd = Vector((pEnd_x,pEnd_y,pEnd_z))
+    # 微调曲线
+    shift = Vector((
+        con.JIAOLIANG_H*dk/2,   # 横向延伸，以便做45度相交裁剪
+        -0.5*dk,   # 防止与仔角梁头穿模
+        0.5*dk,   # 防止与翘飞椽穿模
+    ))
+    pEnd += shift
 
     # 4.绘制大连檐对象
     CurvePoints = utils.setEaveCurvePoint(pStart,pEnd)
@@ -2275,10 +2280,11 @@ def __buildCornerFlyrafter(
         # 计算相邻椽头间的撇向
         if n == 0:
             head_shear_direction = Vector((0,0,0))
-        elif n == 1:
-            head_shear_base = head_shear_direction
         else:
             head_shear_direction = cfrEnds[n] - cfrEnds[n-1] 
+        # 始终取0-1两根翘飞椽的夹角为基础，为后续椽头撇向做基准
+        if n == 1:
+            head_shear_base = head_shear_direction
         
         cfr_Obj = __drawCornerFlyrafterNew(
             cornerRafterObj = cornerRafterColl[n], # 对应的翼角椽对象

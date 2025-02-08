@@ -266,7 +266,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "斗口",
             default=0.0,
             min=0.016,
-            max=0.18,
+            max=0.16,
             step=0.01,
             precision=3,
             description="比例模数(m)，清官式常用0.08(二寸半)、0.096(三寸)等",

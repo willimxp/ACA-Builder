@@ -191,7 +191,7 @@ def __updateAssetStyle(buildingObj:bpy.types.Object,
             if styleKey in bData:
                 # styleValue为了样式下拉框能自动选中，
                 # 在载入样式时自动转为了int，这里要转为str与xml比较
-                styleValue = bData[styleKey]   
+                styleValue = int(bData[styleKey])
                 # 查找“item”子节点
                 items = assetNode.findall('item')
                 for n,item in enumerate(items):

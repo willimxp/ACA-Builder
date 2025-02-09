@@ -217,12 +217,13 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 但最高不超过1.5m
     if height > con.WALL_BOTTOM_LIMIT:
         height = con.WALL_BOTTOM_LIMIT
+    heightOffset = 0.02
     bottomObj = utils.drawHexagon(
         name='下碱',
         dimensions=Vector((wallLength,
                wallDeepth,
                height)),
-        location=Vector((0,0,height/2)),
+        location=Vector((0,0,height/2-heightOffset)),
         parent=wallProxy,
     )
     # 赋材质
@@ -232,7 +233,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 2、创建上身对象
     extrudeHeight = wallHeight/10
     bodyObj = utils.drawHexagon(
-        name='上身',
+        name='墙体',
         dimensions=Vector((wallLength-bodyShrink*2,
                wallDeepth-bodyShrink*2,
                wallHeight-extrudeHeight)),
@@ -263,13 +264,21 @@ def __drawWall(wallProxy:bpy.types.Object):
     wallParts.append(bodyObj)
     
     # 合并
-    wallObj = utils.joinObjects(wallParts,'墙体')
+    # wallObj = utils.joinObjects(wallParts,'墙体')
+    modBool:bpy.types.BooleanModifier = \
+            bodyObj.modifiers.new('合并','BOOLEAN')
+    modBool.object = bottomObj
+    modBool.solver = 'EXACT'
+    modBool.operation = 'UNION'
+    modBool.material_mode = 'TRANSFER'
+    utils.applyAllModifer(bodyObj)
+    utils.delObject(bottomObj)
     # 导角
     modBevel:bpy.types.BevelModifier = \
-        wallObj.modifiers.new('Bevel','BEVEL')
+        bodyObj.modifiers.new('Bevel','BEVEL')
     modBevel.width = con.BEVEL_HIGH
 
-    return wallObj
+    return bodyObj
 
 # 个性化设置一个墙体
 # 传入wallproxy

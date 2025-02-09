@@ -1032,7 +1032,9 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     # 250110 重展UV
     # 实际在__setTile中已经做了setGlazeStyle，但仅基于单个瓦片
     # 将active_material落在筒板瓦的瓦面上
-    tileSet.active_material_index = int(bData.tile_color)
+    # 250209 注意，瓦面同时使用琉璃和瓦当两个材质
+    # 所以计算active material时，需要乘2
+    tileSet.active_material_index = int(bData.tile_color)*2
     # 这里在modifier的平铺范围上做全局的UV平铺
     mat.setGlazeUV(tileSet)
 

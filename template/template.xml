@@ -39,7 +39,7 @@
 		<shengqi type="IntProperty">1</shengqi>
 		<tile_width type="FloatProperty">0.387</tile_width>
 		<tile_length type="FloatProperty">0.5</tile_length>
-		<paoshou_count type="IntProperty">7</paoshou_count>
+		<paoshou_count type="IntProperty">5</paoshou_count>
 		<aca_type type="StringProperty">building</aca_type>
 		<is_showPlatform type="BoolProperty">True</is_showPlatform>
 		<is_showPillers type="BoolProperty">True</is_showPillers>
@@ -66,7 +66,7 @@
 		<y_total type="FloatProperty">10.56</y_total>
 		<dg_style type="EnumProperty">0</dg_style>
 		<liangtou type="FloatProperty">0.4</liangtou>
-		<tile_color type="EnumProperty">1</tile_color>
+		<tile_color type="EnumProperty">0</tile_color>
 		<tile_alt_color type="EnumProperty">1</tile_alt_color>
 	</template>
 	<template>

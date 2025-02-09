@@ -468,7 +468,7 @@ def delWall(buildingObj:bpy.types.Object,
 # 因为墙体数量产生了变化，重新生成所有墙体
 # 用户的个性化设置丢失
 # 按照默认设计参数生成
-# todo：后续可以按照模版中的设置生成（包含预设的个性化设置）
+# todo：后续可以按照模板中的设置生成（包含预设的个性化设置）
 def buildWallLayout(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
@@ -490,7 +490,7 @@ def buildWallLayout(buildingObj:bpy.types.Object):
     # 一、批量生成wallproxy
     # 计算布局数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
-    # 解析模版输入的墙体设置，格式如下
+    # 解析模板输入的墙体设置，格式如下
     # "wall#3/0#3/3,wall#0/0#3/0,wall#0/3#3/3,window#0/0#0/1,window#0/2#0/3,door#0/1#0/2,"
     wallSetting = bData.wall_net
     wallList = wallSetting.split(',')

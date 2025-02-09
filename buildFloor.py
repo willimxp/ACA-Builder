@@ -18,7 +18,7 @@ from . import buildWall
 from . import buildPlatform
 from . import buildRoof
 
-# 添加建筑empty根节点，并绑定设计模版
+# 添加建筑empty根节点，并绑定设计模板
 # 返回建筑empty根节点对象
 # 被ACA_OT_add_newbuilding类调用
 def __addBuildingRoot(templateName):
@@ -292,7 +292,7 @@ def __buildQueti(fangObj):
     if pFrom_y == pTo_y and pFrom_y in (0,len(net_y)-1):
         isQueti = True
     # 是否有装修（槛墙、隔扇、槛窗等）
-    # 解析模版输入的墙体设置，格式如下
+    # 解析模板输入的墙体设置，格式如下
     # "wall#3/0#3/3,wall#0/0#3/0,wall#0/3#3/3,window#0/0#0/1,window#0/2#0/3,door#0/1#0/2,"
     wallSetting = bData.wall_net
     wallStr = __getWallRange(wallSetting)
@@ -441,7 +441,7 @@ def __buildFang(buildingObj:bpy.types.Object):
                 # 连带小额枋、垫板子对象
                 utils.deleteHierarchy(obj,del_parent=True)
     
-    # 根据建筑模版的参数设置分布
+    # 根据建筑模板的参数设置分布
     # '0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,'
     fangStr = bData.fang_net
     fangID_List = fangStr.split(',')
@@ -796,7 +796,7 @@ def buildPillers(buildingObj:bpy.types.Object):
         # 清空地盘下所有的柱子、柱础
         utils.deleteHierarchy(floorRootObj)
 
-    # 2、生成柱顶石模版，因为是简单立方体，就不做模版导入了
+    # 2、生成柱顶石模板，因为是简单立方体，就不做模板导入了
     pillerBase_h = 0.3
     pillerBase_popup = 0.02
     # 柱顶石边长（为了防止与方砖缦地交叠，做了1/10000的放大）
@@ -878,7 +878,7 @@ def buildPillers(buildingObj:bpy.types.Object):
                 parentObj=newPillerObj
             )
 
-    # 移除柱顶石模版    
+    # 移除柱顶石模板    
     bpy.data.objects.remove(pillerBottom_basemesh)
 
     # 重新生成柱网配置
@@ -995,11 +995,11 @@ def buildFloor(buildingObj:bpy.types.Object):
     # 新建还是刷新？
     if buildingObj == None:
         utils.outputMsg("创建新建筑...")
-        # 获取panel上选择的模版
+        # 获取panel上选择的模板
         templateName = bpy.context.scene.ACA_data.template
-        # 添加建筑根节点，同时载入模版
+        # 添加建筑根节点，同时载入模板
         buildingObj = __addBuildingRoot(templateName)
-        # 在buldingObj上绑定模版bData和资产库aData
+        # 在buldingObj上绑定模板bData和资产库aData
         template.loadTemplate(buildingObj)
     else:
         # 简单粗暴的全部删除

@@ -1,7 +1,7 @@
 # 作者：willimxp
 # 所属插件：ACA Builder
 # 功能概述：
-#   管理模版
+#   管理模板
 import bpy
 import pathlib
 import xml.etree.ElementTree as ET
@@ -25,7 +25,7 @@ def __getPath(fileName):
     srcPath = USER / "scripts/addons" / addonName / templateFolder / fileName
     return str(srcPath)
 
-# 解析XML，获取模版列表
+# 解析XML，获取模板列表
 def getTemplateList(onlyname=False):
     # 载入XML
     # 这个结果打包发布后出现错误，改为绝对路径
@@ -48,7 +48,7 @@ def getTemplateList(onlyname=False):
             
     return template_list
 
-# 根据选择的模版，获取模版类型（房屋、院墙）
+# 根据选择的模板，获取模板类型（房屋、院墙）
 def getBuildingType(templateName):
     # 载入XML
     # 这个结果打包发布后出现错误，改为绝对路径
@@ -58,7 +58,7 @@ def getBuildingType(templateName):
     root = tree.getroot()
     templates = root.findall('template')
 
-    # 有些模版没有这个类型值，默认置为普通building
+    # 有些模板没有这个类型值，默认置为普通building
     typeName = con.ACA_TYPE_BUILDING
 
     template_list = []
@@ -116,7 +116,7 @@ def updateDougongData(buildingObj:bpy.types.Object):
     dgrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_DG_ROOT)
     
-    # 1、根据斗栱样式，更新对应斗栱资产模版
+    # 1、根据斗栱样式，更新对应斗栱资产模板
     # 1.1、验证斗栱样式非空，否则默认取第一个
     if 'dg_style' not in bData:
         bData['dg_style'] = '0'
@@ -295,7 +295,7 @@ def __loadDefaultData(buildingObj:bpy.types.Object):
     return bData
 
 # 填充资产对象的引用aData
-# aData中仅为对模版xx.blend文件中对象的引用
+# aData中仅为对模板xx.blend文件中对象的引用
 # aData根据bData中定义的dgStyle等属性的不同而动态改变
 # aData绑定在Blender的Scene场景中，未做建筑间隔离
 # 在更新斗栱时，修改了aData中涉及斗栱的属性
@@ -304,7 +304,7 @@ def loadAssetByBuilding(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     aData : tmpData = bpy.context.scene.ACA_temp
 
-    # 解析XML配置模版
+    # 解析XML配置模板
     path = __getPath(assetsFileName)
     tree = ET.parse(path)
     root = tree.getroot()
@@ -314,8 +314,8 @@ def loadAssetByBuilding(buildingObj:bpy.types.Object):
         tag = node.tag
         type = node.attrib['type']
         value = node.text
-        # 静态的模版对象声明为Object
-        # 动态的模版对象声明为List，
+        # 静态的模板对象声明为Object
+        # 动态的模板对象声明为List，
         # 不在这里处理，而拆分到类似updateDougongData的定制方法中处理
         if type == 'Object':
             # 241224 为了解决以下报错，做的安全性验证
@@ -333,30 +333,30 @@ def loadAssetByBuilding(buildingObj:bpy.types.Object):
     
     return
 
-# 载入模版
+# 载入模板
 # 直接将XML填充入bData
 # 注意，所有的属性都为选填，所以要做好空值的检查
 def loadTemplate(buildingObj:bpy.types.Object):
-    # 解析XML配置模版
+    # 解析XML配置模板
     path = __getPath(xmlFileName)
     tree = ET.parse(path)
     root = tree.getroot()
     templates = root.findall('template')
     if templates == None:
-        utils.outputMsg("模版解析失败")
+        utils.outputMsg("模板解析失败")
         return
     
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     templateName = bData.template_name
     
-    # 在XML中查找对应名称的那个模版
+    # 在XML中查找对应名称的那个模板
     for template in templates:
         nameNode = template.find('template_name')
         if nameNode != None:
             if nameNode.text == templateName:
                 # 初始化bData默认值，根据DK/PD实时刷新一次
-                # 模版名称
+                # 模板名称
                 bData['template_name'] = nameNode.text
                 # 斗口
                 dk = template.find('dk')
@@ -375,7 +375,7 @@ def loadTemplate(buildingObj:bpy.types.Object):
                     type = node.attrib['type']
                     value = node.text
                     # 类型转换
-                    # 20250209 老版本的模版通过数据类型进行判断
+                    # 20250209 老版本的模板通过数据类型进行判断
                     if type == 'str':
                         # 特殊处理下拉框
                         if tag in ('roof_style',
@@ -395,7 +395,7 @@ def loadTemplate(buildingObj:bpy.types.Object):
                             bData[tag] = True
                         if value == 'False':
                             bData[tag] = False
-                    # 20250209 新版本的模版通过bdata数据属性进行判断
+                    # 20250209 新版本的模板通过bdata数据属性进行判断
                     elif type =='StringProperty':
                         bData[tag] = value
                     elif type == 'IntProperty':
@@ -418,11 +418,11 @@ def loadTemplate(buildingObj:bpy.types.Object):
     
     return
 
-# 保存模版修改
+# 保存模板修改
 def saveTemplate(buildingObj:bpy.types.Object):
     # 载入输入
     bData:acaData = buildingObj.ACA_data
-    # 模版名称取当前建筑的名称
+    # 模板名称取当前建筑的名称
     templateName = buildingObj.name
 
     # 忽略处理的节点
@@ -436,26 +436,26 @@ def saveTemplate(buildingObj:bpy.types.Object):
         'dg_scale',
     }
     
-    # 解析XML配置模版
+    # 解析XML配置模板
     path = __getPath(xmlFileName)
     tree = ET.parse(path)
     root = tree.getroot()   # <templates>根节点
     # 验证根节点
     templateNodeList = root.findall('template')
     if templateNodeList == None:
-        utils.outputMsg("模版解析失败")
+        utils.outputMsg("模板解析失败")
         return
     
-    # 遍历查找对应模版
+    # 遍历查找对应模板
     isNewTemplate = True
     for templateNode in templateNodeList:
         nameNode = templateNode.find('template_name')
         if nameNode != None:
             if nameNode.text == templateName:
-                # 找到对应模版
+                # 找到对应模板
                 isNewTemplate = False
                 break
-    # 如果没有找到，则新建模版节点
+    # 如果没有找到，则新建模板节点
     if isNewTemplate:
         templateNode = ET.SubElement(root,'template')
 
@@ -472,7 +472,7 @@ def saveTemplate(buildingObj:bpy.types.Object):
         # 数据验证和预处理
         # 忽略无需保存的键值
         if key in ignoreKeys: continue
-        # 以当前建筑名称覆盖模版名称
+        # 以当前建筑名称覆盖模板名称
         if key == 'template_name':
             value = templateName
         # 浮点数取3位精度
@@ -500,25 +500,25 @@ def saveTemplate(buildingObj:bpy.types.Object):
     # 保存
     tree.write(path, encoding='UTF-8',xml_declaration=True)
 
-    # 刷新panel的模版列表
+    # 刷新panel的模板列表
     bpy.context.scene.ACA_data.template = templateName
 
     return {'FINISHED'}
 
-# 删除模版
+# 删除模板
 def delTemplate():
-    # 解析XML配置模版
+    # 解析XML配置模板
     path = __getPath(xmlFileName)
     tree = ET.parse(path)
     root = tree.getroot()   # <templates>根节点
     # 验证根节点
     templateNodeList = root.findall('template')
     if templateNodeList == None:
-        utils.outputMsg("模版解析失败")
+        utils.outputMsg("模板解析失败")
         return
     
-    # 遍历查找对应模版
-    # 模版名称取panel上选择的模版
+    # 遍历查找对应模板
+    # 模板名称取panel上选择的模板
     templateName = bpy.context.scene.ACA_data.template
     bFind = False
     nextTemplateName = ''
@@ -533,7 +533,7 @@ def delTemplate():
                     preTemplateName = nameNode.text
                 else:
                     # 如果找到了对应名称
-                    # 删除模版
+                    # 删除模板
                     root.remove(templateNode)
                     # 更新标志位，进入下一次循环
                     # 以便填充nextTemplateName
@@ -549,7 +549,7 @@ def delTemplate():
     # 保存
     tree.write(path, encoding='UTF-8',xml_declaration=True)
 
-    # 刷新panel的模版列表
+    # 刷新panel的模板列表
     if nextTemplateName != '':
         # 优先绑定下一个选项
         bpy.context.scene.ACA_data.template = nextTemplateName

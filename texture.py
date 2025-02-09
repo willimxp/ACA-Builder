@@ -666,7 +666,7 @@ def __setTuanHead(tuan:bpy.types.Object):
 # 按照箍头、公母草贴图的XY比例，计算公母草的横向平铺次数
 def __setYOUE(youeObj:bpy.types.Object,
               mat:bpy.types.Object):
-    # 使用垫板模版替换原对象
+    # 使用垫板模板替换原对象
     youeNewObj = utils.copyObject(mat,singleUser=True)
     utils.replaceObject(youeObj,youeNewObj,delete=True)
     
@@ -675,7 +675,7 @@ def __setYOUE(youeObj:bpy.types.Object,
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='DESELECT')
     # 选择中段中段控制采用了对象的vertex group
-    vertex_group_name = 'body'  # 在模版中预定义的vertex group名称
+    vertex_group_name = 'body'  # 在模板中预定义的vertex group名称
     youeNewObj.vertex_groups.active = \
         youeNewObj.vertex_groups[vertex_group_name]
     bpy.ops.object.vertex_group_select()
@@ -695,7 +695,7 @@ def __setYOUE(youeObj:bpy.types.Object,
     
     # 5、中段的UV缩放
     b = 1.737       # 中段长度
-    c = 3           # 模版中的默认重复次数
+    c = 3           # 模板中的默认重复次数
     scale = round(x2/b)/c
     uvMap = youeNewObj.data.uv_layers['UVMap']
     # 这里用fixcenter的方式，避免影响箍头的uv（箍头UV预定义为满铺）

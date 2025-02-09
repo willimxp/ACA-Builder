@@ -7,6 +7,7 @@ import bpy
 from . import data
 from .const import ACA_Consts as con
 from . import utils
+from . import build
 
 # 营造向导面板
 class ACA_PT_basic(bpy.types.Panel):
@@ -16,38 +17,41 @@ class ACA_PT_basic(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示 
     
     # 自定义属性
-    bl_category = "古建营造"         # 标签页名称
-    bl_label = "营造向导"            # 面板名称，显示为可折叠的箭头后
+    bl_category = "筑韵古建"         # 标签页名称
+    bl_label = "筑韵古建"            # 面板名称，显示为可折叠的箭头后
     
     def draw(self, context):
         layout = self.layout
         
-        # 模版属性================
+        # 模板属性================
         # 从当前场景中载入数据集
         scnData : data.ACA_data_scene = context.scene.ACA_data
         box = layout.box()
         # 模板选择列表
         droplistTemplate = box.column(align=True)
         droplistTemplate.prop(scnData, "template",text='')
+
         toolBox = box.column(align=True)
+        # 生成新建筑
+        toolBar = toolBox.grid_flow(columns=1, align=True) 
+        buttonAddnew = toolBar.column(align=True)
+        buttonAddnew.operator(
+            "aca.add_newbuilding",icon='PLAY',
+            depress=True,text='从模板生成新建筑'
+            )
+        
         toolBar = toolBox.grid_flow(columns=2, align=True)
-        # 保存模版
+        # 保存模板
         col = toolBar.column(align=True)
         col.operator(
             "aca.save_template",icon='FILE_TICK',
             text='保存模板')
-        # 删除模版
+        # 删除模板
         col = toolBar.column(align=True)
         col.operator(
             "aca.del_template",icon='TRASH',
             text='删除模板')
-        toolBar = toolBox.grid_flow(columns=1, align=True)
-        # 生成新建筑        
-        buttonAddnew = toolBar.column(align=True)
-        buttonAddnew.operator(
-            "aca.add_newbuilding",icon='PLAY',
-            depress=True,text='添加新建筑'
-            )
+        
         
         # 实例属性==============
         if context.object != None:
@@ -63,52 +67,61 @@ class ACA_PT_basic(bpy.types.Panel):
             col.operator("aca.focus_building",icon='FILE_PARENT')
             if objData.aca_type == con.ACA_TYPE_BUILDING:
                 col.enabled = False
-            # 斗口值
-            if bData!= None:
+
+            # 运行中提示
+            if not build.isFinished:
+                row = layout.row()
+                row.label(text='正在生成中... ...',icon='INFO')
+                row = layout.row()
+                row.label(text='一般需要20~80秒左右，请耐心等待。')
+            else:
+                # 斗口值
+                if bData!= None:
+                    row = box.row(align=True)
+                    col = row.column(align=True)
+                    col.prop(bData,'DK')
+                    # 计算默认斗口值
+                    col = row.column(align=True)
+                    col.operator("aca.default_dk",icon='SHADERFX',text='')
+
+                # 更新建筑
                 row = box.row(align=True)
+                # 自动更新
                 col = row.column(align=True)
-                col.prop(bData,'DK')
-                # 计算默认斗口值
+                col.prop(
+                    data=bpy.context.scene.ACA_data,
+                    property='is_auto_rebuild',
+                    toggle=True,
+                    icon='FILE_REFRESH',
+                    text=''
+                )
                 col = row.column(align=True)
-                col.operator("aca.default_dk",icon='SHADERFX',text='')
+                col.operator(
+                    "aca.update_building",
+                    depress=True,text='更新建筑'
+                )
+                #row = box.row(align=True)
+                col = row.column(align=True)
+                col.operator(
+                    "aca.del_building",icon='TRASH',
+                    text='删除建筑'
+                )
+                
+                # 导出功能
+                box = layout.box()
+                toolBox = box.column(align=True)
+                # 合并按钮
+                toolBar = toolBox.grid_flow(columns=1, align=True)
+                col = toolBar.column(align=True)
+                col.operator("aca.join",icon='PACKAGE')
+                # 导出按钮
+                toolBar = toolBox.grid_flow(columns=2, align=True)
+                col = toolBar.column(align=True)
+                col.operator("aca.export_fbx",icon='EXPORT')
+                col = toolBar.column(align=True)
+                col.operator("aca.export_glb",icon='EXPORT')
+            return   
 
-            
-            # 更新建筑
-            row = box.row(align=True)
-            # 自动更新
-            col = row.column(align=True)
-            col.prop(
-                data=bpy.context.scene.ACA_data,
-                property='is_auto_rebuild',
-                toggle=True,
-                icon='FILE_REFRESH',
-                text=''
-            )
-            col = row.column(align=True)
-            col.operator(
-                "aca.update_building",
-                depress=True,text='更新建筑'
-            )
-            #row = box.row(align=True)
-            col = row.column(align=True)
-            col.operator(
-                "aca.del_building",icon='TRASH',
-                text='删除建筑'
-            )
-
-            # 导出功能
-            box = layout.box()
-            toolBox = box.column(align=True)
-            # 合并按钮
-            toolBar = toolBox.grid_flow(columns=1, align=True)
-            col = toolBar.column(align=True)
-            col.operator("aca.join",icon='PACKAGE')
-            # 导出按钮
-            toolBar = toolBox.grid_flow(columns=2, align=True)
-            col = toolBar.column(align=True)
-            col.operator("aca.export_fbx",icon='EXPORT')
-            col = toolBar.column(align=True)
-            col.operator("aca.export_glb",icon='EXPORT')
         
         # 性能分析按钮
         # row = layout.row()
@@ -128,9 +141,22 @@ class ACA_PT_props(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "古建营造"         # 标签页名称
+    bl_category = "筑韵古建"         # 标签页名称
     bl_label = "屋身参数"            # 面板名称，显示为可折叠的箭头后
 
+    @classmethod 
+    def poll(self, context):
+        isAcaObj = False
+        # 从当前场景中载入数据集
+        if context.object != None:
+            # 追溯全局属性
+            buildingObj,bData,objData = utils.getRoot(context.object)
+            if buildingObj != None: 
+                if bData.aca_type == con.ACA_TYPE_BUILDING:
+                    isAcaObj = True
+        if isAcaObj and build.isFinished:
+            return True
+    
     def draw(self, context):
         # 从当前场景中载入数据集
         if context.object != None:
@@ -155,7 +181,7 @@ class ACA_PT_platform(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "古建营造"             # 标签页名称
+    bl_category = "筑韵古建"             # 标签页名称
     bl_label = ""                       # 面板名称，已替换为draw_header实现
     bl_parent_id = "ACA_PT_props"       # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
@@ -219,7 +245,7 @@ class ACA_PT_pillers(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "古建营造"             # 标签页名称
+    bl_category = "筑韵古建"             # 标签页名称
     bl_label = ""                       # 面板名称，已替换为draw_header实现
     bl_parent_id = "ACA_PT_props"       # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
@@ -302,7 +328,7 @@ class ACA_PT_wall(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "古建营造"             # 标签页名称
+    bl_category = "筑韵古建"             # 标签页名称
     bl_label = ""                       # 面板名称，已替换为draw_header实现
     bl_parent_id = "ACA_PT_props"       # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
@@ -478,9 +504,22 @@ class ACA_PT_roof_props(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "古建营造"         # 标签页名称
+    bl_category = "筑韵古建"         # 标签页名称
     bl_label = "屋顶参数"            # 面板名称，显示为可折叠的箭头后
 
+    @classmethod 
+    def poll(self, context):
+        isAcaObj = False
+        # 从当前场景中载入数据集
+        if context.object != None:
+            # 追溯全局属性
+            buildingObj,bData,objData = utils.getRoot(context.object)
+            if buildingObj != None: 
+                if bData.aca_type == con.ACA_TYPE_BUILDING:
+                    isAcaObj = True
+        if isAcaObj and build.isFinished:
+            return True
+            
     def draw(self, context):
         # 从当前场景中载入数据集
         if context.object != None:
@@ -517,7 +556,7 @@ class ACA_PT_dougong(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "古建营造"             # 标签页名称
+    bl_category = "筑韵古建"             # 标签页名称
     bl_label = ""                       # 面板名称，已替换为draw_header实现
     bl_parent_id = "ACA_PT_roof_props"  # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
@@ -611,7 +650,7 @@ class ACA_PT_beam(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "古建营造"             # 标签页名称
+    bl_category = "筑韵古建"             # 标签页名称
     bl_parent_id = "ACA_PT_roof_props"  # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
     bl_label = ""                       # 面板名称，已替换为draw_header实现
@@ -721,7 +760,7 @@ class ACA_PT_rafter(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "古建营造"             # 标签页名称
+    bl_category = "筑韵古建"             # 标签页名称
     bl_parent_id = "ACA_PT_roof_props"  # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
     bl_label = ""                       # 面板名称，已替换为draw_header实现
@@ -823,7 +862,7 @@ class ACA_PT_tiles(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "古建营造"             # 标签页名称
+    bl_category = "筑韵古建"             # 标签页名称
     bl_parent_id = "ACA_PT_roof_props"  # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
     bl_label = ""                       # 面板名称，已替换为draw_header实现
@@ -881,10 +920,23 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "古建营造"         # 标签页名称
+    bl_category = "筑韵古建"         # 标签页名称
     bl_label = "院墙参数"            # 面板名称，显示为可折叠的箭头后
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
-
+    
+    @classmethod 
+    def poll(self, context):
+        isAcaObj = False
+        # 从当前场景中载入数据集
+        if context.object != None:
+            # 追溯全局属性
+            buildingObj,bData,objData = utils.getRoot(context.object)
+            if buildingObj != None: 
+                if bData.aca_type == con.ACA_TYPE_YARDWALL:
+                    isAcaObj = True
+        if isAcaObj and build.isFinished:
+            return True
+            
     def draw(self, context):
         # 从当前场景中载入数据集
         if context.object != None:

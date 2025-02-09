@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <templates>
 	<template>
-		<template_name type="StringProperty">示例模版</template_name>
+		<template_name type="StringProperty">示例模板</template_name>
 		<DK type="FloatProperty">0.08</DK>
 		<platform_height type="FloatProperty">1.0</platform_height>
 		<platform_extend type="FloatProperty">1.08</platform_extend>
@@ -67,7 +67,7 @@
 		<dg_style type="EnumProperty">0</dg_style>
 		<liangtou type="FloatProperty">0.4</liangtou>
 		<tile_color type="EnumProperty">0</tile_color>
-		<tile_alt_color type="EnumProperty">1</tile_alt_color>
+		<tile_alt_color type="EnumProperty">0</tile_alt_color>
 	</template>
 	<template>
 		<template_name type="str">九檩单檐庑殿周围廊</template_name>
@@ -457,7 +457,7 @@
 		<paoshou_count type="int">7</paoshou_count>
 	</template>
 	<template>
-		<template_name type="str">空白模版</template_name>
+		<template_name type="str">空白模板</template_name>
 		<DK type="float">0.05</DK>
 		<is_showPlatform type="bool">True</is_showPlatform>
 		<is_showPillers type="bool">True</is_showPillers>

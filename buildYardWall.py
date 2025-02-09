@@ -14,7 +14,7 @@ from . import utils
 from . import template
 from . import texture as mat
 
-# 添加建筑empty根节点，并绑定设计模版
+# 添加建筑empty根节点，并绑定设计模板
 # 返回建筑empty根节点对象
 # 被ACA_OT_add_newbuilding类调用
 def __addBuildingRoot(templateName):
@@ -267,7 +267,7 @@ def buildSingleWall(
         parentObj=wallProxy,
         singleUser=True)
     walleaveWidth = walleaveObj.dimensions.x
-    # 墙檐宽度默认按1米厚度制作的模版asset，这里根据墙厚度缩放
+    # 墙檐宽度默认按1米厚度制作的模板asset，这里根据墙厚度缩放
     walleaveObj.scale.y = bData.yardwall_depth
     # 墙檐定位，从墙顶部，下移一个瓦当取斜，再下移一个墙檐
     eaveTileOffset = (
@@ -335,11 +335,11 @@ def buildYardWall(buildingObj:bpy.types.Object):
     # 新建还是刷新？
     if buildingObj == None:
         utils.outputMsg("创建新建筑...")
-        # 获取panel上选择的模版
+        # 获取panel上选择的模板
         templateName = bpy.context.scene.ACA_data.template
-        # 添加建筑根节点，同时载入模版
+        # 添加建筑根节点，同时载入模板
         buildingObj = __addBuildingRoot(templateName)
-        # 在buldingObj上绑定模版bData和资产库aData
+        # 在buldingObj上绑定模板bData和资产库aData
         template.loadTemplate(buildingObj)
     else:
         # 简单粗暴的全部删除

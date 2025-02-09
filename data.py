@@ -260,7 +260,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = '对象类型',
         ) # type: ignore
     template_name : bpy.props.StringProperty(
-            name = '模版名称'
+            name = '模板名称'
         ) #type: ignore
     DK: bpy.props.FloatProperty(
             name = "斗口",
@@ -504,7 +504,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     dg_extend : bpy.props.FloatProperty(
             name="斗栱挑檐",    # 令拱出跳距离
             default=0.45,
-            description = "斗栱出跳由斗栱模版预先定义，不可修改",
+            description = "斗栱出跳由斗栱模板预先定义，不可修改",
             min=0.01,
             precision=3,
         )# type: ignore 
@@ -736,13 +736,13 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             name = "是否实时重建"
         ) # type: ignore
     template : bpy.props.EnumProperty(
-            name = "模版列表",
+            name = "模板列表",
             description = "模板列表",
             items = getTemplateList,
             options = {"ANIMATABLE"},
         ) # type: ignore
 
-# 全局共用的模版信息，各个建筑都进行引用
+# 全局共用的模板信息，各个建筑都进行引用
 # 包括资产库资产引用等    
 class ACA_data_template(bpy.types.PropertyGroup):
     # 材质对象

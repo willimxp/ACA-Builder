@@ -40,7 +40,7 @@ class ACA_OT_add_building(bpy.types.Operator):
     bl_idname="aca.add_newbuilding"
     bl_label = "添加新建筑"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '根据选择的模版，自动生成建筑的各个构件'
+    bl_description = '根据选择的模板，自动生成建筑的各个构件'
 
     def execute(self, context):  
         timeStart = time.time()
@@ -481,11 +481,11 @@ class ACA_OT_default_dk(bpy.types.Operator):
 
         return {'FINISHED'}
 
-# 保存模版
+# 保存模板
 class ACA_OT_save_template(bpy.types.Operator):
     bl_idname="aca.save_template"
-    bl_label = "保存模版修改"
-    bl_description = '将当前选中的建筑参数保存为模版，以便重复生成'
+    bl_label = "保存模板修改"
+    bl_description = '将当前选中的建筑参数保存为模板，以便重复生成'
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -493,21 +493,21 @@ class ACA_OT_save_template(bpy.types.Operator):
             from . import template
             result = template.saveTemplate(buildingObj)
             if 'FINISHED' in result:
-                self.report({'INFO'},"模版修改已保存。")
+                self.report({'INFO'},"模板修改已保存。")
         else:
             utils.showMessageBox(
                 "此对象并非插件生成，或已经合并，无法操作。",
-                title="保存模版",
+                title="保存模板",
             )
             return {'FINISHED'}
 
         return {'FINISHED'}
     
-# 删除模版
+# 删除模板
 class ACA_OT_del_template(bpy.types.Operator):
     bl_idname="aca.del_template"
-    bl_label = "删除模版"
-    bl_description = '从配置文件中删除当前模版'
+    bl_label = "删除模板"
+    bl_description = '从配置文件中删除当前模板'
 
     @classmethod
     def poll(cls, context):
@@ -517,7 +517,7 @@ class ACA_OT_del_template(bpy.types.Operator):
         from . import template
         result = template.delTemplate()
         if 'FINISHED' in result:
-            self.report({'INFO'},"模版已删除。")
+            self.report({'INFO'},"模板已删除。")
 
         return {'FINISHED'}
     
@@ -528,7 +528,7 @@ class ACA_OT_del_template(bpy.types.Operator):
         # https://docs.blender.org/api/current/bpy.types.WindowManager.html#bpy.types.WindowManager.invoke_props_dialog
         return context.window_manager.invoke_props_dialog(
             operator = self,
-            title="删除模版"      # 如果为空，自动取bl_label
+            title="删除模板"      # 如果为空，自动取bl_label
             )
 
     def draw(self, context):
@@ -613,7 +613,7 @@ class ACA_OT_Show_Message_Box(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self, width = 400)
  
     def draw(self, context):
-        panelTitle = "ACA Blender Addon"
+        panelTitle = "ACA筑韵古建"
         self.layout.label(text=panelTitle)
         message_list = self.message.split("|")
         for li in message_list:

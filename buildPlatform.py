@@ -231,7 +231,7 @@ def __buildSteps(baseRootObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     stepObjList = []
 
-    # 解析模版输入的踏跺设置，格式如下
+    # 解析模板输入的踏跺设置，格式如下
     # "3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
     stepStr = bData.step_net
     stepList = stepStr.split(',')

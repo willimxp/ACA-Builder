@@ -23,7 +23,7 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
-    # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
+    # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     # 收集扇心对象
@@ -130,7 +130,7 @@ def __buildKanKuang(wallproxy,windowsillHeight):
             "未找到建筑根节点或设计数据","ERROR")
         return
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
-    # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
+    # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     use_KanWall = wData.use_KanWall
@@ -634,7 +634,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     aData:tmpData = bpy.context.scene.ACA_temp
     wData:acaData = wallproxy.ACA_data
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
-    # todo：是采用用户可调整的设计值，还是取模版中定义的理论值？
+    # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     pillerD = bData.piller_diameter

@@ -9,7 +9,7 @@ class ACA_Consts(object):
     # https://www.jb51.net/article/274253.htm
 
     # 系统参数
-    ROOT_COLL_NAME = 'ACA古建.营造'               # 根目录名称
+    ROOT_COLL_NAME = 'ACA筑韵古建'               # 根目录名称
     PLATFORM_NAME = '台基'                      # 台基名称
     ACA_TYPE_BUILDING = 'building'              # ACA类型：建筑根节点
     ACA_TYPE_BASE_ROOT = 'base_root'            # ACA类型：台基根节点

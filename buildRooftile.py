@@ -1036,7 +1036,8 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     # 所以计算active material时，需要乘2
     tileSet.active_material_index = int(bData.tile_color)*2
     # 这里在modifier的平铺范围上做全局的UV平铺
-    mat.setGlazeUV(tileSet)
+    # 250209 使用cubeProject时有明显的横纹，改为smartProject
+    mat.setGlazeUV(tileSet,uvType=None)
 
     # 隐藏辅助对象
     utils.hideObj(tile_bool_obj)

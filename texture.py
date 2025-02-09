@@ -1022,10 +1022,11 @@ def setGlazeStyle(paintObj:bpy.types.Object,
 
 # 对琉璃对象重展开UV
 # 在对象应用了modifier的基础上，进行材质的平铺
-def setGlazeUV(paintObj:bpy.types.Object):
+def setGlazeUV(paintObj:bpy.types.Object,
+    uvType = uvType.CUBE):
     UvUnwrap(
         object=paintObj,
-        type=uvType.CUBE,
+        type=uvType,
         cubesize=200,
         onlyActiveMat=True)
     return

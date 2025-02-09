@@ -337,55 +337,64 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     x_rooms : bpy.props.IntProperty(
             name = "面阔间数",
             min = 1, max = 11,step = 2,
-            update= reset_building 
+            update= reset_building,
+            description="必须为奇数，最多不超过11间",
         )# type: ignore
     x_1 : bpy.props.FloatProperty(
             name = "明间宽度",
             min = 0, 
             precision=3,
-            update = update_building
+            update = update_building,
+            description="常取7攒斗栱，且一般柱不越间广（柱高小于明间宽度）",
         )# type: ignore
     x_2 : bpy.props.FloatProperty(
             name = "次间宽度",
             min = 0, 
             precision=3,
-            update = update_building
+            update = update_building,
+            description="常取6攒斗栱",
         )# type: ignore
     x_3 : bpy.props.FloatProperty(
             name = "梢间宽度",
             min = 0, 
             precision=3,
-            update = update_building
+            update = update_building,
+            description="可以与次间宽度相同",
         )# type: ignore
     x_4 : bpy.props.FloatProperty(
             name = "尽间宽度",
             min = 0, 
             precision=3,
-            update = update_building
+            update = update_building,
+            description="如果做四面廊，一般取2攒斗栱",
         )# type: ignore
     y_rooms : bpy.props.IntProperty(
             name = "进深间数",
             max = 5,
             min = 1, 
-            update = reset_building
+            update = reset_building,
+            description="根据通进深的需要，以及是否做前后廊，可以为偶数",
         )# type: ignore
     y_1 : bpy.props.FloatProperty(
             name = "明间深度",
             min = 0, 
             precision=3,
-            update = update_building
+            update = update_building,
+            description="需综合考虑步架进行设计",
         )# type: ignore
     y_2 : bpy.props.FloatProperty(
             name = "次间深度",
             min = 0, 
             precision=3,
-            update = update_building
+            update = update_building,
+            description="需综合考虑步架进行设计",
         )# type: ignore
     y_3 : bpy.props.FloatProperty(
             name = "梢间深度",
             min = 0, 
             precision=3,
-            update = update_building
+            update = update_building,
+            description="需综合考虑步架进行设计",
         )# type: ignore
     piller_net : bpy.props.StringProperty(
             name = "保存的柱网列表"
@@ -404,7 +413,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min = 0.01, 
             precision=3,
             update = update_building,
-            description="面阔一丈，柱高八尺",
+            description="有斗拱的取57-60斗口，无斗拱的取面阔的8/10",
         )# type: ignore
     piller_diameter : bpy.props.FloatProperty(
             name = "柱径",
@@ -413,12 +422,13 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             precision=3,
             # update = update_piller
             update = update_building,
-            description="柱高：柱径可以取11:1",
+            description="有斗拱的取6斗口，无斗拱的取1/10柱高",
         )# type: ignore
     use_smallfang: bpy.props.BoolProperty(
             default=False,
-            name="小额枋",
-            update = update_building
+            name="双重额枋",
+            update = update_building,
+            description="同时使用大额枋、由额垫板、小额枋的三件套连接两根柱",
         )# type: ignore 
     
     
@@ -453,29 +463,33 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_wall
         )# type: ignore
     wall_span : bpy.props.FloatProperty(
-            name="墙体顶部间隔",
+            name="上槛高度",
             default=0,
             description='重檐时，装修不做到柱头，用走马板填充'
         )# type: ignore 
     # 隔扇属性
     door_height : bpy.props.FloatProperty(
             name="中槛高度",
-            update = update_wall
+            update = update_wall,
+            description="仅在做横披窗时需要设置",
         )# type: ignore 
     door_num : bpy.props.IntProperty(
             name="隔扇数量",
             default=4, max=6,step=2,min=2,
-            update = update_wall
+            update = update_wall,
+            description="一般做4扇隔扇",
         )# type: ignore 
     gap_num : bpy.props.IntProperty(
             name="抹头数量",
             default=5,min=2,max=6,
-            update = update_wall
+            update = update_wall,
+            description="2~6抹头都可以，根据需要自由设置",
         )# type: ignore 
     use_topwin: bpy.props.BoolProperty(
             default=False,
             name="添加横披窗",
-            update = update_wall
+            update = update_wall,
+            description="在隔扇上方的固定窗户",
         )# type: ignore 
     use_KanWall: bpy.props.BoolProperty(
             default=False,
@@ -487,15 +501,17 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=False,
             name="使用斗栱",
             update=update_dougong,
+            description="小式建筑可以不使用斗栱，大梁直接坐在柱头",
         )# type: ignore 
     use_pingbanfang: bpy.props.BoolProperty(
             default=True,
             name="使用平板枋",
-            update=update_roof
+            update=update_roof,
+            description="在柱头和斗栱之间的一层垫板，明清式建筑一般都会使用",
         )# type: ignore 
     dg_style : bpy.props.EnumProperty(
             name = "斗栱类型",
-            description = "斗栱的出踩和出跳",
+            description = "根据建筑等级的不同，斗栱有严格的限制",
             items = getDougongList,
             options = {"ANIMATABLE"},
             update=update_dougong,
@@ -520,7 +536,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     dg_gap:bpy.props.FloatProperty(
             name="斗栱间距",    # 斗栱间距
-            description = "斗栱间距建议不小于11斗口，可以根据需要适当增大",
+            description = "一般取11斗口",
             default=0.99,
             precision=3,
             min=0.1,
@@ -543,37 +559,44 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             ],
             #update = update_roof,
             update = update_roofstyle,
+            description="请选择一种屋顶样式",
         ) # type: ignore
     use_hallway : bpy.props.BoolProperty(
             default=False,
             name="做廊步架",
             update = update_building,
+            description="在前后廊和周围廊做法时，升高金柱到下金桁高度",
         )# type: ignore 
     rafter_count : bpy.props.IntProperty(
-            name="椽架数量",
+            name="步架数量",
             default=8,
             min=2,max=9,
             #update = update_roof,
+            description="以通进深除以22斗口来估算，过大过小会有很多潜在问题",
         )# type: ignore 
     use_flyrafter :  bpy.props.BoolProperty(
             default=True,
             name="使用飞椽",
             #update = update_roof,
+            description="小式的硬山、悬山可以不做飞椽，但四坡面必须使用飞椽做翼角",
         )# type: ignore 
     use_wangban :  bpy.props.BoolProperty(
             default=True,
             name="添加望板",
             #update = update_roof,
+            description="可以不做望板，更直观的查看屋顶结构",
         )# type: ignore 
     qiqiao: bpy.props.IntProperty(
             name="起翘(椽径倍数)",
             default=4, 
-            #update=update_roof
+            #update=update_roof,
+            description="常做4椽起翘，也可以视情况适当增加",
         )# type: ignore 
     chong: bpy.props.IntProperty(
             name="出冲(椽径倍数)",
             default=3, 
-            #update=update_roof
+            #update=update_roof,
+            description="常做3椽出冲，也可以视情况适当增加",
         )# type: ignore 
     shengqi: bpy.props.IntProperty(
             name="生起(椽径倍数)",
@@ -619,6 +642,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("1","   举折系数：陡峭","[0.5,1,1.5,2]，慎用，一般用于亭子等建筑"),
                 ("2","   举折系数：平缓","[0.5,0.65,0.75,0.9]"),
             ],
+            description="决定了屋面坡度的曲率",
         ) # type: ignore
     roof_qiao_point : bpy.props.FloatVectorProperty(
         name="翼角起翘参考点",
@@ -666,36 +690,42 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=6,
             min=0,
             max=10,
-            update=update_rooftile
+            update=update_rooftile,
+            description="包括骑鸡仙人的数量",
         )# type: ignore 
     
     # 院墙属性
     is_4_sides:bpy.props.BoolProperty(
             default = True,
             name = "是否做四面墙",
+            description="同时生成四面合围的墙体，转角处将做45度拼接",
         ) # type: ignore
     yard_width :bpy.props.FloatProperty(
             name="庭院面阔",
             default=40,
             min=1,
+            description="围墙的长度",
             update=update_yardwall,
         )# type: ignore 
     yard_depth :bpy.props.FloatProperty(
             name="庭院进深",
             default=30,
             min=1,
+            description="仅在四面合围墙体时设置",
             update=update_yardwall,
         )# type: ignore
     yardwall_height:bpy.props.FloatProperty(
             name="院墙高度",
             default=3,
             min=1,
+            description="院墙高度，不含帽瓦",
             update=update_yardwall,
         )# type: ignore
     yardwall_depth:bpy.props.FloatProperty(
             name="院墙厚度",
             default=1,
             min=0.5,
+            description="院墙厚度，不含帽瓦",
             update=update_yardwall,
         )# type: ignore
     yardwall_angle:bpy.props.FloatProperty(
@@ -703,6 +733,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=30,
             min=0,
             max=45,
+            description="帽瓦斜率，一般可维持30度",
             update=update_yardwall,
         )# type: ignore  
 
@@ -736,8 +767,8 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             name = "是否实时重建"
         ) # type: ignore
     template : bpy.props.EnumProperty(
-            name = "模板列表",
-            description = "模板列表",
+            name = "样式列表",
+            description = "样式列表",
             items = getTemplateList,
             options = {"ANIMATABLE"},
         ) # type: ignore

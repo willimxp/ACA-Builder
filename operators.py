@@ -40,7 +40,7 @@ class ACA_OT_add_building(bpy.types.Operator):
     bl_idname="aca.add_newbuilding"
     bl_label = "添加新建筑"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '根据选择的模板，自动生成建筑的各个构件'
+    bl_description = '根据选择的样式，自动生成建筑的各个构件'
 
     def execute(self, context):  
         timeStart = time.time()
@@ -53,7 +53,7 @@ class ACA_OT_add_building(bpy.types.Operator):
         if 'FINISHED' in result:
             templateName = bpy.context.scene.ACA_data.template
             runTime = time.time() - timeStart
-            message = "参数化营造完成！(%s , %.1f秒)" \
+            message = "参数化营造完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
                         % (templateName,runTime)
             utils.popMessageBox(message)
         return {'FINISHED'}
@@ -140,7 +140,8 @@ class ACA_OT_reset_floor(bpy.types.Operator):
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(
             operator = self,
-            title="重设柱网",
+            title="ACA筑韵古建 addon for Blender",
+            width = 400,
             )
 
     def draw(self, context):
@@ -152,7 +153,7 @@ class ACA_OT_reset_floor(bpy.types.Operator):
         row = self.layout
         row.label(
             text=("所有额枋、槛墙、槛窗、隔扇都会被删除！"),
-            icon='NONE'
+            icon='BLANK1'
             )
     
 # 减柱
@@ -172,17 +173,25 @@ class ACA_OT_del_piller(bpy.types.Operator):
 
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(
-            operator = self,
-            title="删除柱子"
-            )
+            self, 
+            title="ACA筑韵古建 addon for Blender",
+            width = 400,)
 
     def draw(self, context):
         row = self.layout
+        pillers = context.selected_objects
+        pillersName = ''
+        for piller in pillers:
+            pillersName += piller.name + '，'
         row.label(
             text=("确定删除【" 
-                  + bpy.context.object.name
+                  + pillersName[:-1]
                   + "】吗？"),
             icon='QUESTION'
+            )
+        row.label(
+            text=("减柱做为配置参数可以保存在模板样式中"),
+            icon='BLANK1'
             )
 
 # 添加踏跺
@@ -391,6 +400,7 @@ class ACA_OT_del_wall(bpy.types.Operator):
     # def invoke(self, context, event):
     #     return context.window_manager.invoke_props_dialog(
     #         operator = self,
+    #         title="ACA筑韵古建 addon for Blender",
     #         title="删除对象"
     #         )
 
@@ -468,10 +478,10 @@ class ACA_OT_default_dk(bpy.types.Operator):
                 / con.PILLER_H_EAVE)
             # 取整
             bData['DK'] = int(dk*100)/100
-            funproxy = partial(
-                buildFloor.buildFloor,
-                buildingObj=buildingObj)
-            utils.fastRun(funproxy)
+            # funproxy = partial(
+            #     buildFloor.buildFloor,
+            #     buildingObj=buildingObj)
+            # utils.fastRun(funproxy)
         else:
             utils.showMessageBox(
                 "此对象并非插件生成，或已经合并，无法操作。",
@@ -481,11 +491,11 @@ class ACA_OT_default_dk(bpy.types.Operator):
 
         return {'FINISHED'}
 
-# 保存模板
+# 保存样式
 class ACA_OT_save_template(bpy.types.Operator):
     bl_idname="aca.save_template"
-    bl_label = "保存模板修改"
-    bl_description = '将当前选中的建筑参数保存为模板，以便重复生成'
+    bl_label = "保存样式修改"
+    bl_description = '将当前选中的建筑参数保存为样式，以便重复生成'
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -493,11 +503,11 @@ class ACA_OT_save_template(bpy.types.Operator):
             from . import template
             result = template.saveTemplate(buildingObj)
             if 'FINISHED' in result:
-                self.report({'INFO'},"模板修改已保存。")
+                self.report({'INFO'},"样式修改已保存。")
         else:
             utils.showMessageBox(
                 "此对象并非插件生成，或已经合并，无法操作。",
-                title="保存模板",
+                title="保存样式",
             )
             return {'FINISHED'}
 
@@ -506,8 +516,8 @@ class ACA_OT_save_template(bpy.types.Operator):
 # 删除模板
 class ACA_OT_del_template(bpy.types.Operator):
     bl_idname="aca.del_template"
-    bl_label = "删除模板"
-    bl_description = '从配置文件中删除当前模板'
+    bl_label = "删除样式"
+    bl_description = '从模板配置文件中删除当前样式'
 
     @classmethod
     def poll(cls, context):
@@ -517,7 +527,7 @@ class ACA_OT_del_template(bpy.types.Operator):
         from . import template
         result = template.delTemplate()
         if 'FINISHED' in result:
-            self.report({'INFO'},"模板已删除。")
+            self.report({'INFO'},"样式已删除。")
 
         return {'FINISHED'}
     
@@ -528,7 +538,8 @@ class ACA_OT_del_template(bpy.types.Operator):
         # https://docs.blender.org/api/current/bpy.types.WindowManager.html#bpy.types.WindowManager.invoke_props_dialog
         return context.window_manager.invoke_props_dialog(
             operator = self,
-            title="删除模板"      # 如果为空，自动取bl_label
+            title="ACA筑韵古建 addon for Blender",      # 如果为空，自动取bl_label
+            width = 400,
             )
 
     def draw(self, context):
@@ -538,6 +549,12 @@ class ACA_OT_del_template(bpy.types.Operator):
                   + bpy.context.scene.ACA_data.template 
                   + "】吗？"),
             icon='QUESTION'
+            )
+        row.label(
+            text=("注意：建筑样式保存在模板文件中，删除后无法复原。")
+            )
+        row.label(
+            text=("建议先备份插件目录中的template.xml。")
             )
 
 # 生成院墙
@@ -610,16 +627,21 @@ class ACA_OT_Show_Message_Box(bpy.types.Operator):
             h = h + (20*len(self.message.split("|")))
             context.window.cursor_warp(w, h)
         
-        return context.window_manager.invoke_props_dialog(self, width = 400)
+        return context.window_manager.invoke_props_dialog(
+            self, 
+            title="ACA筑韵古建 addon for Blender",
+            width = 400,)
  
     def draw(self, context):
-        panelTitle = "ACA筑韵古建"
-        self.layout.label(text=panelTitle)
+        # 提示内容，多行之间用'|'分割
         message_list = self.message.split("|")
-        for li in message_list:
+        for n,li in enumerate(message_list):
+            if n==0: 
+                icon=self.icon
+            else:
+                icon = 'BLANK1'
             row=self.layout.row()
-            row.scale_y = 2
-            row.label(text=li, icon=self.icon)
+            row.label(text=li,icon=icon)
         if not self.restored and self.center:
             context.window.cursor_warp(self.orig_x, self.orig_y)
             self.restored = True
@@ -661,6 +683,7 @@ class ACA_OT_JOIN(bpy.types.Operator):
     bl_idname="aca.join"
     bl_label = "合并模型"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '将所有的建筑构件合并为一个整体，便于做裁剪等操作'
 
     def execute(self, context):  
         # 预处理
@@ -723,6 +746,7 @@ class ACA_OT_EXPORT_FBX(bpy.types.Operator):
     bl_idname="aca.export_fbx"
     bl_label = "导出FBX"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '导出为FBX模型，可用于D5渲染器导入'
     
     filter_glob: bpy.props.StringProperty(
         default = '*.fbx',
@@ -771,6 +795,7 @@ class ACA_OT_EXPORT_GLB(bpy.types.Operator):
     bl_idname="aca.export_glb"
     bl_label = "导出GLB"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '导出为GLB模型，推荐UE5导入。'
 
     filter_glob: bpy.props.StringProperty(
         default = '*.glb',

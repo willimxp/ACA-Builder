@@ -45,12 +45,12 @@ class ACA_PT_basic(bpy.types.Panel):
         col = toolBar.column(align=True)
         col.operator(
             "aca.save_template",icon='FILE_TICK',
-            text='保存模板')
+            text='保存样式')
         # 删除模板
         col = toolBar.column(align=True)
         col.operator(
             "aca.del_template",icon='TRASH',
-            text='删除模板')
+            text='删除样式')
         
         
         # 实例属性==============
@@ -546,7 +546,7 @@ class ACA_PT_roof_props(bpy.types.Panel):
                 buttonBuildroof = box.row()
                 buttonBuildroof.operator(
                     "aca.build_roof",icon='HOME',
-                    text='生成屋顶',depress=True)# 
+                    text='重新生成屋顶',depress=True)# 
 
 # “斗栱属性”子面板
 class ACA_PT_dougong(bpy.types.Panel):
@@ -1000,4 +1000,4 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
                     'aca.build_yardwall',
                     icon='PLAY',
                     depress=True,
-                    text='生成院墙')
+                    text='重新生成院墙')

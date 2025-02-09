@@ -240,9 +240,9 @@ def hide_tiles(self, context:bpy.types.Context):
 # misbehave or even crash.
 dougongList = []
 def getDougongList(self, context):
-    from . import acaTemplate
+    from . import template
     global dougongList
-    dougongList = acaTemplate.getDougongList()
+    dougongList = template.getDougongList()
     return dougongList
 
 # 对象范围的数据
@@ -632,7 +632,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             items = [
                 ("0","黄琉璃",""),
                 ("1","绿琉璃",""),
-                ("2","紫琉璃",""),
+                #("2","紫琉璃",""),
             ],
         ) # type: ignore
     tile_alt_color : bpy.props.EnumProperty(
@@ -640,7 +640,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             items = [
                 ("0","黄琉璃",""),
                 ("1","绿琉璃",""),
-                ("2","紫琉璃",""),
+               # ("2","紫琉璃",""),
             ],
         ) # type: ignore
     tile_width : bpy.props.FloatProperty(
@@ -715,9 +715,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
 # misbehave or even crash.
 templateList = []
 def getTemplateList(self, context):
-    from . import acaTemplate
+    from . import template
     global templateList
-    templateList = acaTemplate.getTemplateList()
+    templateList = template.getTemplateList()
     return templateList
 
 # 场景范围的数据

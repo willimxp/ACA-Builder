@@ -7,7 +7,7 @@ import bpy
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from . import utils
-from . import acaTemplate
+from . import template
 
 # 开始新的营造
 def build():
@@ -19,7 +19,7 @@ def build():
     templateName = bpy.context.scene.ACA_data.template
 
     # 获取模版类型，建筑或院墙
-    acaType = acaTemplate.getBuildingType(templateName)
+    acaType = template.getBuildingType(templateName)
 
     # 根据模版类型调用不同的入口
     if acaType == con.ACA_TYPE_BUILDING:

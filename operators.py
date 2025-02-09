@@ -490,8 +490,8 @@ class ACA_OT_save_template(bpy.types.Operator):
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj != None:
-            from . import acaTemplate
-            result = acaTemplate.saveTemplate(buildingObj)
+            from . import template
+            result = template.saveTemplate(buildingObj)
             if 'FINISHED' in result:
                 self.report({'INFO'},"模版修改已保存。")
         else:
@@ -514,8 +514,8 @@ class ACA_OT_del_template(bpy.types.Operator):
         return True
     
     def execute(self, context):  
-        from . import acaTemplate
-        result = acaTemplate.delTemplate()
+        from . import template
+        result = template.delTemplate()
         if 'FINISHED' in result:
             self.report({'INFO'},"模版已删除。")
 

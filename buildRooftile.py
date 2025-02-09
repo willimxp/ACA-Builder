@@ -9,7 +9,7 @@ from mathutils import Vector,Matrix
 
 from . import utils
 from . import buildBeam
-from . import acaTemplate
+from . import template
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
@@ -623,7 +623,7 @@ def __drawTileGrid(
     # 这里采用几何节点实现，利用了resample curve节点，可以生成均匀分布的网格
     # 而python中暂未找到在curve上均匀分配的API
     # 连接资产blender文件中的瓦面对象，直接放到“瓦作层”节点下
-    tileGrid:bpy.types.Object = acaTemplate.loadAssets(
+    tileGrid:bpy.types.Object = template.loadAssets(
         "瓦面",tileRootObj,hide=False,link=False)
     # 瓦面要与辅助线重合，并上移一个大连檐高度
     tileGrid.location = TileCurve.location

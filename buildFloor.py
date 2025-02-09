@@ -13,7 +13,7 @@ from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
 from . import utils
-from . import acaTemplate
+from . import template
 from . import buildWall
 from . import buildPlatform
 from . import buildRoof
@@ -1000,12 +1000,12 @@ def buildFloor(buildingObj:bpy.types.Object):
         # 添加建筑根节点，同时载入模版
         buildingObj = __addBuildingRoot(templateName)
         # 在buldingObj上绑定模版bData和资产库aData
-        acaTemplate.loadTemplate(buildingObj)
+        template.loadTemplate(buildingObj)
     else:
         # 简单粗暴的全部删除
         utils.deleteHierarchy(buildingObj)
         # 刷新buildingObj中绑定的资产库aData
-        acaTemplate.loadAssetByBuilding(buildingObj)   
+        template.loadAssetByBuilding(buildingObj)   
 
     # 载入数据
     bData:acaData = buildingObj.ACA_data

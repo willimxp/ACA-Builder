@@ -11,7 +11,7 @@ from .data import ACA_data_template as tmpData
 from . import utils
 
 
-xmlFileName = 'simplyhouse.xml'
+xmlFileName = 'template.xml'
 blenderFileName = 'acaAssets.blend'
 assetsFileName = 'assetsIndex.xml'
 
@@ -375,6 +375,7 @@ def loadTemplate(buildingObj:bpy.types.Object):
                     type = node.attrib['type']
                     value = node.text
                     # 类型转换
+                    # 20250209 老版本的模版通过数据类型进行判断
                     if type == 'str':
                         # 特殊处理下拉框
                         if tag in ('roof_style',
@@ -394,8 +395,23 @@ def loadTemplate(buildingObj:bpy.types.Object):
                             bData[tag] = True
                         if value == 'False':
                             bData[tag] = False
+                    # 20250209 新版本的模版通过bdata数据属性进行判断
+                    elif type =='StringProperty':
+                        bData[tag] = value
+                    elif type == 'IntProperty':
+                        bData[tag] = int(value)
+                    elif type == 'FloatProperty':
+                        bData[tag] = round(float(value),3)
+                    elif type == 'BoolProperty':
+                        if value == 'True':
+                            bData[tag] = True
+                        if value == 'False':
+                            bData[tag] = False
+                    elif type == 'EnumProperty':
+                        bData[tag] = int(value)
                     else:
-                        print("can't convert:",node.tag, node.attrib['type'],node.text)
+                        print("can't convert:",node.tag, 
+                              node.attrib['type'],node.text)
 
     # 填充建筑使用的资产对象，根据其中的dg_style等不同，载入不同的资产样式
     loadAssetByBuilding(buildingObj)
@@ -448,7 +464,10 @@ def saveTemplate(buildingObj:bpy.types.Object):
     for key in bData.__annotations__.keys():
         # 提取键值，并保存
         value = getattr(bData, key)
-        keyType = type(value).__name__
+        # 20250209 数据类型改为从data定义中获取，可以明确区分enum类型
+        # 从而更好的处理下拉列表
+        # keyType = type(value).__name__
+        keyType = bData.bl_rna.properties[key].rna_type.identifier
 
         # 数据验证和预处理
         # 忽略无需保存的键值
@@ -457,9 +476,9 @@ def saveTemplate(buildingObj:bpy.types.Object):
         if key == 'template_name':
             value = templateName
         # 浮点数取3位精度
-        if keyType == 'float':
+        if keyType == 'FloatProperty':
             value = round(value,3)
-        if keyType == 'Object':
+        if keyType == 'PointerProperty':
             # value目前未bpy.data.object对象
             object = getattr(bData, key)
             value = object.name  # 对象名称

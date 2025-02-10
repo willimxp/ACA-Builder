@@ -697,7 +697,7 @@ def addStep(buildingObj:bpy.types.Object,
                 == con.ACA_TYPE_PILLER:
                 pillerNum += 1
     if pillerNum < 2:
-        utils.showMessageBox("ERROR:请至少选择2根柱子")
+        utils.popMessageBox("请至少选择2根柱子")
         return
     
     # 构造枋网设置

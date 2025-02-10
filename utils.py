@@ -6,6 +6,8 @@
 import bpy
 import bmesh
 import math
+import logging
+import traceback
 from mathutils import Vector,Euler,Matrix,geometry
 import numpy as np
 import time
@@ -57,20 +59,25 @@ def console_clear():
     with bpy.context.temp_override(**context_override):
         bpy.ops.console.clear()
 
-# 弹出提示框
-def showMessageBox(message = "", title = "Message Box", icon = 'INFO'):
-    def draw(self, context):
-        self.layout.label(text=message)
-    bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
+# # 弹出提示框
+# def popMessageBox(message = "", title = "Message Box", icon = 'INFO'):
+#     def draw(self, context):
+#         self.layout.label(text=message)
+#     bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
 # 弹出模态提示框
 # 实际调用的是operator.py中的ACA_OT_Show_Message_Box
 # 因为使用了模态对话框，必须按照blender的operator声明，并在init中注册绑定
 def popMessageBox(message = "", icon = 'INFO'):
+    # 写入日志
+    logger = logging.getLogger('ACA')
+    logger.info(message)
+
     bpy.ops.aca.show_message_box('INVOKE_DEFAULT', 
         message=message, 
         icon=icon, 
         center=True)
+    return
 
 # 递归查询，并选择collection，似乎没有找到更好的办法
 # Recursivly transverse layer_collection for a particular name
@@ -158,7 +165,7 @@ def setCollection(name:str,
 
     if not coll_found:    
         # 新建collection，不与其他用户自建的模型打架
-        outputMsg("Add Collection: " + coll_name)
+        # outputMsg("Add Collection: " + coll_name)
         coll = bpy.data.collections.new(coll_name)
         if isRoot:
             bpy.context.scene.collection.children.link(coll)
@@ -682,6 +689,10 @@ def fastRun(func):
     try:
         _BPyOpsSubModOp._view_layer_update = dummy_view_layer_update
         result = func()
+    except Exception as e:
+        print(e)
+        logError(e)
+        return {'CANCELLED':e}
     finally:
         _BPyOpsSubModOp._view_layer_update = view_layer_update
     
@@ -695,9 +706,18 @@ def fastRun(func):
 
 # 格式化输出内容
 def outputMsg(msg:str):
-    stime = time.strftime("%H:%M:%S", time.localtime())
-    strout = "ACA[" + stime + "]: " + msg
-    print(strout)
+    # # 打印到python console中
+    # stime = time.strftime("%H:%M:%S", time.localtime())
+    # strout = "ACA[" + stime + "]: " + msg
+    # print(strout)
+
+    # 输出到日志文件中
+    logger = logging.getLogger('ACA')
+    logger.info(msg)
+
+    # 更新到build进度中
+    from . import build
+    build.buildStatus = msg
     
     # 界面刷新
     try:
@@ -705,6 +725,7 @@ def outputMsg(msg:str):
         redrawViewport()
     except Exception as e:
         print(e)
+        logError(e)
         return
 
 # 隐藏对象，包括viewport和render渲染
@@ -1783,4 +1804,11 @@ def unionProject(
     bpy.context.collection.objects.link(projectObj) 
 
 
+    return
+
+# 输出异常信息
+def logError(e):
+    logger = logging.getLogger('ACA')
+    logger.error(f"Exception occurred: {e}")
+    logger.error(traceback.format_exc())
     return

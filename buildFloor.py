@@ -609,7 +609,7 @@ def addFang(buildingObj:bpy.types.Object,
                 == con.ACA_TYPE_PILLER:
                 pillerNum += 1
     if pillerNum < 2:
-        utils.showMessageBox("ERROR:请至少选择2根柱子")
+        utils.popMessageBox("请至少选择2根柱子")
         return
 
     # 构造枋网设置
@@ -776,7 +776,7 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
     if bData.x_rooms % 2 == 0:
         # 不处理偶数面阔间数
-        utils.showMessageBox("面阔间数不能为偶数","ERROR")
+        utils.popMessageBox("面阔间数不能为偶数")
         return
     
     # 1、查找或新建地盘根节点

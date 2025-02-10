@@ -56,6 +56,12 @@ class ACA_OT_add_building(bpy.types.Operator):
             message = "参数化营造完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
                         % (templateName,runTime)
             utils.popMessageBox(message)
+
+        if 'CANCELLED' in result:
+            utils.popMessageBox(
+                "插件在运行中发生了一个异常错误：|"
+                + str(result['CANCELLED'])
+                + "|请联系开发者，并提供日志文件")
         return {'FINISHED'}
 
 # 更新建筑
@@ -68,10 +74,7 @@ class ACA_OT_update_building(bpy.types.Operator):
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj == None:
-            utils.showMessageBox(
-                "此对象并非插件生成，或已经合并，无法操作。",
-                title="更新建筑",
-            )
+            utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
             return {'FINISHED'}
         buildingName = buildingObj.name
         # 更新新建筑
@@ -80,11 +83,19 @@ class ACA_OT_update_building(bpy.types.Operator):
         funproxy = partial(build.updateBuilding,
                     buildingObj=buildingObj)
         result = utils.fastRun(funproxy)
+
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
             message = "更新建筑完成！(%s , %.1f秒)" \
                         % (buildingName,runTime)
             utils.popMessageBox(message)
+            
+        if 'CANCELLED' in result:
+            utils.popMessageBox(
+                "插件在运行中发生了一个异常错误：|"
+                + str(result['CANCELLED'])
+                + "|请联系开发者，并提供日志文件")
+            
         return {'FINISHED'}
     
 # 删除建筑
@@ -97,10 +108,7 @@ class ACA_OT_del_building(bpy.types.Operator):
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj == None:
-            utils.showMessageBox(
-                "此对象并非插件生成，或已经合并，无法操作。",
-                title="删除建筑",
-            )
+            utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
             return {'FINISHED'}
         buildingName = buildingObj.name
         if buildingObj != None:
@@ -122,10 +130,7 @@ class ACA_OT_reset_floor(bpy.types.Operator):
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj == None:
-            utils.showMessageBox(
-                "此对象并非插件生成，或已经合并，无法操作。",
-                title="生成柱网",
-            )
+            utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
             return {'FINISHED'}
         if buildingObj != None:
             funproxy = partial(buildFloor.resetFloor,
@@ -446,19 +451,28 @@ class ACA_OT_build_roof(bpy.types.Operator):
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj == None:
-            utils.showMessageBox(
-                "此对象并非插件生成，或已经合并，无法操作。",
-                title="生成屋顶",
-            )
+            utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
             return {'FINISHED'}
         else:
+            from . import build
+            build.isFinished = False
+
             # 生成屋顶
             funproxy = partial(
                 buildRoof.buildRoof,
                 buildingObj=buildingObj)
             result = utils.fastRun(funproxy)
+            
+            build.isFinished = True
+
             if 'FINISHED' in result:
                 self.report({'INFO'},"屋顶已重新营造！")
+
+            if 'CANCELLED' in result:
+                utils.popMessageBox(
+                    "插件在运行中发生了一个异常错误：|"
+                    + str(result['CANCELLED'])
+                    + "|请联系开发者，并提供日志文件")
 
         return {'FINISHED'}
     
@@ -483,10 +497,7 @@ class ACA_OT_default_dk(bpy.types.Operator):
             #     buildingObj=buildingObj)
             # utils.fastRun(funproxy)
         else:
-            utils.showMessageBox(
-                "此对象并非插件生成，或已经合并，无法操作。",
-                title="生成斗口",
-            )
+            utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
             return {'FINISHED'}
 
         return {'FINISHED'}
@@ -505,10 +516,7 @@ class ACA_OT_save_template(bpy.types.Operator):
             if 'FINISHED' in result:
                 self.report({'INFO'},"样式修改已保存。")
         else:
-            utils.showMessageBox(
-                "此对象并非插件生成，或已经合并，无法操作。",
-                title="保存样式",
-            )
+            utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
             return {'FINISHED'}
 
         return {'FINISHED'}

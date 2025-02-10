@@ -6,6 +6,8 @@ import bpy
 from . import panel
 from . import operators
 from . import data
+import logging
+import pathlib
 
 # Blender配置元数据，用户安装插件时的设置项
 # https://developer.blender.org/docs/handbook/addons/addon_meta_info/
@@ -79,6 +81,12 @@ def register():
 
     # 注册自定义属性
     data.initprop()
+
+    # 初始化日志记录器
+    initLogger()
+    
+    return
+    
     
 def unregister():
     # 销毁类
@@ -88,7 +96,61 @@ def unregister():
     # 销毁自定义属性
     data.delprop()
 
+    # 移除日志记录器
+    removeLogger()
+
+    return
+
 # 仅用于在blender text editor中测试用途
 # 当做为blender addon插件载入时不会触发
 if __name__ == "__main__":
     register()
+
+# 初始化日志模块
+# 请注意：Blender做为root logger，已经使用了logging.basicConfig()
+# https://blender.stackexchange.com/questions/270509/output-a-log-file-from-blender-for-debugging-addon
+# https://docs.python.org/zh-cn/3.13/howto/logging.html#
+def initLogger():
+    logLevel = logging.DEBUG
+
+    # 获取日志记录器
+    logger = logging.getLogger("ACA")
+    logger.setLevel(logLevel)
+
+    # 检查是否已经存在相同的 Handler
+    if (logger.hasHandlers()):
+        logger.handlers.clear()
+
+    # 日志格式    
+    formatter = logging.Formatter(
+        fmt='%(asctime)s [%(levelname)s] : %(message)s',
+        datefmt='%y/%m/%d %H:%M:%S',
+        )
+
+    # 添加控制台日志记录器
+    ch = logging.StreamHandler()
+    ch.setLevel(logLevel)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    # 添加文件日志记录器
+    # 设置日志路径
+    USER = pathlib.Path(
+        bpy.utils.resource_path('USER'))
+    log_file_path = USER / "scripts/addons/ACA Builder/aca_log.txt"
+    log_handler = logging.FileHandler(
+        filename=log_file_path,
+        mode='w',                   # 每次清空上一次的日志
+        )
+    log_handler.setLevel(logLevel)
+    log_handler.setFormatter(formatter)    
+    logger.addHandler(log_handler)
+    logger.info('ACA插件日志记录开始')
+
+    return
+
+# 移除日志记录器
+def removeLogger():
+    logger = logging.getLogger("ACA")
+    if (logger.hasHandlers()):
+        logger.handlers.clear()

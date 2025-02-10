@@ -10,6 +10,7 @@ from . import utils
 from . import template
 
 isFinished = True
+buildStatus = ''
 
 # 开始新的营造
 def build():
@@ -25,24 +26,26 @@ def build():
 
     # 根据模板类型调用不同的入口
     global isFinished
+    isFinished = False
+
     if acaType == con.ACA_TYPE_BUILDING:
-        isFinished = False
         from . import buildFloor
         buildFloor.buildFloor(None)
-        isFinished = True
     elif acaType == con.ACA_TYPE_YARDWALL:
-        isFinished = False
         from . import buildYardWall
         buildYardWall.buildYardWall(None)
-        isFinished = True
     else:
-        utils.outputMsg("无法创建该类型的建筑：" + templateName)
-
+        utils.popMessageBox("无法创建该类型的建筑：" + templateName)
+    
+    isFinished = True
     return {'FINISHED'}
 
 def updateBuilding(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
+
+    global isFinished
+    isFinished = False
 
     if bData.aca_type == con.ACA_TYPE_BUILDING:
         from . import buildFloor
@@ -51,10 +54,10 @@ def updateBuilding(buildingObj:bpy.types.Object):
         from . import buildYardWall
         buildYardWall.buildYardWall(buildingObj)
     else:
-        utils.outputMsg("无法创建该类型的建筑：" + bData.aca_type)
+        utils.popMessageBox("无法创建该类型的建筑：" + bData.aca_type)
+
+    isFinished = True
     return {'FINISHED'}
-
-
 
 # 删除建筑
 def delBuilding(buildingObj:bpy.types.Object):

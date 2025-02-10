@@ -71,7 +71,7 @@ class ACA_PT_basic(bpy.types.Panel):
             # 运行中提示
             if not build.isFinished:
                 row = layout.row()
-                row.label(text='正在生成中... ...',icon='INFO')
+                row.label(text='生成中：'+build.buildStatus,icon='INFO')
                 row = layout.row()
                 row.label(text='一般需要20~80秒左右，请耐心等待。')
             else:

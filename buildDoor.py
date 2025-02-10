@@ -126,8 +126,8 @@ def __buildKanKuang(wallproxy,windowsillHeight):
     # 载入数据
     buildingObj,bData,wData = utils.getRoot(wallproxy)
     if buildingObj == None:
-        utils.showMessageBox(
-            "未找到建筑根节点或设计数据","ERROR")
+        utils.popMessageBox(
+            "未找到建筑根节点或设计数据")
         return
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
     # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
@@ -762,8 +762,8 @@ def buildDoor(wallProxy:bpy.types.Object):
     buildingObj,bData,wData = utils.getRoot(wallProxy)
     aData:tmpData = bpy.context.scene.ACA_temp
     if buildingObj == None:
-        utils.showMessageBox(
-            "未找到建筑根节点或设计数据","ERROR")
+        utils.popMessageBox(
+            "未找到建筑根节点或设计数据")
         return
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk

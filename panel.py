@@ -52,6 +52,20 @@ class ACA_PT_basic(bpy.types.Panel):
             "aca.del_template",icon='TRASH',
             text='删除样式')
         
+        # 运行中提示
+        if not build.isFinished:
+            row = layout.row()
+            row.label(text='生成中：需要20~90秒，请耐心等待。',icon='INFO')
+            row = layout.row()
+            row.progress(
+                type="BAR",
+                factor=build.progress,
+                text=build.buildStatus,
+            )
+
+            # 运行时，不显示以下的面板内容
+            # 待运行结束后，才会显示
+            return
         
         # 实例属性==============
         if context.object != None:
@@ -68,73 +82,59 @@ class ACA_PT_basic(bpy.types.Panel):
             if objData.aca_type == con.ACA_TYPE_BUILDING:
                 col.enabled = False
 
-            # 运行中提示
-            if not build.isFinished:
-                row = layout.row()
-                row.label(text='生成中：需要20~90秒，请耐心等待。',icon='INFO')
-                row = layout.row()
-                row.progress(
-                    type="BAR",
-                    factor=build.progress,
-                    text=build.buildStatus,
-                )
-            else:
-                # 斗口值
-                if bData!= None:
-                    row = box.row(align=True)
-                    col = row.column(align=True)
-                    col.prop(bData,'DK')
-                    # 计算默认斗口值
-                    col = row.column(align=True)
-                    col.operator("aca.default_dk",icon='SHADERFX',text='')
-
-                # 更新建筑
+            # 斗口值
+            if bData!= None:
                 row = box.row(align=True)
-                # 自动更新
                 col = row.column(align=True)
-                col.prop(
-                    data=bpy.context.scene.ACA_data,
-                    property='is_auto_rebuild',
-                    toggle=True,
-                    icon='FILE_REFRESH',
-                    text=''
-                )
+                col.prop(bData,'DK')
+                # 计算默认斗口值
                 col = row.column(align=True)
-                col.operator(
-                    "aca.update_building",
-                    depress=True,text='更新建筑'
-                )
-                #row = box.row(align=True)
-                col = row.column(align=True)
-                col.operator(
-                    "aca.del_building",icon='TRASH',
-                    text='删除建筑'
-                )
-                
-                # 导出功能
-                box = layout.box()
-                toolBox = box.column(align=True)
-                # 合并按钮
-                toolBar = toolBox.grid_flow(columns=1, align=True)
-                col = toolBar.column(align=True)
-                col.operator("aca.join",icon='PACKAGE')
-                # 导出按钮
-                toolBar = toolBox.grid_flow(columns=2, align=True)
-                col = toolBar.column(align=True)
-                col.operator("aca.export_fbx",icon='EXPORT')
-                col = toolBar.column(align=True)
-                col.operator("aca.export_glb",icon='EXPORT')
-            return   
+                col.operator("aca.default_dk",icon='SHADERFX',text='')
 
-        
-        # 性能分析按钮
-        # row = layout.row()
-        # row.operator("aca.profile",icon='HOME')
-        
-        # 测试按钮
-        # row = layout.row()
-        # row.operator("aca.test",icon='HOME')
-
+            # 更新建筑
+            row = box.row(align=True)
+            # 自动更新
+            col = row.column(align=True)
+            col.prop(
+                data=bpy.context.scene.ACA_data,
+                property='is_auto_rebuild',
+                toggle=True,
+                icon='FILE_REFRESH',
+                text=''
+            )
+            col = row.column(align=True)
+            col.operator(
+                "aca.update_building",
+                depress=True,text='更新建筑'
+            )
+            #row = box.row(align=True)
+            col = row.column(align=True)
+            col.operator(
+                "aca.del_building",icon='TRASH',
+                text='删除建筑'
+            )
+            
+            # 导出功能
+            box = layout.box()
+            toolBox = box.column(align=True)
+            # 合并按钮
+            toolBar = toolBox.grid_flow(columns=1, align=True)
+            col = toolBar.column(align=True)
+            col.operator("aca.join",icon='PACKAGE')
+            # 导出按钮
+            toolBar = toolBox.grid_flow(columns=2, align=True)
+            col = toolBar.column(align=True)
+            col.operator("aca.export_fbx",icon='EXPORT')
+            col = toolBar.column(align=True)
+            col.operator("aca.export_glb",icon='EXPORT')   
+    
+            # 性能分析按钮
+            # row = layout.row()
+            # row.operator("aca.profile",icon='HOME')
+            
+            # 测试按钮
+            # row = layout.row()
+            # row.operator("aca.test",icon='HOME')
         return
 
 # “屋身参数”面板

@@ -2712,7 +2712,7 @@ def __buildShanhuaBan(buildingObj: bpy.types.Object,
         # 向上位移:沿着椽架方向，位移博缝板
         # 博缝板是沿着博缝板曲线进行排布，该曲线z位移了桁径+椽径+望板+灰泥，按40度加斜计算，
         bofeng_offset = (con.HENG_COMMON_D + con.YUANCHUAN_D 
-                  + con.WANGBAN_H + con.ROOFMUD_H)*dk * math.sin(math.radians(40))
+                  + con.WANGBAN_H + con.ROOFMUD_H)*dk * math.sin(math.radians(45))
         l= bofeng_height - bofeng_offset
         # 用三角函数进行了计算，建议画个图看看
         p1= purlin_pos[n-1]

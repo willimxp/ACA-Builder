@@ -158,6 +158,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
             if n==0 :
                 # 廊步架宽度 = 柱网的廊间进深
                 rafterSpan = abs(net_y[1]-net_y[0])
+                rafterSpan0 = rafterSpan    # 檐步架宽度，后续使用
                 roomDepth -= rafterSpan*2 # 从通进深扣除前后的两个廊步架
             else:
                 # 其他步架平分
@@ -183,11 +184,13 @@ def getPurlinPos(buildingObj:bpy.types.Object):
                 and n>0):
                 # 收山系统的选择，推荐一桁径以上，一步架以下
                 # 当超出限制值时，自动设置为限制值
+                # 注意：这里必须按照檐步架计算
+                # 而且在廊间举架做法中，檐步架与其他步架宽度不同
                 shoushanLimit = (
-                    rafterSpan              # 步架
-                    - con.BOFENG_WIDTH*dk   # 博缝板
-                    - con.XYB_WIDTH*dk      # 山花板
-                    - con.BEAM_DEPTH*pd/2  # 梁架中线
+                    rafterSpan0                 # 檐步架
+                    - con.BOFENG_WIDTH*dk       # 博缝板
+                    - con.XYB_WIDTH*dk          # 山花板
+                    - con.BEAM_DEPTH*pd/2       # 梁架中线
                     )
                 if bData.shoushan > shoushanLimit:
                     bData['shoushan'] = shoushanLimit

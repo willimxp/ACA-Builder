@@ -1815,7 +1815,35 @@ def unionProject(
 
 # 输出异常信息
 def logError(e):
+    from . import build
+    build.isFinished = True
     logger = logging.getLogger('ACA')
     logger.error(f"Exception occurred: {e}")
     logger.error(traceback.format_exc())
     return
+
+# 按照指定长度，将字符串切分
+# 中文算两个长度
+def splitText(text, max_length=40):
+    result = []  # 存储切分后的段落
+    current_segment = []  # 当前正在处理的段落
+    current_length = 0  # 当前段落的长度
+
+    for char in text:
+        # 判断字符长度：中文字符算两个长度，其他字符算一个长度
+        char_length = 2 if '\u4e00' <= char <= '\u9fff' else 1
+
+        # 如果当前段落长度加上当前字符长度超过最大长度，则切分
+        if current_length + char_length > max_length:
+            result.append(''.join(current_segment))  # 将当前段落加入结果数组
+            current_segment = [char]  # 开始新的段落
+            current_length = char_length  # 重置当前段落长度
+        else:
+            current_segment.append(char)  # 将字符加入当前段落
+            current_length += char_length  # 更新当前段落长度
+
+    # 处理剩余的字符
+    if current_segment:
+        result.append(''.join(current_segment))
+
+    return result

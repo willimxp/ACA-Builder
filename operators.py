@@ -50,18 +50,22 @@ class ACA_OT_add_building(bpy.types.Operator):
         funproxy = partial(build.build)
         result = utils.fastRun(funproxy)
 
+        message=''
+        type = {'INFO'}
         if 'FINISHED' in result:
             templateName = bpy.context.scene.ACA_data.template
             runTime = time.time() - timeStart
             message = "参数化营造完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
                         % (templateName,runTime)
-            utils.popMessageBox(message)
-
-        if 'CANCELLED' in result:
-            utils.popMessageBox(
-                "插件在运行中发生了一个异常错误：|"
+        elif 'CANCELLED' in result:
+            message = ("插件在运行中发生了一个异常错误：|- “"
                 + str(result['CANCELLED'])
-                + "|请联系开发者，并提供日志文件")
+                + "”|请联系开发者，并提供日志文件")
+            type = {'ERROR'}
+        
+        if message != '':
+            utils.popMessageBox(message)
+            self.report(type,message)
         return {'FINISHED'}
 
 # 更新建筑
@@ -84,18 +88,21 @@ class ACA_OT_update_building(bpy.types.Operator):
                     buildingObj=buildingObj)
         result = utils.fastRun(funproxy)
 
+        message=''
+        type = {'INFO'}
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
             message = "更新建筑完成！(%s , %.1f秒)" \
                         % (buildingName,runTime)
-            utils.popMessageBox(message)
-            
-        if 'CANCELLED' in result:
-            utils.popMessageBox(
-                "插件在运行中发生了一个异常错误：|"
+        elif 'CANCELLED' in result:
+            message = ("插件在运行中发生了一个异常错误：|- “"
                 + str(result['CANCELLED'])
-                + "|请联系开发者，并提供日志文件")
-            
+                + "”|请联系开发者，并提供日志文件")
+
+        if message != '':
+            utils.popMessageBox(message)
+            self.report(type,message)
+
         return {'FINISHED'}
     
 # 删除建筑
@@ -466,14 +473,19 @@ class ACA_OT_build_roof(bpy.types.Operator):
             
             build.isFinished = True
 
+            message=''
+            type = {'INFO'}
             if 'FINISHED' in result:
-                self.report({'INFO'},"屋顶已重新营造！")
-
-            if 'CANCELLED' in result:
-                utils.popMessageBox(
-                    "插件在运行中发生了一个异常错误：|"
-                    + str(result['CANCELLED'])
-                    + "|请联系开发者，并提供日志文件")
+                message = "屋顶已重新营造！"
+            elif 'CANCELLED' in result:
+                message = ("插件在运行中发生了一个异常错误：|- “"
+                + str(result['CANCELLED'])
+                + "”|请联系开发者，并提供日志文件")
+                type = {'ERROR'}
+            
+            if message != '':
+                utils.popMessageBox(message)
+                self.report(type,message)
 
         return {'FINISHED'}
     
@@ -645,12 +657,16 @@ class ACA_OT_Show_Message_Box(bpy.types.Operator):
         # 提示内容，多行之间用'|'分割
         message_list = self.message.split("|")
         for n,li in enumerate(message_list):
-            if n==0: 
-                icon=self.icon
-            else:
-                icon = 'BLANK1'
-            row=self.layout.row()
-            row.label(text=li,icon=icon)
+            # 对异常信息等很长的行，再次进行二次拆分
+            chunkSize = 64
+            liSplit = utils.splitText(li,chunkSize)
+            for m,lis in enumerate(liSplit):
+                if m+n==0: 
+                    icon=self.icon
+                else:
+                    icon = 'BLANK1'
+                row=self.layout.row()
+                row.label(text=lis,icon=icon)
         if not self.restored and self.center:
             context.window.cursor_warp(self.orig_x, self.orig_y)
             self.restored = True

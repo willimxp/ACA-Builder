@@ -263,7 +263,7 @@
 		<use_hallway type="BoolProperty">True</use_hallway>
 		<liangtou type="FloatProperty">0.4</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
-		<shoushan type="FloatProperty">1.451</shoushan>
+		<shoushan type="FloatProperty">1.304</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
 		<juzhe type="EnumProperty">0</juzhe>
 		<tile_color type="EnumProperty">0</tile_color>

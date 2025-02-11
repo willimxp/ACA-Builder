@@ -11,6 +11,7 @@ from . import template
 
 isFinished = True
 buildStatus = ''
+progress = 0
 
 # 开始新的营造
 def build():
@@ -24,10 +25,12 @@ def build():
     # 获取模板类型，建筑或院墙
     acaType = template.getBuildingType(templateName)
 
-    # 根据模板类型调用不同的入口
-    global isFinished
+    # 调用进度条
+    global isFinished,progress
     isFinished = False
+    progress = 0
 
+    # 根据模板类型调用不同的入口
     if acaType == con.ACA_TYPE_BUILDING:
         from . import buildFloor
         buildFloor.buildFloor(None)
@@ -44,9 +47,12 @@ def updateBuilding(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
 
-    global isFinished
+    # 调用进度条
+    global isFinished,progress
     isFinished = False
+    progress = 0
 
+    # 根据模板类型调用不同的入口
     if bData.aca_type == con.ACA_TYPE_BUILDING:
         from . import buildFloor
         buildFloor.buildFloor(buildingObj)

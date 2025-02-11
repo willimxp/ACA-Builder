@@ -1050,6 +1050,8 @@ def redrawViewport():
     do = bpy.context.scene.ACA_data.is_auto_redraw
     if do:
         bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+    from . import build
+    build.progress += 0.05
     return 
 
 # 删除所有无用数据，以免拖累性能

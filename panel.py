@@ -71,9 +71,13 @@ class ACA_PT_basic(bpy.types.Panel):
             # 运行中提示
             if not build.isFinished:
                 row = layout.row()
-                row.label(text='生成中：'+build.buildStatus,icon='INFO')
+                row.label(text='生成中：需要20~90秒，请耐心等待。',icon='INFO')
                 row = layout.row()
-                row.label(text='一般需要20~80秒左右，请耐心等待。')
+                row.progress(
+                    type="BAR",
+                    factor=build.progress,
+                    text=build.buildStatus,
+                )
             else:
                 # 斗口值
                 if bData!= None:

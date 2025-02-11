@@ -456,6 +456,7 @@ class ACA_OT_build_roof(bpy.types.Operator):
         else:
             from . import build
             build.isFinished = False
+            build.progress = 0
 
             # 生成屋顶
             funproxy = partial(

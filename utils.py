@@ -718,11 +718,19 @@ def outputMsg(msg:str):
     # 更新到build进度中
     from . import build
     build.buildStatus = msg
+    # 更新进度条
+    if build.progress < 0.5:
+        build.progress += 0.05
+    elif build.progress < 0.8:
+        build.progress += 0.02
+    else:
+        build.progress += 0.01
     
     # 界面刷新
     try:
         #console_print(strout)
         redrawViewport()
+        return 
     except Exception as e:
         print(e)
         logError(e)
@@ -1050,9 +1058,6 @@ def redrawViewport():
     do = bpy.context.scene.ACA_data.is_auto_redraw
     if do:
         bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
-    from . import build
-    build.progress += 0.05
-    return 
 
 # 删除所有无用数据，以免拖累性能
 def delOrphan():

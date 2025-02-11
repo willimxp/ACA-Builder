@@ -373,7 +373,7 @@ def buildSingleWall(
         # 删除wallproxy
         utils.delObject(wallproxy)
 
-        utils.outputMsg("Wall: " + wallObj.name)
+        utils.outputMsg("Building " + wallObj.name)
 
     utils.focusObj(wallObj)
 

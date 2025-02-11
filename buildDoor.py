@@ -848,7 +848,7 @@ def buildDoor(wallProxy:bpy.types.Object):
         kankuangList.append(wallHeadBoard)
 
     # 合并槛框
-    kankuangJoined = utils.joinObjects(kankuangList,'槛框')
+    kankuangJoined = utils.joinObjects(kankuangList,'隔扇槛框')
     # 将隔扇挂入槛框父节点
     for geshan in geshanList:
         utils.changeParent(geshan,kankuangJoined,resetOrigin=False)

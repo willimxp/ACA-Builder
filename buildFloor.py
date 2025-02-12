@@ -756,6 +756,87 @@ def getPillerHeight(buildingObj,pillerID):
 
     return pillerHeight
 
+# 计算檐柱、金柱高度
+# 檐柱直接返回用户输入的柱高
+# 金柱如果不做斗拱、不做廊间举架，与檐柱通高
+# 如果做斗拱，则抬升斗拱高度-2*正心枋
+# 如果做廊间举架，则额外抬升檐步举高
+def resizeInnerPillerHeight(buildingObj,pillerID):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    pillerIndex = pillerID.split('/')
+    x = int(pillerIndex[0])
+    y = int(pillerIndex[1])
+
+    # 默认为用户输入的檐柱高
+    pillerHeight = bData.piller_height
+
+    # 1、判断是否要做斗栱增高
+    needLiftDG = False
+    if x not in (0,bData.x_rooms) \
+        and y not in (0,bData.y_rooms):
+        needLiftDG = True
+    
+    # 如果有斗拱，先增高到挑檐桁底皮
+    if needLiftDG and bData.use_dg:
+        pillerHeight += bData.dg_height
+        # 是否使用平板枋
+        if bData.use_pingbanfang:
+            pillerHeight += con.PINGBANFANG_H*dk
+        # 向下扣除两根正心枋，即到了梁底高度
+        pillerHeight -= 4*dk
+
+
+    # 2、判断是否需要做廊步举架
+    needResizePiller = False
+    if bData.y_rooms>=3 and bData.use_hallway:
+        # 如果2坡顶，则前后廊柱全部升高
+        if bData.roof_style in (
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG,
+            con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG,
+        ):
+            if y in (1,bData.y_rooms-1):
+                needResizePiller = True
+        # 如果4坡顶，则仅内圈廊柱升高（无论前后廊，还是周围廊）
+        if bData.roof_style in (
+            con.ROOF_LUDING,
+            con.ROOF_WUDIAN,
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,
+        ):
+            # 前后檐
+            if x not in (0,bData.x_rooms) \
+                and y in (1,bData.y_rooms-1):
+                needResizePiller = True
+            # 两山
+            if x in (1,bData.x_rooms-1)  \
+                and y not in (0,bData.y_rooms):
+                needResizePiller = True
+
+    if needResizePiller:
+        # 计算廊间进深
+        net_x,net_y = getFloorDate(buildingObj)
+        rafterSpan = abs(net_y[1]-net_y[0])
+        # 如果带斗拱，叠加斗栱出跳
+        if bData.use_dg:
+            rafterSpan += bData.dg_extend
+        # 乘以举折系数
+        lift_ratio = []
+        if bData.juzhe == '0':
+            lift_ratio = con.LIFT_RATIO_DEFAULT
+        if bData.juzhe == '1':
+            lift_ratio = con.LIFT_RATIO_BIG
+        if bData.juzhe == '2':
+            lift_ratio = con.LIFT_RATIO_SMALL
+        if bData.juzhe == '3':
+            lift_ratio = con.LIFT_RATIO_FLAT
+        pillerHeight += rafterSpan*lift_ratio[0]  
+
+    return pillerHeight
+
 # 根据柱网数组，排布柱子
 # 1. 第一次按照模板生成，柱网下没有柱，一切从0开始；
 # 2. 用户调整柱网的开间、进深，需要保持柱子的高、径、样式
@@ -847,9 +928,12 @@ def buildPillers(buildingObj:bpy.types.Object):
             pillerObj.ACA_data['aca_obj'] = True
             pillerObj.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
             pillerObj.ACA_data['pillerID'] = pillerID
-            # 241124 添加廊间金柱的升高处理
-            if y_rooms>=3 and bData.use_hallway:
-                pillerObj.dimensions.z = getPillerHeight(
+            # # 241124 添加廊间金柱的升高处理
+            # if y_rooms>=3 and bData.use_hallway:
+            #     pillerObj.dimensions.z = getPillerHeight(
+            #         buildingObj,pillerID)
+            # 250212 金柱的升高处理（包含廊间举架）
+            pillerObj.dimensions.z = resizeInnerPillerHeight(
                     buildingObj,pillerID)
             # 应用拉伸
             utils.applyTransfrom(pillerObj,use_scale=True)

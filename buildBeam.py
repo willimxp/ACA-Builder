@@ -166,6 +166,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
         else:
             # 不做廊步架，则所有步架平分
             rafterSpan = roomDepth/rafterCount
+            rafterSpan0 = rafterSpan    # 檐步架宽度，后续使用
         # 盝顶：直接采用用户设置的参数
         if roofStyle == con.ROOF_LUDING:
             rafterSpan = bData.luding_rafterspan

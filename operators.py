@@ -55,7 +55,7 @@ class ACA_OT_add_building(bpy.types.Operator):
         if 'FINISHED' in result:
             templateName = bpy.context.scene.ACA_data.template
             runTime = time.time() - timeStart
-            message = "参数化营造完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
+            message = "从模板样式新建完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
                         % (templateName,runTime)
         elif 'CANCELLED' in result:
             message = ("插件在运行中发生了一个异常错误：|- “"
@@ -92,12 +92,13 @@ class ACA_OT_update_building(bpy.types.Operator):
         type = {'INFO'}
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
-            message = "更新建筑完成！(%s , %.1f秒)" \
+            message = "更新建筑完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
                         % (buildingName,runTime)
         elif 'CANCELLED' in result:
             message = ("插件在运行中发生了一个异常错误：|- “"
                 + str(result['CANCELLED'])
                 + "”|请联系开发者，并提供日志文件")
+            type = {'ERROR'}
 
         if message != '':
             utils.popMessageBox(message)
@@ -460,32 +461,36 @@ class ACA_OT_build_roof(bpy.types.Operator):
         if buildingObj == None:
             utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
             return {'FINISHED'}
-        else:
-            from . import build
-            build.isFinished = False
-            build.progress = 0
+        buildingName = buildingObj.name
+        timeStart = time.time()
 
-            # 生成屋顶
-            funproxy = partial(
-                buildRoof.buildRoof,
-                buildingObj=buildingObj)
-            result = utils.fastRun(funproxy)
-            
-            build.isFinished = True
+        from . import build
+        build.isFinished = False
+        build.progress = 0
 
-            message=''
-            type = {'INFO'}
-            if 'FINISHED' in result:
-                message = "屋顶已重新营造！"
-            elif 'CANCELLED' in result:
-                message = ("插件在运行中发生了一个异常错误：|- “"
-                + str(result['CANCELLED'])
-                + "”|请联系开发者，并提供日志文件")
-                type = {'ERROR'}
-            
-            if message != '':
-                utils.popMessageBox(message)
-                self.report(type,message)
+        # 生成屋顶
+        funproxy = partial(
+            buildRoof.buildRoof,
+            buildingObj=buildingObj)
+        result = utils.fastRun(funproxy)
+        
+        build.isFinished = True
+
+        message=''
+        type = {'INFO'}
+        if 'FINISHED' in result:
+            runTime = time.time() - timeStart
+            message = "重新生成屋顶完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
+                    % (buildingName,runTime)
+        elif 'CANCELLED' in result:
+            message = ("插件在运行中发生了一个异常错误：|- “"
+            + str(result['CANCELLED'])
+            + "”|请联系开发者，并提供日志文件")
+            type = {'ERROR'}
+        
+        if message != '':
+            utils.popMessageBox(message)
+            self.report(type,message)
 
         return {'FINISHED'}
     

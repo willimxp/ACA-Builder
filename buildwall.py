@@ -196,20 +196,7 @@ def __drawWall(wallProxy:bpy.types.Object):
 
     wallParts = []
 
-    # 针对重檐，装修不一定做到柱头，用走马板填充
-    if bData.wall_span != 0 :
-        wallHeadBoard = utils.addCube(
-                name = "走马板",
-                location=(0,0,
-                    wallHeight \
-                        +bData.wall_span/2),
-                dimension=(wallLength,
-                           con.BOARD_YOUE_Y*dk,
-                           bData.wall_span),
-                parent=wallProxy,
-            )
-        mat.setMat(wallHeadBoard,aData.mat_wood)
-        wallParts.append(wallHeadBoard)
+    
 
     # 1、创建下碱对象
     # 下碱一般取墙体高度的1/3
@@ -277,6 +264,23 @@ def __drawWall(wallProxy:bpy.types.Object):
     modBevel:bpy.types.BevelModifier = \
         bodyObj.modifiers.new('Bevel','BEVEL')
     modBevel.width = con.BEVEL_HIGH
+
+    # 针对重檐，装修不一定做到柱头，用走马板填充
+    if bData.wall_span != 0 :
+        wallHeadBoard = utils.addCube(
+                name = "走马板",
+                location=(0,0,
+                    (wallHeight/2 
+                     + extrudeHeight/2
+                     +bData.wall_span/2)
+                ),
+                dimension=(wallLength,
+                           con.BOARD_YOUE_Y*dk,
+                           bData.wall_span),
+                parent=bodyObj,
+            )
+        mat.setMat(wallHeadBoard,aData.mat_red)
+        wallParts.append(wallHeadBoard)
 
     return bodyObj
 

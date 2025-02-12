@@ -844,7 +844,7 @@ def buildDoor(wallProxy:bpy.types.Object):
                            bData.wall_span),
                 parent=wallProxy,
             )
-        mat.setMat(wallHeadBoard,aData.mat_wood)
+        mat.setMat(wallHeadBoard,aData.mat_red)
         kankuangList.append(wallHeadBoard)
 
     # 合并槛框

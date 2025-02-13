@@ -421,9 +421,10 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
         # 正心桁下不做枋
         if n == 0: 
             useHengFang = False
-        # 做廊步架时，金桁下不做枋
-        if bData.use_hallway and n == 1:
-            useHengFang = False
+        # 250213 下面这个逻辑没有看懂，暂时屏蔽，待观察
+        # # 做廊步架时，金桁下不做枋
+        # if bData.use_hallway and n == 1:
+        #     useHengFang = False
         
         if useHengFang: 
             # 5、桁枋
@@ -822,12 +823,7 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
     else:
         # 庑殿的趴梁
         if bData.roof_style == con.ROOF_WUDIAN:
-            # 如果做廊间举架，下金桁则无需做趴梁
-            if bData.use_hallway:
-                rangeStart = 1
-            else:
-                rangeStart = 0
-            beamRange = range(rangeStart,len(purlin_pos)-2)
+            beamRange = range(0,len(purlin_pos)-2)
         # 歇山的趴梁只从正心桁向上做一根
         if bData.roof_style in (con.ROOF_XIESHAN,
                      con.ROOF_XIESHAN_JUANPENG):
@@ -845,6 +841,12 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
     
     gabelBeamList = []
     for n in beamRange:
+        use_beam = True
+        use_tuo = True
+        # 廊间举架的下金桁下，只做坨橔，不做趴梁
+        if n==0 and bData.use_hallway:
+            use_beam = False
+
         # 如果找不到梁架，极端情况可能没有，取上层槫子坐标
         if beamX == 0:
             beamX = purlin_pos[n+1].x
@@ -867,44 +869,47 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
             con.GABELBEAM_HEIGHT*dk
         ))
         # 3、创建趴梁
-        gabelBeam = __drawGabelBeam(
-            name="趴梁",
-            location=loc,
-            dimension=dim,
-            parent=beamRootObj,
-        )
-        gabelBeamList.append(gabelBeam)
-        utils.addModifierMirror(
-            object=gabelBeam,
-            mirrorObj=beamRootObj,
-            use_axis=(True,True,False)
-        )
+        if use_beam:
+            gabelBeam = __drawGabelBeam(
+                name="趴梁",
+                location=loc,
+                dimension=dim,
+                parent=beamRootObj,
+            )
+            gabelBeamList.append(gabelBeam)
+            utils.addModifierMirror(
+                object=gabelBeam,
+                mirrorObj=beamRootObj,
+                use_axis=(True,True,False)
+            )
         # 4、创建坨橔
-        tuodunHeight = (purlin_pos[n+1].z - purlin_pos[n].z
-                  - con.GABELBEAM_HEIGHT*dk)       
-        tuodunLoc = purlin_pos[n+1] - Vector((0,0,tuodunHeight/2))
-        tuodunDim = Vector((
-            con.GABELBEAM_DEPTH*dk,
-            con.GABELBEAM_DEPTH*dk,
-            tuodunHeight
-        ))
-        tuodunObj = utils.addCube(
-            name='坨橔',
-            location=tuodunLoc,
-            dimension=tuodunDim,
-            parent=beamRootObj,
-        )
-        gabelBeamList.append(tuodunObj)
-        # 添加bevel
-        modBevel:bpy.types.BevelModifier = \
-            tuodunObj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = con.BEVEL_HIGH
-        modBevel.offset_type = 'WIDTH'
-        utils.addModifierMirror(
-            object=tuodunObj,
-            mirrorObj=beamRootObj,
-            use_axis=(True,True,False)
-        )
+        if use_tuo:
+            tuodunHeight = purlin_pos[n+1].z - purlin_pos[n].z 
+            if use_beam:
+                tuodunHeight -= con.GABELBEAM_HEIGHT*dk
+            tuodunLoc = purlin_pos[n+1] - Vector((0,0,tuodunHeight/2))
+            tuodunDim = Vector((
+                con.GABELBEAM_DEPTH*dk,
+                con.GABELBEAM_DEPTH*dk,
+                tuodunHeight
+            ))
+            tuodunObj = utils.addCube(
+                name='坨橔',
+                location=tuodunLoc,
+                dimension=tuodunDim,
+                parent=beamRootObj,
+            )
+            gabelBeamList.append(tuodunObj)
+            # 添加bevel
+            modBevel:bpy.types.BevelModifier = \
+                tuodunObj.modifiers.new('Bevel','BEVEL')
+            modBevel.width = con.BEVEL_HIGH
+            modBevel.offset_type = 'WIDTH'
+            utils.addModifierMirror(
+                object=tuodunObj,
+                mirrorObj=beamRootObj,
+                use_axis=(True,True,False)
+            )
     
     # 合并趴梁
     gabelBeamJoined = utils.joinObjects(

@@ -2825,28 +2825,33 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
-
     # 绘制象眼板上沿曲线
     xybVerts = []
     # 悬山的象眼板在山柱中线处
     xyb_x = bData.x_total/2
 
     # 241119 有斗拱的悬山建筑，向下延伸象眼板，封闭缝隙
-    if bData.roof_style in (
-            con.ROOF_XUANSHAN,
-            con.ROOF_XUANSHAN_JUANPENG):
-        if bData.use_dg:
-            # 有斗拱的，向下延伸：一斗栱高
-            point = Vector((xyb_x,
-                            purlin_pos[0].y,
-                            - bData.dg_height))
-        else:
-            # 无斗拱的，向下延伸：垫板高度
-            point = Vector((xyb_x,
-                            purlin_pos[0].y,
-                            - con.BOARD_HENG_H*dk))
-        xybVerts.insert(0,point*Vector((1,-1,1)))
-        xybVerts.append(point)
+    
+    # 有斗拱的，向下延伸：一斗栱高
+    extend = 0
+    if bData.use_dg:
+        extend += bData.dg_height
+        if bData.use_pingbanfang:
+            extend += con.PINGBANFANG_H*dk
+    # 做廊间举架的，向下延伸额枋/小额枋高度
+    if bData.use_hallway:
+        # 大额枋
+        extend += con.EFANG_LARGE_H*dk
+        if bData.use_smallfang:
+            # 小额枋
+            extend += con.EFANG_SMALL_H*dk
+            # 由额垫板
+            extend += con.BOARD_YOUE_H*dk
+    point = Vector((xyb_x,
+                    purlin_pos[0].y,
+                    -extend))
+    xybVerts.insert(0,point*Vector((1,-1,1)))
+    xybVerts.append(point)
 
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
     # 悬山从正心桁做起

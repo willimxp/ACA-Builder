@@ -160,9 +160,9 @@ def update_dougong(self, context:bpy.types.Context):
         #     buildingObj=buildingObj)
         
         # 241125 修改斗栱时，涉及到柱高的变化，最好是全屋更新
-        from . import buildRoof
+        from . import build
         funproxy = partial(
-                buildRoof.buildRoof,
+                build.updateBuilding,
                 buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:

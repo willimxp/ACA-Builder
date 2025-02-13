@@ -347,7 +347,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
         py = int(py)
 
         # 判断柱子是否为金柱，并向相邻的檐柱做穿插枋
-        # 前后檐
+        # 前后檐（包括2坡顶和4坡顶）
         if (py in (1,bData.y_rooms-1)
              and px not in (0, bData.x_rooms) ):
             if net_y[py] < 0:
@@ -358,17 +358,23 @@ def __buildCCFang(buildingObj:bpy.types.Object):
                 # 北面
                 ccfangList.append("%d/%d#%d/%d" 
                             % (px,py,px,py+1))
-        # 两山
-        if (px in (1, bData.x_rooms-1) 
-             and py not in (0,bData.y_rooms)):
-            if net_x[px] < 0:
-                # 西面
-                ccfangList.append("%d/%d#%d/%d" 
-                            % (px,py,px-1,py))
-            else:
-                # 东面
-                ccfangList.append("%d/%d#%d/%d" 
-                            % (px,py,px+1,py))
+        # 如果4坡顶，两山做穿插枋
+        if bData.roof_style in (
+            con.ROOF_LUDING,
+            con.ROOF_WUDIAN,
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,
+        ):
+            if (px in (1, bData.x_rooms-1) 
+                and py not in (0,bData.y_rooms)):
+                if net_x[px] < 0:
+                    # 西面
+                    ccfangList.append("%d/%d#%d/%d" 
+                                % (px,py,px-1,py))
+                else:
+                    # 东面
+                    ccfangList.append("%d/%d#%d/%d" 
+                                % (px,py,px+1,py))
 
     # 循环生成穿插枋
     # 从柱头向下一个大额枋

@@ -27,21 +27,20 @@ def __addRoofRoot(buildingObj:bpy.types.Object):
     if roofRootObj != None:
         utils.deleteHierarchy(roofRootObj)
     else:
+        # 250108 以柱头为屋顶层的起始点
+        # 台基高度 + 柱高
+        bData : acaData = buildingObj.ACA_data # 载入数据
+        tile_base = bData.platform_height \
+                    + bData.piller_height 
+        
         # 创建根节点
-        bpy.ops.object.empty_add(type='PLAIN_AXES')
-        roofRootObj = bpy.context.object
-        roofRootObj.name = '屋顶层'
-        roofRootObj.parent = buildingObj
+        roofRootObj = utils.addEmpty(
+            name='屋顶层',
+            parent = buildingObj,
+            location=(0,0,tile_base),
+        )
         roofRootObj.ACA_data['aca_obj'] = True
         roofRootObj.ACA_data['aca_type'] = con.ACA_TYPE_ROOF_ROOT
-
-    # 250108 以柱头为屋顶层的起始点
-    # 台基高度 + 柱高
-    bData : acaData = buildingObj.ACA_data # 载入数据
-    tile_base = bData.platform_height \
-                + bData.piller_height
-    
-    roofRootObj.location = (0,0,tile_base)       
 
     return roofRootObj
 
@@ -55,17 +54,19 @@ def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     if rafterRootObj == None:
-        # 创建椽望根对象
-        bpy.ops.object.empty_add(
-            type='PLAIN_AXES',location=(0,0,0))
-        rafterRootObj = bpy.context.object
-        rafterRootObj.name = "椽望层"
-        rafterRootObj.ACA_data['aca_obj'] = True
-        rafterRootObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER_ROOT
         # 绑定在屋顶根节点下
         roofRootObj = utils.getAcaChild(
             buildingObj,con.ACA_TYPE_ROOF_ROOT)
-        rafterRootObj.parent = roofRootObj
+        
+        # 创建椽望根对象
+        rafterRootObj = utils.addEmpty(
+            name = "椽望层",
+            parent = roofRootObj,
+            location=(0,0,0)
+        )
+        rafterRootObj.ACA_data['aca_obj'] = True
+        rafterRootObj.ACA_data['aca_type'] = con.ACA_TYPE_RAFTER_ROOT
+        
     else:
         utils.deleteHierarchy(rafterRootObj)
         utils.focusCollByObj(rafterRootObj)

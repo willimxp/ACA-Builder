@@ -428,6 +428,34 @@ def alignToVector(vector) -> Vector:
     euler = quaternion.to_euler('XYZ')
     return euler
 
+# 添加一个empty对象
+def addEmpty(name=None,
+            type='PLAIN_AXES',
+            radius=1,
+            location=(0,0,0),
+            rotation=(0,0,0),
+            parent=None,
+            hide=True,
+            ):
+    bpy.ops.object.empty_add(
+        type=type,
+        radius=radius,
+        location=location,
+        rotation=rotation
+        )
+    emptyObj = bpy.context.object
+
+    if name != None:
+        emptyObj.name = name
+    else:
+        emptyObj.name = 'empty'
+        
+    if parent != None:
+        emptyObj.parent = parent
+    if hide:
+        hideObj(emptyObj)
+    return emptyObj
+
 # low level cube create
 # https://blender.stackexchange.com/questions/305262/low-level-fast-way-to-create-cube
 # 特别是避免了applyTransform中updateScene导致的性能影响

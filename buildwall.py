@@ -17,16 +17,16 @@ from . import texture as mat
 
 # 创建新地盘对象（empty）
 def __addWallrootNode(buildingObj:bpy.types.Object):
-    # 创建新地盘对象（empty）
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
-    wallrootObj = bpy.context.object
-    wallrootObj.name = "装修层"
-    wallrootObj.parent = buildingObj  # 挂接在对应建筑节点下
-    wallrootObj.ACA_data['aca_obj'] = True
-    wallrootObj.ACA_data['aca_type'] = con.ACA_TYPE_WALL_ROOT
     #与台基顶面对齐
     wall_z = buildingObj.ACA_data.platform_height
-    wallrootObj.location = (0,0,wall_z)
+    # 创建新地盘对象（empty）
+    wallrootObj = utils.addEmpty(
+        name = "装修层",
+        parent = buildingObj,
+        location = (0,0,wall_z),
+    )
+    wallrootObj.ACA_data['aca_obj'] = True
+    wallrootObj.ACA_data['aca_type'] = con.ACA_TYPE_WALL_ROOT
     return wallrootObj
 
 # 计算墙体数据

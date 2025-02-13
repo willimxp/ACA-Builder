@@ -21,15 +21,12 @@ def __addBuildingRoot(templateName):
     # 创建或锁定根目录
     coll = utils.setCollection(templateName)
     # 创建buildObj根节点
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
-    buildingObj = bpy.context.object
-    buildingObj.location = bpy.context.scene.cursor.location   # 原点摆放在3D Cursor位置
-    buildingObj.name = templateName   # 系统遇到重名会自动添加00x的后缀       
-    buildingObj.empty_display_type = 'SPHERE'
-
+    buildingObj = utils.addEmpty(
+        name = templateName,
+        location = bpy.context.scene.cursor.location,
+    )
     bData:acaData = buildingObj.ACA_data
     bData['template_name'] = templateName
-    
     return buildingObj
 
 # 平铺瓦顶

@@ -25,12 +25,11 @@ def __addBuildingRoot(templateName):
     # 创建或锁定根目录
     coll = utils.setCollection(templateName)
     # 创建buildObj根节点
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
-    buildingObj = bpy.context.object
-    buildingObj.location = bpy.context.scene.cursor.location   # 原点摆放在3D Cursor位置
-    buildingObj.name = templateName   # 系统遇到重名会自动添加00x的后缀       
-    buildingObj.empty_display_type = 'SPHERE' 
-
+    # 原点摆放在3D Cursor位置
+    buildingObj = utils.addEmpty(
+        name=templateName,
+        location=bpy.context.scene.cursor.location
+    )
     bData:acaData = buildingObj.ACA_data
     bData['template_name'] = templateName
 
@@ -793,16 +792,16 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 1、查找或新建地盘根节点
     floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
     if floorRootObj == None:        
-        # 创建新地盘对象（empty）===========================================================
-        bpy.ops.object.empty_add(type='PLAIN_AXES')
-        floorRootObj = bpy.context.object
-        floorRootObj.name = "柱网层"
-        floorRootObj.parent = buildingObj  # 挂接在对应建筑节点下
-        floorRootObj.ACA_data['aca_obj'] = True
-        floorRootObj.ACA_data['aca_type'] = con.ACA_TYPE_FLOOR_ROOT
         #与台基顶面对齐
         floor_z = bData.platform_height
-        floorRootObj.location = (0,0,floor_z)
+        # 创建新地盘对象（empty）
+        floorRootObj = utils.addEmpty(
+            name="柱网层",
+            parent=buildingObj,
+            location = (0,0,floor_z)
+        )
+        floorRootObj.ACA_data['aca_obj'] = True
+        floorRootObj.ACA_data['aca_type'] = con.ACA_TYPE_FLOOR_ROOT
     else:
         # 清空地盘下所有的柱子、柱础
         utils.deleteHierarchy(floorRootObj)

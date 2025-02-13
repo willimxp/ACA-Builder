@@ -543,13 +543,11 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     geshan_bevel = con.BEVEL_LOW
 
     # 1、隔扇根对象
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
-    geshan_root:bpy.types.Object = bpy.context.object
-    geshan_root.name = name
-    geshan_root.location = location
-    geshan_root.parent = wallproxy  # 绑定到外框父对象
-    # 隐藏隔扇根节点
-    utils.hideObj(geshan_root)  
+    geshan_root = utils.addEmpty(
+        name=name,
+        location=location,
+        parent=wallproxy,   # 绑定到外框父对象
+    )
     
     # 2、构造隔扇数据
     geshanData,windowsillZ = __getGeshanData(

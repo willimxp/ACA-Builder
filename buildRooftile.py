@@ -26,17 +26,17 @@ def __setTileRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 新建或清空根节点
     tileRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_TILE_ROOT)
     if tileRootObj == None:
-        # 创建屋顶根对象
-        bpy.ops.object.empty_add(
-            type='PLAIN_AXES',location=(0,0,0))
-        tileRootObj = bpy.context.object
-        tileRootObj.name = "瓦作层"
-        tileRootObj.ACA_data['aca_obj'] = True
-        tileRootObj.ACA_data['aca_type'] = con.ACA_TYPE_TILE_ROOT
         # 绑定在屋顶根节点下
         roofRootObj = utils.getAcaChild(
             buildingObj,con.ACA_TYPE_ROOF_ROOT) 
-        tileRootObj.parent = roofRootObj
+        # 创建屋顶根对象
+        tileRootObj = utils.addEmpty(
+            name = "瓦作层",
+            parent = roofRootObj,
+            location=(0,0,0)
+        )
+        tileRootObj.ACA_data['aca_obj'] = True
+        tileRootObj.ACA_data['aca_type'] = con.ACA_TYPE_TILE_ROOT
     else:
         utils.deleteHierarchy(tileRootObj)
         utils.focusCollByObj(tileRootObj)
@@ -1212,13 +1212,11 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     modArray.fit_length = zhengji_length
 
     # 45度镜像
-    bpy.ops.object.empty_add(
-        type='PLAIN_AXES',
+    diagnalObj = utils.addEmpty(
+        name = '45度镜像',
+        parent = tileRootObj,
         location=ridgeCross
-        )
-    diagnalObj = bpy.context.object
-    diagnalObj.parent = tileRootObj
-    diagnalObj.name = '45度镜像'
+    )
     diagnalObj.rotation_euler.z = math.radians(45)
     mod:bpy.types.MirrorModifier = \
         roofRidgeObj.modifiers.new('45度对称','MIRROR')

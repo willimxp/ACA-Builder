@@ -23,22 +23,15 @@ def __addBeamRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 新建或清空根节点
     beamRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_BEAM_ROOT)
-    if beamRootObj == None:
-        # 创建梁架根对象
-        bpy.ops.object.empty_add(
-            type='PLAIN_AXES',location=(0,0,0))
-        beamRootObj = bpy.context.object
-        beamRootObj.name = "梁架层"
-        beamRootObj.ACA_data['aca_obj'] = True
-        beamRootObj.ACA_data['aca_type'] = con.ACA_TYPE_BEAM_ROOT
-        # 绑定在屋顶根节点下
-        roofRootObj = utils.getAcaChild(
-            buildingObj,con.ACA_TYPE_ROOF_ROOT)
-        beamRootObj.parent = roofRootObj
-    else:
-        # 清空梁架节点下的所有子节点
+    # 清空梁架节点下的所有子节点
+    if beamRootObj !=None:
         utils.deleteHierarchy(beamRootObj)
         utils.focusCollByObj(beamRootObj)
+        return
+    
+    # 绑定在屋顶根节点下
+    roofRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_ROOF_ROOT)
 
     # 250108 屋顶层原点改为柱头，椽望层相应抬高到斗栱高度
     bData : acaData = buildingObj.ACA_data
@@ -53,7 +46,15 @@ def __addBeamRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     else:
         # 以大梁抬升金桁垫板高度，即为挑檐桁下皮位置
         zLoc += con.BOARD_HENG_H*dk
-    beamRootObj.location.z = zLoc
+
+    # 创建梁架根对象
+    beamRootObj = utils.addEmpty(
+        name='梁架层',
+        location=(0,0,zLoc),
+        parent=roofRootObj
+    )
+    beamRootObj.ACA_data['aca_obj'] = True
+    beamRootObj.ACA_data['aca_type'] = con.ACA_TYPE_BEAM_ROOT
 
     return beamRootObj
 

@@ -782,19 +782,17 @@ def buildPlatform(buildingObj:bpy.types.Object):
     baseRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_BASE_ROOT)
     if baseRootObj == None:        
-        # 创建新台基对象（empty）===========================================================
-        bpy.ops.object.empty_add(type='PLAIN_AXES')
-        baseRootObj = bpy.context.object
-        baseRootObj.name = "台基层"
-        baseRootObj.parent = buildingObj  # 挂接在对应建筑节点下
+        # 创建新台基对象（empty）
+        baseRootObj = utils.addEmpty(
+            name="台基层",
+            parent = buildingObj,
+            location = (0,0,bData.platform_height/2) #以台基几何中心为origin
+        )
         baseRootObj.ACA_data['aca_obj'] = True
         baseRootObj.ACA_data['aca_type'] = con.ACA_TYPE_BASE_ROOT
     else:
         # 清空台基下属的台明、踏跺
         utils.deleteHierarchy(baseRootObj)
-    
-    #以台基几何中心为origin
-    baseRootObj.location = (0,0,bData.platform_height/2)
     
     # 2、开始构建台基
     # 收集待合并的部件
@@ -814,12 +812,6 @@ def buildPlatform(buildingObj:bpy.types.Object):
     # basePartList.append(sanshuiObj)
     # 3、合并构件
     baseJoined = utils.joinObjects(basePartList)
-
-     # 更新建筑框大小
-    buildingObj.empty_display_size = math.sqrt(
-            taimingObj.dimensions.x * taimingObj.dimensions.x
-            + taimingObj.dimensions.y * taimingObj.dimensions.y
-        ) / 2
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
@@ -860,15 +852,6 @@ def resizePlatform(buildingObj:bpy.types.Object):
         # 以大梁抬升, 实际为金桁垫板高度+半桁
         tile_base += con.BOARD_HENG_H*dk + con.HENG_COMMON_D*dk/2
     roofRoot.location.z = tile_base
-
-    # 更新建筑框大小
-    if pfObj == None:
-        buildingObj.empty_display_size = bData.x_total
-    else:
-        buildingObj.empty_display_size = math.sqrt(
-                pfObj.dimensions.x * pfObj.dimensions.x
-                + pfObj.dimensions.y * pfObj.dimensions.y
-            ) / 2
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

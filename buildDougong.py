@@ -18,28 +18,20 @@ def __addDougongRoot(buildingObj:bpy.types.Object):
     # 设置目录
     buildingColl = buildingObj.users_collection[0]
     utils.setCollection('斗栱',parentColl=buildingColl) 
-    
-    # 载入数据
-    bData : acaData = buildingObj.ACA_data # 载入数据
 
     # 新建或清空根节点
     dgrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_DG_ROOT)
     if dgrootObj == None:
-        # 创建根对象（empty）===========================================================
-        # 250108 屋顶层原点改为柱头，斗栱层原点也改为柱头
-        # # 相对于屋顶层根节点（挑檐桁下皮）
-        # root_z = -bData.dg_height
-        bpy.ops.object.empty_add(
-            type='PLAIN_AXES',location=(0,0,0))
-        dgrootObj = bpy.context.object
-        dgrootObj.name = "斗栱层"
-        dgrootObj.ACA_data['aca_obj'] = True
-        dgrootObj.ACA_data['aca_type'] = con.ACA_TYPE_DG_ROOT
         # 绑定在屋顶根节点下
         roofRootObj = utils.getAcaChild(
             buildingObj,con.ACA_TYPE_ROOF_ROOT)
-        dgrootObj.parent = roofRootObj
+        # 创建根对象（empty）
+        dgrootObj = utils.addEmpty(
+            name='斗栱层',
+            parent=roofRootObj)
+        dgrootObj.ACA_data['aca_obj'] = True
+        dgrootObj.ACA_data['aca_type'] = con.ACA_TYPE_DG_ROOT
     else:
         # 清空根节点
         utils.deleteHierarchy(dgrootObj)

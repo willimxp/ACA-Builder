@@ -97,7 +97,7 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
         con.PINGBANFANG_H*dk
     )
     pingbanfangObj = utils.addCube(
-            name="平板枋",
+            name="平板枋.山面",
             location=loc,
             dimension=dimensions,
             rotation=(0,0,math.radians(90)),
@@ -114,6 +114,31 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
         mirrorObj=dgrootObj,
         use_axis=(True,False,False)
     )
+    # 如果2坡顶，则做抱头裁剪
+    if bData.roof_style in (
+        con.ROOF_XUANSHAN,
+        con.ROOF_XUANSHAN_JUANPENG,
+        con.ROOF_YINGSHAN,
+        con.ROOF_YINGSHAN_JUANPENG,
+    ):
+        pStart = Vector((0,0,0))
+        pEnd = Vector((1,0,0))
+        pCut = Vector((0,net_y[1],0))
+        utils.addBisect(
+            object=pingbanfangObj,
+            pStart=pingbanfangObj.matrix_world @ pStart,
+            pEnd=pingbanfangObj.matrix_world @ pEnd,
+            pCut=pingbanfangObj.matrix_world @ pCut,
+            clear_outer=True,
+        )
+        utils.addModifierMirror(
+            object=pingbanfangObj,
+            mirrorObj=dgrootObj,
+            use_axis=(False,True,False),
+        )
+
+
+
     # 设置材质:平板枋走龙
     mat.setMat(pingbanfangObj,
         aData.mat_paint_walkdragon)

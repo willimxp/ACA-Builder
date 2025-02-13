@@ -286,7 +286,6 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
         else:
             purlin_length_x = pCross.x * 2 + hengExtend
             
-
         # 241118 正心桁也做彩画
         if n==0:
             zhengxinhengObj = __buildYanHeng(
@@ -365,6 +364,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 hengFB.modifiers.new('Bevel','BEVEL')
             modBevel.width = con.BEVEL_LOW
         
+        # 桁垫板 =======================================================
         # 有斗拱时，正心桁下不做垫板
         if not (bData.use_dg and n == 0):
             # 4、桁垫板
@@ -388,9 +388,6 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 parent=beamRootObj,
             )
             purlinFrameList.append(dianbanObj)
-            # 无斗拱，第一层垫板刷红漆
-            if n==0 and not bData.use_dg:
-                mat.setMat(dianbanObj,aData.mat_red)
             # 添加镜像
             if (
                     # 除了脊桁
@@ -418,14 +415,15 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 dianbanObj.modifiers.new('Bevel','BEVEL')
             modBevel.width = con.BEVEL_EXLOW
         
-        # 桁枋
+        # 桁枋 =======================================================
         useHengFang = True
         # 正心桁下不做枋
         if n == 0: 
             useHengFang = False
+        # 做廊步架时，金桁下不做枋
         if bData.use_hallway and n == 1:
             useHengFang = False
-        # 做廊步架时，金桁下不做枋
+        
         if useHengFang: 
             # 5、桁枋
             loc = (0,pCross.y,
@@ -473,6 +471,18 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             modBevel:bpy.types.BevelModifier = \
                 hengfangObj.modifiers.new('Bevel','BEVEL')
             modBevel.width = con.BEVEL_LOW
+
+        # 设色 =======================================================
+        # 根据需要刷红漆，否则默认做原木色       
+        # 无斗拱时，正心桁下刷红漆
+        if n==0 and not bData.use_dg:
+            mat.setMat(dianbanObj,aData.mat_red)
+
+        # 金桁如果做承椽枋、垫板、枋，则涂红
+        if n==1 and bData.roof_style == con.ROOF_LUDING:
+            mat.setMat(hengFB,aData.mat_red)
+            mat.setMat(dianbanObj,aData.mat_red)
+            mat.setMat(hengfangObj,aData.mat_red)
 
     # 三、布置山面桁檩
     # 仅庑殿、歇山做山面桁檩，硬山、悬山不做山面桁檩
@@ -553,12 +563,11 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 use_fang = False
                 if bData.use_dg:
                     use_dianban = False
-            # 4坡顶，金桁下不做枋
+            # 4坡顶，金桁下不做枋（排除盝顶）
             if roofStyle in (
                     con.ROOF_WUDIAN,
                     con.ROOF_XIESHAN,
-                    con.ROOF_XIESHAN_JUANPENG,
-                    con.ROOF_LUDING,) and n==1:
+                    con.ROOF_XIESHAN_JUANPENG,) and n==1:
                  use_fang = False
             # 桁垫板
             if use_dianban:
@@ -629,6 +638,12 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 modBevel:bpy.types.BevelModifier = \
                     hengfangObj.modifiers.new('Bevel','BEVEL')
                 modBevel.width = con.BEVEL_LOW
+
+            # 金桁如果做承椽枋、垫板、枋，则涂红
+            if n==1 and bData.roof_style == con.ROOF_LUDING:
+                mat.setMat(hengLR,aData.mat_red)
+                mat.setMat(dianbanObj,aData.mat_red)
+                mat.setMat(hengfangObj,aData.mat_red)
 
     # 设置材质
     for obj in purlinFrameList:

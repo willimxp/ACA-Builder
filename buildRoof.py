@@ -2831,15 +2831,18 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
     xyb_x = bData.x_total/2
 
     # 241119 有斗拱的悬山建筑，向下延伸象眼板，封闭缝隙
-    
     # 有斗拱的，向下延伸：一斗栱高
     extend = 0
     if bData.use_dg:
         extend += bData.dg_height
         if bData.use_pingbanfang:
             extend += con.PINGBANFANG_H*dk
+    # 没有斗栱的，延伸一个垫板高度
+    else:
+        extend += con.BOARD_HENG_H*dk
     # 做廊间举架的，向下延伸额枋/小额枋高度
-    if bData.use_hallway:
+    # 有斗拱的，也做这个延伸
+    if bData.use_hallway or bData.use_dg:
         # 大额枋
         extend += con.EFANG_LARGE_H*dk
         if bData.use_smallfang:

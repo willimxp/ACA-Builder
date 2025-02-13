@@ -687,16 +687,26 @@ def __setYOUE(youeObj:bpy.types.Object,
     x1 = l1 - a*2
     x2 = l2 - a*2
     scale = (x2/l2)/(x1/l1)
-    bpy.ops.transform.resize(
-        value=(scale,1,1))
+    # 注意，这里缩放时要根据全局的旋转角度来判断
+    rot = youeNewObj.matrix_world.to_euler().z
+    if abs(rot) < 0.01:
+        bpy.ops.transform.resize(
+            value=(scale,1,1))
+    else:
+        bpy.ops.transform.resize(
+            value=(1,scale,1))
     
     # 4、退出编辑状态，以便后续获取uvmap
     bpy.ops.object.mode_set(mode='OBJECT')
     
     # 5、中段的UV缩放
-    b = 1.737       # 中段长度
-    c = 3           # 模板中的默认重复次数
-    scale = round(x2/b)/c
+    b = 1.737       # 每一段的最佳长度（以0.16的垫板高度，按贴图尺寸826*76转换）
+    scale = round(x2/b)
+    # scale取整后，最小不能小于1
+    if scale == 0:
+        scale = 1
+    # 模版文件中重复了3次，进行还原
+    scale = scale / 3
     uvMap = youeNewObj.data.uv_layers['UVMap']
     # 这里用fixcenter的方式，避免影响箍头的uv（箍头UV预定义为满铺）
     # vertex group无法直接传递给uvmap，因为uvmap对应到面（faceloop）

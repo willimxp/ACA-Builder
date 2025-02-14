@@ -324,7 +324,8 @@ def buildSingleWall(
 
     return
 
-def buildYardWall(buildingObj:bpy.types.Object):
+def buildYardWall(buildingObj:bpy.types.Object,
+                  templateName = None,):
     # 定位到根目录，如果没有则新建
     utils.setCollection(con.ROOT_COLL_NAME,
                         isRoot=True,colorTag=2)
@@ -332,8 +333,9 @@ def buildYardWall(buildingObj:bpy.types.Object):
     # 新建还是刷新？
     if buildingObj == None:
         utils.outputMsg("创建新建筑...")
-        # 获取panel上选择的模板
-        templateName = bpy.context.scene.ACA_data.template
+        if templateName == None:
+            # 获取panel上选择的模板
+            templateName = bpy.context.scene.ACA_data.template
         # 添加建筑根节点，同时载入模板
         buildingObj = __addBuildingRoot(templateName)
         # 在buldingObj上绑定模板bData和资产库aData

@@ -996,7 +996,8 @@ def resetFloor(buildingObj:bpy.types.Object):
 
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
-def buildFloor(buildingObj:bpy.types.Object):
+def buildFloor(buildingObj:bpy.types.Object,
+               templateName = None,):
     # 定位到collection，如果没有则新建
     utils.setCollection(con.ROOT_COLL_NAME,
                         isRoot=True,colorTag=2)
@@ -1004,8 +1005,9 @@ def buildFloor(buildingObj:bpy.types.Object):
     # 新建还是刷新？
     if buildingObj == None:
         utils.outputMsg("创建新建筑...")
-        # 获取panel上选择的模板
-        templateName = bpy.context.scene.ACA_data.template
+        if templateName == None:
+            # 获取panel上选择的模板
+            templateName = bpy.context.scene.ACA_data.template
         # 添加建筑根节点，同时载入模板
         buildingObj = __addBuildingRoot(templateName)
         # 在buldingObj上绑定模板bData和资产库aData

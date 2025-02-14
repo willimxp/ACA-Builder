@@ -333,6 +333,98 @@ def loadAssetByBuilding(buildingObj:bpy.types.Object):
     
     return
 
+def getTemplateChild(templateName):
+    path = __getPath(xmlFileName)
+    tree = ET.parse(path)
+    root = tree.getroot()
+    templates = root.findall('template')
+
+    tempChildren = []
+    for template in templates:
+        tname = template.find('template_name')
+        if tname == None: 
+            continue
+        if tname.text == templateName:
+            children = template.findall('template')
+            for child in children:
+                tname = child.find('template_name')
+                ttype = child.find('aca_type')
+                tempChildren.append(
+                    {
+                        'templateName': tname.text,
+                        'acaType' : ttype.text,
+                    }
+                )
+    return tempChildren
+
+def __loadTemplateSingle(
+        buildingObj:bpy.types.Object,
+        template,
+    ):    
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    
+    # 初始化bData默认值，根据DK/PD实时刷新一次
+    # 斗口
+    dk = template.find('DK')
+    if dk != None: 
+        bData['DK'] = round(float(dk.text),3)
+    # 柱径
+    pd = template.find('piller_diameter')
+    if pd != None:
+        bData['piller_diameter'] = round(float(pd.text),3)
+    # 刷新bData默认值
+    bData = __loadDefaultData(buildingObj)
+
+    # 遍历所有子节点，并绑定到对应属性
+    for node in template:
+        tag = node.tag
+        type = node.attrib['type']
+        value = node.text
+        # 类型转换
+        # 20250209 老版本的模板通过数据类型进行判断
+        if type == 'str':
+            # 特殊处理下拉框
+            if tag in ('roof_style',
+                        'juzhe',
+                        'dg_style'):
+                bData[tag] = int(value)
+            else:
+                bData[tag] = value
+        elif type == 'float':
+            bData[tag] = round(float(value),3)
+        elif type == 'int':
+            bData[tag] = int(value)
+        elif type == 'bool':
+            # 注意这里的True/False是str，用bool()强制转换时都为True，
+            # 所以以下手工进行了判断
+            if value == 'True':
+                bData[tag] = True
+            if value == 'False':
+                bData[tag] = False
+        # 20250209 新版本的模板通过bdata数据属性进行判断
+        elif type =='StringProperty':
+            bData[tag] = value
+        elif type == 'IntProperty':
+            bData[tag] = int(value)
+        elif type == 'FloatProperty':
+            bData[tag] = round(float(value),3)
+        elif type == 'BoolProperty':
+            if value == 'True':
+                bData[tag] = True
+            if value == 'False':
+                bData[tag] = False
+        elif type == 'EnumProperty':
+            bData[tag] = int(value)
+        else:
+            print("can't convert:",node.tag, 
+                    node.attrib['type'],node.text)
+
+    # 填充建筑使用的资产对象，根据其中的dg_style等不同，载入不同的资产样式
+    loadAssetByBuilding(buildingObj)
+
+    return
+
 # 载入模板
 # 直接将XML填充入bData
 # 注意，所有的属性都为选填，所以要做好空值的检查
@@ -350,71 +442,24 @@ def loadTemplate(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     templateName = bData.template_name
     
-    # 在XML中查找对应名称的那个模板
+    # 在根层次中查找对应名称的那个模板
     for template in templates:
-        nameNode = template.find('template_name')
-        if nameNode != None:
-            if nameNode.text == templateName:
-                # 初始化bData默认值，根据DK/PD实时刷新一次
-                # 模板名称
-                bData['template_name'] = nameNode.text
-                # 斗口
-                dk = template.find('dk')
-                if dk != None: 
-                    bData['DK'] = round(float(dk.text),3)
-                # 柱径
-                pd = template.find('piller_diameter')
-                if pd != None:
-                    bData['piller_diameter'] = round(float(pd.text),3)
-                # 刷新bData默认值
-                bData = __loadDefaultData(buildingObj)
-
-                # 遍历所有子节点，并绑定到对应属性
-                for node in template:
-                    tag = node.tag
-                    type = node.attrib['type']
-                    value = node.text
-                    # 类型转换
-                    # 20250209 老版本的模板通过数据类型进行判断
-                    if type == 'str':
-                        # 特殊处理下拉框
-                        if tag in ('roof_style',
-                                   'juzhe',
-                                   'dg_style'):
-                            bData[tag] = int(value)
-                        else:
-                            bData[tag] = value
-                    elif type == 'float':
-                        bData[tag] = round(float(value),3)
-                    elif type == 'int':
-                        bData[tag] = int(value)
-                    elif type == 'bool':
-                        # 注意这里的True/False是str，用bool()强制转换时都为True，
-                        # 所以以下手工进行了判断
-                        if value == 'True':
-                            bData[tag] = True
-                        if value == 'False':
-                            bData[tag] = False
-                    # 20250209 新版本的模板通过bdata数据属性进行判断
-                    elif type =='StringProperty':
-                        bData[tag] = value
-                    elif type == 'IntProperty':
-                        bData[tag] = int(value)
-                    elif type == 'FloatProperty':
-                        bData[tag] = round(float(value),3)
-                    elif type == 'BoolProperty':
-                        if value == 'True':
-                            bData[tag] = True
-                        if value == 'False':
-                            bData[tag] = False
-                    elif type == 'EnumProperty':
-                        bData[tag] = int(value)
-                    else:
-                        print("can't convert:",node.tag, 
-                              node.attrib['type'],node.text)
-
-    # 填充建筑使用的资产对象，根据其中的dg_style等不同，载入不同的资产样式
-    loadAssetByBuilding(buildingObj)
+        # 查看是否有子模版
+        tType = template.find('acaType')
+        if tType == con.ACA_TYPE_COMBO:
+            tempChildren = template.find('template')
+            for tempChild in tempChildren:
+                nameNode = tempChild.find('template_name')
+                if nameNode != None:
+                    if nameNode.text == templateName:
+                        __loadTemplateSingle(
+                            buildingObj,tempChild)
+        else:
+            nameNode = template.find('template_name')
+            if nameNode != None:
+                if nameNode.text == templateName:
+                    __loadTemplateSingle(
+                        buildingObj,template)
     
     return
 

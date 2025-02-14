@@ -13,6 +13,18 @@ isFinished = True
 buildStatus = ''
 progress = 0
 
+def __buildSingle(acaType,templateName):
+    # 根据模板类型调用不同的入口
+    if acaType == con.ACA_TYPE_BUILDING:
+        from . import buildFloor
+        buildFloor.buildFloor(None,templateName)
+    elif acaType == con.ACA_TYPE_YARDWALL:
+        from . import buildYardWall
+        buildYardWall.buildYardWall(None,templateName)
+    else:
+        utils.popMessageBox("无法创建该类型的建筑：" + templateName)
+    return
+
 # 开始新的营造
 def build():
     # 创建或锁定根目录（ACA筑韵古建）
@@ -30,15 +42,20 @@ def build():
     isFinished = False
     progress = 0
 
-    # 根据模板类型调用不同的入口
-    if acaType == con.ACA_TYPE_BUILDING:
-        from . import buildFloor
-        buildFloor.buildFloor(None)
-    elif acaType == con.ACA_TYPE_YARDWALL:
-        from . import buildYardWall
-        buildYardWall.buildYardWall(None)
+    if acaType != con.ACA_TYPE_COMBO:
+        # 单体建筑
+        __buildSingle(
+            acaType=acaType,
+            templateName=templateName
+        )
     else:
-        utils.popMessageBox("无法创建该类型的建筑：" + templateName)
+        # 组合建筑
+        tempChildren = template.getTemplateChild(templateName)
+        for child in tempChildren:
+            __buildSingle(
+                acaType=child['acaType'],
+                templateName=child['templateName']
+            )
     
     isFinished = True
     return {'FINISHED'}

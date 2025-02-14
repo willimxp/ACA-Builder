@@ -58,6 +58,9 @@ def build():
             )
     
     isFinished = True
+    
+    # 关闭视角自动锁定
+    bpy.context.scene.ACA_data['is_auto_viewall'] = False
     return {'FINISHED'}
 
 def updateBuilding(buildingObj:bpy.types.Object):

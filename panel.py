@@ -34,19 +34,19 @@ class ACA_PT_basic(bpy.types.Panel):
         toolBox = box.column(align=True)
         # 生成新建筑
         toolBar = toolBox.grid_flow(columns=2, align=True) 
-        # 是否锁定正面视角
-        col = toolBar.column(align=True)
-        col.prop(
-            data=bpy.context.scene.ACA_data,
-            property='is_auto_viewall',
-            toggle=True,
-            icon='VIS_SEL_11',
-            text=''
-        )
+        # # 是否锁定正面视角
+        # col = toolBar.column(align=True)
+        # col.prop(
+        #     data=bpy.context.scene.ACA_data,
+        #     property='is_auto_viewall',
+        #     toggle=True,
+        #     icon='VIS_SEL_11',
+        #     text=''
+        # )
         buttonAddnew = toolBar.column(align=True)
         buttonAddnew.operator(
             "aca.add_newbuilding",
-            #icon='BLANK1',
+            icon='PLAY',
             depress=True,
             text='从模板生成新建筑'
             )

@@ -102,6 +102,7 @@ def buildSingleWall(
         tileAngle,
         use_cut=False,
         ):
+    utils.outputMsg("开始墙体筑造...")
     # 载入数据
     buildingObj = wallProxy.parent
     bData:acaData = buildingObj.ACA_data
@@ -126,7 +127,6 @@ def buildSingleWall(
         location=(0,0,height/2-wallHeight/2),
         parent=wallProxy,
     )
-
     # 赋材质
     mat.setMat(bottomObj,aData.mat_rock)
 
@@ -139,9 +139,18 @@ def buildSingleWall(
         location=(0,0,0),
         parent=wallProxy,
     )
-
     # 赋材质
     mat.setMat(bodyObj,aData.mat_dust_red)
+
+    # 合并
+    modBool:bpy.types.BooleanModifier = \
+            bodyObj.modifiers.new('合并','BOOLEAN')
+    modBool.object = bottomObj
+    modBool.solver = 'EXACT'
+    modBool.operation = 'UNION'
+    modBool.material_mode = 'TRANSFER'
+    utils.applyAllModifer(bodyObj)
+    utils.delObject(bottomObj)
 
     # 3、瓦顶
     # 瓦件缩放
@@ -305,7 +314,7 @@ def buildSingleWall(
             pCut=wallProxy.matrix_world @ \
                 Vector((-wallLength/2+wallDeepth/2+cutExtend,0,0)),
             clear_inner=True,
-            use_fill=False,
+            use_fill=True,
         )
         # 右侧剪切
         utils.addBisect(
@@ -315,7 +324,7 @@ def buildSingleWall(
             pCut=wallProxy.matrix_world @ \
                 Vector((wallLength/2-wallDeepth/2-cutExtend,0,0)),
             clear_inner=True,
-            use_fill=False,
+            use_fill=True,
         )
     # 挂入根节点
     utils.changeParent(wallObj,buildingObj,resetOrigin=False)
@@ -440,5 +449,6 @@ def buildYardWall(buildingObj:bpy.types.Object,
             )
 
     utils.focusObj(buildingObj)
+    utils.outputMsg("完成墙体构造")
 
     return {'FINISHED'}

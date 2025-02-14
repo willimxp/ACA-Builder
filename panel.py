@@ -93,7 +93,16 @@ class ACA_PT_basic(bpy.types.Panel):
 
             # 更新建筑
             row = box.row(align=True)
-            # 自动更新
+            # 是否锁定正面视角
+            col = row.column(align=True)
+            col.prop(
+                data=bpy.context.scene.ACA_data,
+                property='is_auto_viewall',
+                toggle=True,
+                icon='VIS_SEL_11',
+                text=''
+            )
+            # 是否修改参数时，自动触发更新
             col = row.column(align=True)
             col.prop(
                 data=bpy.context.scene.ACA_data,
@@ -113,6 +122,8 @@ class ACA_PT_basic(bpy.types.Panel):
                 "aca.del_building",icon='TRASH',
                 text='删除建筑'
             )
+
+            
             
             # 导出功能
             box = layout.box()

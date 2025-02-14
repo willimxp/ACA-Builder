@@ -772,6 +772,10 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             items = getTemplateList,
             options = {"ANIMATABLE"},
         ) # type: ignore
+    is_auto_viewall : bpy.props.BoolProperty(
+            default = True,
+            name = "是否锁定正面视角"
+        ) # type: ignore
 
 # 全局共用的模板信息，各个建筑都进行引用
 # 包括资产库资产引用等    

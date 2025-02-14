@@ -1083,6 +1083,30 @@ def updateScene():
 # 刷新viewport，避免长时间卡死，并可见到建造过程
 def redrawViewport():
     updateScene()
+
+    # 设置窗口视角
+    lockView = bpy.context.scene.ACA_data.is_auto_viewall
+    if lockView:
+        areas  = [area for area 
+                  in bpy.context.screen.areas 
+                  if area.type == 'VIEW_3D']
+        if areas:
+            regions = [region for region 
+                       in areas[0].regions 
+                       if region.type == 'WINDOW']
+
+            if regions:
+                context_override = bpy.context.copy()
+                context_override.update({
+                    'area': areas[0],
+                    'region': regions[0],
+                })     
+                with bpy.context.temp_override(**context_override):
+                    bpy.ops.view3d.view_axis(type='FRONT')
+                    bpy.ops.view3d.view_all()
+                    #bpy.ops.view3d.view_selected()
+
+    # 窗口刷新显示
     do = bpy.context.scene.ACA_data.is_auto_redraw
     if do:
         bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)

@@ -33,11 +33,22 @@ class ACA_PT_basic(bpy.types.Panel):
 
         toolBox = box.column(align=True)
         # 生成新建筑
-        toolBar = toolBox.grid_flow(columns=1, align=True) 
+        toolBar = toolBox.grid_flow(columns=2, align=True) 
+        # 是否锁定正面视角
+        col = toolBar.column(align=True)
+        col.prop(
+            data=bpy.context.scene.ACA_data,
+            property='is_auto_viewall',
+            toggle=True,
+            icon='VIS_SEL_11',
+            text=''
+        )
         buttonAddnew = toolBar.column(align=True)
         buttonAddnew.operator(
-            "aca.add_newbuilding",icon='PLAY',
-            depress=True,text='从模板生成新建筑'
+            "aca.add_newbuilding",
+            #icon='BLANK1',
+            depress=True,
+            text='从模板生成新建筑'
             )
         
         toolBar = toolBox.grid_flow(columns=2, align=True)
@@ -93,15 +104,6 @@ class ACA_PT_basic(bpy.types.Panel):
 
             # 更新建筑
             row = box.row(align=True)
-            # 是否锁定正面视角
-            col = row.column(align=True)
-            col.prop(
-                data=bpy.context.scene.ACA_data,
-                property='is_auto_viewall',
-                toggle=True,
-                icon='VIS_SEL_11',
-                text=''
-            )
             # 是否修改参数时，自动触发更新
             col = row.column(align=True)
             col.prop(

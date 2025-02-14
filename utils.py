@@ -1102,9 +1102,12 @@ def redrawViewport():
                     'region': regions[0],
                 })     
                 with bpy.context.temp_override(**context_override):
-                    bpy.ops.view3d.view_axis(type='FRONT')
+                    
                     bpy.ops.view3d.view_all()
                     #bpy.ops.view3d.view_selected()
+                    # bpy.ops.view3d.view_axis(type='FRONT')
+                    # bpy.ops.view3d.view_orbit(angle=math.radians(45), type='ORBITRIGHT')
+                    # bpy.ops.view3d.view_orbit(angle=math.radians(15), type='ORBITUP')
 
     # 窗口刷新显示
     do = bpy.context.scene.ACA_data.is_auto_redraw

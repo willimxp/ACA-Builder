@@ -760,11 +760,18 @@ def getTemplateList(self, context):
 class ACA_data_scene(bpy.types.PropertyGroup):
     is_auto_redraw : bpy.props.BoolProperty(
             default = True,
-            name = "是否实时重绘"
+            name = "是否实时重绘",
+            description = "取消后，生成过程中不进行刷新，直到全部生成后才显示",
+        ) # type: ignore
+    is_auto_viewall : bpy.props.BoolProperty(
+            default = True,
+            name = "是否设置视角",
+            description = "取消后，不再自动切换视角，始终保持当前视角",
         ) # type: ignore
     is_auto_rebuild : bpy.props.BoolProperty(
             default = True,
-            name = "是否实时重建"
+            name = "是否实时重建",
+            description = "取消后，在大部分参数修改时，不会自动重建，直到手工点击更新建筑",
         ) # type: ignore
     template : bpy.props.EnumProperty(
             name = "样式列表",
@@ -772,11 +779,7 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             items = getTemplateList,
             options = {"ANIMATABLE"},
         ) # type: ignore
-    is_auto_viewall : bpy.props.BoolProperty(
-            default = True,
-            name = "是否锁定正面视角"
-        ) # type: ignore
-
+    
 # 全局共用的模板信息，各个建筑都进行引用
 # 包括资产库资产引用等    
 class ACA_data_template(bpy.types.PropertyGroup):

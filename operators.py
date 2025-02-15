@@ -10,6 +10,7 @@ from . import data
 
 from .const import ACA_Consts as con
 from . import utils
+from . import build
 from . import buildWall
 from . import buildFloor
 from . import buildDougong
@@ -141,7 +142,7 @@ class ACA_OT_reset_floor(bpy.types.Operator):
             utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
             return {'FINISHED'}
         if buildingObj != None:
-            funproxy = partial(buildFloor.resetFloor,
+            funproxy = partial(build.resetFloor,
                         buildingObj=buildingObj)
             result = utils.fastRun(funproxy)
             if 'FINISHED' in result:

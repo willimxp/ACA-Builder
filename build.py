@@ -8,6 +8,8 @@ from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from . import utils
 from . import template
+from . import buildFloor
+from . import buildYardWall
 
 isFinished = True
 buildStatus = ''
@@ -16,10 +18,8 @@ progress = 0
 def __buildSingle(acaType,templateName):
     # 根据模板类型调用不同的入口
     if acaType == con.ACA_TYPE_BUILDING:
-        from . import buildFloor
         buildFloor.buildFloor(None,templateName)
     elif acaType == con.ACA_TYPE_YARDWALL:
-        from . import buildYardWall
         buildYardWall.buildYardWall(None,templateName)
     else:
         utils.popMessageBox("无法创建该类型的建筑：" + templateName)
@@ -74,10 +74,8 @@ def updateBuilding(buildingObj:bpy.types.Object):
 
     # 根据模板类型调用不同的入口
     if bData.aca_type == con.ACA_TYPE_BUILDING:
-        from . import buildFloor
         buildFloor.buildFloor(buildingObj)
     elif bData.aca_type == con.ACA_TYPE_YARDWALL:
-        from . import buildYardWall
         buildYardWall.buildYardWall(buildingObj)
     else:
         utils.popMessageBox("无法创建该类型的建筑：" + bData.aca_type)
@@ -96,8 +94,16 @@ def delBuilding(buildingObj:bpy.types.Object):
     bpy.data.collections.remove(buildingColl)
     # 清理垃圾  
     utils.delOrphan()
-    return
+    return {'FINISHED'}
 
-# 导出建筑
-def exportBuilding(buildingObj:bpy.types.Object):
-    return
+# 清除所有的装修、踏跺等，重新生成地盘
+def resetFloor(buildingObj:bpy.types.Object):
+    # 调用进度条
+    global isFinished,progress
+    isFinished = False
+    progress = 0
+
+    buildFloor.resetFloor(buildingObj)
+
+    isFinished = True
+    return  {'FINISHED'}

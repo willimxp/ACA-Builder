@@ -985,12 +985,22 @@ def resizePiller(buildingObj:bpy.types.Object):
 
 # 重设柱网设置，让减柱重新显示
 def resetFloor(buildingObj:bpy.types.Object):
+    # 清空柱网、额枋、装修的设置
     bData:acaData = buildingObj.ACA_data
     bData.piller_net = ''
     bData.fang_net = ''
     bData.wall_net = ''
-    # 20150109 踏跺数据未重置，导致开间变化后，错误的踏跺无法生成而崩溃
+    
+    # 250109 踏跺数据未重置，导致开间变化后，错误的踏跺无法生成而崩溃
     bData.step_net = ''
+
+    # 250215 重设地盘后，默认不做屋顶
+    bData.is_showDougong = False
+    bData.is_showBeam = False
+    bData.is_showRafter = False
+    bData.is_showTiles = False
+
+    # 调用
     result = buildFloor(buildingObj)
     return result
 

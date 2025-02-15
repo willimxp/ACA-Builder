@@ -336,9 +336,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore
     x_rooms : bpy.props.IntProperty(
             name = "面阔间数",
-            min = 1, max = 11,step = 2,
+            min = 1, 
+            # max = 11,
+            step = 2,
             update= reset_building,
-            description="必须为奇数，最多不超过11间",
+            description="必须为奇数，建议最多不超过11间",
         )# type: ignore
     x_1 : bpy.props.FloatProperty(
             name = "明间宽度",
@@ -370,7 +372,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore
     y_rooms : bpy.props.IntProperty(
             name = "进深间数",
-            max = 5,
+            #max = 5,
             min = 1, 
             update = reset_building,
             description="根据通进深的需要，以及是否做前后廊，可以为偶数",

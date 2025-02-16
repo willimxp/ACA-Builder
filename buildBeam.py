@@ -844,7 +844,12 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
         use_beam = True
         use_tuo = True
         # 廊间举架的下金桁下，只做坨橔，不做趴梁
-        if n==0 and bData.use_hallway:
+        # 判断第一层山面梁架的做法（下金桁位置，从山面金柱到内圈金柱）
+        if (n==0 
+            and bData.use_dg
+            and bData.use_hallway):
+            # 做廊间举架、且有斗拱时，金桁交圈用坨橔支撑在山面的桃尖顺梁上
+            # 此时不必做趴梁，仅做坨橔
             use_beam = False
 
         # 如果找不到梁架，极端情况可能没有，取上层槫子坐标

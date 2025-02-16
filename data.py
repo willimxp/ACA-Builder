@@ -627,7 +627,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0,
             max=2,
             precision=3,
-            description="歇山顶的山面内返的距离(米)，建议取一桁径以上，不超过一步架"
+            description="歇山顶的山面内返的距离(米)，建议最小8斗口，最大不超过檐步架"
         )# type: ignore
     luding_rafterspan:bpy.props.FloatProperty(
             name="盝顶檐步架宽", 

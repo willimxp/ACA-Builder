@@ -3256,8 +3256,8 @@ def __buildShanWall(
     dlyObj:bpy.types.Object = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_DLY_FB)
     p1 = Vector(dlyObj.location)
-    # 位移到大连檐外沿
-    offset = Vector((ridge_x,con.DALIANYAN_H*dk/2,0))
+    # 位移到大连檐X方向的最外侧，Z方向的底边
+    offset = Vector((ridge_x,-con.DALIANYAN_H*dk/2,0))
     offset.rotate(dlyObj.rotation_euler)
     p1 += offset
     ShanWallVerts.insert(0,p1*Vector((1,-1,1)))
@@ -3266,9 +3266,10 @@ def __buildShanWall(
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
     # 从举架定位点做偏移
     for n in range(len(purlin_pos)):
-        # 向上位移:半桁径+椽径+望板高+灰泥层高
-        offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
-                  + con.WANGBAN_H + con.ROOFMUD_H)*dk
+        # 向上位移:半桁径+椽径+望板高
+        offset = (con.HENG_COMMON_D/2 
+                  + con.YUANCHUAN_D 
+                  + con.WANGBAN_H)*dk
         point:Vector = purlin_pos[n]*Vector((0,1,1)) \
                 + Vector((ridge_x,0,offset))
         ShanWallVerts.insert(0,point*Vector((1,-1,1)))

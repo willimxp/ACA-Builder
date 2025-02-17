@@ -101,7 +101,7 @@ class ACA_PT_basic(bpy.types.Panel):
                 # 计算默认斗口值
                 col = row.column(align=True)
                 col.operator("aca.default_dk",icon='SHADERFX',text='')
-
+            
             # 更新建筑
             row = box.row(align=True)
             # 是否修改参数时，自动触发更新
@@ -125,8 +125,6 @@ class ACA_PT_basic(bpy.types.Panel):
                 text='删除建筑'
             )
 
-            
-            
             # 导出功能
             box = layout.box()
             toolBox = box.column(align=True)
@@ -140,6 +138,13 @@ class ACA_PT_basic(bpy.types.Panel):
             col.operator("aca.export_fbx",icon='EXPORT')
             col = toolBar.column(align=True)
             col.operator("aca.export_glb",icon='EXPORT')   
+
+            # 帮助文档
+            row = layout.row(align=True)
+            col = row.column(align=True)
+            op = col.operator("wm.url_open",icon='URL',text='帮助文档')
+            op.url = 'https://docs.qq.com/doc/DYXpwbUp1UWR0RXpu'
+
     
             # 性能分析按钮
             # row = layout.row()

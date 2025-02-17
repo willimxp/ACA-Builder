@@ -154,10 +154,9 @@ def update_dougong(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bData,odata = utils.getRoot(context.object)
     if buildingObj != None:
-        # # 重新生成屋顶
-        # funproxy = partial(
-        #     buildDougong.buildDougong,
-        #     buildingObj=buildingObj)
+        # 初始化斗栱数据，避免跨建筑时公用的aData干扰
+        from . import template
+        template.updateDougongData(buildingObj)
         
         # 241125 修改斗栱时，涉及到柱高的变化，最好是全屋更新
         from . import build
@@ -508,7 +507,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     use_pingbanfang: bpy.props.BoolProperty(
             default=True,
             name="使用平板枋",
-            update=update_roof,
+            update=update_dougong,
             description="在柱头和斗栱之间的一层垫板，明清式建筑一般都会使用",
         )# type: ignore 
     dg_style : bpy.props.EnumProperty(

@@ -16,7 +16,7 @@ bl_info = {
     "author" : "皮皮 willimxp",
     "description" : "模板化生成清官式建筑。Generate architecher in chinese style.",
     "blender" : (4, 2, 0),
-    "version" : (0, 0, 1),
+    "version" : (0, 0, 2),
     "location" : "View3D > Properties > ACA Builder",
     "tracker_url": "https://github.com/willimxp/ACA-Builder/issues",
     "doc_url": "https://docs.qq.com/doc/DYXpwbUp1UWR0RXpu",
@@ -144,7 +144,11 @@ def initLogger():
     log_handler.setLevel(logLevel)
     log_handler.setFormatter(formatter)    
     logger.addHandler(log_handler)
-    logger.info('ACA插件日志记录开始')
+    ver = 'V%s.%s.%s' % (
+            bl_info['version'][0],
+            bl_info['version'][1],
+            bl_info['version'][2])
+    logger.info('ACA筑韵古建%s——日志记录开始' % ver)
 
     return
 

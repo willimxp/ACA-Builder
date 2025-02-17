@@ -18,12 +18,24 @@ class ACA_PT_basic(bpy.types.Panel):
     
     # 自定义属性
     bl_category = "筑韵古建"         # 标签页名称
-    bl_label = "筑韵古建"            # 面板名称，显示为可折叠的箭头后
+    bl_label = ""                   # 面板名称，在draw_header中写入版本号
+
+    def draw_header(self,context):
+        from . import bl_info
+        ver = ' V%s.%s.%s' % (
+            bl_info['version'][0],
+            bl_info['version'][1],
+            bl_info['version'][2])
+        
+        layout = self.layout
+        row = layout.row()
+        row.label(text='ACA筑韵古建'+ ver)
     
     def draw(self, context):
         layout = self.layout
         
-        if bpy.app.version < (4,5,0):
+        if bpy.app.version < (4,2,0):
+            
             row = layout.row()
             row.label(text='本插件无法运行在V%s.%s.%s' % (bpy.app.version[0],bpy.app.version[1],bpy.app.version[2]))
             row = layout.row()

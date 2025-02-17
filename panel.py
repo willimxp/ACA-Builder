@@ -63,6 +63,12 @@ class ACA_PT_basic(bpy.types.Panel):
             "aca.del_template",icon='TRASH',
             text='删除样式')
         
+        # 帮助文档
+        row = layout.row(align=True)
+        col = row.column(align=True)
+        op = col.operator("wm.url_open",icon='URL',text='帮助文档')
+        op.url = 'https://docs.qq.com/doc/DYXpwbUp1UWR0RXpu'
+        
         # 运行中提示
         if not build.isFinished:
             row = layout.row()
@@ -139,20 +145,13 @@ class ACA_PT_basic(bpy.types.Panel):
             col = toolBar.column(align=True)
             col.operator("aca.export_glb",icon='EXPORT')   
 
-            # 帮助文档
-            row = layout.row(align=True)
-            col = row.column(align=True)
-            op = col.operator("wm.url_open",icon='URL',text='帮助文档')
-            op.url = 'https://docs.qq.com/doc/DYXpwbUp1UWR0RXpu'
-
-    
-            # 性能分析按钮
-            # row = layout.row()
-            # row.operator("aca.profile",icon='HOME')
-            
-            # 测试按钮
-            # row = layout.row()
-            # row.operator("aca.test",icon='HOME')
+        # 性能分析按钮
+        # row = layout.row()
+        # row.operator("aca.profile",icon='HOME')
+        
+        # 测试按钮
+        # row = layout.row()
+        # row.operator("aca.test",icon='HOME')
         return
 
 # “屋身参数”面板

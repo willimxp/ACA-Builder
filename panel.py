@@ -23,9 +23,11 @@ class ACA_PT_basic(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         
-        if bpy.app.version < (4,2,0):
+        if bpy.app.version < (4,5,0):
             row = layout.row()
-            row.label(text='本插件需要运行在Blender V4.2.0以上')
+            row.label(text='本插件无法运行在V%s.%s.%s' % (bpy.app.version[0],bpy.app.version[1],bpy.app.version[2]))
+            row = layout.row()
+            row.label(text='请安装Blender V4.2.0以上')
             row = layout.row()
             op = row.operator("wm.url_open",icon='URL',text='下载Blender')
             op.url = 'https://www.blender.org/download/'

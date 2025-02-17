@@ -23,6 +23,14 @@ class ACA_PT_basic(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         
+        if bpy.app.version < (4,2,0):
+            row = layout.row()
+            row.label(text='本插件需要运行在Blender V4.2.0以上')
+            row = layout.row()
+            op = row.operator("wm.url_open",icon='URL',text='下载Blender')
+            op.url = 'https://www.blender.org/download/'
+            return
+
         # 模板属性================
         # 从当前场景中载入数据集
         scnData : data.ACA_data_scene = context.scene.ACA_data
@@ -167,6 +175,8 @@ class ACA_PT_props(bpy.types.Panel):
 
     @classmethod 
     def poll(self, context):
+        if bpy.app.version < (4,2,0):return
+        
         isAcaObj = False
         # 从当前场景中载入数据集
         if context.object != None:
@@ -527,6 +537,9 @@ class ACA_PT_roof_props(bpy.types.Panel):
 
     @classmethod 
     def poll(self, context):
+        # 限制最低版本
+        if bpy.app.version < (4,2,0):return
+
         isAcaObj = False
         # 从当前场景中载入数据集
         if context.object != None:

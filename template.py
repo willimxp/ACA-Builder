@@ -218,8 +218,11 @@ def loadAssets(assetName : str,
     filepath = __getPath(blenderFileName)
 
     # 简化做法，效率更高，但没有关联子对象
-    with bpy.data.libraries.load(filepath,link=link) as (data_from, data_to):
-        data_to.objects = [name for name in data_from.objects if name==assetName]
+    try:
+        with bpy.data.libraries.load(filepath,link=link) as (data_from, data_to):
+            data_to.objects = [name for name in data_from.objects if name==assetName]
+    except OSError:
+        raise Exception('无法打开资产库，请确认acaAssets.blend文件已经放入插件目录')
     # 验证找到的资产是否唯一
     if len(data_to.objects) == 0:
         utils.outputMsg("未找到指定载入的资产:" + assetName)

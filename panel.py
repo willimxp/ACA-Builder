@@ -35,7 +35,6 @@ class ACA_PT_basic(bpy.types.Panel):
         layout = self.layout
         
         if bpy.app.version < (4,2,0):
-            
             row = layout.row()
             row.label(text='本插件无法运行在V%s.%s.%s' % (bpy.app.version[0],bpy.app.version[1],bpy.app.version[2]))
             row = layout.row()

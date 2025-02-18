@@ -648,9 +648,18 @@ class ACA_OT_Show_Message_Box(bpy.types.Operator):
         if self.center:
             self.orig_x = event.mouse_x
             self.orig_y = event.mouse_y
+
+            windowWidth = context.window.width
+            windowHeight = context.window.height
+            # 判断macOs，使用Retina高分辨屏幕时，分辨率x2
+            import sys
+            platform = sys.platform
+            if platform.startswith('darwin'):
+                windowWidth = windowWidth*2
+                windowHeight = windowHeight*2
             
-            w = int(context.window.width/2)
-            h = int(context.window.height/2)
+            w = int(windowWidth/2)
+            h = int(windowHeight/2)
             h = h + (20*len(self.message.split("|")))
             context.window.cursor_warp(w, h)
         

@@ -121,32 +121,66 @@ def update_piller(self, context:bpy.types.Context):
         utils.outputMsg("updated piller failed, context should be pillerObj")
     return
 
-def update_wall(self, context:bpy.types.Context):
-    # 确认选中为building节点
-    buildingObj,bdata,odata = utils.getRoot(context.object)
-    if buildingObj != None:
-        refObj = None
-        if odata.aca_type == con.ACA_TYPE_WALL:
-            refObj = context.object
-        elif odata.aca_type == con.ACA_TYPE_WALL_CHILD:
-            refObj = context.object.parent
-        else:
-            refObj = buildingObj
+def update_topwin(self, context:bpy.types.Context):
+    # 联动计算door_height
+    dk = self.DK
+    pd = con.PILLER_D_EAVE*dk
 
-        from . import buildWall
-        if refObj != buildingObj:
-            # 此对象为已生成的wall对象，做个体更新
-            funproxy = partial(buildWall.buildSingleWall,
-                            buildingObj=refObj)
-        else:
-            # 全局更新
-            funproxy = partial(buildWall.buildWallLayout,
-                            buildingObj=refObj)
-        utils.fastRun(funproxy)
-            
-
+    # use_topwin与topwin_height联动
+    # 最初设计让用户勾选use_topwin
+    # 后来设计用户直接输入topwin_height，如果输入0就自动不使用横披窗
+    if self.topwin_height < 0.0001:
+        self.use_topwin = False
     else:
-        utils.outputMsg("updated platform failed, context.object should be buildingObj")
+        self.use_topwin = True
+
+    # 从柱高开始倒推
+    doorHeight = self.piller_height
+    # 大额枋
+    doorHeight -= con.EFANG_LARGE_H*dk
+    # 小额枋和由额垫板
+    if self.use_smallfang:
+        doorHeight -= (con.EFANG_SMALL_H*dk
+                       + con.BOARD_YOUE_H*dk)
+    # 下槛和上槛
+    doorHeight -= (con.KAN_DOWN_HEIGHT*pd  # 下槛
+                   + con.KAN_UP_HEIGHT*pd   # 中槛
+                  )
+    # 中槛和横披窗
+    if self.use_topwin:
+        doorHeight -= (con.KAN_MID_HEIGHT*pd
+                       + self.topwin_height)
+    # 走马板
+    if self.wall_span > 0.00001:
+        doorHeight -= self.wall_span
+    
+    # 计算中槛中心Z高度
+    midkan_z = (con.KAN_DOWN_HEIGHT*pd
+                + doorHeight
+                + con.KAN_MID_HEIGHT*pd/2)
+    # 存入door_height
+    self['door_height'] = midkan_z
+
+    # 继续调用墙体更新
+    update_wall(self, context)
+    return
+
+def update_wall(self, context:bpy.types.Context):
+    # 从self属性找到对应的Object，用self.id_data
+    # https://blender.stackexchange.com/questions/145245/how-to-access-object-instance-from-property-instance-in-update-callback
+    refObj = self.id_data
+
+    from . import buildWall
+    # 更新全局的墙体
+    if self.aca_type == con.ACA_TYPE_BUILDING:
+        funproxy = partial(buildWall.buildWallLayout,
+                         buildingObj=refObj)
+    # 更新个体的墙体
+    elif self.aca_type == con.ACA_TYPE_WALL:
+        funproxy = partial(buildWall.buildSingleWall,
+                                buildingObj=refObj)
+    utils.fastRun(funproxy)
+
     return
 
 # 刷新斗栱布局
@@ -328,10 +362,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     
     # 柱网对象属性
     x_total : bpy.props.FloatProperty(
-            name = "通面阔"
+            name = "通面阔",
+            precision=3,
         )# type: ignore
     y_total : bpy.props.FloatProperty(
-            name = "通进深"
+            name = "通进深",
+            precision=3,
         )# type: ignore
     x_rooms : bpy.props.IntProperty(
             name = "面阔间数",
@@ -459,21 +495,19 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     wall_depth : bpy.props.FloatProperty(
             name="墙厚度",
             default=1.0,
+            precision=3,
             min=0.1,
             max=2,
             update = update_wall
         )# type: ignore
     wall_span : bpy.props.FloatProperty(
-            name="上槛高度",
+            name="走马板高度",
             default=0,
-            description='重檐时，装修不做到柱头，用走马板填充'
+            precision=3,
+            description='重檐时，装修不做到柱头，用走马板填充，输入0则不做走马板',
+            update = update_wall,
         )# type: ignore 
     # 隔扇属性
-    door_height : bpy.props.FloatProperty(
-            name="中槛高度",
-            update = update_wall,
-            description="仅在做横披窗时需要设置",
-        )# type: ignore 
     door_num : bpy.props.IntProperty(
             name="隔扇数量",
             default=4, max=6,step=2,min=2,
@@ -489,8 +523,20 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     use_topwin: bpy.props.BoolProperty(
             default=False,
             name="添加横披窗",
-            update = update_wall,
             description="在隔扇上方的固定窗户",
+        )# type: ignore 
+    door_height : bpy.props.FloatProperty(
+            name="中槛高度",
+            precision=3,
+            update = update_wall,
+            description="中槛中线到台面上皮的高度",
+        )# type: ignore 
+    topwin_height : bpy.props.FloatProperty(
+            name="横披窗高度",
+            default=0,
+            precision=3,
+            update = update_topwin,
+            description="横披窗（棂心）的高度，输入0则不做横披窗",
         )# type: ignore 
     use_KanWall: bpy.props.BoolProperty(
             default=False,
@@ -704,6 +750,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     yard_width :bpy.props.FloatProperty(
             name="庭院面阔",
             default=40,
+            precision=3,
             min=1,
             description="围墙的长度",
             update=update_yardwall,
@@ -711,6 +758,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     yard_depth :bpy.props.FloatProperty(
             name="庭院进深",
             default=30,
+            precision=3,
             min=1,
             description="仅在四面合围墙体时设置",
             update=update_yardwall,
@@ -718,6 +766,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     yardwall_height:bpy.props.FloatProperty(
             name="院墙高度",
             default=3,
+            precision=3,
             min=1,
             description="院墙高度，不含帽瓦",
             update=update_yardwall,
@@ -725,6 +774,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     yardwall_depth:bpy.props.FloatProperty(
             name="院墙厚度",
             default=1,
+            precision=3,
             min=0.5,
             description="院墙厚度，不含帽瓦",
             update=update_yardwall,
@@ -732,6 +782,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     yardwall_angle:bpy.props.FloatProperty(
             name="院墙帽瓦斜率",
             default=30,
+            precision=3,
             min=0,
             max=45,
             description="帽瓦斜率，一般可维持30度",

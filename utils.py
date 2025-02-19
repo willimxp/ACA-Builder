@@ -718,8 +718,19 @@ def fastRun(func):
         _BPyOpsSubModOp._view_layer_update = dummy_view_layer_update
         result = func()
     except Exception as e:
+        # 输出到console
         print(e)
+
+        # 输出到日志文件
         logError(e)
+
+        # 输入到前端弹窗
+        message = ("插件在运行中发生了一个异常错误：|- “"
+                + str(e)
+                + "”|请联系开发者，并提供日志文件")
+        popMessageBox(message)
+
+        # 返回给上层调用
         return {'CANCELLED':e}
     finally:
         _BPyOpsSubModOp._view_layer_update = view_layer_update

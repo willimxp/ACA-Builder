@@ -58,11 +58,6 @@ class ACA_OT_add_building(bpy.types.Operator):
             runTime = time.time() - timeStart
             message = "从模板样式新建完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
                         % (templateName,runTime)
-        elif 'CANCELLED' in result:
-            message = ("插件在运行中发生了一个异常错误：|- “"
-                + str(result['CANCELLED'])
-                + "”|请联系开发者，并提供日志文件")
-            type = {'ERROR'}
         
         if message != '':
             utils.popMessageBox(message)
@@ -95,11 +90,6 @@ class ACA_OT_update_building(bpy.types.Operator):
             runTime = time.time() - timeStart
             message = "更新建筑完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
                         % (buildingName,runTime)
-        elif 'CANCELLED' in result:
-            message = ("插件在运行中发生了一个异常错误：|- “"
-                + str(result['CANCELLED'])
-                + "”|请联系开发者，并提供日志文件")
-            type = {'ERROR'}
 
         if message != '':
             utils.popMessageBox(message)
@@ -483,11 +473,6 @@ class ACA_OT_build_roof(bpy.types.Operator):
             runTime = time.time() - timeStart
             message = "重新生成屋顶完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
                     % (buildingName,runTime)
-        elif 'CANCELLED' in result:
-            message = ("插件在运行中发生了一个异常错误：|- “"
-            + str(result['CANCELLED'])
-            + "”|请联系开发者，并提供日志文件")
-            type = {'ERROR'}
         
         if message != '':
             utils.popMessageBox(message)

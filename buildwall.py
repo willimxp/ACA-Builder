@@ -290,29 +290,49 @@ def buildSingleWall(
         buildingObj:bpy.types.Object,
         wallID='',
     ):
-    # 锁定操作目录
-    buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('装修',parentColl=buildingColl)
-
-    # 查找装修布局节点
-    wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
-    # 如果找不到“装修布局”根节点，重新创建
-    if wallrootObj == None:        
-        wallrootObj = __addWallrootNode(buildingObj)
-
-    # 0、判断新增还是修改
-    isNew = False
+    # 0、全局修改还是个体修改
     inputObjType = buildingObj.ACA_data['aca_type']
+    
+    # 全局修改，生成新的wallproxy
     if inputObjType == con.ACA_TYPE_BUILDING:
+        # 锁定操作目录
+        buildingColl = buildingObj.users_collection[0]
+        utils.setCollection('装修',parentColl=buildingColl)
+
+        # 查找装修布局节点
+        wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
+        # 如果找不到“装修布局”根节点，重新创建
+        if wallrootObj == None:        
+            wallrootObj = __addWallrootNode(buildingObj)
+
         # 生成wallproxy，做为墙体生成的数据参考
-        isNew = True
         wallproxy = __tempWallproxy(buildingObj,wallID)
+    
+    # 个体修改，沿用现有的wall做为wallproxy
     elif inputObjType == con.ACA_TYPE_WALL:
-        # 不重新生成wallproxy
-        # 此时传入的buildingObj实际是选中的wallObj
-        # 以该wallObj做为wallproxy使用（可能略有出入，待观察）
-        wallproxy = buildingObj
-        wallID = wallproxy.ACA_data['wallID']
+        # 装修根节点
+        wallrootObj = utils.getAcaParent(buildingObj,con.ACA_TYPE_WALL_ROOT)
+
+        # 重新生成wallproxy
+        wallID = buildingObj.ACA_data['wallID']
+        # 生成wallproxy，做为墙体生成的数据参考
+        bobj = utils.getAcaParent(buildingObj,con.ACA_TYPE_BUILDING)
+        wallproxy = __tempWallproxy(bobj,wallID)
+
+        # 将原有属性传递
+        wData = wallproxy.ACA_data
+        oData:acaData = buildingObj.ACA_data
+        wData['wall_depth'] = oData.wall_depth
+        wData['wall_span'] = oData.wall_span
+        wData['door_height'] = oData.door_height
+        wData['door_num'] = oData.door_num
+        wData['gap_num'] = oData.gap_num
+        wData['use_topwin'] = oData.use_topwin
+        wData['use_smallfang'] = oData.use_smallfang
+
+        # 删除老的隔扇
+        utils.deleteHierarchy(buildingObj,del_parent=True)
+        
     else:
         utils.outputMsg(
             'Can not build wall by ' 

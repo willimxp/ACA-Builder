@@ -402,12 +402,15 @@ class ACA_PT_wall(bpy.types.Panel):
         if buildingObj == None: return
         if bData.aca_type != con.ACA_TYPE_BUILDING:
             layout.enabled = False
-        # if objData.aca_type == con.ACA_TYPE_WALL:
-        #     col = row.column()
-        #     col.label(text='['+context.object.name+']',icon='KEYTYPE_JITTER_VEC')
-        # else:
-        #     col = row.column()
-        #     col.label(text='[全局]',icon='KEYTYPE_KEYFRAME_VEC')
+        # 显示为局部设置
+        if objData.aca_type in (
+                con.ACA_TYPE_WALL,con.ACA_TYPE_WALL_CHILD):
+            col = row.column()
+            col.label(text='['+context.object.name+']',icon='KEYTYPE_JITTER_VEC')
+        # 显示为全局设置
+        else:
+            col = row.column()
+            col.label(text='[全局]',icon='KEYTYPE_KEYFRAME_VEC')
 
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -471,17 +474,18 @@ class ACA_PT_wall(bpy.types.Panel):
             toolBar = toolBox.grid_flow(align=True,columns=1)
             
             
-            # 显示全区还是个体
-            selectRange = toolBar.column(align=True)
-            if objData.aca_type in (
-                con.ACA_TYPE_WALL,con.ACA_TYPE_WALL_CHILD): 
-                selectRange.label(
-                    text='['+context.object.name+']',
-                    icon='KEYTYPE_JITTER_VEC')
-            else:
-                selectRange.label(
-                    text='[全局]',
-                    icon='KEYTYPE_KEYFRAME_VEC')
+            # # 显示全区还是个体
+            # selectRange = toolBar.column(align=True)
+            # if objData.aca_type in (
+            #     con.ACA_TYPE_WALL,con.ACA_TYPE_WALL_CHILD): 
+            #     selectRange.label(
+            #         text='['+context.object.name+']',
+            #         icon='KEYTYPE_JITTER_VEC')
+            # else:
+            #     selectRange.label(
+            #         text='[全局]',
+            #         icon='KEYTYPE_KEYFRAME_VEC')
+
             # 区分全局还是个体
             if objData.aca_type == con.ACA_TYPE_WALL:     
                 # 如果用户选中了wallProxy
@@ -492,24 +496,7 @@ class ACA_PT_wall(bpy.types.Panel):
             else:
                 dataSource = bData  
 
-            # 隔扇数量（区分了全局和个体）
-            inputDoorNum = toolBar.column(align=True)
-            inputDoorNum.prop(
-                dataSource, "door_num",text='隔扇数量')
-            # 抹头数量（区分了全局和个体）
-            inputGapNum = toolBar.column(align=True)
-            inputGapNum.prop(
-                dataSource, "gap_num",text='抹头数量')            
-            # 中槛高度（不区分）
-            inputMidHeight = toolBar.column(align=True)
-            inputMidHeight.prop(
-                bData, "door_height",text='中槛高度')
-            # 上槛高度（不区分）
-            inputTopHeight = toolBar.column(align=True)
-            inputTopHeight.prop(
-                bData, "wall_span",text='上槛高度')
-            
-            toolBar = toolBox.grid_flow(align=True,columns=2)
+            toolBar = toolBox.grid_flow(align=True,columns=1)
             # 复选框：是否使用小额枋（不区分）
             checkboxFang = toolBar.column(align=True)
             if dataSource.use_smallfang:
@@ -520,20 +507,36 @@ class ACA_PT_wall(bpy.types.Panel):
                 bData, "use_smallfang",
                 toggle=1,text="双重额枋",
                 icon=checkbox_icon) 
-            # 复选框：是否使用横披窗（区分了全局和个体）
-            checkboxTopwin = toolBar.column(align=True)
-            if dataSource.use_topwin:
-                checkbox_icon = 'CHECKBOX_HLT'
-            else:
-                checkbox_icon = 'CHECKBOX_DEHLT'
-            checkboxTopwin.prop(
-                dataSource, "use_topwin",
-                toggle=1,text='横披窗',
-                icon=checkbox_icon)
+
+            # 隔扇数量（区分了全局和个体）
+            inputDoorNum = toolBar.column(align=True)
+            inputDoorNum.prop(
+                dataSource, "door_num",text='隔扇数量')
+            # 抹头数量（区分了全局和个体）
+            inputGapNum = toolBar.column(align=True)
+            inputGapNum.prop(
+                dataSource, "gap_num",text='抹头数量')            
             
-            # 关联“是否使用横披窗”和“中槛高度”
-            if not dataSource.use_topwin:
-                inputMidHeight.enabled = False 
+            # 上槛高度（不区分）
+            inputTopHeight = toolBar.column(align=True)
+            inputTopHeight.prop(
+                bData, "wall_span")
+            
+    
+            # # 复选框：是否使用横披窗（区分了全局和个体）
+            # checkboxTopwin = toolBar.column(align=True)
+            # if dataSource.use_topwin:
+            #     checkbox_icon = 'CHECKBOX_HLT'
+            # else:
+            #     checkbox_icon = 'CHECKBOX_DEHLT'
+            # checkboxTopwin.prop(
+            #     dataSource, "use_topwin",
+            #     toggle=1,text='横披窗',
+            #     icon=checkbox_icon)
+            # 横披窗高度（不区分）
+            inputMidHeight = toolBar.column(align=True)
+            inputMidHeight.prop(
+                bData, "topwin_height")
         
         return
 

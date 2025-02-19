@@ -381,6 +381,16 @@ def buildSingleWall(
             wData['gap_num'] = bData.gap_num
             wData['use_topwin'] = bData.use_topwin
             wData['use_smallfang'] = bData.use_smallfang
+        
+        # # 替换wallproxy
+        # utils.applyTransfrom(wallObj,
+        #                     use_location=True,
+        #                     use_rotation=True,
+        #                     use_scale=True)
+        # utils.replaceObject(wallproxy,wallObj,
+        #                     use_Dimension=False)        
+        # # 删除原对象(以及可能存在的隔扇等子对象)
+        # utils.deleteHierarchy(wallproxy,del_parent=True)
 
         # 挂入根节点
         utils.changeParent(wallObj,wallrootObj,resetOrigin=False)

@@ -788,28 +788,20 @@ class ACA_OT_EXPORT_FBX(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = '导出为FBX模型，可用于D5渲染器导入'
     
-    filter_glob: bpy.props.StringProperty(
-        default = '*.fbx',
-        options = {'HIDDEN'}) # type: ignore
     filepath: bpy.props.StringProperty(
-        subtype="FILE_PATH")# type: ignore
+        name="File Path",
+        description="Filepath used for exporting the file",
+        maxlen=1024,
+        subtype='FILE_PATH',)# type: ignore
+    check_existing: bpy.props.BoolProperty(
+        name="Check Existing",
+        description="Check and warn on overwriting existing files",
+        default=True,
+        options={'HIDDEN'},
+    )# type: ignore
+    filename: bpy.props.StringProperty()# type: ignore
 
-    def execute(self, context):  
-        # # 预处理
-        # buildingObj,bData,objData = utils.getRoot(context.object)
-        
-        # # 验证是否建筑已经过合并
-        # is_joined = False
-        # if buildingObj == None:
-        #     is_joined = True
-        #     buildingObj = context.object
-
-        # # 未合并的建筑，先执行合并
-        # if not is_joined:
-        #     result = bpy.ops.aca.join()
-        #     if 'FINISHED' not in result:
-        #         return {'CANCELLED'}
-        
+    def execute(self, context):          
         # 导出fbx
         filePath = self.filepath
         absPath = bpy.path.abspath(filePath)
@@ -826,6 +818,25 @@ class ACA_OT_EXPORT_FBX(bpy.types.Operator):
         return {'FINISHED'}
     
     def invoke(self, context, event):
+        # 获取当前的Blender文件名
+        blend_filepath = context.blend_data.filepath
+        if not blend_filepath:
+            blend_filepath = "untitled"
+        else:
+            import os
+            blend_filepath = os.path.splitext(blend_filepath)[0]
+
+        # 获取当前激活的对象名
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj == None:
+            buildingObj = context.object  
+
+        # 合并生成默认的导出名称
+        self.filepath = (blend_filepath 
+                         + '_' + buildingObj.name
+                         + '.fbx')
+
+        # 弹出文件选择框
         context.window_manager.fileselect_add(self)        
         return {'RUNNING_MODAL'}
 
@@ -837,28 +848,17 @@ class ACA_OT_EXPORT_GLB(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = '导出为GLB模型，推荐UE5导入。'
 
-    filter_glob: bpy.props.StringProperty(
-        default = '*.glb',
-        options = {'HIDDEN'}) # type: ignore
     filepath: bpy.props.StringProperty(
         subtype="FILE_PATH")# type: ignore
+    check_existing: bpy.props.BoolProperty(
+        name="Check Existing",
+        description="Check and warn on overwriting existing files",
+        default=True,
+        options={'HIDDEN'},
+    )# type: ignore
+    filename: bpy.props.StringProperty()# type: ignore
 
-    def execute(self, context):  
-        # # 预处理
-        # buildingObj,bData,objData = utils.getRoot(context.object)
-        
-        # # 验证是否建筑已经过合并
-        # is_joined = False
-        # if buildingObj == None:
-        #     is_joined = True
-        #     buildingObj = context.object
-
-        # # 未合并的建筑，先执行合并
-        # if not is_joined:
-        #     result = bpy.ops.aca.join()
-        #     if 'FINISHED' not in result:
-        #         return {'CANCELLED'}
-        
+    def execute(self, context):        
         # 导出fbx
         filePath = self.filepath
         absPath = bpy.path.abspath(filePath)
@@ -880,13 +880,26 @@ class ACA_OT_EXPORT_GLB(bpy.types.Operator):
         return {'FINISHED'}
     
     def invoke(self, context, event):        
+        # 获取当前的Blender文件名
+        blend_filepath = context.blend_data.filepath
+        if not blend_filepath:
+            blend_filepath = "untitled"
+        else:
+            import os
+            blend_filepath = os.path.splitext(blend_filepath)[0]
+
+        # 获取当前激活的对象名
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if buildingObj == None:
+            buildingObj = context.object  
+
+        # 合并生成默认的导出名称
+        self.filepath = (blend_filepath 
+                         + '_' + buildingObj.name
+                         + '.glb')
+        
         # 弹出文件选择框
         context.window_manager.fileselect_add(self)   
-
-        # 设置默认文件名
-        buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj == None:buildingObj = context.object
-        self.filepath = buildingObj.name + '.glb'     
         return {'RUNNING_MODAL'}
     
 # 测试

@@ -409,7 +409,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     
     # 柱子属性
     piller_height : bpy.props.FloatProperty(
-            name = "柱高",
+            name = "檐柱高",
             default = 0.0,
             min = 0.01, 
             precision=3,
@@ -417,7 +417,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             description="有斗拱的取57-60斗口，无斗拱的取面阔的8/10",
         )# type: ignore
     piller_diameter : bpy.props.FloatProperty(
-            name = "柱径",
+            name = "檐柱径",
             default = 0.0,
             min = 0.01, 
             precision=3,

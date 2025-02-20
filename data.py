@@ -707,7 +707,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             ],
         ) # type: ignore
     tile_alt_color : bpy.props.EnumProperty(
-            name = "瓦面剪边颜色",
+            name = "剪边颜色",
             items = [
                 ("0","黄琉璃",""),
                 ("1","绿琉璃",""),

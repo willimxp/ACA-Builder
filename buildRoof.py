@@ -3230,7 +3230,7 @@ def __buildShanWall(
     # 山墙横坐标
     ridge_x = bData.x_total/2
 
-    # 墀头点
+    # 从墙根底部做起，从屋顶层反向推算
     tile_base = bData.piller_height
     # 如果有斗栱，抬高斗栱高度
     if bData.use_dg:
@@ -3244,12 +3244,18 @@ def __buildShanWall(
         -tile_base))
     ShanWallVerts.insert(0,p00*Vector((1,-1,1)))
     ShanWallVerts.append(p00)
-    # 2、垂直延伸到柱头高度
+    # 2、做出墀头造型，简单的两个斜面
+    # 具体的定位是自己粗估的，没有啥依据
     p01: Vector = Vector((bData.x_total/2,
-        bData.y_total/2 + con.SHANQIANG_EX*dk,
-        -tile_base+bData.piller_height))
+                            p00.y,
+                            -13*dk))
     ShanWallVerts.insert(0,p01*Vector((1,-1,1)))
     ShanWallVerts.append(p01)
+    p02: Vector = Vector((bData.x_total/2,
+                            p00.y+6*dk,
+                            -10*dk))
+    ShanWallVerts.insert(0,p02*Vector((1,-1,1)))
+    ShanWallVerts.append(p02)
 
     # 3、檐口点：从正身飞椽的中心当开始，上移半飞椽+大连檐
     # 大连檐中心

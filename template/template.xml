@@ -14,7 +14,7 @@
 		<y_1 type="FloatProperty">3.52</y_1>
 		<y_2 type="FloatProperty">3.52</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
-		<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
+		<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/1,1/2,1/3,2/0,2/1,2/2,2/3,3/0,3/1,3/2,3/3,</piller_net>
 		<wall_net type="StringProperty">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
 		<fang_net type="StringProperty">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
 		<piller_height type="FloatProperty">4.93</piller_height>

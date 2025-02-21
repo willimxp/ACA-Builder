@@ -109,6 +109,7 @@ class ACA_PT_basic(bpy.types.Panel):
         if context.object != None:
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
+            
             box = layout.box()
             # 名称
             row = box.row(align=True)
@@ -117,8 +118,15 @@ class ACA_PT_basic(bpy.types.Panel):
             # 聚焦根节点
             col = row.column(align=True)
             col.operator("aca.focus_building",icon='FILE_PARENT')
-            if objData.aca_type == con.ACA_TYPE_BUILDING:
+            if (buildingObj == None
+                or objData.aca_type == con.ACA_TYPE_BUILDING):
                 col.enabled = False
+
+            if buildingObj == None: 
+                # 如果不属于建筑构件，提示，并隐藏所有子面板
+                row = layout.row()
+                row.label(text='该对象不是ACA插件生成',icon='INFO')
+                return
 
             # 斗口值
             if bData!= None:

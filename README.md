@@ -6,7 +6,9 @@
 - 运行在Blender建模软件中，跨平台支持Windows/MacOs/Linux，无需深入学习Blender，傻瓜化操作。
 - 生成的建筑（包括贴图）可以导出FBX、GLB等格式，导入UE、D5、SU等软件中；
 
-<img src="https://pic1.imgdb.cn/item/67b7ec04d0e0a243d40130e7.jpg" alt="渲染效果图"/>
+<img src="https://github.com/user-attachments/assets/375e96a9-02ae-425b-a984-de7202e7cc1a" alt="渲染效果图"/>
+
+（上图用ACA筑韵古建插件生成模型，导入D5渲染器进行场景制作）
 
 ### 特点
 1. 支持多种屋顶形态，包括：硬山、悬山、歇山、庑殿、盝顶。

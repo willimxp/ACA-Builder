@@ -25,12 +25,24 @@ def __buildSingle(acaType,templateName):
         utils.popMessageBox("无法创建该类型的建筑：" + templateName)
     return
 
+# 排除目录下的其他建筑
+def __excludeOther(rootColl,isExclude=True):
+    # 排除其他建筑
+    for coll in rootColl.children:
+        layerColl = utils.recurLayerCollection(
+            bpy.context.view_layer.layer_collection,
+            coll.name)
+        if layerColl != None:
+            layerColl.exclude = True
+    utils.redrawViewport()
+    return
+
 # 开始新的营造
 def build():
     # 创建或锁定根目录（ACA筑韵古建）
-    utils.setCollection(con.ROOT_COLL_NAME,
+    rootColl = utils.setCollection(con.ROOT_COLL_NAME,
                         isRoot=True,colorTag=2)
-
+    
     # 待营造的模板，来自用户界面上的选择
     templateName = bpy.context.scene.ACA_data.template
 
@@ -41,6 +53,8 @@ def build():
     global isFinished,progress
     isFinished = False
     progress = 0
+    # 暂时排除目录下的其他建筑，以加快执行速度
+    __excludeOther(rootColl,True)
 
     if acaType != con.ACA_TYPE_COMBO:
         # 单体建筑
@@ -58,12 +72,19 @@ def build():
             )
     
     isFinished = True
-    
+    # 取消排除目录下的其他建筑
+    __excludeOther(rootColl,False)
+
     # 关闭视角自动锁定
     bpy.context.scene.ACA_data['is_auto_viewall'] = False
+
     return {'FINISHED'}
 
 def updateBuilding(buildingObj:bpy.types.Object):
+    # 创建或锁定根目录（ACA筑韵古建）
+    rootColl = utils.setCollection(con.ROOT_COLL_NAME,
+                        isRoot=True,colorTag=2)
+    
     # 载入数据
     bData:acaData = buildingObj.ACA_data
 
@@ -71,6 +92,8 @@ def updateBuilding(buildingObj:bpy.types.Object):
     global isFinished,progress
     isFinished = False
     progress = 0
+    # 暂时排除目录下的其他建筑，以加快执行速度
+    __excludeOther(rootColl,True)
 
     # 根据模板类型调用不同的入口
     if bData.aca_type == con.ACA_TYPE_BUILDING:
@@ -81,6 +104,9 @@ def updateBuilding(buildingObj:bpy.types.Object):
         utils.popMessageBox("无法创建该类型的建筑：" + bData.aca_type)
 
     isFinished = True
+    # 取消排除目录下的其他建筑
+    __excludeOther(rootColl,False)
+
     return {'FINISHED'}
 
 # 删除建筑
@@ -98,12 +124,20 @@ def delBuilding(buildingObj:bpy.types.Object):
 
 # 清除所有的装修、踏跺等，重新生成地盘
 def resetFloor(buildingObj:bpy.types.Object):
+    # 创建或锁定根目录（ACA筑韵古建）
+    rootColl = utils.setCollection(con.ROOT_COLL_NAME,
+                        isRoot=True,colorTag=2)
+    
     # 调用进度条
     global isFinished,progress
     isFinished = False
     progress = 0
+    # 暂时排除目录下的其他建筑，以加快执行速度
+    __excludeOther(rootColl,True)
 
     buildFloor.resetFloor(buildingObj)
 
     isFinished = True
+    # 取消排除目录下的其他建筑
+    __excludeOther(rootColl,False)
     return  {'FINISHED'}

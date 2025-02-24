@@ -832,26 +832,29 @@ def resizePlatform(buildingObj:bpy.types.Object):
     # 柱网层
     floorRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_FLOOR_ROOT)
-    floorRootObj.location.z =  bData.platform_height
+    if floorRootObj != None:
+        floorRootObj.location.z =  bData.platform_height
     # 墙体层
     wallRoot = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_WALL_ROOT)
-    wallRoot.location.z = bData.platform_height
+    if wallRoot != None:
+        wallRoot.location.z = bData.platform_height
     # 屋顶层
     roofRoot = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_ROOF_ROOT)
-    tile_base = bData.platform_height \
-                + bData.piller_height
-    # 如果有斗栱，抬高斗栱高度
-    if bData.use_dg:
-        tile_base += bData.dg_height
-        # 是否使用平板枋
-        if bData.use_pingbanfang:
-            tile_base += con.PINGBANFANG_H*dk
-    else:
-        # 以大梁抬升, 实际为金桁垫板高度+半桁
-        tile_base += con.BOARD_HENG_H*dk + con.HENG_COMMON_D*dk/2
-    roofRoot.location.z = tile_base
+    if roofRoot != None:
+        tile_base = bData.platform_height \
+                    + bData.piller_height
+        # 如果有斗栱，抬高斗栱高度
+        if bData.use_dg:
+            tile_base += bData.dg_height
+            # 是否使用平板枋
+            if bData.use_pingbanfang:
+                tile_base += con.PINGBANFANG_H*dk
+        else:
+            # 以大梁抬升, 实际为金桁垫板高度+半桁
+            tile_base += con.BOARD_HENG_H*dk + con.HENG_COMMON_D*dk/2
+        roofRoot.location.z = tile_base
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

@@ -206,10 +206,10 @@ def update_roof(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bData,oData = utils.getRoot(context.object)
     if buildingObj != None:
-        from . import buildRoof
+        from . import build
         # 重新生成屋顶
         funproxy = partial(
-            buildRoof.buildRoof,
+            build.resetRoof,
             buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
@@ -618,31 +618,31 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name="步架数量",
             default=8,
             min=2,max=9,
-            #update = update_roof,
+            update = update_roof,
             description="以通进深除以22斗口来估算，过大过小会有很多潜在问题",
         )# type: ignore 
     use_flyrafter :  bpy.props.BoolProperty(
             default=True,
             name="使用飞椽",
-            #update = update_roof,
+            update = update_roof,
             description="小式的硬山、悬山可以不做飞椽，但四坡面必须使用飞椽做翼角",
         )# type: ignore 
     use_wangban :  bpy.props.BoolProperty(
             default=True,
             name="添加望板",
-            #update = update_roof,
+            update = update_roof,
             description="可以不做望板，更直观的查看屋顶结构",
         )# type: ignore 
     qiqiao: bpy.props.IntProperty(
             name="起翘(椽径倍数)",
             default=4, 
-            #update=update_roof,
+            update=update_roof,
             description="常做4椽起翘，也可以视情况适当增加",
         )# type: ignore 
     chong: bpy.props.IntProperty(
             name="出冲(椽径倍数)",
             default=3, 
-            #update=update_roof,
+            update=update_roof,
             description="常做3椽出冲，也可以视情况适当增加",
         )# type: ignore 
     shengqi: bpy.props.IntProperty(

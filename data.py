@@ -831,6 +831,11 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             items = getTemplateList,
             options = {"ANIMATABLE"},
         ) # type: ignore
+    use_bevel : bpy.props.BoolProperty(
+            default = True,
+            name = "是否使用倒角",
+            description = "取消后，不再使用倒角，直接生成直角构件",
+        ) # type: ignore
     
 # 全局共用的模板信息，各个建筑都进行引用
 # 包括资产库资产引用等    

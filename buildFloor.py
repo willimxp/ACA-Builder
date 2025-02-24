@@ -510,11 +510,9 @@ def __buildFang(buildingObj:bpy.types.Object):
         # 设置梁枋彩画
         mat.setMat(bigFangObj,aData.mat_paint_beam_big)
         # 添加边缘导角
-        modBevel:bpy.types.BevelModifier=bigFangObj.modifiers.new(
-            "Bevel",'BEVEL'
-        )
-        modBevel.width = con.BEVEL_EXHIGH
-        modBevel.segments=3
+        utils.addModifierBevel(bigFangObj, 
+                               width=con.BEVEL_EXHIGH, 
+                               segments=3)
         fangPart.append(bigFangObj)
         # 241120 添加霸王拳
         # 仅对四坡顶做霸王拳，硬山、悬山等不做霸王拳
@@ -568,11 +566,9 @@ def __buildFang(buildingObj:bpy.types.Object):
             # 设置梁枋彩画
             mat.setMat(smallFangObj,aData.mat_paint_beam_small)
             # 添加边缘导角
-            modBevel:bpy.types.BevelModifier=smallFangObj.modifiers.new(
-                "Bevel",'BEVEL'
-            )
-            modBevel.width = con.BEVEL_HIGH
-            modBevel.segments=2
+            utils.addModifierBevel(smallFangObj, 
+                                   width=con.BEVEL_HIGH, 
+                                   segments=2)
             fangPart.append(smallFangObj)
     
         # 201121 添加雀替
@@ -823,10 +819,9 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 柱顶石材质：石头
     mat.setMat(pillerBottom_basemesh,aData.mat_stone)
     # 添加bevel
-    modBevel:bpy.types.BevelModifier = \
-        pillerBottom_basemesh.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_HIGH
-    modBevel.offset_type = 'WIDTH'
+    utils.addModifierBevel(pillerBottom_basemesh, 
+                           width=con.BEVEL_HIGH, 
+                           type='WIDTH',)
     
     # 3、根据地盘数据，循环排布每根柱子
     net_x,net_y = getFloorDate(buildingObj)

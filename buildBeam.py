@@ -361,9 +361,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                         edge_num =6
                     )
                 purlinFrameList.append(fujimuObj)
-            modBevel:bpy.types.BevelModifier = \
-                hengFB.modifiers.new('Bevel','BEVEL')
-            modBevel.width = con.BEVEL_LOW
+            # 倒角
+            utils.addModifierBevel(hengFB,con.BEVEL_LOW)
         
         # 桁垫板 =======================================================
         # 有斗拱时，正心桁下不做垫板
@@ -412,9 +411,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 )
             # 导角
             utils.applyTransfrom(dianbanObj,use_scale=True)
-            modBevel:bpy.types.BevelModifier = \
-                dianbanObj.modifiers.new('Bevel','BEVEL')
-            modBevel.width = con.BEVEL_EXLOW
+            utils.addModifierBevel(dianbanObj,con.BEVEL_EXLOW)
         
         # 桁枋 =======================================================
         useHengFang = True
@@ -470,9 +467,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     use_axis=(False,True,False)
                 )  
             utils.applyTransfrom(hengfangObj,use_scale=True)
-            modBevel:bpy.types.BevelModifier = \
-                hengfangObj.modifiers.new('Bevel','BEVEL')
-            modBevel.width = con.BEVEL_LOW
+            # 倒角
+            utils.addModifierBevel(hengfangObj,con.BEVEL_LOW)
 
         # 设色 =======================================================
         # 根据需要刷红漆，否则默认做原木色       
@@ -542,9 +538,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                         mirrorObj=beamRootObj,
                         use_axis=(True,False,False)
                     )
-                modBevel:bpy.types.BevelModifier = \
-                    hengLR.modifiers.new('Bevel','BEVEL')
-                modBevel.width = con.BEVEL_LOW
+                # 倒角
+                utils.addModifierBevel(hengLR,con.BEVEL_LOW)
             
             # 判断垫板、枋的逻辑
             use_dianban = True
@@ -604,9 +599,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 )
                 # 导角
                 utils.applyTransfrom(dianbanObj,use_scale=True)
-                modBevel:bpy.types.BevelModifier = \
-                    dianbanObj.modifiers.new('Bevel','BEVEL')
-                modBevel.width = con.BEVEL_EXLOW
+                # 倒角
+                utils.addModifierBevel(dianbanObj,con.BEVEL_EXLOW)
             # 桁枋
             if use_fang:
                 loc = (pCross.x,0,
@@ -637,9 +631,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     use_axis=(True,False,False)
                 )
                 utils.applyTransfrom(hengfangObj,use_scale=True)
-                modBevel:bpy.types.BevelModifier = \
-                    hengfangObj.modifiers.new('Bevel','BEVEL')
-                modBevel.width = con.BEVEL_LOW
+                # 倒角
+                utils.addModifierBevel(hengfangObj,con.BEVEL_LOW)
 
             # 金桁如果做承椽枋、垫板、枋，则涂红
             if n==1 and bData.roof_style == con.ROOF_LUDING:
@@ -799,11 +792,9 @@ def __drawGabelBeam(name='趴梁',
     bm.free() 
     bpy.ops.object.mode_set( mode = 'OBJECT' )
 
-    # 添加bevel
-    modBevel:bpy.types.BevelModifier = \
-        gabelBeam.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_HIGH
-    modBevel.offset_type = 'WIDTH'
+    # 倒角
+    utils.addModifierBevel(gabelBeam,con.BEVEL_HIGH,
+                           type='WIDTH')
 
     return gabelBeam
 
@@ -905,11 +896,9 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
                 parent=beamRootObj,
             )
             gabelBeamList.append(tuodunObj)
-            # 添加bevel
-            modBevel:bpy.types.BevelModifier = \
-                tuodunObj.modifiers.new('Bevel','BEVEL')
-            modBevel.width = con.BEVEL_HIGH
-            modBevel.offset_type = 'WIDTH'
+            # 倒角
+            utils.addModifierBevel(tuodunObj,con.BEVEL_HIGH,
+                                   type='WIDTH')
             utils.addModifierMirror(
                 object=tuodunObj,
                 mirrorObj=beamRootObj,
@@ -952,11 +941,9 @@ def __drawSaftBeam(name='太平梁',
     bm.free() 
     bpy.ops.object.mode_set( mode = 'OBJECT' )
 
-    # 添加bevel
-    modBevel:bpy.types.BevelModifier = \
-        safeBeam.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_HIGH
-    modBevel.offset_type = 'WIDTH'
+    # 倒角
+    utils.addModifierBevel(safeBeam,con.BEVEL_HIGH,
+                           type='WIDTH')
 
     return safeBeam
 
@@ -1043,11 +1030,9 @@ def __addSafeBeam(buildingObj,purlin_pos):
         parent=beamRootObj,
     )
     saftBeamList.append(tuodunObj)
-    # 添加bevel
-    modBevel:bpy.types.BevelModifier = \
-        tuodunObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_HIGH
-    modBevel.offset_type = 'WIDTH'
+    # 倒角
+    utils.addModifierBevel(tuodunObj,con.BEVEL_HIGH,
+                           type='WIDTH')
     utils.addModifierMirror(
         object=tuodunObj,
         mirrorObj=beamRootObj,
@@ -1325,10 +1310,8 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
         # 合并
         beamSetObj = utils.joinObjects(
             beamObjects,newName='梁架')
-        # 导角
-        modBevel:bpy.types.BevelModifier = \
-            beamSetObj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = con.BEVEL_HIGH
+        # 倒角
+        utils.addModifierBevel(beamSetObj,con.BEVEL_HIGH)
     else:
         beamSetObj = None
                            

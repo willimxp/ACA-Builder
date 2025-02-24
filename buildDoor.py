@@ -359,10 +359,8 @@ def __buildKanKuang(wallproxy,windowsillHeight):
     
     # 合并槛框
     kankuangObj = utils.joinObjects(KankuangObjs,'槛框')     
-    # 添加bevel
-    modBevel:bpy.types.BevelModifier = \
-        kankuangObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_HIGH
+    # 倒角
+    utils.addModifierBevel(kankuangObj,con.BEVEL_HIGH)
 
     # 输出下抱框，做为隔扇生成的参考
     return kankuangObj
@@ -615,10 +613,8 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     # 锁定旋转，仅允许Z轴开窗、开门
     geshanObj.lock_rotation = (True,True,False)
 
-    # 添加整体bevel
-    modBevel:bpy.types.BevelModifier = \
-        geshanObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = geshan_bevel
+    # 倒角
+    utils.addModifierBevel(geshanObj,geshan_bevel)
 
     return geshanObj,windowsillZ
     
@@ -748,9 +744,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     # 合并构件
     kangqiangObj = utils.joinObjects(kanQiangObjs,'槛墙')
     # 设置bevel
-    modBevel:bpy.types.BevelModifier = \
-            kangqiangObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_HIGH
+    utils.addModifierBevel(kangqiangObj, con.BEVEL_HIGH)
 
     return kangqiangObj
 

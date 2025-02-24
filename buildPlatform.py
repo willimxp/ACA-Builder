@@ -202,9 +202,10 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
     # 统一设置
     for obj in taimingList:
         # 添加bevel
-        modBevel:bpy.types.BevelModifier = \
-            obj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = con.BEVEL_EXHIGH
+        utils.addModifierBevel(
+            object=obj,
+            width=con.BEVEL_EXHIGH
+        )
         # 设置材质
         mat.setMat(obj,aData.mat_rock)
     
@@ -538,11 +539,12 @@ def __drawStep(
 
     # 批量设置
     for obj in taduoObjs:
-        modBevel:bpy.types.BevelModifier = \
-            obj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = bevel
-        modBevel.offset_type = 'WIDTH'
-        modBevel.use_clamp_overlap = False
+        utils.addModifierBevel(
+            object=obj,
+            width=bevel,
+            type='WIDTH',
+            clamp=False,
+        )
         # 设置材质
         mat.setMat(obj,aData.mat_rock)
 
@@ -673,13 +675,6 @@ def __addPlatformExpand(
     
     # 5、设置材质
     mat.setMat(baseExpandObj,pfeMat)
-
-    # # 6、添加导角
-    # modBevel:bpy.types.BevelModifier = \
-    #         baseExpandObj.modifiers.new('Bevel','BEVEL')
-    # modBevel.width = con.BEVEL_LOW
-    # modBevel.offset_type = 'WIDTH'
-    # modBevel.use_clamp_overlap = False
 
     return baseExpandObj
 

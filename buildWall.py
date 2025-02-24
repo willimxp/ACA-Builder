@@ -261,9 +261,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     utils.applyAllModifer(bodyObj)
     utils.delObject(bottomObj)
     # 导角
-    modBevel:bpy.types.BevelModifier = \
-        bodyObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_HIGH
+    utils.addModifierBevel(bodyObj, width=con.BEVEL_HIGH)
 
     # 针对重檐，装修不一定做到柱头，用走马板填充
     if bData.wall_span != 0 :

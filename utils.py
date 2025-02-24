@@ -912,6 +912,29 @@ def addModifierMirror(object:bpy.types.Object,
     mod.use_bisect_axis = use_bisect
     mod.use_bisect_flip_axis = use_flip
 
+# 添加倒角修改器
+def addModifierBevel(object:bpy.types.Object,
+                        width=0.1,
+                        name='Bevel',
+                        type='OFFSET',
+                        segments=1,
+                        clamp=True
+                      ):
+    # 是否启用倒角
+    use_bevel = bpy.context.scene.ACA_data.use_bevel
+    if not use_bevel:
+        return None
+    
+    # 添加倒角
+    modBevel:bpy.types.BevelModifier = \
+                object.modifiers.new(name,'BEVEL')
+    modBevel.width = width
+    modBevel.segments = segments
+    modBevel.use_clamp_overlap = clamp
+    modBevel.offset_type = type
+
+    return modBevel
+
 # 应用所有修改器
 def applyAllModifer(object:bpy.types.Object):
     # 仅在有修改器，或为curve等非mesh对象上执行，以便提升效率

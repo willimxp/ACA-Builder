@@ -67,10 +67,11 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
             parent=dgrootObj,
         ) 
     # 添加倒角
-    modBevel:bpy.types.BevelModifier = \
-        pingbanfangObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_HIGH
-    modBevel.segments = 2
+    utils.addModifierBevel(
+        object=pingbanfangObj,
+        width=con.BEVEL_HIGH,
+        segments=2
+    )
     # 添加镜像
     utils.addModifierMirror(
         object=pingbanfangObj,
@@ -96,10 +97,11 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
             parent=dgrootObj,
         ) 
     # 设置倒角
-    modBevel:bpy.types.BevelModifier = \
-        pingbanfangObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_HIGH
-    modBevel.segments = 2
+    utils.addModifierBevel(
+        object=pingbanfangObj,
+        width=con.BEVEL_HIGH,
+        segments=2
+    )
     # 添加镜像
     utils.addModifierMirror(
         object=pingbanfangObj,

@@ -127,15 +127,6 @@ class ACA_PT_basic(bpy.types.Panel):
                 row = layout.row()
                 row.label(text='该对象不是ACA插件生成',icon='INFO')
                 return
-
-            # 斗口值
-            if bData!= None:
-                row = box.row(align=True)
-                col = row.column(align=True)
-                col.prop(bData,'DK')
-                # 计算默认斗口值
-                col = row.column(align=True)
-                col.operator("aca.default_dk",icon='SHADERFX',text='')
             
             # 更新建筑
             row = box.row(align=True)
@@ -158,21 +149,7 @@ class ACA_PT_basic(bpy.types.Panel):
             col.operator(
                 "aca.del_building",icon='TRASH',
                 text='删除建筑'
-            )
-
-            # 导出功能
-            box = layout.box()
-            toolBox = box.column(align=True)
-            # 合并按钮
-            toolBar = toolBox.grid_flow(columns=1, align=True)
-            col = toolBar.column(align=True)
-            col.operator("aca.join",icon='PACKAGE')
-            # 导出按钮
-            toolBar = toolBox.grid_flow(columns=2, align=True)
-            col = toolBar.column(align=True)
-            col.operator("aca.export_fbx",icon='EXPORT')
-            col = toolBar.column(align=True)
-            col.operator("aca.export_glb",icon='EXPORT')   
+            ) 
 
         # 性能分析按钮
         # row = layout.row()
@@ -181,6 +158,43 @@ class ACA_PT_basic(bpy.types.Panel):
         # 测试按钮
         # row = layout.row()
         # row.operator("aca.test",icon='HOME')
+        return
+
+# 更多设置子面板
+class ACA_PT_extra(bpy.types.Panel):
+    # 常规属性
+    bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
+    bl_region_type = 'UI'           # UI代表sidebar形式
+    bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
+    
+    # 自定义属性
+    bl_category = "筑韵古建"             # 标签页名称
+    bl_label = "更多设置"                       # 面板名称，已替换为draw_header实现
+    bl_parent_id = "ACA_PT_basic"       # 父面板
+    bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
+
+    def draw(self, context):
+        sData = context.scene.ACA_data
+        layout = self.layout
+        box = layout.box()
+
+        # 是否使用倒角
+        row = box.row()
+        row.prop(sData, "use_bevel")
+
+        toolBox = box.column(align=True)
+        # 合并按钮
+        toolBar = toolBox.grid_flow(columns=1, align=True)
+        col = toolBar.column(align=True)
+        col.operator("aca.join",icon='PACKAGE')
+        # 导出按钮
+        toolBar = toolBox.grid_flow(columns=2, align=True)
+        col = toolBar.column(align=True)
+        col.operator("aca.export_fbx",icon='EXPORT')
+        col = toolBar.column(align=True)
+        col.operator("aca.export_glb",icon='EXPORT')   
+        
+        
         return
 
 # “屋身参数”面板
@@ -222,6 +236,16 @@ class ACA_PT_props(bpy.types.Panel):
                 row = layout.row()
                 row.label(text='请先选择一个或多个建筑对象')
                 return             
+
+            # 斗口值
+            if bData!= None:
+                box = layout.box()
+                row = box.row(align=True)
+                col = row.column(align=True)
+                col.prop(bData,'DK')
+                # 计算默认斗口值
+                col = row.column(align=True)
+                col.operator("aca.default_dk",icon='SHADERFX',text='')
         
         return
 

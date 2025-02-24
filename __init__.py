@@ -32,6 +32,7 @@ classes = (
     
     # 基本面板类
     panel.ACA_PT_basic,
+    panel.ACA_PT_extra,
     panel.ACA_PT_props, 
     panel.ACA_PT_roof_props,
     panel.ACA_PT_pillers,

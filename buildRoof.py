@@ -1305,9 +1305,10 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             ex_length = ex_length / math.cos(CornerBeamObj.rotation_euler.y)
             CornerBeamObj.dimensions.x += ex_length
             utils.applyTransfrom(CornerBeamObj,use_scale=True)
-            modBevel:bpy.types.BevelModifier = \
-                CornerBeamObj.modifiers.new('Bevel','BEVEL')
-            modBevel.width = con.BEVEL_LOW
+            utils.addModifierBevel(
+                object=CornerBeamObj,
+                width=con.BEVEL_LOW
+            )
             # 替换老角梁造型
             if aData.cornerbeam_source != None:
                 cbNewObj = utils.copyObject(
@@ -1335,9 +1336,10 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                     object=cbcObj,
                     mirrorObj=rafterRootObj,
                     use_axis=(True,True,False))
-                modBevel:bpy.types.BevelModifier = \
-                    cbcObj.modifiers.new('Bevel','BEVEL')
-                modBevel.width = con.BEVEL_LOW
+                utils.addModifierBevel(
+                    object=cbcObj,
+                    width=con.BEVEL_LOW
+                )
 
         # 添加镜像
         utils.addModifierMirror(
@@ -2555,10 +2557,11 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             cfrSet = mat.setMat(
                 cfrSet,aData.mat_paint_flyrafter,override=True)
             # 倒角
-            modBevel:bpy.types.BevelModifier = \
-                cfrSet.modifiers.new('Bevel','BEVEL')
-            modBevel.width = con.BEVEL_EXLOW
-            modBevel.segments = 2
+            utils.addModifierBevel(
+                object=cfrSet,
+                width=con.BEVEL_EXLOW,
+                segments=2
+            )
             # 角梁45度对称
             utils.addModifierMirror(
                 object=cfrSet,
@@ -2578,10 +2581,11 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         # 绑定材质
         crSet = mat.setMat(crSet,aData.mat_paint_rafter,override=True)
         # 倒角
-        modBevel:bpy.types.BevelModifier = \
-            crSet.modifiers.new('Bevel','BEVEL')
-        modBevel.width = con.BEVEL_EXLOW
-        modBevel.segments = 2
+        utils.addModifierBevel(
+            object=crSet,
+            width=con.BEVEL_EXLOW,
+            segments=2
+        )
         # 角梁45度对称
         utils.addModifierMirror(
             object=crSet,
@@ -2616,10 +2620,11 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     yanRafterObj = mat.setMat(
         yanRafterObj,aData.mat_paint_rafter,override=True)
     # 倒角
-    modBevel:bpy.types.BevelModifier = \
-        yanRafterObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_EXLOW
-    modBevel.segments = 2
+    utils.addModifierBevel(
+        object=yanRafterObj,
+        width=con.BEVEL_EXLOW,
+        segments=2
+    )
     # 镜像
     utils.addModifierMirror(
             object=yanRafterObj,
@@ -2635,10 +2640,11 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         yanRafterObj = mat.setMat(
             yanRafterObj,aData.mat_paint_rafter,override=True)
         # 倒角
-        modBevel:bpy.types.BevelModifier = \
-            yanRafterObj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = con.BEVEL_EXLOW
-        modBevel.segments = 2
+        utils.addModifierBevel(
+            object=yanRafterObj,
+            width=con.BEVEL_EXLOW,
+            segments=2
+        )
         # 镜像
         utils.addModifierMirror(
             object=yanRafterObj,
@@ -2654,10 +2660,11 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         flyRafterObj = mat.setMat(
             flyRafterObj,aData.mat_paint_flyrafter,override=True)
         # 倒角
-        modBevel:bpy.types.BevelModifier = \
-            flyRafterObj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = con.BEVEL_EXLOW
-        modBevel.segments = 2
+        utils.addModifierBevel(
+            object=flyRafterObj,
+            width=con.BEVEL_EXLOW,
+            segments=2
+        )
         # 镜像
         utils.addModifierMirror(
             object=flyRafterObj,
@@ -2673,10 +2680,11 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         flyRafterObj = mat.setMat(
             flyRafterObj,aData.mat_paint_flyrafter,override=True)
         # 倒角
-        modBevel:bpy.types.BevelModifier = \
-            flyRafterObj.modifiers.new('Bevel','BEVEL')
-        modBevel.width = con.BEVEL_EXLOW
-        modBevel.segments = 2
+        utils.addModifierBevel(
+            object=flyRafterObj,
+            width=con.BEVEL_EXLOW,
+            segments=2
+        )
         # 镜像
         utils.addModifierMirror(
             object=flyRafterObj,
@@ -3209,9 +3217,10 @@ def __buildBofeng(buildingObj: bpy.types.Object,
             clear_outer=True,
             direction='V'
         )
-    modBevel:bpy.types.BevelModifier = \
-        bofengObj.modifiers.new('Bevel','BEVEL')
-    modBevel.width = con.BEVEL_LOW
+    utils.addModifierBevel(
+        object=bofengObj,
+        width=con.BEVEL_LOW
+    )
     return bofengObj
 
 # 营造山墙

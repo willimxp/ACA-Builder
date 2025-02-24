@@ -14,7 +14,6 @@ from . import build
 from . import buildWall
 from . import buildFloor
 from . import buildDougong
-from . import buildRoof
 
 # 根据当前选中的对象，聚焦建筑根节点
 class ACA_OT_focusBuilding(bpy.types.Operator):
@@ -47,7 +46,6 @@ class ACA_OT_add_building(bpy.types.Operator):
         timeStart = time.time()
 
         # 创建新建筑
-        from . import build
         funproxy = partial(build.build)
         result = utils.fastRun(funproxy)
 
@@ -79,7 +77,6 @@ class ACA_OT_update_building(bpy.types.Operator):
         buildingName = buildingObj.name
         # 更新新建筑
         timeStart = time.time()
-        from . import build
         funproxy = partial(build.updateBuilding,
                     buildingObj=buildingObj)
         result = utils.fastRun(funproxy)
@@ -111,7 +108,6 @@ class ACA_OT_del_building(bpy.types.Operator):
             return {'FINISHED'}
         buildingName = buildingObj.name
         if buildingObj != None:
-            from . import build
             build.delBuilding(buildingObj)
             message = "%s-建筑已删除！" \
                         % (buildingName)
@@ -455,13 +451,9 @@ class ACA_OT_build_roof(bpy.types.Operator):
         buildingName = buildingObj.name
         timeStart = time.time()
 
-        from . import build
-        build.isFinished = False
-        build.progress = 0
-
         # 生成屋顶
         funproxy = partial(
-            buildRoof.buildRoof,
+            build.resetRoof,
             buildingObj=buildingObj)
         result = utils.fastRun(funproxy)
         
@@ -687,7 +679,6 @@ class ACA_OT_PROFILE(bpy.types.Operator):
         pr.enable()  # Start profiling  
 
         # Call the function you want to profile  
-        from . import build
         funproxy = partial(build.build)
         result = utils.fastRun(funproxy)
 
@@ -757,7 +748,6 @@ class ACA_OT_JOIN(bpy.types.Operator):
         coll.objects.link(joinedModel)
 
         # 删除原目录
-        from . import build
         build.delBuilding(buildingObj)
 
         # 聚焦

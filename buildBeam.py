@@ -201,9 +201,10 @@ def getPurlinPos(buildingObj:bpy.types.Object):
                         - bData.shoushan         # 用户自定义推山尺寸
                     )
         # 2.c、庑殿，下金桁以上，应用推山做法
+        # 见马炳坚书p25，Xn= 0.9**n * X
         elif (roofStyle == con.ROOF_WUDIAN
             and n>0): 
-            purlinWidth -= bData.tuishan**(n-1)*rafterSpan
+            purlinWidth -= bData.tuishan**n*rafterSpan
         # 2.4、盝顶仅做到下金桁
         elif roofStyle== con.ROOF_LUDING and n >0:
             continue

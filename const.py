@@ -107,7 +107,8 @@ class ACA_Consts(object):
     # 垫板
     BOARD_YOUE_H = 2        # 由额垫板高(DK)
     BOARD_YOUE_Y = 1        # 由额垫板厚(DK)
-    BOARD_HENG_H = 4.8      # 金脊桁檩垫板高(DK)
+    BOARD_YANHENG_H = 4.8   # 檐桁垫板高(DK)
+    BOARD_JINHENG_H = 4     # 金脊桁檩垫板高(DK)
     BOARD_HENG_Y = 1.5      # 金脊桁檩垫板厚(DK)
 
     # 门窗（马炳坚数据）

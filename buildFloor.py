@@ -723,7 +723,7 @@ def getPillerHeight(buildingObj,pillerID):
             con.ROOF_YINGSHAN,
             con.ROOF_YINGSHAN_JUANPENG,
         ):
-            if y in (1,bData.y_rooms-1):
+            if y not in (0,bData.y_rooms):
                 needResizePiller = True
         # 如果4坡顶，则仅内圈廊柱升高（无论前后廊，还是周围廊）
         if bData.roof_style in (
@@ -734,10 +734,10 @@ def getPillerHeight(buildingObj,pillerID):
         ):
             # 前后檐
             if x not in (0,bData.x_rooms) \
-                and y in (1,bData.y_rooms-1):
+                and y not in (0,bData.y_rooms):
                 needResizePiller = True
             # 两山
-            if x in (1,bData.x_rooms-1)  \
+            if x not in (0,bData.x_rooms)  \
                 and y not in (0,bData.y_rooms):
                 needResizePiller = True
 
@@ -759,6 +759,10 @@ def getPillerHeight(buildingObj,pillerID):
         if bData.juzhe == '3':
             lift_ratio = con.LIFT_RATIO_FLAT
         pillerHeight += rafterSpan*lift_ratio[0]  
+
+        # 250225 补偿檐桁垫板与金桁垫板的高度差
+        pillerHeight += (con.BOARD_YANHENG_H
+                    -con.BOARD_JINHENG_H)*dk
 
     return pillerHeight
 

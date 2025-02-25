@@ -82,8 +82,8 @@ def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
         if bData.use_pingbanfang:
             zLoc += con.PINGBANFANG_H*dk
     else:
-        # 以大梁抬升金桁垫板高度，即为挑檐桁下皮位置
-        zLoc += con.BOARD_HENG_H*dk
+        # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
+        zLoc += con.BOARD_YANHENG_H*dk
     rafterRootObj.location.z = zLoc
 
     return rafterRootObj
@@ -2846,9 +2846,9 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
         extend += bData.dg_height
         if bData.use_pingbanfang:
             extend += con.PINGBANFANG_H*dk
-    # 没有斗栱的，延伸一个垫板高度
+    # 没有斗栱的，延伸一个檐桁垫板高度
     else:
-        extend += con.BOARD_HENG_H*dk
+        extend += con.BOARD_YANHENG_H*dk
     # 做廊间举架的，向下延伸额枋/小额枋高度
     # 有斗拱的，也做这个延伸
     if bData.use_hallway or bData.use_dg:

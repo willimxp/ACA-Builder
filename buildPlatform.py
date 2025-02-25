@@ -847,8 +847,8 @@ def resizePlatform(buildingObj:bpy.types.Object):
             if bData.use_pingbanfang:
                 tile_base += con.PINGBANFANG_H*dk
         else:
-            # 以大梁抬升, 实际为金桁垫板高度+半桁
-            tile_base += con.BOARD_HENG_H*dk + con.HENG_COMMON_D*dk/2
+            # 以大梁抬升, 实际为檐桁垫板高度+半桁
+            tile_base += con.BOARD_YANHENG_H*dk + con.HENG_COMMON_D*dk/2
         roofRoot.location.z = tile_base
     
     # 重新聚焦建筑根节点

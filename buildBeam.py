@@ -44,8 +44,8 @@ def __addBeamRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
         if bData.use_pingbanfang:
             zLoc += con.PINGBANFANG_H*dk
     else:
-        # 以大梁抬升金桁垫板高度，即为挑檐桁下皮位置
-        zLoc += con.BOARD_HENG_H*dk
+        # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
+        zLoc += con.BOARD_YANHENG_H*dk
 
     # 创建梁架根对象
     beamRootObj = utils.addEmpty(
@@ -365,12 +365,18 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             utils.addModifierBevel(hengFB,con.BEVEL_LOW)
         
         # 桁垫板 =======================================================
+        # 250225 区分檐桁、金桁的不同垫板高度
+        if n == 0 :
+            board_h = con.BOARD_YANHENG_H
+        else:
+            board_h = con.BOARD_JINHENG_H
         # 有斗拱时，正心桁下不做垫板
         if not (bData.use_dg and n == 0):
             # 4、桁垫板
+            # 定位
             loc = (0,pCross.y,
                 (pCross.z - con.HENG_COMMON_D*dk/2
-                    - con.BOARD_HENG_H*dk/2))
+                    - board_h*dk/2))
             # 桁垫板长度
             if (bData.roof_style in (con.ROOF_WUDIAN)
                 and n!=len(purlin_pos)-1):
@@ -378,9 +384,11 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 dianbanL = purlin_length_x - hengExtend
             else:
                 dianbanL = purlin_length_x
+            # 定尺寸
             dim = (dianbanL,
                 con.BOARD_HENG_Y*dk,
-                con.BOARD_HENG_H*dk)
+                board_h*dk)
+            # 创建桁垫板
             dianbanObj = utils.addCube(
                 name="桁垫板",
                 location=loc,
@@ -427,7 +435,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             # 5、桁枋
             loc = (0,pCross.y,
                 (pCross.z - con.HENG_COMMON_D*dk/2
-                    - con.BOARD_HENG_H*dk
+                    - board_h*dk
                     - con.HENGFANG_H*dk/2))
             # 桁枋长度
             if (bData.roof_style in (con.ROOF_WUDIAN)
@@ -566,11 +574,16 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     con.ROOF_XIESHAN,
                     con.ROOF_XIESHAN_JUANPENG,) and n==1:
                  use_fang = False
+            # 250225 区分檐桁、金桁的不同垫板高度
+            if n == 0 :
+                board_h = con.BOARD_YANHENG_H
+            else:
+                board_h = con.BOARD_JINHENG_H
             # 桁垫板
             if use_dianban:
                 loc = (pCross.x,0,
                     (pCross.z - con.HENG_COMMON_D*dk/2
-                        - con.BOARD_HENG_H*dk/2))
+                        - board_h*dk/2))
                 # 桁垫板长度
                 if bData.roof_style in (con.ROOF_WUDIAN):
                     # 庑殿的桁垫板不出梢（由顺趴梁坨橔围合）
@@ -579,7 +592,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     dianbanL = purlin_length_y
                 dim = (dianbanL,
                     con.BOARD_HENG_Y*dk,
-                    con.BOARD_HENG_H*dk)
+                    board_h*dk)
                 dianbanObj = utils.addCube(
                     name="垫板",
                     location=loc,
@@ -605,7 +618,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             if use_fang:
                 loc = (pCross.x,0,
                     (pCross.z - con.HENG_COMMON_D*dk/2
-                        - con.BOARD_HENG_H*dk
+                        - board_h*dk
                         - con.HENGFANG_H*dk/2))
                 # 桁枋长度
                 if (bData.roof_style in (con.ROOF_WUDIAN)
@@ -1145,11 +1158,17 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     con.BEAM_HEIGHT*pd
                 ))
                 # 绘制梁mesh，包括梁头形状
+                # 识别是否为首层梁，在绘制时檐桁垫板和金桁垫板高度不同
+                if n==0: 
+                    isFirst = True
+                else: 
+                    isFirst = False
                 beamCopyObj = __drawBeam(
                     location=beam_loc,
                     dimension=beam_dim,
                     buildingObj=buildingObj,
-                    name = beam_name
+                    name = beam_name,
+                    isFirst=isFirst,
                 )
                 beamCopyObj.parent= beamRootObj
                 beamObjects.append(beamCopyObj)
@@ -1221,11 +1240,16 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
             if (n==0 and bData.use_hallway):
                 useShuzhu = False
             if useShuzhu:
+                # 250225 区分檐桁、金桁的不同垫板高度
+                if n == 0 :
+                    board_h = con.BOARD_YANHENG_H
+                else:
+                    board_h = con.BOARD_JINHENG_H
                 # 计算蜀柱高度
                 # 梁肩高度，以梁高 - 半桁径 - 桁垫板
                 beamShoulderHeight = (con.BEAM_HEIGHT*pd 
                                 - con.HENG_COMMON_D*dk/2
-                                - con.BOARD_HENG_H*dk)
+                                - board_h*dk)
                 # 非卷棚顶的最后一根梁，直接支撑到脊槫
                 if (n == len(purlin_pos)-2 and 
                         roofStyle not in (
@@ -1244,7 +1268,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     shuzhu_height = (purlin_pos[n+1].z 
                                     - purlin_pos[n].z 
                                     - con.HENG_COMMON_D*dk/2
-                                    - con.BOARD_HENG_H*dk)
+                                    - board_h*dk)
                     # 桃尖梁没有梁肩
                     beamShoulderHeight = 0
                 # 其他的一般情况，支撑到上下两根梁之间
@@ -1343,19 +1367,25 @@ def __drawBeam(
         location:Vector,
         dimension:Vector,
         buildingObj:bpy.types.Object,
-        name='梁',):
+        name='梁',
+        isFirst=False,  # 是否为首层梁
+        ):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     bWidth = dimension.x
     bLength = dimension.y
     bHeight = dimension.z
+    if isFirst:
+        board_h = con.BOARD_YANHENG_H
+    else:  
+        board_h = con.BOARD_JINHENG_H
 
     # 梁头与横梁中线齐平
     p1 = Vector((0,bLength/2,0))
     # 梁底，从P1向下半檩径+垫板高度
     p2 = p1 - Vector((0,0,
-        con.HENG_COMMON_D*dk/2+con.BOARD_HENG_H*dk))
+        con.HENG_COMMON_D*dk/2+board_h*dk))
     # 梁底，Y镜像P2
     p3 = p2 * Vector((1,-1,1))
     # 梁头，Y镜像坡P1
@@ -1367,7 +1397,7 @@ def __drawBeam(
     p5 += Vector((0,0.05,0))
     # 梁肩，从梁腰45度，延伸到梁顶部（梁高-垫板高-半桁）
     offset = (bHeight
-              - con.BOARD_HENG_H*dk
+              - board_h*dk
               - con.HENG_COMMON_D*dk/2)
     p6 = p5 + Vector((0,offset,offset))
     # 梁肩Y镜像

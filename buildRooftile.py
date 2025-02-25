@@ -52,8 +52,8 @@ def __setTileRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
         if bData.use_pingbanfang:
             zLoc += con.PINGBANFANG_H*dk
     else:
-        # 以大梁抬升金桁垫板高度，即为挑檐桁下皮位置
-        zLoc += con.BOARD_HENG_H*dk
+        # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
+        zLoc += con.BOARD_YANHENG_H*dk
     tileRootObj.location.z = zLoc
         
     return tileRootObj

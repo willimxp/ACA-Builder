@@ -896,6 +896,15 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
             tuodunHeight = purlin_pos[n+1].z - purlin_pos[n].z 
             if use_beam:
                 tuodunHeight -= con.GABELBEAM_HEIGHT*dk
+            # 250225 如果廊间举架
+            # 且檐面廊间面阔与山面廊间进深相当
+            # 此时坨橔直接立于柱头上
+            if (n==0 and bData.use_hallway
+                and net_x[1]-net_x[0] == net_y[1]-net_y[0]):
+                # 坨橔高度从桁中线，做到梁底（一个金桁垫板）
+                tuodunHeight = (con.BOARD_JINHENG_H*dk
+                                + con.HENG_COMMON_D*dk/2)
+            
             tuodunLoc = purlin_pos[n+1] - Vector((0,0,tuodunHeight/2))
             tuodunDim = Vector((
                 con.GABELBEAM_DEPTH*dk,
@@ -1237,6 +1246,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
             # 做抱头梁时不做蜀柱（盝顶、廊间举架等）
             if (roofStyle == con.ROOF_LUDING):
                 useShuzhu = False
+            # 廊间举架，不做第一层蜀柱（大梁坐柱头）
             if (n==0 and bData.use_hallway):
                 useShuzhu = False
             if useShuzhu:
@@ -1250,8 +1260,27 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 beamShoulderHeight = (con.BEAM_HEIGHT*pd 
                                 - con.HENG_COMMON_D*dk/2
                                 - board_h*dk)
-                # 非卷棚顶的最后一根梁，直接支撑到脊槫
-                if (n == len(purlin_pos)-2 and 
+                # 首层蜀柱
+                if n==0: 
+                    # 如果有斗拱，一层蜀柱坐在桃尖梁上
+                    if bData.use_dg:
+                        # 注意：这里扣减的应该是金桁垫板高度，而不是檐桁垫板高度
+                        board_h = con.BOARD_JINHENG_H
+                        shuzhu_height = (purlin_pos[n+1].z 
+                                        - purlin_pos[n].z 
+                                        - con.HENG_COMMON_D*dk/2
+                                        - board_h*dk)
+                        # 桃尖梁没有梁肩
+                        beamShoulderHeight = 0
+                    # 首层蜀柱，如果无斗拱，补偿檐桁垫板和金桁垫板的高度差
+                    else:
+                        shuzhu_height = (purlin_pos[n+1].z 
+                                        - purlin_pos[n].z 
+                                        - con.BEAM_HEIGHT*pd)
+                        shuzhu_height += (con.BOARD_YANHENG_H*dk
+                                        -con.BOARD_JINHENG_H*dk)
+                # 非卷棚顶的最后一根蜀柱，直接支撑到脊槫
+                elif (n == len(purlin_pos)-2 and 
                         roofStyle not in (
                             con.ROOF_XUANSHAN_JUANPENG,
                             con.ROOF_YINGSHAN_JUANPENG,
@@ -1261,16 +1290,6 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     shuzhu_height = (purlin_pos[n+1].z 
                                     - purlin_pos[n].z
                                     - beamShoulderHeight)
-                # 如果有斗拱，且不是廊间举架（前后通檐），一层蜀柱坐在桃尖梁上
-                elif (not bData.use_hallway 
-                    and bData.use_dg
-                    and n==0):
-                    shuzhu_height = (purlin_pos[n+1].z 
-                                    - purlin_pos[n].z 
-                                    - con.HENG_COMMON_D*dk/2
-                                    - board_h*dk)
-                    # 桃尖梁没有梁肩
-                    beamShoulderHeight = 0
                 # 其他的一般情况，支撑到上下两根梁之间
                 else:
                     shuzhu_height = (purlin_pos[n+1].z

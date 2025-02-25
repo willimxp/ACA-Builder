@@ -709,8 +709,8 @@ def getPillerHeight(buildingObj,pillerID):
         # 是否使用平板枋
         if bData.use_pingbanfang:
             pillerHeight += con.PINGBANFANG_H*dk
-        # 向下扣除两根正心枋，即到了梁底高度
-        pillerHeight -= 4*dk
+        # 向下扣除金桁垫板，即到了梁底高度
+        pillerHeight -= con.BOARD_JINHENG_H*dk
 
 
     # 2、判断是否需要做廊步举架
@@ -761,7 +761,9 @@ def getPillerHeight(buildingObj,pillerID):
         pillerHeight += rafterSpan*lift_ratio[0]  
 
         # 250225 补偿檐桁垫板与金桁垫板的高度差
-        pillerHeight += (con.BOARD_YANHENG_H
+        # 无斗栱时，正心桁由檐垫板支撑，金桁由金桁垫板支撑，导致了该高度差
+        if not bData.use_dg:
+            pillerHeight += (con.BOARD_YANHENG_H
                     -con.BOARD_JINHENG_H)*dk
 
     return pillerHeight

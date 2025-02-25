@@ -256,17 +256,6 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
         del purlin_pos[0]
     # 其他的桁为了效率，还是贯通整做成一根
     
-    # 桁的各个参数
-    if roofStyle in (
-            con.ROOF_XUANSHAN,
-            con.ROOF_YINGSHAN,
-            con.ROOF_YINGSHAN_JUANPENG,
-            con.ROOF_XUANSHAN_JUANPENG):
-        # 硬山、悬山桁不做出梢
-        hengExtend = 0.02
-    else:
-        # 庑殿和歇山为了便于垂直交扣，做一桁径的出梢
-        hengExtend = con.HENG_EXTEND * dk
     # 桁直径（正心桁、金桁、脊桁）
     purlin_r = con.HENG_COMMON_D / 2 * dk
 
@@ -274,19 +263,32 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     for n in range(len(purlin_pos)) :
         # 1、桁交点
         pCross = purlin_pos[n]
-        # 2、计算桁的长度
-        # 桁交圈出梢
-        isJuanpeng = bData.roof_style in (
-                            con.ROOF_XUANSHAN_JUANPENG,
-                            con.ROOF_YINGSHAN_JUANPENG,
-                            con.ROOF_XIESHAN_JUANPENG,
-                         )
-        # 尖山（非卷棚）的脊槫不做交圈出梢
-        if n == len(purlin_pos)-1 and not isJuanpeng:
-            purlin_length_x = pCross.x * 2 
-        # 其他情况都做交圈出梢
+        
+        # 2、计算桁的长度====================
+        # 四坡顶做交圈出梢
+        if bData.roof_style in (
+            con.ROOF_WUDIAN,
+            con.ROOF_LUDING,
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,
+        ):
+            purlin_length_x = (pCross.x * 2
+                + con.HENG_EXTEND * dk)
+        # 2坡顶，微微出梢
         else:
-            purlin_length_x = pCross.x * 2 + hengExtend
+            purlin_length_x = pCross.x * 2 + 0.02
+        # 脊桁出梢控制
+        if n == len(purlin_pos)-1:
+            # 庑殿脊桁出梢半个太平梁
+            if bData.roof_style==con.ROOF_WUDIAN:
+                purlin_length_x = (pCross.x * 2
+                         + con.GABELBEAM_DEPTH*dk)
+        # 歇山檐面的下金桁延长，与上层对齐
+        if n >= 1:
+            if roofStyle in (
+                    con.ROOF_XIESHAN,
+                    con.ROOF_XIESHAN_JUANPENG) :
+                purlin_length_x = purlin_pos[-1].x * 2            
             
         # 241118 正心桁也做彩画
         if n==0:
@@ -296,12 +298,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                             purlin_name='正心桁')
             purlinFrameList.append(zhengxinhengObj)
         else:
-            # 歇山檐面的下金桁延长，与上层对齐
-            if roofStyle in (
-                    con.ROOF_XIESHAN,
-                    con.ROOF_XIESHAN_JUANPENG) \
-                and n >= 1 :
-                    purlin_length_x = purlin_pos[-1].x * 2
+            
 
             # 3、创建桁对象
             loc = (0,pCross.y,pCross.z)
@@ -379,12 +376,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 (pCross.z - con.HENG_COMMON_D*dk/2
                     - board_h*dk/2))
             # 桁垫板长度
-            if (bData.roof_style in (con.ROOF_WUDIAN)
-                and n!=len(purlin_pos)-1):
-                # 庑殿的桁垫板不出梢（由顺趴梁坨橔围合）
-                dianbanL = purlin_length_x - hengExtend
-            else:
-                dianbanL = purlin_length_x
+            dianbanL = purlin_length_x
             # 定尺寸
             dim = (dianbanL,
                 con.BOARD_HENG_Y*dk,
@@ -439,12 +431,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     - board_h*dk
                     - con.HENGFANG_H*dk/2))
             # 桁枋长度
-            if (bData.roof_style in (con.ROOF_WUDIAN)
-                and n != (len(purlin_pos)-1)):
-                # 庑殿的桁垫板不出梢（由顺趴梁坨橔围合）
-                hengfangL = purlin_length_x - hengExtend
-            else:
-                hengfangL = purlin_length_x
+            hengfangL = purlin_length_x
             dim = (hengfangL,
                 con.HENGFANG_Y*dk,
                 con.HENGFANG_H*dk)
@@ -511,7 +498,9 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
         for n in rafterRange :
             pCross = purlin_pos[n]
             # 2、计算桁的长度
-            purlin_length_y = pCross.y * 2 + hengExtend
+            # 四坡顶做交圈出梢
+            purlin_length_y = (pCross.y * 2
+                + con.HENG_EXTEND * dk)
 
             # 241118 正心桁做彩画
             if n==0: 
@@ -586,11 +575,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     (pCross.z - con.HENG_COMMON_D*dk/2
                         - board_h*dk/2))
                 # 桁垫板长度
-                if bData.roof_style in (con.ROOF_WUDIAN):
-                    # 庑殿的桁垫板不出梢（由顺趴梁坨橔围合）
-                    dianbanL = purlin_length_y - hengExtend
-                else:
-                    dianbanL = purlin_length_y
+                dianbanL = purlin_length_y
                 dim = (dianbanL,
                     con.BOARD_HENG_Y*dk,
                     board_h*dk)
@@ -622,12 +607,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                         - board_h*dk
                         - con.HENGFANG_H*dk/2))
                 # 桁枋长度
-                if (bData.roof_style in (con.ROOF_WUDIAN)
-                    and n != (len(purlin_pos)-1)):
-                    # 庑殿的桁垫板不出梢（由顺趴梁坨橔围合）
-                    hengfangL = purlin_length_y - hengExtend
-                else:
-                    hengfangL = purlin_length_y
+                hengfangL = purlin_length_y
                 dim = (hengfangL,
                     con.HENGFANG_Y*dk,
                     con.HENGFANG_H*dk)
@@ -1002,11 +982,8 @@ def __addSafeBeam(buildingObj,purlin_pos):
             return
     
     # 1、太平梁定位
-    # 取脊桁端头 + 桁檩出梢 - 半梁厚
-    x = (purlin_pos[-1].x 
-                + con.HENG_EXTEND*dk/2
-                - con.GABELBEAM_DEPTH*dk/2
-        )
+    # 定位在脊桁定位点
+    x = purlin_pos[-1].x
     loc = Vector((x,0,
             # 梁下皮与下层桁檩中线平
             (purlin_pos[-2].z 

@@ -170,7 +170,7 @@
 		<roof_style type="EnumProperty">2</roof_style>
 		<rafter_count type="IntProperty">8</rafter_count>
 		<use_flyrafter type="BoolProperty">True</use_flyrafter>
-		<use_wangban type="BoolProperty">False</use_wangban>
+		<use_wangban type="BoolProperty">True</use_wangban>
 		<qiqiao type="IntProperty">4</qiqiao>
 		<chong type="IntProperty">3</chong>
 		<shengqi type="IntProperty">1</shengqi>

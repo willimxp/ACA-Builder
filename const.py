@@ -62,16 +62,18 @@ class ACA_Consts(object):
     # 台基
     PLATFORM_HEIGHT = 2         # 台基默认高度(PD)
     PLATFORM_EXTEND = 2.4       # 台基下檐出(PD)
-    STEP_HEIGHT = 0.15          # 阶条石、上基石、中基石的高度(m)，刘大可P418
-    STEP_SIDE_WIDTH = 0.15      # 垂带宽度占整个踏跺的比例
+    # 踏跺宽高比
+    # 刘大可给出2.5倍(p416，p418)
+    # 梁思成给出2倍（清则例图解）
+    STEP_RATIO = 2
     # 规定为大式5寸，小式4寸，根据台明高度相除取整
-    STEP_RATIO = 2.5
+    STEP_HEIGHT = 0.16          # 阶条石、上基石、中基石的高度(m)，刘大可P418
     STEP_WIDTH = STEP_HEIGHT*STEP_RATIO   # 上基石、中基石的宽度
-    # 可取值范围较大，这里为了保持踏跺的斜率比例，统一取2.5倍，刘大可p416，p418
-    GROUND_BORDER = 0.05        # 土衬的地坪露明和外沿金边(m)
+    STEP_SIDE_WIDTH = 0.15      # 垂带宽度占整个踏跺的比例
     # 金边大式2寸，小式1.5寸，露明1~2寸，这里统一取了5cm，刘大可p377
-    FIRST_LENGTH  = 0.3         # 好头石比例
+    GROUND_BORDER = 0.05        # 土衬的地坪露明和外沿金边(m)
     # 好头石长度取（尽间面阔+山出）*0.2，刘大可p377
+    FIRST_LENGTH  = 0.3         # 好头石比例
 
     # 开间
     ROOM_X1 = 77    # 明间宽(DK)
@@ -118,13 +120,17 @@ class ACA_Consts(object):
     WALL_SHRINK = 0.015                 # 墙体退花碱厚度(m)
     KAN_DOWN_HEIGHT = 0.8               # 下槛高度(PD)
     KAN_DOWN_DEPTH = 0.3                # 下槛深度(PD)，梁思成实际使用的为0.4
-    KAN_MID_HEIGHT = 0.66               # 中槛高度(PD)(汤崇平书p20中定为0.64)
+    # 为了便于无论是否做横披都能对齐隔扇
+    # 所以把中槛高度与上槛做成一致，而没有取标准的0.64
+    KAN_MID_HEIGHT = 0.5               # 中槛高度(PD)(汤崇平书p20中定为0.64)
     KAN_MID_DEPTH = 0.3                 # 中槛深度(PD)
     KAN_UP_HEIGHT = 0.5                 # 上槛高度(PD)
     KAN_UP_DEPTH = 0.3                  # 上槛深度(PD)
     KAN_WIND_HEIGHT = 0.5               # 风槛高度(PD)
     KAN_WIND_DEPTH = 0.3                # 风槛深度(PD)
-    BAOKUANG_WIDTH = 0.66               # 抱框宽度(PD)
+    # 抱框宽度梁思成和马炳坚给出2/3D，汤崇平给出0.64，姜振鹏给出0.56
+    # 实际看来0.56的观感更好，与相关的图纸数据也更加匹配
+    BAOKUANG_WIDTH = 0.56               # 抱框宽度(PD)
     BAOKUANG_DEPTH = 0.3                # 抱框深度(PD)
     BORDER_WIDTH = 0.2                  # 边梃、抹头宽(PD)
     BORDER_DEPTH = BAOKUANG_DEPTH       # 边梃、抹头厚(PD)
@@ -156,7 +162,7 @@ class ACA_Consts(object):
     BEAM_DEPTH = 1.1        # 梁厚(PD)
     BOFENG_WIDTH = 1.2      # 博缝板厚(DK)
     BOFENG_HEIGHT = 8       # 博缝板高(DK)
-    XYB_WIDTH = 0.8         # 象眼板厚(DK)
+    XYB_WIDTH = 1           # 象眼板/山花板厚(DK)
     JIAOBEI_WIDTH = 2       # 角背厚度(DK)
     GABELBEAM_HEIGHT = 6.5  # 趴梁高(DK),马炳坚p9
     GABELBEAM_DEPTH = 5.2   # 趴梁厚(DK)

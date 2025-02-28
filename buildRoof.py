@@ -3176,7 +3176,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     )
     # 尺寸适配
     # 先做到桁檩下皮
-    height = (con.ROOFMUD_H*dk
+    bofengHeight = (con.ROOFMUD_H*dk
               + con.WANGBAN_H*dk
               + con.HENG_COMMON_D*dk
               + con.YUANCHUAN_D*dk
@@ -3185,13 +3185,13 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     tileHeight = (aData.circularTile_source.dimensions.z 
                   * bData.DK 
                   / con.DEFAULT_DK)
-    height -= tileHeight
+    bofengHeight -= tileHeight
     # 再适当调整，没有依据，仅为我的个人喜好
     if bData.roof_style in (
         con.ROOF_XIESHAN,
         con.ROOF_XIESHAN_JUANPENG):
         # 歇山做窄一些，留出更多的山花板
-        height += con.BOFENG_OFFSET_XS*dk
+        bofengHeight += con.BOFENG_OFFSET_XS*dk
     if bData.roof_style in (
         con.ROOF_YINGSHAN,
         con.ROOF_YINGSHAN_JUANPENG,
@@ -3199,11 +3199,11 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         con.ROOF_XUANSHAN_JUANPENG,
     ):
         # 硬山、悬山做宽一些，更加美观
-        height += con.BOFENG_OFFSET_YS*dk
+        bofengHeight += con.BOFENG_OFFSET_YS*dk
     bofengObj.dimensions = (
         bofengObj.dimensions.x,
         con.BOFENG_WIDTH*dk,
-        height)
+        bofengHeight)
     # 添加curve变形
     modCurve : bpy.types.CurveModifier = \
         bofengObj.modifiers.new('曲线拟合','CURVE')
@@ -3229,7 +3229,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         use_bisect=(False,True,False)
     )
 
-    # 歇山的博缝板做到椽架
+    # 歇山的博缝板裁剪，仅做到椽架
     # 从正心桁做收山加斜，再上移半桁+1椽
     if bData.roof_style in (con.ROOF_XIESHAN,
                             con.ROOF_XIESHAN_JUANPENG,):
@@ -3251,6 +3251,78 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         object=bofengObj,
         width=con.BEVEL_LOW
     )
+
+    # 山花板
+    if bData.roof_style in (
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,):
+        # 1、定位
+        # 基于博缝板曲线的位移
+        offset = Vector((0,
+             -(con.BOFENG_WIDTH*dk + con.XYB_WIDTH*dk)/2,
+             -bofengHeight))
+        shanhuaLoc = bofengCurve.location+offset
+        # 2、复制博缝板资产
+        shanhuaObj = utils.copyObject(
+            sourceObj=aData.bofeng_source,
+            name="山花板",
+            parentObj=rafterRootObj,
+            location=shanhuaLoc,
+            singleUser=True
+        )
+        # 3、调整尺寸，这里无法给出一个确切大小，暂时使用了一个极大的值
+        # 后续做镜像的时候，会在Y轴进行合并
+        # 山花拉伸高度，要保证能够在Y轴合并
+        # 太小，会出现没有完全合并，太大，反而会导致上部被合并
+        shanhuaHeight = bData.y_total/2 # 没有依据，只是一个差不多的值
+        shanhuaObj.dimensions = (
+            shanhuaObj.dimensions.x,
+            con.BOFENG_WIDTH*dk,
+            shanhuaHeight)
+        
+        
+        # 4、添加curve变形
+        modCurve : bpy.types.CurveModifier = \
+            shanhuaObj.modifiers.new('曲线拟合','CURVE')
+        modCurve.object = bofengCurve
+        
+        # 5、镜像
+        utils.addModifierMirror(
+            object=shanhuaObj,
+            mirrorObj=rafterRootObj,
+            use_axis=(True,True,False),
+            use_bisect=(False,True,False)
+        )
+
+        # 6、裁剪，只做到山花与檐椽架的交点，以下的部分剪掉
+        if bData.roof_style in (con.ROOF_XIESHAN,
+                                con.ROOF_XIESHAN_JUANPENG,):
+            Px = (bofengCurve.location.x
+                     -(con.BOFENG_WIDTH*dk + con.XYB_WIDTH*dk)/2)
+            Py = 0
+            # 从正心桁做收山加斜，再上移半桁+1椽
+            Pz = rafter_pos[0].z + ( bData.shoushan/2         # 收山加斜
+                                + con.WANGBAN_H*dk         # 望板
+                                + con.HENG_COMMON_D*dk/2   # 半桁径
+                                + con.YUANCHUAN_D*dk       # 椽径
+                                )
+            cutPoint = Vector((Px,Py,Pz))
+            utils.addBisect(
+                object=shanhuaObj,
+                pCut=rafterRootObj.matrix_world @ cutPoint,
+                clear_outer=True,
+                direction='V'
+            )
+        
+        # 7、将几何中心放在裁切点上，做为后续做山花材质时的定位参考
+        bpy.ops.object.transform_apply(
+            location=True, rotation=True, scale=True)
+        utils.setOrigin(shanhuaObj,cutPoint)
+        
+        # 8、贴山花板贴材质
+        mat.setMat(shanhuaObj,aData.mat_paint_shanhua,
+                   override=True)
+
     return bofengObj
 
 # 营造山墙
@@ -3448,11 +3520,6 @@ def __buildRafterFrame(buildingObj:bpy.types.Object):
             con.ROOF_XUANSHAN,
             con.ROOF_XUANSHAN_JUANPENG):
         __buildXiangyanBan(buildingObj,rafter_pos)
-    # 营造山花板，适用于歇山
-    if bData.roof_style in (
-            con.ROOF_XIESHAN,
-            con.ROOF_XIESHAN_JUANPENG,):
-        __buildShanhuaBan(buildingObj,rafter_pos)
     # 营造博缝板，适用于歇山、悬山(卷棚)、硬山
     if bData.roof_style in (
             con.ROOF_XIESHAN,

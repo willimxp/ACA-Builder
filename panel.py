@@ -777,15 +777,29 @@ class ACA_PT_beam(bpy.types.Panel):
             toolBox = box.column(align=True)
             toolBar = toolBox.grid_flow(
                 align=True,columns=1)
-            # 举折系数
-            droplistJuzhe = toolBar.column(align=True)
-            droplistJuzhe.prop(
-                bData, "juzhe",text='',)
+
+            # 做廊步架
+            inputJujia= toolBar.column(align=True)
+            if bData.y_rooms >= 3:
+                if bData.use_hallway:
+                    checkbox_icon = 'CHECKBOX_HLT'
+                else:
+                    checkbox_icon = 'CHECKBOX_DEHLT'
+                #checkUseHallway = box.column(align=True)
+                inputJujia.prop(
+                    bData, "use_hallway",
+                    text='廊间举架做法',
+                    toggle=True,
+                    icon=checkbox_icon) 
             # 步架数量          
             inputRaftercount = toolBar.column(align=True)
             inputRaftercount.prop(
                 bData, "rafter_count",
                 text='步架数量')
+            # 举折系数
+            droplistJuzhe = toolBar.column(align=True)
+            droplistJuzhe.prop(
+                bData, "juzhe",text='',)
             # 推山
             inputTuishan = toolBar.column(align=True)
             inputTuishan.prop(
@@ -807,23 +821,6 @@ class ACA_PT_beam(bpy.types.Panel):
                 text='',
                 icon='SHADERFX',
             )
-            
-            toolBar = toolBox.grid_flow(
-                align=True,columns=1)
-
-            # 做廊步架
-            inputJujia= toolBar.column(align=True)
-            if bData.y_rooms >= 3:
-                if bData.use_hallway:
-                    checkbox_icon = 'CHECKBOX_HLT'
-                else:
-                    checkbox_icon = 'CHECKBOX_DEHLT'
-                #checkUseHallway = box.column(align=True)
-                inputJujia.prop(
-                    bData, "use_hallway",
-                    text='廊间举架做法',
-                    toggle=True,
-                    icon=checkbox_icon) 
 
             # 只有庑殿可以设置推山
             if bData.roof_style != con.ROOF_WUDIAN:

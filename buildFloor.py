@@ -905,9 +905,9 @@ def buildPillers(buildingObj:bpy.types.Object):
     if bData.fang_net != '':
         __buildFang(buildingObj)
 
-    # 做廊间举架时，添加穿插枋
-    if bData.use_hallway:
-        __buildCCFang(buildingObj)
+    # 250227 始终调用穿插枋处理
+    # 函数内部会判断是否满足做穿插枋的条件
+    __buildCCFang(buildingObj)
 
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

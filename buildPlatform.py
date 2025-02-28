@@ -508,12 +508,10 @@ def __drawStep(
     taduoObjs.append(brickObj)
 
     # 3、台阶（上基石、中基石，也叫踏跺心子）
-    # 计算台阶数量，每个台阶不超过基石的最大高度（15cm）
-    count = math.ceil(
-        (pHeight-con.GROUND_BORDER)
-        /con.STEP_HEIGHT)
+    # 计算台阶数量，每个台阶不超过基石的最大高度（16cm）
+    count = round(pHeight/con.STEP_HEIGHT)
     stepHeight = (pHeight-con.GROUND_BORDER)/count
-    stepDeepth = pDeepth/(count)
+    stepDeepth = pDeepth/count
     brickObj = utils.addCube(
         name='台阶',
         location=(

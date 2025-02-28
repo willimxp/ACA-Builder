@@ -108,7 +108,7 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
         wall_height += \
         - con.BOARD_YOUE_H*dk \
         - con.EFANG_SMALL_H*dk # 除去小额枋、垫板高度
-    
+        
     # 定义wallproxy尺寸
     wall_depth = 1 # 墙线框默认尺寸，后续被隐藏显示，所以没有实际影响
     # 重檐时，装修不到柱头，留出走马板位置
@@ -122,13 +122,33 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     pFrom = setting[1].split('/')
     pFrom_x = int(pFrom[0])
     pFrom_y = int(pFrom[1])
-    pStart = Vector((net_x[pFrom_x],net_y[pFrom_y],wall_height/2))
     # 结束柱子
     pTo = setting[2].split('/')
     pTo_x = int(pTo[0])
     pTo_y = int(pTo[1])
-    pEnd = Vector((net_x[pTo_x],net_y[pTo_y],wall_height/2))
+    
+    # 250226 如果是廊间装修，槛框做到穿插枋上皮
+    # 此时上槛与抱头梁重叠
+    # 与是否做廊间举架无关
+    isLangjian = False
+    # 横向廊间，如，0/1#1/1
+    if (pFrom_y == pTo_y 
+        and pFrom_x+pTo_x in (1,bData.x_rooms*2-1)):
+        isLangjian = True
+    # 纵向廊间
+    if (pFrom_x == pTo_x 
+        and pFrom_y+pTo_y in (1,bData.y_rooms*2-1)):
+        isLangjian = True
+    if isLangjian:
+        # 穿插枋下皮与由额垫板下皮持平
+        # (简化处理，上槛中线对齐大额枋底皮)
+        # 上槛和穿插枋高度可能不同，存在误差
+        wall_height = (pillerHeight 
+                       - con.EFANG_LARGE_H*dk
+                       + con.KAN_UP_HEIGHT*pd/2)
 
+    pStart = Vector((net_x[pFrom_x],net_y[pFrom_y],wall_height/2))
+    pEnd = Vector((net_x[pTo_x],net_y[pTo_y],wall_height/2))
     # 计算墙体的方向，以建筑中心点，逆时针排布
     # 参考https://math.stackexchange.com/questions/285346/why-does-cross-product-tell-us-about-clockwise-or-anti-clockwise-rotation#:~:text=We%20can%20tell%20which%20direction,are%20parallel%20to%20each%20other.
     zAxis = Vector((0,0,1))
@@ -174,11 +194,12 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
 
     # 验证是否做横披窗
     # 如果中槛高度高于整个槛框高度，则不做横披窗
-    if (bData.use_topwin 
-        and wall_height > bData.door_height+con.KAN_MID_HEIGHT*pd):
-        wData['use_topwin'] = True
-    else:
-        wData['use_topwin'] = False
+    if bData.use_topwin:
+        if wall_height > (bData.door_height
+                          +con.KAN_MID_HEIGHT*pd):
+            wData['use_topwin'] = True
+        else:
+            wData['use_topwin'] = False
     return wallproxy
 
 # 绘制墙体

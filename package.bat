@@ -2,7 +2,7 @@
 chcp 65001 >nul
 setlocal enabledelayedexpansion
 
-set "source=D:\百度同步盘\BaiduSyncdisk\ACA Builder"
+set "source=D:\过程文档\ACA Builder"
 
 rem 使用 wmic 获取当前日期，格式为 YYYYMMDD
 for /f "tokens=2 delims==" %%a in ('wmic os get localdatetime /value') do (

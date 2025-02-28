@@ -435,7 +435,7 @@ def addEmpty(name=None,
             location=(0,0,0),
             rotation=(0,0,0),
             parent=None,
-            hide=True,
+            hide=False,
             ):
     bpy.ops.object.empty_add(
         type=type,

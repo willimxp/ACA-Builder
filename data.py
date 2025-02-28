@@ -124,42 +124,50 @@ def update_piller(self, context:bpy.types.Context):
 def update_topwin(self, context:bpy.types.Context):
     # 联动计算door_height
     dk = self.DK
-    pd = con.PILLER_D_EAVE*dk
+    # pd = con.PILLER_D_EAVE*dk
 
-    # use_topwin与topwin_height联动
-    # 最初设计让用户勾选use_topwin
-    # 后来设计用户直接输入topwin_height，如果输入0就自动不使用横披窗
-    if self.topwin_height < 0.0001:
-        self.use_topwin = False
-    else:
-        self.use_topwin = True
+    # # use_topwin与topwin_height联动
+    # # 最初设计让用户勾选use_topwin
+    # # 后来设计用户直接输入topwin_height，如果输入0就自动不使用横披窗
+    # if self.topwin_height < 0.0001:
+    #     self.use_topwin = False
+    # else:
+    #     self.use_topwin = True
 
-    # 从柱高开始倒推
-    doorHeight = self.piller_height
-    # 大额枋
-    doorHeight -= con.EFANG_LARGE_H*dk
-    # 小额枋和由额垫板
-    if self.use_smallfang:
-        doorHeight -= (con.EFANG_SMALL_H*dk
-                       + con.BOARD_YOUE_H*dk)
-    # 下槛和上槛
-    doorHeight -= (con.KAN_DOWN_HEIGHT*pd  # 下槛
-                   + con.KAN_UP_HEIGHT*pd   # 中槛
-                  )
-    # 中槛和横披窗
-    if self.use_topwin:
-        doorHeight -= (con.KAN_MID_HEIGHT*pd
-                       + self.topwin_height)
-    # 走马板
-    if self.wall_span > 0.00001:
-        doorHeight -= self.wall_span
+    # # 从柱高开始倒推
+    # doorHeight = self.piller_height
+    # # 大额枋
+    # doorHeight -= con.EFANG_LARGE_H*dk
+    # # 小额枋和由额垫板
+    # if self.use_smallfang:
+    #     doorHeight -= (con.EFANG_SMALL_H*dk
+    #                    + con.BOARD_YOUE_H*dk)
+    # # 下槛和上槛
+    # doorHeight -= (con.KAN_DOWN_HEIGHT*pd  # 下槛
+    #                + con.KAN_UP_HEIGHT*pd   # 中槛
+    #               )
+    # # 中槛和横披窗
+    # if self.use_topwin:
+    #     doorHeight -= (con.KAN_MID_HEIGHT*pd
+    #                    + self.topwin_height)
+    # # 走马板
+    # if self.wall_span > 0.00001:
+    #     doorHeight -= self.wall_span
     
-    # 计算中槛中心Z高度
-    midkan_z = (con.KAN_DOWN_HEIGHT*pd
-                + doorHeight
-                + con.KAN_MID_HEIGHT*pd/2)
-    # 存入door_height
-    self['door_height'] = midkan_z
+    # # 计算中槛中心Z高度
+    # midkan_z = (con.KAN_DOWN_HEIGHT*pd
+    #             + doorHeight
+    #             + con.KAN_MID_HEIGHT*pd/2)
+    # # 存入door_height
+    # self['door_height'] = midkan_z
+
+    # 250225 因为需要同时考虑外檐装修和內檐装修
+    # 所以以上通过檐柱高倒推无法满足內檐装修的计算
+    # 所以，固定为与穿插枋下皮对齐
+    # (简化处理，上槛中线对齐大额枋底皮)
+    # 上槛和穿插枋高度可能不同，存在误差
+    self['door_height'] = (self.piller_height
+                -con.EFANG_LARGE_H*dk)
 
     # 继续调用墙体更新
     update_wall(self, context)
@@ -521,9 +529,10 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             description="2~6抹头都可以，根据需要自由设置",
         )# type: ignore 
     use_topwin: bpy.props.BoolProperty(
-            default=False,
+            default=True,
             name="添加横披窗",
-            description="在隔扇上方的固定窗户",
+            description="在隔扇上方的固定窗户,仅在金柱加高的內檐装修中有效",
+            update = update_topwin,
         )# type: ignore 
     door_height : bpy.props.FloatProperty(
             name="中槛高度",
@@ -531,13 +540,13 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_wall,
             description="中槛中线到台面上皮的高度",
         )# type: ignore 
-    topwin_height : bpy.props.FloatProperty(
-            name="横披窗高度",
-            default=0,
-            precision=3,
-            update = update_topwin,
-            description="横披窗（棂心）的高度，输入0则不做横披窗",
-        )# type: ignore 
+    # topwin_height : bpy.props.FloatProperty(
+    #         name="横披窗高度",
+    #         default=0,
+    #         precision=3,
+    #         update = update_topwin,
+    #         description="横披窗（棂心）的高度，输入0则不做横披窗",
+    #     )# type: ignore 
     use_KanWall: bpy.props.BoolProperty(
             default=False,
             name="添加槛墙"
@@ -672,7 +681,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0,
             max=2,
             precision=3,
-            description="歇山顶的山面内返的距离(米)，建议最小8斗口，最大不超过檐步架"
+            description="歇山顶的山花板从檐檩中向内移动的距离(米)，一般为1檩径(4斗口)，最大不超过檐步架"
         )# type: ignore
     luding_rafterspan:bpy.props.FloatProperty(
             name="盝顶檐步架宽", 

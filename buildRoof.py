@@ -2706,40 +2706,32 @@ def __buildShanhuaBan(buildingObj: bpy.types.Object,
 
     # 绘制象眼板上沿曲线
     shbVerts = []
-    # 歇山的山花板横坐标在金桁交点处（加出梢）
-    shb_x = (purlin_pos[-1].x       # 桁檩定位点
-                 - con.XYB_WIDTH*dk/2   # 移到外皮位置
-                 + 0.01)                # 防止与檩头交叠
 
-    # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
-    for n in range(1,len(purlin_pos)): # 歇山从金桁以上做起
-        # 让山花板的边缘与博缝板的边缘拼接
-        # 在每根槫子的Z坐标上计算博缝板的Z偏移
-        # 博缝板的高度调整，参考__buildBofeng()中的处理
-        bofeng_height= (con.HENG_COMMON_D + con.YUANCHUAN_D*4
-                   + con.WANGBAN_H + con.ROOFMUD_H)*dk
-        # 向上位移:沿着椽架方向，位移博缝板
-        # 博缝板是沿着博缝板曲线进行排布，该曲线z位移了桁径+椽径+望板+灰泥，按40度加斜计算，
-        bofeng_offset = (con.HENG_COMMON_D + con.YUANCHUAN_D 
-                  + con.WANGBAN_H + con.ROOFMUD_H)*dk * math.sin(math.radians(45))
-        l= bofeng_height - bofeng_offset
-        # 用三角函数进行了计算，建议画个图看看
-        p1= purlin_pos[n-1]
-        p2= purlin_pos[n]
-        ang = math.atan((p2.z-p1.z)/(p2.y-p1.y))
-        h = l/math.cos(ang)
-
-        # 歇山卷棚的山花板的手工调整
-        # 因为悬山卷棚顶步的在槫子后有一段平推，不能再用上面的三角函数计算
-        if (n==(len(purlin_pos)-1)
-            and bData.roof_style == con.ROOF_XIESHAN_JUANPENG):
-            # 根据实际情况，只下移了半槫
-            # 这个计算不严格
-            h = con.HENG_COMMON_D*dk
-
-        point:Vector = purlin_pos[n].copy()
-        point.x = shb_x
-        point.z -= h
+    for n in range(len(purlin_pos)):
+        # 向下位移，要与博缝板的做法一致，
+        offsetZ = (con.HENG_COMMON_D*dk/2
+                +con.BOFENG_OFFSET_XS*dk
+                -0.5*dk # 略作重叠，避免破口
+                )
+        offset = Vector((0,0,-offsetZ))
+        # 位移向量按各段椽架的斜率旋转
+        if n != 0:
+            purlinAngle = math.atan(
+                    (purlin_pos[n].z-purlin_pos[n-1].z)
+                    /(purlin_pos[n-1].y-purlin_pos[n].y)
+                )
+            purlinEular = Euler((-purlinAngle,0,0),'XYZ')
+            offset.rotate(purlinEular)
+        point:Vector = purlin_pos[n]+offset
+        # X坐标放到山花板位置
+        point.x = (purlin_pos[-1].x       # 桁檩定位点
+                    - con.XYB_WIDTH*dk/2   # 移到外皮位置
+                    + 0.01)                # 防止与檩头交叠
+        # 顶部点的Y坐标可能小于0，做纵向补偿
+        if point.y <0: 
+            point.z -= abs(point.y)*0.9 # 按最后一步架举架0.9计算
+            point.y=0
+        # 分别插入两侧的点
         shbVerts.insert(0,point*Vector((1,-1,1)))
         shbVerts.append(point)
     
@@ -2955,6 +2947,7 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
                     purlin_pos):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     rafterRootObj = utils.getAcaChild(
@@ -2988,9 +2981,27 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
     # 从举架定位点做偏移
     for n in range(len(purlin_pos)):
         # 向上位移:半桁径+椽径+望板高+灰泥层高
-        offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
-                  + con.WANGBAN_H + con.ROOFMUD_H)*dk
-        point:Vector = purlin_pos[n]+Vector((0,0,offset))
+        offsetZ = (con.HENG_COMMON_D/2*dk
+                 + con.YUANCHUAN_D*dk 
+                 + con.WANGBAN_H*dk
+                 + con.ROOFMUD_H*dk
+                )
+        # 为了防止与排山勾滴穿模，向下调整一个筒瓦高度
+        if n > 1 :
+            tileHeight = (aData.circularTile_source.dimensions.z 
+                  * bData.DK 
+                  / con.DEFAULT_DK)
+            offsetZ -= tileHeight
+        offset = Vector((0,0,offsetZ))
+        # 位移向量按各段椽架的斜率旋转
+        if n != 0:
+            purlinAngle = math.atan(
+                    (purlin_pos[n].z-purlin_pos[n-1].z)
+                    /(purlin_pos[n-1].y-purlin_pos[n].y)
+                )
+            purlinEular = Euler((-purlinAngle,0,0),'XYZ')
+            offset.rotate(purlinEular)
+        point:Vector = purlin_pos[n]+offset
         point.x = ridge_x
         ridgeCurveVerts.append(point)
     
@@ -3104,22 +3115,16 @@ def __buildBofengNails(
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
-    
-    # 定位
-    # 与博缝板外皮相切
-    loc_x = bofengObj.location.x + con.BOFENG_WIDTH*dk
-    # 大小
-    radius = 0.6*dk
-    # 六边形环绕
-    count = 6
-    span = 3*dk
-
     # 收集对象
     nails = []
     
     # 根据槫子位置，摆放雪花钉
     for rafter in rafter_pos:
-        # 中心
+        # 定位: 与博缝板外皮相切
+        loc_x = bofengObj.location.x + con.BOFENG_WIDTH*dk
+        # 大小
+        radius = 0.6*dk
+        # 创建
         nailObj = utils.addSphere(
             name='雪花钉',
             radius=radius,
@@ -3127,11 +3132,13 @@ def __buildBofengNails(
             location= (
                 loc_x,
                 rafter.y,
-                rafter.z - 2*dk),   # 适当向下调整
+                rafter.z), 
             parent=rafterRootObj
         )
         nails.append(nailObj)
         # 六边形环绕
+        count = 6
+        span = con.HENG_TIAOYAN_D*dk/2
         for n in range(count):
             nailObjCopy = utils.copySimplyObject(nailObj)
             offset = Vector((0,span,0))
@@ -3168,8 +3175,31 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         singleUser=True
     )
     # 尺寸适配
-    height = (con.HENG_COMMON_D + con.YUANCHUAN_D*4
-                   + con.WANGBAN_H + con.ROOFMUD_H)*dk
+    # 先做到桁檩下皮
+    height = (con.ROOFMUD_H*dk
+              + con.WANGBAN_H*dk
+              + con.HENG_COMMON_D*dk
+              + con.YUANCHUAN_D*dk
+              )
+    # 排山勾滴的瓦高调整
+    tileHeight = (aData.circularTile_source.dimensions.z 
+                  * bData.DK 
+                  / con.DEFAULT_DK)
+    height -= tileHeight
+    # 再适当调整，没有依据，仅为我的个人喜好
+    if bData.roof_style in (
+        con.ROOF_XIESHAN,
+        con.ROOF_XIESHAN_JUANPENG):
+        # 歇山做窄一些，留出更多的山花板
+        height += con.BOFENG_OFFSET_XS*dk
+    if bData.roof_style in (
+        con.ROOF_YINGSHAN,
+        con.ROOF_YINGSHAN_JUANPENG,
+        con.ROOF_XUANSHAN,
+        con.ROOF_XUANSHAN_JUANPENG,
+    ):
+        # 硬山、悬山做宽一些，更加美观
+        height += con.BOFENG_OFFSET_YS*dk
     bofengObj.dimensions = (
         bofengObj.dimensions.x,
         con.BOFENG_WIDTH*dk,

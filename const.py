@@ -161,7 +161,9 @@ class ACA_Consts(object):
     BEAM_HEIGHT = 1.4       # 梁高(PD)
     BEAM_DEPTH = 1.1        # 梁厚(PD)
     BOFENG_WIDTH = 1.2      # 博缝板厚(DK)
-    BOFENG_HEIGHT = 8       # 博缝板高(DK)
+    BOFENG_HEIGHT = 8       # 博缝板高(DK)，实际并没有使用，而是在代码中进行了控制
+    BOFENG_OFFSET_XS = 3    # 博缝板下缘距离桁下皮的距离(DK)，歇山
+    BOFENG_OFFSET_YS = 6    # 博缝板下缘距离桁下皮的距离(DK)，硬山/悬山
     XYB_WIDTH = 1           # 象眼板/山花板厚(DK)
     JIAOBEI_WIDTH = 2       # 角背厚度(DK)
     GABELBEAM_HEIGHT = 6.5  # 趴梁高(DK),马炳坚p9

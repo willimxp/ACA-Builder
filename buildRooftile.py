@@ -2402,6 +2402,7 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
     endCurvePoint = CurveData.splines[0].points[2]
     endCurvePoint.radius = 0
     utils.setOrigin(sideRidgeCurve,p0)
+    utils.hideObj(sideRidgeCurve)
 
     # 平铺脊筒
     sideRidgeObj = __arrayRidgeByCurve(

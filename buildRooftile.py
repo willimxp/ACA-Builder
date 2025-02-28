@@ -703,16 +703,27 @@ def __drawTileBool(
             # 下金桁采用脊桁的坐标定位
             if n == 1:
                 # 前后檐的山腰裁剪点，垂脊的定位类似
-                if direction == 'X':
-                    # X向：以脊桁宽度为基准
-                    cutPoint.x = (purlin_cross_points[-1].x
-                            + con.EAVETILE_EX*dk 
-                            - bData.tile_width_real)
-                    # Y向：与起始点做45度连线
-                    cutPoint.y = p0.y - (p0.x - cutPoint.x)
-                if direction == 'Y':
-                    # 偏移，以免山面瓦与前后檐面瓦穿模
-                    cutPoint -= Vector((0,con.JIAOLIANG_Y/2*dk,0))
+                # if direction == 'X':
+                #     # X向：以脊桁宽度为基准
+                #     cutPoint.x = (purlin_cross_points[-1].x
+                #             + con.EAVETILE_EX*dk 
+                #             - bData.tile_width_real)
+                #     # Y向：与起始点做45度连线
+                #     cutPoint.y = p0.y - (p0.x - cutPoint.x)
+                # if direction == 'Y':
+                #     # 偏移，以免山面瓦与前后檐面瓦穿模
+                #     cutPoint -= Vector((0,con.JIAOLIANG_Y/2*dk,0))
+
+                # 250227 歇山山面的瓦面与前后檐瓦面相同处理，都裁剪到山花位置
+                # 原本为了兼容宋式开放的山花，而把山面瓦一直做到踩步金
+                # 但是山面的瓦面从三根曲线生成的不完美，反而导致与前后檐瓦面穿模
+                # 所以暂时这样按照清则例处理，与梁思成的图纸也一致
+                # X向：以脊桁宽度为基准
+                cutPoint.x = (purlin_cross_points[-1].x
+                        + con.EAVETILE_EX*dk 
+                        - bData.tile_width_real)
+                # Y向：与起始点做45度连线
+                cutPoint.y = p0.y - (p0.x - cutPoint.x)
             # 上金桁、脊桁不做裁剪点，直接跳过
             if n > 1: 
                 continue   
@@ -1048,6 +1059,53 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     bpy.data.objects.remove(eaveTile)
     bpy.data.objects.remove(dripTile)
 
+# 计算正脊长度
+# 并且可以在硬山、悬山、歇山的垂脊、排山勾滴等复用
+def __getTopRidgeLength(buildingObj: bpy.types.Object,
+        rafter_pos):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    pd = bData.piller_diameter
+
+    # 硬山正脊，山墙向内半垄瓦
+    if bData.roof_style in (
+            con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG,
+            ):
+        zhengji_length = (bData.x_total/2
+            + con.SHANQIANG_WIDTH*dk
+            -bData.tile_width_real/2
+            )
+    # 悬山正脊，从槫头向内半垄
+    elif bData.roof_style in (
+            con.ROOF_XUANSHAN,
+            con.ROOF_XUANSHAN_JUANPENG,
+            ):
+        zhengji_length = (rafter_pos[-1].x
+            -bData.tile_width_real/2)
+    # 庑殿正脊外皮与垂脊相交
+    elif bData.roof_style == con.ROOF_WUDIAN:
+        zhengji_length = (rafter_pos[-1].x
+            + bData.tile_width_real/2)
+    # 歇山正脊对齐排山勾滴定位
+    elif bData.roof_style in (
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,
+            ):
+        # 从槫头向内微调，不要到半垄，以免排山勾滴过大
+        # 因为排山勾滴要保持与博缝板的关系，不能调整
+        # 还需要继续观察效果
+        zhengji_length = (rafter_pos[-1].x
+                -bData.tile_width_real/4)
+        # 矫正到瓦垄中心(可能在筒瓦上，也可能在板瓦上)
+        zhengji_length = __getTileCoord(
+            buildingObj, zhengji_length)
+    else:
+        zhengji_length = 0
+
+    return zhengji_length
+
 # 营造顶部正脊
 def __buildTopRidge(buildingObj: bpy.types.Object,
                  rafter_pos):
@@ -1066,6 +1124,14 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
                 + con.YUANCHUAN_D       # 椽架厚度
                 + con.WANGBAN_H         # 望板厚度
                 + con.ROOFMUD_H)*dk)    # 灰泥厚度
+    # 庑殿正脊适当调整（垂脊相交的方式与歇山、悬山等略有不同）
+    if bData.roof_style == con.ROOF_WUDIAN:
+        # 向下调减1斗口（纯粹为了好看，没啥依据）
+        zhengji_z -= dk
+    
+    # 根据庑殿、歇山、悬山、硬山的不同，计算正脊长度
+    zhengji_length = __getTopRidgeLength(
+        buildingObj,rafter_pos)
 
     # 攒尖顶仅做宝顶
     if (bData.x_total == bData.y_total 
@@ -1081,10 +1147,6 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         # 退出，不再做后续的正脊和螭吻
         return
     
-    # 庑殿正脊适当调整（垂脊相交的方式与歇山、悬山等略有不同）
-    if bData.roof_style == con.ROOF_WUDIAN:
-        # 向下调减1斗口（纯粹为了好看，没啥依据）
-        zhengji_z -= dk
     # 载入正脊资产对象
     roofRidgeObj = utils.copyObject(
         sourceObj=aData.ridgeTop_source,
@@ -1101,24 +1163,6 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     # 脊筒坐中
     roofRidgeObj.location.x = - roofRidgeObj.dimensions.x/2
     
-    # 横向平铺
-    # 硬山正脊做到垂脊中线，即山墙向内半垄瓦
-    if bData.roof_style in (
-            con.ROOF_YINGSHAN,
-            con.ROOF_YINGSHAN_JUANPENG
-            ):
-        zhengji_length = bData.x_total/2 \
-            + con.SHANQIANG_WIDTH*dk \
-            - bData.tile_width_real/2
-    # 庑殿正脊外皮与垂脊相交
-    elif bData.roof_style == con.ROOF_WUDIAN:
-        zhengji_length = rafter_pos[-1].x \
-            + bData.tile_width_real/2
-    # 歇山、悬山正脊内皮与垂脊相交
-    else:
-        # 与垂脊相交，从金交点偏移半垄
-        zhengji_length = rafter_pos[-1].x
-            #- bData.tile_width_real/2        
     # 横向平铺
     modArray:bpy.types.ArrayModifier = \
         roofRidgeObj.modifiers.new('横向平铺','ARRAY')
@@ -1261,38 +1305,36 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
 
     return
 
-# 获取瓦垄坐标
+# 查找给定X坐标附近的瓦垄X坐标
+# 250227 修正，强制取X内侧（左侧）的瓦垄，以免意外取到右侧的瓦垄
 def __getTileCoord(buildingObj:bpy.types.Object,
                    tileCoord):
+    # 载入瓦面网格对象
     tileGrid = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_GRID
     )
-    
-    diff = 9999
-    newTileCoord = None
-    tileSpan = 0
-    pretile = 0
+    # 载入bmesh对象
     bm = bmesh.new()
     bm.from_mesh(tileGrid.data)
+    
+    # 临时做距离逼近的变量
+    compare = 9999
+    # 最终找到的瓦垄X坐标
+    newTileCoord = None
+    # 在瓦面网格上逐点比较
     for vert in bm.verts:
         # 当前点到瓦垄的距离n
-        n = abs(vert.co.x - tileCoord)
+        distance = tileCoord - vert.co.x
+        if distance < 0: 
+            # 仅找输入点左侧的瓦垄，如果为负数，说明已经到了右侧，退出循环
+            break
+
         # 备份相对较小的值到m，便于下次比较
-        if n < diff:
-            diff = n
+        if distance < compare:
+            compare = distance
             newTileCoord = vert.co.x
 
-            # 计算最近的垄距
-            tilex = vert.co.x
-            if tilex - pretile > 0:
-                tileSpan = tilex - pretile
-        pretile = vert.co.x
-
     bm.free()
-
-    # 偏移半垄，让垂脊坐垄中
-    bData:acaData = buildingObj.ACA_data
-    newTileCoord += tileSpan
 
     return newTileCoord
 
@@ -1312,33 +1354,10 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     )
     ridgeCurveVerts = []
 
-    # 垂脊横坐标定位
-    # 歇山/悬山，向内一垄，让出排山勾滴的位置
-    ''' todo: 这样的做法结果是垂脊坐在筒瓦垄上，
-    而刘大可P267的图上是坐在筒瓦外侧，
-    但实际摆放不太合理，所以暂时维持此做法'''
-    ridge_x = (purlin_pos[-1].x 
-               + con.EAVETILE_EX*dk 
-               - bData.tile_width_real)
-    # 250114 瓦垄取整，让垂脊与瓦垄对齐(仅适用歇山顶)
-    # 因为歇山瓦面受飞檐影响，瓦垄宽度不相等，
-    # 只能通过瓦面bmesh轮询face坐标定位
-    if bData.roof_style in (
-            con.ROOF_XIESHAN,
-            con.ROOF_XIESHAN_JUANPENG
-            ):
-        ridge_x = __getTileCoord(buildingObj,ridge_x)
-    # 硬山建筑，向外移动一个山墙
-    if bData.roof_style in (
-            con.ROOF_YINGSHAN,
-            con.ROOF_YINGSHAN_JUANPENG
-            ):
-        ridge_x += (con.SHANQIANG_WIDTH * dk 
-            - con.BEAM_DEPTH * pd/2) # 山墙内还包了半边梁、柱
+    # 根据庑殿、歇山、悬山、硬山的不同，计算正脊长度
+    ridge_x = __getTopRidgeLength(buildingObj,purlin_pos)
 
-    # 垂脊纵坐标定位
-    # P1:硬山、悬山的垂脊从檐口做起
-    # （歇山从正心桁做，所以不需要此点）
+    # 硬山和悬山添加垂脊在檐口的八字撇角
     if bData.roof_style in (
             con.ROOF_YINGSHAN,
             con.ROOF_YINGSHAN_JUANPENG,
@@ -1424,6 +1443,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
             root_obj=tileRootObj,
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
             )
+    
     # 矫正曲线倾斜
     # todo：添加了八字拐弯后，屋脊不再垂直，只能手工矫正，暂时没有啥好办法
     if bData.roof_style in (

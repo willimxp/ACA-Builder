@@ -196,8 +196,8 @@ def getPurlinPos(buildingObj:bpy.types.Object):
                     )
                 if bData.shoushan > shoushanLimit:
                     bData['shoushan'] = shoushanLimit
-                purlinWidth = (bData.x_total/2 
-                        - con.BOFENG_WIDTH*dk   # 推山做到博缝板外皮
+                # 推山从山面檐檩中，向内一檩径，作为山花板外皮（博缝板内皮）
+                purlinWidth = (bData.x_total/2
                         - bData.shoushan         # 用户自定义推山尺寸
                     )
         # 2.c、庑殿，下金桁以上，应用推山做法
@@ -1121,11 +1121,14 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 # 第一层不做（排山梁架不坐在柱头）
                 if n == 0: 
                     use_beam = False
-                # 第二层做踩步金，与下金桁下皮平
+                # 第二层做踩步金
                 if n == 1:
-                    beam_z = purlin_pos[1].z \
-                        + con.BEAM_HEIGHT*pd \
-                        - con.HENG_COMMON_D*dk/2
+                    # # 马炳坚的做法是踩步金下皮与下金桁下皮平
+                    # beam_z = (purlin_pos[1].z 
+                    #     + con.BOARD_JINHENG_H)
+                    # 这里为了避免踩步金与上层梁架穿模，做了梁腰与下金桁上皮平
+                    beam_z = (purlin_pos[1].z 
+                        + con.HENG_COMMON_D*dk/2)
                     beam_l = purlin_pos[1].y*2
                     beam_name = '踩步金'
                 # X坐标，位移到下金桁的X位置
@@ -1378,6 +1381,7 @@ def __drawBeam(
     else:  
         board_h = con.BOARD_JINHENG_H
 
+    # 几何中心的Z=梁头上皮，即可直接与桁檩取相同的Z坐标
     # 梁头与横梁中线齐平
     p1 = Vector((0,bLength/2,0))
     # 梁底，从P1向下半檩径+垫板高度

@@ -366,6 +366,7 @@ def __buildKanKuang(wallproxy,windowsillHeight):
     return kankuangObj
 
 # 构造隔扇数据
+# 采用故宫王璞子书的做法，暂时未使用
 def __getGeshanData(
         wallproxy,
         scale,      # 隔扇尺寸
@@ -528,6 +529,182 @@ def __getGeshanData(
 
     return geshanParts,locZ
 
+# 构造隔扇数据
+# 做法二，按照梁思成和马炳坚的做法
+def __getGeshanData2(
+        wallproxy,
+        scale,      # 隔扇尺寸
+        gapNum,     # 抹头数量
+        useKanwall, # 是否做槛墙
+        dir='L'     # 隔扇方向：左开/右开
+        ):
+    # 载入数据
+    buildingObj = utils.getAcaParent(wallproxy,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    # 考虑到柱的艺术夸张可能性，隔扇按6dk计算
+    pd = con.PILLER_D_EAVE * dk
+    # 输入的隔扇三维尺寸
+    geshan_width,geshan_depth,geshan_height = scale
+    # 边梃/抹头宽（看面）: 1/10隔扇宽（或1/5D）
+    border_width = con.BORDER_WIDTH * pd
+    # 边梃/抹头厚(进深)：1.5倍宽或0.3D，这里直接取了抱框厚度
+    border_depth = con.BORDER_DEPTH * pd
+    # 隔扇部件数据集合
+    geshanParts = []  
+    
+    # 1-预布局：根据抹头数量，排布扇心、裙板、绦环
+    motouData = {'name':'抹头',}
+    taohuanData = {'name':'绦环'}
+    shanxinData = {'name':'扇心'}    
+    qunbanData = {'name':'裙板'} 
+    # 二抹：0-抹头，1-扇心，2-抹头
+    if gapNum >= 2:
+        geshanParts.append(motouData.copy())
+        geshanParts.append(shanxinData.copy())
+        geshanParts.append(motouData.copy())
+        if gapNum==2 and useKanwall:
+            # 槛窗不做2抹，按3抹做，继续进入下一个判断
+            gapNum=3
+    # 三抹：0-抹头，1-扇心，2-抹头，【3-裙板，4-抹头】
+    if gapNum >= 3:
+        if not useKanwall:
+            # 扇心下增加裙板
+            geshanParts.append(qunbanData.copy())
+            geshanParts.append(motouData.copy())
+    # 四抹：0-抹头，1-扇心，2-抹头，【3-绦环，4，抹头】，
+    # 5-裙板，6-抹头
+    if gapNum >= 4:
+        # 扇心和裙板之间加绦环
+        geshanParts.insert(3,taohuanData.copy())
+        geshanParts.insert(4,motouData.copy())
+    # 五抹：0-抹头，1-扇心，2-抹头，3-绦环，4，抹头，
+    # 5-裙板，6-抹头，【7-绦环，8-抹头】
+    if gapNum >= 5:
+        if not useKanwall:
+            # 底部增加绦环
+            geshanParts.append(taohuanData.copy())
+            geshanParts.append(motouData.copy())
+    # 六抹：【0-抹头，1-绦环】，2-抹头，3-扇心，4-抹头，
+    # 5-绦环，6，抹头，7-裙板，8-抹头，9-绦环，10-抹头
+    if gapNum >= 6:
+        # 顶步增加绦环
+        geshanParts.insert(0,motouData.copy())
+        geshanParts.insert(1,taohuanData.copy())
+    
+    # 2-计算各部件的尺寸、位置
+    width = geshan_width-border_width*2
+    # 2.1，计算扇心高度，采用马炳坚做法
+    # 参考汤崇平p43
+    
+    # 扇心满做
+    if gapNum == 2:
+        heartHeight = geshan_height - border_width*2
+    # 从扇心底皮向上为0.6的隔扇高，减去最上面的一根抹头
+    if gapNum in (3,4,5):
+        # 无绦环板
+        heartHeight = geshan_height*0.6 - border_width
+    elif gapNum == 6:
+        # 一个绦环板
+        heartHeight = geshan_height*0.6 - border_width*4
+
+    # 裙板高度在下部0.4隔扇高中，根据抹头和绦环板的高度调整
+    if gapNum == 3:
+        # 三抹：0-抹头，1-扇心，2-抹头，【3-裙板，4-抹头】
+        qunbanHeight = geshan_height*0.4 - border_width*2
+    if gapNum == 4:
+        # 四抹：0-抹头，1-扇心，2-抹头，【3-绦环，4，抹头】，
+        # 5-裙板，6-抹头
+        qunbanHeight = geshan_height*0.4 - border_width*5
+    if gapNum == 5:
+        # 五抹：0-抹头，1-扇心，2-抹头，3-绦环，4，抹头，
+        # 5-裙板，6-抹头，【7-绦环，8-抹头】
+        qunbanHeight = geshan_height*0.4 - border_width*8
+    if gapNum == 6:
+        # 六抹：【0-抹头，1-绦环】，2-抹头，3-扇心，4-抹头，
+        # 5-绦环，6，抹头，7-裙板，8-抹头，9-绦环，10-抹头
+        qunbanHeight = geshan_height*0.4 - border_width*8
+    
+    # 2.3, 依次推理抹头定位
+    # Z坐标从上向下依次推理
+    locZ = geshan_height/2
+    for part in geshanParts:
+        if part['name'] == '抹头':
+            # 抹头的高度、厚度与边梃相同
+            height = depth = border_width
+        if part['name'] == '绦环':
+            # 绦环板按1/3边梃厚
+            depth = border_depth/3
+            # 绦环板按2边梃高
+            height = border_width*2
+        if part['name'] == '扇心':
+            # 扇心厚度同边梃厚
+            depth = border_depth
+            height = heartHeight
+        if part['name'] == '裙板':
+            # 裙板板按1/3边梃厚
+            depth = border_depth/3
+            height = qunbanHeight
+        # 尺寸
+        part['size'] = Vector((width,depth,height))
+        # 定位
+        part['loc'] = Vector((0,0,locZ-height/2))
+        # 下一步定位推理
+        locZ -= height
+
+    # 3、计算边梃
+    # 根据是否有槛窗，计算边梃尺寸
+    if not useKanwall:
+        # 边梃高度做到底部
+        biantingHeight = geshan_height
+    else:
+        # 边梃高度仅做到窗台
+        # 取上文中推理得到的locZ
+        biantingHeight = (geshan_height/2 - locZ)
+    scale = Vector((border_width,border_depth,biantingHeight))
+    loc = Vector((-geshan_width/2+border_width/2,0,
+            (geshan_height - biantingHeight)/2) ) 
+    biantingDataL = {
+        'name' : '边梃',
+        'loc' : loc,
+        'size': scale,
+    }
+    biantingDataR = {
+        'name' : '边梃',
+        'loc' : loc * Vector((-1,1,1)),
+        'size': scale,
+    }
+    geshanParts.append(biantingDataL)
+    geshanParts.append(biantingDataR)
+
+    # 4、计算门轴
+    # 门轴长度，比隔扇延长2个门楹长度（粗略）
+    menzhouHeight = biantingHeight + con.MENYIN_HEIGHT*pd*2
+    # 门轴位置分左开，右开
+    if dir=='L':
+        menzhouX = -geshan_width/2 + con.MENZHOU_R*pd
+    else:
+        menzhouX = geshan_width/2 - con.MENZHOU_R*pd
+    # 门轴外皮与隔扇相切（实际应该是做成一体的）
+    menzhouY = con.BORDER_DEPTH * pd/2 + con.MENZHOU_R * pd
+    # 门轴与隔扇垂直对齐
+    if not useKanwall:
+        # 隔扇与门轴居中对齐
+        menzhouZ = 0
+    else:
+        # 槛窗与门轴对齐
+        menzhouZ = (geshan_height - biantingHeight)/2
+    menzhouData = {
+        'name':'门轴',
+        'loc':Vector((menzhouX,menzhouY,menzhouZ)),
+        'size': Vector((con.MENZHOU_R*pd,
+                        con.MENZHOU_R*pd,
+                        menzhouHeight)),
+    }
+    geshanParts.append(menzhouData)
+
+    return geshanParts,locZ
+
 # 构件隔扇，重构241213
 def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     # 载入数据
@@ -548,7 +725,9 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     )
     
     # 2、构造隔扇数据
-    geshanData,windowsillZ = __getGeshanData(
+    # 250226 重构，采用梁思成和马炳坚的做法
+    # 原来的故宫王璞子书的做法，暂时不用，保留__getGeshanData
+    geshanData,windowsillZ = __getGeshanData2(
         wallproxy=wallproxy,
         scale=scale,
         gapNum=wData.gap_num,

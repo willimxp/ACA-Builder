@@ -279,7 +279,7 @@ def setMat(object:bpy.types.Object,
 
     # 柱头贴图
     if mat == aData.mat_paint_pillerhead:
-        object = __setPillerHead(object,mat)
+        object = __setPillerHead2(object,mat)
 
     # 栱垫板(小号和普通版)
     if mat in (aData.mat_paint_dgfillboard,
@@ -546,6 +546,41 @@ def __setPillerHead(pillerObj:bpy.types.Object,
     newPiller = utils.joinObjects(pillerParts,pillerName,cleanup=True)
     
     return newPiller
+
+# 重构，不再用bisect拼接的方式，直接控制vertex group
+# 计算柱头贴图的高度
+# 依据大额枋、由额垫板、小额枋的高度计算
+def __setPillerHead2(pillerObj:bpy.types.Object,
+                    mat:bpy.types.Object):
+    buildingObj = utils.getAcaParent(
+        pillerObj,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+
+    # 计算柱头高度（大额枋/小额枋下皮）
+    fangHeight = con.EFANG_LARGE_H*dk
+    if bData.use_smallfang:
+        fangHeight += (con.BOARD_YOUE_H*dk
+            + con.EFANG_SMALL_H*dk)
+
+    # 2、选择中段
+    utils.focusObj(pillerObj)
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='DESELECT')
+    # 选择中段中段控制采用了对象的vertex group
+    vertex_group_name = 'neck'  # 在模板中预定义的vertex group名称
+    pillerObj.vertex_groups.active = \
+        pillerObj.vertex_groups[vertex_group_name]
+    bpy.ops.object.vertex_group_select()
+
+    # 3、拉伸柱头贴图区
+    bpy.ops.transform.translate(
+            value=(0,0,-fangHeight))
+    
+    # 4、退出编辑状态，以便后续获取uvmap
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
+    return pillerObj
 
 # 已废弃，栱垫板改为PBR模式，改用__setDgBoard方法
 # # 设置垫拱板的重复次数，根据斗栱攒数计算

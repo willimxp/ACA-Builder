@@ -27,7 +27,7 @@
     <mat_paint_doorring type="Object">绦环板</mat_paint_doorring>
     <mat_paint_shanhua type="Object">山花板</mat_paint_shanhua>
     <mat_geshanxin type="Object">三交六椀隔心</mat_geshanxin>
-    <piller_source type="Object">直柱</piller_source>
+    <piller_source type="Object">直柱.彩画</piller_source>
     <pillerbase_source type="Object">素平柱础</pillerbase_source>
     <lingxin_source type="Object">棂心.正搭斜交</lingxin_source>
     <dg_piller_source type="List" key='dg_style'>

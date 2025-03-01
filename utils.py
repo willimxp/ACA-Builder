@@ -717,7 +717,7 @@ def fastRun(func):
     try:
         _BPyOpsSubModOp._view_layer_update = dummy_view_layer_update
         result = func()
-        outputMsg("执行成功")
+        outputMsg("执行成功-------------------------")
     except Exception as e:
         # 输出到console
         print(e)
@@ -747,8 +747,14 @@ def fastRun(func):
 # 格式化输出内容
 def outputMsg(msg:str):
     # 打印到python console中
-    stime = time.strftime("%H:%M:%S", time.localtime())
-    strout = "ACA[" + stime + "]: " + msg
+    # 拼接毫秒部分
+    timestamp = time.time()
+    integer_part = int(timestamp)
+    milliseconds = int((timestamp - integer_part) * 100)
+    formatted_time = time.strftime("%H:%M:%S", time.localtime(integer_part))
+    formatted_time_with_ms = f"{formatted_time}.{milliseconds:02d}"
+    #stime = time.strftime("%H:%M:%S", time.localtime())
+    strout = "ACA[" + formatted_time_with_ms + "]: " + msg
     print(strout)
 
     # 输出到日志文件中

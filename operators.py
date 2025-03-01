@@ -139,11 +139,17 @@ class ACA_OT_reset_floor(bpy.types.Operator):
         return {'FINISHED'}
     
     def invoke(self, context, event):
-        return context.window_manager.invoke_props_dialog(
-            operator = self,
-            title="ACA筑韵古建 addon for Blender",
-            width = 400,
-            )
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
+        if bData.x_rooms % 2 == 0:
+            # 不处理偶数面阔间数
+            utils.popMessageBox("面阔间数不能为偶数")
+        else:
+            return context.window_manager.invoke_props_dialog(
+                operator = self,
+                title="ACA筑韵古建 addon for Blender",
+                width = 400,
+                )
 
     def draw(self, context):
         row = self.layout

@@ -42,7 +42,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         name='方砖缦地',
         location=(
             0,0,
-            pHeight/2-con.STEP_HEIGHT/2
+            pHeight-con.STEP_HEIGHT/2
         ),
         dimension=(
             bData.x_total+bData.piller_diameter*2,
@@ -77,7 +77,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
             location=(
                 (net_x[n+1]+net_x[n])/2,
                 pDeepth/2-stoneWidth/2,
-                pHeight/2-con.STEP_HEIGHT/2
+                pHeight-con.STEP_HEIGHT/2
             ),
             dimension=(
                 net_x[n+1]-net_x[n],
@@ -105,7 +105,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
             location=(
                 pWidth/2-stoneWidth/2,
                 (net_y[n+1]+net_y[n])/2,
-                pHeight/2-con.STEP_HEIGHT/2
+                pHeight-con.STEP_HEIGHT/2
             ),
             dimension=(
                 stoneWidth,
@@ -132,7 +132,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         location=(
             pWidth/2-stoneWidth/2,
             pDeepth/2-stoneWidth/2,
-            (pHeight/2
+            (pHeight
              -con.STEP_HEIGHT
              -cornerPillerH/2)
         ),
@@ -157,7 +157,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         name='陡板-前后檐',
         location=(
             0,pDeepth/2- con.STEP_HEIGHT/2,
-            (pHeight/2 - con.STEP_HEIGHT - h/2)
+            (pHeight - con.STEP_HEIGHT - h/2)
         ),
         dimension=(
             pWidth - stoneWidth*2,    # 台基宽度 - 两头的角柱（与阶条石同宽）
@@ -181,7 +181,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         location=(
             pWidth/2- con.STEP_HEIGHT/2,
             0,
-            (pHeight/2 - con.STEP_HEIGHT - h/2)
+            (pHeight - con.STEP_HEIGHT - h/2)
         ),
         dimension=(
             con.STEP_HEIGHT,             # 与阶条石同宽
@@ -369,7 +369,7 @@ def __addStepProxy(baseRootObj:bpy.types.Object,
         y = (net_y[pTo_y] + net_y[pFrom_y])/2
     stepProxy = utils.addCube(
         name='踏跺proxy',
-        location=(x,y,0),
+        location=(x,y,stepHeight/2),
         dimension=(stepWidth,stepDeepth,stepHeight),
         rotation=rot,
     )
@@ -591,7 +591,7 @@ def __addPlatformExpand(
         # 拓展尺寸
         pfExpand = con.GROUND_BORDER*2
         # 位置
-        loc_z = -bData.platform_height/2 + con.GROUND_BORDER/2
+        loc_z = con.GROUND_BORDER/2
         # 高度
         height = con.GROUND_BORDER
         # 材质
@@ -601,7 +601,7 @@ def __addPlatformExpand(
         # 拓展尺寸
         pfExpand = con.SANSHUI_WIDTH*dk*2
         # 位置
-        loc_z = -bData.platform_height/2
+        loc_z = 0
         # 高度
         height = con.SANSHUI_HEIGHT 
         # 材质
@@ -779,7 +779,7 @@ def buildPlatform(buildingObj:bpy.types.Object):
         baseRootObj = utils.addEmpty(
             name="台基层",
             parent = buildingObj,
-            location = (0,0,bData.platform_height/2) #以台基几何中心为origin
+            location = (0,0,0) # 台基以地平基线为原点
         )
         baseRootObj.ACA_data['aca_obj'] = True
         baseRootObj.ACA_data['aca_type'] = con.ACA_TYPE_BASE_ROOT

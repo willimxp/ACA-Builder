@@ -92,7 +92,8 @@ def build():
 
     return {'FINISHED'}
 
-def updateBuilding(buildingObj:bpy.types.Object):
+def updateBuilding(buildingObj:bpy.types.Object,
+                   reloadAssets = False):
     # 创建或锁定根目录（ACA筑韵古建）
     rootColl = utils.setCollection(con.ROOT_COLL_NAME,
                         isRoot=True,colorTag=2)
@@ -109,9 +110,11 @@ def updateBuilding(buildingObj:bpy.types.Object):
 
     # 根据模板类型调用不同的入口
     if bData.aca_type == con.ACA_TYPE_BUILDING:
-        buildFloor.buildFloor(buildingObj)
+        buildFloor.buildFloor(buildingObj,
+                    reloadAssets=reloadAssets)
     elif bData.aca_type == con.ACA_TYPE_YARDWALL:
-        buildYardWall.buildYardWall(buildingObj)
+        buildYardWall.buildYardWall(buildingObj,
+                    reloadAssets=reloadAssets)
     else:
         utils.popMessageBox("无法创建该类型的建筑：" + bData.aca_type)
 

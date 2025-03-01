@@ -304,6 +304,7 @@ def __loadDefaultData(buildingObj:bpy.types.Object):
 # aData绑定在Blender的Scene场景中，未做建筑间隔离
 # 在更新斗栱时，修改了aData中涉及斗栱的属性
 def loadAssetByBuilding(buildingObj:bpy.types.Object):
+    utils.outputMsg("重新载入素材库...")
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     aData : tmpData = bpy.context.scene.ACA_temp

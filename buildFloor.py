@@ -1008,11 +1008,12 @@ def resetFloor(buildingObj:bpy.types.Object):
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
 def buildFloor(buildingObj:bpy.types.Object,
-               templateName = None,):
+               templateName = None,
+               reloadAssets = False):
     # 定位到collection，如果没有则新建
     utils.setCollection(con.ROOT_COLL_NAME,
                         isRoot=True,colorTag=2)
-    
+
     # 新建还是刷新？
     if buildingObj == None:
         utils.outputMsg("创建新建筑...")
@@ -1024,10 +1025,12 @@ def buildFloor(buildingObj:bpy.types.Object,
         # 在buldingObj上绑定模板bData和资产库aData
         template.loadTemplate(buildingObj)
     else:
+        utils.outputMsg("更新建筑...")
         # 简单粗暴的全部删除
         utils.deleteHierarchy(buildingObj)
-        # 刷新buildingObj中绑定的资产库aData
-        template.loadAssetByBuilding(buildingObj)   
+        if reloadAssets:
+            # 刷新buildingObj中绑定的资产库aData
+            template.loadAssetByBuilding(buildingObj)  
 
     # 载入数据
     bData:acaData = buildingObj.ACA_data

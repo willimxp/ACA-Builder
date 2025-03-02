@@ -357,23 +357,17 @@ def __buildCCFang(buildingObj:bpy.types.Object):
                 # 北面
                 ccfangList.append("%d/%d#%d/%d" 
                             % (px,py,px,py+1))
-        # 如果4坡顶，两山做穿插枋
-        if bData.roof_style in (
-            con.ROOF_LUDING,
-            con.ROOF_WUDIAN,
-            con.ROOF_XIESHAN,
-            con.ROOF_XIESHAN_JUANPENG,
-        ):
-            if (px in (1, bData.x_rooms-1) 
-                and py not in (0,bData.y_rooms)):
-                if net_x[px] < 0:
-                    # 西面
-                    ccfangList.append("%d/%d#%d/%d" 
-                                % (px,py,px-1,py))
-                else:
-                    # 东面
-                    ccfangList.append("%d/%d#%d/%d" 
-                                % (px,py,px+1,py))
+        # 两山
+        if (px in (1, bData.x_rooms-1) 
+            and py not in (0,bData.y_rooms)):
+            if net_x[px] < 0:
+                # 西面
+                ccfangList.append("%d/%d#%d/%d" 
+                            % (px,py,px-1,py))
+            else:
+                # 东面
+                ccfangList.append("%d/%d#%d/%d" 
+                            % (px,py,px+1,py))
 
     # 循环生成穿插枋
     # 从柱头向下一个大额枋

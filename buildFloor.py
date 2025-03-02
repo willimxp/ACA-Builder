@@ -375,18 +375,27 @@ def __buildCCFang(buildingObj:bpy.types.Object):
     # 从柱头向下一个大额枋
     ccfangOffset = con.EFANG_LARGE_H*dk
     for ccfang in ccfangList:
-        jinPiller,yanPiller = ccfang.split('#')
+        startPillerID,endPillerID = ccfang.split('#')
+        # 找到相对较矮的柱高
+        startPillerHeight = getPillerHeight(
+                    buildingObj,startPillerID)
+        endPillerHeight = getPillerHeight(
+                    buildingObj,endPillerID)
+        if startPillerHeight > endPillerHeight:
+            pillerHeight = endPillerHeight
+        else:
+            pillerHeight = startPillerHeight
         # 起点檐柱
-        px1,py1 = yanPiller.split('/')
+        px1,py1 = startPillerID.split('/')
         pStart = Vector((
             net_x[int(px1)],net_y[int(py1)],
-            bData.piller_height-ccfangOffset
+            pillerHeight-ccfangOffset
         ))
         # 终点金柱
-        px2,py2 = jinPiller.split('/')
+        px2,py2 = endPillerID.split('/')
         pEnd = Vector((
             net_x[int(px2)],net_y[int(py2)],
-            bData.piller_height-ccfangOffset
+            pillerHeight-ccfangOffset
         ))
         # 做穿插枋proxy，定下尺寸、位置、大小
         ccFangProxy = utils.addCubeBy2Points(
@@ -417,6 +426,89 @@ def __buildCCFang(buildingObj:bpy.types.Object):
             use_Modifier=False
         )
         utils.applyAllModifer(ccFangObj)
+
+    return
+
+# 添加金柱之间的金枋
+# 适用于采用了廊间做法的
+def __buildJinFang(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    aData:tmpData = bpy.context.scene.ACA_temp
+    # 查找或新建地盘根节点
+    floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
+    # 获取开间、进深数据
+    net_x,net_y = getFloorDate(buildingObj)
+    # 穿插枋列表
+    jinfangList = []
+
+    # 循环所有的柱子
+    # 解析piller_net,如：
+    pillerList = bData.piller_net.split(',')
+    for pillerID in pillerList:
+        # pillnet_net字串尾部有多余的','，导致可能有空pillerID
+        if pillerID == '' : continue
+
+        px,py = pillerID.split('/')
+        px = int(px)
+        py = int(py)
+
+        # 判断柱子是否为金柱，并向相邻的檐柱做穿插枋
+        # 横向金枋
+        if (py not in (0,bData.y_rooms)
+             and px not in (0, bData.x_rooms-1, bData.x_rooms)):
+                jinfangList.append("%d/%d#%d/%d" 
+                            % (px,py,px+1,py))
+        # 纵向金枋
+        if (px not in (0, bData.x_rooms) 
+            and py not in (0,bData.y_rooms-1, bData.y_rooms)):
+            # 西面
+            jinfangList.append("%d/%d#%d/%d" 
+                        % (px,py,px,py+1))
+
+    # 循环生成金枋（金枋在柱头）
+    for jinfang in jinfangList:
+        startPillerID,endPillerID = jinfang.split('#')
+        # 找到相对较矮的柱高
+        startPillerHeight = getPillerHeight(
+                    buildingObj,startPillerID)
+        endPillerHeight = getPillerHeight(
+                    buildingObj,endPillerID)
+        if startPillerHeight > endPillerHeight:
+            pillerHeight = endPillerHeight
+        else:
+            pillerHeight = startPillerHeight
+        # 起点檐柱
+        px1,py1 = startPillerID.split('/')
+        pStart = Vector((
+            net_x[int(px1)],net_y[int(py1)],
+            pillerHeight-con.HENGFANG_H*dk/2
+        ))
+        # 终点金柱
+        px2,py2 = endPillerID.split('/')
+        pEnd = Vector((
+            net_x[int(px2)],net_y[int(py2)],
+            pillerHeight-con.HENGFANG_H*dk/2
+        ))
+        # 做金枋，定下尺寸、位置、大小
+        # 金枋做小一圈，以免和梁架生成的桁枋打架
+        # 其实这里的金枋和桁架的金枋是同一个东西，应该在生成桁架时避开
+        jinFangObj = utils.addCubeBy2Points(
+            start_point=pStart,
+            end_point=pEnd,
+            depth=con.HENGFANG_Y*dk-0.01,
+            height=con.HENGFANG_H*dk-0.01,
+            name='金枋.'+jinfang,
+            root_obj=floorRootObj
+        )
+        # 刷红漆
+        mat.setMat(jinFangObj,aData.mat_red)
+        # 倒角
+        utils.addModifierBevel(
+            object=jinFangObj,
+            width=con.BEVEL_LOW
+        )
 
     return
 
@@ -933,6 +1025,9 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 250227 始终调用穿插枋处理
     # 函数内部会判断是否满足做穿插枋的条件
     __buildCCFang(buildingObj)
+
+    # 250302 添加金柱间的金枋
+    __buildJinFang(buildingObj)
 
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

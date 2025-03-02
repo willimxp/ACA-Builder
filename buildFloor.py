@@ -340,7 +340,9 @@ def __buildCCFang(buildingObj:bpy.types.Object):
     # 解析piller_net,如：
     pillerList = bData.piller_net.split(',')
     for pillerID in pillerList:
+        # pillnet_net字串尾部有多余的','，导致可能有空pillerID
         if pillerID == '' : continue
+
         px,py = pillerID.split('/')
         px = int(px)
         py = int(py)
@@ -425,6 +427,38 @@ def __buildFang(buildingObj:bpy.types.Object):
     dk = bData.DK
     aData:tmpData = bpy.context.scene.ACA_temp
 
+    # 根据fang_net判断是否需要自动生成
+    # '0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,'
+    fangStr = bData.fang_net
+    if fangStr != '':
+        # 不重新生成额枋
+        return
+    # 如果fangStr为空，比如，第一次生成的新建筑，或更改地盘需要重新生成
+    # 则继续进行后续生成操作
+
+    # 自动生成fangstr
+    # 提取柱网列表
+    pillerList = bData.piller_net.split(',')
+    for pillerID in pillerList:
+        # pillnet_net字串尾部多余的','而导致空pillerID
+        if pillerID == '' : continue
+
+        px,py = pillerID.split('/')
+        px = int(px)
+        py = int(py)
+
+        # 判断柱子是否为檐柱，并向相邻的檐柱做额枋
+        # 前后檐
+        if (py in (0,bData.y_rooms) 
+                and px != bData.x_rooms):
+            fangStr += ("%d/%d#%d/%d," 
+                        % (px,py,px+1,py))
+        # 两山
+        if (px in (0, bData.x_rooms) 
+                and py != bData.y_rooms):
+            fangStr += ("%d/%d#%d/%d," 
+                        % (px,py,px,py+1))
+
     # 柱网根节点
     floorRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_FLOOR_ROOT)
@@ -441,8 +475,6 @@ def __buildFang(buildingObj:bpy.types.Object):
                 utils.deleteHierarchy(obj,del_parent=True)
     
     # 根据建筑模板的参数设置分布
-    # '0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,'
-    fangStr = bData.fang_net
     fangID_List = fangStr.split(',')
     for fangID in fangID_List:
         if fangID == '': continue
@@ -895,9 +927,8 @@ def buildPillers(buildingObj:bpy.types.Object):
                 bData.piller_net += pillerID + ','
 
     # 添加柱间的额枋
-    # 重设柱网时，可能清除fang_net数据，而导致异常
-    if bData.fang_net != '':
-        __buildFang(buildingObj)
+    # 函数内部会自动生成默认额枋
+    __buildFang(buildingObj)
 
     # 250227 始终调用穿插枋处理
     # 函数内部会判断是否满足做穿插枋的条件

@@ -430,7 +430,6 @@ def __buildCCFang(buildingObj:bpy.types.Object):
     return
 
 # 添加金柱之间的金枋
-# 适用于采用了廊间做法的
 def __buildJinFang(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
@@ -440,27 +439,24 @@ def __buildJinFang(buildingObj:bpy.types.Object):
     floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
     # 获取开间、进深数据
     net_x,net_y = getFloorDate(buildingObj)
-    # 穿插枋列表
+    # 金枋列表
     jinfangList = []
 
-    # 循环所有的柱子
-    # 解析piller_net,如：
-    pillerList = bData.piller_net.split(',')
+    # 生成金枋列表jinfangList
+    # 循环解析柱网piller_net，删除结尾的','，并用','分割
+    pillerList = bData.piller_net.rstrip(',').split(',')
     for pillerID in pillerList:
-        # pillnet_net字串尾部有多余的','，导致可能有空pillerID
-        if pillerID == '' : continue
-
         px,py = pillerID.split('/')
         px = int(px)
         py = int(py)
 
-        # 判断柱子是否为金柱，并向相邻的檐柱做穿插枋
-        # 横向金枋
-        if (py not in (0,bData.y_rooms)
+        # 判断柱子是否为金柱，并向相邻的金柱做金枋
+        # 横向金枋，仅做外金柱之间的横向金枋，不做内金柱之间的横向金枋
+        if (py in (1,bData.y_rooms-1)
              and px not in (0, bData.x_rooms-1, bData.x_rooms)):
                 jinfangList.append("%d/%d#%d/%d" 
-                            % (px,py,px+1,py))
-        # 纵向金枋
+                                % (px,py,px+1,py))
+        # 纵向金枋，无论内外金柱，都做纵向金枋
         if (px not in (0, bData.x_rooms) 
             and py not in (0,bData.y_rooms-1, bData.y_rooms)):
             # 西面

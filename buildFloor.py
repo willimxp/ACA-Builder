@@ -338,11 +338,8 @@ def __buildCCFang(buildingObj:bpy.types.Object):
 
     # 循环所有的柱子
     # 解析piller_net,如：
-    pillerList = bData.piller_net.split(',')
+    pillerList = bData.piller_net.rstrip(',').split(',')
     for pillerID in pillerList:
-        # pillnet_net字串尾部有多余的','，导致可能有空pillerID
-        if pillerID == '' : continue
-
         px,py = pillerID.split('/')
         px = int(px)
         py = int(py)
@@ -521,11 +518,8 @@ def __buildFang(buildingObj:bpy.types.Object):
 
     # 自动生成fangstr
     # 提取柱网列表
-    pillerList = bData.piller_net.split(',')
+    pillerList = bData.piller_net.rstrip(',').split(',')
     for pillerID in pillerList:
-        # pillnet_net字串尾部多余的','而导致空pillerID
-        if pillerID == '' : continue
-
         px,py = pillerID.split('/')
         px = int(px)
         py = int(py)
@@ -536,15 +530,17 @@ def __buildFang(buildingObj:bpy.types.Object):
                 and px != bData.x_rooms):
             sfang = ("%d/%d#%d/%d," 
                         % (px,py,px+1,py))
+            # 判断该fangStr是否已经在fangNet中
+            if sfang not in fangNet:
+                fangNet += sfang
         # 两山
         if (px in (0, bData.x_rooms) 
                 and py != bData.y_rooms):
             sfang = ("%d/%d#%d/%d," 
                         % (px,py,px,py+1))
-            
-        # 判断该fangStr是否已经在fangNet中
-        if sfang not in fangNet:
-            fangNet += sfang
+            # 判断该fangStr是否已经在fangNet中
+            if sfang not in fangNet:
+                fangNet += sfang
     # 将fangstr存入bdata
     bData['fang_net'] = fangNet
 

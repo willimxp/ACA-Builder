@@ -521,12 +521,7 @@ def __buildFang(buildingObj:bpy.types.Object):
 
     # 根据fang_net判断是否需要自动生成
     # '0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,'
-    fangStr = bData.fang_net
-    if fangStr != '':
-        # 不重新生成额枋
-        return
-    # 如果fangStr为空，比如，第一次生成的新建筑，或更改地盘需要重新生成
-    # 则继续进行后续生成操作
+    fangNet = bData.fang_net
 
     # 自动生成fangstr
     # 提取柱网列表
@@ -543,13 +538,19 @@ def __buildFang(buildingObj:bpy.types.Object):
         # 前后檐
         if (py in (0,bData.y_rooms) 
                 and px != bData.x_rooms):
-            fangStr += ("%d/%d#%d/%d," 
+            sfang = ("%d/%d#%d/%d," 
                         % (px,py,px+1,py))
         # 两山
         if (px in (0, bData.x_rooms) 
                 and py != bData.y_rooms):
-            fangStr += ("%d/%d#%d/%d," 
+            sfang = ("%d/%d#%d/%d," 
                         % (px,py,px,py+1))
+            
+        # 判断该fangStr是否已经在fangNet中
+        if sfang not in fangNet:
+            fangNet += sfang
+    # 将fangstr存入bdata
+    bData['fang_net'] = fangNet
 
     # 柱网根节点
     floorRootObj = utils.getAcaChild(
@@ -567,7 +568,7 @@ def __buildFang(buildingObj:bpy.types.Object):
                 utils.deleteHierarchy(obj,del_parent=True)
     
     # 根据建筑模板的参数设置分布
-    fangID_List = fangStr.split(',')
+    fangID_List = fangNet.split(',')
     for fangID in fangID_List:
         if fangID == '': continue
 
@@ -699,8 +700,8 @@ def __buildFang(buildingObj:bpy.types.Object):
             fangJoined = utils.joinObjects(fangPart,newName='额枋.'+ fangID)
             bigFangObj = fangJoined
         
-    # 聚焦到最后添加的大额枋，便于用户可以直接删除
-    utils.focusObj(bigFangObj)
+    # # 聚焦到最后添加的大额枋，便于用户可以直接删除
+    # utils.focusObj(bigFangObj)
     return {'FINISHED'}
 
 # 在选中的柱子间，添加枋
@@ -1020,6 +1021,7 @@ def buildPillers(buildingObj:bpy.types.Object):
 
     # 添加柱间的额枋
     # 函数内部会自动生成默认额枋
+    utils.outputMsg("Building Fangs...")
     __buildFang(buildingObj)
 
     # 250227 始终调用穿插枋处理

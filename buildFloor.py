@@ -327,6 +327,12 @@ def __buildQueti(fangObj):
 def __buildCCFang(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
+    
+    # 校验：穿插枋做在廊间，所以，进深至少3间，面阔至少3间
+    if bData.x_rooms < 3 or bData.y_rooms < 3:
+        # 否则不做
+        return {'CANCELLED'}
+    
     dk = bData.DK
     aData:tmpData = bpy.context.scene.ACA_temp
     # 查找或新建地盘根节点
@@ -424,7 +430,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
         )
         utils.applyAllModifer(ccFangObj)
 
-    return
+    return {'FINISHED'}
 
 # 添加金柱之间的金枋
 def __buildJinFang(buildingObj:bpy.types.Object):

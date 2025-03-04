@@ -361,44 +361,47 @@ def __buildCCFang(buildingObj:bpy.types.Object):
             else:
                 # 北面
                 ccfangList.append("%d/%d#%d/%d" 
-                            % (px,py,px,py+1))
-        # 两山
-        if (px in (1, bData.x_rooms-1) 
-            and py not in (0,bData.y_rooms)):
-            if net_x[px] < 0:
-                # 西面
-                ccfangList.append("%d/%d#%d/%d" 
-                            % (px,py,px-1,py))
-            else:
-                # 东面
-                ccfangList.append("%d/%d#%d/%d" 
-                            % (px,py,px+1,py))
+                            % (px,py,px,py+1))              
+        # 如果4坡顶，两山做穿插枋
+        # 这里纠结了2次，硬山悬山不应该做两山的穿插枋吧？
+        # 中间曾经放开过？忘记为什么了。继续观察吧
+        if bData.roof_style in (
+            con.ROOF_LUDING,
+            con.ROOF_WUDIAN,
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,
+        ):
+            if (px in (1, bData.x_rooms-1) 
+                and py not in (0,bData.y_rooms)):
+                if net_x[px] < 0:
+                    # 西面
+                    ccfangList.append("%d/%d#%d/%d" 
+                                % (px,py,px-1,py))
+                else:
+                    # 东面
+                    ccfangList.append("%d/%d#%d/%d" 
+                                % (px,py,px+1,py))
+
 
     # 循环生成穿插枋
     # 从柱头向下一个大额枋
     ccfangOffset = con.EFANG_LARGE_H*dk
     for ccfang in ccfangList:
-        startPillerID,endPillerID = ccfang.split('#')
+        jinPillerID,yanPillerID = ccfang.split('#')
         # 找到相对较矮的柱高
-        startPillerHeight = getPillerHeight(
-                    buildingObj,startPillerID)
-        endPillerHeight = getPillerHeight(
-                    buildingObj,endPillerID)
-        if startPillerHeight > endPillerHeight:
-            pillerHeight = endPillerHeight
-        else:
-            pillerHeight = startPillerHeight
+        yanPillerHeight = getPillerHeight(
+                    buildingObj,yanPillerID)
         # 起点檐柱
-        px1,py1 = startPillerID.split('/')
+        px1,py1 = yanPillerID.split('/')
         pStart = Vector((
             net_x[int(px1)],net_y[int(py1)],
-            pillerHeight-ccfangOffset
+            yanPillerHeight-ccfangOffset
         ))
         # 终点金柱
-        px2,py2 = endPillerID.split('/')
+        px2,py2 = jinPillerID.split('/')
         pEnd = Vector((
             net_x[int(px2)],net_y[int(py2)],
-            pillerHeight-ccfangOffset
+            yanPillerHeight-ccfangOffset
         ))
         # 做穿插枋proxy，定下尺寸、位置、大小
         ccFangProxy = utils.addCubeBy2Points(

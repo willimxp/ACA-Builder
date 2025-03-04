@@ -363,8 +363,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
                 ccfangList.append("%d/%d#%d/%d" 
                             % (px,py,px,py+1))              
         # 如果4坡顶，两山做穿插枋
-        # 这里纠结了2次，硬山悬山不应该做两山的穿插枋吧？
-        # 中间曾经放开过？忘记为什么了。继续观察吧
+        # 对于2坡顶，两山廊间应该做金枋，而不是穿插枋
         if bData.roof_style in (
             con.ROOF_LUDING,
             con.ROOF_WUDIAN,
@@ -458,10 +457,22 @@ def __buildJinFang(buildingObj:bpy.types.Object):
 
         # 判断柱子是否为金柱，并向相邻的金柱做金枋
         # 横向金枋，仅做外金柱之间的横向金枋，不做内金柱之间的横向金枋
-        if (py in (1,bData.y_rooms-1)
-             and px not in (0, bData.x_rooms-1, bData.x_rooms)):
-                jinfangList.append("%d/%d#%d/%d" 
-                                % (px,py,px+1,py))
+        useJinfang = False
+        if py in (1,bData.y_rooms-1):
+            if bData.roof_style in (con.ROOF_YINGSHAN,
+                                    con.ROOF_YINGSHAN_JUANPENG,
+                                    con.ROOF_XUANSHAN,
+                                    con.ROOF_XUANSHAN_JUANPENG,):
+                # 2坡顶，横向都做金枋
+                if px != bData.x_rooms:
+                    useJinfang = True
+            else:
+                # 4坡顶，横向在廊间不做金枋
+                if px not in (0, bData.x_rooms-1, bData.x_rooms):
+                    useJinfang =True
+        if useJinfang:  
+            jinfangList.append("%d/%d#%d/%d" 
+                                    % (px,py,px+1,py))
         # 纵向金枋，无论内外金柱，都做纵向金枋
         if (px not in (0, bData.x_rooms) 
             and py not in (0,bData.y_rooms-1, bData.y_rooms)):

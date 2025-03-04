@@ -125,31 +125,31 @@ class ACA_OT_reset_floor(bpy.types.Operator):
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj == None:
-            utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
-            return {'FINISHED'}
-        if buildingObj != None:
-            funproxy = partial(build.resetFloor,
-                        buildingObj=buildingObj)
-            result = utils.fastRun(funproxy)
-            if 'FINISHED' in result:
-                self.report({'INFO'},"柱网已重新营造！")
-        else:
-            self.report({'ERROR'},"找不到根节点！")
+        funproxy = partial(build.resetFloor,
+                    buildingObj=buildingObj)
+        result = utils.fastRun(funproxy)
+        if 'FINISHED' in result:
+            self.report({'INFO'},"柱网已重新营造！")
         return {'FINISHED'}
     
     def invoke(self, context, event):
+        # 开始记录操作，以便后续可以撤销
+        #bpy.ops.ed.undo_push(message="Before Confirm Dialog")
+
         buildingObj,bData,objData = utils.getRoot(context.object)
         # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
         if bData.x_rooms % 2 == 0:
             # 不处理偶数面阔间数
             utils.popMessageBox("面阔间数不能为偶数")
-        else:
-            return context.window_manager.invoke_props_dialog(
-                operator = self,
-                title="ACA筑韵古建 addon for Blender",
-                width = 400,
-                )
+            # 用户取消操作时执行撤销
+            bpy.ops.ed.undo()
+            return {'CANCELLED'}
+
+        return context.window_manager.invoke_props_dialog(
+            operator = self,
+            title="ACA筑韵古建 addon for Blender",
+            width = 400,
+            )
 
     def draw(self, context):
         row = self.layout
@@ -163,6 +163,11 @@ class ACA_OT_reset_floor(bpy.types.Operator):
             icon='BLANK1'
             )
     
+    def cancel(self, context):
+        print('canceled')
+        # 用户取消操作时执行撤销
+        bpy.ops.ed.undo()
+        
 # 减柱
 class ACA_OT_del_piller(bpy.types.Operator):
     bl_idname="aca.del_piller"

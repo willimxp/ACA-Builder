@@ -1119,7 +1119,11 @@ def resetFloor(buildingObj:bpy.types.Object):
     bData.is_showTiles = False
 
     # 调用
-    result = buildFloor(buildingObj)
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if isRebuild:
+        result = buildFloor(buildingObj)
+    else:
+        result = {'CANCELLED'}
     return result
 
 # 执行营造整体过程

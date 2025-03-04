@@ -657,7 +657,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     shengqi: bpy.props.IntProperty(
             name="生起(椽径倍数)",
             default=1, 
-            #update=update_roof
+            update=update_roof
         )# type: ignore 
     liangtou: bpy.props.FloatProperty(
             name="梁头位置", 
@@ -665,6 +665,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0,
             max=1.0,
             precision=3,
+            update = update_roof,
             description="老梁头压挑檐桁的尺度，建议在0.5左右，可根据起翘形态适当调整"
         )# type: ignore
     tuishan: bpy.props.FloatProperty(
@@ -673,6 +674,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0.1,
             max=1.0,
             precision=3,
+            update = update_roof,
             description="庑殿顶两山坡度的调整系数，标准值为0.9，设置为1.0即不做推山"
         )# type: ignore
     shoushan: bpy.props.FloatProperty(
@@ -681,6 +683,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0,
             max=2,
             precision=3,
+            update = update_roof,
             description="歇山顶的山花板从檐檩中向内移动的距离(米)，一般为1檩径(4斗口)，最大不超过檐步架"
         )# type: ignore
     luding_rafterspan:bpy.props.FloatProperty(
@@ -689,6 +692,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0,
             max=6,
             precision=3,
+            update = update_roof,
             description="盝顶檐步架宽度，用于重檐时，请设置为上下层面阔/进深收分的距离"
         )# type: ignore
     juzhe : bpy.props.EnumProperty(
@@ -699,6 +703,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("2","   举折系数：平缓","[0.5,0.65,0.75,0.9]"),
             ],
             description="决定了屋面坡度的曲率",
+            update = update_roof,
         ) # type: ignore
     roof_qiao_point : bpy.props.FloatVectorProperty(
         name="翼角起翘参考点",

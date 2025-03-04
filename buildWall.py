@@ -191,15 +191,13 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     wData['door_num'] = bData.door_num
     wData['gap_num'] = bData.gap_num
     wData['use_smallfang'] = bData.use_smallfang
+    wData['use_topwin'] = bData.use_topwin
 
     # 验证是否做横披窗
     # 如果中槛高度高于整个槛框高度，则不做横披窗
-    if bData.use_topwin:
-        if wall_height > (bData.door_height
-                          +con.KAN_MID_HEIGHT*pd):
-            wData['use_topwin'] = True
-        else:
-            wData['use_topwin'] = False
+    if wall_height < (bData.door_height
+                        +con.KAN_MID_HEIGHT*pd):
+        wData['use_topwin'] = False
     return wallproxy
 
 # 绘制墙体

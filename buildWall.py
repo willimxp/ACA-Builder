@@ -132,13 +132,15 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     # 与是否做廊间举架无关
     isLangjian = False
     # 横向廊间，如，0/1#1/1
-    if (pFrom_y == pTo_y 
-        and pFrom_x+pTo_x in (1,bData.x_rooms*2-1)):
-        isLangjian = True
+    if bData.y_rooms>3:
+        if (pFrom_y == pTo_y 
+            and pFrom_x+pTo_x in (1,bData.x_rooms*2-1)):
+            isLangjian = True
     # 纵向廊间
-    if (pFrom_x == pTo_x 
-        and pFrom_y+pTo_y in (1,bData.y_rooms*2-1)):
-        isLangjian = True
+    if bData.x_rooms >3:
+        if (pFrom_x == pTo_x 
+            and pFrom_y+pTo_y in (1,bData.y_rooms*2-1)):
+            isLangjian = True
     if isLangjian:
         # 穿插枋下皮与由额垫板下皮持平
         # (简化处理，上槛中线对齐大额枋底皮)

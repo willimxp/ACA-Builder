@@ -33,10 +33,10 @@ def delprop():
     del bpy.types.Scene.ACA_data
     del bpy.types.Object.ACA_data
 
-# 筛选资产目录
-def p_filter(self, object:bpy.types.Object):
-    # 仅返回Assets collection中的对象
-    return object.users_collection[0].name == 'Assets'
+# # 筛选资产目录
+# def p_filter(self, object:bpy.types.Object):
+#     # 仅返回Assets collection中的对象
+#     return object.users_collection[0].name == 'Assets'
 
 # 更新建筑，但不重设柱网
 def update_building(self, context:bpy.types.Context):
@@ -71,10 +71,20 @@ def reset_building(self, context:bpy.types.Context):
 
 # 更新院墙
 def update_yardwall(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
     bpy.ops.aca.build_yardwall()
     return
 
 def update_platform(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
@@ -91,6 +101,11 @@ def update_platform(self, context:bpy.types.Context):
 
 # 仅更新柱体样式，不触发其他重建
 def update_PillerStyle(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
@@ -107,6 +122,11 @@ def update_PillerStyle(self, context:bpy.types.Context):
 
 # 更新柱体尺寸，会自动触发墙体重建
 def update_piller(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
@@ -122,6 +142,11 @@ def update_piller(self, context:bpy.types.Context):
     return
 
 def update_topwin(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
     # 联动计算door_height
     dk = self.DK
     # pd = con.PILLER_D_EAVE*dk
@@ -174,6 +199,11 @@ def update_topwin(self, context:bpy.types.Context):
     return
 
 def update_wall(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
     # 从self属性找到对应的Object，用self.id_data
     # https://blender.stackexchange.com/questions/145245/how-to-access-object-instance-from-property-instance-in-update-callback
     refObj = self.id_data
@@ -193,6 +223,11 @@ def update_wall(self, context:bpy.types.Context):
 
 # 刷新斗栱布局
 def update_dougong(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
     # 确认选中为building节点
     buildingObj,bData,odata = utils.getRoot(context.object)
     if buildingObj != None:
@@ -211,6 +246,11 @@ def update_dougong(self, context:bpy.types.Context):
     return
 
 def update_roof(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
     # 确认选中为building节点
     buildingObj,bData,oData = utils.getRoot(context.object)
     if buildingObj != None:
@@ -226,6 +266,11 @@ def update_roof(self, context:bpy.types.Context):
 
 # 用户修改屋顶类型时的回调
 def update_roofstyle(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
     buildingObj,bData,oData = utils.getRoot(context.object)
     # 庑殿、歇山不可以不做飞椽
     if bData.roof_style in (
@@ -238,6 +283,11 @@ def update_roofstyle(self, context:bpy.types.Context):
     return
 
 def update_rooftile(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
     # 确认选中为building节点
     buildingObj,bData,oData = utils.getRoot(context.object)
     if buildingObj != None:
@@ -974,7 +1024,6 @@ class ACA_data_template(bpy.types.PropertyGroup):
     lingxin_source:bpy.props.PointerProperty(
             name = "棂心",
             type = bpy.types.Object,
-            poll = p_filter,
             update = update_wall
         )# type: ignore 
     
@@ -1030,124 +1079,100 @@ class ACA_data_template(bpy.types.PropertyGroup):
     flatTile_source:bpy.props.PointerProperty(
             name = "板瓦",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     circularTile_source:bpy.props.PointerProperty(
             name = "筒瓦",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     eaveTile_source:bpy.props.PointerProperty(
             name = "瓦当",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     dripTile_source:bpy.props.PointerProperty(
             name = "滴水",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     
     # 屋脊对象
     ridgeTop_source:bpy.props.PointerProperty(
             name = "正脊筒",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     ridgeBack_source:bpy.props.PointerProperty(
             name = "垂脊兽后",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     ridgeFront_source:bpy.props.PointerProperty(
             name = "垂脊兽前",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     ridgeEnd_source:bpy.props.PointerProperty(
             name = "端头盘子",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     chiwen_source:bpy.props.PointerProperty(
             name = "螭吻",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     baoding_source:bpy.props.PointerProperty(
             name = "宝顶",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     chuishou_source:bpy.props.PointerProperty(
             name = "垂兽",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     taoshou_source:bpy.props.PointerProperty(
             name = "套兽",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     
     # 跑兽对象
     paoshou_0_source:bpy.props.PointerProperty(
             name = "仙人",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     paoshou_1_source:bpy.props.PointerProperty(
             name = "龙",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     paoshou_2_source:bpy.props.PointerProperty(
             name = "凤",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     paoshou_3_source:bpy.props.PointerProperty(
             name = "狮子",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     paoshou_4_source:bpy.props.PointerProperty(
             name = "海马",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     paoshou_5_source:bpy.props.PointerProperty(
             name = "天马",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     paoshou_6_source:bpy.props.PointerProperty(
             name = "狎鱼",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     paoshou_7_source:bpy.props.PointerProperty(
             name = "狻猊",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     paoshou_8_source:bpy.props.PointerProperty(
             name = "獬豸",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     paoshou_9_source:bpy.props.PointerProperty(
             name = "斗牛",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore 
     paoshou_10_source:bpy.props.PointerProperty(
             name = "行什",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore     
     walleave:bpy.props.PointerProperty(
             name = "墙檐",
             type = bpy.types.Object,
-            poll = p_filter
         )# type: ignore     

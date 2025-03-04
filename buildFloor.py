@@ -590,6 +590,9 @@ def __buildFang(buildingObj:bpy.types.Object):
         fang_x = (net_x[pFrom_x]+net_x[pTo_x])/2
         fang_y = (net_y[pFrom_y]+net_y[pTo_y])/2
         fang_z = pillerHeight - con.EFANG_LARGE_H*dk/2
+        # 为了防止柱头与大额枋之间穿模，同时也便于在俯视图中选择柱头
+        # 将额枋轻微位移1mm
+        fang_z -= 0.001
         bigFangLoc = Vector((fang_x,fang_y,fang_z))   
         # 计算枋的方向，以建筑中心点，逆时针排布
         # 参考https://math.stackexchange.com/questions/285346/why-does-cross-product-tell-us-about-clockwise-or-anti-clockwise-rotation#:~:text=We%20can%20tell%20which%20direction,are%20parallel%20to%20each%20other.

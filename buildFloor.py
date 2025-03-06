@@ -1132,11 +1132,12 @@ def resetFloor(buildingObj:bpy.types.Object):
     # 250109 踏跺数据未重置，导致开间变化后，错误的踏跺无法生成而崩溃
     bData.step_net = ''
 
-    # 250215 重设地盘后，默认不做屋顶
-    bData.is_showDougong = False
-    bData.is_showBeam = False
-    bData.is_showRafter = False
-    bData.is_showTiles = False
+    # 250306 重新考虑后，觉得似乎不必禁止
+    # # 250215 重设地盘后，默认不做屋顶
+    # bData.is_showDougong = False
+    # bData.is_showBeam = False
+    # bData.is_showRafter = False
+    # bData.is_showTiles = False
 
     # 调用
     isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild

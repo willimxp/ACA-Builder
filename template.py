@@ -434,39 +434,47 @@ def __loadTemplateSingle(
 # 直接将XML填充入bData
 # 注意，所有的属性都为选填，所以要做好空值的检查
 def loadTemplate(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    templateName = bData.template_name
+    
     # 解析XML配置模板
     path = __getPath(xmlFileName)
     tree = ET.parse(path)
     root = tree.getroot()
+    
+    # 读取所有根节点模板
     templates = root.findall('template')
     if templates == None:
         utils.outputMsg("模板解析失败")
         return
     
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
-    templateName = bData.template_name
-    
     # 在根层次中查找对应名称的那个模板
     for template in templates:
         # 查看是否有子模版
-        tType = template.find('acaType')
-        if tType == con.ACA_TYPE_COMBO:
-            tempChildren = template.find('template')
-            for tempChild in tempChildren:
-                nameNode = tempChild.find('template_name')
+        tType = template.find('aca_type')
+        if tType != None:
+            # 如果 aca_type=combo，则继续查找子模板
+            if tType.text == con.ACA_TYPE_COMBO:
+                # 查找子模板XML节点
+                tempChildren = template.findall('template')
+                for tempChild in tempChildren:
+                    nameNode = tempChild.find('template_name')
+                    if nameNode != None:
+                        if nameNode.text == templateName:
+                            __loadTemplateSingle(
+                                buildingObj,tempChild)
+                            return
+            else:
+                nameNode = template.find('template_name')
                 if nameNode != None:
                     if nameNode.text == templateName:
                         __loadTemplateSingle(
-                            buildingObj,tempChild)
-        else:
-            nameNode = template.find('template_name')
-            if nameNode != None:
-                if nameNode.text == templateName:
-                    __loadTemplateSingle(
-                        buildingObj,template)
-    
-    return
+                            buildingObj,template)
+                        return
+                    
+    # 经过经过以上循环，没有符合条件的模板，抛出异常
+    raise Exception('无法载入模板')
 
 # 保存模板修改
 def saveTemplate(buildingObj:bpy.types.Object):

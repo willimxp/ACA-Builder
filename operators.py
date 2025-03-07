@@ -924,4 +924,82 @@ class ACA_OT_test(bpy.types.Operator):
 
         return {'FINISHED'}
 
+# 插件设置
+class ACA_OT_Preferences(bpy.types.AddonPreferences):
+    # This must match the add-on name, use `__package__`
+    # when defining this for add-on extensions or a sub-module of a python package.
+    bl_idname = __name__.split('.')[0]
+
+    filepath: bpy.props.StringProperty(
+        name="素材库路径",
+        subtype='FILE_PATH',
+    )# type: ignore
+
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        filepath = self.filepath
+        if filepath == '':
+            row.label(text="请设置acaAssets.blend文件的路径:")
+        else:
+            row.label(text=self.filepath)
+        row = layout.row()
+        row.operator(
+            "aca.link_assets",icon='COLLECTION_COLOR_02')
     
+# 关联素材库
+class ACA_OT_LINK_ASSETS(bpy.types.Operator):
+    bl_idname="aca.link_assets"
+    bl_label = "关联素材库"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '关联acaAssets.blend素材库'
+
+    filepath: bpy.props.StringProperty(
+        subtype="FILE_PATH")# type: ignore
+    check_existing: bpy.props.BoolProperty(
+        name="Check Existing",
+        description="Check and warn on overwriting existing files",
+        default=True,
+        options={'HIDDEN'},
+    )# type: ignore
+    filename: bpy.props.StringProperty()# type: ignore
+
+    def execute(self, context):               
+        # 检查路径是否包含文件名
+        import os
+        filepath = self.filepath
+        # 检查路径是否为空
+        if not filepath:
+            utils.popMessageBox("请选择一个文件")
+            return {'CANCELLED'}
+        # 检查是否为文件
+        if not os.path.isfile(filepath):
+            utils.popMessageBox("选择的不是一个有效的文件")
+            return {'CANCELLED'}
+        # 检查文件扩展名是否为 .blend
+        if not filepath.lower().endswith('.blend'):
+            utils.popMessageBox(f"选择的文件 {filepath} 不是 .blend 文件")
+            return {'CANCELLED'}
+        # 路径验证通过
+        preferences = bpy.context.preferences
+        addon_main_name = __name__.split('.')[0]
+        addon_prefs = preferences.addons[addon_main_name].preferences
+        addon_prefs.filepath = filepath
+        utils.popMessageBox("素材库路径设置成功")
+        utils.outputMsg(f"素材库路径已设置为 {filepath}")
+
+        return {'FINISHED'}
+    
+    def invoke(self, context, event): 
+        addonName = "ACA Builder"
+        templateFolder = 'template'
+        blenderFileName = 'acaAssets.blend'
+        import pathlib
+        USER = pathlib.Path(
+            bpy.utils.resource_path('USER'))
+        srcPath = USER / "scripts/addons" / addonName / templateFolder /blenderFileName
+        self.filepath = str(srcPath)
+         
+        # 弹出文件选择框
+        context.window_manager.fileselect_add(self)   
+        return {'RUNNING_MODAL'}

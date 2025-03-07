@@ -16,7 +16,7 @@ bl_info = {
     "author" : "皮皮 willimxp",
     "description" : "模板化生成清官式建筑。Generate architecher in chinese style.",
     "blender" : (4, 2, 0),
-    "version" : (0, 0, 19),
+    "version" : (0, 0, 20),
     "location" : "View3D > Properties > ACA Builder",
     "tracker_url": "https://github.com/willimxp/ACA-Builder/issues",
     "doc_url": "https://docs.qq.com/doc/DYXpwbUp1UWR0RXpu",
@@ -44,7 +44,9 @@ classes = (
     panel.ACA_PT_tiles,
     panel.ACA_PT_yardwall_props,
     
-    # 操作逻辑类    
+    # 操作逻辑类  
+    operators.ACA_OT_LINK_ASSETS,
+    operators.ACA_OT_Preferences,     # 插件设置
     operators.ACA_OT_test,
     operators.ACA_OT_add_building,
     operators.ACA_OT_update_building,

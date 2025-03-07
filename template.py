@@ -214,8 +214,18 @@ def loadAssets(assetName : str,
                parent:bpy.types.Object=None,
                hide=True,
                link=True):   
-    # 打开资产文件
+    import os
+    # 查找默认插件目录下的素材库
     filepath = __getPath(blenderFileName)
+    # 如果找不到文件，尝试查找用户自定义路径
+    if not os.path.exists(filepath):
+        # 查找用户自定义路径
+        preferences = bpy.context.preferences
+        addon_main_name = __name__.split('.')[0]
+        addon_prefs = preferences.addons[addon_main_name].preferences
+        filepath = addon_prefs.filepath    
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"无法打开资产库，请确认已经按照使用手册，关联了acaAssets.blend文件。")   
 
     # 简化做法，效率更高，但没有关联子对象
     try:

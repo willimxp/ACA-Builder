@@ -56,7 +56,6 @@ def build():
                         isRoot=True,colorTag=2)
     
     # 待营造的模板，来自用户界面上的选择
-    # templateName = bpy.context.scene.ACA_data.template
     from . import data
     scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
     templateList = scnData.templateItem

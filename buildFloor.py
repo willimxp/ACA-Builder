@@ -1167,7 +1167,11 @@ def buildFloor(buildingObj:bpy.types.Object,
         utils.outputMsg("创建新建筑...")
         if templateName == None:
             # 获取panel上选择的模板
-            templateName = bpy.context.scene.ACA_data.template
+            from . import data
+            scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
+            templateList = scnData.templateItem
+            templateIndex = scnData.templateIndex
+            templateName = templateList[templateIndex].name
         # 添加建筑根节点，同时载入模板
         buildingObj = __addBuildingRoot(templateName)
         # 在buldingObj上绑定模板bData和资产库aData

@@ -52,7 +52,12 @@ class ACA_OT_add_building(bpy.types.Operator):
         message=''
         type = {'INFO'}
         if 'FINISHED' in result:
-            templateName = bpy.context.scene.ACA_data.template
+            from . import data
+            scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
+            templateList = scnData.templateItem
+            templateIndex = scnData.templateIndex
+            templateName = templateList[templateIndex].name
+
             runTime = time.time() - timeStart
             message = "从模板样式新建完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
                         % (templateName,runTime)
@@ -593,11 +598,11 @@ class ACA_OT_del_template(bpy.types.Operator):
             from . import template
             templateList = template.getTemplateList(onlyname=True)
             # 重新填充场景的模板列表
-            for templateName in templateList:
+            for templateItemName in templateList:
                 item = scnData.templateItem.add()
-                item.name = templateName
+                item.name = templateItemName
 
-            self.report({'INFO'},"样式已删除。")
+            self.report({'INFO'},f"【{templateName}】样式已删除。")
 
         return {'FINISHED'}
     

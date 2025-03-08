@@ -568,9 +568,6 @@ def saveTemplate(buildingObj:bpy.types.Object):
     # 保存
     tree.write(path, encoding='UTF-8',xml_declaration=True)
 
-    # 刷新panel的模板列表
-    bpy.context.scene.ACA_data.template = templateName
-
     return {'FINISHED'}
 
 # 删除模板
@@ -586,8 +583,6 @@ def delTemplate(templateName):
         return
     
     # 遍历查找对应模板
-    # 模板名称取panel上选择的模板
-    #templateName = bpy.context.scene.ACA_data.template
     bFind = False
     nextTemplateName = ''
     preTemplateName = ''
@@ -616,14 +611,5 @@ def delTemplate(templateName):
     ET.indent(tree, space="\t", level=0)
     # 保存
     tree.write(path, encoding='UTF-8',xml_declaration=True)
-
-    # 刷新panel的模板列表
-    if nextTemplateName != '':
-        # 优先绑定下一个选项
-        bpy.context.scene.ACA_data.template = nextTemplateName
-    elif preTemplateName != '':
-        # 候选上一个选项
-        bpy.context.scene.ACA_data.template = preTemplateName
-    # 如果都为空，则不做绑定
 
     return {'FINISHED'}

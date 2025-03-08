@@ -26,6 +26,7 @@ bl_info = {
 # 定义一个注入类列表，在register和unregister时自动批量处理
 classes = (
     # 全局数据类
+    data.TemplateListItem,
     data.ACA_data_scene,    
     data.ACA_data_obj,
     data.ACA_data_template,
@@ -75,6 +76,8 @@ classes = (
     operators.ACA_OT_EXPORT_FBX,
     operators.ACA_OT_EXPORT_GLB,
     operators.ACA_OT_JOIN,
+    operators.ACA_Template_UL_items,
+    operators.ACA_OT_SELECT_TEMPLATE_DIALOG,
 )
 
 def register():   

@@ -574,7 +574,7 @@ def saveTemplate(buildingObj:bpy.types.Object):
     return {'FINISHED'}
 
 # 删除模板
-def delTemplate():
+def delTemplate(templateName):
     # 解析XML配置模板
     path = __getPath(xmlFileName)
     tree = ET.parse(path)
@@ -587,7 +587,7 @@ def delTemplate():
     
     # 遍历查找对应模板
     # 模板名称取panel上选择的模板
-    templateName = bpy.context.scene.ACA_data.template
+    #templateName = bpy.context.scene.ACA_data.template
     bFind = False
     nextTemplateName = ''
     preTemplateName = ''

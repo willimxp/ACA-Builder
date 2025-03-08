@@ -152,19 +152,18 @@ class ACA_OT_reset_floor(bpy.types.Operator):
             )
 
     def draw(self, context):
-        row = self.layout
+        row = self.layout.row()
         row.label(
             text=("请注意，柱网数据将重新生成。"),
             icon='ERROR'
             )
-        row = self.layout
+        row = self.layout.row()
         row.label(
             text=("所有额枋、槛墙、槛窗、隔扇都会被删除！"),
             icon='BLANK1'
             )
     
     def cancel(self, context):
-        print('canceled')
         # 用户取消操作时执行撤销
         bpy.ops.ed.undo()
         
@@ -540,8 +539,14 @@ class ACA_OT_del_template(bpy.types.Operator):
         return True
     
     def execute(self, context):  
+        from . import data
+        scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
+        templateList = scnData.templateItem
+        templateIndex = scnData.templateIndex
+        templateName = templateList[templateIndex].name
+
         from . import template
-        result = template.delTemplate()
+        result = template.delTemplate(templateName)
         if 'FINISHED' in result:
             self.report({'INFO'},"样式已删除。")
 
@@ -559,11 +564,15 @@ class ACA_OT_del_template(bpy.types.Operator):
             )
 
     def draw(self, context):
+        from . import data
+        scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
+        templateList = scnData.templateItem
+        templateIndex = scnData.templateIndex
+        templateName = templateList[templateIndex].name
+
         row = self.layout
         row.label(
-            text=("确定删除【" 
-                  + bpy.context.scene.ACA_data.template 
-                  + "】吗？"),
+            text=(f"确定删除【{templateName}】吗？"),
             icon='QUESTION'
             )
         row.label(
@@ -1003,3 +1012,77 @@ class ACA_OT_LINK_ASSETS(bpy.types.Operator):
         # 弹出文件选择框
         context.window_manager.fileselect_add(self)   
         return {'RUNNING_MODAL'}
+
+
+# 模板列表的自定义行样式
+class ACA_Template_UL_items(bpy.types.UIList):
+    def draw_item(self, context, layout, data, 
+                  item, icon, active_data, active_propname, index):
+        row = layout.row()
+        row.label(text=item.name,icon='KEYTYPE_GENERATED_VEC')
+
+# 选择生成模板
+class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
+    bl_idname = "aca.select_template_dialog"
+    bl_label = "请选择一个古建筑模板样式："
+ 
+    from bpy.props import StringProperty, BoolProperty
+    message: StringProperty()               # type: ignore 
+    icon: StringProperty(default="INFO")    # type: ignore 
+    center: BoolProperty(default=True)     # type: ignore 
+    
+    def execute(self, context):
+        bpy.ops.aca.add_newbuilding()
+        return {'FINISHED'}
+ 
+    def invoke(self, context, event):
+        # 鼠标定位
+        self.restored = False
+        if self.center:
+            self.orig_x = event.mouse_x
+            self.orig_y = event.mouse_y
+
+            windowWidth = context.window.width
+            windowHeight = context.window.height
+            # 判断macOs，使用Retina高分辨屏幕时，分辨率x2
+            import sys
+            platform = sys.platform
+            if platform.startswith('darwin'):
+                windowWidth = windowWidth*2
+                windowHeight = windowHeight*2
+            
+            w = int(windowWidth/2)
+            h = int(windowHeight/2)
+            h = h + (20*len(self.message.split("|")))
+            context.window.cursor_warp(w, h)
+        
+        # 弹出对话框
+        return context.window_manager.invoke_props_dialog(
+            self, 
+            width = 300,
+            confirm_text='生成')
+ 
+    def draw(self, context):
+        scnData : data.ACA_data_scene = context.scene.ACA_data
+        layout = self.layout 
+        
+        # 模板列表    
+        row = layout.row()
+        row.template_list(
+            listtype_name="ACA_Template_UL_items", 
+            list_id="my_list", 
+            dataptr=scnData, 
+            propname="templateItem", 
+            active_dataptr=scnData, 
+            active_propname="templateIndex", 
+            rows=10)
+        
+        # 删除按钮
+        col = row.column(align=True)
+        col.operator("aca.del_template", icon='TRASH', text="")
+
+        # 鼠标定位
+        if not self.restored and self.center:
+            context.window.cursor_warp(self.orig_x, self.orig_y)
+            self.restored = True
+

@@ -853,19 +853,26 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update=update_yardwall,
         )# type: ignore  
 
-# 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据
-# https://docs.blender.org/api/current/bpy.props.html
-# Warning
-# There is a known bug with using a callback, 
-# Python must keep a reference to the strings 
-# returned by the callback or Blender will 
-# misbehave or even crash.
-templateList = []
-def getTemplateList(self, context):
-    from . import template
-    global templateList
-    templateList = template.getTemplateList()
-    return templateList
+# template下拉框已经废弃，本方法也随之废弃
+# # 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据
+# # https://docs.blender.org/api/current/bpy.props.html
+# # Warning
+# # There is a known bug with using a callback, 
+# # Python must keep a reference to the strings 
+# # returned by the callback or Blender will 
+# # misbehave or even crash.
+# templateList = []
+# def getTemplateList(self, context):
+#     from . import template
+#     global templateList
+#     templateList = template.getTemplateList()
+#     return templateList
+
+# 模板样式列表的行对象，绑定在UI_list上
+class TemplateListItem(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(
+        name="Name", default="Item"
+    ) # type: ignore
 
 # 场景范围的数据
 # 可绑定面板参数属性
@@ -889,12 +896,19 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             name = "是否实时重建",
             description = "取消后，在大部分参数修改时，不会自动重建，直到手工点击更新建筑",
         ) # type: ignore
-    template : bpy.props.EnumProperty(
-            name = "样式列表",
-            description = "样式列表",
-            items = getTemplateList,
-            options = {"ANIMATABLE"},
-        ) # type: ignore
+    # template原来提供给模板下拉框使用，现在改为列表，则不再使用该属性
+    # template : bpy.props.EnumProperty(
+    #         name = "样式列表",
+    #         description = "样式列表",
+    #         items = getTemplateList,
+    #         options = {"ANIMATABLE"},
+    #     ) # type: ignore
+    templateItem : bpy.props.CollectionProperty(
+        type=TemplateListItem)# type: ignore
+    templateIndex: bpy.props.IntProperty(
+            name="Active List Index",
+            default=0, 
+        )# type: ignore 
     use_bevel : bpy.props.BoolProperty(
             default = True,
             name = "是否使用倒角",

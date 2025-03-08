@@ -56,7 +56,12 @@ def build():
                         isRoot=True,colorTag=2)
     
     # 待营造的模板，来自用户界面上的选择
-    templateName = bpy.context.scene.ACA_data.template
+    # templateName = bpy.context.scene.ACA_data.template
+    from . import data
+    scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
+    templateList = scnData.templateItem
+    templateIndex = scnData.templateIndex
+    templateName = templateList[templateIndex].name
 
     # 获取模板类型，建筑或院墙
     acaType = template.getBuildingType(templateName)
@@ -88,7 +93,7 @@ def build():
     __excludeOther(rootColl,False)
 
     # 关闭视角自动锁定
-    bpy.context.scene.ACA_data['is_auto_viewall'] = False
+    scnData['is_auto_viewall'] = False
 
     return {'FINISHED'}
 

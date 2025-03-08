@@ -517,16 +517,53 @@ class ACA_OT_save_template(bpy.types.Operator):
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj != None:
-            from . import template
-            result = template.saveTemplate(buildingObj)
-            if 'FINISHED' in result:
-                self.report({'INFO'},"样式修改已保存。")
-        else:
+        if buildingObj == None:
             utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
             return {'FINISHED'}
+        
+        from . import template
+        result = template.saveTemplate(buildingObj)
+        if 'FINISHED' in result:
+            self.report({'INFO'},f"【{buildingObj.name}】样式已保存。")
 
         return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        # 查询所有的模板列表
+        from . import template
+        templateList = template.getTemplateList(onlyname=True)
+        # 确认当前建筑名称是否与模板冲突
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        buildingName = buildingObj.name
+        for templateItem in templateList:
+            if templateItem == buildingName:
+                # 提示用户是否覆盖模板
+                return context.window_manager.invoke_props_dialog(
+                        operator = self,
+                        title="ACA筑韵古建 addon for Blender",
+                        width = 400,
+                        )
+        # 检查通过，执行保存
+        return self.execute(context)
+
+    def draw(self, context):
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        buildingName = buildingObj.name
+        row = self.layout.row()
+        row.label(
+            text=(f"是否覆盖【{buildingName}】？"),
+            icon='INFO'
+            )
+        row = self.layout.row()
+        row.label(
+            text=("请注意，覆盖模板样式的操作无法取消！"),
+            icon='BLANK1'
+            )
+        row = self.layout.row()
+        row.label(
+            text=("你可以先修改名称，再重新保存。"),
+            icon='BLANK1'
+            )
     
 # 删除模板
 class ACA_OT_del_template(bpy.types.Operator):

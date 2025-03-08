@@ -550,16 +550,22 @@ def __buildFang(buildingObj:bpy.types.Object):
                 and px != bData.x_rooms):
             sfang = ("%d/%d#%d/%d," 
                         % (px,py,px+1,py))
+            sfang_alt = ("%d/%d#%d/%d," 
+                        % (px+1,py,px,py))
             # 判断该fangStr是否已经在fangNet中
-            if sfang not in fangNet:
+            if (sfang not in fangNet 
+                and sfang_alt not in fangNet):
                 fangNet += sfang
         # 两山
         if (px in (0, bData.x_rooms) 
                 and py != bData.y_rooms):
             sfang = ("%d/%d#%d/%d," 
                         % (px,py,px,py+1))
+            sfang_alt = ("%d/%d#%d/%d," 
+                        % (px,py+1,px,py))
             # 判断该fangStr是否已经在fangNet中
-            if sfang not in fangNet:
+            if (sfang not in fangNet 
+                and sfang_alt not in fangNet):
                 fangNet += sfang
     # 将fangstr存入bdata
     bData['fang_net'] = fangNet

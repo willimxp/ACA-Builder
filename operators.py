@@ -585,6 +585,18 @@ class ACA_OT_del_template(bpy.types.Operator):
         from . import template
         result = template.delTemplate(templateName)
         if 'FINISHED' in result:
+            # 刷新场景中的模板列表数据
+            scnData : data.ACA_data_scene = context.scene.ACA_data
+            # 清空场景中的模板列表数据
+            scnData.templateItem.clear()
+            # 查询所有的模板列表
+            from . import template
+            templateList = template.getTemplateList(onlyname=True)
+            # 重新填充场景的模板列表
+            for templateName in templateList:
+                item = scnData.templateItem.add()
+                item.name = templateName
+
             self.report({'INFO'},"样式已删除。")
 
         return {'FINISHED'}
@@ -1092,6 +1104,17 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
             h = int(windowHeight/2)
             h = h + (20*len(self.message.split("|")))
             context.window.cursor_warp(w, h)
+        
+        scnData : data.ACA_data_scene = context.scene.ACA_data
+        # 清空场景中的模板列表数据
+        scnData.templateItem.clear()
+        # 查询所有的模板列表
+        from . import template
+        templateList = template.getTemplateList(onlyname=True)
+        # 重新填充场景的模板列表
+        for templateName in templateList:
+            item = scnData.templateItem.add()
+            item.name = templateName
         
         # 弹出对话框
         return context.window_manager.invoke_props_dialog(

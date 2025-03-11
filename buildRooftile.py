@@ -682,7 +682,7 @@ def __drawTileBool(
     vectors = []
 
     # 起始点，从子角梁头向外延伸，确保包住所有瓦片
-    offset = Vector((6*dk,6*dk,-10*dk))
+    offset = Vector((6*dk,6*dk,-100*dk))
     p0 = bData.roof_qiao_point + offset
     # 插入前点
     vectors.insert(0,p0)

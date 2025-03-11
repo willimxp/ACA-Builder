@@ -60,7 +60,7 @@ class ACA_PT_basic(bpy.types.Panel):
             text='从模板生成新建筑'
             )
         
-        if context.object == None:
+        if context.object == None and build.isFinished:
             layout.label(text='Quick Start :')
             layout.label(text='选择一个模板，生成古建筑',icon='KEYTYPE_JITTER_VEC')
             layout.label(text='修改参数，定制你的样式',icon='KEYTYPE_MOVING_HOLD_VEC')
@@ -70,7 +70,7 @@ class ACA_PT_basic(bpy.types.Panel):
             # 场景数据集
             scnData : data.ACA_data_scene = context.scene.ACA_data
             
-            if buildingObj == None: 
+            if buildingObj == None and build.isFinished: 
                 # 如果不属于建筑构件，提示，并隐藏所有子面板
                 row = layout.row()
                 row.label(text='该对象不是ACA插件生成',icon='INFO')

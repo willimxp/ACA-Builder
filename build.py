@@ -115,12 +115,13 @@ def updateBuilding(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
 
+    # 暂时排除目录下的其他建筑，以加快执行速度
+    __excludeOther(rootColl,True,buildingObj)
+
     # 调用进度条
     global isFinished,progress
     isFinished = False
     progress = 0
-    # 暂时排除目录下的其他建筑，以加快执行速度
-    __excludeOther(rootColl,True,buildingObj)
 
     # 根据模板类型调用不同的入口
     if bData.aca_type == con.ACA_TYPE_BUILDING:

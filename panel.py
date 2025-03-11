@@ -110,20 +110,25 @@ class ACA_PT_basic(bpy.types.Panel):
 
                 #----------------------------
                 row = box.row(align=True)
-                # 是否修改参数时，自动触发更新
-                col = row.column(align=True)
-                col.prop(
-                    data=bpy.context.scene.ACA_data,
-                    property='is_auto_rebuild',
-                    toggle=True,
-                    icon='FILE_REFRESH',
-                    text=''
-                )
                 # 更新建筑
                 col = row.column(align=True)
                 col.operator(
                     "aca.update_building",
-                    depress=True,text='更新建筑'
+                    depress=True,text='更新建筑',
+                    icon='FILE_REFRESH',
+                )
+                # 是否修改参数时，自动触发更新
+                col = row.column(align=True)
+                if scnData.is_auto_rebuild:
+                    text = '暂停刷新'
+                else:
+                    text = '自动刷新'
+                col.prop(
+                    data=bpy.context.scene.ACA_data,
+                    property='is_auto_rebuild',
+                    toggle=True,
+                    icon='FF',
+                    text=text
                 )
 
         # 运行中提示

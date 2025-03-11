@@ -97,8 +97,11 @@ def __getRafterGap(buildingObj,rafter_tile_width:float):
 
     # 根据椽当=1椽径估算，取整
     rafter_count = math.floor(rafter_tile_width / (con.YUANCHUAN_D*dk*2))
-    # 最终椽当宽度
-    rafter_gap = rafter_tile_width / rafter_count
+    if rafter_count == 0:
+        return con.YUANCHUAN_D*dk*2
+    else:
+        # 最终椽当宽度
+        rafter_gap = rafter_tile_width / rafter_count
 
     return rafter_gap
 

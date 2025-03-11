@@ -1228,7 +1228,8 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
         ))
     ridgeCross += offset
     
-    # 横向围脊
+    #------------------------
+    # 1、横向围脊
     roofRidgeObj = utils.copyObject(
         sourceObj=aData.ridgeBack_source,
         name="围脊",
@@ -1254,31 +1255,62 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     modArray.relative_offset_displace = (1,0,0)
     modArray.fit_type = 'FIT_LENGTH' 
     modArray.fit_length = zhengji_length
-
-    # 45度镜像
-    diagnalObj = utils.addEmpty(
-        name = '45度镜像',
-        parent = tileRootObj,
-        location=ridgeCross
-    )
-    diagnalObj.rotation_euler.z = math.radians(45)
-    mod:bpy.types.MirrorModifier = \
-        roofRidgeObj.modifiers.new('45度对称','MIRROR')
-    mod.mirror_object = diagnalObj
-    mod.use_axis = (False,True,False)
-    mod.use_bisect_axis = (False,True,False)
-
     # 镜像
     mod:bpy.types.MirrorModifier = \
         roofRidgeObj.modifiers.new('XY对称','MIRROR')
     mod.mirror_object = tileRootObj
     mod.use_axis = (True,True,False)
     mod.use_bisect_axis = (True,True,False)
-
     # 250113 设置材质
     mat.setGlazeStyle(roofRidgeObj)
 
-    # 摆放螭吻
+    #------------------------
+    # 2、纵向围脊
+    roofRidgeObj = utils.copyObject(
+        sourceObj=aData.ridgeBack_source,
+        name="围脊",
+        location=(ridgeCross.x,
+                  0,
+                  ridgeCross.z),
+        rotation=(0,0,math.radians(90)),
+        parentObj=tileRootObj,
+        singleUser=True)
+    # 根据斗口调整尺度
+    utils.resizeObj(roofRidgeObj,
+        bData.DK / con.DEFAULT_DK)
+    # 与瓦垄宽度匹配
+    roofRidgeObj.dimensions.x = bData.tile_width_real
+    utils.applyTransfrom(roofRidgeObj,use_scale=True)
+    # 脊筒坐中
+    roofRidgeObj.location.y = - roofRidgeObj.dimensions.x/2
+    # 横向平铺
+    # 适当延长，保证转角处能紧密对接（在45度镜像时，超出的部分被裁剪）
+    zhengji_length = ridgeCross.y + 0.5
+    modArray:bpy.types.ArrayModifier = \
+        roofRidgeObj.modifiers.new('横向平铺','ARRAY')
+    modArray.use_relative_offset = True
+    modArray.relative_offset_displace = (1,0,0)
+    modArray.fit_type = 'FIT_LENGTH' 
+    modArray.fit_length = zhengji_length
+    # 镜像
+    mod:bpy.types.MirrorModifier = \
+        roofRidgeObj.modifiers.new('XY对称','MIRROR')
+    mod.mirror_object = tileRootObj
+    mod.use_axis = (True,True,False)
+    mod.use_bisect_axis = (True,True,False)
+    # 250113 设置材质
+    mat.setGlazeStyle(roofRidgeObj)
+
+    #------------------------
+    # 3、摆放螭吻
+    # 45度镜像
+    diagnalObj = utils.addEmpty(
+        name = '45度镜像',
+        parent = tileRootObj,
+        location=ridgeCross
+    )
+    diagnalObj.rotation_euler.z = math.radians(45)   
+    # 螭吻对象
     chiwenObj = utils.copyObject(
         sourceObj=aData.chiwen_source,
         name='合角吻',
@@ -1294,7 +1326,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     mod.mirror_object = diagnalObj
     mod.use_axis = (False,True,False)
     mod.use_bisect_axis = (False,True,False)
-
+    # 镜像
     utils.addModifierMirror(
         object=chiwenObj,
         mirrorObj=tileRootObj,

@@ -76,7 +76,7 @@ classes = (
     operators.ACA_OT_EXPORT_FBX,
     operators.ACA_OT_EXPORT_GLB,
     operators.ACA_OT_JOIN,
-    operators.ACA_Template_UL_items,
+    operators.ACA_Template_UL_Items,
     operators.ACA_OT_SELECT_TEMPLATE_DIALOG,
 )
 
@@ -90,6 +90,11 @@ def register():
 
     # 初始化日志记录器
     initLogger()
+
+    # 250311 发现在中文版中UV贴图异常
+    # 最终发现是该选项会导致生成的'UVMap'变成'UV贴图'
+    # 禁用语言-翻译-新建数据
+    bpy.context.preferences.view.use_translate_new_dataname = False
     
     return
     

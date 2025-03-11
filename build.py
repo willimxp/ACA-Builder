@@ -51,6 +51,11 @@ def __excludeOther(rootColl,isExclude,buildingObj=None):
 
 # 开始新的营造
 def build():
+    # 250311 发现在中文版中UV贴图异常
+    # 最终发现是该选项会导致生成的'UVMap'变成'UV贴图'
+    # 禁用语言-翻译-新建数据
+    bpy.context.preferences.view.use_translate_new_dataname = False
+    
     # 创建或锁定根目录（ACA筑韵古建）
     rootColl = utils.setCollection(con.ROOT_COLL_NAME,
                         isRoot=True,colorTag=2)
@@ -98,6 +103,11 @@ def build():
 
 def updateBuilding(buildingObj:bpy.types.Object,
                    reloadAssets = False):
+    # 250311 发现在中文版中UV贴图异常
+    # 最终发现是该选项会导致生成的'UVMap'变成'UV贴图'
+    # 禁用语言-翻译-新建数据
+    bpy.context.preferences.view.use_translate_new_dataname = False
+    
     # 创建或锁定根目录（ACA筑韵古建）
     rootColl = utils.setCollection(con.ROOT_COLL_NAME,
                         isRoot=True,colorTag=2)

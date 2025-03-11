@@ -1069,7 +1069,7 @@ class ACA_OT_LINK_ASSETS(bpy.types.Operator):
 
 
 # 模板列表的自定义行样式
-class ACA_Template_UL_items(bpy.types.UIList):
+class ACA_Template_UL_Items(bpy.types.UIList):
     def draw_item(self, context, layout, data, 
                   item, icon, active_data, active_propname, index):
         row = layout.row()
@@ -1134,7 +1134,7 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
         # 模板列表    
         row = layout.row()
         row.template_list(
-            listtype_name="ACA_Template_UL_items", 
+            listtype_name="ACA_Template_UL_Items", 
             list_id="my_list", 
             dataptr=scnData, 
             propname="templateItem", 

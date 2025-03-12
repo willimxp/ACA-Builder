@@ -495,6 +495,9 @@ def __buildDougong(dgrootObj:bpy.types.Object):
     
     # 补间斗栱/平身科
     if aData.dg_fillgap_source != '' :
+        # 强制斗栱间距最小为11斗口
+        if bData.dg_gap < dk*11:
+            bData['dg_gap'] = dk*11
         # 前后坡的补间斗拱
         for n in range(len(net_x)-1) : 
             # 计算补间斗栱攒数

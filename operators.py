@@ -529,7 +529,7 @@ class ACA_OT_save_template(bpy.types.Operator):
         from . import template
         result = template.saveTemplate(buildingObj)
         if 'FINISHED' in result:
-            self.report({'INFO'},f"【{buildingObj.name}】样式已保存。")
+            utils.popMessageBox(f"【{buildingObj.name}】模板样式保存成功")
 
         return {'FINISHED'}
     

@@ -92,33 +92,31 @@ class ACA_PT_basic(bpy.types.Panel):
                     or objData.aca_type == con.ACA_TYPE_BUILDING):
                     col.enabled = False
 
-                #toolBox = box.row(align=True)     
+                    
                 
                 #----------------------------
+                toolBox = box.row(align=True) 
                 toolBar = toolBox.grid_flow(columns=2, align=True)
                 # 保存模板
                 col = toolBar.column(align=True)
                 col.operator(
                     "aca.save_template",icon='FILE_TICK',
                     text='保存样式')
-                #row = box.row(align=True)
+                # 更新建筑
+                col = toolBar.column(align=True)
+                col.operator(
+                    "aca.update_building",
+                    depress=True,text='更新建筑',
+                    icon='FILE_REFRESH',
+                )              
+                # 删除建筑
                 col = toolBar.column(align=True)
                 col.operator(
                     "aca.del_building",icon='TRASH',
                     text='删除建筑'
                 ) 
-
-                #----------------------------
-                row = box.row(align=True)
-                # 更新建筑
-                col = row.column(align=True)
-                col.operator(
-                    "aca.update_building",
-                    depress=True,text='更新建筑',
-                    icon='FILE_REFRESH',
-                )
                 # 是否修改参数时，自动触发更新
-                col = row.column(align=True)
+                col = toolBar.column(align=True)
                 if scnData.is_auto_rebuild:
                     text = '暂停刷新'
                 else:
@@ -130,6 +128,22 @@ class ACA_PT_basic(bpy.types.Panel):
                     icon='FF',
                     text=text
                 )
+
+                toolBox = box.column(align=True)
+                # 合并按钮
+                toolBar = toolBox.grid_flow(columns=1, align=True)
+                col = toolBar.column(align=True)
+                col.operator("aca.join",icon='PACKAGE')
+                # 导出按钮
+                toolBar = toolBox.grid_flow(columns=2, align=True)
+                col = toolBar.column(align=True)
+                col.operator("aca.export_fbx",icon='EXPORT')
+                col = toolBar.column(align=True)
+                col.operator("aca.export_glb",icon='EXPORT')   
+
+                # 是否使用倒角
+                row = box.row()
+                row.prop(scnData, "use_bevel")
 
         # 运行中提示
         if not build.isFinished:
@@ -154,57 +168,57 @@ class ACA_PT_basic(bpy.types.Panel):
         # row.operator("aca.test",icon='HOME')
         return
 
-# 更多设置子面板
-class ACA_PT_extra(bpy.types.Panel):
-    # 常规属性
-    bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
-    bl_region_type = 'UI'           # UI代表sidebar形式
-    bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
+# # 更多设置子面板
+# class ACA_PT_extra(bpy.types.Panel):
+#     # 常规属性
+#     bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
+#     bl_region_type = 'UI'           # UI代表sidebar形式
+#     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
-    # 自定义属性
-    bl_category = "筑韵古建"             # 标签页名称
-    bl_label = "更多设置"                       # 面板名称，已替换为draw_header实现
-    bl_parent_id = "ACA_PT_basic"       # 父面板
-    bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
+#     # 自定义属性
+#     bl_category = "筑韵古建"             # 标签页名称
+#     bl_label = "更多设置"                       # 面板名称，已替换为draw_header实现
+#     bl_parent_id = "ACA_PT_basic"       # 父面板
+#     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
 
-    @classmethod 
-    def poll(self, context):
-        if bpy.app.version < (4,2,0):return
+#     @classmethod 
+#     def poll(self, context):
+#         if bpy.app.version < (4,2,0):return
         
-        isAcaObj = False
-        # 从当前场景中载入数据集
-        if context.object != None:
-            # 追溯全局属性
-            buildingObj,bData,objData = utils.getRoot(context.object)
-            if buildingObj != None: 
-                if bData.aca_type == con.ACA_TYPE_BUILDING:
-                    isAcaObj = True
-        if isAcaObj and build.isFinished:
-            return True
+#         isAcaObj = False
+#         # 从当前场景中载入数据集
+#         if context.object != None:
+#             # 追溯全局属性
+#             buildingObj,bData,objData = utils.getRoot(context.object)
+#             if buildingObj != None: 
+#                 if bData.aca_type == con.ACA_TYPE_BUILDING:
+#                     isAcaObj = True
+#         if isAcaObj and build.isFinished:
+#             return True
         
-    def draw(self, context):
-        sData = context.scene.ACA_data
-        layout = self.layout
-        box = layout.box()
+#     def draw(self, context):
+#         sData = context.scene.ACA_data
+#         layout = self.layout
+#         box = layout.box()
 
-        # 是否使用倒角
-        row = box.row()
-        row.prop(sData, "use_bevel")
+#         # 是否使用倒角
+#         row = box.row()
+#         row.prop(sData, "use_bevel")
 
-        toolBox = box.column(align=True)
-        # 合并按钮
-        toolBar = toolBox.grid_flow(columns=1, align=True)
-        col = toolBar.column(align=True)
-        col.operator("aca.join",icon='PACKAGE')
-        # 导出按钮
-        toolBar = toolBox.grid_flow(columns=2, align=True)
-        col = toolBar.column(align=True)
-        col.operator("aca.export_fbx",icon='EXPORT')
-        col = toolBar.column(align=True)
-        col.operator("aca.export_glb",icon='EXPORT')   
+#         toolBox = box.column(align=True)
+#         # 合并按钮
+#         toolBar = toolBox.grid_flow(columns=1, align=True)
+#         col = toolBar.column(align=True)
+#         col.operator("aca.join",icon='PACKAGE')
+#         # 导出按钮
+#         toolBar = toolBox.grid_flow(columns=2, align=True)
+#         col = toolBar.column(align=True)
+#         col.operator("aca.export_fbx",icon='EXPORT')
+#         col = toolBar.column(align=True)
+#         col.operator("aca.export_glb",icon='EXPORT')   
         
         
-        return
+#         return
 
 # “屋身参数”面板
 class ACA_PT_props(bpy.types.Panel):

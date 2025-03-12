@@ -998,6 +998,12 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
         subtype='FILE_PATH',
     )# type: ignore
 
+    use_bevel : bpy.props.BoolProperty(
+            default = True,
+            name = "是否使用倒角",
+            description = "取消后，不再使用倒角，直接生成直角构件",
+        ) # type: ignore
+
     def draw(self, context):
         layout = self.layout
         row = layout.row()
@@ -1009,6 +1015,9 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
         row = layout.row()
         row.operator(
             "aca.link_assets",icon='COLLECTION_COLOR_02')
+        
+        row = layout.row()
+        row.prop(self,'use_bevel')
     
 # 关联素材库
 class ACA_OT_LINK_ASSETS(bpy.types.Operator):

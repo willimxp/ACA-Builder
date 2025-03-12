@@ -141,10 +141,6 @@ class ACA_PT_basic(bpy.types.Panel):
                 col = toolBar.column(align=True)
                 col.operator("aca.export_glb",icon='EXPORT')   
 
-                # 是否使用倒角
-                row = box.row()
-                row.prop(scnData, "use_bevel")
-
         # 运行中提示
         if not build.isFinished:
             row = layout.row()

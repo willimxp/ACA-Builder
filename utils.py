@@ -928,7 +928,10 @@ def addModifierBevel(object:bpy.types.Object,
                         clamp=True
                       ):
     # 是否启用倒角
-    use_bevel = bpy.context.scene.ACA_data.use_bevel
+    preferences = bpy.context.preferences
+    addon_main_name = __name__.split('.')[0]
+    addon_prefs = preferences.addons[addon_main_name].preferences
+    use_bevel = addon_prefs.use_bevel    
     if not use_bevel:
         return None
     

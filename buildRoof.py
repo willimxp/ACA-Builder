@@ -3241,6 +3241,25 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         bofengObj.modifiers.new('曲线拟合','CURVE')
     modCurve.object = bofengCurve
 
+    # 歇山的博缝板裁剪，避免与角梁打架
+    if bData.roof_style in (con.ROOF_XIESHAN,
+                            con.ROOF_XIESHAN_JUANPENG,):
+        # 做沿角梁的45度裁剪，避免博缝板与角梁交叉
+        pCut = Vector((
+            (bData.x_total/2
+                - bData.y_total/2
+                + con.JIAOLIANG_Y*dk/2*1.414),
+            0,0
+        ))
+        utils.addBisect(
+            object=bofengObj,
+            pStart=Vector((0,0,0)),
+            pEnd=Vector((1,1,0)),
+            pCut=buildingObj.matrix_world @ pCut,
+            clear_outer=True,
+            direction='Z'
+        )
+
     # 根据槫子位置，摆放雪花钉
     nailsSet = __buildBofengNails(buildingObj,
                 bofengObj,

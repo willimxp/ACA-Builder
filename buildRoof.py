@@ -95,8 +95,11 @@ def __getRafterGap(buildingObj,rafter_tile_width:float):
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
 
+    # 平铺宽度减去椽当坐中半椽，第一根椽径半椽，合计1椽
+    # 从第一根中间椽中线，到最后一根椽的中线，进行计算
+    rafter_tile_width -= con.YUANCHUAN_D*dk
     # 根据椽当=1椽径估算，取整
-    rafter_count = math.floor(rafter_tile_width / (con.YUANCHUAN_D*dk*2))
+    rafter_count = round(rafter_tile_width / (con.YUANCHUAN_D*dk*2))
     if rafter_count == 0:
         return con.YUANCHUAN_D*dk*2
     else:
@@ -200,6 +203,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+
     # 金桁是数组中的第二个（已排除挑檐桁）
     jinhengPos = purlin_pos[1]
     # 计算椽当，考虑椽当居中，实际平铺长度减半椽
@@ -215,6 +219,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
         rafter_end = purlin_pos[n] * Vector((0,1,1))
         rafter_start = purlin_pos[n+1] * Vector((0,1,1))
         # 椽当居中，将桁交点投影到X=0椽子偏移半椽（真实的半椽，不做椽当取整计算）
+        # 从中线开始，坐中椽当计半椽，椽子中线计半椽，合计偏移1椽径
         rafter_offset = Vector((con.YUANCHUAN_D*dk,0,0))
         rafter_end += rafter_offset
         rafter_start += rafter_offset
@@ -355,22 +360,43 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             utils.shaderSmooth(curveRafter)
             
         # 5. 各层椽子平铺
-        if bData.roof_style == con.ROOF_WUDIAN and n != 0:
-            # 庑殿的椽架需要延伸到下层宽度，以便后续做45度裁剪
-            rafter_tile_x = purlin_pos[n].x
+        # 5.1 计算椽架宽度（从建筑中线到最后一根椽子的中线）
+        # 庑殿的椽架需要延伸到下层宽度，以便后续做45度裁剪
+        if bData.roof_style == con.ROOF_WUDIAN:
+            if n==0:
+                rafter_tile_x = purlin_pos[n+1].x
+            else:
+                rafter_tile_x = purlin_pos[n].x
+        # 歇山、盝顶的椽架平铺到上层桁交点
+        elif bData.roof_style in (
+                con.ROOF_XIESHAN,
+                con.ROOF_XIESHAN_JUANPENG,
+                con.ROOF_LUDING):
+            if n==0:
+                rafter_tile_x = purlin_pos[n+1].x
+            else:
+                # 歇山的花架椽与博缝板相邻，减半椽
+                rafter_tile_x = (
+                    purlin_pos[n+1].x
+                    - con.YUANCHUAN_D*dk/2)
+        # 硬山的椽架只做到山柱中线，避免与山墙打架
         elif bData.roof_style in (
                 con.ROOF_YINGSHAN,
                 con.ROOF_YINGSHAN_JUANPENG):
-            # 硬山的椽架只做到山柱中线，避免与山墙打架
-            rafter_tile_x = bData.x_total/2
-        else:
-            # 檐椽平铺到上层桁交点
-            rafter_tile_x = purlin_pos[n+1].x  
+            rafter_tile_x = (bData.x_total/2
+                             -con.YUANCHUAN_D*dk/2)
+        # 悬山的椽架外皮与博缝板内皮相邻，即需要向内退让半椽
+        elif bData.roof_style in (
+                con.ROOF_XUANSHAN,
+                con.ROOF_XUANSHAN_JUANPENG):
+            rafter_tile_x = (purlin_pos[n+1].x 
+                             -con.YUANCHUAN_D*dk/2)
+        # 计算椽子间距
+        rafter_gap_x = __getRafterGap(buildingObj,
+            rafter_tile_x)
         # 计算椽子数量：椽当数+1
         # 取整可小不可大，否则会超出博缝板，导致穿模
-        count = math.floor(
-            (rafter_tile_x- con.YUANCHUAN_D*dk)
-                /rafter_gap_x) + 1
+        count = math.floor(rafter_tile_x/rafter_gap_x) + 1
         utils.addModifierArray(
             object=fbRafterObj,
             count=count,
@@ -415,11 +441,7 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
-    # 金桁是数组中的第二个（已排除挑檐桁）
-    jinhengPos = purlin_pos[1]
-    # 计算山面椽当
-    rafter_gap_y = __getRafterGap(buildingObj,
-        rafter_tile_width=(jinhengPos.y-con.YUANCHUAN_D*dk))     
+        
     
     rafterNames = __getRafterName(len(purlin_pos))
     # 根据桁数组循环计算各层椽架
@@ -464,7 +486,10 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
             rafter_tile_y = purlin_pos[n].y
         else:
             # 檐椽平铺到上层桁交点
-            rafter_tile_y = purlin_pos[n+1].y       
+            rafter_tile_y = purlin_pos[n+1].y    
+        # 计算山面椽当
+        rafter_gap_y = __getRafterGap(buildingObj,
+            rafter_tile_y)    
         utils.addModifierArray(
             object=lrRafterObj,
             count=round(rafter_tile_y /rafter_gap_y)+1,

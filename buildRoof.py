@@ -99,7 +99,7 @@ def __getRafterGap(buildingObj,rafter_tile_width:float):
     # 从第一根中间椽中线，到最后一根椽的中线，进行计算
     rafter_tile_width -= con.YUANCHUAN_D*dk
     # 根据椽当=1椽径估算，取整
-    rafter_count = round(rafter_tile_width / (con.YUANCHUAN_D*dk*2))
+    rafter_count = math.floor(rafter_tile_width / (con.YUANCHUAN_D*dk*2))
     if rafter_count == 0:
         return con.YUANCHUAN_D*dk*2
     else:
@@ -202,14 +202,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
-
-    # 金桁是数组中的第二个（已排除挑檐桁）
-    jinhengPos = purlin_pos[1]
-    # 计算椽当，考虑椽当居中，实际平铺长度减半椽
-    # （真实的半椽，不做椽当取整计算）
-    rafter_gap_x = __getRafterGap(buildingObj,
-        rafter_tile_width=(jinhengPos.x-con.YUANCHUAN_D*dk))
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)  
     
     rafterNames = __getRafterName(len(purlin_pos))
     # 根据桁数组循环计算各层椽架
@@ -264,10 +257,12 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             bpy.context.collection.objects.link(tympanumRafter)
             tympanumRafter.ACA_data['aca_type'] = ''
             # 重设檐椽平铺宽度
-            rafter_tile_x = purlin_pos[-1].x 
+            rafter_tile_x = purlin_pos[-1].x - con.YUANCHUAN_D*dk/2
+            rafter_gap_x = __getRafterGap(buildingObj,purlin_pos[1].x)
+            rafterCount = math.floor((rafter_tile_x-con.YUANCHUAN_D*dk)/rafter_gap_x) + 1
             utils.addModifierArray(
                 object=tympanumRafter,
-                count=int(rafter_tile_x /rafter_gap_x),
+                count=rafterCount,
                 offset=(0,-rafter_gap_x,0)
             )
             # 裁剪椽架，檐椽不做裁剪
@@ -285,8 +280,89 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                 mirrorObj=rafterRootObj,
                 use_axis=(True,True,False)
             )
+            
+        # 5. 各层椽子平铺
+        # 5.1 计算椽架宽度（从建筑中线到最后一根椽子的中线）
+        # 庑殿的椽架需要延伸到下层宽度，以便后续做45度裁剪
+        if bData.roof_style == con.ROOF_WUDIAN:
+            if n==0:
+                rafter_tile_x = purlin_pos[n+1].x
+            else:
+                rafter_tile_x = purlin_pos[n].x
+        # 歇山、盝顶的椽架平铺到上层桁交点
+        elif bData.roof_style in (
+                con.ROOF_XIESHAN,
+                con.ROOF_XIESHAN_JUANPENG,
+                con.ROOF_LUDING):
+            if n==0:
+                rafter_tile_x = purlin_pos[n+1].x
+            else:
+                # 歇山的花架椽与博缝板相邻，减半椽
+                rafter_tile_x = (
+                    purlin_pos[-1].x
+                    - con.YUANCHUAN_D*dk/2)
+        # 硬山的椽架只做到山柱中线，避免与山墙打架
+        elif bData.roof_style in (
+                con.ROOF_YINGSHAN,
+                con.ROOF_YINGSHAN_JUANPENG):
+            rafter_tile_x = (bData.x_total/2
+                             -con.YUANCHUAN_D*dk/2)
+        # 悬山的椽架外皮与博缝板内皮相邻，即需要向内退让半椽
+        elif bData.roof_style in (
+                con.ROOF_XUANSHAN,
+                con.ROOF_XUANSHAN_JUANPENG):
+            rafter_tile_x = (purlin_pos[n+1].x 
+                             -con.YUANCHUAN_D*dk/2)
+        # 5.2 计算椽子间距
+        # 硬山做到山墙，悬山做到博缝板，依此距离计算
+        if bData.roof_style in (
+                con.ROOF_YINGSHAN,
+                con.ROOF_YINGSHAN_JUANPENG,
+                con.ROOF_XUANSHAN,
+                con.ROOF_XUANSHAN_JUANPENG,
+                ):
+            rafter_gap_x = __getRafterGap(buildingObj,
+                rafter_tile_x)
+        # 四坡顶椽架统一按照檐椽计算，即下金桁的宽度
+        else:
+            rafter_gap_x = __getRafterGap(buildingObj,
+                purlin_pos[1].x)
+        # 5.3 计算椽子数量：椽当数+1
+        # 计算椽子数量时，从平铺宽度上扣除半椽坐中椽当，扣除半椽外侧椽径，合计一椽
+        countWidth = rafter_tile_x-con.YUANCHUAN_D*dk
+        rafterCount = math.floor(countWidth/rafter_gap_x) + 1
+        # 5.4 平铺
+        utils.addModifierArray(
+            object=fbRafterObj,
+            count=rafterCount,
+            offset=(0,-rafter_gap_x,0)
+        )
+        
+        # 6、裁剪，仅用于庑殿，且檐椽不涉及
+        if bData.roof_style == con.ROOF_WUDIAN and n!=0:
+            # 裁剪椽架，檐椽不做裁剪
+            utils.addBisect(
+                    object=fbRafterObj,
+                    pStart=buildingObj.matrix_world @ purlin_pos[n],
+                    pEnd=buildingObj.matrix_world @ purlin_pos[n+1],
+                    pCut=buildingObj.matrix_world @ purlin_pos[n] - \
+                        Vector((con.JIAOLIANG_Y*dk/2,0,0)),
+                    clear_outer=True
+            ) 
+        
+        # 7、镜像必须放在裁剪之后，才能做上下对称     
+        # 檐椽不在此时镜像，延后到整个椽架做完后镜像
+        # 因为檐椽需要做AB色的贴图，且需要考虑居中对称问题
+        if n != 0:
+            utils.addModifierMirror(
+                object=fbRafterObj,
+                mirrorObj=rafterRootObj,
+                use_axis=(True,True,False)
+            )
 
-        # 4.1、卷棚顶的最后一个椽架上，再添加一层罗锅椽
+        
+
+        # 8、卷棚顶的最后一个椽架上，再添加一层罗锅椽
         if (bData.roof_style in (
                 con.ROOF_XUANSHAN_JUANPENG,
                 con.ROOF_YINGSHAN_JUANPENG,
@@ -337,16 +413,10 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                 clear_inner=True,
                 direction='Y'
             )            
-            # 横向平铺
-            rafter_tile_x = purlin_pos[-1].x 
-            # 计算椽子数量：椽当数+1
-            # 取整可小不可大，否则会超出博缝板，导致穿模
-            count = math.floor(
-                (rafter_tile_x- con.YUANCHUAN_D*dk)
-                    /rafter_gap_x) + 1
+            # 平铺数据利用前后坡椽架数据，不重新计算
             utils.addModifierArray(
                 object=curveRafter,
-                count=count,
+                count=rafterCount,
                 offset=(rafter_gap_x,0,0)
             )            
             # 四方镜像，Y向裁剪
@@ -358,72 +428,6 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             )
             # 平滑
             utils.shaderSmooth(curveRafter)
-            
-        # 5. 各层椽子平铺
-        # 5.1 计算椽架宽度（从建筑中线到最后一根椽子的中线）
-        # 庑殿的椽架需要延伸到下层宽度，以便后续做45度裁剪
-        if bData.roof_style == con.ROOF_WUDIAN:
-            if n==0:
-                rafter_tile_x = purlin_pos[n+1].x
-            else:
-                rafter_tile_x = purlin_pos[n].x
-        # 歇山、盝顶的椽架平铺到上层桁交点
-        elif bData.roof_style in (
-                con.ROOF_XIESHAN,
-                con.ROOF_XIESHAN_JUANPENG,
-                con.ROOF_LUDING):
-            if n==0:
-                rafter_tile_x = purlin_pos[n+1].x
-            else:
-                # 歇山的花架椽与博缝板相邻，减半椽
-                rafter_tile_x = (
-                    purlin_pos[n+1].x
-                    - con.YUANCHUAN_D*dk/2)
-        # 硬山的椽架只做到山柱中线，避免与山墙打架
-        elif bData.roof_style in (
-                con.ROOF_YINGSHAN,
-                con.ROOF_YINGSHAN_JUANPENG):
-            rafter_tile_x = (bData.x_total/2
-                             -con.YUANCHUAN_D*dk/2)
-        # 悬山的椽架外皮与博缝板内皮相邻，即需要向内退让半椽
-        elif bData.roof_style in (
-                con.ROOF_XUANSHAN,
-                con.ROOF_XUANSHAN_JUANPENG):
-            rafter_tile_x = (purlin_pos[n+1].x 
-                             -con.YUANCHUAN_D*dk/2)
-        # 计算椽子间距
-        rafter_gap_x = __getRafterGap(buildingObj,
-            rafter_tile_x)
-        # 计算椽子数量：椽当数+1
-        # 取整可小不可大，否则会超出博缝板，导致穿模
-        count = math.floor(rafter_tile_x/rafter_gap_x) + 1
-        utils.addModifierArray(
-            object=fbRafterObj,
-            count=count,
-            offset=(0,-rafter_gap_x,0)
-        )
-        
-        # 四、裁剪，仅用于庑殿，且檐椽不涉及
-        if bData.roof_style == con.ROOF_WUDIAN and n!=0:
-            # 裁剪椽架，檐椽不做裁剪
-            utils.addBisect(
-                    object=fbRafterObj,
-                    pStart=buildingObj.matrix_world @ purlin_pos[n],
-                    pEnd=buildingObj.matrix_world @ purlin_pos[n+1],
-                    pCut=buildingObj.matrix_world @ purlin_pos[n] - \
-                        Vector((con.JIAOLIANG_Y*dk/2,0,0)),
-                    clear_outer=True
-            ) 
-        
-        # 五、镜像必须放在裁剪之后，才能做上下对称     
-        # 檐椽不在此时镜像，延后到整个椽架做完后镜像
-        # 因为檐椽需要做AB色的贴图，且需要考虑居中对称问题
-        if n != 0:
-            utils.addModifierMirror(
-                object=fbRafterObj,
-                mirrorObj=rafterRootObj,
-                use_axis=(True,True,False)
-            )
 
         # 平滑
         utils.shaderSmooth(fbRafterObj)

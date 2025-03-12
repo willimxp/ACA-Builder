@@ -666,6 +666,9 @@ def __drawTileBool(
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
+    roofRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_ROOF_ROOT
+    )
 
     # 任意添加一个对象，具体几何数据在bmesh中建立
     bpy.ops.mesh.primitive_cube_add(
@@ -682,8 +685,12 @@ def __drawTileBool(
     vectors = []
 
     # 起始点，从子角梁头向外延伸，确保包住所有瓦片
-    offset = Vector((6*dk,6*dk,-100*dk))
-    p0 = bData.roof_qiao_point + offset
+    p0 = bData.roof_qiao_point.copy()
+    # 为了保险起见，切割体做到建筑的地平高度
+    offsetz = (p0.z 
+               + tileRootObj.location.z 
+               + roofRootObj.location.z)
+    p0 += Vector((6*dk,6*dk,-offsetz))
     # 插入前点
     vectors.insert(0,p0)
     # 插入后点，即前点的Y镜像
@@ -773,7 +780,13 @@ def __drawTileBool(
         ))
 
     # 挤出厚度
-    height = purlin_cross_points[-1].z + bData.y_total
+    # 裁剪体的高度为了保险起见，从地平一直做到正脊
+    # 简化计算即屋顶层的起点高度+举架高度
+    # 举架高度进一步简化为通进深*5举
+    # 另外考虑斗栱高度，灰泥高度，正脊高度等，粗暴的再加100DK
+    height = (roofRootObj.location.z 
+              + bData.y_total * 0.5
+              + 100*dk)
     return_geo = bmesh.ops.extrude_face_region(bm, geom=bm.faces)
     verts = [elem for elem in return_geo['geom'] if type(elem) == bmesh.types.BMVert]
     bmesh.ops.translate(bm, verts=verts, vec=(0, 0,height))

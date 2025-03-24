@@ -1674,8 +1674,10 @@ def resizeObj(object:bpy.types.Object,
 # 表面平滑
 def shaderSmooth(object:bpy.types.Object):
     focusObj(object)
-    
-    if bpy.app.version >= (4, 1, 0) :
+    if bpy.app.version >= (4, 2, 0) :
+        # 此方法为Blender 4.2以上才有
+        bpy.ops.object.shade_auto_smooth()
+    elif bpy.app.version >= (4, 1, 0) :
         # 此方法为Blender 4.1中新提供的，4.0以及以前都不支持
         bpy.ops.object.shade_smooth_by_angle(angle=math.radians(45))
     elif bpy.app.version >= (3, 3, 0) :

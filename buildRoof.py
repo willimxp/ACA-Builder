@@ -1716,8 +1716,11 @@ def __drawCrWangban(
         else:
             m = n-1
         crObj:bpy.types.Object = crCollection[m]
-        # X：避让里口木和雀台，Z：抬升半椽
-        offset = Vector(((-con.QUETAI-con.LIKOUMU_Y)*dk,0,con.YUANCHUAN_D/2*dk))
+        # X：避让里口木，Z：抬升半椽
+        offset = Vector((-con.LIKOUMU_Y*dk,
+                         0,
+                         0
+                        ))
         offset.rotate(crObj.rotation_euler)
         crEnd_loc += offset
         vectors.insert(0,crEnd_loc)
@@ -1778,16 +1781,17 @@ def __drawCrWangban(
     bm.to_mesh(crWangbanObj.data)
     crWangbanObj.data.update()
     bm.free()
-
+    
     # 处理UV
     mat.UvUnwrap(crWangbanObj,type='cube')
 
     return crWangbanObj
 
 # 营造翼角椽望板
-def __buildCrWangban(buildingObj:bpy.types.Object
-                     ,purlin_pos,
-                     cornerRafterColl):
+def __buildCrWangban(buildingObj:bpy.types.Object,
+                     purlin_pos,
+                     cornerRafterColl,
+                     crCurve:bpy.types.Curve):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -1797,14 +1801,11 @@ def __buildCrWangban(buildingObj:bpy.types.Object
     # 老角梁
     cornerBeamObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_CORNER_BEAM)
-    # 翼角椽定位线
-    CrCurve = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_CORNER_RAFTER_CURVE)
     
     # 获取翼角椽尾坐标集合
     crCount = len(cornerRafterColl)
     CrEnds = utils.getBezierSegment(
-        CrCurve,
+        crCurve,
         crCount,
         withCurveEnd = True)
     
@@ -1838,6 +1839,7 @@ def __buildCrWangban(buildingObj:bpy.types.Object
         mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
+    utils.shaderSmooth(crWangban)
     return crWangban
 
 # 营造翼角大连檐实体（连接翘飞椽）
@@ -2519,7 +2521,7 @@ def __buildCornerFlyrafter(
 # 连接各个翘飞椽尾，到翘飞椽头
 def __drawCfrWangban(
         origin_point,
-        cfrEnds,
+        cfrHeads,
         cfrCollection,
         root_obj,
         name = '翘飞椽望板'):
@@ -2545,51 +2547,42 @@ def __drawCfrWangban(
     # 不从翘飞椽本身取椽头坐标，因为已经根据檐口线做了角度补偿，会导致望板穿模
     # 所以还是从檐口线上取
     # 计算从檐口线上移的距离，统一按正身檐椽计算，没有取每一根翼角椽计算，不然太复杂了
-    flyrafterObj:bpy.types.Object = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_FLYRAFTER_FB)
-    offset = con.FLYRAFTER_H/2*dk / math.cos(flyrafterObj.rotation_euler.y)
-    # 循环插入翘飞椽尾坐标
-    for n in range(len(cfrEnds)):
+    # 循环插入翘飞椽头坐标
+    for n in range(len(cfrHeads)):
         # 翘飞椽头坐标, 插入队列头
-        cfrEnd_loc = cfrWangbanObj.matrix_world.inverted() @ cfrEnds[n]
+        cfrHead_loc = cfrWangbanObj.matrix_world.inverted() @ cfrHeads[n]
         # 基于每根翘飞椽（椽头角度）进行位移
         # 翘飞椽数组比檐口点数组少两个，只能特殊处理一下
         if n == 0:
             m = 0
-        elif n == len(cfrEnds) -1 :
+        elif n == len(cfrHeads) -1 :
             m = n-2
         else:
             m = n-1
+        # 偏移量：水平1里口木
+        offset = Vector((-con.DALIANYAN_Y*dk,0,0))
         cfrObj:bpy.types.Object = cfrCollection[m]
-        # 偏移量，垂直半飞椽+半望板，水平1雀台+1里口木
-        offset = Vector((
-            -con.QUETAI*dk-con.DALIANYAN_Y*dk,0,
-            con.FLYRAFTER_H/2*dk))
-        offset.rotate(cfrObj.rotation_euler)
-        cfrEnd_loc += offset
-        if n == 0:
-            # 矫正起点，檐口线起点在最后一根正身椽头，调整到金交点
-            cfrEnd_loc.x = 0
-        vectors.insert(0,cfrEnd_loc)
-    # 循环插入翘飞椽头坐标
-    for n in range(len(cfrCollection)):
-        # 翘飞椽头坐标,插入队列尾
-        cfrObj:bpy.types.Object = cfrCollection[n]
-        cfrHead_loc = cfrWangbanObj.matrix_world.inverted() @ cfrObj.location
-        # 上移半望板高度        
-        offset = Vector((0,0,con.WANGBAN_H/2*dk))
         offset.rotate(cfrObj.rotation_euler)
         cfrHead_loc += offset
+        if n == 0:
+            # 矫正起点，檐口线起点在最后一根正身椽头，调整到金交点
+            cfrHead_loc.x = 0
+        vectors.insert(0,cfrHead_loc)
+    # 循环插入翘飞椽尾坐标
+    for n in range(len(cfrCollection)):
+        # 翘飞椽尾坐标,插入队列尾
+        cfrObj:bpy.types.Object = cfrCollection[n]
+        cfrEnd_loc = cfrWangbanObj.matrix_world.inverted() @ cfrObj.location
         # 在第一根椽之前，手工添加金交点一侧的后点
         if n==0:
             vectors.append((
-                0,cfrHead_loc.y,cfrHead_loc.z
+                0,cfrEnd_loc.y,cfrEnd_loc.z
             ))
-        # 循环依次添加椽头
-        vectors.append(cfrHead_loc)
+        # 循环依次添加椽尾
+        vectors.append(cfrEnd_loc)
         # 在最后一根椽后，再手工追加角梁侧的后点
         if n==len(cfrCollection)-1:
-            vectors.append(cfrHead_loc)
+            vectors.append(cfrEnd_loc)
 
     # 摆放点
     vertices=[]
@@ -2650,13 +2643,13 @@ def __buildCfrWangban(
     # 翘飞椽根数
     cr_count = len(cfrCollection)
     # 获取翘飞椽头坐标集合
-    cfrEnds = utils.getBezierSegment(
+    cfrHeads = utils.getBezierSegment(
         cfrCurve,cr_count,withCurveEnd=True)
     
     # 绘制翘飞椽望板
     cfrWangban = __drawCfrWangban(
         origin_point = purlin_pos[1],#金桁交点
-        cfrEnds = cfrEnds,
+        cfrHeads = cfrHeads,
         cfrCollection = cfrCollection,
         root_obj = rafterRootObj,
         name = '翘飞椽望板'
@@ -2682,6 +2675,8 @@ def __buildCfrWangban(
         mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
+    # 平滑
+    utils.shaderSmooth(cfrWangban)
     return cfrWangban
 
 # 营造椽架（包括檐椽、飞椽、望板等）
@@ -2746,7 +2741,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         
         if useWangban:
             # 翼角椽望板
-            wangbanCR = __buildCrWangban(buildingObj,purlin_pos,cornerRafterColl)
+            wangbanCR = __buildCrWangban(buildingObj,
+                        purlin_pos,cornerRafterColl,crCurve)
             wangbanObjs.append(wangbanCR) 
 
         # 是否做二层飞椽

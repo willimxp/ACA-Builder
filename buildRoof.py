@@ -1181,8 +1181,21 @@ def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object,
 
     # 第5点，定位子角梁的梁头上沿
     # 在local坐标系中计算子角梁头的绝对位置
-    # 计算冲出后的X、Y坐标，由飞椽平出+冲1椽（老角梁已经冲了2椽）
-    scb_ex_length = (con.FLYRAFTER_EX + con.YUANCHUAN_D) * dk
+    # 计算冲出后的X、Y坐标
+    # 飞椽平出+冲1椽（老角梁已经冲了2椽）
+    scb_ex_length = con.FLYRAFTER_EX*dk
+    # 出冲
+    if bData.chong <= 1:
+        # 最小为0，不能为负数
+        crChong = 0
+    elif bData.chong > 4:
+        # 最大为3
+        crChong = 3
+    else:
+        # 其他减一份
+        crChong = bData.chong - 1
+    cfrChong = bData.chong - crChong
+    scb_ex_length += con.YUANCHUAN_D*dk * cfrChong
     scb_abs_x = cornerBeam_head_co.x + scb_ex_length
     scb_abs_y = cornerBeam_head_co.y + scb_ex_length
     # 计算翘四后的Z坐标

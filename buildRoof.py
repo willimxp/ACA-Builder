@@ -1876,10 +1876,10 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
     # 延长终点相交
     bpoints = eaveCurveData.splines[0].bezier_points
     bpoints.add(1)
-    endpoint = bpoints[1].co + Vector((10*dk,0*dk,0*dk))
+    endpoint = bpoints[1].co + Vector((100*dk,0*dk,6*dk))
     bpoints[2].co = endpoint
     bpoints[2].handle_left = endpoint
-    bpoints[2].handle_right = endpoint
+    # bpoints[2].handle_right = endpoint
     
     # Curve转为mesh
     utils.applyAllModifer(flyrafterEaveObj)
@@ -1951,10 +1951,10 @@ def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
     # 起翘
     qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
     # 避让角梁，向内1/4角梁，见汤崇平书籍的p196
-    shift = con.JIAOLIANG_Y/4*dk * math.sqrt(2)
+    shift = con.JIAOLIANG_Y/2*dk * math.sqrt(2)
     # 终点计算
     pEnd = Vector((
-        bData.x_total/2 + ex - shift,
+        bData.x_total/2 + ex-shift,
         bData.y_total/2 + ex,
         pStart_center.z + qiqiao
     ))

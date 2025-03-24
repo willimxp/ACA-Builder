@@ -16,7 +16,7 @@ bl_info = {
     "author" : "皮皮 willimxp",
     "description" : "模板化生成清官式建筑。Generate architecher in chinese style.",
     "blender" : (4, 2, 0),
-    "version" : (0, 0, 21),
+    "version" : (0, 0, 22),
     "location" : "View3D > Properties > ACA Builder",
     "tracker_url": "https://github.com/willimxp/ACA-Builder/issues",
     "doc_url": "https://docs.qq.com/doc/DYXpwbUp1UWR0RXpu",
@@ -76,7 +76,7 @@ classes = (
     operators.ACA_OT_EXPORT_FBX,
     operators.ACA_OT_EXPORT_GLB,
     operators.ACA_OT_JOIN,
-    operators.ACA_Template_UL_Items,
+    operators.ACA_UL_Template_Items,
     operators.ACA_OT_SELECT_TEMPLATE_DIALOG,
 )
 

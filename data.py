@@ -251,6 +251,9 @@ def update_roof(self, context:bpy.types.Context):
     if not isRebuild:
         return
     
+    # 手动将操作添加到撤销栈
+    bpy.ops.ed.undo_push(message="Float Property Update")
+    
     # 确认选中为building节点
     buildingObj,bData,oData = utils.getRoot(context.object)
     if buildingObj != None:
@@ -704,6 +707,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update=update_roof,
             description="常做3椽出冲，也可以视情况适当增加",
         )# type: ignore 
+    use_pie: bpy.props.BoolProperty(
+            name="使用撇",
+            default=True,
+            update=update_roof,
+            description="翼角翘飞椽可以选择是否做官式的撇向做法，起翘夸张的非官式做法建议关闭",
+    )# type: ignore
     shengqi: bpy.props.IntProperty(
             name="生起(椽径倍数)",
             default=1, 

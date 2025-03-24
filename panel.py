@@ -943,6 +943,17 @@ class ACA_PT_rafter(bpy.types.Panel):
                 inputChong.enabled = False
                 inputQiao.enabled = False
 
+            # 瞥向处理
+            if bData.use_pie:
+                checkbox_icon = 'CHECKBOX_HLT'
+            else:
+                checkbox_icon = 'CHECKBOX_DEHLT'
+            checkboxUsePie = toolBar.column(align=True)
+            checkboxUsePie.prop(
+                bData, "use_pie",
+                text='撇向处理',toggle=True,
+                icon=checkbox_icon) 
+
 # “瓦作属性”子面板
 class ACA_PT_tiles(bpy.types.Panel):
     # 常规属性

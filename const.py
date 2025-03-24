@@ -36,7 +36,6 @@ class ACA_Consts(object):
     ACA_TYPE_CORNER_BEAM = 'corner_beam'                # 大角梁
     ACA_TYPE_CORNER_BEAM_CHILD = 'corner_beam_child'    # 大角梁
     ACA_TYPE_CORNER_RAFTER_CURVE = 'corner_rafter_curve'         # 翼角椽定位线
-    ACA_TYPE_CORNER_FLYRAFTER_CURVE = 'corner_flyfater_curve'    # 翘飞椽定位线
     ACA_TYPE_TILE_ROOT = 'tile_root'            # ACA类型：屋瓦层
     ACA_TYPE_ASSET_ROOT ='asset_root'           # ACA类型：斗栱根节点
     ACA_TYPE_TILE_GRID ='tile_grid'             # ACA类型：前后檐瓦面

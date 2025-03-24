@@ -1079,13 +1079,38 @@ def copyModifiers(from_0bj,to_obj):
     bpy.ops.object.select_all(action='DESELECT')
 
 # 在坐标点上摆放一个cube，以便直观看到
-def showVector(point: Vector,parentObj=None,name="定位点") -> object :
-    bpy.ops.mesh.primitive_cube_add(size=0.3,location=point)
+def showPoint(point: Vector,parentObj=None,name="定位点",size=0.3) -> object :
+    bpy.ops.mesh.primitive_cube_add(size=size,location=point)
     cube = bpy.context.active_object
     if parentObj != None:
         cube.parent = parentObj
     cube.name = name
+    cube.show_name = True
     return cube
+
+# 向量的可视化
+def showVector(vector: Vector,
+               loc=Vector((0,0,0)),
+               parentObj=None,name="向量") -> object :
+    empty = bpy.data.objects.new("VectorEmpty", None)
+    scene = bpy.context.scene
+    scene.collection.objects.link(empty)
+    
+    empty.name = name
+    empty.show_name = True
+    empty.empty_display_type = 'SINGLE_ARROW' # 'ARROWS'
+    empty.location = loc
+    empty.empty_display_size = vector.length
+    if parentObj != None:
+        empty.parent = parentObj
+
+    forward_vector = Vector((0, 0, 1))
+    rotation = forward_vector.rotation_difference(vector).to_euler()
+    empty.rotation_mode = 'XYZ'
+    empty.rotation_euler = rotation
+    
+    
+    return empty
 
 # 设置origin到cursor
 # 输入的origin必须为相对于object的局域坐标
@@ -1319,11 +1344,20 @@ def addBezierByPoints(
     if width!=0 and height!=0:
         bpy.ops.mesh.primitive_plane_add(size=1,location=(0,0,0))
         bevel_object = bpy.context.object
-        bevel_object.scale = (width,height,0)
         bevel_object.name = name + '.bevel'
         bevel_object.parent = root_obj
-        # 将Plane Mesh转换为Curve，才能绑定到curve上
+        # 设置大小
+        bevel_object.scale = (width,height,0)
         bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        updateScene()
+        # 移动origin
+        bpy.ops.object.mode_set(mode = 'EDIT')
+        bpy.ops.mesh.select_all(action = 'SELECT')
+        bpy.ops.transform.translate(value=(width/2,height/2,0))
+        bpy.ops.object.mode_set(mode = 'OBJECT')    
+
+        # 将Plane Mesh转换为Curve，才能绑定到curve上
+        
         bpy.ops.object.convert(target='CURVE')
         # 翻转curve，否则会导致连檐的face朝向不对
         bpy.ops.object.editmode_toggle()
@@ -1946,3 +1980,145 @@ def splitText(text, max_length=40):
         result.append(''.join(current_segment))
 
     return result
+
+# 从一点向一个圆弧求切点
+# https://stackoverflow.com/questions/49968720/find-tangent-points-in-a-circle-from-a-point 
+def calculate_tangent_points(center, radius, point):
+    """
+    计算从点到圆弧的切点
+    :param center: 圆心坐标，格式为 (x0, y0)
+    :param radius: 圆弧半径
+    :param point: 点 P 的坐标，格式为 (xp, yp)
+    :return: 两个切点的坐标，格式为 [(x1, y1), (x2, y2)]
+    """
+    x0, y0 = center
+    xp, yp = point
+
+    # 计算点 P 到圆心的距离
+    d = math.sqrt((xp - x0) ** 2 + (yp - y0) ** 2)
+
+    # 如果点 P 在圆内，没有切点
+    if d < radius:
+        return []
+
+    # 计算夹角
+    theta = math.atan2(yp - y0, xp - x0)
+    alpha = math.acos(radius / d)
+
+    # 计算两个切点的角度
+    angle1 = theta + alpha
+    angle2 = theta - alpha
+
+    # 计算切点坐标
+    x1 = x0 + radius * math.cos(angle1)
+    y1 = y0 + radius * math.sin(angle1)
+    x2 = x0 + radius * math.cos(angle2)
+    y2 = y0 + radius * math.sin(angle2)
+
+    return [(x1, y1), (x2, y2)]
+
+'''
+计算3D空间中一条直线与一条贝塞尔曲线的在XY投影面上的交点，
+并返回这个交点在贝塞尔曲线上的3D坐标
+'''
+def bezier_point(p0, p1, p2, p3, t):
+    """
+    计算贝塞尔曲线上 t 位置的点
+    :param p0: 起点
+    :param p1: 第一个控制点
+    :param p2: 第二个控制点
+    :param p3: 终点
+    :param t: 参数 t，范围 [0, 1]
+    :return: 贝塞尔曲线上 t 位置的点
+    """
+    u = 1 - t
+    tt = t * t
+    uu = u * u
+    uuu = uu * u
+    ttt = tt * t
+
+    p = uuu * p0 + 3 * uu * t * p1 + 3 * u * tt * p2 + ttt * p3
+    return p
+
+def line_equation(p1, p2, x):
+    """
+    计算直线上 x 位置对应的 y 值
+    :param p1: 直线上的第一个点
+    :param p2: 直线上的第二个点
+    :param x: 给定的 x 坐标
+    :return: 直线上 x 位置对应的 y 值
+    """
+    if p2.x - p1.x == 0:
+        return None
+    m = (p2.y - p1.y) / (p2.x - p1.x)
+    b = p1.y - m * p1.x
+    return m * x + b
+
+def find_intersection(p1, p2, 
+                      p0, p1_bez, p2_bez, p3_bez, 
+                      tolerance=1e-4, max_iterations=10000):
+    """
+    用二分法查找直线与贝塞尔曲线的交点
+    :param p1: 直线上的第一个点
+    :param p2: 直线上的第二个点
+    :param p0: 贝塞尔曲线的起点
+    :param p1_bez: 贝塞尔曲线的第一个控制点
+    :param p2_bez: 贝塞尔曲线的第二个控制点
+    :param p3_bez: 贝塞尔曲线的终点
+    :param tolerance: 容差
+    :param max_iterations: 最大迭代次数
+    :return: 交点列表
+    """
+    intersections = []
+    t_min = 0
+    t_max = 1
+    for _ in range(max_iterations):
+        t_mid = (t_min + t_max) / 2
+        bezier_point_mid = bezier_point(p0, p1_bez, p2_bez, p3_bez, t_mid)
+        line_y = line_equation(p1, p2, bezier_point_mid.x)
+        if line_y is None:
+            break
+        diff = abs(bezier_point_mid.y - line_y)
+        if diff < tolerance:
+            intersections.append(t_mid)
+            break
+        if (bezier_point(p0, p1_bez, p2_bez, p3_bez, t_min).y - line_equation(p1, p2, bezier_point(p0, p1_bez, p2_bez, p3_bez, t_min).x)) * (
+                bezier_point_mid.y - line_y) < 0:
+            t_max = t_mid
+        else:
+            t_min = t_mid
+    return intersections
+
+def intersect_line_bezier(
+        line_start, line_end, 
+        bezier_start, bezier_control1, bezier_control2, bezier_end):
+    """
+    计算 3D 空间中直线与贝塞尔曲线在 XY 投影面上的交点，并返回 3D 坐标
+    :param line_start: 直线起点
+    :param line_end: 直线终点
+    :param bezier_start: 贝塞尔曲线起点
+    :param bezier_control1: 贝塞尔曲线第一个控制点
+    :param bezier_control2: 贝塞尔曲线第二个控制点
+    :param bezier_end: 贝塞尔曲线终点
+    :return: 交点的 3D 坐标列表
+    """
+    # 投影到 XY 平面
+    line_start_xy = Vector((line_start.x, line_start.y))
+    line_end_xy = Vector((line_end.x, line_end.y))
+    bezier_start_xy = Vector((bezier_start.x, bezier_start.y))
+    bezier_control1_xy = Vector((bezier_control1.x, bezier_control1.y))
+    bezier_control2_xy = Vector((bezier_control2.x, bezier_control2.y))
+    bezier_end_xy = Vector((bezier_end.x, bezier_end.y))
+
+    # 计算投影后的交点参数 t
+    t_values = find_intersection(
+        line_start_xy, line_end_xy, 
+        bezier_start_xy, bezier_control1_xy, bezier_control2_xy, bezier_end_xy)
+
+    # 根据参数 t 计算 3D 交点坐标
+    intersections_3d = []
+    for t in t_values:
+        intersection_3d = bezier_point(bezier_start, bezier_control1, bezier_control2, bezier_end, t)
+        intersections_3d.append(intersection_3d)
+
+    return intersections_3d

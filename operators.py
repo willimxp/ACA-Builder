@@ -220,6 +220,17 @@ class ACA_OT_add_step(bpy.types.Operator):
     def execute(self, context):  
         piller = context.object
         pillers = context.selected_objects
+        # 校验用户至少选择2根柱子
+        pillerNum = 0
+        for piller in pillers:
+            if 'aca_type' in piller.ACA_data:   # 可能选择了没有属性的对象
+                if piller.ACA_data['aca_type'] \
+                    == con.ACA_TYPE_PILLER:
+                    pillerNum += 1
+        if pillerNum < 2:
+            utils.popMessageBox("请至少选择2根柱子")
+            return {'CANCELLED'}
+        
         buildingObj = utils.getAcaParent(piller,con.ACA_TYPE_BUILDING)
         from . import buildPlatform
         funproxy = partial(
@@ -241,6 +252,20 @@ class ACA_OT_del_step(bpy.types.Operator):
     def execute(self, context):  
         step = context.object
         steps = context.selected_objects
+
+        selected = False
+        for step in steps:
+            # 校验用户选择的对象，可能误选了其他东西，直接忽略
+            # 如果用户选择的是step子对象，则强制转换到父对象
+            if 'aca_type' in step.ACA_data:
+                if step.ACA_data['aca_type'] \
+                        == con.ACA_TYPE_STEP:
+                    selected = True
+        
+        if not selected:
+            utils.popMessageBox("请选择需要删除的踏跺")
+            return {'CANCELLED'}
+                
         buildingObj = utils.getAcaParent(
             step,con.ACA_TYPE_BUILDING)
         from . import buildPlatform
@@ -1078,7 +1103,7 @@ class ACA_OT_LINK_ASSETS(bpy.types.Operator):
 
 
 # 模板列表的自定义行样式
-class ACA_Template_UL_Items(bpy.types.UIList):
+class ACA_UL_Template_Items(bpy.types.UIList):
     def draw_item(self, context, layout, data, 
                   item, icon, active_data, active_propname, index):
         row = layout.row()
@@ -1143,7 +1168,7 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
         # 模板列表    
         row = layout.row()
         row.template_list(
-            listtype_name="ACA_Template_UL_Items", 
+            listtype_name="ACA_UL_Template_Items", 
             list_id="my_list", 
             dataptr=scnData, 
             propname="templateItem", 

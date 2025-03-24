@@ -1548,7 +1548,7 @@ def __buildCornerRafterCurve(buildingObj:bpy.types.Object):
         # 没有飞椽时，全部通过檐椽冲出
         ex += bData.chong*con.YUANCHUAN_D*dk
     # 避让老角梁，见汤崇平书籍的p196
-    shift = con.JIAOLIANG_Y/2*dk * math.sqrt(2)
+    shift = con.JIAOLIANG_Y/4*dk * math.sqrt(2)
     pEnd = Vector((
         bData.x_total/2 + ex - shift,
         bData.y_total/2 + ex,

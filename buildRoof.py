@@ -1648,15 +1648,17 @@ def __buildCornerRafter(buildingObj:bpy.types.Object,
         #     rot = utils.alignToVector(rotV)
         #     cornerRafterObj.rotation_euler.x = -rot.z
         cornerRafterObj.rotation_euler.x = 0
-        # 裁剪椽架，檐椽不做裁剪
-        utils.addBisect(
-                object=cornerRafterObj,
-                pStart=buildingObj.matrix_world @ purlin_pos[0],
-                pEnd=buildingObj.matrix_world @ purlin_pos[1],
-                pCut=buildingObj.matrix_world @ purlin_pos[0] - \
-                    Vector((con.JIAOLIANG_Y*dk/2*math.sqrt(2),0,0)),
-                clear_outer=True
-        ) 
+        # 250324 为了防止裁剪翼角椽，导致无法准确获取椽头坐标，进而导致翘飞椽构造异常
+        # 将裁剪已到了__buildRafterForAll中合并翼角椽后进行处理
+        # # 裁剪椽架，檐椽不做裁剪
+        # utils.addBisect(
+        #         object=cornerRafterObj,
+        #         pStart=buildingObj.matrix_world @ purlin_pos[0],
+        #         pEnd=buildingObj.matrix_world @ purlin_pos[1],
+        #         pCut=buildingObj.matrix_world @ purlin_pos[0] - \
+        #             Vector((con.JIAOLIANG_Y*dk/2*math.sqrt(2),0,0)),
+        #         clear_outer=True
+        # ) 
         # 为了便于贴图，将镜像延后到所有椽架做完后添加
         # # 角梁45度对称
         # utils.addModifierMirror(
@@ -2684,6 +2686,7 @@ def __buildCfrWangban(
 def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
     aData:tmpData = bpy.context.scene.ACA_temp
     roofStyle = bData.roof_style
     useFlyrafter = bData.use_flyrafter
@@ -2807,6 +2810,14 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             width=con.BEVEL_EXLOW,
             segments=2
         )
+        utils.addBisect(
+                object=crSet,
+                pStart=buildingObj.matrix_world @ purlin_pos[0],
+                pEnd=buildingObj.matrix_world @ purlin_pos[1],
+                pCut=buildingObj.matrix_world @ purlin_pos[0] - \
+                    Vector((con.JIAOLIANG_Y*dk/2*math.sqrt(2),0,0)),
+                clear_outer=True
+        ) 
         # 角梁45度对称
         utils.addModifierMirror(
             object=crSet,
@@ -2820,8 +2831,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             use_axis=(True,True,False)
         )
 
-        # 平滑
-        utils.shaderSmooth(crSet)
+        # # 平滑
+        # utils.shaderSmooth(crSet)
 
     # 以下为各类屋顶类型通用的处理  
     # 合并望板

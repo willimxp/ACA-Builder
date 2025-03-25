@@ -208,7 +208,7 @@ class ACA_Consts(object):
     EAVETILE_EX = 2         # 瓦当、滴水出檐长度(DK)
     SHANQIANG_WIDTH = 9     # 山墙厚度(DK)，即1.5柱径
     SHANQIANG_EX = 11       # 山墙墀头延伸(DK)，约1.8柱径
-    TILE_HEIGHT = 0.04      # 瓦层高度(米)，预估值
+    TILE_HEIGHT = 0      # 瓦层高度(米)，预估值
     JUANPENG_PUMP = 6       # 卷棚瓦作的囊(DK)，为了使屋顶更加圆润饱满
     JUANPENG_OVERLAP = 2    # 卷棚顶部瓦片的交叠(DK)
 

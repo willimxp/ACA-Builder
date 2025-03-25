@@ -187,7 +187,8 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
 # 两山direction=’Y‘
 def __drawSideCurve(buildingObj:bpy.types.Object,
                 purlin_pos,
-                direction='X'):
+                direction='X',
+                eaveCurve:bpy.types.Curve=None):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -268,25 +269,31 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
             con.ROOF_XIESHAN_JUANPENG,
             con.ROOF_LUDING,
         ):
-        # 初始位置：角柱上的大连檐高度
-        p1 = Vector((bData.x_total/2,
-                     bData.y_total/2,
-                     dlyObj.location.z))
-        # 偏移上檐出、冲出、起翘
-        # 1、上檐出（檐椽平出+飞椽平出）
-        ex = con.YANCHUAN_EX*dk
-        if bData.use_flyrafter:
-            ex += con.FLYRAFTER_EX*dk
-        # 2、斗栱平出
-        if bData.use_dg:
-            ex += bData.dg_extend
-        # 3、XY方向的冲出
-        ex += ex_chong
-        # 4、Z方向的起翘，额外添加半个大连檐高度
-        offset_cq = Vector((ex,ex,ex_qiqiao+con.DALIANYAN_H*dk/2 + con.TILE_HEIGHT))
-        p1 += offset_cq
-        # 5、瓦口延伸量
-        p1 += ex_eaveTile
+        # # 初始位置：角柱上的大连檐高度
+        # p1 = Vector((bData.x_total/2,
+        #              bData.y_total/2,
+        #              dlyObj.location.z))
+        # # 偏移上檐出、冲出、起翘
+        # # 1、上檐出（檐椽平出+飞椽平出）
+        # ex = con.YANCHUAN_EX*dk
+        # if bData.use_flyrafter:
+        #     ex += con.FLYRAFTER_EX*dk
+        # # 2、斗栱平出
+        # if bData.use_dg:
+        #     ex += bData.dg_extend
+        # # 3、XY方向的冲出
+        # ex += ex_chong
+        # # 4、Z方向的起翘，额外添加半个大连檐高度
+        # offset_cq = Vector((ex,ex,ex_qiqiao+con.DALIANYAN_H*dk/2 + con.TILE_HEIGHT))
+        # p1 += offset_cq
+        # # 5、瓦口延伸量
+        # p1 += ex_eaveTile
+
+        # 250325 p1改为通过eaveData传送
+        eaveCurveData:bpy.types.Curve = eaveCurve.data
+        start_point = eaveCurveData.splines[0].bezier_points[0]
+        end_point = eaveCurveData.splines[0].bezier_points[-1]
+        p1= end_point.co+eaveCurve.location
         sideCurveVerts.append(p1)
 
         # 第3-5点，从举架定位点做偏移
@@ -395,7 +402,7 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     originPoint = dlyObj.location+ex_eaveTile
     utils.setOrigin(sideCurve,originPoint)
 
-    utils.hideObj(sideCurve)
+    # utils.hideObj(sideCurve)
     return sideCurve
 
 # 绘制檐口线（直达子角梁中心），做为翼角瓦檐口终点
@@ -435,6 +442,17 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     dlyObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,dly_type)
     p1 = Vector(dlyObj.location)
+    # 位移到大连檐外沿，瓦当滴水向外延伸
+    if direction == 'X':
+        offset = Vector((0,
+            con.DALIANYAN_H*dk/2,
+            -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
+    else:
+        offset = Vector((0,
+            con.DALIANYAN_H*dk/2,
+            con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
+    offset.rotate(dlyObj.rotation_euler)
+    p1 += offset
     eaveCurveVerts.append(p1)
 
     # 第2点：翼角起翘点，X与下金桁对齐
@@ -471,12 +489,32 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
             ex += bData.dg_extend
         # 冲出
         ex += bData.chong * con.YUANCHUAN_D * dk
-        x = bData.x_total/2 + ex
-        y = bData.y_total/2 + ex
+        # 起翘
         qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
-        # 另加半个大连檐高度
-        z = p2.z + qiqiao + con.DALIANYAN_H*dk/2 + con.TILE_HEIGHT
-        p3 = Vector((x,y,z)) + shift
+        p3 = Vector((
+            bData.x_total/2 + ex,
+            bData.y_total/2 + ex,
+            p2.z + qiqiao
+            )) 
+        # 避让角梁
+        p3 += shift
+        # 位移到大连檐外沿，瓦当滴水向外延伸
+
+        if direction == 'X':
+            offset = Vector((
+                0,
+                con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk,
+                con.DALIANYAN_H*dk/2,
+                ))
+        else:
+            offset = Vector((
+                con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk,
+                0,
+                con.DALIANYAN_H*dk/2,
+                ))
+        # ccbObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_CORNER_BEAM_CHILD)
+        # offset.rotate(ccbObj.rotation_euler)
+        p3 += offset
 
         # 绘制檐口线
         CurvePoints = utils.setEaveCurvePoint(p2,p3,direction)
@@ -495,22 +533,39 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
         utils.transBezierPoint(bpoints[0],bpoints[1])
         bpoints[0].co = p1
 
+        # 250325延长到翼角边线
+        # 计算从当前终点到目标 x 坐标需要移动的距离
+        if direction == 'X':
+            target_x = con.EAVETILE_EX*dk - shift.x
+        else:
+            target_x = con.EAVETILE_EX*dk - shift.y
+        # 获取曲线终点的贝塞尔点
+        end_point = eaveCurveData.splines[0].bezier_points[-1]
+        # 获取终点右侧的控制手柄
+        handle_left = end_point.handle_left
+        # 计算从终点到右控制手柄的方向向量
+        dir = handle_left - end_point.co
+        if direction == 'X':
+            scale_factor = target_x / dir.x
+        else:
+            scale_factor = target_x / dir.y
+        # 计算新的点的坐标
+        new_point_co = end_point.co + dir * scale_factor
+        # 添加一个新的贝塞尔点
+        bpoints = eaveCurveData.splines[0].bezier_points
+        bpoints.add(1)
+        # 设置新点的坐标
+        new_point = bpoints[-1]
+        new_point.co = new_point_co
+        # 设置新点左控制手柄的类型为向量
+        new_point.handle_left_type = 'VECTOR'
+        # 设置新点右控制手柄的类型为向量
+        new_point.handle_right_type = 'VECTOR'
+
     # 设置origin
     utils.setOrigin(eaveCurve,p1)
-    
-    # 位移到大连檐外沿，瓦当滴水向外延伸
-    if direction == 'X':
-        offset = Vector((0,
-            con.DALIANYAN_H*dk/2,
-            -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
-    else:
-        offset = Vector((0,
-            con.DALIANYAN_H*dk/2,
-            con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
-    offset.rotate(dlyObj.rotation_euler)
-    eaveCurve.location += offset
 
-    utils.hideObj(eaveCurve)
+    # utils.hideObj(eaveCurve)
     return eaveCurve
 
 # 计算瓦垄的数量
@@ -610,7 +665,7 @@ def __drawTileGrid(
         rafter_pos,direction)
     # 绘制侧边瓦垄线
     SideCurve = __drawSideCurve(buildingObj,
-        rafter_pos,direction)
+        rafter_pos,direction,EaveCurve)
 
     # 坡面长度
     # 似乎是2.8版本中新增的方法
@@ -649,6 +704,7 @@ def __drawTileGrid(
     if direction == 'X':
         bData['tile_width_real'] = tileGrid.dimensions.x/(GridCols-1)*2
 
+    utils.hideObj(tileGrid)
     return tileGrid
 
 # 绘制瓦面的斜切boolean对象

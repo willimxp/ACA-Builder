@@ -860,7 +860,6 @@ def addCylinderHorizontal(radius,depth,name,root_obj,
         edge_num=edge_num
     )
     # apply rotation
-    #bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
     applyTransfrom(cylinder,use_rotation=True)
     # 旋转到实际角度
     cylinder.rotation_euler = rotation
@@ -1348,7 +1347,7 @@ def addBezierByPoints(
         bevel_object.parent = root_obj
         # 设置大小
         bevel_object.scale = (width,height,0)
-        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        applyTransfrom(bevel_object,use_scale=True)
         updateScene()
         # 移动origin
         bpy.ops.object.mode_set(mode = 'EDIT')
@@ -1459,7 +1458,7 @@ def addCurveByPoints(CurvePoints,
         bevel_object.name = name + '.bevel'
         bevel_object.parent = root_obj
         # 将Plane Mesh转换为Curve，才能绑定到curve上
-        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        applyTransfrom(bevel_object,use_scale=True)
         bpy.ops.object.convert(target='CURVE')
         # 翻转curve，否则会导致连檐的face朝向不对
         bpy.ops.object.editmode_toggle()

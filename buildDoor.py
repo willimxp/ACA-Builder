@@ -49,7 +49,7 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
         scale.z - con.ZIBIAN_WIDTH*pd, # 旋转90度，原Zscale给Yscale
         0)
     # apply scale
-    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+    utils.applyTransfrom(zibianObj,use_rotation=True,use_scale=True)
     # 转换为Curve
     bpy.ops.object.convert(target='CURVE')
     # 旋转所有的点45度，形成四边形
@@ -109,7 +109,10 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
                    1)
     linxinObj.rotation_euler.x = math.radians(90)
     # apply
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    utils.applyTransfrom(linxinObj,
+                         use_location=True,
+                         use_scale=True,
+                         use_rotation=True)
     # 棂心贴图（三交六椀）
     mat.setMat(linxinObj,aData.mat_geshanxin)
     linxingList.append(linxinObj)

@@ -1426,7 +1426,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object,
     bevel_object.parent = rafterRootObj
     # 设置大小
     bevel_object.scale = (width,height,0)
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    utils.applyTransfrom(bevel_object,use_scale=True)
     utils.updateScene()
     # 移动origin到下皮外沿
     bpy.ops.object.mode_set(mode = 'EDIT')
@@ -1879,7 +1879,7 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
     bevel_object.parent = rafterRootObj
     # 设置大小
     bevel_object.scale = (width,height,0)
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    utils.applyTransfrom(bevel_object,use_scale=True)
     utils.updateScene()
     # 移动origin到下皮外沿
     bpy.ops.object.mode_set(mode = 'EDIT')
@@ -3579,8 +3579,11 @@ def __buildBofeng(buildingObj: bpy.types.Object,
             )
         
         # 7、将几何中心放在裁切点上，做为后续做山花材质时的定位参考
-        bpy.ops.object.transform_apply(
-            location=True, rotation=True, scale=True)
+        utils.applyTransfrom(shanhuaObj,
+                             use_location=True,
+                             use_rotation=True,
+                             use_scale=True)
+        
         utils.setOrigin(shanhuaObj,cutPoint)
         
         # 8、贴山花板贴材质

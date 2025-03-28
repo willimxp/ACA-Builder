@@ -38,7 +38,8 @@ class ACA_Consts(object):
     ACA_TYPE_CORNER_RAFTER_CURVE = 'corner_rafter_curve'            # 翼角椽定位线
     ACA_TYPE_CORNER_FLYRAFTER_CURVE = 'corner_flyrafter_curve'      # 翘飞椽定位线
     ACA_TYPE_CORNER_FLYRAFTER_EAVE = 'corner_flyrafter_eave'        # 大连檐
-    ACA_TYPE_TILE_EAVE_CURVE = 'tile_eave_curve'                    # 瓦口线
+    ACA_TYPE_TILE_EAVE_CURVE_FB = 'tile_eave_curve_fb'              # 前后瓦口线
+    ACA_TYPE_TILE_EAVE_CURVE_LR = 'tile_eave_curve_lr'              # 两山瓦口线
     ACA_TYPE_TILE_ROOT = 'tile_root'                                # ACA类型：屋瓦层
     ACA_TYPE_ASSET_ROOT ='asset_root'                               # ACA类型：斗栱根节点
     ACA_TYPE_TILE_GRID ='tile_grid'                                 # ACA类型：前后檐瓦面
@@ -211,7 +212,7 @@ class ACA_Consts(object):
     EAVETILE_EX = 2         # 瓦当、滴水出檐长度(DK)
     SHANQIANG_WIDTH = 9     # 山墙厚度(DK)，即1.5柱径
     SHANQIANG_EX = 11       # 山墙墀头延伸(DK)，约1.8柱径
-    TILE_HEIGHT = 0      # 瓦层高度(米)，预估值
+    TILE_HEIGHT = 0.04      # 瓦层高度(米)，预估值
     JUANPENG_PUMP = 3       # 卷棚瓦作的囊(DK)，为了使屋顶更加圆润饱满
     JUANPENG_OVERLAP = 2    # 卷棚顶部瓦片的交叠(DK)
 

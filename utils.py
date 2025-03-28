@@ -348,7 +348,9 @@ def applyTransfrom(ob,
 
     # rotation
     T = Matrix.Translation(loc)
-    R = mb.to_3x3().normalized().to_4x4()
+    # R = mb.to_3x3().normalized().to_4x4()
+    # 直接使用旋转矩阵，不进行归一化，避免负缩放问题
+    R = rot.to_matrix().to_4x4()
     S = Matrix.Diagonal(scale).to_4x4()
 
     transform = [I, I, I]

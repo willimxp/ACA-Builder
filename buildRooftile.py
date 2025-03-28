@@ -358,7 +358,7 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     # 载入翘飞椽定位线
     cfrCurve = utils.getAcaChild(buildingObj,
                 con.ACA_TYPE_CORNER_FLYRAFTER_CURVE)
-    # 创建瓦面檐口线
+    # 复制并做为瓦面檐口线的基础
     eaveCurve = utils.copyObject(cfrCurve,
                                  name=eaveCurve_name,
                                  parentObj=tileRootObj,
@@ -419,11 +419,13 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     binormal.rotate(rotation)
     # 1.4、通过切线和副切线计算法线向量
     normal = tangent.cross(binormal).normalized()
+
     # 2、沿法线方向，位移终点到大连檐上皮外侧
     if direction == 'X':
-        offset = Vector((-liftHeight, con.EAVETILE_EX*dk,0,))
+        offset = Vector((-liftHeight, con.EAVETILE_EX*dk,0))
     else:
         offset = Vector((-liftHeight, -con.EAVETILE_EX*dk,0))
+
     end_rot = utils.alignToVector(normal)
     offset.rotate(end_rot)
     bpoints[1].co += offset
@@ -440,6 +442,40 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
                 (bpoints[0].co.y + bpoints[1].co.y)/2,
                 bpoints[0].co.z)
     
+    # 2.1延长终点，与角梁相交，以便两片滴水在子角梁头和龙
+    # 重新计算曲线切线
+    end_point = bpoints[1].co
+    prev_point = bpoints[1].handle_left
+    tangent2 = end_point - prev_point
+    #utils.showVector(tangent2,loc=bpoints[1].co,parentObj=tileRootObj,name='切线')
+    # 子角梁头
+    ccbHead = bData.roof_qiao_point.copy()
+    # 避让角梁，适当让滴水分开，纯手工调正
+    shift = con.JIAOLIANG_Y/2*dk * math.sqrt(2)
+    if direction == 'X':
+        shiftV = Vector((shift,0,0))
+    else:
+        shiftV = Vector((0,shift,0))
+    ccbHead -= shiftV
+    #utils.showPoint(ccbHead,parentObj=tileRootObj,name='子角梁头')
+    # 计算沿 z 轴旋转 45 度的平面的法向量
+    normal45 = Vector((1, -1, 0))
+    #utils.showVector(normal45,loc=bpoints[1].co,parentObj=tileRootObj,name='45度')
+    # 计算从终点沿切线方向到平面的距离
+    distance = (ccbHead -end_point).dot(normal45) / tangent2.dot(normal45)
+    extended_point = end_point + tangent2 * distance
+    #utils.showPoint(extended_point,parentObj=tileRootObj,name='延伸点')
+    bpoints[1].co = extended_point
+    if direction == 'X':
+        bpoints[1].handle_left = (
+                (bpoints[0].co.x + bpoints[1].co.x)/2,
+                bpoints[0].co.y,
+                bpoints[0].co.z)
+    else:
+        bpoints[1].handle_left = (
+                bpoints[0].co.x,
+                (bpoints[0].co.y + bpoints[1].co.y)/2,
+                bpoints[0].co.z)
 
     # 三、延长到正心中点
     # 0号点在起翘点，1号点在子角梁
@@ -456,6 +492,9 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     utils.setOrigin(eaveCurve,bpoints[0].co)
 
     return eaveCurve
+
+def __extendEaveCurveToCCB():
+    return
 
 # 计算瓦垄的数量
 def __getTileCols(buildingObj:bpy.types.Object,direction='X'):
@@ -2068,7 +2107,6 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     mat.setGlazeStyle(eaveTileObj)
     mat.setGlazeStyle(dripTileObj)
 
-
     return
 
 # 营造戗脊（庑殿垂脊）曲线
@@ -2169,7 +2207,11 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
             )
     utils.setOrigin(ridgeCurve,ridgeCurveVerts[0])
-    utils.hideObj(ridgeCurve)
+
+    ridgeCurve.show_in_front = True
+    ridgeCurve.show_axis = True
+    ridgeCurve.data.bevel_depth = 0.03
+    # utils.hideObj(ridgeCurve)
     return ridgeCurve
 
 # 营造四角的戗脊

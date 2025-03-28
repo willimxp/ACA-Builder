@@ -9,41 +9,44 @@ class ACA_Consts(object):
     # https://www.jb51.net/article/274253.htm
 
     # 系统参数
-    ROOT_COLL_NAME = 'ACA筑韵古建'               # 根目录名称
-    PLATFORM_NAME = '台基'                      # 台基名称
-    ACA_TYPE_BUILDING = 'building'              # ACA类型：建筑根节点
-    ACA_TYPE_BASE_ROOT = 'base_root'            # ACA类型：台基根节点
-    ACA_TYPE_PLATFORM = 'platform'              # ACA类型：台基
-    ACA_TYPE_STEP = 'step'                      # ACA类型：踏跺
-    ACA_TYPE_FLOOR_ROOT = 'floor'               # ACA类型：柱网
-    ACA_TYPE_PILLER = 'piller'                  # ACA类型：柱子
-    ACA_TYPE_FANG = 'fang'                      # ACA类型：枋
-    ACA_TYPE_WALL_ROOT = 'wall_root'            # ACA类型：装修布局，墙体的父节点
-    ACA_TYPE_WALL = 'wall'                      # ACA类型：墙体
-    ACA_TYPE_WALL_CHILD = 'wall_child'          # ACA类型：墙体子对象
-    ACA_TYPE_DG_ROOT ='dg_root'                 # ACA类型：斗栱根节点
-    ACA_TYPE_ROOF_ROOT ='roof_root'             # ACA类型：屋顶根节点
-    ACA_TYPE_BEAM_ROOT = 'beam_root'            # ACA类型：梁架根节点
-    ACA_TYPE_RAFTER_ROOT = 'rafter_root'        # ACA类型：椽望根节点
-    ACA_TYPE_RAFTER_FB = 'rafter_fb'            # ACA类型：前后檐椽
-    ACA_TYPE_RAFTER_LR = 'rafter_lr'            # ACA类型：两山檐椽
-    ACA_TYPE_FLYRAFTER_FB = 'flyrafter_fb'      # 前后檐飞椽
-    ACA_TYPE_FLYRAFTER_LR = 'flyrafter_lr'      # 两山飞椽
-    ACA_TYPE_RAFTER_LKM_FB  = 'rafter_lkm_fb'      # 里口木-前后檐
-    ACA_TYPE_RAFTER_LKM_LR  = 'rafter_lkm_lr'      # 里口木-两山
-    ACA_TYPE_RAFTER_DLY_FB = 'rafter_dly_fb'       # 大连檐-前后
-    ACA_TYPE_RAFTER_DLY_LR = 'rafter_dly_lr'       # 大连檐-两山
-    ACA_TYPE_CORNER_BEAM = 'corner_beam'                # 大角梁
-    ACA_TYPE_CORNER_BEAM_CHILD = 'corner_beam_child'    # 大角梁
-    ACA_TYPE_CORNER_RAFTER_CURVE = 'corner_rafter_curve'         # 翼角椽定位线
-    ACA_TYPE_TILE_ROOT = 'tile_root'            # ACA类型：屋瓦层
-    ACA_TYPE_ASSET_ROOT ='asset_root'           # ACA类型：斗栱根节点
-    ACA_TYPE_TILE_GRID ='tile_grid'             # ACA类型：前后檐瓦面
-    ACA_TYPE_YARDWALL = 'yard_wall'             # ACA类型：院墙
-    ACA_WALLTYPE_WALL = 'wall'                  # 隔断属性-墙
-    ACA_WALLTYPE_WINDOW = 'window'              # 隔断属性-槛窗
-    ACA_WALLTYPE_DOOR = 'door'                  # 隔断属性-隔扇
-    ACA_TYPE_COMBO = 'combo'                    # 组合样式
+    ROOT_COLL_NAME = 'ACA筑韵古建'                                   # 根目录名称
+    PLATFORM_NAME = '台基'                                           # 台基名称
+    ACA_TYPE_BUILDING = 'building'                                  # ACA类型：建筑根节点
+    ACA_TYPE_BASE_ROOT = 'base_root'                                # ACA类型：台基根节点
+    ACA_TYPE_PLATFORM = 'platform'                                  # ACA类型：台基
+    ACA_TYPE_STEP = 'step'                                          # ACA类型：踏跺
+    ACA_TYPE_FLOOR_ROOT = 'floor'                                   # ACA类型：柱网
+    ACA_TYPE_PILLER = 'piller'                                      # ACA类型：柱子
+    ACA_TYPE_FANG = 'fang'                                          # ACA类型：枋
+    ACA_TYPE_WALL_ROOT = 'wall_root'                                # ACA类型：装修布局，墙体的父节点
+    ACA_TYPE_WALL = 'wall'                                          # ACA类型：墙体
+    ACA_TYPE_WALL_CHILD = 'wall_child'                              # ACA类型：墙体子对象
+    ACA_TYPE_DG_ROOT ='dg_root'                                     # ACA类型：斗栱根节点
+    ACA_TYPE_ROOF_ROOT ='roof_root'                                 # ACA类型：屋顶根节点
+    ACA_TYPE_BEAM_ROOT = 'beam_root'                                # ACA类型：梁架根节点
+    ACA_TYPE_RAFTER_ROOT = 'rafter_root'                            # ACA类型：椽望根节点
+    ACA_TYPE_RAFTER_FB = 'rafter_fb'                                # ACA类型：前后檐椽
+    ACA_TYPE_RAFTER_LR = 'rafter_lr'                                # ACA类型：两山檐椽
+    ACA_TYPE_FLYRAFTER_FB = 'flyrafter_fb'                          # 前后檐飞椽
+    ACA_TYPE_FLYRAFTER_LR = 'flyrafter_lr'                          # 两山飞椽
+    ACA_TYPE_RAFTER_LKM_FB  = 'rafter_lkm_fb'                       # 里口木-前后檐
+    ACA_TYPE_RAFTER_LKM_LR  = 'rafter_lkm_lr'                       # 里口木-两山
+    ACA_TYPE_RAFTER_DLY_FB = 'rafter_dly_fb'                        # 大连檐-前后
+    ACA_TYPE_RAFTER_DLY_LR = 'rafter_dly_lr'                        # 大连檐-两山
+    ACA_TYPE_CORNER_BEAM = 'corner_beam'                            # 大角梁
+    ACA_TYPE_CORNER_BEAM_CHILD = 'corner_beam_child'                # 大角梁
+    ACA_TYPE_CORNER_RAFTER_CURVE = 'corner_rafter_curve'            # 翼角椽定位线
+    ACA_TYPE_CORNER_FLYRAFTER_CURVE = 'corner_flyrafter_curve'      # 翘飞椽定位线
+    ACA_TYPE_CORNER_FLYRAFTER_EAVE = 'corner_flyrafter_eave'        # 大连檐
+    ACA_TYPE_TILE_EAVE_CURVE = 'tile_eave_curve'                    # 瓦口线
+    ACA_TYPE_TILE_ROOT = 'tile_root'                                # ACA类型：屋瓦层
+    ACA_TYPE_ASSET_ROOT ='asset_root'                               # ACA类型：斗栱根节点
+    ACA_TYPE_TILE_GRID ='tile_grid'                                 # ACA类型：前后檐瓦面
+    ACA_TYPE_YARDWALL = 'yard_wall'                                 # ACA类型：院墙
+    ACA_WALLTYPE_WALL = 'wall'                                      # 隔断属性-墙
+    ACA_WALLTYPE_WINDOW = 'window'                                  # 隔断属性-槛窗
+    ACA_WALLTYPE_DOOR = 'door'                                      # 隔断属性-隔扇
+    ACA_TYPE_COMBO = 'combo'                                        # 组合样式
 
     # 默认斗口
     DEFAULT_DK = 0.08   # 单位(m)
@@ -209,7 +212,7 @@ class ACA_Consts(object):
     SHANQIANG_WIDTH = 9     # 山墙厚度(DK)，即1.5柱径
     SHANQIANG_EX = 11       # 山墙墀头延伸(DK)，约1.8柱径
     TILE_HEIGHT = 0      # 瓦层高度(米)，预估值
-    JUANPENG_PUMP = 6       # 卷棚瓦作的囊(DK)，为了使屋顶更加圆润饱满
+    JUANPENG_PUMP = 3       # 卷棚瓦作的囊(DK)，为了使屋顶更加圆润饱满
     JUANPENG_OVERLAP = 2    # 卷棚顶部瓦片的交叠(DK)
 
     # 导角尺度(m)

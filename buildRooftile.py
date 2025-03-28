@@ -63,7 +63,8 @@ def __setTileRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
 # 两山direction=’Y‘
 def __drawTileCurve(buildingObj:bpy.types.Object,
                     purlin_pos,
-                    direction='X'):
+                    direction='X',
+                    eaveCurve:bpy.types.Curve=None):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -71,42 +72,28 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
 
-    if direction == 'X':
-        tileCurve_name = "前后正身坡线"
-        if bData.use_flyrafter:
-            dly_type = con.ACA_TYPE_RAFTER_DLY_FB
-        else:
-            dly_type = con.ACA_TYPE_RAFTER_LKM_FB
-        proj_v = Vector((0,1,1))
-    else:
-        tileCurve_name = "两山正身坡线"
-        if bData.use_flyrafter:
-            dly_type = con.ACA_TYPE_RAFTER_DLY_LR
-        else:
-            dly_type = con.ACA_TYPE_RAFTER_LKM_LR
-        proj_v = Vector((1,0,1))
-
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
     # 同时与梁思成绘制的图纸进行了拟合，所以也有一定的推测成分
     tileCurveVerts = []
 
-    # 第1点：从正身飞椽的中心当开始，上移半飞椽+大连檐
-    # 大连檐中心
-    dlyObj:bpy.types.Object = \
-        utils.getAcaChild(buildingObj,dly_type)
-    curve_p1 = Vector(dlyObj.location)
-    # 位移到大连檐外沿，瓦当滴水向外延伸
-    if direction == 'X':
-        offset = Vector((0,con.DALIANYAN_H*dk/2,
-            -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
-    else:
-        offset = Vector((0,con.DALIANYAN_H*dk/2,
-            con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
-    offset.rotate(dlyObj.rotation_euler)
-    curve_p1 += offset
+    # p1 檐口点，与大连檐相切，定位瓦当滴水的伸出
+    # 250325 p1改为通过eaveCurve中统一计算，避免多处定义而不吻合
+    eaveCurveData:bpy.types.Curve = eaveCurve.data
+    start_point = eaveCurveData.splines[0].bezier_points[0]
+    curve_p1= start_point.co+eaveCurve.location
     tileCurveVerts.append(curve_p1)
 
     # 第3-5点，从举架定位点做偏移
+    # 从桁檩中点向上位移:半桁径+椽径+望板高+灰泥层高
+    offset_rafter =  (con.HENG_COMMON_D*dk/2 
+                        + con.YUANCHUAN_D*dk 
+                        + con.WANGBAN_H*dk)
+    offset_mud = con.ROOFMUD_H*dk
+    offsetZ = Vector((0, 0, offset_rafter + offset_mud))
+    # 简单的做45度加斜
+    # 这里曾经按照椽架斜率方向抬升，但导致瓦面在正脊处不闭合，所以只做了Z方向的位移
+    offsetZ *= math.sqrt(2)
+
     for n in range(len(purlin_pos)):
         # 盝顶只做到下金桁
         if bData.roof_style == con.ROOF_LUDING:
@@ -118,25 +105,12 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
             and direction == 'Y' 
             and n>1): 
                 continue
-        # 向上位移:半桁径+椽径+望板高+灰泥层高
-        offset_rafter = Vector((0,0,
-            (con.HENG_COMMON_D/2 
-            + con.YUANCHUAN_D 
-            + con.WANGBAN_H)*dk))
-        offset_mud = Vector((0,0,con.ROOFMUD_H*dk))
-        #241115 取消了灰背计算时的旋转，否则导致瓦面在正脊处无法闭合，与正脊割裂
-        # # 为了与屋脊更好的匹配，将灰背的位移按照椽架斜率旋转
-        # if n != len(purlin_pos)-1:
-        #     purlinAngle = math.atan(
-        #             (purlin_pos[n+1].z-purlin_pos[n].z)
-        #             /(purlin_pos[n].y-purlin_pos[n+1].y)
-        #         )
-        # if direction == 'X':
-        #     purlinEular = Euler((-purlinAngle,0,0),'XYZ')
-        # else:
-        #     purlinEular = Euler((0,purlinAngle,0),'XYZ')
-        #offset_mud.rotate(purlinEular)
-        point = purlin_pos[n]*proj_v + offset_rafter + offset_mud
+        
+        if direction == 'X':
+            proj_v = Vector((0,1,1))
+        else:
+            proj_v = Vector((1,0,1))
+        point = purlin_pos[n]*proj_v + offsetZ
         tileCurveVerts.append(point)
 
     # 卷棚的前后坡，增加辅助点
@@ -147,29 +121,27 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
             )
         and direction == 'X'
     ):
+        # 1、调整囊点
         tileCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
                 con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
+        # 2、添加正脊位置的原点
         # Y=0时，抬升1椽径，见马炳坚p20
-        p1 = Vector((0,
-            0,
+        p1 = Vector((0, 0,
             purlin_pos[-1].z + con.YUANCHUAN_D*dk))
         # 向上位移:半桁径+椽径+望板高+灰泥层高
-        offset = Vector(
-                            (0,0,
-                                (con.HENG_COMMON_D/2 
-                                    + con.YUANCHUAN_D 
-                                    + con.WANGBAN_H 
-                                    + con.ROOFMUD_H
-                                )*dk
-                            )
-                        )
-        p1 += offset
+        p1 += offsetZ
         tileCurveVerts.append(p1)
+        # 3、添加一个延伸点
+        # 添加一个瓦片重合距离
         p2 = p1 + Vector((0,-con.JUANPENG_OVERLAP*dk,0))
         tileCurveVerts.append(p2)
 
     # 创建瓦垄曲线
+    if direction == 'X':
+        tileCurve_name = "前后正身坡线"
+    else:
+        tileCurve_name = "两山正身坡线"
     tileCurve = utils.addCurveByPoints(
             CurvePoints=tileCurveVerts,
             name=tileCurve_name,
@@ -222,6 +194,15 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
         utils.getAcaChild(buildingObj,dly_type)
     ex_eaveTile.rotate(dlyObj.rotation_euler)
 
+    # 瓦片与椽架的间隙高度
+    offset_rafter = (con.HENG_COMMON_D*dk /2 
+                    + con.YUANCHUAN_D*dk 
+                    + con.WANGBAN_H*dk)
+    offset_mud = con.ROOFMUD_H*dk
+    offsetZ = Vector((0,0,offset_rafter + offset_mud))
+    # 简单的45度加斜
+    offsetZ *= math.sqrt(2)
+
     # 计算曲线控制点
     sideCurveVerts = []
     # 第1点：檐口线终点
@@ -241,21 +222,7 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
         # 第3-5点，从举架定位点做偏移
         for n in range(len(purlin_pos)):
             # 垂直偏移瓦作层高度：半桁+椽架+望板+灰泥层
-            offset_rafter = Vector((0,0,
-                (con.HENG_COMMON_D/2 
-                + con.YUANCHUAN_D 
-                + con.WANGBAN_H)*dk))
-            offset_mud = Vector((0,0,con.ROOFMUD_H*dk))
-            #241115 取消了灰背计算时的旋转，否则导致瓦面在正脊处无法闭合，与正脊割裂
-            # 为了与屋脊更好的匹配，将灰背的位移按照椽架斜率旋转
-            # if n != len(purlin_pos)-1:
-            #     purlinAngle = math.atan(
-            #             (purlin_pos[n+1].z-purlin_pos[n].z)
-            #             /(purlin_pos[n].y-purlin_pos[n+1].y)
-            #         )
-            # purlinEular = Euler((-purlinAngle,0,0),'XYZ')
-            #offset_mud.rotate(purlinEular)   
-            point = purlin_pos[n] + offset_rafter + offset_mud
+            point = purlin_pos[n] + offsetZ
             # 对齐檐口横坐标
             point.x = p1.x
             sideCurveVerts.append(point)
@@ -289,7 +256,7 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
         # # 5、瓦口延伸量
         # p1 += ex_eaveTile
 
-        # 250325 p1改为通过eaveData传送
+        # 250325 p1改为通过eaveCurve传送
         eaveCurveData:bpy.types.Curve = eaveCurve.data
         start_point = eaveCurveData.splines[0].bezier_points[0]
         end_point = eaveCurveData.splines[0].bezier_points[-1]
@@ -325,24 +292,7 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
                 # 檐出、冲出、起翘,不做Y方向
                 point += offset_cq * Vector((1,0,1))
             # 垂直偏移瓦作层高度：半桁+椽架+望板+灰泥层
-            offset_rafter = Vector((0,0,
-                (con.HENG_COMMON_D/2 
-                + con.YUANCHUAN_D 
-                + con.WANGBAN_H)*dk))
-            offset_mud = Vector((0,0,con.ROOFMUD_H*dk))
-            #241115 取消了灰背计算时的旋转，否则导致瓦面在正脊处无法闭合，与正脊割裂
-            # # 为了与屋脊更好的匹配，将灰背的位移按照椽架斜率旋转
-            # if n != len(purlin_pos)-1:
-            #     purlinAngle = math.atan(
-            #             (purlin_pos[n+1].z-purlin_pos[n].z)
-            #             /(purlin_pos[n].y-purlin_pos[n+1].y)
-            #         )
-            # if direction == 'X':
-            #     purlinEular = Euler((-purlinAngle,0,0),'XYZ')
-            # else:
-            #     purlinEular = Euler((0,purlinAngle,0),'XYZ')
-            # offset_mud.rotate(purlinEular)        
-            point += + offset_rafter + offset_mud
+            point += offsetZ
             sideCurveVerts.append(point)
 
     # 卷棚的前后坡，增加辅助点
@@ -352,32 +302,15 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
             con.ROOF_XIESHAN_JUANPENG,)
         and direction == 'X'
     ):
+        # 1、 调整囊点
         sideCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
                 con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
-        # # 大连檐的定位中，自动判断了硬山山墙延伸的需求
-        # # x = utils.getMeshDims(dlyObj).x / 2 
-        # x= sideCurveVerts[-1].x
-        # # Y=0时，抬升1椽径，见马炳坚p20
-        # p1 = Vector((x,
-        #     0,
-        #     purlin_pos[-1].z + con.YUANCHUAN_D*dk))
-        # # # 瓦口延伸
-        # # p1 += ex_eaveTile * Vector((1,0,0))
-        # # 向上位移:半桁径+椽径+望板高+灰泥层高
-        # offset = Vector(
-        #                     (0,0,
-        #                         (con.HENG_COMMON_D/2 
-        #                             + con.YUANCHUAN_D 
-        #                             + con.WANGBAN_H 
-        #                             + con.ROOFMUD_H
-        #                         )*dk
-        #                     )
-        #                 )
-        # p1 += offset
+        # 2、 添加正脊位置的原点
         # 241206 简单的把卷棚的中心点从上一个囊点延伸到Y=0的位置
         p1 = sideCurveVerts[-1] * Vector((1,0,1))
         sideCurveVerts.append(p1)
+        # 3、添加一个延伸点
         p2 = p1 + Vector((0,-con.JUANPENG_OVERLAP*dk,0))
         sideCurveVerts.append(p2)
 
@@ -389,25 +322,14 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
         )
     # 设置origin，与eave curve的origin重合，正身瓦口点
-    # 仅做了以免的勾滴延伸，不像上面做了XY两个方面的勾滴延伸
-    if direction == 'X':
-        ex_eaveTile = Vector((0,
-            con.DALIANYAN_H*dk/2,
-            -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
-    else:
-        ex_eaveTile = Vector((0,
-            con.DALIANYAN_H*dk/2,
-            con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
-    ex_eaveTile.rotate(dlyObj.rotation_euler)
-    originPoint = dlyObj.location+ex_eaveTile
-    utils.setOrigin(sideCurve,originPoint)
-
-    # utils.hideObj(sideCurve)
+    utils.setOrigin(sideCurve,start_point.co+eaveCurve.location)
+    utils.hideObj(sideCurve)
     return sideCurve
 
 # 绘制檐口线（直达子角梁中心），做为翼角瓦檐口终点
+# 基于翘飞椽定位线绘制
+# 250328 重构，依据翘飞椽曲线进行法线方向的推算，更加完美的防止檐口的穿模
 def __drawEaveCurve(buildingObj:bpy.types.Object,
-                    purlin_pos,
                     direction='X'):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
@@ -415,157 +337,124 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
-    
+
+    # 从大连檐下皮上推的距离，包括一个大连檐和一个筒瓦高度
+    aData:tmpData = bpy.context.scene.ACA_temp
+    tileHeight = (aData.circularTile_source.dimensions.z 
+                  * bData.DK 
+                  / con.DEFAULT_DK)
+    liftHeight = con.DALIANYAN_H*dk + tileHeight
     if direction == 'X':
         eaveCurve_name = "前后檐瓦口线"
-        if bData.use_flyrafter:
-            dly_type = con.ACA_TYPE_RAFTER_DLY_FB
-        else:
-            dly_type = con.ACA_TYPE_RAFTER_LKM_FB
-        proj_v1 = Vector((1,0,0))
-        # 闪避1/4角梁
-        shift = Vector((-con.JIAOLIANG_Y/4*dk * math.sqrt(2),0,0))
+        dlyObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,
+                          con.ACA_TYPE_RAFTER_DLY_FB)
     else:
         eaveCurve_name = "两山檐瓦口线"
-        if bData.use_flyrafter:
-            dly_type = con.ACA_TYPE_RAFTER_DLY_LR
-        else:
-            dly_type = con.ACA_TYPE_RAFTER_LKM_LR
-        proj_v1 = Vector((0,1,0))
-        # 闪避1/4角梁
-        shift = Vector((0,-con.JIAOLIANG_Y/4*dk * math.sqrt(2),0))
+        dlyObj:bpy.types.Object = \
+        utils.getAcaChild(buildingObj,
+                          con.ACA_TYPE_RAFTER_DLY_LR)
+    
+    # 载入翘飞椽定位线
+    cfrCurve = utils.getAcaChild(buildingObj,
+                con.ACA_TYPE_CORNER_FLYRAFTER_CURVE)
+    # 创建瓦面檐口线
+    eaveCurve = utils.copyObject(cfrCurve,
+                                 name=eaveCurve_name,
+                                 parentObj=tileRootObj,
+                                 singleUser=True)
+    eaveCurve.ACA_data['aca_type'] = con.ACA_TYPE_TILE_EAVE_CURVE
+    if direction == 'Y':
+        # 做45度镜像
+        pivot = (bData.x_total/2-bData.y_total/2,
+             -bData.x_total/2+bData.y_total/2,0)
+        utils.mirror45(eaveCurve,pivot)
+        utils.focusObj(eaveCurve)
+        # 应用变换
+        utils.applyTransfrom(eaveCurve,
+                             use_location=True,
+                             use_rotation=True,
+                             use_scale=True)    
 
-    eaveCurveVerts = []
-
-    # 第1点：大连檐中心
-    # 大连檐
-    dlyObj:bpy.types.Object = \
-        utils.getAcaChild(buildingObj,dly_type)
-    p1 = Vector(dlyObj.location)
-    # 位移到大连檐外沿，瓦当滴水向外延伸
+    # 重新构造大连檐上皮外沿的曲线
+    # 不能简单的做位移，起点和终点的法线已经不同
+    # 借助了豆包进行了分析计算
+    eaveCurveData:bpy.types.Curve = eaveCurve.data
+    bpoints = eaveCurveData.splines[0].bezier_points
+    # ---------------------------------
+    # 一、计算起点(起翘点)，简单的按照大连檐斜率进行推算
     if direction == 'X':
-        offset = Vector((0,
-            con.DALIANYAN_H*dk/2,
-            -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
+        offset = Vector((0, liftHeight,-con.EAVETILE_EX*dk))
     else:
-        offset = Vector((0,
-            con.DALIANYAN_H*dk/2,
-            con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
+        offset = Vector((0, liftHeight,con.EAVETILE_EX*dk))
+    # 随大连檐翻转
     offset.rotate(dlyObj.rotation_euler)
-    p1 += offset
-    eaveCurveVerts.append(p1)
+    bpoints[0].co += offset
+    bpoints[0].handle_left += offset
+    bpoints[0].handle_right += offset
 
-    # 第2点：翼角起翘点，X与下金桁对齐
-    p2 = p1 + purlin_pos[1] * proj_v1
-    eaveCurveVerts.append(p2)
+    # 二、计算终点，先计算终点的切线方向，再计算终点的法线方向
+    # 注意，这里要求曲线的twist method为Z_UP
+    # 1、计算法线方向
+    # 1.1、计算切线方向
+    end_point = bpoints[1].co
+    handle = bpoints[1].handle_left
+    tangent = end_point - handle
+    tangent.normalize()
+    # 1.2、计算副法线方向
+    # 创建一个临时向量，用于叉乘计算
+    temp_vector = Vector((0, 0, 1))
+    if tangent.cross(temp_vector).length < 1e-6:
+        temp_vector = Vector((1, 0, 0))
+    # 计算副法线方向
+    binormal = tangent.cross(temp_vector).normalized()
+    # if direction == 'Y':
+    #     binormal = -binormal
+    # 1.3、应用倾斜度
+    if direction == 'X':
+        rotation = Matrix.Rotation(bpoints[1].tilt, 4, tangent)
+    else:
+        rotation = Matrix.Rotation(-bpoints[1].tilt, 4, tangent)
+    # 应用旋转矩阵到法线方向
+    binormal.rotate(rotation)
+    # 1.4、通过切线和副切线计算法线向量
+    normal = tangent.cross(binormal).normalized()
+    # 2、沿法线方向，位移终点到大连檐上皮外侧
+    if direction == 'X':
+        offset = Vector((-liftHeight, con.EAVETILE_EX*dk,0,))
+    else:
+        offset = Vector((-liftHeight, -con.EAVETILE_EX*dk,0))
+    end_rot = utils.alignToVector(normal)
+    offset.rotate(end_rot)
+    bpoints[1].co += offset
+    bpoints[1].handle_right += offset
+    # 更新控制点
+    if direction == 'X':
+        bpoints[1].handle_left = (
+                (bpoints[0].co.x + bpoints[1].co.x)/2,
+                bpoints[0].co.y,
+                bpoints[0].co.z)
+    else:
+        bpoints[1].handle_left = (
+                bpoints[0].co.x,
+                (bpoints[0].co.y + bpoints[1].co.y)/2,
+                bpoints[0].co.z)
+    
 
-    # 硬山，悬山（卷棚）檐口平直
-    if bData.roof_style in (con.ROOF_XUANSHAN,
-                            con.ROOF_YINGSHAN,
-                            con.ROOF_YINGSHAN_JUANPENG,
-                            con.ROOF_XUANSHAN_JUANPENG):
-        # 绘制檐口线
-        CurvePoints = utils.setEaveCurvePoint(p1,p2,direction)
-        eaveCurve = utils.addBezierByPoints(
-                CurvePoints=CurvePoints,
-                name=eaveCurve_name,
-                resolution = con.CURVE_RESOLUTION,
-                root_obj=tileRootObj
-            )
-
-    # 庑殿、歇山按照冲三翘四的理论值计算
-    if bData.roof_style in (
-            con.ROOF_WUDIAN,
-            con.ROOF_XIESHAN,
-            con.ROOF_XIESHAN_JUANPENG,
-            con.ROOF_LUDING):
-        # 第3点：檐口线终点，按照冲三翘四的理论值计算（与子角梁解耦）
-        # 上檐出（檐椽平出+飞椽平出）
-        ex = con.YANCHUAN_EX*dk
-        if bData.use_flyrafter:
-            ex += con.FLYRAFTER_EX*dk
-        # 斗栱平出
-        if bData.use_dg:
-            ex += bData.dg_extend
-        # 冲出
-        ex += bData.chong * con.YUANCHUAN_D * dk
-        # 起翘
-        qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
-        p3 = Vector((
-            bData.x_total/2 + ex,
-            bData.y_total/2 + ex,
-            p2.z + qiqiao
-            )) 
-        # 避让角梁
-        p3 += shift
-        # 位移到大连檐外沿，瓦当滴水向外延伸
-
-        if direction == 'X':
-            offset = Vector((
-                0,
-                con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk,
-                con.DALIANYAN_H*dk/2,
-                ))
-        else:
-            offset = Vector((
-                con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk,
-                0,
-                con.DALIANYAN_H*dk/2,
-                ))
-        # ccbObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_CORNER_BEAM_CHILD)
-        # offset.rotate(ccbObj.rotation_euler)
-        p3 += offset
-
-        # 绘制檐口线
-        CurvePoints = utils.setEaveCurvePoint(p2,p3,direction)
-        eaveCurve = utils.addBezierByPoints(
-                CurvePoints=CurvePoints,
-                name=eaveCurve_name,
-                resolution = con.CURVE_RESOLUTION,
-                root_obj=tileRootObj
-            )
-        
-        # 延长到P1点
-        eaveCurveData:bpy.types.Curve = eaveCurve.data
-        bpoints = eaveCurveData.splines[0].bezier_points
-        bpoints.add(1)
-        utils.transBezierPoint(bpoints[1],bpoints[2])
-        utils.transBezierPoint(bpoints[0],bpoints[1])
-        bpoints[0].co = p1
-
-        # 250325延长到翼角边线
-        # 计算从当前终点到目标 x 坐标需要移动的距离
-        if direction == 'X':
-            target_x = con.EAVETILE_EX*dk - shift.x
-        else:
-            target_x = con.EAVETILE_EX*dk - shift.y
-        # 获取曲线终点的贝塞尔点
-        end_point = eaveCurveData.splines[0].bezier_points[-1]
-        # 获取终点右侧的控制手柄
-        handle_left = end_point.handle_left
-        # 计算从终点到右控制手柄的方向向量
-        dir = handle_left - end_point.co
-        if direction == 'X':
-            scale_factor = target_x / dir.x
-        else:
-            scale_factor = target_x / dir.y
-        # 计算新的点的坐标
-        new_point_co = end_point.co + dir * scale_factor
-        # 添加一个新的贝塞尔点
-        bpoints = eaveCurveData.splines[0].bezier_points
-        bpoints.add(1)
-        # 设置新点的坐标
-        new_point = bpoints[-1]
-        new_point.co = new_point_co
-        # 设置新点左控制手柄的类型为向量
-        new_point.handle_left_type = 'VECTOR'
-        # 设置新点右控制手柄的类型为向量
-        new_point.handle_right_type = 'VECTOR'
+    # 三、延长到正心中点
+    # 0号点在起翘点，1号点在子角梁
+    # 在0号点前插入正心中点
+    bpoints.add(1)
+    utils.transBezierPoint(bpoints[1],bpoints[2])
+    utils.transBezierPoint(bpoints[0],bpoints[1])
+    if direction == 'X':
+        bpoints[0].co = Vector(bpoints[1].co) * Vector((0,1,1))
+    else:
+        bpoints[0].co = Vector(bpoints[1].co) * Vector((1,0,1))
 
     # 设置origin
-    utils.setOrigin(eaveCurve,p1)
+    utils.setOrigin(eaveCurve,bpoints[0].co)
 
-    # utils.hideObj(eaveCurve)
     return eaveCurve
 
 # 计算瓦垄的数量
@@ -632,15 +521,8 @@ def __drawTileGrid(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
     
-    # 瓦垄宽度
-    tileWidth = bData.tile_width
-    # 250116 不再以用户输入瓦垄长，以筒瓦为依据
-    # # 瓦片长度
-    # tileLength = bData.tile_length
+    # 瓦片长度
     tileLength = (aData.circularTile_source.dimensions.y 
-                  * bData.DK 
-                  / con.DEFAULT_DK)
-    tileHeight = (aData.circularTile_source.dimensions.z 
                   * bData.DK 
                   / con.DEFAULT_DK)
 
@@ -648,7 +530,6 @@ def __drawTileGrid(
     tileCols = __getTileCols(buildingObj,direction)
 
     # 在网格上以半垄划分，分别对应到板瓦和筒瓦
-    # GridCols = (tileCols+1)*2
     GridCols = tileCols*2
     
     if direction == 'X':
@@ -657,12 +538,11 @@ def __drawTileGrid(
         tileGrid_name = "两山瓦面"
 
     # 1、生成三条辅助线，这是后续所有计算的基础
+    # 绘制檐口线
+    EaveCurve = __drawEaveCurve(buildingObj,direction)
     # 绘制正身坡线
     TileCurve:bpy.types.Curve = __drawTileCurve(
-        buildingObj,rafter_pos,direction)
-    # 绘制檐口线
-    EaveCurve = __drawEaveCurve(buildingObj,
-        rafter_pos,direction)
+        buildingObj,rafter_pos,direction,EaveCurve)
     # 绘制侧边瓦垄线
     SideCurve = __drawSideCurve(buildingObj,
         rafter_pos,direction,EaveCurve)
@@ -683,7 +563,7 @@ def __drawTileGrid(
     # 瓦面要与辅助线重合，并上移一个大连檐高度
     tileGrid.location = TileCurve.location
     # 250116 瓦面上移一个筒瓦高，以便卷棚顶筒瓦能够紧密结合
-    tileGrid.location.z += tileHeight
+    # tileGrid.location.z += tileHeight
     tileGrid.name = tileGrid_name
     # 输入修改器参数
     gnMod:bpy.types.NodesModifier = \
@@ -939,7 +819,6 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                   / con.DEFAULT_DK)
     # 计算瓦垄的数量
     tileCols = __getTileCols(buildingObj,direction)
-    #GridCols = tileCols*2+1
     GridCols = tileCols*2-1
 
     # 构造一个裁剪对象，做boolean
@@ -966,6 +845,12 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     bm.from_mesh(tileGrid.data)   # fill it in from a Mesh
     tileList = []
     for f in bm.faces:
+        # 不能直接用face normal进行定位
+        # # 构造矩阵的旋转
+        # z_axis = Vector((0, 0, 1))
+        # rotation = z_axis.rotation_difference(f.normal)
+        # M = rotation.to_matrix().to_4x4()
+
         # 基于edge，构造Matrix变换矩阵，用于瓦片的定位
         # https://blender.stackexchange.com/questions/177218/make-bone-roll-match-a-face-vertex-normal/177331#177331
         # 取面上第一条边（沿着坡面）
@@ -979,17 +864,26 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         x = y.cross(z)
         # 坐标系转置（行列互换，以复合blender的坐标系要求）
         M = Matrix((x, y, z)).transposed().to_4x4()
-        # 250116 按照网格长度缩放筒板瓦
+
+        # 构造矩阵的位移
+        M.translation = f.calc_center_median()
+        
+        # 构造矩阵的缩放
+        # 按照网格长度缩放筒板瓦
+        # 网格边长
+        cellLength = f.edges[dir_index].calc_length()
+        # 筒瓦边长
         tileLength = aData.circularTile_source.dimensions.y 
         tileLength = tileLength * bData.DK / con.DEFAULT_DK
-        cellLength = e.calc_length()
+        # 缩放比例
         scale_factor = cellLength/tileLength
+        # 在矩阵中添加缩放
         if direction=='X':
-            M = Matrix.Diagonal((1,scale_factor,1)).to_4x4() @ M
+            scale_matrix = Matrix.Scale(scale_factor, 4, (0, 1, 0))
+            M =  M @ scale_matrix
         else:
-            M = Matrix.Diagonal((scale_factor,1,1)).to_4x4() @ M
-        # 坐标系原点放在几何面的中心
-        M.translation = f.calc_center_median()
+            scale_matrix = Matrix.Scale(scale_factor, 4, (1, 0, 0))
+            M =  M @ scale_matrix
     
         # 250116 瓦片布在网格几何中心，
         # 并对齐筒瓦顶面，以避免卷棚顶筒瓦的间隙
@@ -1121,7 +1015,6 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
 
     # 隐藏辅助对象
     utils.hideObj(tile_bool_obj)
-    utils.hideObj(tileGrid)
 
     bpy.data.objects.remove(flatTile)
     bpy.data.objects.remove(circularTile)

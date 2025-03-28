@@ -2125,3 +2125,58 @@ def intersect_line_bezier(
         intersections_3d.append(intersection_3d)
 
     return intersections_3d
+
+# 沿着曲线尾部延长，不改变原曲线的形状
+def extend_bezier_curve_endpoint(curve_obj, extension_length):
+    if curve_obj.type != 'CURVE':
+        print("所选对象不是曲线。")
+        return
+
+    curve = curve_obj.data
+    spline = curve.splines[0]
+
+    if spline.type != 'BEZIER':
+        print("所选曲线不是贝塞尔曲线。")
+        return
+
+    # 获取曲线的最后一个控制点和其右手柄
+    last_point = spline.bezier_points[-1]
+    last_handle_left = last_point.handle_left
+
+    # 计算延长方向向量
+    direction = (last_point.co - last_handle_left).normalized()
+
+    # 计算新的控制点位置
+    new_point_co = last_point.co + direction * extension_length
+
+    # 在曲线末尾添加新的控制点
+    bpoints = spline.bezier_points
+    bpoints.add(1)
+    new_point = bpoints[-1]
+    
+    new_point.co = new_point_co
+    new_point.handle_left = last_point.co
+    last_point.handle_right = new_point.co
+    new_point.tilt = last_point.tilt
+
+# 45度镜像
+def mirror45(obj:bpy.types.Object,p):
+    # 创建一个 45 度旋转矩阵（绕 Z 轴）
+    rotation_matrix = Matrix.Rotation(math.radians(45), 4, 'Z')
+
+    # 将对象移动到原点，相对于 p 点
+    obj.location -= Vector(p)
+
+    # 应用旋转矩阵
+    obj.matrix_world = rotation_matrix @ obj.matrix_world
+
+    # 应用镜像变换（这里假设是 X 轴镜像）
+    mirror_matrix = Matrix.Scale(-1, 4, (1, 0, 0))
+    obj.matrix_world = mirror_matrix @ obj.matrix_world
+
+    # 再旋转 -45 度回到原来的角度
+    inverse_rotation_matrix = Matrix.Rotation(math.radians(-45), 4, 'Z')
+    obj.matrix_world = inverse_rotation_matrix @ obj.matrix_world
+
+    # 将对象移回原来相对于 p 点的位置
+    obj.location += Vector(p)

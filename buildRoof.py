@@ -1899,22 +1899,31 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
                             cfrCurve,
                             name=name,
                             singleUser=True)
+    flyrafterEaveObj.ACA_data['aca_obj'] = True
+    flyrafterEaveObj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_FLYRAFTER_EAVE
+
     # 绑定bevel
     eaveCurveData:bpy.types.Curve = flyrafterEaveObj.data
     eaveCurveData.bevel_mode = 'OBJECT'
     eaveCurveData.bevel_object = bevel_object
     # 控制分辨率
     eaveCurveData.resolution_u = 16
+    # 控制扭转方式
+    eaveCurveData.twist_mode = 'Z_UP'
     # 关闭平滑导致的法线不佳
     polyline = eaveCurveData.splines[0]
     polyline.use_smooth = False
-    
+
     # 延长终点相交
-    bpoints = eaveCurveData.splines[0].bezier_points
-    bpoints.add(1)
-    endpoint = bpoints[1].co + Vector((100*dk,0*dk,6*dk))
-    bpoints[2].co = endpoint
-    bpoints[2].handle_left = endpoint
+    utils.extend_bezier_curve_endpoint(flyrafterEaveObj,10*dk)
+    # 沿子角梁头裁剪
+    utils.addBisect(
+        object=flyrafterEaveObj,
+        pStart=Vector((0,0,0)),
+        pEnd=Vector((1,-1,0)),
+        pCut=bData.roof_qiao_point,
+        clear_outer=True,
+    )
     
     # Curve转为mesh
     utils.applyAllModifer(flyrafterEaveObj)
@@ -1969,7 +1978,7 @@ def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
     # Z向相当于Y向，向外半个大连檐+雀台
     offset = Vector((0,
                      con.DALIANYAN_H*dk/2, 
-                     con.DALIANYAN_Y*dk/2   # -con.QUETAI*dk  
+                     con.DALIANYAN_Y*dk/2  
                      ))
     offset.rotate(dlyObj.rotation_euler)
     pStart = pStart_center - offset
@@ -2007,6 +2016,8 @@ def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
                         name='翘飞椽定位线',
                         root_obj=rafterRootObj,
                     )
+    flyrafterCurve_obj.ACA_data['aca_obj'] = True
+    flyrafterCurve_obj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_FLYRAFTER_CURVE
     return flyrafterCurve_obj
 
 # 绘制一根翘飞椽

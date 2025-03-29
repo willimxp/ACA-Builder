@@ -2160,23 +2160,25 @@ def extend_bezier_curve_endpoint(curve_obj, extension_length):
     new_point.tilt = last_point.tilt
 
 # 45度镜像
-def mirror45(obj:bpy.types.Object,p):
-    # 创建一个 45 度旋转矩阵（绕 Z 轴）
-    rotation_matrix = Matrix.Rotation(math.radians(45), 4, 'Z')
+def mirror45(obj:bpy.types.Object,pivot):
+    # 定义枢轴点和对称轴向量
+    pivot = obj.matrix_world @ Vector(pivot)
+    axis = Vector((1, 1, 0)).normalized()
 
-    # 将对象移动到原点，相对于 p 点
-    obj.location -= Vector(p)
+    # 构建反射矩阵，只处理x和y轴方向
+    mirror_matrix = Matrix.Identity(4)
+    for i in range(2):
+        for j in range(2):
+            mirror_matrix[i][j] = 2 * axis[i] * axis[j]
+    for i in range(2):
+        mirror_matrix[i][i] -= 1
 
-    # 应用旋转矩阵
-    obj.matrix_world = rotation_matrix @ obj.matrix_world
+    # 考虑枢轴点的平移
+    translate_to_pivot = Matrix.Translation(pivot)
+    translate_back = Matrix.Translation(-pivot)
 
-    # 应用镜像变换（这里假设是 X 轴镜像）
-    mirror_matrix = Matrix.Scale(-1, 4, (1, 0, 0))
-    obj.matrix_world = mirror_matrix @ obj.matrix_world
+    # 组合矩阵
+    final_matrix = translate_to_pivot @ mirror_matrix @ translate_back
 
-    # 再旋转 -45 度回到原来的角度
-    inverse_rotation_matrix = Matrix.Rotation(math.radians(-45), 4, 'Z')
-    obj.matrix_world = inverse_rotation_matrix @ obj.matrix_world
-
-    # 将对象移回原来相对于 p 点的位置
-    obj.location += Vector(p)
+    # 应用镜像变换到对象
+    obj.matrix_world = final_matrix @ obj.matrix_world

@@ -426,15 +426,13 @@ def __drawEaveCurveByCCB(buildingObj:bpy.types.Object,
         utils.getAcaChild(buildingObj,
                           con.ACA_TYPE_RAFTER_DLY_LR)
         # 做45度镜像
-        pivot = (bData.x_total/2-bData.y_total/2,
-             -bData.x_total/2+bData.y_total/2,0)
+        pivot = (bData.x_total/2-bData.y_total/2,0,0)
         utils.mirror45(eaveCurve,pivot)
-        utils.focusObj(eaveCurve)
         # 应用变换
         utils.applyTransfrom(eaveCurve,
                              use_location=True,
                              use_rotation=True,
-                             use_scale=True)    
+                             use_scale=True)  
 
     # 重新构造大连檐上皮外沿的曲线
     # 不能简单的做位移，起点和终点的法线已经不同

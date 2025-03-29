@@ -1868,7 +1868,7 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     
-    name = '大连檐'
+    name = '大连檐.翼角'
     height = con.DALIANYAN_H*dk
     width = con.DALIANYAN_Y*dk
     
@@ -1916,12 +1916,13 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
 
     # 延长终点相交
     utils.extend_bezier_curve_endpoint(flyrafterEaveObj,10*dk)
+    pCut = flyrafterEaveObj.matrix_world @ bData.roof_qiao_point
     # 沿子角梁头裁剪
     utils.addBisect(
         object=flyrafterEaveObj,
         pStart=Vector((0,0,0)),
         pEnd=Vector((1,-1,0)),
-        pCut=bData.roof_qiao_point,
+        pCut=pCut,
         clear_outer=True,
     )
     

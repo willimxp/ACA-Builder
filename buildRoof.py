@@ -3241,21 +3241,7 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
                  + con.WANGBAN_H*dk
                  + con.ROOFMUD_H*dk
                 )
-        # 为了防止与排山勾滴穿模，向下调整一个筒瓦高度
-        if n > 1 :
-            tileHeight = (aData.circularTile_source.dimensions.z 
-                  * bData.DK 
-                  / con.DEFAULT_DK)
-            offsetZ -= tileHeight
         offset = Vector((0,0,offsetZ))
-        # 位移向量按各段椽架的斜率旋转
-        if n != 0:
-            purlinAngle = math.atan(
-                    (purlin_pos[n].z-purlin_pos[n-1].z)
-                    /(purlin_pos[n-1].y-purlin_pos[n].y)
-                )
-            purlinEular = Euler((-purlinAngle,0,0),'XYZ')
-            offset.rotate(purlinEular)
         point:Vector = purlin_pos[n]+offset
         point.x = ridge_x
         ridgeCurveVerts.append(point)

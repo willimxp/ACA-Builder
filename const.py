@@ -203,6 +203,7 @@ class ACA_Consts(object):
     DEFAULT_PILLER_HEIGHT = 0.8         # 默认柱高，取明间的0.8，马炳坚p4
     SANSHUI_WIDTH = 20                  # 散水宽度(DK)
     SANSHUI_HEIGHT = 0.02               # 散水高度(m)
+    TILE_CORNER_SPLIT = 1               # 硬山/悬山四角滴水间距(DK)
 
     # 瓦作类
     # 屋瓦灰背层高度，用于计算铺瓦的高度

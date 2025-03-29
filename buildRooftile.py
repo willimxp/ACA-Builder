@@ -275,6 +275,7 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
+    pd = bData.piller_diameter
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
@@ -319,9 +320,19 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     p1 += offset
     eaveCurveVerts.append(p1)
 
-    # 第2点：两山端点，直接做到purlin_pos
-    p2 = p1 + purlin_pos[1] * proj_v1
-    eaveCurveVerts.append(p2)
+    # 第2点：两山端点
+    # 为了与垂脊完美匹配，以垂脊线算法为依据，参考__drawFrontRidgeCurve
+    # 计算正脊长度
+    ridge_x = __getTopRidgeLength(buildingObj,purlin_pos)
+    # 计算一层瓦的投影长度(顺檐椽角度)
+    offset = Vector((bData.tile_length,0,0))
+    yanRafterObj:bpy.types.Object = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_RAFTER_FB)
+    offset.rotate(yanRafterObj.rotation_euler)
+    # 向外歪一瓦层，做端头盘子的八字转角
+    aside = offset.y
+    split = con.TILE_CORNER_SPLIT*dk
+    p2 = p1 + Vector((ridge_x+aside-split,0,0))
 
     # 绘制檐口线
     CurvePoints = utils.setEaveCurvePoint(p1,p2,direction)
@@ -1519,7 +1530,7 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
     ridgeCurveVerts = []
-    # 垂脊横坐标，向内一垄
+    # 垂脊横坐标，向内半垄
     ridge_x = purlin_pos[-1].x - bData.tile_width_real/2
     # 硬山建筑，向外移动一个山墙
     if bData.roof_style in (
@@ -1973,12 +1984,6 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     # 计算排布间隔，保证筒瓦坐中
     curveLength = sideRidgeCurve.data.splines[0].calc_length()
     # 实际勾头从曲线开头处让开一层瓦距
-    # arrayLength = (curveLength 
-    #                - bData.tile_length
-    #                - eaveTileWidth/2 
-    #                + bData.tile_width
-    #                )
-    # 20240604，为了让端头盘子与两侧紧密连接，不再做脚对脚对齐
     arrayLength = (curveLength 
                    - bData.tile_length
                    + bData.tile_width
@@ -2037,16 +2042,9 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     ))
     # 排山滴水位移
     dripTileObj.location += Vector((
-        # X方向（实际为Y方向），位移一个瓦层长，和半个勾头宽
-        # -bData.tile_length - eaveTileWidth/2 + bData.tile_width/2,
-        # 20240604，为了让端头盘子与两侧紧密连接，不再做脚对脚对齐
-        -bData.tile_length + bData.tile_width/2,
-        0,
-        # # Z方向（实际为X方向），位移（瓦垄宽-勾头宽）/2
-        # (bData.tile_width - eaveTileWidth)/2,
-        # 20240604，为了让端头盘子与两侧紧密连接，不再做脚对脚对齐
-        0,
-    ))
+        # X方向（实际为Y方向），位移半瓦宽，适当调整
+        - bData.tile_width/2 - con.TILE_CORNER_SPLIT*dk,
+        0,0))
     
     if bData.roof_style in (
             con.ROOF_XUANSHAN,

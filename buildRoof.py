@@ -361,8 +361,6 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                 use_axis=(True,True,False)
             )
 
-        
-
         # 8、卷棚顶的最后一个椽架上，再添加一层罗锅椽
         if (bData.roof_style in (
                 con.ROOF_XUANSHAN_JUANPENG,

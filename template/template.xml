@@ -416,7 +416,7 @@
 	</template>
 	<template>
 		<aca_type type="StringProperty">building</aca_type>
-		<template_name type="StringProperty">空台基</template_name>
+		<template_name type="StringProperty">空柱网</template_name>
 		<DK type="FloatProperty">0.08</DK>
 		<is_showPlatform type="BoolProperty">True</is_showPlatform>
 		<is_showPillers type="BoolProperty">True</is_showPillers>

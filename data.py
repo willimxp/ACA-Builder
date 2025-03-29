@@ -695,15 +695,17 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_roof,
             description="可以不做望板，更直观的查看屋顶结构",
         )# type: ignore 
-    qiqiao: bpy.props.IntProperty(
+    qiqiao: bpy.props.FloatProperty(
             name="起翘(椽径倍数)",
             default=4, 
+            min=0,
             update=update_roof,
             description="常做4椽起翘，也可以视情况适当增加",
         )# type: ignore 
-    chong: bpy.props.IntProperty(
+    chong: bpy.props.FloatProperty(
             name="出冲(椽径倍数)",
-            default=3, 
+            default=3,
+            min=0, 
             update=update_roof,
             description="常做3椽出冲，也可以视情况适当增加",
         )# type: ignore 

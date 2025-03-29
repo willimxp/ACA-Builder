@@ -51,7 +51,9 @@ def __arrayTile(
     # 垄距，以最宽的滴水瓦为参考
     colWidth = aData.dripTile_source.dimensions.x * tileScale
     # 取可以整数排布的垄距
-    colWidth = wallLength/math.floor(wallLength/colWidth)
+    col = math.floor(wallLength/colWidth)
+    if col == 0 : col = 1
+    colWidth = wallLength / col
     # 行距，以筒瓦长度为参考
     rowHeight = aData.circularTile_source.dimensions.y * tileScale
 
@@ -158,7 +160,9 @@ def buildSingleWall(
     # 垄距
     colWidth = aData.dripTile_source.dimensions.x * tileScale
     # 取可以整数排布的垄距
-    colWidth = wallLength / math.floor(wallLength/colWidth)
+    col = math.floor(wallLength/colWidth)
+    if col == 0 : col = 1
+    colWidth = wallLength / col
     
     # 3.1、滴水
     __arrayTile(
@@ -249,6 +253,8 @@ def buildSingleWall(
     ridgeWidth = ridgeObj.dimensions.x
     # 计算墙的长度，至少铺几片正脊
     count = math.floor(ridgeLength/ridgeWidth)
+    # count最小不能为0，否则导致异常
+    if count == 0 : count = 1
     # 每段平铺长度
     span = ridgeLength / count
     # 缩放墙檐宽度
@@ -285,6 +291,8 @@ def buildSingleWall(
     # 计算平铺
     # 计算墙的长度，至少铺几片墙檐
     count = math.floor(wallLength/walleaveWidth)
+    # count最小不能为0，否则导致异常
+    if count == 0 : count = 1
     # 每段平铺长度
     span = wallLength/count
     # 缩放墙檐宽度

@@ -764,6 +764,8 @@ def __setDgBoard(dgBoardObj:bpy.types.Object,
     totalLength += 0.001
     # 向下取整，宜疏不宜密（与builddougong.__buildDougong方法统一）
     count = math.floor(totalLength/bData.dg_gap)
+    # count最小不能为0，否则导致异常
+    if count == 0 : count = 1
     boardLength = totalLength/count
 
     # 在每攒斗栱之间摆放栱垫板

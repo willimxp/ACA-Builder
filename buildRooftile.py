@@ -547,6 +547,7 @@ def __getTileCols(buildingObj:bpy.types.Object,direction='X'):
 
     # 瓦垄数（完整的板瓦列数，包括居中的半列）
     tileCols = math.floor(roofWidth / tileWidth)
+    if tileCols == 0 : tileCols += 1
 
     return tileCols
 

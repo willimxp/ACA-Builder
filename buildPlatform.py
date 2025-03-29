@@ -510,6 +510,7 @@ def __drawStep(
     # 3、台阶（上基石、中基石，也叫踏跺心子）
     # 计算台阶数量，每个台阶不超过基石的最大高度（16cm）
     count = round(pHeight/con.STEP_HEIGHT)
+    if count == 0: count += 1
     stepHeight = (pHeight-con.GROUND_BORDER)/count
     stepDeepth = pDeepth/count
     brickObj = utils.addCube(

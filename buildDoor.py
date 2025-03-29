@@ -768,6 +768,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
                 name=part['name'],
                 root_obj=geshan_root,  # 挂接在柱网节点下
             )
+            mat.setMat(menzhouObj,aData.mat_red)
 
         # 设置材质
         partMat = None

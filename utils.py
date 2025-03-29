@@ -346,6 +346,16 @@ def applyTransfrom(ob,
     I = Matrix()
     loc, rot, scale = mb.decompose()
 
+    # 处理零缩放，将接近零的值替换为极小值
+    epsilon = 1e-8
+    new_scale = []
+    for s in scale:
+        if abs(s) < epsilon:
+            new_scale.append(epsilon)
+        else:
+            new_scale.append(s)
+    scale = tuple(new_scale)
+
     # rotation
     T = Matrix.Translation(loc)
     # R = mb.to_3x3().normalized().to_4x4()

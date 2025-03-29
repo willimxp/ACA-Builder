@@ -47,7 +47,7 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     zibianObj.scale = (
         scale.x - con.ZIBIAN_WIDTH*pd,
         scale.z - con.ZIBIAN_WIDTH*pd, # 旋转90度，原Zscale给Yscale
-        0)
+        1)
     # apply scale
     utils.applyTransfrom(zibianObj,use_rotation=True,use_scale=True)
     # 转换为Curve

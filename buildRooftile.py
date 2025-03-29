@@ -167,32 +167,33 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
-    
-    if direction == 'X':
-        sideCurve_name = "前后翼角坡线"
-        if bData.use_flyrafter:
-            dly_type = con.ACA_TYPE_RAFTER_DLY_FB
-        else:
-            dly_type = con.ACA_TYPE_RAFTER_LKM_FB
-        # 瓦口相对大连檐中心的偏移量
-        # 从大连檐中心位移到大连檐的上侧边，然后位移勾滴延伸
-        # 这里为大连檐坐标系，X为水平方向，Y为椽架垂直方向，Z为出檐方向
-        ex_eaveTile = Vector((con.EAVETILE_EX*dk,
-            con.DALIANYAN_H*dk/2,
-            -con.DALIANYAN_Y*dk/2-con.EAVETILE_EX*dk))
+
+    # 计算曲线控制点
+    sideCurveVerts = []
+
+    # p1点
+    # 250325 p1改为通过eaveCurve传送
+    eaveCurveData:bpy.types.Curve = eaveCurve.data
+    start_point = eaveCurveData.splines[0].bezier_points[0]
+    end_point = eaveCurveData.splines[0].bezier_points[-1]
+    p1= end_point.co+eaveCurve.location
+    sideCurveVerts.append(p1)
+
+    # 第3-5点，从举架定位点做偏移
+    # 庑殿、歇山按照冲三翘四的理论值计算（
+    if bData.roof_style in (
+        con.ROOF_WUDIAN,
+        con.ROOF_XIESHAN,
+        con.ROOF_XIESHAN_JUANPENG,
+        con.ROOF_LUDING,
+    ):
+        ex_chong = bData.chong * con.YUANCHUAN_D * dk
+        ex_qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
     else:
-        sideCurve_name = "两山翼角坡线"
-        if bData.use_flyrafter:
-            dly_type = con.ACA_TYPE_RAFTER_DLY_LR
-        else:
-            dly_type = con.ACA_TYPE_RAFTER_LKM_LR
-        ex_eaveTile = Vector((con.EAVETILE_EX*dk,
-            con.DALIANYAN_H*dk/2,
-            con.DALIANYAN_Y*dk/2+con.EAVETILE_EX*dk))
-    # 变化瓦口延伸到大连檐坐标系
-    dlyObj:bpy.types.Object = \
-        utils.getAcaChild(buildingObj,dly_type)
-    ex_eaveTile.rotate(dlyObj.rotation_euler)
+        ex_chong = 0
+        ex_qiqiao = 0
+    # XY方向冲出,Z方向起翘
+    offset_cq = Vector((ex_chong,ex_chong,ex_qiqiao))
 
     # 瓦片与椽架的间隙高度
     offset_rafter = (con.HENG_COMMON_D*dk /2 
@@ -202,93 +203,33 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     offsetZ = Vector((0,0,offset_rafter + offset_mud))
     # 简单的45度加斜
     offsetZ *= math.sqrt(2)
-
-    # 计算曲线控制点
-    sideCurveVerts = []
-    # 第1点：檐口线终点
-    # 硬山悬山
-    if bData.roof_style in (con.ROOF_XUANSHAN,
-                            con.ROOF_YINGSHAN,
-                            con.ROOF_YINGSHAN_JUANPENG,
-                            con.ROOF_XUANSHAN_JUANPENG):    
-        # 硬山和悬山铺瓦到大连檐外侧
-        # 大连檐的定位中，自动判断了硬山山墙延伸的需求
-        x = utils.getMeshDims(dlyObj).x / 2 
-        y = dlyObj.location.y
-        z = dlyObj.location.z
-        # 叠加瓦口勾滴延伸，与排山勾滴做45度对称
-        p1 = Vector((x,y,z))+ex_eaveTile
-        sideCurveVerts.append(p1)
-        # 第3-5点，从举架定位点做偏移
-        for n in range(len(purlin_pos)):
-            # 垂直偏移瓦作层高度：半桁+椽架+望板+灰泥层
-            point = purlin_pos[n] + offsetZ
-            # 对齐檐口横坐标
-            point.x = p1.x
-            sideCurveVerts.append(point)
-
-        # 计算曲线origin，在檐口
+        
+    for n in range(len(purlin_pos)):
+        # 盝顶只做到下金桁
+        if bData.roof_style == con.ROOF_LUDING:
+            if n >1:
+                continue
+        # 歇山的山面只做到金桁高度（踏脚木位置）
+        if (bData.roof_style in (con.ROOF_XIESHAN,
+                                    con.ROOF_XIESHAN_JUANPENG,)
+            and direction == 'Y' 
+            and n>1): 
+                continue
+        
         if direction == 'X':
-            ex_eaveTile = Vector((0,
-                con.DALIANYAN_H*dk/2,
-                -con.DALIANYAN_Y*dk/2 - con.EAVETILE_EX*dk))
+            # 与檐口P1点X向对齐
+            point = Vector((p1.x,purlin_pos[n].y,purlin_pos[n].z))
+            # 檐出、冲出、起翘,不做X方向
+            point += offset_cq * Vector((0,1,1))
         else:
-            ex_eaveTile = Vector((0,
-                con.DALIANYAN_H*dk/2,
-                con.DALIANYAN_Y*dk/2 + con.EAVETILE_EX*dk))
-        ex_eaveTile.rotate(dlyObj.rotation_euler)
-        originPoint = dlyObj.location + ex_eaveTile
+            # 与檐口P1点Y向对齐
+            point = Vector((purlin_pos[n].x,p1.y,purlin_pos[n].z))
+            # 檐出、冲出、起翘,不做Y方向
+            point += offset_cq * Vector((1,0,1))
 
-    # 庑殿、歇山按照冲三翘四的理论值计算（与子角梁解耦）
-    if bData.roof_style in (
-            con.ROOF_WUDIAN,
-            con.ROOF_XIESHAN,
-            con.ROOF_XIESHAN_JUANPENG,
-            con.ROOF_LUDING,
-        ):
-        # 250325 p1改为通过eaveCurve传送
-        eaveCurveData:bpy.types.Curve = eaveCurve.data
-        start_point = eaveCurveData.splines[0].bezier_points[0]
-        end_point = eaveCurveData.splines[0].bezier_points[-1]
-        p1= end_point.co+eaveCurve.location
-        sideCurveVerts.append(p1)
-
-        # 第3-5点，从举架定位点做偏移
-        ex_chong = bData.chong * con.YUANCHUAN_D * dk
-        ex_qiqiao = bData.qiqiao * con.YUANCHUAN_D * dk
-        for n in range(len(purlin_pos)):
-            # 盝顶只做到下金桁
-            if bData.roof_style == con.ROOF_LUDING:
-                if n >1:
-                    continue
-            # 歇山的山面只做到金桁高度（踏脚木位置）
-            if (bData.roof_style in (con.ROOF_XIESHAN,
-                                     con.ROOF_XIESHAN_JUANPENG,)
-                and direction == 'Y' 
-                and n>1): 
-                    continue
-            # XY方向冲出,Z方向起翘
-            offset_cq = Vector((ex_chong,ex_chong,ex_qiqiao))
-            if direction == 'X':
-                # 与檐口P1点X向对齐
-                point = Vector((p1.x,purlin_pos[n].y,purlin_pos[n].z))
-                # 与p1点相同，做瓦口延伸
-                point += ex_eaveTile*Vector((0,1,1))
-                # 檐出、冲出、起翘,不做X方向
-                point += offset_cq * Vector((0,1,1))
-            else:
-                # 与檐口P1点Y向对齐
-                point = Vector((purlin_pos[n].x,p1.y,purlin_pos[n].z))
-                # 与p1点相同，做瓦口延伸
-                point += ex_eaveTile*Vector((1,0,1))
-                # 檐出、冲出、起翘,不做Y方向
-                point += offset_cq * Vector((1,0,1))
-            # 垂直偏移瓦作层高度：半桁+椽架+望板+灰泥层
-            point += offsetZ
-            sideCurveVerts.append(point)
-
-        # 设置origin
-        originPoint = start_point.co+eaveCurve.location
+        # 垂直偏移瓦作层高度：半桁+椽架+望板+灰泥层
+        point += offsetZ
+        sideCurveVerts.append(point)   
 
     # 卷棚的前后坡，增加辅助点
     if (bData.roof_style in (
@@ -310,6 +251,10 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
         sideCurveVerts.append(p2)
 
     # 绘制翼角瓦垄线
+    if direction == 'X':
+        sideCurve_name = "前后翼角坡线"
+    else:
+        sideCurve_name = "两山翼角坡线"
     sideCurve = utils.addCurveByPoints(
             CurvePoints=sideCurveVerts,
             name=sideCurve_name,
@@ -317,6 +262,7 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
         )
     # 设置origin，与eave curve的origin重合，正身瓦口点
+    originPoint = start_point.co + eaveCurve.location
     utils.setOrigin(sideCurve,originPoint)
     utils.hideObj(sideCurve)
     return sideCurve
@@ -388,7 +334,6 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
 
     # 设置origin
     utils.setOrigin(eaveCurve,p1)
-
     utils.hideObj(eaveCurve)
     return eaveCurve
 
@@ -2248,10 +2193,6 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
             )
     utils.setOrigin(ridgeCurve,ridgeCurveVerts[0])
-
-    ridgeCurve.show_in_front = True
-    ridgeCurve.show_axis = True
-    ridgeCurve.data.bevel_depth = 0.03
     utils.hideObj(ridgeCurve)
     return ridgeCurve
 

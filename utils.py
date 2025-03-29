@@ -936,7 +936,7 @@ def addModifierBevel(object:bpy.types.Object,
                         name='Bevel',
                         type='OFFSET',
                         segments=1,
-                        clamp=True
+                        clamp=False
                       ):
     # 是否启用倒角
     preferences = bpy.context.preferences

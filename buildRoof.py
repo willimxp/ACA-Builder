@@ -3525,7 +3525,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         )
     utils.addModifierBevel(
         object=bofengObj,
-        width=con.BEVEL_LOW
+        width=con.BEVEL_HIGH
     )
 
     # 山花板

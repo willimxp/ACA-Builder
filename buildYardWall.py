@@ -173,7 +173,7 @@ def buildSingleWall(
                   wallHeight/2),
         rotation=(tileAngle,0,0),
         wallProxy=wallProxy,
-        arrayLength=wallLength-colWidth,)
+        arrayLength=wallLength-colWidth/2,)
 
     # 3.2、瓦当
     __arrayTile(
@@ -195,7 +195,7 @@ def buildSingleWall(
                   wallHeight/2),
         rotation=(tileAngle,0,0),
         wallProxy=wallProxy,
-        arrayLength=wallLength-colWidth,
+        arrayLength=wallLength-colWidth/2,
         arrayWidth=wallDeepth,)
 
     # 3.4、筒瓦

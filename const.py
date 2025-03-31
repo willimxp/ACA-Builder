@@ -165,8 +165,8 @@ class ACA_Consts(object):
     BEAM_DEPTH = 1.1        # 梁厚(PD)
     BOFENG_WIDTH = 1.2      # 博缝板厚(DK)
     BOFENG_HEIGHT = 8       # 博缝板高(DK)，实际并没有使用，而是在代码中进行了控制
-    BOFENG_OFFSET_XS = 3    # 博缝板下缘距离桁下皮的距离(DK)，歇山
-    BOFENG_OFFSET_YS = 6    # 博缝板下缘距离桁下皮的距离(DK)，硬山/悬山
+    BOFENG_OFFSET_XS = 6    # 博缝板下缘距离桁下皮的距离(DK)，歇山
+    BOFENG_OFFSET_YS = 10    # 博缝板下缘距离桁下皮的距离(DK)，硬山/悬山
     XYB_WIDTH = 0.99         # 象眼板/山花板厚(DK)，略微退让，避免与由额垫板打架
     JIAOBEI_WIDTH = 2       # 角背厚度(DK)
     GABELBEAM_HEIGHT = 6.5  # 趴梁高(DK),马炳坚p9
@@ -214,7 +214,7 @@ class ACA_Consts(object):
     SHANQIANG_WIDTH = 9     # 山墙厚度(DK)，即1.5柱径
     SHANQIANG_EX = 11       # 山墙墀头延伸(DK)，约1.8柱径
     TILE_HEIGHT = 0.04      # 瓦层高度(米)，预估值
-    JUANPENG_PUMP = 3       # 卷棚瓦作的囊(DK)，为了使屋顶更加圆润饱满
+    JUANPENG_PUMP = 4       # 卷棚瓦作的囊(DK)，为了使屋顶更加圆润饱满
     JUANPENG_POP = 4        # 卷棚瓦作向上的蓬起
 
     # 导角尺度(m)

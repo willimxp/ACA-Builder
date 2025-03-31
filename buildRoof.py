@@ -3495,6 +3495,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
              -(con.BOFENG_WIDTH*dk + con.XYB_WIDTH*dk)/2,
              -bofengHeight))
         shanhuaLoc = bofengCurve.location+offset
+
         # 2、复制博缝板资产
         shanhuaObj = utils.copyObject(
             sourceObj=aData.bofeng_source,
@@ -3503,6 +3504,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
             location=shanhuaLoc,
             singleUser=True
         )
+        
         # 3、调整尺寸，这里无法给出一个确切大小，暂时使用了一个极大的值
         # 后续做镜像的时候，会在Y轴进行合并
         # 山花拉伸高度，要保证能够在Y轴合并
@@ -3512,7 +3514,6 @@ def __buildBofeng(buildingObj: bpy.types.Object,
             shanhuaObj.dimensions.x,
             con.BOFENG_WIDTH*dk,
             shanhuaHeight)
-        
         
         # 4、添加curve变形
         modCurve : bpy.types.CurveModifier = \
@@ -3547,7 +3548,12 @@ def __buildBofeng(buildingObj: bpy.types.Object,
                 direction='V'
             )
         
-        # 7、将几何中心放在裁切点上，做为后续做山花材质时的定位参考
+        # 7、消除破面
+        modDecimate : bpy.types.DecimateModifier = \
+            shanhuaObj.modifiers.new('Decimate','DECIMATE')
+        modDecimate.ratio = 0.99
+        
+        # 8、将几何中心放在裁切点上，做为后续做山花材质时的定位参考
         utils.applyTransfrom(shanhuaObj,
                              use_location=True,
                              use_rotation=True,
@@ -3555,7 +3561,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         
         utils.setOrigin(shanhuaObj,cutPoint)
         
-        # 8、贴山花板贴材质
+        # 9、贴山花板贴材质
         mat.setMat(shanhuaObj,aData.mat_paint_shanhua,
                    override=True)
 

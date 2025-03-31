@@ -5,7 +5,7 @@
 import bpy
 import bmesh
 import math
-from mathutils import Vector,Matrix
+from mathutils import Vector,Matrix,Euler
 
 from . import utils
 from . import buildBeam
@@ -85,16 +85,15 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
 
     # 第3-5点，从举架定位点做偏移
     # 从桁檩中点向上位移:半桁径+椽径+望板高+灰泥层高
-    offset_rafter =  (con.HENG_COMMON_D*dk/2 
-                        + con.YUANCHUAN_D*dk 
-                        + con.WANGBAN_H*dk)
-    offset_mud = con.ROOFMUD_H*dk
-    offsetZ = Vector((0, 0, offset_rafter + offset_mud))
-    # 简单的做45度加斜
-    # 这里曾经按照椽架斜率方向抬升，但导致瓦面在正脊处不闭合，所以只做了Z方向的位移
-    offsetZ *= math.sqrt(2)
+    offset =  (con.HENG_COMMON_D*dk/2 
+                + con.YUANCHUAN_D*dk 
+                + con.WANGBAN_H*dk
+                + con.ROOFMUD_H*dk)
+    # 从桁檩中心，按法线方向提升
+    tile_pos = utils.push_purlinPos(purlin_pos, 
+                        -offset, direction)
 
-    for n in range(len(purlin_pos)):
+    for n in range(len(tile_pos)):
         # 盝顶只做到下金桁
         if bData.roof_style == con.ROOF_LUDING:
             if n >1:
@@ -105,13 +104,7 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
             and direction == 'Y' 
             and n>1): 
                 continue
-        
-        if direction == 'X':
-            proj_v = Vector((0,1,1))
-        else:
-            proj_v = Vector((1,0,1))
-        point = purlin_pos[n]*proj_v + offsetZ
-        tileCurveVerts.append(point)
+        tileCurveVerts.append(tile_pos[n])
 
     # 卷棚的前后坡，增加辅助点
     if (bData.roof_style in (
@@ -126,11 +119,9 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
                 con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
         # 2、添加正脊位置的原点
+        p1 = tile_pos[-1].z * Vector((0,0,1))
         # Y=0时，抬升1椽径，见马炳坚p20
-        p1 = Vector((0, 0,
-            purlin_pos[-1].z + con.YUANCHUAN_D*dk))
-        # 向上位移:半桁径+椽径+望板高+灰泥层高
-        p1 += offsetZ
+        p1 += Vector((0,0,con.YUANCHUAN_D*dk))
         tileCurveVerts.append(p1)
         # 3、添加一个延伸点
         # 添加一个瓦片重合距离
@@ -196,15 +187,15 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     offset_cq = Vector((ex_chong,ex_chong,ex_qiqiao))
 
     # 瓦片与椽架的间隙高度
-    offset_rafter = (con.HENG_COMMON_D*dk /2 
+    offset = (con.HENG_COMMON_D*dk /2 
                     + con.YUANCHUAN_D*dk 
-                    + con.WANGBAN_H*dk)
-    offset_mud = con.ROOFMUD_H*dk
-    offsetZ = Vector((0,0,offset_rafter + offset_mud))
-    # 简单的45度加斜
-    offsetZ *= math.sqrt(2)
+                    + con.WANGBAN_H*dk
+                    + con.ROOFMUD_H*dk)
+    # 从桁檩中心，按法线方向提升
+    tile_pos = utils.push_purlinPos(purlin_pos, 
+                        -offset, direction)
         
-    for n in range(len(purlin_pos)):
+    for n in range(len(tile_pos)):
         # 盝顶只做到下金桁
         if bData.roof_style == con.ROOF_LUDING:
             if n >1:
@@ -218,17 +209,15 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
         
         if direction == 'X':
             # 与檐口P1点X向对齐
-            point = Vector((p1.x,purlin_pos[n].y,purlin_pos[n].z))
+            point = Vector((p1.x,tile_pos[n].y,tile_pos[n].z))
             # 檐出、冲出、起翘,不做X方向
             point += offset_cq * Vector((0,1,1))
         else:
             # 与檐口P1点Y向对齐
-            point = Vector((purlin_pos[n].x,p1.y,purlin_pos[n].z))
+            point = Vector((tile_pos[n].x,p1.y,tile_pos[n].z))
             # 檐出、冲出、起翘,不做Y方向
             point += offset_cq * Vector((1,0,1))
 
-        # 垂直偏移瓦作层高度：半桁+椽架+望板+灰泥层
-        point += offsetZ
         sideCurveVerts.append(point)   
 
     # 卷棚的前后坡，增加辅助点
@@ -245,8 +234,11 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
         # 2、 添加正脊位置的原点
         # 241206 简单的把卷棚的中心点从上一个囊点延伸到Y=0的位置
         p1 = sideCurveVerts[-1] * Vector((1,0,1))
+        # Y=0时，抬升1椽径，见马炳坚p20
+        p1 += Vector((0,0,con.YUANCHUAN_D*dk))
         sideCurveVerts.append(p1)
         # 3、添加一个延伸点
+        # 添加一个瓦片重合距离
         p2 = p1 + Vector((0,-con.JUANPENG_OVERLAP*dk,0))
         sideCurveVerts.append(p2)
 
@@ -1444,11 +1436,16 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
         ridgeCurveVerts.append(curve_p2)
 
     # Pn: 从举架定位点做偏移（歇山、硬山、悬山相同）
-    for n in range(len(purlin_pos)):
-        # 向上位移:半桁径+椽径+望板高+灰泥层高
-        offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
-                  + con.WANGBAN_H + con.ROOFMUD_H)*dk
-        point:Vector = purlin_pos[n]+Vector((0,0,offset))
+    # 从桁檩中点向上位移:半桁径+椽径+望板高+灰泥层高
+    offset =  (con.HENG_COMMON_D*dk/2 
+                + con.YUANCHUAN_D*dk 
+                + con.WANGBAN_H*dk
+                + con.ROOFMUD_H*dk
+                - con.RIDGE_OFFSET*dk)
+    # 从桁檩中心，按法线方向提升
+    tile_pos = utils.push_purlinPos(purlin_pos,-offset)
+    for n in range(len(tile_pos)):
+        point:Vector = tile_pos[n]
         point.x = ridge_x
         ridgeCurveVerts.append(point)
 
@@ -1463,18 +1460,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
         # Y=0时，抬升1椽径，见马炳坚p20
         p1 = Vector((ridge_x,
             0,
-            purlin_pos[-1].z + con.YUANCHUAN_D*dk))
-        # 向上位移:半桁径+椽径+望板高+灰泥层高
-        offset = Vector(
-                            (0,0,
-                                (con.HENG_COMMON_D/2 
-                                    + con.YUANCHUAN_D 
-                                    + con.WANGBAN_H 
-                                    + con.ROOFMUD_H
-                                )*dk
-                            )
-                        )
-        p1 += offset
+            tile_pos[-1].z + con.YUANCHUAN_D*dk))
         ridgeCurveVerts.append(p1)
         p2 = p1 + Vector((0,-con.JUANPENG_OVERLAP*dk,0))
         ridgeCurveVerts.append(p2)
@@ -1558,12 +1544,17 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
         ridgeCurveVerts.append(curve_p1)
 
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
+    # 从桁檩中点向上位移:半桁径+椽径+望板高+灰泥层高
+    offset =  (con.HENG_COMMON_D*dk/2 
+                + con.YUANCHUAN_D*dk 
+                + con.WANGBAN_H*dk
+                + con.ROOFMUD_H*dk
+                - con.RIDGE_OFFSET*dk)
+    # 从桁檩中心，按法线方向提升
+    tile_pos = utils.push_purlinPos(purlin_pos, -offset)
     # 从举架定位点做偏移
-    for n in range(len(purlin_pos)):
-        # 向上位移:半桁径+椽径+望板高+灰泥层高
-        offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
-                  + con.WANGBAN_H + con.ROOFMUD_H)*dk
-        point:Vector = purlin_pos[n]+Vector((0,0,offset))
+    for n in range(len(tile_pos)):
+        point:Vector = tile_pos[n]
         point.x = ridge_x        
         ridgeCurveVerts.append(point)
     
@@ -1578,18 +1569,7 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
         # Y=0时，抬升1椽径，见马炳坚p20
         p1 = Vector((ridge_x,
             0,
-            purlin_pos[-1].z + con.YUANCHUAN_D*dk))
-        # 向上位移:半桁径+椽径+望板高+灰泥层高
-        offset = Vector(
-                            (0,0,
-                                (con.HENG_COMMON_D/2 
-                                    + con.YUANCHUAN_D 
-                                    + con.WANGBAN_H 
-                                    + con.ROOFMUD_H
-                                )*dk
-                            )
-                        )
-        p1 += offset
+            tile_pos[-1].z + con.YUANCHUAN_D*dk))
         ridgeCurveVerts.append(p1)
     
     # 创建瓦垄曲线

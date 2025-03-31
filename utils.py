@@ -2192,3 +2192,51 @@ def mirror45(obj:bpy.types.Object,pivot):
 
     # 应用镜像变换到对象
     obj.matrix_world = final_matrix @ obj.matrix_world
+
+# 抬升桁檩高度，以法线方向计算
+def push_purlinPos(purlinPos, L,direction='X'):
+    # 将3d空间中的purlinPos转换到2d投影面上
+    p = []
+    for point in purlinPos:
+        if direction == 'X':
+            p.append((point.y,point.z))
+        else:
+            p.append((point.x,point.z))
+             
+    def get_normal_vector(x1, y1, x2, y2):
+        dx = x2 - x1
+        dy = y2 - y1
+        length = math.sqrt(dx ** 2 + dy ** 2)
+        # 计算法向量
+        normal_dx = -dy / length
+        normal_dy = dx / length
+        return normal_dx, normal_dy
+
+    # 从第一点开始，按照法线方向抬升
+    new_p = []
+    for i in range(len(p) - 1):
+        x1, y1 = p[i]
+        x2, y2 = p[i+1]
+        normal_dx, normal_dy = get_normal_vector(x1, y1, x2, y2)
+        # 计算新点的坐标
+        new_x1 = x1 + L * normal_dx
+        new_y1 = y1 + L * normal_dy
+        new_p.append((new_x1, new_y1))
+
+    # 添加最后一个点，对齐到y=0的位置
+    x, y = p[-1]
+    prev_x, prev_y = p[-2]
+    prev_new_x, prev_new_y = new_p[-1]
+    slope = (y - prev_y) / (x - prev_x)
+    new_y = prev_new_y + slope * (x - prev_new_x)
+    new_p.append((x, new_y))
+
+    # 将2d坐标转换到3d空间
+    p3d = []
+    for p in new_p:
+        if direction == 'X':
+            p3d.append(Vector((0,p[0], p[1])))
+        else:
+            p3d.append(Vector((p[0], 0, p[1])))
+
+    return p3d

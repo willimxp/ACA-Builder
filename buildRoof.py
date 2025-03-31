@@ -204,19 +204,24 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)  
-    
+    # 各层椽架命名
     rafterNames = __getRafterName(len(purlin_pos))
+    # 从桁檩中点向上位移:半桁径+椽径+望板高+灰泥层高
+    offset =  (con.HENG_COMMON_D*dk/2 
+                + con.YUANCHUAN_D*dk/2)
+    # 按法线方向提升
+    rafter_pos = utils.push_purlinPos(
+                    purlin_pos, -offset, 'X')
+    
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
         # 1.逐层定位椽子，直接连接上下层的桁檩(槫子)
-        # 前后檐椽从X=0的中心平铺，并做四方镜像        
-        rafter_end = purlin_pos[n] * Vector((0,1,1))
-        rafter_start = purlin_pos[n+1] * Vector((0,1,1))
+        # 前后檐椽从X=0的中心平铺，并做四方镜像
         # 椽当居中，将桁交点投影到X=0椽子偏移半椽（真实的半椽，不做椽当取整计算）
         # 从中线开始，坐中椽当计半椽，椽子中线计半椽，合计偏移1椽径
         rafter_offset = Vector((con.YUANCHUAN_D*dk,0,0))
-        rafter_end += rafter_offset
-        rafter_start += rafter_offset
+        rafter_end = rafter_pos[n] + rafter_offset
+        rafter_start = rafter_pos[n+1] + rafter_offset
         # 根据起始点创建椽子
         fbRafterObj = utils.addCylinderBy2Points(
             radius = con.YUANCHUAN_D/2*dk,
@@ -225,12 +230,6 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             name="前后檐.%d-%s" % (n+1,rafterNames[n]),
             root_obj = rafterRootObj
         )
-        
-        # 2. 各层椽子都上移，与桁檩上皮相切
-        bpy.ops.transform.translate(
-            value = (0,0,(con.HENG_COMMON_D+con.YUANCHUAN_D)*dk/2),
-            orient_type = con.OFFSET_ORIENTATION
-        )  
         
         # 3. 仅檐椽延长，按檐总平出加斜计算
         if n == 0:
@@ -259,8 +258,9 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             tympanumRafter.ACA_data['aca_type'] = ''
             # 重设檐椽平铺宽度
             rafter_tile_x = purlin_pos[-1].x - con.YUANCHUAN_D*dk/2
+            # 计算椽当(统一按照下金桁宽度计算)
             rafter_gap_x = __getRafterGap(buildingObj,purlin_pos[1].x)
-            rafterCount = math.floor((rafter_tile_x-con.YUANCHUAN_D*dk)/rafter_gap_x) + 1
+            rafterCount = round(rafter_tile_x/rafter_gap_x) + 1
             utils.addModifierArray(
                 object=tympanumRafter,
                 count=rafterCount,
@@ -444,18 +444,25 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
     dk = bData.DK
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
-        
-    
+    # 各层椽架命名
     rafterNames = __getRafterName(len(purlin_pos))
+    # 从桁檩中点向上位移:半桁径+椽径+望板高+灰泥层高
+    offset =  (con.HENG_COMMON_D*dk/2 
+                + con.YUANCHUAN_D*dk/2)
+    # 按法线方向提升
+    rafter_pos = utils.push_purlinPos(
+                    purlin_pos, -offset, 'Y')
+
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
         if bData.roof_style in (con.ROOF_XIESHAN,
                                 con.ROOF_XIESHAN_JUANPENG): 
             if n > 0: continue  # 歇山山面仅做一层椽架
         # 1.逐层定位椽子，直接连接上下层的桁檩(槫子)
+        # 椽当坐中，空出一椽径
         rafter_offset = Vector((0,con.YUANCHUAN_D*dk,0))
-        rafter_end = purlin_pos[n]*Vector((1,0,1))+rafter_offset
-        rafter_start = purlin_pos[n+1]*Vector((1,0,1))+rafter_offset
+        rafter_end = rafter_pos[n] + rafter_offset
+        rafter_start = rafter_pos[n+1] +rafter_offset
         lrRafterObj = utils.addCylinderBy2Points(
             radius = con.YUANCHUAN_D/2*dk,
             start_point = rafter_start,
@@ -463,11 +470,6 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
             name="两山.%d-%s" % (n+1,rafterNames[n]),
             root_obj = rafterRootObj
         )
-        # 上移，与桁檩上皮相切
-        bpy.ops.transform.translate(
-            value = (0,0,(con.HENG_COMMON_D+con.YUANCHUAN_D)*dk/2),
-            orient_type = con.OFFSET_ORIENTATION # GLOBAL/LOCAL ?
-        )   
         
         # 檐面和山面的檐椽延长，按檐总平出加斜计算
         if n == 0:
@@ -490,9 +492,9 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
         else:
             # 檐椽平铺到上层桁交点
             rafter_tile_y = purlin_pos[n+1].y    
-        # 计算山面椽当
+        # 计算椽当(统一按照下金桁宽度计算)
         rafter_gap_y = __getRafterGap(buildingObj,
-            rafter_tile_y)    
+            purlin_pos[1].y )    
         utils.addModifierArray(
             object=lrRafterObj,
             count=round(rafter_tile_y /rafter_gap_y)+1,
@@ -3233,16 +3235,18 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
     ridgeCurveVerts.append(curve_p1)
 
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
+    # 从桁檩中点向上位移:半桁径+椽径+望板高+灰泥层高
+    offset =  (con.HENG_COMMON_D*dk/2 
+                + con.YUANCHUAN_D*dk 
+                + con.WANGBAN_H*dk
+                + con.ROOFMUD_H*dk
+                - con.RIDGE_OFFSET*dk)
+    # 从桁檩中心，按法线方向提升
+    tile_pos = utils.push_purlinPos(purlin_pos,-offset)
+
     # 从举架定位点做偏移
     for n in range(len(purlin_pos)):
-        # 向上位移:半桁径+椽径+望板高+灰泥层高
-        offsetZ = (con.HENG_COMMON_D/2*dk
-                 + con.YUANCHUAN_D*dk 
-                 + con.WANGBAN_H*dk
-                 + con.ROOFMUD_H*dk
-                )
-        offset = Vector((0,0,offsetZ))
-        point:Vector = purlin_pos[n]+offset
+        point:Vector = tile_pos[n]
         point.x = ridge_x
         ridgeCurveVerts.append(point)
     
@@ -3257,18 +3261,7 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
         # Y=0时，抬升1椽径，见马炳坚p20
         p1 = Vector((ridge_x,
             0,
-            purlin_pos[-1].z + con.YUANCHUAN_D*dk))
-        # 向上位移:半桁径+椽径+望板高+灰泥层高
-        offset = Vector(
-                            (0,0,
-                                (con.HENG_COMMON_D/2 
-                                    + con.YUANCHUAN_D 
-                                    + con.WANGBAN_H 
-                                    + con.ROOFMUD_H
-                                )*dk
-                            )
-                        )
-        p1 += offset
+            tile_pos[-1].z + con.YUANCHUAN_D*dk))
         ridgeCurveVerts.append(p1)
 
     # 创建博缝板曲线

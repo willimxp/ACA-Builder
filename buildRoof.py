@@ -689,6 +689,30 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
     # 收集待合并的望板
     wangbanObjs = []
 
+    # 从桁檩中点向上位移:半桁径+椽径+半望板
+    offset =  (con.HENG_COMMON_D*dk/2 
+                + con.YUANCHUAN_D*dk
+                + con.WANGBAN_H*dk/2)
+    # 按法线方向提升
+    wangban_pos = utils.push_purlinPos(
+                    purlin_pos, -offset, 'Y')
+    
+    # 歇山的山面坐标需要根据檐面矫正，否则会产生极大的错误
+    if bData.roof_style in (
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG):
+        purlinPosNew = []
+        for p in purlin_pos:
+            # 从前后檐面的y坐标，45度对称到两山
+            px = p.y + (bData.x_total - bData.y_total)/2
+            purlinPosNew.append(Vector((
+                px,p.y,p.z)))
+        wangban_pos = utils.push_purlinPos(
+                        purlinPosNew, -offset, 'Y')
+    else:
+        wangban_pos = utils.push_purlinPos(
+                        purlin_pos, -offset, 'Y')
+
     # 望板只做1象限半幅，然后镜像
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
@@ -703,10 +727,10 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
         else: # 其他椽架平铺到下层桁交点，然后切割
             width = purlin_pos[n].y
         # 起点在上层桁檩
-        pstart = purlin_pos[n+1].copy()
+        pstart = wangban_pos[n+1].copy()
         pstart.y = width/2
         # 终点在本层桁檩
-        pend = purlin_pos[n].copy()
+        pend = wangban_pos[n].copy()
         pend.y = width/2
         # 摆放望板
         wangbanObj = utils.addCubeBy2Points(
@@ -735,20 +759,6 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
             # 加斜计算
             wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True)
-
-        # 所有望板上移，与椽架上皮相切（从桁檩中心偏：半桁檩+1椽径+半望板）
-        # 1. 上移到椽头，采用global坐标，半檩+半椽
-        offset = con.HENG_COMMON_D/2*dk+con.YUANCHUAN_D/2*dk
-        bpy.ops.transform.translate(
-            value = (0,0,offset),
-            orient_type = con.OFFSET_ORIENTATION
-        )
-        # 2. 上移到望板高度，采用local坐标，半椽+半望
-        offset = con.WANGBAN_H/2*dk + con.YUANCHUAN_D/2*dk
-        bpy.ops.transform.translate(
-            value = (0,0,offset),
-            orient_type = 'LOCAL'
-        )
 
         # 仅庑殿需要裁剪望板
         if bData.roof_style == con.ROOF_WUDIAN:

@@ -2214,7 +2214,7 @@ def push_purlinPos(purlinPos, L,direction='X'):
 
     # 从第一点开始，按照法线方向抬升
     new_p = []
-    for i in range(len(p) - 1):
+    for i in range(len(p)-1):
         x1, y1 = p[i]
         x2, y2 = p[i+1]
         normal_dx, normal_dy = get_normal_vector(x1, y1, x2, y2)
@@ -2223,18 +2223,26 @@ def push_purlinPos(purlinPos, L,direction='X'):
         new_y1 = y1 + L * normal_dy
         new_p.append((new_x1, new_y1))
 
-    # 添加最后一个点，对齐到y=0的位置
-    x, y = p[-1]
-    prev_x, prev_y = p[-2]
-    prev_new_x, prev_new_y = new_p[-1]
-    slope = (y - prev_y) / (x - prev_x) if (x - prev_x) != 0 else float('inf')
-    if slope != float('inf'):
-        # 根据斜率和对齐的x坐标，计算新的y坐标
-        new_y = prev_new_y + slope * (x - prev_new_x)
+    # 卷棚最后一点仍按最后一段斜率处理
+    if abs(p[-1][0]) > 1e-6:
+        x, y = p[-1]
+        new_x = x + L * normal_dx
+        new_y = y + L * normal_dy
+        new_p.append((new_x, new_y))
+    # 非卷棚，在正脊和龙
     else:
-        # 处理垂直情况
-        new_y = prev_new_y
-    new_p.append((x, new_y))
+        # 添加最后一个点，对齐到y=0的位置
+        x, y = p[-1]
+        prev_x, prev_y = p[-2]
+        prev_new_x, prev_new_y = new_p[-1]
+        slope = (y - prev_y) / (x - prev_x) if (x - prev_x) != 0 else float('inf')
+        if slope != float('inf'):
+            # 根据斜率和对齐的x坐标，计算新的y坐标
+            new_y = prev_new_y + slope * (x - prev_new_x)
+        else:
+            # 处理垂直情况
+            new_y = prev_new_y
+        new_p.append((x, new_y))
 
     # 将2d坐标转换到3d空间
     p3d = []

@@ -374,11 +374,11 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             # p2点为罗锅椽的屋脊高度
             p2 = p1 + Vector((
                 0,
-                -purlin_pos[-1].y/2,   # 回退一半
+                -rafter_pos[-1].y/2,   # 回退一半
                 con.YUANCHUAN_D*dk  # 抬升1椽径，见马炳坚p20
             ))
             # p3再回退一半
-            p3 = p2 + Vector((0,-purlin_pos[-1].y/2,0))
+            p3 = p2 + Vector((0,-rafter_pos[-1].y/2,0))
             # 三点生成曲线
             curveRafter:bpy.types.Object = \
                 utils.addCurveByPoints(
@@ -647,11 +647,11 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             # p2点为罗锅椽的屋脊高度
             p2 = p1 + Vector((
                 0,
-                -purlin_pos[-1].y/2,   # 回退一半
-                con.YUANCHUAN_D*dk  # 抬升1椽径，见马炳坚p20
+                -wangban_pos[-1].y/2,   # 回退一半
+                con.YUANCHUAN_D*dk+ con.WANGBAN_H*dk/2  # 抬升1椽径，见马炳坚p20
             ))
             # p3点再退一半，最终回到y=0的位置
-            p3 = p2 + Vector((0,-purlin_pos[-1].y/2,0))
+            p3 = p2 + Vector((0,-wangban_pos[-1].y/2,0))
             # 三点生成曲线
             wangbanJuanpeng:bpy.types.Object = \
                 utils.addCurveByPoints(

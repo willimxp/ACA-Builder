@@ -369,51 +369,28 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                 con.ROOF_YINGSHAN_JUANPENG,
                 con.ROOF_XIESHAN_JUANPENG,)
             and n==len(purlin_pos)-2):
-            # p0点从上金桁檩开始（投影到X中心）
-            p0 = purlin_pos[n] * Vector((0,1,1))
-            # p1点从脊檩开始（投影到X中心）
-            p1 = purlin_pos[n+1] * Vector((0,1,1))
+            # p1点从脊檩开始
+            p1 = rafter_pos[-1]
             # p2点为罗锅椽的屋脊高度
             p2 = p1 + Vector((
                 0,
-                -purlin_pos[n+1].y,   # 回归到y=0的位置
+                -purlin_pos[-1].y/2,   # 回退一半
                 con.YUANCHUAN_D*dk  # 抬升1椽径，见马炳坚p20
             ))
-            # p3点是为了控制罗锅椽的曲率，没有理论依据，我觉得好看就行
-            p3 = p2 + Vector((0,-con.HENG_COMMON_D*dk,0))
-            # 四点生成曲线
+            # p3再回退一半
+            p3 = p2 + Vector((0,-purlin_pos[-1].y/2,0))
+            # 三点生成曲线
             curveRafter:bpy.types.Object = \
                 utils.addCurveByPoints(
-                    CurvePoints=(p0,p1,p2,p3),
+                    CurvePoints=(p1,p2,p3),
                     name='罗锅椽',
                     root_obj=rafterRootObj)
+            # 椽当坐中
+            curveRafter.location.x += con.YUANCHUAN_D*dk
             # 设置曲线的椽径（半径）
             curveRafter.data.bevel_depth = con.YUANCHUAN_D*dk/2
-            # 调整定位
-            rafter_offset = Vector((
-                rafter_gap_x/2,     # 椽当坐中
-                0,
-                (con.HENG_COMMON_D*dk/2
-                    +con.YUANCHUAN_D*dk*1.1))   # 桁檩相切，因为曲线弯曲后，略作了调整
-            )
-            curveRafter.location += rafter_offset
-            # 裁剪掉尾部
-            '''为了罗锅椽能与脑椽紧密相连，所以曲线延长到了脑椽上
-            最后把这个部分再裁剪掉'''
-            # 裁剪点置于桁檩上皮（转到全局坐标）
-            pCut = (rafterRootObj.matrix_world @ 
-                    purlin_pos[n+1]
-                    +Vector((0,0,con.HENG_COMMON_D*dk/2)))
-            pStart = rafterRootObj.matrix_world @ Vector((0,0,0))
-            pEnd = rafterRootObj.matrix_world @ Vector((0,1,1))
-            utils.addBisect(
-                object=curveRafter,
-                pStart=pStart,
-                pEnd=pEnd,   #近似按45度斜切，其实有误差
-                pCut=pCut,
-                clear_inner=True,
-                direction='Y'
-            )            
+            # 曲线平滑
+            curveRafter.data.bevel_resolution = 5
             # 平铺数据利用前后坡椽架数据，不重新计算
             utils.addModifierArray(
                 object=curveRafter,

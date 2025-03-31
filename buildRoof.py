@@ -3228,6 +3228,11 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
             0,
             tile_pos[-1].z + con.YUANCHUAN_D*dk))
         ridgeCurveVerts.append(p1)
+        # 追加一个延伸点，让博缝板在顶部的曲线更加平滑
+        p2 = p1 + Vector((0,
+            -bData.y_total,
+            0))
+        ridgeCurveVerts.append(p2)
 
     # 创建博缝板曲线
     ridgeCurve = utils.addCurveByPoints(
@@ -3235,6 +3240,7 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
             name="博缝板曲线",
             root_obj=rafterRootObj,
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
+            resolution=16
             )
     utils.setOrigin(ridgeCurve,ridgeCurveVerts[0])
     utils.hideObj(ridgeCurve)

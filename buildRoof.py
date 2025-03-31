@@ -256,11 +256,13 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             tympanumRafter.name = '山花补齐檐椽'
             bpy.context.collection.objects.link(tympanumRafter)
             tympanumRafter.ACA_data['aca_type'] = ''
-            # 重设檐椽平铺宽度
+            # 重设檐椽平铺宽度（避免与博缝板穿模，减半椽）
             rafter_tile_x = purlin_pos[-1].x - con.YUANCHUAN_D*dk/2
             # 计算椽当(统一按照下金桁宽度计算)
             rafter_gap_x = __getRafterGap(buildingObj,purlin_pos[1].x)
-            rafterCount = round(rafter_tile_x/rafter_gap_x) + 1
+            # 计算椽子数量时，从平铺宽度上扣除半椽坐中椽当，扣除半椽外侧椽径，合计一椽
+            countWidth = rafter_tile_x-con.YUANCHUAN_D*dk
+            rafterCount = math.floor(countWidth/rafter_gap_x) + 1
             utils.addModifierArray(
                 object=tympanumRafter,
                 count=rafterCount,
@@ -295,13 +297,13 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING):
+            # 檐椽做到下金桁(起翘点)
             if n==0:
                 rafter_tile_x = purlin_pos[n+1].x
+            # 花架椽和脊椽做到山花板
             else:
-                # 歇山的花架椽与博缝板相邻，减半椽
-                rafter_tile_x = (
-                    purlin_pos[-1].x
-                    - con.YUANCHUAN_D*dk/2)
+                # 避免与博缝板穿模，减半椽
+                rafter_tile_x = purlin_pos[-1].x - con.YUANCHUAN_D*dk/2
         # 硬山的椽架只做到山柱中线，避免与山墙打架
         elif bData.roof_style in (
                 con.ROOF_YINGSHAN,

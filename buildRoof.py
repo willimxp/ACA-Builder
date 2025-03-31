@@ -3214,8 +3214,7 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
     offset =  (con.HENG_COMMON_D*dk/2 
                 + con.YUANCHUAN_D*dk 
                 + con.WANGBAN_H*dk
-                + con.ROOFMUD_H*dk
-                - con.RIDGE_OFFSET*dk)
+                + con.ROOFMUD_H*dk)
     # 从桁檩中心，按法线方向提升
     tile_pos = utils.push_purlinPos(purlin_pos,-offset)
 
@@ -3232,16 +3231,16 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
             con.ROOF_XIESHAN_JUANPENG,):
         ridgeCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
-                con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
+                0))
+        JuanSpan = ridgeCurveVerts[-1].y
         # Y=0时，抬升1椽径，见马炳坚p20
-        p1 = Vector((ridge_x,
-            0,
-            tile_pos[-1].z + con.YUANCHUAN_D*dk))
+        p1 = ridgeCurveVerts[-1] + Vector((
+                0,
+                -JuanSpan/2,
+                con.JUANPENG_POP*dk))
         ridgeCurveVerts.append(p1)
         # 追加一个延伸点，让博缝板在顶部的曲线更加平滑
-        p2 = p1 + Vector((0,
-            -bData.y_total,
-            0))
+        p2 = p1 + Vector((0,-JuanSpan/2,0))
         ridgeCurveVerts.append(p2)
 
     # 创建博缝板曲线

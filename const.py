@@ -214,9 +214,8 @@ class ACA_Consts(object):
     SHANQIANG_WIDTH = 9     # 山墙厚度(DK)，即1.5柱径
     SHANQIANG_EX = 11       # 山墙墀头延伸(DK)，约1.8柱径
     TILE_HEIGHT = 0.04      # 瓦层高度(米)，预估值
-    JUANPENG_PUMP = 0       # 卷棚瓦作的囊(DK)，为了使屋顶更加圆润饱满
-    JUANPENG_OVERLAP = 2    # 卷棚顶部瓦片的交叠(DK)
-    RIDGE_OFFSET = 1.5      # 屋脊与瓦面的相对位移(DK)
+    JUANPENG_PUMP = 3       # 卷棚瓦作的囊(DK)，为了使屋顶更加圆润饱满
+    JUANPENG_POP = 4        # 卷棚瓦作向上的蓬起
 
     # 导角尺度(m)
     BEVEL_EXHIGH = 0.04

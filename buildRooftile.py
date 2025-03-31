@@ -138,15 +138,16 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
         # 1、调整囊点
         tileCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
-                con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
+                0))
         # 2、添加正脊位置的原点
-        p1 = tile_pos[-1].z * Vector((0,0,1))
-        # Y=0时，抬升1椽径，见马炳坚p20
-        p1 += Vector((0,0,con.YUANCHUAN_D*dk))
+        p1 = tileCurveVerts[-1] + Vector((
+                                    0,
+                                    -tile_pos[-1].y/2,
+                                    con.JUANPENG_POP*dk))
         tileCurveVerts.append(p1)
         # 3、添加一个延伸点
         # 添加一个瓦片重合距离
-        p2 = p1 + Vector((0,-con.JUANPENG_OVERLAP*dk,0))
+        p2 = p1 + Vector((0,-tile_pos[-1].y/2,0))
         tileCurveVerts.append(p2)
 
     # 创建瓦垄曲线
@@ -270,16 +271,16 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
         # 1、 调整囊点
         sideCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
-                con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
-        # 2、 添加正脊位置的原点
-        # 241206 简单的把卷棚的中心点从上一个囊点延伸到Y=0的位置
-        p1 = sideCurveVerts[-1] * Vector((1,0,1))
-        # Y=0时，抬升1椽径，见马炳坚p20
-        p1 += Vector((0,0,con.YUANCHUAN_D*dk))
+                0))
+        # 2、 退半步
+        JuanSpan = sideCurveVerts[-1].y
+        p1 = sideCurveVerts[-1] + Vector((
+                0,
+                -JuanSpan/2,
+                con.JUANPENG_POP*dk))
         sideCurveVerts.append(p1)
-        # 3、添加一个延伸点
-        # 添加一个瓦片重合距离
-        p2 = p1 + Vector((0,-con.JUANPENG_OVERLAP*dk,0))
+        # 3、添加一个延伸点,再退半步
+        p2 = p1 + Vector((0,-JuanSpan/2,0))
         sideCurveVerts.append(p2)
 
     # 绘制翼角瓦垄线
@@ -1480,8 +1481,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     offset =  (con.HENG_COMMON_D*dk/2 
                 + con.YUANCHUAN_D*dk 
                 + con.WANGBAN_H*dk
-                + con.ROOFMUD_H*dk
-                - con.RIDGE_OFFSET*dk)
+                + con.ROOFMUD_H*dk)
     # 从桁檩中心，按法线方向提升
     tile_pos = utils.push_purlinPos(purlin_pos,-offset)
     for n in range(len(tile_pos)):
@@ -1496,13 +1496,16 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
             con.ROOF_XIESHAN_JUANPENG,):
         ridgeCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
-                con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
+                0))
+        JuanSpan = ridgeCurveVerts[-1].y
         # Y=0时，抬升1椽径，见马炳坚p20
-        p1 = Vector((ridge_x,
-            0,
-            tile_pos[-1].z + con.YUANCHUAN_D*dk))
+        p1 = ridgeCurveVerts[-1] + Vector((
+                0,
+                -JuanSpan/2,
+                con.JUANPENG_POP*dk))
         ridgeCurveVerts.append(p1)
-        p2 = p1 + Vector((0,-con.JUANPENG_OVERLAP*dk,0))
+        # 延伸以便更加平滑
+        p2 = p1 + Vector((0,-JuanSpan/2,0))
         ridgeCurveVerts.append(p2)
     else:
         # 延长曲线终点，与正脊相交
@@ -1588,8 +1591,7 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
     offset =  (con.HENG_COMMON_D*dk/2 
                 + con.YUANCHUAN_D*dk 
                 + con.WANGBAN_H*dk
-                + con.ROOFMUD_H*dk
-                - con.RIDGE_OFFSET*dk)
+                + con.ROOFMUD_H*dk)
     # 从桁檩中心，按法线方向提升
     tile_pos = utils.push_purlinPos(purlin_pos, -offset)
     # 从举架定位点做偏移
@@ -1605,12 +1607,17 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
             con.ROOF_XIESHAN_JUANPENG,):
         ridgeCurveVerts[-1] += Vector((0,
                 con.JUANPENG_PUMP*dk,   # 卷棚的囊调整
-                con.YUANCHUAN_D*dk))    # 提前抬高屋脊高度
+                0))
+        JuanSpan = ridgeCurveVerts[-1].y
         # Y=0时，抬升1椽径，见马炳坚p20
-        p1 = Vector((ridge_x,
-            0,
-            tile_pos[-1].z + con.YUANCHUAN_D*dk))
+        p1 = ridgeCurveVerts[-1] + Vector((
+                0,
+                -JuanSpan/2,
+                con.JUANPENG_POP*dk))
         ridgeCurveVerts.append(p1)
+        # 延伸以便更加平滑
+        p2 = p1 + Vector((0,-JuanSpan/2,0))
+        ridgeCurveVerts.append(p2)
     
     # 创建瓦垄曲线
     ridgeCurve = utils.addCurveByPoints(
@@ -2007,6 +2014,7 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     arrayLength = (curveLength 
                    - bData.tile_length
                    + bData.tile_width
+                   + con.TILE_CORNER_SPLIT*dk
                    )
     arrayCount = int(arrayLength/bData.tile_width)
     arraySpan = arrayLength / arrayCount

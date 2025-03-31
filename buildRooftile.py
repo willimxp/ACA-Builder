@@ -1175,15 +1175,17 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
 
     # 创建正脊
     # 定位：脊槫上皮+椽径+望板高+灰泥层高
-    zhengji_z = (rafter_pos[-1].z +     # 脊槫中心
-                 (con.HENG_COMMON_D/2   # 脊槫上皮
-                + con.YUANCHUAN_D       # 椽架厚度
-                + con.WANGBAN_H         # 望板厚度
-                + con.ROOFMUD_H)*dk)    # 灰泥厚度
-    # 庑殿正脊适当调整（垂脊相交的方式与歇山、悬山等略有不同）
-    if bData.roof_style == con.ROOF_WUDIAN:
-        # 向下调减1斗口（纯粹为了好看，没啥依据）
-        zhengji_z -= dk
+    offset = (con.HENG_COMMON_D*dk /2       # 脊槫上皮
+                + con.YUANCHUAN_D*dk        # 椽架厚度
+                + con.WANGBAN_H*dk          # 望板厚度
+                + con.ROOFMUD_H*dk )        # 灰泥厚度
+    # 根据最后一根椽子的斜率，将法线高度换算到垂直高度
+    angle = ((rafter_pos[-1].z-rafter_pos[-2].z)
+           /(rafter_pos[-2].y-rafter_pos[-1].y))
+    offsetZ = offset / math.cos(math.atan(angle))
+    zhengji_z = rafter_pos[-1].z + offsetZ
+    # 向下调减1斗口（纯粹为了好看，没啥依据）
+    zhengji_z -= 0.5 * dk
     
     # 根据庑殿、歇山、悬山、硬山的不同，计算正脊长度
     zhengji_length = __getTopRidgeLength(

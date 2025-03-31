@@ -556,6 +556,14 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
     # 收集望板对象，并合并
     wangbanObjs = []
 
+    # 从桁檩中点向上位移:半桁径+椽径+半望板
+    offset =  (con.HENG_COMMON_D*dk/2 
+                + con.YUANCHUAN_D*dk
+                + con.WANGBAN_H*dk/2)
+    # 按法线方向提升
+    wangban_pos = utils.push_purlinPos(
+                    purlin_pos, -offset, 'X')
+
     # 望板只做1象限半幅，然后镜像
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
@@ -570,10 +578,10 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             and n>0):
             width = purlin_pos[-1].x
         # 起点在上层桁檩
-        pstart = purlin_pos[n+1].copy()
+        pstart = wangban_pos[n+1].copy()
         pstart.x = width/2
         # 终点在本层桁檩
-        pend = purlin_pos[n].copy()
+        pend = wangban_pos[n].copy()
         pend.x = width/2
         # 摆放望板
         wangbanObj = utils.addCubeBy2Points(
@@ -602,20 +610,6 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             # 加斜计算
             wangbanObj.dimensions.x += extend_hyp
             utils.applyTransfrom(wangbanObj,use_scale=True) 
-
-        # 所有望板上移
-        # 1. 上移到椽头，采用global坐标，半檩+半椽
-        offset = con.HENG_COMMON_D/2*dk+con.YUANCHUAN_D/2*dk
-        bpy.ops.transform.translate(
-            value = (0,0,offset),
-            orient_type = con.OFFSET_ORIENTATION
-        )
-        # 2. 上移到望板高度，采用local坐标，半椽+半望
-        offset = con.WANGBAN_H/2*dk + con.YUANCHUAN_D/2*dk
-        bpy.ops.transform.translate(
-            value = (0,0,offset),
-            orient_type = 'LOCAL'
-        )
 
         # 仅庑殿需要裁剪望板
         if bData.roof_style == con.ROOF_WUDIAN:
@@ -664,63 +658,41 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             )
             wangbanObjs.append(tympanumWangban)
 
-        # 另做卷棚望板
+        # 另做卷棚最后一层望板
         if (n == len(purlin_pos)-2 and 
             bData.roof_style in (
                 con.ROOF_XUANSHAN_JUANPENG,
                 con.ROOF_YINGSHAN_JUANPENG,
                 con.ROOF_XIESHAN_JUANPENG,)):
-            # p0点从上金桁檩开始（投影到X中心）
-            p0 = purlin_pos[n] * Vector((0,1,1))
-            # p1点从脊檩开始（投影到X中心）
-            p1 = purlin_pos[n+1] * Vector((0,1,1))
+            # p1点从脊檩开始
+            p1 = wangban_pos[-1]
+            # 向中心合龙，为了塑造曲线，采用了p2，p3两步走
             # p2点为罗锅椽的屋脊高度
             p2 = p1 + Vector((
                 0,
-                -purlin_pos[n+1].y,   # 回归到y=0的位置
+                -purlin_pos[-1].y/2,   # 回退一半
                 con.YUANCHUAN_D*dk  # 抬升1椽径，见马炳坚p20
             ))
-            # p3点是为了控制罗锅椽的曲率，没有理论依据，我觉得好看就行
-            p3 = p2 + Vector((0,-con.HENG_COMMON_D*dk,0))
-            # 四点生成曲线
-            curveRafter:bpy.types.Object = \
+            # p3点再退一半，最终回到y=0的位置
+            p3 = p2 + Vector((0,-purlin_pos[-1].y/2,0))
+            # 三点生成曲线
+            wangbanJuanpeng:bpy.types.Object = \
                 utils.addCurveByPoints(
-                    CurvePoints=(p0,p1,p2,p3),
+                    CurvePoints=(p1,p2,p3),
                     name='卷棚望板',
                     root_obj=rafterRootObj,
                     height=con.WANGBAN_H*dk,
-                    width=purlin_pos[-1].x *2
+                    width=purlin_pos[-1].x *2,
+                    resolution=2,
                     )
-            # 调整定位
-            rafter_offset = Vector((0,0,
-                (con.HENG_COMMON_D*dk/2
-                    +con.YUANCHUAN_D*dk*1.9))   # 与椽架相切，因为曲线弯曲后，略作了调整
-            )
-            curveRafter.location += rafter_offset
-            # 裁剪掉尾部
-            '''为了罗锅椽能与脑椽紧密相连，所以曲线延长到了脑椽上
-            最后把这个部分再裁剪掉'''
-            # 裁剪点置于桁檩上皮（转到全局坐标）
-            pCut = (rafterRootObj.matrix_world @ 
-                    purlin_pos[n+1]
-                    +Vector((0,0,con.HENG_COMMON_D*dk/2)))
-            utils.addBisect(
-                object=curveRafter,
-                pStart=rafterRootObj.matrix_world @Vector((0,0,0)),
-                pEnd=rafterRootObj.matrix_world @Vector((0,1,1)),   #近似按45度斜切，其实有误差
-                pCut=pCut,
-                clear_inner=True,
-                direction='Y'
-            )
             # 四方镜像，Y向裁剪
             utils.addModifierMirror(
-                object=curveRafter,
+                object=wangbanJuanpeng,
                 mirrorObj=rafterRootObj,
                 use_axis=(False,True,False),
                 use_bisect=(False,True,False)
             )
-            # 平滑
-            utils.shaderSmooth(curveRafter)
+            wangbanObjs.append(wangbanJuanpeng)
             
     # 合并望板
     wangbanSetObj = utils.joinObjects(
@@ -2882,6 +2854,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         # 设置材质
         mat.setMat(wangbanSet,
                 aData.mat_paint_wangban)
+        utils.shaderSmooth(wangbanSet)
     
     # 檐椽事后处理(处理UV,添加倒角)
     # 只能放在最后加倒角，因为计算翼角椽时有取檐椽头坐标

@@ -84,14 +84,35 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
     tileCurveVerts.append(curve_p1)
 
     # 第3-5点，从举架定位点做偏移
-    # 从桁檩中点向上位移:半桁径+椽径+望板高+灰泥层高
-    offset =  (con.HENG_COMMON_D*dk/2 
-                + con.YUANCHUAN_D*dk 
-                + con.WANGBAN_H*dk
-                + con.ROOFMUD_H*dk)
+    # 半桁径+椽径+望板高+灰泥层高 + 筒瓦高
+    aData:tmpData = bpy.context.scene.ACA_temp
+    tileHeight = (aData.circularTile_source.dimensions.z 
+                  * bData.DK 
+                  / con.DEFAULT_DK)
+    offset = (con.HENG_COMMON_D*dk /2 
+                    + con.YUANCHUAN_D*dk 
+                    + con.WANGBAN_H*dk
+                    + con.ROOFMUD_H*dk
+                    + tileHeight)
     # 从桁檩中心，按法线方向提升
     tile_pos = utils.push_purlinPos(purlin_pos, 
                         -offset, direction)
+    
+    # 歇山的山面坐标需要根据檐面矫正，否则会产生极大的错误
+    if bData.roof_style in (
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG) and direction=='Y':
+        purlinPosNew = []
+        for p in purlin_pos:
+            # 从前后檐面的y坐标，45度对称到两山
+            px = p.y + (bData.x_total - bData.y_total)/2
+            purlinPosNew.append(Vector((
+                px,p.y,p.z)))
+        tile_pos = utils.push_purlinPos(
+                        purlinPosNew, -offset, direction)
+    else:
+        tile_pos = utils.push_purlinPos(
+                        purlin_pos, -offset, direction)
 
     for n in range(len(tile_pos)):
         # 盝顶只做到下金桁
@@ -187,13 +208,32 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     offset_cq = Vector((ex_chong,ex_chong,ex_qiqiao))
 
     # 瓦片与椽架的间隙高度
+    # 半桁径+椽径+望板高+灰泥层高 + 筒瓦高
+    aData:tmpData = bpy.context.scene.ACA_temp
+    tileHeight = (aData.circularTile_source.dimensions.z 
+                  * bData.DK 
+                  / con.DEFAULT_DK)
     offset = (con.HENG_COMMON_D*dk /2 
                     + con.YUANCHUAN_D*dk 
                     + con.WANGBAN_H*dk
-                    + con.ROOFMUD_H*dk)
+                    + con.ROOFMUD_H*dk
+                    + tileHeight)
     # 从桁檩中心，按法线方向提升
-    tile_pos = utils.push_purlinPos(purlin_pos, 
-                        -offset, direction)
+    # 歇山的山面坐标需要根据檐面矫正，否则会产生极大的错误
+    if bData.roof_style in (
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG) and direction=='Y':
+        purlinPosNew = []
+        for p in purlin_pos:
+            # 从前后檐面的y坐标，45度对称到两山
+            px = p.y + (bData.x_total - bData.y_total)/2
+            purlinPosNew.append(Vector((
+                px,p.y,p.z)))
+        tile_pos = utils.push_purlinPos(
+                        purlinPosNew, -offset, direction)
+    else:
+        tile_pos = utils.push_purlinPos(
+                        purlin_pos, -offset, direction)
         
     for n in range(len(tile_pos)):
         # 盝顶只做到下金桁

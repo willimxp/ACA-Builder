@@ -2223,8 +2223,9 @@ def push_purlinPos(purlinPos, L,direction='X'):
         new_y1 = y1 + L * normal_dy
         new_p.append((new_x1, new_y1))
 
-    # 卷棚最后一点仍按最后一段斜率处理
-    if abs(p[-1][0]) > 1e-6:
+    # 卷棚的前后檐最后一点仍按最后一段斜率处理
+    # 加上X的判断，避免两山也错误的进入这个判断
+    if abs(p[-1][0]) > 1e-6 and direction=='X':
         x, y = p[-1]
         new_x = x + L * normal_dx
         new_y = y + L * normal_dy

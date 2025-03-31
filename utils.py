@@ -2227,8 +2227,6 @@ def push_purlinPos(purlinPos, L,direction='X'):
     x, y = p[-1]
     prev_x, prev_y = p[-2]
     prev_new_x, prev_new_y = new_p[-1]
-    # slope = (y - prev_y) / (x - prev_x)
-    # new_y = prev_new_y + slope * (x - prev_new_x)
     slope = (y - prev_y) / (x - prev_x) if (x - prev_x) != 0 else float('inf')
     if slope != float('inf'):
         # 根据斜率和对齐的x坐标，计算新的y坐标

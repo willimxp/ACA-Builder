@@ -452,8 +452,21 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
     offset =  (con.HENG_COMMON_D*dk/2 
                 + con.YUANCHUAN_D*dk/2)
     # 按法线方向提升
-    rafter_pos = utils.push_purlinPos(
-                    purlin_pos, -offset, 'Y')
+    # 歇山的山面坐标需要根据檐面矫正，否则会产生极大的错误
+    if bData.roof_style in (
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG):
+        purlinPosNew = []
+        for p in purlin_pos:
+            # 从前后檐面的y坐标，45度对称到两山
+            px = p.y + (bData.x_total - bData.y_total)/2
+            purlinPosNew.append(Vector((
+                px,p.y,p.z)))
+        rafter_pos = utils.push_purlinPos(
+                        purlinPosNew, -offset, 'Y')
+    else:
+        rafter_pos = utils.push_purlinPos(
+                        purlin_pos, -offset, 'Y')
 
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
@@ -464,7 +477,7 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
         # 椽当坐中，空出一椽径
         rafter_offset = Vector((0,con.YUANCHUAN_D*dk,0))
         rafter_end = rafter_pos[n] + rafter_offset
-        rafter_start = rafter_pos[n+1] +rafter_offset
+        rafter_start = rafter_pos[n+1] + rafter_offset
         lrRafterObj = utils.addCylinderBy2Points(
             radius = con.YUANCHUAN_D/2*dk,
             start_point = rafter_start,

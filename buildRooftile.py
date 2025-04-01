@@ -1185,7 +1185,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     offsetZ = offset / math.cos(math.atan(angle))
     zhengji_z = rafter_pos[-1].z + offsetZ
     # 向下调减1斗口（纯粹为了好看，没啥依据）
-    zhengji_z -= 0.5 * dk
+    zhengji_z += con.RIDGE_OFFSET * dk
     
     # 根据庑殿、歇山、悬山、硬山的不同，计算正脊长度
     zhengji_length = __getTopRidgeLength(
@@ -2201,11 +2201,31 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
         ridgeRange = range(2)
 
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
+    # 半桁径+椽径+望板高+灰泥层高 + 筒瓦高
+    aData:tmpData = bpy.context.scene.ACA_temp
+    tileHeight = (aData.circularTile_source.dimensions.z 
+                  * bData.DK 
+                  / con.DEFAULT_DK)
+    offset = (con.HENG_COMMON_D*dk /2 
+                    + con.YUANCHUAN_D*dk 
+                    + con.WANGBAN_H*dk
+                    + con.ROOFMUD_H*dk
+                    #+ tileHeight
+                    )
+    # 从桁檩中心，按法线方向提升
+    tile_pos = utils.push_purlinPos(purlin_pos, 
+                        -offset, 'X')
+    
     # 从举架定位点做偏移
     for n in ridgeRange:
+        # point:Vector = Vector((
+        #         tile_pos[n].y+ (bData.x_total-bData.y_total)/2,
+        #         tile_pos[n].y,
+        #         tile_pos[n].z))
+
         # 向上位移:半桁径+椽径+望板高+灰泥层高
         offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
-                    + con.WANGBAN_H + con.ROOFMUD_H)*dk
+                    + con.WANGBAN_H + con.ROOFMUD_H)*dk + tileHeight
         point:Vector = purlin_pos[n]+Vector((0,0,offset))
         # 曲线矫正，随着起翘幅度的增大，下金桁位置的垂脊有与瓦面分离的风险
         # 所以在第一点上随着起翘，反向进行了压制

@@ -2003,9 +2003,6 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
-    eaveTile:bpy.types.Object = aData.eaveTile_source
-    eaveTileWidth = eaveTile.dimensions.x
-    eaveTileLength = eaveTile.dimensions.y
     
     # 构造排山滴水
     sideRidgeCurve = __drawSideRidgeCurve(
@@ -2058,23 +2055,15 @@ def __buildSideTile(buildingObj: bpy.types.Object,
 
     # 排山勾头位移
     # 在curve modifier的影响下，X位移实际在Y方向，Z位移实际在X方向
-    # 让排山勾头与檐面勾头“脚对脚”对齐
     eaveTileObj.location += Vector((
-        # X方向（实际为Y方向），位移一个瓦层长，和半个勾头宽
-        # -bData.tile_length - eaveTileWidth/2,
-        # 20240604，为了让端头盘子与两侧紧密连接，不再做脚对脚对齐
-        -bData.tile_length,
-        0,
-        # # Z方向（实际为X方向），位移（瓦垄宽-勾头宽）/2
-        # (bData.tile_width - eaveTileWidth)/2,
-        # 20240604，为了让端头盘子与两侧紧密连接，不再做脚对脚对齐
-        0,
-    ))
+        # X方向（实际为Y方向），位移一瓦宽，四角退让，适当手工调整
+        - arraySpan - con.TILE_CORNER_SPLIT*dk + 0.5*dk, 
+        0, 0))
     # 排山滴水位移
     dripTileObj.location += Vector((
-        # X方向（实际为Y方向），位移半瓦宽，适当调整
-        - bData.tile_width/2 - con.TILE_CORNER_SPLIT*dk,
-        0,0))
+        # X方向（实际为Y方向），位移半瓦宽，四角退让，适当手工调整
+        - arraySpan/2 - con.TILE_CORNER_SPLIT*dk + 0.5*dk,
+        0, 0))
     
     if bData.roof_style in (
             con.ROOF_XUANSHAN,

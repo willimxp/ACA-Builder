@@ -2057,12 +2057,12 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     # 在curve modifier的影响下，X位移实际在Y方向，Z位移实际在X方向
     eaveTileObj.location += Vector((
         # X方向（实际为Y方向），位移一瓦宽，四角退让，适当手工调整
-        - arraySpan - con.TILE_CORNER_SPLIT*dk + 0.5*dk, 
+        - arraySpan - con.TILE_CORNER_SPLIT*dk, 
         0, 0))
     # 排山滴水位移
     dripTileObj.location += Vector((
         # X方向（实际为Y方向），位移半瓦宽，四角退让，适当手工调整
-        - arraySpan/2 - con.TILE_CORNER_SPLIT*dk + 0.5*dk,
+        - arraySpan/2 - con.TILE_CORNER_SPLIT*dk,
         0, 0))
     
     if bData.roof_style in (

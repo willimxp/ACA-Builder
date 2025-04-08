@@ -3590,8 +3590,8 @@ def __buildShanWall(
     if bData.use_dg:
         tile_base += bData.dg_height
     else:
-        # 以大梁抬升
-        tile_base += con.BEAM_HEIGHT*pd
+        # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
+        tile_base += con.BOARD_YANHENG_H*dk
     # 1、山墙下脚点，向外伸出檐椽平出，做到柱脚高度
     p00: Vector = Vector((bData.x_total/2,
         bData.y_total/2 + con.SHANQIANG_EX*dk,

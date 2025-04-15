@@ -842,6 +842,10 @@ class ACA_OT_JOIN(bpy.types.Operator):
         joinedModel.parent = None
         utils.applyTransfrom(joinedModel,use_location=True)
 
+        # 标示为ACA对象
+        joinedModel.ACA_data['aca_obj'] = True
+        joinedModel.ACA_data['aca_type'] = con.ACA_TYPE_BUILDING_JOINED
+
         # 移到导出目录
         coll:bpy.types.Collection = utils.setCollection(
             'ACA古建.合并',isRoot=True,colorTag=3)

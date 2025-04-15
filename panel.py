@@ -70,7 +70,9 @@ class ACA_PT_basic(bpy.types.Panel):
             # 场景数据集
             scnData : data.ACA_data_scene = context.scene.ACA_data
             
-            if buildingObj == None and build.isFinished: 
+            if (buildingObj == None 
+                and build.isFinished
+                and objData.aca_type != con.ACA_TYPE_BUILDING_JOINED): 
                 # 如果不属于建筑构件，提示，并隐藏所有子面板
                 row = layout.row()
                 row.label(text='该对象不是ACA插件生成',icon='INFO')
@@ -78,56 +80,57 @@ class ACA_PT_basic(bpy.types.Panel):
             
             if build.isFinished:
                 box = layout.box()
-                toolBox = box.column(align=True)    
-                
-                #----------------------------
-                toolBar = toolBox.grid_flow(columns=2, align=True)
-                # 建筑名称
-                col = toolBar.column(align=True)
-                col.prop(buildingObj,"name",text="")
-                # 聚焦根节点，右侧小按钮
-                col = toolBar.column(align=True)
-                col.operator("aca.focus_building",icon='FILE_PARENT')
-                if (buildingObj == None
-                    or objData.aca_type == con.ACA_TYPE_BUILDING):
-                    col.enabled = False
 
+                # 合并的对象不显示这些控件，否则会报错
+                if objData.aca_type != con.ACA_TYPE_BUILDING_JOINED:
+                    toolBox = box.column(align=True)    
                     
-                
-                #----------------------------
-                toolBox = box.row(align=True) 
-                toolBar = toolBox.grid_flow(columns=2, align=True)
-                # 保存模板
-                col = toolBar.column(align=True)
-                col.operator(
-                    "aca.save_template",icon='FILE_TICK',
-                    text='保存样式')
-                # 更新建筑
-                col = toolBar.column(align=True)
-                col.operator(
-                    "aca.update_building",
-                    depress=True,text='更新建筑',
-                    icon='FILE_REFRESH',
-                )              
-                # 删除建筑
-                col = toolBar.column(align=True)
-                col.operator(
-                    "aca.del_building",icon='TRASH',
-                    text='删除建筑'
-                ) 
-                # 是否修改参数时，自动触发更新
-                col = toolBar.column(align=True)
-                if scnData.is_auto_rebuild:
-                    text = '暂停刷新'
-                else:
-                    text = '自动刷新'
-                col.prop(
-                    data=bpy.context.scene.ACA_data,
-                    property='is_auto_rebuild',
-                    toggle=True,
-                    icon='FF',
-                    text=text
-                )
+                    #----------------------------
+                    toolBar = toolBox.grid_flow(columns=2, align=True)
+                    # 建筑名称
+                    col = toolBar.column(align=True)
+                    col.prop(buildingObj,"name",text="")
+                    # 聚焦根节点，右侧小按钮
+                    col = toolBar.column(align=True)
+                    col.operator("aca.focus_building",icon='FILE_PARENT')
+                    if (buildingObj == None
+                        or objData.aca_type == con.ACA_TYPE_BUILDING):
+                        col.enabled = False
+                    
+                    #----------------------------
+                    toolBox = box.row(align=True) 
+                    toolBar = toolBox.grid_flow(columns=2, align=True)
+                    # 保存模板
+                    col = toolBar.column(align=True)
+                    col.operator(
+                        "aca.save_template",icon='FILE_TICK',
+                        text='保存样式')
+                    # 更新建筑
+                    col = toolBar.column(align=True)
+                    col.operator(
+                        "aca.update_building",
+                        depress=True,text='更新建筑',
+                        icon='FILE_REFRESH',
+                    )              
+                    # 删除建筑
+                    col = toolBar.column(align=True)
+                    col.operator(
+                        "aca.del_building",icon='TRASH',
+                        text='删除建筑'
+                    ) 
+                    # 是否修改参数时，自动触发更新
+                    col = toolBar.column(align=True)
+                    if scnData.is_auto_rebuild:
+                        text = '暂停刷新'
+                    else:
+                        text = '自动刷新'
+                    col.prop(
+                        data=bpy.context.scene.ACA_data,
+                        property='is_auto_rebuild',
+                        toggle=True,
+                        icon='FF',
+                        text=text
+                    )
 
                 toolBox = box.column(align=True)
                 # 合并按钮

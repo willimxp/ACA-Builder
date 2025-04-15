@@ -12,6 +12,7 @@ class ACA_Consts(object):
     ROOT_COLL_NAME = 'ACA筑韵古建'                                   # 根目录名称
     PLATFORM_NAME = '台基'                                           # 台基名称
     ACA_TYPE_BUILDING = 'building'                                  # ACA类型：建筑根节点
+    ACA_TYPE_BUILDING_JOINED = 'joined'                             # ACA类型：已合并建筑
     ACA_TYPE_BASE_ROOT = 'base_root'                                # ACA类型：台基根节点
     ACA_TYPE_PLATFORM = 'platform'                                  # ACA类型：台基
     ACA_TYPE_STEP = 'step'                                          # ACA类型：踏跺

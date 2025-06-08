@@ -1405,7 +1405,9 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object,
     # 移动origin到下皮外沿
     bpy.ops.object.mode_set(mode = 'EDIT')
     bpy.ops.mesh.select_all(action = 'SELECT')
-    bpy.ops.transform.translate(value=(width/2,height/2,0))
+    # 250608 截面的位置按照根节点的坐标系计算，以免在建筑旋转时错误
+    offset = buildingObj.matrix_world @ Vector((width/2,height/2,0))
+    bpy.ops.transform.translate(value=offset)
     bpy.ops.object.mode_set(mode = 'OBJECT')    
     # 将Plane Mesh转换为Curve，才能绑定到curve上
     bpy.ops.object.convert(target='CURVE')
@@ -1858,7 +1860,9 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
     # 移动origin到下皮外沿
     bpy.ops.object.mode_set(mode = 'EDIT')
     bpy.ops.mesh.select_all(action = 'SELECT')
-    bpy.ops.transform.translate(value=(width/2,height/2,0))
+    # 250608 截面的位置按照根节点的坐标系计算，以免在建筑旋转时错误
+    offset = buildingObj.matrix_world @ Vector((width/2,height/2,0))
+    bpy.ops.transform.translate(value=offset)
     bpy.ops.object.mode_set(mode = 'OBJECT')    
     # 将Plane Mesh转换为Curve，才能绑定到curve上
     bpy.ops.object.convert(target='CURVE')
@@ -1894,8 +1898,8 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
     # 沿子角梁头裁剪
     utils.addBisect(
         object=flyrafterEaveObj,
-        pStart=Vector((0,0,0)),
-        pEnd=Vector((1,-1,0)),
+        pStart=flyrafterEaveObj.matrix_world @ Vector((0,0,0)),
+        pEnd=flyrafterEaveObj.matrix_world @ Vector((1,-1,0)),
         pCut=pCut,
         clear_outer=True,
     )
@@ -3435,8 +3439,8 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         ))
         utils.addBisect(
             object=bofengObj,
-            pStart=Vector((0,0,0)),
-            pEnd=Vector((1,1,0)),
+            pStart=buildingObj.matrix_world @ Vector((0,0,0)),
+            pEnd=buildingObj.matrix_world @ Vector((1,1,0)),
             pCut=buildingObj.matrix_world @ pCut,
             clear_outer=True,
             direction='Z'

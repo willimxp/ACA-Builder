@@ -1305,8 +1305,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     # 脊筒坐中
     roofRidgeObj.location.x = - roofRidgeObj.dimensions.x/2
     # 横向平铺
-    # 适当延长，保证转角处能紧密对接（在45度镜像时，超出的部分被裁剪）
-    zhengji_length = ridgeCross.x + 0.5
+    zhengji_length = ridgeCross.x
     modArray:bpy.types.ArrayModifier = \
         roofRidgeObj.modifiers.new('横向平铺','ARRAY')
     modArray.use_relative_offset = True
@@ -1342,8 +1341,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     # 脊筒坐中
     roofRidgeObj.location.y = - roofRidgeObj.dimensions.x/2
     # 横向平铺
-    # 适当延长，保证转角处能紧密对接（在45度镜像时，超出的部分被裁剪）
-    zhengji_length = ridgeCross.y + 0.5
+    zhengji_length = ridgeCross.y
     modArray:bpy.types.ArrayModifier = \
         roofRidgeObj.modifiers.new('横向平铺','ARRAY')
     modArray.use_relative_offset = True

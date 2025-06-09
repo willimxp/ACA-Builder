@@ -750,7 +750,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     luding_rafterspan:bpy.props.FloatProperty(
             name="盝顶檐步架宽", 
             default=3,
-            min=0,
+            min=0.01,
             max=6,
             precision=3,
             update = update_roof,

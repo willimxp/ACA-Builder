@@ -86,7 +86,7 @@ def recurLayerCollection(layerColl, collName,is_like = False):
     found = None
     if is_like:
         # 模糊匹配
-        if (collName in layerColl.name):
+        if layerColl.name.startswith(collName):
             return layerColl
     else:
         # 精确匹配

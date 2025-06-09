@@ -689,10 +689,14 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
                purlin_cross.y,
                purlin_cross.z))
         # 转角出头
-        if n in (0,len(net_x)-2):
-            length += hengExtend
-            sign = utils.getSign(net_x[n])
-            loc += Vector((hengExtend/2*sign,0,0))
+        # 250609 一间的建筑，两侧都出头，否则，只在梢间出头
+        if len(net_x) == 2:
+            length += hengExtend*2
+        else:
+            if n in (0,len(net_x)-2):
+                length += hengExtend
+                sign = utils.getSign(net_x[n])
+                loc += Vector((hengExtend/2*sign,0,0))
         # 类似做大小额枋，也在挑檐桁上做ID
         fangID = "%s/%s#%s/%s" % (n,0,n+1,0)
         purlinList.append(
@@ -715,10 +719,14 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
                 (net_y[n+1] + net_y[n])/2,
                 purlin_cross.z))
             # 转角出头
-            if n in (0,len(net_y)-2):
-                length += hengExtend
-                sign = utils.getSign(net_y[n])
-                loc += Vector((0,hengExtend/2*sign,0))
+            # 250609 一间的建筑，两侧都出头，否则，只在梢间出头
+            if len(net_y) == 2:
+                length += hengExtend*2
+            else:
+                if n in (0,len(net_y)-2):
+                    length += hengExtend
+                    sign = utils.getSign(net_y[n])
+                    loc += Vector((0,hengExtend/2*sign,0))
             # 类似做大小额枋，也在挑檐桁上做ID
             fangID = "%s/%s#%s/%s" % (0,n,0,n+1)
             purlinList.append(

@@ -972,12 +972,9 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         # 缩放比例
         scale_factor = cellLength/tileLength
         # 在矩阵中添加缩放
-        if direction=='X':
-            scale_matrix = Matrix.Scale(scale_factor, 4, (0, 1, 0))
-            M =  M @ scale_matrix
-        else:
-            scale_matrix = Matrix.Scale(scale_factor, 4, (1, 0, 0))
-            M =  M @ scale_matrix
+        # 250610 这里不需要根据direction的X/Y来缩放，统一在Y缩放即可
+        scale_matrix = Matrix.Scale(scale_factor, 4, (0, 1, 0))
+        M =  M @ scale_matrix
     
         # 250116 瓦片布在网格几何中心，
         # 并对齐筒瓦顶面，以避免卷棚顶筒瓦的间隙

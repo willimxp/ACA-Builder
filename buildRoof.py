@@ -1405,8 +1405,10 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object,
     # 移动origin到下皮外沿
     bpy.ops.object.mode_set(mode = 'EDIT')
     bpy.ops.mesh.select_all(action = 'SELECT')
-    # 250608 截面的位置按照根节点的坐标系计算，以免在建筑旋转时错误
-    offset = buildingObj.matrix_world @ Vector((width/2,height/2,0))
+    # 250611 连檐截面随着建筑根节点旋转时进行旋转，以保持在下缘
+    # 但是不需要跟随建筑根节点的位移，所以将矩阵中的位移部分去掉 
+    rot_mat = buildingObj.matrix_world.to_3x3().to_4x4()
+    offset = rot_mat @ Vector((width/2, height/2, 0))
     bpy.ops.transform.translate(value=offset)
     bpy.ops.object.mode_set(mode = 'OBJECT')    
     # 将Plane Mesh转换为Curve，才能绑定到curve上
@@ -1860,8 +1862,10 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
     # 移动origin到下皮外沿
     bpy.ops.object.mode_set(mode = 'EDIT')
     bpy.ops.mesh.select_all(action = 'SELECT')
-    # 250608 截面的位置按照根节点的坐标系计算，以免在建筑旋转时错误
-    offset = buildingObj.matrix_world @ Vector((width/2,height/2,0))
+    # 250611 连檐截面随着建筑根节点旋转时进行旋转，以保持在下缘
+    # 但是不需要跟随建筑根节点的位移，所以将矩阵中的位移部分去掉 
+    rot_mat = buildingObj.matrix_world.to_3x3().to_4x4()
+    offset = rot_mat @ Vector((width/2,height/2,0))
     bpy.ops.transform.translate(value=offset)
     bpy.ops.object.mode_set(mode = 'OBJECT')    
     # 将Plane Mesh转换为Curve，才能绑定到curve上

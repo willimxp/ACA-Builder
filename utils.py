@@ -2173,8 +2173,13 @@ def extend_bezier_curve_endpoint(curve_obj, extension_length):
 def mirror45(obj:bpy.types.Object,pivot):
     # 定义枢轴点和对称轴向量
     pivot = obj.matrix_world @ Vector(pivot)
+
     # 250608 bugfix: 父对象旋转时，45度镜像应该随之计算
-    axis = obj.matrix_world @ Vector((1, 1, 0)).normalized()
+    # axis = obj.matrix_world @ Vector((1, 1, 0)).normalized()
+    # 250611 建筑根节点旋转时，45镜像轴也随之改变
+    # 但是不需要跟随建筑根节点的位移，所以将矩阵中的位移部分去掉 
+    rot_mat = obj.matrix_world.to_3x3().to_4x4()
+    axis = rot_mat @ Vector((1, 1, 0)).normalized()
 
     # 构建反射矩阵，只处理x和y轴方向
     mirror_matrix = Matrix.Identity(4)

@@ -2529,6 +2529,8 @@ def buildTile(buildingObj: bpy.types.Object):
         aData.circularTile_source.dimensions.y
         * (bData.DK / con.DEFAULT_DK)
     )
+    # 250612 同时初始化tile_width_real
+    bData['tile_width_real'] = bData.tile_width
 
     # 计算桁檩定位点
     purlin_pos = buildBeam.getPurlinPos(buildingObj)

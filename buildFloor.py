@@ -194,6 +194,7 @@ def __drawBWQ(fangObj:bpy.types.Object,
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
     # 添加霸王拳，以大额枋为父对象，继承位置和旋转
     bawangquanObj = utils.copyObject(
         sourceObj=aData.bawangquan_source,
@@ -203,10 +204,13 @@ def __drawBWQ(fangObj:bpy.types.Object,
     )
     # 霸王拳尺度权衡，参考马炳坚p163
     bawangquanObj.dimensions = (
-        con.BAWANGQUAN_L*bData.piller_diameter,         # 长1D
-        con.BAWANGQUAN_Y*bData.piller_diameter,         # 厚0.5D，马炳坚定义的0.8额枋
-        con.BAWANGQUAN_H*bData.piller_diameter,          # 厚0.5D，马炳坚定义的高0.8额枋
+        con.BAWANGQUAN_L*pd,         # 长1D
+        con.BAWANGQUAN_Y*pd,         # 厚0.5D，马炳坚定义的0.8额枋
+        con.BAWANGQUAN_H*pd,          # 厚0.5D，马炳坚定义的高0.8额枋
     )
+    # 250613 根据斗口的缩放，调整霸王拳的位置
+    bawangquanObj.location.x += \
+        (bData.piller_diameter - pd)/2*utils.getSign(bwqX)
     utils.applyTransfrom(bawangquanObj,use_scale=True)
     return
 

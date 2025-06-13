@@ -1748,7 +1748,8 @@ def replaceObject(
 
     if use_Dimension:
         toObj.dimensions = getMeshDims(fromObj) # 排除modifier的尺寸
-        applyTransfrom(toObj,use_scale=True)
+        # 250613 对于使用了GN的对象，如穿插枋，应用缩放后导致尺寸错误
+        #applyTransfrom(toObj,use_scale=True)
     
     if use_Modifier:
         copyModifiers(fromObj,toObj)

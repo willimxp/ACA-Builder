@@ -974,6 +974,7 @@ def buildPillers(buildingObj:bpy.types.Object):
         dimension=(pillerBase_size,
                 pillerBase_size,
                 pillerBase_h),
+        parent=floorRootObj,
     )
     # 柱顶石材质：石头
     mat.setMat(pillerBottom_basemesh,aData.mat_stone)

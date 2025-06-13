@@ -946,6 +946,11 @@ def addModifierBevel(object:bpy.types.Object,
     if not use_bevel:
         return None
     
+    # 250613 倒角随斗口缩放
+    buildingObj = getAcaParent(object,con.ACA_TYPE_BUILDING)
+    bData:data.ACA_data_obj = buildingObj.ACA_data
+    width = width * bData.DK / con.DEFAULT_DK
+    
     # 添加倒角
     modBevel:bpy.types.BevelModifier = \
                 object.modifiers.new(name,'BEVEL')

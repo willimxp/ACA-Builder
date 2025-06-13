@@ -323,7 +323,11 @@ def __buildQueti(fangObj):
     )
     # 宽度适配到开间的净面宽
     quetiObj.dimensions.x = fang_length-bData.piller_diameter
-    utils.applyTransfrom(quetiObj,use_scale=True)
+    # 250613 根据斗口的缩放，调整雀替的尺度
+    quetiObj.scale.y = dk / con.DEFAULT_DK
+    quetiObj.scale.z = dk / con.DEFAULT_DK
+    # 250613 有GN的对象不能应用缩放
+    # utils.applyTransfrom(quetiObj,use_scale=True)
     return quetiObj
 
 # 添加穿插枋

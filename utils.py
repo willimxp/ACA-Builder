@@ -2235,16 +2235,14 @@ def push_purlinPos(purlinPos, L,direction='X'):
         new_y1 = y1 + L * normal_dy
         new_p.append((new_x1, new_y1))
 
-    # 卷棚的前后檐最后一点仍按最后一段斜率处理
-    # 250610 与卷棚其实无关，盝顶也涉及同样问题，两山也应该法线计算
-    # --加上X的判断，避免两山也错误的进入这个判断
-    # --if abs(p[-1][0]) > 1e-6 and direction=='X':
-    if abs(p[-1][0]) > 1e-6:
+    # 250616: 最后一个点的处理
+    # 一般情况，如卷棚和盝顶，无论前后檐还是两山，都仍然按法线推动
+    if abs(purlinPos[-1][1]) > 1e-6:
         x, y = p[-1]
         new_x = x + L * normal_dx
         new_y = y + L * normal_dy
         new_p.append((new_x, new_y))
-    # 非卷棚，在正脊和龙
+    # 特殊情况，如庑殿、歇山，前后檐和两山从法线点进一步按照斜率推动到正脊和龙处
     else:
         # 添加最后一个点，对齐到y=0的位置
         x, y = p[-1]

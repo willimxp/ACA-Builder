@@ -68,6 +68,8 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
@@ -86,9 +88,7 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
     # 第3-5点，从举架定位点做偏移
     # 半桁径+椽径+望板高+灰泥层高 + 筒瓦高
     aData:tmpData = bpy.context.scene.ACA_temp
-    tileHeight = (aData.circularTile_source.dimensions.z 
-                  * bData.DK 
-                  / con.DEFAULT_DK)
+    tileHeight = aData.circularTile_source.dimensions.z * tileScale
     offset = (con.HENG_COMMON_D*dk /2 
                     + con.YUANCHUAN_D*dk 
                     + con.WANGBAN_H*dk
@@ -177,6 +177,8 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
@@ -211,9 +213,7 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     # 瓦片与椽架的间隙高度
     # 半桁径+椽径+望板高+灰泥层高 + 筒瓦高
     aData:tmpData = bpy.context.scene.ACA_temp
-    tileHeight = (aData.circularTile_source.dimensions.z 
-                  * bData.DK 
-                  / con.DEFAULT_DK)
+    tileHeight = aData.circularTile_source.dimensions.z * tileScale
     offset = (con.HENG_COMMON_D*dk /2 
                     + con.YUANCHUAN_D*dk 
                     + con.WANGBAN_H*dk
@@ -308,7 +308,8 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = bData.piller_diameter
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
@@ -337,9 +338,7 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     p1 = Vector(dlyObj.location)
     # 筒瓦高度
     aData:tmpData = bpy.context.scene.ACA_temp
-    tileHeight = (aData.circularTile_source.dimensions.z 
-                  * bData.DK 
-                  / con.DEFAULT_DK)
+    tileHeight = aData.circularTile_source.dimensions.z * tileScale
     # 位移到大连檐外沿+筒瓦高度，瓦当滴水向外延伸
     if direction == 'X':
         offset = Vector((0,
@@ -389,6 +388,8 @@ def __drawEaveCurveByCCB(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
@@ -432,9 +433,7 @@ def __drawEaveCurveByCCB(buildingObj:bpy.types.Object,
     # 一、计算起点(起翘点)，简单的按照大连檐斜率进行推算
     # 从大连檐下皮上推的距离，包括一个大连檐和一个筒瓦高度
     aData:tmpData = bpy.context.scene.ACA_temp
-    tileHeight = (aData.circularTile_source.dimensions.z 
-                  * bData.DK 
-                  / con.DEFAULT_DK)
+    tileHeight = aData.circularTile_source.dimensions.z * tileScale
     liftHeight = con.DALIANYAN_H*dk + tileHeight
     if direction == 'X':
         offset = Vector((0, liftHeight,-con.EAVETILE_EX*dk))
@@ -606,11 +605,11 @@ def __drawTileGrid(
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
     
     # 瓦片长度
-    tileLength = (aData.circularTile_source.dimensions.y 
-                  * bData.DK 
-                  / con.DEFAULT_DK)
+    tileLength = aData.circularTile_source.dimensions.y * tileScale
 
     # 计算瓦垄的数量（包括居中列板瓦的半幅屋面列数）
     tileCols = __getTileCols(buildingObj,direction)
@@ -871,6 +870,8 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
 
     # 载入瓦片资源
     flatTile:bpy.types.Object = utils.copyObject(
@@ -882,14 +883,10 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     dripTile:bpy.types.Object = utils.copyObject(
         aData.dripTile_source,singleUser=True)
     # 根据斗口调整尺度
-    flatTile = utils.resizeObj(flatTile,
-        bData.DK / con.DEFAULT_DK)
-    circularTile = utils.resizeObj(circularTile,
-        bData.DK / con.DEFAULT_DK)
-    eaveTile = utils.resizeObj(eaveTile,
-        bData.DK / con.DEFAULT_DK)
-    dripTile = utils.resizeObj(dripTile,
-        bData.DK / con.DEFAULT_DK)
+    flatTile = utils.resizeObj(flatTile, tileScale)
+    circularTile = utils.resizeObj(circularTile,tileScale)
+    eaveTile = utils.resizeObj(eaveTile,tileScale)
+    dripTile = utils.resizeObj(dripTile,tileScale)
     utils.applyTransfrom(flatTile,use_scale=True)
     utils.applyTransfrom(circularTile,use_scale=True)
     utils.applyTransfrom(eaveTile,use_scale=True)
@@ -905,12 +902,8 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     # 250116 不再以用户输入瓦垄长，以筒瓦为依据
     # # 瓦片长度
     # tileLength = bData.tile_length
-    tileLength = (aData.circularTile_source.dimensions.y 
-                  * bData.DK 
-                  / con.DEFAULT_DK)
-    tileHeight = (aData.circularTile_source.dimensions.z 
-                  * bData.DK 
-                  / con.DEFAULT_DK)
+    tileLength = aData.circularTile_source.dimensions.y * tileScale
+    tileHeight = aData.circularTile_source.dimensions.z * tileScale
     # 计算瓦垄的数量
     tileCols = __getTileCols(buildingObj,direction)
     GridCols = tileCols*2-1
@@ -967,8 +960,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         # 网格边长
         cellLength = f.edges[dir_index].calc_length()
         # 筒瓦边长
-        tileLength = aData.circularTile_source.dimensions.y 
-        tileLength = tileLength * bData.DK / con.DEFAULT_DK
+        tileLength = aData.circularTile_source.dimensions.y * tileScale
         # 缩放比例
         scale_factor = cellLength/tileLength
         # 在矩阵中添加缩放
@@ -1169,6 +1161,8 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
 
     # 创建正脊
     # 定位：脊槫上皮+椽径+望板高+灰泥层高
@@ -1197,8 +1191,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
             location=(0,0,zhengji_z),
             parentObj=tileRootObj)
         # 根据斗口调整尺度
-        utils.resizeObj(baodingObj,
-            bData.DK / con.DEFAULT_DK)
+        utils.resizeObj(baodingObj,tileScale)
         # 退出，不再做后续的正脊和螭吻
         return
     
@@ -1210,8 +1203,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         parentObj=tileRootObj,
         singleUser=True)
     # 根据斗口调整尺度
-    utils.resizeObj(roofRidgeObj,
-        bData.DK / con.DEFAULT_DK)
+    utils.resizeObj(roofRidgeObj,tileScale)
     # 与瓦垄宽度匹配
     roofRidgeObj.dimensions.x = bData.tile_width_real
     utils.applyTransfrom(roofRidgeObj,use_scale=True)
@@ -1243,8 +1235,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         parentObj=tileRootObj,
         singleUser=True)
     # 根据斗口调整尺度
-    utils.resizeObj(chiwenObj,
-        bData.DK / con.DEFAULT_DK)
+    utils.resizeObj(chiwenObj,tileScale)
     utils.addModifierMirror(
         object=chiwenObj,
         mirrorObj=tileRootObj,
@@ -1264,6 +1255,8 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
    
     # 围脊相交点，以金桁交点为参考
     # todo: 后续允许设置收分距离
@@ -1294,8 +1287,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
         parentObj=tileRootObj,
         singleUser=True)
     # 根据斗口调整尺度
-    utils.resizeObj(roofRidgeObj,
-        bData.DK / con.DEFAULT_DK)
+    utils.resizeObj(roofRidgeObj,tileScale)
     # 与瓦垄宽度匹配
     roofRidgeObj.dimensions.x = bData.tile_width_real
     utils.applyTransfrom(roofRidgeObj,use_scale=True)
@@ -1330,8 +1322,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
         parentObj=tileRootObj,
         singleUser=True)
     # 根据斗口调整尺度
-    utils.resizeObj(roofRidgeObj,
-        bData.DK / con.DEFAULT_DK)
+    utils.resizeObj(roofRidgeObj,tileScale)
     # 与瓦垄宽度匹配
     roofRidgeObj.dimensions.x = bData.tile_width_real
     utils.applyTransfrom(roofRidgeObj,use_scale=True)
@@ -1372,8 +1363,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
         parentObj=tileRootObj,
         singleUser=True)
     # 根据斗口调整尺度
-    utils.resizeObj(chiwenObj,
-        bData.DK / con.DEFAULT_DK *0.75)
+    utils.resizeObj(chiwenObj,tileScale *0.75)
     mod:bpy.types.MirrorModifier = \
         chiwenObj.modifiers.new('45度对称','MIRROR')
     mod.mirror_object = diagnalObj
@@ -1639,6 +1629,8 @@ def __arrayRidgeByCurve(buildingObj: bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
     
     # 复制垂脊对象
     frontRidgeObj = utils.copyObject(
@@ -1648,8 +1640,7 @@ def __arrayRidgeByCurve(buildingObj: bpy.types.Object,
         parentObj=tileRootObj,
         singleUser=True)
     # 根据斗口调整尺度
-    utils.resizeObj(frontRidgeObj,
-        bData.DK / con.DEFAULT_DK)
+    utils.resizeObj(frontRidgeObj,tileScale)
     # 应用缩放，以便平铺到曲线长度
     utils.applyTransfrom(
         frontRidgeObj,use_scale=True)
@@ -1691,6 +1682,8 @@ def __arraySideTile(buildingObj: bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
     
     # 复制勾滴对象
     tileObj = utils.copyObject(
@@ -1700,8 +1693,7 @@ def __arraySideTile(buildingObj: bpy.types.Object,
         parentObj=tileRootObj,
         singleUser=True)
     # 根据斗口调整尺度
-    tileObj = utils.resizeObj(tileObj,
-        bData.DK / con.DEFAULT_DK)
+    tileObj = utils.resizeObj(tileObj,tileScale)
     utils.applyTransfrom(tileObj,use_scale=True)
     # 旋转
     tileObj.rotation_euler.x = math.radians(90)
@@ -1744,6 +1736,8 @@ def __buildTaoshou(buildingObj: bpy.types.Object):
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
 
     # 获取子角梁
     ccbObj = utils.getAcaChild(
@@ -1761,8 +1755,7 @@ def __buildTaoshou(buildingObj: bpy.types.Object):
         singleUser=True
     )
     # 根据斗口调整尺度
-    utils.resizeObj(taoshouObj,
-        bData.DK / con.DEFAULT_DK)
+    utils.resizeObj(taoshouObj,tileScale)
     # 与子角梁头做相同旋转
     taoshouObj.rotation_euler = ccbObj.rotation_euler
 
@@ -1786,6 +1779,8 @@ def __buildPaoshou(buildingObj: bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
     
     # 载入10个跑兽
     paoshouObjs = []
@@ -1803,11 +1798,11 @@ def __buildPaoshou(buildingObj: bpy.types.Object,
 
     # 以一个脊筒长度为单位距离
     ridgeObj:bpy.types.Object = aData.ridgeFront_source
-    ridgeLength = ridgeObj.dimensions.x * (bData.DK/con.DEFAULT_DK)
-    ridgeHeight = ridgeObj.dimensions.z * (bData.DK/con.DEFAULT_DK)
+    ridgeLength = ridgeObj.dimensions.x * tileScale
+    ridgeHeight = ridgeObj.dimensions.z * tileScale
     # 端头盘子长度
     ridgeEndObj:bpy.types.Object = aData.ridgeEnd_source
-    ridgeEnd_Length = ridgeEndObj.dimensions.x * (bData.DK/con.DEFAULT_DK)
+    ridgeEnd_Length = ridgeEndObj.dimensions.x * tileScale
 
     for n in range(count):
         #跑兽沿垂脊方向间隔一个脊筒，且坐在脊筒中间
@@ -1822,8 +1817,7 @@ def __buildPaoshou(buildingObj: bpy.types.Object,
             singleUser=True
         )
         # 根据斗口调整尺度
-        utils.resizeObj(shouObj,
-            bData.DK / con.DEFAULT_DK)
+        utils.resizeObj(shouObj,tileScale)
         # 通过曲线变形，获得仰角
         modCurve:bpy.types.CurveModifier = \
              shouObj.modifiers.new('curve','CURVE')
@@ -1853,6 +1847,8 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     eaveTile:bpy.types.Object = aData.eaveTile_source
     eaveTileWidth = eaveTile.dimensions.x
     eaveTileLength = eaveTile.dimensions.y
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
     
     # 绘制垂脊曲线，其中自动判断了垂脊起点：
     # 歇山仅做到正心桁位置
@@ -1877,7 +1873,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
                         ridgeName='垂脊兽后')
         # 获取脊筒长度
         ridgeObj:bpy.types.Object = aData.ridgeBack_source
-        ridgeLength = ridgeObj.dimensions.x * (bData.DK/con.DEFAULT_DK)
+        ridgeLength = ridgeObj.dimensions.x * tileScale
         # 摆放垂兽
         chuishouObj = utils.copyObject(
             sourceObj=aData.chuishou_source,
@@ -1887,8 +1883,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
             singleUser=True)
         
         # 根据斗口调整尺度
-        utils.resizeObj(chuishouObj,
-            bData.DK / con.DEFAULT_DK)
+        utils.resizeObj(chuishouObj,tileScale)
         # 通过曲线变形，获得仰角
         modCurve:bpy.types.CurveModifier = \
                 chuishouObj.modifiers.new('curve','CURVE')
@@ -1929,8 +1924,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
             parentObj=tileRootObj,
             singleUser=True)
         # 根据斗口调整尺度
-        utils.resizeObj(ridgeEndObj,
-            bData.DK / con.DEFAULT_DK)
+        utils.resizeObj(ridgeEndObj,tileScale)
         # 应用缩放，以便平铺到曲线长度
         utils.applyTransfrom(
             ridgeEndObj,use_scale=True)
@@ -1967,8 +1961,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
 
             # 给垂脊兽后留出跑兽的空间
             ridgeUnit: bpy.types.Object= aData.ridgeFront_source
-            ridgeUnit_Length = (ridgeUnit.dimensions.x 
-                * (bData.DK/con.DEFAULT_DK))
+            ridgeUnit_Length = ridgeUnit.dimensions.x * tileScale
             paoLength = (ridgeEnd_Length 
                 + ridgeUnit_Length * bData.paoshou_count)
             frontRidgeAfterObj.location.x += paoLength
@@ -1998,6 +1991,8 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
     
     # 构造排山滴水
     sideRidgeCurve = __drawSideRidgeCurve(
@@ -2039,8 +2034,7 @@ def __buildSideTile(buildingObj: bpy.types.Object,
         parentObj=tileRootObj,
         singleUser=True)
     # 根据斗口调整尺度
-    utils.resizeObj(eaveTileCenterObj,
-        bData.DK / con.DEFAULT_DK)
+    utils.resizeObj(eaveTileCenterObj,tileScale)
     eaveTileCenterObj.rotation_euler.z = math.radians(90)
     utils.addModifierMirror(
         object=eaveTileCenterObj,
@@ -2097,7 +2091,7 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     # 与山花板类似，裁剪到博脊上皮
     # 即，从正心桁上推瓦面+收山加斜+博脊高
     ridgeObj:bpy.types.Object = aData.ridgeFront_source
-    ridgeHeight = ridgeObj.dimensions.z * dk/con.DEFAULT_DK
+    ridgeHeight = ridgeObj.dimensions.z * tileScale
     cutPoint = rafter_pos[0] \
         + Vector((0,0,
             + bData.shoushan/2         # 收山按五举加斜
@@ -2142,6 +2136,8 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
     ridgeCurveVerts = []
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
 
     # 250328 改为通过檐口线进行定义
     # 获取檐口线（前后檐）
@@ -2162,9 +2158,7 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
     p0 = end_point + tangent2 * distance
     # 将p0向下移动一个筒瓦高度
     aData:tmpData = bpy.context.scene.ACA_temp
-    tileHeight = (aData.circularTile_source.dimensions.z 
-                  * bData.DK 
-                  / con.DEFAULT_DK)
+    tileHeight = aData.circularTile_source.dimensions.z * tileScale
     offset = Vector((0,0,tileHeight))
     # 沿子角梁方向位移
     ccbObj = utils.getAcaChild(
@@ -2187,9 +2181,7 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
     # 半桁径+椽径+望板高+灰泥层高 + 筒瓦高
     aData:tmpData = bpy.context.scene.ACA_temp
-    tileHeight = (aData.circularTile_source.dimensions.z 
-                  * bData.DK 
-                  / con.DEFAULT_DK)
+    tileHeight = aData.circularTile_source.dimensions.z * tileScale
     offset = (con.HENG_COMMON_D*dk /2 
                     + con.YUANCHUAN_D*dk 
                     + con.WANGBAN_H*dk
@@ -2236,6 +2228,9 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
+
     cornerRidgeBeforeObj = None
     cornerRidgeAfterObj = None
     ridgeEndObj = None
@@ -2262,8 +2257,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
             parentObj=tileRootObj,
             singleUser=True)
     # 根据斗口调整尺度
-    utils.resizeObj(ridgeEndObj,
-        bData.DK / con.DEFAULT_DK)
+    utils.resizeObj(ridgeEndObj,tileScale)
     # 应用缩放，以便平铺到曲线长度
     utils.applyTransfrom(
         ridgeEndObj,use_scale=True)
@@ -2305,7 +2299,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
                         ridgeName=cornerRidgeName+'兽后')
         # 留出跑兽的空间
         ridgeUnit: bpy.types.Object= aData.ridgeFront_source
-        ridgeUnit_Length = ridgeUnit.dimensions.x * (bData.DK/con.DEFAULT_DK)
+        ridgeUnit_Length = ridgeUnit.dimensions.x * tileScale
         paoLength = (ridgeEnd_Length
             + ridgeUnit_Length * bData.paoshou_count)
         cornerRidgeAfterObj.location.x += paoLength +ridgeUnit_Length
@@ -2325,8 +2319,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
             location=loc,
             singleUser=True)
         # 根据斗口调整尺度
-        utils.resizeObj(chuishouObj,
-            bData.DK / con.DEFAULT_DK)
+        utils.resizeObj(chuishouObj,tileScale)
         # 通过曲线变形，获得仰角
         modCurve:bpy.types.CurveModifier = \
                 chuishouObj.modifiers.new('curve','CURVE')
@@ -2398,11 +2391,14 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
+
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
     ridgeObj:bpy.types.Object = aData.ridgeFront_source
-    ridgeLength = ridgeObj.dimensions.x * dk/con.DEFAULT_DK
+    ridgeLength = ridgeObj.dimensions.x * tileScale
     
     # 博脊定位
     # X坐标：从山花中线，向外山花板厚度
@@ -2521,14 +2517,10 @@ def buildTile(buildingObj: bpy.types.Object):
     aData:tmpData = bpy.context.scene.ACA_temp
 
     # 自动计算瓦垄长宽，不再需要用户输入
-    bData['tile_width'] = (
-        aData.dripTile_source.dimensions.x
-        * (bData.DK / con.DEFAULT_DK)
-    )
-    bData['tile_length'] = (
-        aData.circularTile_source.dimensions.y
-        * (bData.DK / con.DEFAULT_DK)
-    )
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
+    bData['tile_width'] = aData.dripTile_source.dimensions.x * tileScale
+    bData['tile_length'] = aData.circularTile_source.dimensions.y * tileScale
     # 250612 同时初始化tile_width_real
     bData['tile_width_real'] = bData.tile_width
 

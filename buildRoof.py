@@ -3405,8 +3405,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
               )
     # 排山勾滴的瓦高调整
     tileHeight = (aData.circularTile_source.dimensions.z 
-                  * bData.DK 
-                  / con.DEFAULT_DK)
+                  * bData.DK / con.DEFAULT_DK * bData.tile_scale)
     bofengHeight -= tileHeight
     # 再适当调整，没有依据，仅为我的个人喜好
     if bData.roof_style in (

@@ -773,6 +773,15 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     
     # 瓦作属性
+    # 250616 添加瓦作缩放因子
+    tile_scale:bpy.props.FloatProperty(
+            name="瓦作缩放",    # 瓦作缩放
+            default=1.0,
+            min=0.5,max=2.0,
+            precision=2,
+            description="放大或缩小瓦作的比例，默认1.0",
+            update = update_roof,
+        )# type: ignore
     tile_color : bpy.props.EnumProperty(
             name = "瓦面颜色",
             items = [

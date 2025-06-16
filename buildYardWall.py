@@ -47,7 +47,7 @@ def __arrayTile(
     (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
 
     # 瓦件缩放，当前设置的斗口与默认斗口
-    tileScale = bData.DK / con.DEFAULT_DK
+    tileScale = bData.DK / con.DEFAULT_DK * bData.tile_scale
     # 垄距，以最宽的滴水瓦为参考
     colWidth = aData.dripTile_source.dimensions.x * tileScale
     # 取可以整数排布的垄距
@@ -156,7 +156,7 @@ def buildSingleWall(
 
     # 3、瓦顶
     # 瓦件缩放
-    tileScale = bData.DK / con.DEFAULT_DK
+    tileScale = bData.DK / con.DEFAULT_DK * bData.tile_scale
     # 垄距
     colWidth = aData.dripTile_source.dimensions.x * tileScale
     # 取可以整数排布的垄距
@@ -247,8 +247,7 @@ def buildSingleWall(
         parentObj=wallProxy,
         singleUser=True)
     # 根据斗口调整尺度
-    utils.resizeObj(ridgeObj,
-        bData.DK / con.DEFAULT_DK)
+    utils.resizeObj(ridgeObj,tileScale)
     # 脊筒在正脊长度上整数排布，微调其长度
     ridgeWidth = ridgeObj.dimensions.x
     # 计算墙的长度，至少铺几片正脊
@@ -283,8 +282,8 @@ def buildSingleWall(
     walleaveObj.scale.y = bData.yardwall_depth
     # 墙檐定位，从墙顶部，下移一个瓦当取斜，再下移一个墙檐
     eaveTileOffset = (
-        aData.eaveTile_source.dimensions.y
-        * bData.DK / con.DEFAULT_DK) * math.sin(tileAngle)
+        aData.eaveTile_source.dimensions.y * tileScale 
+        * math.sin(tileAngle)) 
     walleaveZ = (wallHeight/2 
                  - eaveTileOffset
                  - walleaveObj.dimensions.z)

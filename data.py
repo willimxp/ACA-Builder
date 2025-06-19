@@ -653,6 +653,15 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=(1,1,1),
             precision=3,
         )# type: ignore 
+    dk_scale:bpy.props.FloatProperty(
+            name="斗口放大",    # 斗栱间距
+            description = "为了模仿唐宋建筑风格，可以放大斗栱",
+            default=1,
+            precision=3,
+            min=1,
+            max=2.5,
+            update=update_dougong,
+        )# type: ignore 
     dg_gap:bpy.props.FloatProperty(
             name="斗栱间距",    # 斗栱间距
             description = "一般取11斗口",

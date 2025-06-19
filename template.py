@@ -145,7 +145,7 @@ def updateDougongData(buildingObj:bpy.types.Object):
     # 包括dg_height,dg_extend,dgScale
 
     # 2.1、dg_scale: 根据斗口设置进行缩放，参考斗口为二寸五0.08cm
-    dgScale = bData.DK / con.DEFAULT_DK
+    dgScale = bData.DK / con.DEFAULT_DK * bData.dk_scale
     bData['dg_scale'] = (dgScale,dgScale,dgScale)
 
     # 2.2、dg_height,dg_extend

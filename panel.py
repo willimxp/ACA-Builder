@@ -720,6 +720,10 @@ class ACA_PT_dougong(bpy.types.Panel):
             inputDgStyle.prop(
                 bData, "dg_style",
                 text='斗栱类型') 
+            inputDkScale = toolBar.column(align=True)
+            inputDkScale.prop(
+                bData, "dk_scale",
+                text='斗栱放大') 
             inputDgextend = toolBar.column(align=True)
             inputDgextend.prop(
                 bData, "dg_extend",

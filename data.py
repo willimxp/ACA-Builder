@@ -806,7 +806,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             items = [
                 ("0","黄琉璃",""),
                 ("1","绿琉璃",""),
-                #("2","紫琉璃",""),
+                ("2","灰琉璃",""),
+                ("3","蓝琉璃",""),
+                ("4","紫琉璃",""),
             ],
         ) # type: ignore
     tile_alt_color : bpy.props.EnumProperty(
@@ -814,7 +816,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             items = [
                 ("0","黄琉璃",""),
                 ("1","绿琉璃",""),
-               # ("2","紫琉璃",""),
+                ("2","灰琉璃",""),
+                ("3","蓝琉璃",""),
+                ("4","紫琉璃",""),
             ],
         ) # type: ignore
     tile_width : bpy.props.FloatProperty(

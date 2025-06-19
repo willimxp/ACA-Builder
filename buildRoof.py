@@ -1356,11 +1356,11 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                 # 绘制子角梁
                 cbcObj:bpy.types.Object = \
                     __drawCornerBeamChild(CornerBeamObj,'仔角梁')
-                # 设置材质
-                mat.setMat(cbcObj,aData.mat_paint_ccb)
                 cbcObj.parent = rafterRootObj
                 cbcObj.ACA_data['aca_obj'] = True
                 cbcObj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_BEAM_CHILD
+                # 设置材质
+                mat.setMat(cbcObj,aData.mat_paint_ccb)
                 utils.addModifierMirror(
                     object=cbcObj,
                     mirrorObj=rafterRootObj,

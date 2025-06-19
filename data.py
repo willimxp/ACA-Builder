@@ -604,6 +604,16 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=False,
             name="添加槛墙"
         )# type: ignore 
+    paint_style : bpy.props.EnumProperty(
+            name = "彩画样式",
+            description = "可以切换清和玺等彩画样式",
+            items = [
+                ("0","素体",""),
+                ("1","清-和玺彩画",""),
+            ],
+            update = update_building,
+            options = {"ANIMATABLE"}
+        ) # type: ignore
     
     # 斗栱属性
     use_dg :  bpy.props.BoolProperty(

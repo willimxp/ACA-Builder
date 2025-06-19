@@ -585,6 +585,11 @@ class ACA_PT_wall(bpy.types.Panel):
             inputTopHeight = toolBar.column(align=True)
             inputTopHeight.prop(
                 bData, "wall_span")
+            
+            # 彩画样式
+            inputPaintStyle = toolBar.column(align=True)
+            inputPaintStyle.prop(
+                bData, "paint_style",)
         
         return
 

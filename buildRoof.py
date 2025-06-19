@@ -3494,9 +3494,11 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     )
 
     # 山花板
-    if bData.roof_style in (
+    if (bData.roof_style in (
             con.ROOF_XIESHAN,
-            con.ROOF_XIESHAN_JUANPENG,):
+            con.ROOF_XIESHAN_JUANPENG,)
+        # 唐宋样式不做山花板
+        and bData.paint_style not in ('0')):
         # 1、定位
         # 基于博缝板曲线的位移
         offset = Vector((0,

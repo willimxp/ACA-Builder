@@ -139,6 +139,7 @@ def getFloorDate(buildingObj:bpy.types.Object):
 def __buildFangBWQ(fangObj):    
     # 基础数据
     buildingObj = utils.getAcaParent(fangObj,con.ACA_TYPE_BUILDING)
+    bData : acaData = buildingObj.ACA_data
     # 获取开间、进深数据
     net_x,net_y = getFloorDate(buildingObj)
 
@@ -158,30 +159,32 @@ def __buildFangBWQ(fangObj):
     fang_length = utils.getVectorDistance(vFrom,vTo)
     
     # 判断是否需要添加霸王拳
-    # 注意：对于只有一开间的小建筑，可能在同一根枋上做左右两头的霸王拳
-    # 左向添加的如：西南0/0#1/0，东南x/0#x/1，东北x/y#x-1/y,西北0/y#0/y-1
-    # 将两端相加进行判断，左向：1/0,2x/1,2x-1/2y,0/2y-1
-    fangStr = str(pFrom_x+pTo_x) + '/' + str(pFrom_y+pTo_y)
-    xtop = len(net_x)-1
-    ytop = len(net_y)-1
-    if fangStr in ("1/0",
-                    str(xtop*2) + '/1',                  # 2x/1
-                    str(xtop*2-1) + '/' + str(ytop*2),   # 2x-1/2y
-                    '0/' + str(ytop*2-1)                 # 0/2y-1
-                    ):
-        bwqX = -fang_length/2
-        rotZ = math.radians(180)
-        __drawBWQ(fangObj,bwqX,rotZ)
-    # 右侧添加的如：东南x-1/0#x/0,东北x/y-1#x/y，西北0/y#1/y,西南0/0#0/1
-    # 将两端相加进行判断，右向：2x-1/0,2x/2y-1,1/2y,0/1
-    if fangStr in (
-                    str(xtop*2-1) +'/0',                # 2x-1/0
-                    str(xtop*2) + '/' + str(ytop*2-1),  # 2x/2y-1
-                    '1/' + str(ytop*2),                 # 1/2y
-                    "0/1"):
-        bwqX = fang_length/2
-        rotZ = 0
-        __drawBWQ(fangObj,bwqX,rotZ)
+    # 素体不做霸王拳，清式才做霸王拳
+    if bData.paint_style in ('1'):
+        # 注意：对于只有一开间的小建筑，可能在同一根枋上做左右两头的霸王拳
+        # 左向添加的如：西南0/0#1/0，东南x/0#x/1，东北x/y#x-1/y,西北0/y#0/y-1
+        # 将两端相加进行判断，左向：1/0,2x/1,2x-1/2y,0/2y-1
+        fangStr = str(pFrom_x+pTo_x) + '/' + str(pFrom_y+pTo_y)
+        xtop = len(net_x)-1
+        ytop = len(net_y)-1
+        if fangStr in ("1/0",
+                        str(xtop*2) + '/1',                  # 2x/1
+                        str(xtop*2-1) + '/' + str(ytop*2),   # 2x-1/2y
+                        '0/' + str(ytop*2-1)                 # 0/2y-1
+                        ):
+            bwqX = -fang_length/2
+            rotZ = math.radians(180)
+            __drawBWQ(fangObj,bwqX,rotZ)
+        # 右侧添加的如：东南x-1/0#x/0,东北x/y-1#x/y，西北0/y#1/y,西南0/0#0/1
+        # 将两端相加进行判断，右向：2x-1/0,2x/2y-1,1/2y,0/1
+        if fangStr in (
+                        str(xtop*2-1) +'/0',                # 2x-1/0
+                        str(xtop*2) + '/' + str(ytop*2-1),  # 2x/2y-1
+                        '1/' + str(ytop*2),                 # 1/2y
+                        "0/1"):
+            bwqX = fang_length/2
+            rotZ = 0
+            __drawBWQ(fangObj,bwqX,rotZ)
     
     return
         

@@ -538,7 +538,7 @@ def __drawEaveCurveByCCB(buildingObj:bpy.types.Object,
 
     # 设置origin
     utils.setOrigin(eaveCurve,bpoints[0].co)
-
+    utils.hideObj(eaveCurve)
     return eaveCurve
 
 # 计算瓦垄的数量

@@ -316,7 +316,8 @@ def setMat(object:bpy.types.Object,
     # 栱垫板(小号和普通版)
     if mat in (aData.mat_paint_dgfillboard,
                aData.mat_paint_dgfillboard_s):
-        object = __setDgBoard(object,mat)
+        if bData.paint_style != '0':
+            object = __setDgBoard(object,mat)
 
     # 檐椽
     if mat == aData.mat_paint_rafter:

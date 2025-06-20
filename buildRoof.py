@@ -3454,8 +3454,8 @@ def __buildBofeng(buildingObj: bpy.types.Object,
                 bofengObj,
                 rafter_pos)
     # 博缝板刷成红色
-    # mat.setMat(bofengObj,
-    #     aData.mat_red,override=True)
+    mat.setMat(bofengObj,
+        aData.mat_red,override=True)
     # 雪花钉刷成金色
     mat.setMat(nailsSet,aData.mat_gold)
     # 合并博缝板和雪花钉

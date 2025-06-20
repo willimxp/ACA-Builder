@@ -34,8 +34,8 @@
 		<rafter_count type="IntProperty">6</rafter_count>
 		<use_flyrafter type="BoolProperty">True</use_flyrafter>
 		<use_wangban type="BoolProperty">True</use_wangban>
-		<qiqiao type="IntProperty">4</qiqiao>
-		<chong type="IntProperty">3</chong>
+		<qiqiao type="FloatProperty">4.0</qiqiao>
+		<chong type="FloatProperty">3.0</chong>
 		<shengqi type="IntProperty">1</shengqi>
 		<tile_width type="FloatProperty">0.387</tile_width>
 		<tile_length type="FloatProperty">0.5</tile_length>
@@ -68,6 +68,10 @@
 		<liangtou type="FloatProperty">0.4</liangtou>
 		<tile_color type="EnumProperty">0</tile_color>
 		<tile_alt_color type="EnumProperty">0</tile_alt_color>
+		<paint_style type="EnumProperty">1</paint_style>
+		<dk_scale type="FloatProperty">1.0</dk_scale>
+		<use_pie type="BoolProperty">True</use_pie>
+		<tile_scale type="FloatProperty">1.0</tile_scale>
 	</template>
 	<template>
 		<aca_type type="StringProperty">building</aca_type>
@@ -1376,8 +1380,8 @@
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
 		<juzhe type="EnumProperty">0</juzhe>
 		<tile_scale type="FloatProperty">1.0</tile_scale>
-		<tile_color type="EnumProperty">0</tile_color>
-		<tile_alt_color type="EnumProperty">0</tile_alt_color>
+		<tile_color type="EnumProperty">2</tile_color>
+		<tile_alt_color type="EnumProperty">2</tile_alt_color>
 		<tile_width type="FloatProperty">0.387</tile_width>
 		<tile_length type="FloatProperty">0.5</tile_length>
 		<paoshou_count type="IntProperty">5</paoshou_count>

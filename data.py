@@ -970,7 +970,7 @@ class ACA_data_template(bpy.types.PropertyGroup):
             type = bpy.types.Object,
         )# type: ignore 
     mat_red:bpy.props.PointerProperty(
-            name = "漆.土朱材质",
+            name = "漆.通用",
             type = bpy.types.Object,
         )# type: ignore 
     mat_gold:bpy.props.PointerProperty(

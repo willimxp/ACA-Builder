@@ -225,9 +225,8 @@ def setMat(object:bpy.types.Object,
         object,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
     if bData.paint_style == '0':
-        # 素体，五彩画
+        # 素体，无彩画
         if mat in (
-            aData.mat_red,              # 漆.土朱材质
             aData.mat_paint_cloud,      # 挑檐枋
             aData.mat_paint_walkdragon, # 平板枋走龙
             aData.mat_paint_beam_big,   # 梁枋
@@ -239,16 +238,15 @@ def setMat(object:bpy.types.Object,
             aData.mat_paint_ccb,        # 子角梁，龙肚子
             aData.mat_paint_rafter,      # 檐椽
             aData.mat_paint_flyrafter,   # 飞椽
-
         ):
-            mat = aData.mat_wood
+            mat = aData.mat_red
 
     # 简单平铺的材质
     if mat in (
+        aData.mat_red,          # 漆.通用
         aData.mat_wood,         # 木材材质
         aData.mat_rock,         # 石材材质
         aData.mat_stone,        # 石头材质
-        aData.mat_red,          # 漆.土朱材质
         aData.mat_brick_1,      # 方砖缦地
         aData.mat_brick_2,      # 条砖竖铺
         aData.mat_brick_3,      # 条砖横铺
@@ -259,6 +257,22 @@ def setMat(object:bpy.types.Object,
                      mat,
                      uvType=uvType.CUBE,
                      cubesize=2)
+    
+    # 切换一般漆色
+    if mat in (aData.mat_red,):
+        if bData.paint_style == '0':
+            # 酱油色
+            __replaceSlot(object,toSlot=1)
+
+    # 三交六椀隔心
+    if mat == aData.mat_geshanxin:
+        __setTileMat(object,
+                     mat,
+                     uvType=uvType.CUBE,
+                     cubesize=0.1)
+        if bData.paint_style == '0':
+            # 酱油色
+            __replaceSlot(object,toSlot=1)
 
     # 挑檐枋工王云，仅在前后两面做彩画
     if mat in (
@@ -292,13 +306,6 @@ def setMat(object:bpy.types.Object,
     # 由额垫板，公母草贴图
     if mat == aData.mat_paint_grasscouple:
         object = __setYOUE(object,mat)
-
-    # 三交六椀隔心
-    if mat == aData.mat_geshanxin:
-        __setTileMat(object,
-                     mat,
-                     uvType=uvType.CUBE,
-                     cubesize=0.1)
 
     # 柱头贴图
     if mat == aData.mat_paint_pillerhead:

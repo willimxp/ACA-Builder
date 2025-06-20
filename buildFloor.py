@@ -447,6 +447,9 @@ def __buildCCFang(buildingObj:bpy.types.Object):
             var = (pd+extend)/ccFangObj.scale.x
             utils.setGN_Input(gnMod,"pd",var)
         utils.applyAllModifer(ccFangObj)
+        # 穿插枋着色
+        mat.setMat(ccFangObj,
+            aData.mat_ccfang,override=True)
 
     return {'FINISHED'}
 

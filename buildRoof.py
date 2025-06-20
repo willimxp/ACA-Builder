@@ -1351,6 +1351,9 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                     object=cbNewObj,
                     mirrorObj=rafterRootObj,
                     use_axis=(True,True,False))
+                # 老角梁外观
+                mat.setMat(cbNewObj,
+                    aData.mat_cornerbeam,override=True)
             
             if bData.use_flyrafter:
                 # 绘制子角梁

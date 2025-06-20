@@ -227,17 +227,19 @@ def setMat(object:bpy.types.Object,
     if bData.paint_style == '0':
         # 素体，无彩画
         if mat in (
-            aData.mat_paint_cloud,      # 挑檐枋
-            aData.mat_paint_walkdragon, # 平板枋走龙
-            aData.mat_paint_beam_big,   # 梁枋
-            aData.mat_paint_beam_small, # 梁枋
-            aData.mat_paint_doorring,   # 隔扇绦环
-            aData.mat_paint_door,       # 隔扇壶门
-            aData.mat_paint_grasscouple, # 由额垫板公母草
-            aData.mat_paint_pillerhead,  # 柱头贴图
-            aData.mat_paint_ccb,        # 子角梁，龙肚子
-            aData.mat_paint_rafter,      # 檐椽
-            aData.mat_paint_flyrafter,   # 飞椽
+            aData.mat_paint_cloud,          # 挑檐枋
+            aData.mat_paint_walkdragon,     # 平板枋走龙
+            aData.mat_paint_beam_big,       # 梁枋
+            aData.mat_paint_beam_small,     # 梁枋
+            aData.mat_paint_doorring,       # 隔扇绦环
+            aData.mat_paint_door,           # 隔扇壶门
+            aData.mat_paint_grasscouple,    # 由额垫板公母草
+            aData.mat_paint_pillerhead,     # 柱头贴图
+            aData.mat_paint_ccb,            # 子角梁，龙肚子
+            aData.mat_paint_rafter,         # 檐椽
+            aData.mat_paint_flyrafter,      # 飞椽
+            aData.mat_ccfang,               # 穿插枋
+            aData.mat_cornerbeam,           # 老角梁
         ):
             mat = aData.mat_red
 
@@ -258,21 +260,21 @@ def setMat(object:bpy.types.Object,
                      uvType=uvType.CUBE,
                      cubesize=2)
     
-    # 切换一般漆色
-    if mat in (aData.mat_red,):
-        if bData.paint_style == '0':
-            # 酱油色
-            __replaceSlot(object,toSlot=1)
-
     # 三交六椀隔心
     if mat == aData.mat_geshanxin:
         __setTileMat(object,
                      mat,
                      uvType=uvType.CUBE,
                      cubesize=0.1)
-        if bData.paint_style == '0':
+        
+    # 切换酱油色
+    if bData.paint_style == '0':
+        if mat in (aData.mat_red,           # 漆.通用
+                aData.mat_dust_red,      # 墙色抹灰
+                aData.mat_geshanxin,     # 三交六椀隔心
+                ):
             # 酱油色
-            __replaceSlot(object,toSlot=1)
+            __replaceSlot(object,toSlot=1)    
 
     # 挑檐枋工王云，仅在前后两面做彩画
     if mat in (

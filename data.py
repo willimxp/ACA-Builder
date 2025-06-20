@@ -1061,6 +1061,14 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "三交六椀隔心",
             type = bpy.types.Object,
         )# type: ignore    
+    mat_ccfang : bpy.props.PointerProperty(
+            name = "穿插枋",
+            type = bpy.types.Object,
+        )# type: ignore  
+    mat_cornerbeam : bpy.props.PointerProperty(
+            name = "老角梁",
+            type = bpy.types.Object,
+        )# type: ignore  
     
     # 柱对象
     piller_source : bpy.props.PointerProperty(

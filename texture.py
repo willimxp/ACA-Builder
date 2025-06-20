@@ -269,7 +269,7 @@ def setMat(object:bpy.types.Object,
         
     # 切换酱油色
     if bData.paint_style == '0':
-        if mat in (aData.mat_red,           # 漆.通用
+        if mat in (aData.mat_red,        # 漆.通用
                 aData.mat_dust_red,      # 墙色抹灰
                 aData.mat_geshanxin,     # 三交六椀隔心
                 ):
@@ -328,7 +328,8 @@ def setMat(object:bpy.types.Object,
     
     # 望板
     if mat == aData.mat_paint_wangban:
-        __setWangban(object,mat)
+        if bData.paint_style != '0':
+            __setWangban(object,mat)
 
     # 子角梁，龙肚子
     if mat == aData.mat_paint_ccb:

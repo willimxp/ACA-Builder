@@ -3456,9 +3456,15 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     nailsSet = __buildBofengNails(buildingObj,
                 bofengObj,
                 rafter_pos)
-    # 博缝板刷成红色
+    # 博缝板硬山做石材色，其他做漆色
+    if bData.roof_style in (
+        con.ROOF_YINGSHAN,
+        con.ROOF_YINGSHAN_JUANPENG,):
+        bofengMat = aData.mat_rock
+    else:
+        bofengMat = aData.mat_red
     mat.setMat(bofengObj,
-        aData.mat_red,override=True)
+        bofengMat,override=True)
     # 雪花钉刷成金色
     mat.setMat(nailsSet,aData.mat_gold)
     # 合并博缝板和雪花钉

@@ -227,7 +227,6 @@ def setMat(object:bpy.types.Object,
     if bData.paint_style == '0':
         # 素体，无彩画
         if mat in (
-            aData.mat_paint_cloud,          # 挑檐枋
             aData.mat_paint_walkdragon,     # 平板枋走龙
             aData.mat_paint_beam_big,       # 梁枋
             aData.mat_paint_beam_small,     # 梁枋
@@ -243,6 +242,12 @@ def setMat(object:bpy.types.Object,
             aData.mat_queti,                # 雀替
         ):
             mat = aData.mat_red
+
+        if mat in (
+            aData.mat_dougong,              # 斗栱
+            aData.mat_paint_cloud,          # 挑檐枋
+        ):
+            mat = aData.mat_wood
 
     # 简单平铺的材质
     if mat in (

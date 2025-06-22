@@ -331,6 +331,11 @@ def __buildQueti(fangObj):
     quetiObj.scale.z = dk / con.DEFAULT_DK
     # 250613 有GN的对象不能应用缩放
     # utils.applyTransfrom(quetiObj,use_scale=True)
+    # 应用GN修改器
+    utils.applyAllModifer(quetiObj)
+    # 设置雀替外观
+    mat.setMat(quetiObj,
+        aData.mat_queti,override=True)
     return quetiObj
 
 # 添加穿插枋

@@ -240,6 +240,7 @@ def setMat(object:bpy.types.Object,
             aData.mat_paint_flyrafter,      # 飞椽
             aData.mat_ccfang,               # 穿插枋
             aData.mat_cornerbeam,           # 老角梁
+            aData.mat_queti,                # 雀替
         ):
             mat = aData.mat_red
 
@@ -1017,12 +1018,17 @@ def __setShanhua(shanhuaObj:bpy.types.Object,
 
 # 切换材质slot
 def __replaceSlot(obj:bpy.types.Object,
-                  fromSlot=0,
+                  fromSlot=None,
                   toSlot=0,):
     bm = bmesh.new()
     bm.from_mesh(obj.data)
     for face in bm.faces:
-        if face.material_index == fromSlot:
+        # 如果指定fromSlot，则判断原材质是否匹配
+        if (fromSlot != None and 
+            face.material_index != fromSlot):
+                # 不匹配原材质，不做改变
+                pass
+        else:
             face.material_index = toSlot
     bm.to_mesh(obj.data)
     bm.free()

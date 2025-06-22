@@ -1069,6 +1069,10 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "老角梁",
             type = bpy.types.Object,
         )# type: ignore  
+    mat_queti : bpy.props.PointerProperty(
+            name = "雀替",
+            type = bpy.types.Object,
+        )# type: ignore  
     
     # 柱对象
     piller_source : bpy.props.PointerProperty(

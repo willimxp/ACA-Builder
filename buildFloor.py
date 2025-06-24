@@ -159,32 +159,30 @@ def __buildFangBWQ(fangObj):
     fang_length = utils.getVectorDistance(vFrom,vTo)
     
     # 判断是否需要添加霸王拳
-    # 素体不做霸王拳，清式才做霸王拳
-    if bData.paint_style in ('1'):
-        # 注意：对于只有一开间的小建筑，可能在同一根枋上做左右两头的霸王拳
-        # 左向添加的如：西南0/0#1/0，东南x/0#x/1，东北x/y#x-1/y,西北0/y#0/y-1
-        # 将两端相加进行判断，左向：1/0,2x/1,2x-1/2y,0/2y-1
-        fangStr = str(pFrom_x+pTo_x) + '/' + str(pFrom_y+pTo_y)
-        xtop = len(net_x)-1
-        ytop = len(net_y)-1
-        if fangStr in ("1/0",
-                        str(xtop*2) + '/1',                  # 2x/1
-                        str(xtop*2-1) + '/' + str(ytop*2),   # 2x-1/2y
-                        '0/' + str(ytop*2-1)                 # 0/2y-1
-                        ):
-            bwqX = -fang_length/2
-            rotZ = math.radians(180)
-            __drawBWQ(fangObj,bwqX,rotZ)
-        # 右侧添加的如：东南x-1/0#x/0,东北x/y-1#x/y，西北0/y#1/y,西南0/0#0/1
-        # 将两端相加进行判断，右向：2x-1/0,2x/2y-1,1/2y,0/1
-        if fangStr in (
-                        str(xtop*2-1) +'/0',                # 2x-1/0
-                        str(xtop*2) + '/' + str(ytop*2-1),  # 2x/2y-1
-                        '1/' + str(ytop*2),                 # 1/2y
-                        "0/1"):
-            bwqX = fang_length/2
-            rotZ = 0
-            __drawBWQ(fangObj,bwqX,rotZ)
+    # 注意：对于只有一开间的小建筑，可能在同一根枋上做左右两头的霸王拳
+    # 左向添加的如：西南0/0#1/0，东南x/0#x/1，东北x/y#x-1/y,西北0/y#0/y-1
+    # 将两端相加进行判断，左向：1/0,2x/1,2x-1/2y,0/2y-1
+    fangStr = str(pFrom_x+pTo_x) + '/' + str(pFrom_y+pTo_y)
+    xtop = len(net_x)-1
+    ytop = len(net_y)-1
+    if fangStr in ("1/0",
+                    str(xtop*2) + '/1',                  # 2x/1
+                    str(xtop*2-1) + '/' + str(ytop*2),   # 2x-1/2y
+                    '0/' + str(ytop*2-1)                 # 0/2y-1
+                    ):
+        bwqX = -fang_length/2
+        rotZ = math.radians(180)
+        __drawBWQ(fangObj,bwqX,rotZ)
+    # 右侧添加的如：东南x-1/0#x/0,东北x/y-1#x/y，西北0/y#1/y,西南0/0#0/1
+    # 将两端相加进行判断，右向：2x-1/0,2x/2y-1,1/2y,0/1
+    if fangStr in (
+                    str(xtop*2-1) +'/0',                # 2x-1/0
+                    str(xtop*2) + '/' + str(ytop*2-1),  # 2x/2y-1
+                    '1/' + str(ytop*2),                 # 1/2y
+                    "0/1"):
+        bwqX = fang_length/2
+        rotZ = 0
+        __drawBWQ(fangObj,bwqX,rotZ)
     
     return
         
@@ -203,7 +201,8 @@ def __drawBWQ(fangObj:bpy.types.Object,
         sourceObj=aData.bawangquan_source,
         name='霸王拳',parentObj=fangObj,
         location=(bwqX,0,con.EFANG_LARGE_H * dk/2),
-        rotation=(0,0,rotZ)
+        rotation=(0,0,rotZ),
+        singleUser=True
     )
     # 霸王拳尺度权衡，参考马炳坚p163
     bawangquanObj.dimensions = (
@@ -215,6 +214,8 @@ def __drawBWQ(fangObj:bpy.types.Object,
     bawangquanObj.location.x += \
         (bData.piller_diameter - pd)/2*utils.getSign(bwqX)
     utils.applyTransfrom(bawangquanObj,use_scale=True)
+    # 霸王拳着色
+    mat.paint(bawangquanObj,con.M_BAWANGQUAN,override=True)
     return
 
 # 获取开间是否有装修
@@ -334,8 +335,7 @@ def __buildQueti(fangObj):
     # 应用GN修改器
     utils.applyAllModifer(quetiObj)
     # 设置雀替外观
-    mat.setMat(quetiObj,
-        aData.mat_queti,override=True)
+    mat.paint(quetiObj,con.M_QUETI,override=True)
     return quetiObj
 
 # 添加穿插枋
@@ -453,8 +453,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
             utils.setGN_Input(gnMod,"pd",var)
         utils.applyAllModifer(ccFangObj)
         # 穿插枋着色
-        mat.setMat(ccFangObj,
-            aData.mat_ccfang,override=True)
+        mat.paint(ccFangObj,con.M_FANG_CHUANCHA,override=True)
 
     return {'FINISHED'}
 
@@ -539,8 +538,8 @@ def __buildJinFang(buildingObj:bpy.types.Object):
             name='金枋.'+jinfang,
             root_obj=floorRootObj
         )
-        # 刷红漆
-        mat.setMat(jinFangObj,aData.mat_red)
+        # 刷漆
+        mat.paint(jinFangObj,con.M_FANG_JIN)
         # 倒角
         utils.addModifierBevel(
             object=jinFangObj,
@@ -672,7 +671,7 @@ def __buildFang(buildingObj:bpy.types.Object):
         bigFangObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
         bigFangObj.ACA_data['fangID'] = fangID
         # 设置梁枋彩画
-        mat.setMat(bigFangObj,aData.mat_paint_beam_big)
+        mat.paint(bigFangObj,con.M_FANG_EBIG)
         # 添加边缘导角
         utils.addModifierBevel(bigFangObj, 
                                width=con.BEVEL_EXHIGH, 
@@ -707,7 +706,7 @@ def __buildFang(buildingObj:bpy.types.Object):
             dianbanObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             dianbanObj.ACA_data['fangID'] = fangID
             # 设置公母草，注意对象被替换
-            newDianbanObj = mat.setMat(dianbanObj,aData.mat_paint_grasscouple)
+            newDianbanObj = mat.paint(dianbanObj,con.M_BOARD_YOUE)
             fangPart.append(newDianbanObj)
             
             # 小额枋
@@ -728,7 +727,7 @@ def __buildFang(buildingObj:bpy.types.Object):
             smallFangObj.ACA_data['aca_type'] = con.ACA_TYPE_FANG
             smallFangObj.ACA_data['fangID'] = fangID
             # 设置梁枋彩画
-            mat.setMat(smallFangObj,aData.mat_paint_beam_small)
+            mat.paint(smallFangObj,con.M_FANG_ESMALL)
             # 添加边缘导角
             utils.addModifierBevel(smallFangObj, 
                                    width=con.BEVEL_HIGH, 
@@ -988,7 +987,7 @@ def buildPillers(buildingObj:bpy.types.Object):
         parent=floorRootObj,
     )
     # 柱顶石材质：石头
-    mat.setMat(pillerBottom_basemesh,aData.mat_stone)
+    mat.paint(pillerBottom_basemesh,con.M_PILLER_BASE)
     # 添加bevel
     utils.addModifierBevel(pillerBottom_basemesh, 
                            width=con.BEVEL_HIGH, 
@@ -1030,7 +1029,7 @@ def buildPillers(buildingObj:bpy.types.Object):
             utils.applyTransfrom(pillerObj,use_scale=True)
 
             # 柱头贴图，注意此方法会破坏原有柱对象，并返回新对象
-            newPillerObj = mat.setMat(pillerObj,aData.mat_paint_pillerhead,
+            newPillerObj = mat.paint(pillerObj,con.M_PILLER_HEAD,
                        override=True)
 
             # 复制柱础
@@ -1045,7 +1044,7 @@ def buildPillers(buildingObj:bpy.types.Object):
                 parentObj=newPillerObj
             )
             # 柱础材质：石头
-            mat.setMat(pillerbase_basemesh,aData.mat_stone)
+            mat.paint(pillerbase_basemesh,con.M_PILLER_BASE)
             
             # 复制柱顶石
             pillerBottomObj = utils.copySimplyObject(

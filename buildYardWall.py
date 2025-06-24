@@ -130,7 +130,7 @@ def buildSingleWall(
         parent=wallProxy,
     )
     # 赋材质
-    mat.setMat(bottomObj,aData.mat_rock)
+    mat.paint(bottomObj,con.M_WALL_BOTTOM)
 
     # 2、创建上身对象
     bodyObj = utils.addCube(
@@ -142,7 +142,7 @@ def buildSingleWall(
         parent=wallProxy,
     )
     # 赋材质
-    mat.setMat(bodyObj,aData.mat_dust_red)
+    mat.paint(bodyObj,con.M_WALL)
 
     # 合并
     modBool:bpy.types.BooleanModifier = \

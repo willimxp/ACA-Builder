@@ -168,8 +168,8 @@ def __buildLKM(buildingObj:bpy.types.Object,
             )
     LKMObj.ACA_data['aca_obj'] = True
     LKMObj.ACA_data['aca_type'] = LKM_type
-    # 设置材质，刷红漆
-    mat.setMat(LKMObj,aData.mat_red)
+    # 设置材质，刷漆
+    mat.paint(LKMObj,con.M_ROOF_PAINT)
 
     # 镜像
     utils.addModifierMirror(
@@ -1059,8 +1059,8 @@ def __buildDLY(buildingObj,purlin_pos,direction):
     )
     DLY_Obj.ACA_data['aca_obj'] = True
     DLY_Obj.ACA_data['aca_type'] = DLY_type
-    # 设置材质，刷红漆
-    mat.setMat(DLY_Obj,aData.mat_red)
+    # 设置材质，刷漆
+    mat.paint(DLY_Obj,con.M_ROOF_PAINT)
 
     # 添加镜像
     utils.addModifierMirror(
@@ -1352,8 +1352,8 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                     mirrorObj=rafterRootObj,
                     use_axis=(True,True,False))
                 # 老角梁外观
-                mat.setMat(cbNewObj,
-                    aData.mat_cornerbeam,override=True)
+                mat.paint(cbNewObj,con.M_CORNERBEAM,
+                          override=True)
             
             if bData.use_flyrafter:
                 # 绘制子角梁
@@ -1363,7 +1363,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                 cbcObj.ACA_data['aca_obj'] = True
                 cbcObj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_BEAM_CHILD
                 # 设置材质
-                mat.setMat(cbcObj,aData.mat_paint_ccb)
+                mat.paint(cbcObj,con.M_CORNERBEAM_S)
                 utils.addModifierMirror(
                     object=cbcObj,
                     mirrorObj=rafterRootObj,
@@ -1466,8 +1466,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object,
         use_axis=(True,True,False),
     )
     # 设置材质
-    mat.setMat(rafterEaveObj,
-        aData.mat_red)
+    mat.paint(rafterEaveObj,con.M_ROOF_PAINT)
 
     return rafterEaveObj
 
@@ -1933,8 +1932,7 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
         use_axis=(True,True,False),
     )
     # 设置材质
-    mat.setMat(flyrafterEaveObj,
-        aData.mat_red)
+    mat.paint(flyrafterEaveObj,con.M_ROOF_PAINT)
 
 # 营造翘飞椽定位线
 # 250316 做为大连檐和翘飞椽共用的定位参考
@@ -2788,8 +2786,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             cfrSet = utils.joinObjects(
                 cfrCollection,newName='翘飞椽')
             # 绑定材质
-            cfrSet = mat.setMat(
-                cfrSet,aData.mat_paint_flyrafter,override=True)
+            cfrSet = mat.paint(cfrSet,con.M_FLYRAFTER,
+                               override=True)
             # 倒角
             utils.addModifierBevel(
                 object=cfrSet,
@@ -2813,7 +2811,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         crSet = utils.joinObjects(
             cornerRafterColl,newName='翼角椽')
         # 绑定材质
-        crSet = mat.setMat(crSet,aData.mat_paint_rafter,override=True)
+        crSet = mat.paint(crSet,con.M_FLYRAFTER,
+                          override=True)
         # 倒角
         utils.addModifierBevel(
             object=crSet,
@@ -2850,8 +2849,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         wangbanSet = utils.joinObjects(
             wangbanObjs,newName='望板')
         # 设置材质
-        mat.setMat(wangbanSet,
-                aData.mat_paint_wangban)
+        mat.paint(wangbanSet,con.M_WANGBAN)
         utils.shaderSmooth(wangbanSet)
     
     # 檐椽事后处理(处理UV,添加倒角)
@@ -2860,8 +2858,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     yanRafterObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_FB)
     # 材质设置
-    yanRafterObj = mat.setMat(
-        yanRafterObj,aData.mat_paint_rafter,override=True)
+    yanRafterObj = mat.paint(yanRafterObj,con.M_RAFTER,
+                             override=True)
     # 倒角
     utils.addModifierBevel(
         object=yanRafterObj,
@@ -2880,8 +2878,9 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         utils.getAcaChild(buildingObj,con.ACA_TYPE_RAFTER_LR)
     if yanRafterObj != None:
         # 材质设置
-        yanRafterObj = mat.setMat(
-            yanRafterObj,aData.mat_paint_rafter,override=True)
+        yanRafterObj = mat.paint(yanRafterObj,
+                                 con.M_RAFTER,
+                                 override=True)
         # 倒角
         utils.addModifierBevel(
             object=yanRafterObj,
@@ -2900,8 +2899,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_FB)
     if flyRafterObj != None:
         # 设置材质
-        flyRafterObj = mat.setMat(
-            flyRafterObj,aData.mat_paint_flyrafter,override=True)
+        flyRafterObj = mat.paint(
+            flyRafterObj,con.M_FLYRAFTER,override=True)
         # 倒角
         utils.addModifierBevel(
             object=flyRafterObj,
@@ -2920,8 +2919,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         utils.getAcaChild(buildingObj,con.ACA_TYPE_FLYRAFTER_LR)
     if flyRafterObj != None:
         # 设置材质
-        flyRafterObj = mat.setMat(
-            flyRafterObj,aData.mat_paint_flyrafter,override=True)
+        flyRafterObj = mat.paint(
+            flyRafterObj,con.M_FLYRAFTER,override=True)
         # 倒角
         utils.addModifierBevel(
             object=flyRafterObj,
@@ -3056,7 +3055,7 @@ def __buildShanhuaBan(buildingObj: bpy.types.Object,
     )
 
     # 应用材质
-    mat.setMat(shbObj,aData.mat_paint_shanhua)
+    mat.paint(shbObj,con.M_SHANHUA)
 
     return shbObj
 
@@ -3175,13 +3174,11 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
             con.ROOF_XUANSHAN,
             con.ROOF_XUANSHAN_JUANPENG):
         # 悬山用石材封堵
-        mat.setMat(xybObj,
-            aData.mat_stone)
+        mat.paint(xybObj,con.M_XIANGYAN)
     elif bData.roof_style in (con.ROOF_XIESHAN,
                               con.ROOF_XIESHAN_JUANPENG,):
-        # 歇山刷红漆
-        mat.setMat(xybObj,
-            aData.mat_paint_shanhua,override=True)
+        # 歇山刷漆
+        mat.paint(xybObj,con.M_SHANHUA,override=True)
 
     return xybObj
 
@@ -3460,13 +3457,13 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     if bData.roof_style in (
         con.ROOF_YINGSHAN,
         con.ROOF_YINGSHAN_JUANPENG,):
-        bofengMat = aData.mat_rock
+        bofengMat = con.M_ROCK
     else:
-        bofengMat = aData.mat_red
-    mat.setMat(bofengObj,
+        bofengMat = con.M_PAINT
+    mat.paint(bofengObj,
         bofengMat,override=True)
     # 雪花钉刷成金色
-    mat.setMat(nailsSet,aData.mat_gold)
+    mat.paint(nailsSet,con.M_GOLD)
     # 合并博缝板和雪花钉
     bofengObj = utils.joinObjects([bofengObj,nailsSet])
 
@@ -3507,7 +3504,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
             con.ROOF_XIESHAN,
             con.ROOF_XIESHAN_JUANPENG,)
         # 唐宋样式不做山花板
-        and bData.paint_style not in ('0')):
+        and bData.paint_style not in ('1')):
         # 1、定位
         # 基于博缝板曲线的位移
         offset = Vector((0,
@@ -3581,7 +3578,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         utils.setOrigin(shanhuaObj,cutPoint)
         
         # 9、贴山花板贴材质
-        mat.setMat(shanhuaObj,aData.mat_paint_shanhua,
+        mat.paint(shanhuaObj,con.M_SHANHUA,
                    override=True)
 
     return bofengObj
@@ -3701,8 +3698,7 @@ def __buildShanWall(
     bm.free()
 
     # 设置材质
-    mat.setMat(shanWallObj,
-            aData.mat_brick_3)
+    mat.paint(shanWallObj,con.M_BRICK_WALL)
     
     # 2、创建下碱对象
     # 下碱一般取柱高度的1/3
@@ -3733,7 +3729,7 @@ def __buildShanWall(
         parent=shanWallObj,
     )
     # 赋材质
-    mat.setMat(bottomObj,aData.mat_rock)
+    mat.paint(bottomObj,con.M_WALL_BOTTOM)
 
     # 合并山墙和下碱
     shanwallJoin = utils.joinObjects([shanWallObj,bottomObj])
@@ -3793,8 +3789,7 @@ def __buildRafterFrame(buildingObj:bpy.types.Object):
 
     # 设置材质，原木色
     for obj in rafterRootObj.children:
-        mat.setMat(obj,
-            aData.mat_wood)
+        mat.paint(obj,con.M_ROOF_NOPAINT)
         
     return
 

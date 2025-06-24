@@ -68,7 +68,7 @@
 		<liangtou type="FloatProperty">0.4</liangtou>
 		<tile_color type="EnumProperty">0</tile_color>
 		<tile_alt_color type="EnumProperty">0</tile_alt_color>
-		<paint_style type="EnumProperty">1</paint_style>
+		<paint_style type="EnumProperty">0</paint_style>
 		<dk_scale type="FloatProperty">1.0</dk_scale>
 		<use_pie type="BoolProperty">True</use_pie>
 		<tile_scale type="FloatProperty">1.0</tile_scale>
@@ -1357,7 +1357,7 @@
 		<use_topwin type="BoolProperty">False</use_topwin>
 		<door_height type="FloatProperty">3.36</door_height>
 		<use_KanWall type="BoolProperty">True</use_KanWall>
-		<paint_style type="EnumProperty">0</paint_style>
+		<paint_style type="EnumProperty">1</paint_style>
 		<use_dg type="BoolProperty">True</use_dg>
 		<use_pingbanfang type="BoolProperty">False</use_pingbanfang>
 		<dg_style type="EnumProperty">5</dg_style>

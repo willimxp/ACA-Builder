@@ -608,8 +608,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "彩画样式",
             description = "可以切换清和玺等彩画样式",
             items = [
-                ("0","素体",""),
-                ("1","清-和玺彩画",""),
+                ("0","清-和玺彩画",""),
+                ("1","酱油色",""),
+                ("2","白模",""),
             ],
             update = update_building,
             options = {"ANIMATABLE"}
@@ -957,6 +958,10 @@ class ACA_data_scene(bpy.types.PropertyGroup):
 # 包括资产库资产引用等    
 class ACA_data_template(bpy.types.PropertyGroup):
     # 材质对象
+    mat_override:bpy.props.PointerProperty(
+            name = "UVgrid",
+            type = bpy.types.Object,
+        )# type: ignore 
     mat_wood:bpy.props.PointerProperty(
             name = "木材材质",
             type = bpy.types.Object,
@@ -969,7 +974,7 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "石头材质",
             type = bpy.types.Object,
         )# type: ignore 
-    mat_red:bpy.props.PointerProperty(
+    mat_oilpaint:bpy.props.PointerProperty(
             name = "漆.通用",
             type = bpy.types.Object,
         )# type: ignore 
@@ -989,8 +994,8 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "条砖横铺",
             type = bpy.types.Object,
         )# type: ignore 
-    mat_dust_red:bpy.props.PointerProperty(
-            name = "抹灰.红",
+    mat_dust_wall:bpy.props.PointerProperty(
+            name = "墙体抹灰",
             type = bpy.types.Object,
         )# type: ignore 
     mat_paint_beam_big :bpy.props.PointerProperty(

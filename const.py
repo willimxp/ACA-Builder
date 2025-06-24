@@ -225,6 +225,52 @@ class ACA_Consts(object):
     BEVEL_LOW = 0.01
     BEVEL_EXLOW = 0.005
 
+    # 材质名称
+    M_ROCK = '石材'
+    M_PAINT = '上漆'
+    M_GOLD = '金漆'
+    M_BRICK_WALL = '砖墙'
+    M_PLATFORM_FLOOR = '台基地面'
+    M_PLATFORM_WALL = '台基陡板'
+    M_PLATFORM_ROCK = '台基石材'
+    M_PLATFORM_EXPAND = '台基散水'
+    M_QUETI = '雀替'
+    M_FANG_CHUANCHA = '穿插枋'
+    M_FANG_JIN = '金枋'
+    M_FANG_EBIG = '大额枋'
+    M_FANG_ESMALL = '小额枋'
+    M_BOARD_YOUE = '由额垫板'
+    M_BOARD_WALLHEAD = '走马板'
+    M_PILLER_BASE = '柱顶石'
+    M_PILLER = '柱'
+    M_PILLER_HEAD = '柱头'
+    M_WALL_BOTTOM = '墙-下碱'
+    M_WALL = '墙-抹灰'
+    M_WINDOW = '窗框'
+    M_WINDOW_INNER = '棂心'
+    M_WINDOW_WALL = '槛墙'
+    M_DOOR_RING = '绦环板'
+    M_DOOR_BOTTOM = '裙板'
+    M_FANG_PINGBAN = '平板枋'
+    M_FANG_TIAOYAN = '挑檐枋'
+    M_FANG_DGCONNECT = '拽枋'
+    M_DOUGONG = '斗栱'
+    M_BOARD_DG = '栱垫板'
+    M_BOARD_DG_S = '栱垫板-小'
+    M_BAWANGQUAN = '霸王拳'
+    M_BEAM_NOPAINT = '梁架-无漆'
+    M_BEAM_PAINT = '梁架-上漆'
+    M_ROOF_PAINT = '屋顶-上漆'
+    M_ROOF_NOPAINT = '屋顶-无漆'
+    M_CORNERBEAM = '老角梁'
+    M_CORNERBEAM_S = '子角梁'
+    M_RAFTER = '檐椽'
+    M_FLYRAFTER = '飞椽'
+    M_WANGBAN = '望板'
+    M_SHANHUA = '山花板'
+    M_XIANGYAN = '象眼板'
+    
+
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")
 

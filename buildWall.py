@@ -235,7 +235,7 @@ def __drawWall(wallProxy:bpy.types.Object):
         parent=wallProxy,
     )
     # 赋材质
-    mat.setMat(bottomObj,aData.mat_rock)
+    mat.paint(bottomObj,con.M_WALL_BOTTOM)
     wallParts.append(bottomObj)
 
     # 2、创建上身对象
@@ -268,7 +268,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     bm.free() 
 
     # 赋材质
-    mat.setMat(bodyObj,aData.mat_dust_red)
+    mat.paint(bodyObj,con.M_WALL)
     wallParts.append(bodyObj)
     
     # 合并
@@ -298,7 +298,7 @@ def __drawWall(wallProxy:bpy.types.Object):
                            bData.wall_span),
                 parent=bodyObj,
             )
-        mat.setMat(wallHeadBoard,aData.mat_red)
+        mat.paint(wallHeadBoard,con.M_BOARD_WALLHEAD)
         wallParts.append(wallHeadBoard)
 
     return bodyObj

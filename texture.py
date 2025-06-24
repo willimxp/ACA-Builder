@@ -202,6 +202,319 @@ def UvUnwrap(object:bpy.types.Object,
 
     return
 
+# 统一开放的着色接口
+def paint(paintObj:bpy.types.Object,        # 着色对象
+          paintMat:str,                     # 材质名称，根据业务需要自定义
+          override=False,                   # 是否覆盖已有材质
+          ):
+    # 预校验 #############################################
+    # 非mesh对象直接跳过
+    if paintObj == None: return
+    if paintObj.type not in ('MESH','CURVE'):
+        return
+    # 如果已经有材质，且未声明override，则不做材质
+    if paintObj.active_material != None \
+        and not override:
+        # 不做任何改变
+        return
+    
+    # 初始化 ############################################
+    buildingObj = utils.getAcaParent(
+        paintObj,con.ACA_TYPE_BUILDING)
+    bData:acaData = buildingObj.ACA_data
+    aData:tmpData = bpy.context.scene.ACA_temp
+    paintStyle = bData.paint_style
+    mat = None
+    slot = None
+
+    # 作色 #############################################
+    # 0. 通用样式，定义在各个配色方案中都通用的材质
+    if paintMat in (
+            con.M_GOLD, # 金漆
+        ):
+            mat = aData.mat_gold # 金漆
+    if paintMat in (
+            con.M_PLATFORM_FLOOR, # 台基地面
+        ):
+            mat = aData.mat_brick_1 # 方砖缦地
+    if paintMat in (
+            con.M_PLATFORM_WALL, # 台基陡板
+            con.M_BRICK_WALL, # 砖墙
+        ):
+            mat = aData.mat_brick_3 # 条砖横铺
+    if paintMat in (
+            con.M_ROCK, # 石材
+            con.M_PLATFORM_ROCK, # 台基石材
+            con.M_WALL_BOTTOM, # 墙-下碱
+            con.M_WINDOW_WALL, # 槛墙
+        ):
+            mat = aData.mat_rock # 石材
+    if paintMat in (
+            con.M_PLATFORM_EXPAND, # 台基石材
+        ):
+            mat = aData.mat_brick_2 # 条砖竖铺
+    if paintMat in (
+            con.M_PILLER_BASE, # 柱顶石
+            con.M_XIANGYAN, # 象眼板
+        ):
+            mat = aData.mat_stone # 石头
+    if paintMat in (
+            con.M_BEAM_NOPAINT, # 梁架-无漆
+            con.M_ROOF_NOPAINT, # 屋顶-无漆
+        ):
+            mat = aData.mat_wood # 原木
+    
+    
+    # 0. 金龙和玺样式
+    if paintStyle == '0':
+        if paintMat in (
+            con.M_PAINT, # 上漆
+            con.M_FANG_JIN, # 金枋
+            con.M_BOARD_WALLHEAD, # 走马板
+            con.M_WINDOW, # 窗框
+            con.M_BEAM_PAINT, # 梁架上漆
+            con.M_ROOF_PAINT, # 梁架上漆
+        ):
+            mat = aData.mat_oilpaint # 红漆
+        if paintMat in (
+            con.M_FANG_EBIG, # 大额枋
+        ):
+            mat = aData.mat_paint_beam_big
+        if paintMat in (
+            con.M_FANG_ESMALL, # 小额枋
+        ):
+            mat = aData.mat_paint_beam_small    
+        if paintMat in (
+            con.M_BOARD_YOUE, # 由额垫板
+        ):
+            mat = aData.mat_paint_grasscouple   
+        if paintMat in (
+            con.M_PILLER_HEAD, # 柱头
+        ):
+            mat = aData.mat_paint_pillerhead 
+        if paintMat in (
+            con.M_WALL, # 墙-抹灰
+        ):
+            mat = aData.mat_dust_wall
+        if paintMat in (
+            con.M_WINDOW_INNER, # 棂心
+        ):
+            mat = aData.mat_geshanxin 
+        if paintMat in (
+            con.M_DOOR_RING, # 绦环板
+        ):
+            mat = aData.mat_paint_doorring 
+        if paintMat in (
+            con.M_DOOR_BOTTOM, # 裙板
+        ):
+            mat = aData.mat_paint_door 
+        if paintMat in (
+            con.M_FANG_PINGBAN, # 平板枋
+        ):
+            mat = aData.mat_paint_walkdragon 
+        if paintMat in (
+            con.M_FANG_TIAOYAN, # 挑檐枋
+        ):
+            mat = aData.mat_paint_cloud 
+        if paintMat in (
+            con.M_BOARD_DG, # 栱垫板
+        ):
+            mat = aData.mat_paint_dgfillboard 
+        if paintMat in (
+            con.M_BOARD_DG_S, # 栱垫板-小
+        ):
+            mat = aData.mat_paint_dgfillboard_s 
+        if paintMat in (
+            con.M_CORNERBEAM_S, # 子角梁
+        ):
+            mat = aData.mat_paint_ccb
+        if paintMat in (
+            con.M_RAFTER, # 檐椽
+        ):
+            mat = aData.mat_paint_rafter
+        if paintMat in (
+            con.M_FLYRAFTER, # 飞椽
+        ):
+            mat = aData.mat_paint_flyrafter
+        if paintMat in (
+            con.M_WANGBAN, # 望板
+        ):
+            mat = aData.mat_paint_wangban
+        if paintMat in (
+            con.M_SHANHUA, # 山花板
+        ):
+            mat = aData.mat_paint_shanhua
+        if paintMat in (
+            con.M_FANG_DGCONNECT, # 拽枋
+            con.M_DOUGONG, # 斗栱
+            con.M_BAWANGQUAN, # 霸王拳
+            con.M_CORNERBEAM, # 老角梁
+        ):
+            # 直接使用原始贴图，不做改变
+            pass
+        
+    
+    # 1. 酱油漆样式
+    if paintStyle == '1':
+        if paintMat in (
+            con.M_PAINT, # 上漆
+            con.M_QUETI, # 雀替
+            con.M_FANG_CHUANCHA,#穿插枋
+            con.M_FANG_JIN,#金枋
+            con.M_FANG_EBIG, # 大额枋
+            con.M_FANG_ESMALL, # 小额枋
+            con.M_BOARD_YOUE, # 由额垫板
+            con.M_PILLER_HEAD, # 柱头
+            con.M_BOARD_WALLHEAD, # 走马板
+            con.M_WINDOW, # 窗框
+            con.M_DOOR_RING, # 绦环板
+            con.M_DOOR_BOTTOM, # 裙板
+            con.M_FANG_PINGBAN, # 平板枋
+            con.M_BAWANGQUAN, # 霸王拳
+            con.M_BEAM_PAINT, # 梁架-上漆
+            con.M_ROOF_PAINT, # 屋顶-上漆
+            con.M_CORNERBEAM, # 老角梁
+            con.M_CORNERBEAM_S, # 子角梁
+            con.M_RAFTER, # 檐椽
+            con.M_FLYRAFTER, # 飞椽
+            con.M_WANGBAN, # 望板
+            con.M_SHANHUA, # 山花板
+        ):
+            mat = aData.mat_oilpaint
+            slot = 1
+        if paintMat in (
+            con.M_WALL, # 墙-抹灰
+            con.M_BOARD_DG, # 栱垫板
+            con.M_BOARD_DG_S, # 栱垫板-小
+        ):
+            mat = aData.mat_dust_wall
+            slot = 1
+        if paintMat in (
+            con.M_WINDOW_INNER, # 棂心
+        ):
+            mat = aData.mat_geshanxin 
+            slot = 1
+        if paintMat in (
+            con.M_FANG_TIAOYAN, # 挑檐枋
+            con.M_FANG_DGCONNECT, # 拽枋
+            con.M_DOUGONG, # 斗栱
+        ):
+            mat = aData.mat_wood
+        
+
+    # 2. override，全局覆盖的着色方式
+    if paintStyle == '2': 
+        mat = aData.mat_override
+
+    paintObj = __paintMat(paintObj, mat, slot)
+
+    return paintObj
+
+# 设置材质，并进行相应几何处理
+def __paintMat(object:bpy.types.Object,
+              mat=None,
+              slot=None,):    
+    aData:tmpData = bpy.context.scene.ACA_temp
+
+    if mat == aData.mat_override:
+        object = __setTileMat(object,
+                     mat,
+                     uvType=uvType.CUBE,
+                     cubesize=2)
+        return object
+
+    # 简单平铺的材质
+    if mat in (
+        aData.mat_oilpaint,          # 漆.通用
+        aData.mat_wood,         # 木材材质
+        aData.mat_rock,         # 石材材质
+        aData.mat_stone,        # 石头材质
+        aData.mat_brick_1,      # 方砖缦地
+        aData.mat_brick_2,      # 条砖竖铺
+        aData.mat_brick_3,      # 条砖横铺
+        aData.mat_dust_wall,    # 墙体抹灰
+        aData.mat_gold,         # 漆.金
+    ):
+        object = __setTileMat(object,
+                     mat,
+                     uvType=uvType.CUBE,
+                     cubesize=2)
+    
+    # 三交六椀隔心
+    if mat == aData.mat_geshanxin:
+        object = __setTileMat(object,
+                     mat,
+                     uvType=uvType.CUBE,
+                     cubesize=0.1)  
+
+    # 挑檐枋工王云，仅在前后两面做彩画
+    if mat in (
+        aData.mat_paint_cloud,
+    ):
+        object = __paintFrontBack(object,mat)
+
+    # 平板枋走龙，在前后左右四面做彩画
+    if mat in (
+        aData.mat_paint_walkdragon, 
+    ):
+        object = __paintAround(object,mat)
+    
+    # 拉伸填充的材质
+    if mat in (
+        aData.mat_paint_doorring,   # 隔扇绦环
+        aData.mat_paint_door,       # 隔扇壶门
+    ):
+        object = __setTileMat(object,
+                     mat,
+                     uvType=uvType.CUBE,
+                     scaleToBounds=True)
+    
+    # 梁枋彩画
+    if mat in (
+        aData.mat_paint_beam_big,
+        aData.mat_paint_beam_small,
+    ):
+        object = __setFangMat(object,mat)
+
+    # 由额垫板，公母草贴图
+    if mat == aData.mat_paint_grasscouple:
+        object = __setYOUE(object,mat)
+
+    # 柱头贴图
+    if mat == aData.mat_paint_pillerhead:
+        object = __setPillerHead2(object,mat)
+
+    # 栱垫板(小号和普通版)
+    if mat in (aData.mat_paint_dgfillboard,
+               aData.mat_paint_dgfillboard_s):
+        object = __setDgBoard(object,mat)
+
+    # 檐椽
+    if mat == aData.mat_paint_rafter:
+        object = __setRafterMat(object,mat)
+    
+    # 飞椽
+    if mat == aData.mat_paint_flyrafter:
+        object = __setFlyrafterMat(object,mat)
+    
+    # 望板
+    if mat == aData.mat_paint_wangban:
+        object = __setWangban(object,mat)
+
+    # 子角梁，龙肚子
+    if mat == aData.mat_paint_ccb:
+       object = __setCCB(object,mat)
+
+    # 山花板
+    if mat == aData.mat_paint_shanhua:
+        object = __setShanhua(object,mat)
+
+    # 设置材质slot
+    if slot != None:
+        __replaceSlot(object,toSlot=slot)
+
+    return object
+
 # 设置材质，并进行相应几何处理
 def setMat(object:bpy.types.Object,
               mat:bpy.types.Object,
@@ -224,7 +537,7 @@ def setMat(object:bpy.types.Object,
     buildingObj = utils.getAcaParent(
         object,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
-    if bData.paint_style == '0':
+    if bData.paint_style == '1':
         # 素体，无彩画
         if mat in (
             aData.mat_paint_walkdragon,     # 平板枋走龙
@@ -241,7 +554,7 @@ def setMat(object:bpy.types.Object,
             aData.mat_cornerbeam,           # 老角梁
             aData.mat_queti,                # 雀替
         ):
-            mat = aData.mat_red
+            mat = aData.mat_oilpaint
 
         if mat in (
             aData.mat_dougong,              # 斗栱
@@ -251,14 +564,14 @@ def setMat(object:bpy.types.Object,
 
     # 简单平铺的材质
     if mat in (
-        aData.mat_red,          # 漆.通用
+        aData.mat_oilpaint,     # 漆.通用
         aData.mat_wood,         # 木材材质
         aData.mat_rock,         # 石材材质
         aData.mat_stone,        # 石头材质
         aData.mat_brick_1,      # 方砖缦地
         aData.mat_brick_2,      # 条砖竖铺
         aData.mat_brick_3,      # 条砖横铺
-        aData.mat_dust_red,     # 抹灰.红
+        aData.mat_dust_wall,    # 墙体抹灰
         aData.mat_gold,         # 漆.金
     ):
         __setTileMat(object,
@@ -275,8 +588,8 @@ def setMat(object:bpy.types.Object,
         
     # 切换酱油色
     if bData.paint_style == '0':
-        if mat in (aData.mat_red,        # 漆.通用
-                aData.mat_dust_red,      # 墙色抹灰
+        if mat in (aData.mat_oilpaint,        # 漆.通用
+                aData.mat_dust_wall,      # 墙色抹灰
                 aData.mat_geshanxin,     # 三交六椀隔心
                 ):
             # 酱油色
@@ -409,7 +722,7 @@ def __setTileMat(
              correctAspect=correctAspect,
              scaleToBounds=scaleToBounds)
     
-    return
+    return object
 
 # 檐椽展UV
 def __setRafterMat(rafter:bpy.types.Object,mat):
@@ -567,8 +880,8 @@ def __setPillerHead(pillerObj:bpy.types.Object,
 
     # 绑定柱头材质
     __copyMaterial(mat,pillerHeadObj)
-    __copyMaterial(aData.mat_red,pillerBodyObj)
-    __copyMaterial(aData.mat_red,pillerTopObj)
+    __copyMaterial(aData.mat_oilpaint,pillerBodyObj)
+    __copyMaterial(aData.mat_oilpaint,pillerTopObj)
     # 重新展UV
     UvUnwrap(pillerHeadObj,uvType.CYLINDER)
     UvUnwrap(pillerBodyObj,uvType.CUBE,cubesize=2)
@@ -701,7 +1014,7 @@ def __setFangMat(fangObj:bpy.types.Object,
         or fangObj.name.startswith('正心桁')):
         __setTuanHead(fangObj)
     
-    return
+    return fangObj
 
 # 设置槫头坐龙
 def __setTuanHead(tuan:bpy.types.Object):
@@ -897,7 +1210,7 @@ def __paintAround(fangObj:bpy.types.Object,
              cubesize=cubeHeight)
     return fangObj
 
-# 望板材质，底面刷红
+# 望板材质，底面刷漆
 def __setWangban(wangban:bpy.types.Object,
                  mat:bpy.types.Object):
     __copyMaterial(mat,wangban)
@@ -919,7 +1232,7 @@ def __setWangban(wangban:bpy.types.Object,
 
     # 展UV
     UvUnwrap(wangban,uvType.CUBE)
-    return
+    return wangban
 
 # 设置仔角梁龙肚子
 def __setCCB(ccbObj:bpy.types.Object,
@@ -936,7 +1249,7 @@ def __setCCB(ccbObj:bpy.types.Object,
         # 根据向量的点积判断方向，正为同向，0为垂直，负为反向
         dir = face.normal.dot(negZ)
         if dir > 0.5:
-            # 设置为slot1的红漆
+            # 设置为slot1的龙肚子
             face.material_index = 1
     bm.to_mesh(ccbObj.data)
     bm.free()
@@ -948,7 +1261,7 @@ def __setCCB(ccbObj:bpy.types.Object,
              uvType.CUBE,
              cubesize=ccbWidth,
              correctAspect=False)
-    return
+    return ccbObj
 
 # 设置山花板
 def __setShanhua(shanhuaObj:bpy.types.Object,
@@ -1019,7 +1332,7 @@ def __setShanhua(shanhuaObj:bpy.types.Object,
     # 合并
     utils.joinObjects([shanhuaObj,shanghuaTopObj],
                       cleanup=True)
-    return
+    return shanhuaObj
 
 # 切换材质slot
 def __replaceSlot(obj:bpy.types.Object,

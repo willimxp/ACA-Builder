@@ -63,8 +63,8 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     # 转为mesh
     bpy.ops.object.convert(target='MESH')
     zibianObj = bpy.context.object
-    # 仔边刷红漆
-    mat.setMat(zibianObj,aData.mat_red)
+    # 仔边刷漆
+    mat.paint(zibianObj,con.M_WINDOW)
     linxingList.append(bpy.context.object)
 
     # # 填充棂心
@@ -114,7 +114,7 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
                          use_scale=True,
                          use_rotation=True)
     # 棂心贴图（三交六椀）
-    mat.setMat(linxinObj,aData.mat_geshanxin)
+    mat.paint(linxinObj,con.M_WINDOW_INNER)
     linxingList.append(linxinObj)
 
     # 合并扇心
@@ -358,7 +358,7 @@ def __buildKanKuang(wallproxy,windowsillHeight):
     for ob in KankuangObjs:
         # 全部设置为朱漆材质
         # 其中槛窗的窗台为石质，并不会被覆盖
-        mat.setMat(ob,aData.mat_red)
+        mat.paint(ob,con.M_WINDOW)
     
     # 合并槛框
     kankuangObj = utils.joinObjects(KankuangObjs,'槛框')     
@@ -768,17 +768,17 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
                 name=part['name'],
                 root_obj=geshan_root,  # 挂接在柱网节点下
             )
-            mat.setMat(menzhouObj,aData.mat_red)
+            mat.paint(menzhouObj,con.M_WINDOW)
 
         # 设置材质
         partMat = None
         if part['name'] == '绦环':
-            partMat = aData.mat_paint_doorring
+            partMat = con.M_DOOR_RING
         elif part['name'] == '裙板':
-            partMat = aData.mat_paint_door
+            partMat = con.M_DOOR_BOTTOM
         else:
-            partMat = aData.mat_red
-        mat.setMat(partObj,partMat)
+            partMat = con.M_WINDOW
+        mat.paint(partObj,partMat)
             
     # 隔扇子对象合并
     if bData.use_KanWall:
@@ -871,7 +871,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
         parent = wallproxy,
         )
     # 设置材质：石材
-    mat.setMat(kanqiangObj,aData.mat_rock)
+    mat.paint(kanqiangObj,con.M_WINDOW_WALL)
     kanQiangObjs.append(kanqiangObj)
 
     # 窗楹
@@ -922,7 +922,7 @@ def __buildKanqiang(wallproxy:bpy.types.Object
 
     # 设置材质
     for obj in kanQiangObjs:
-        mat.setMat(obj,aData.mat_red)
+        mat.paint(obj,con.M_WINDOW)
 
     # 合并构件
     kangqiangObj = utils.joinObjects(kanQiangObjs,'槛墙')
@@ -1019,7 +1019,7 @@ def buildDoor(wallProxy:bpy.types.Object):
                            bData.wall_span),
                 parent=wallProxy,
             )
-        mat.setMat(wallHeadBoard,aData.mat_red)
+        mat.paint(wallHeadBoard,con.M_WINDOW)
         kankuangList.append(wallHeadBoard)
 
     # 合并槛框

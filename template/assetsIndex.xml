@@ -1,15 +1,15 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <assets>
-    <mat_grid type="Object">UVgrid</mat_grid>
+    <mat_override type="Object">石头</mat_override>
     <mat_wood type="Object">原木</mat_wood>
     <mat_rock type="Object">石材</mat_rock>
     <mat_stone type="Object">石头</mat_stone>
-    <mat_red type="Object">漆.通用</mat_red>
+    <mat_oilpaint type="Object">漆.通用</mat_oilpaint>
     <mat_gold type="Object">漆.金</mat_gold>
     <mat_brick_1 type="Object">方砖缦地</mat_brick_1>
     <mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
     <mat_brick_3 type="Object">条砖横铺</mat_brick_3>
-    <mat_dust_red type="Object">抹灰.红</mat_dust_red>
+    <mat_dust_wall type="Object">墙体抹灰</mat_dust_wall>
     <mat_paint_beam_big type="Object">梁枋彩画.大额枋</mat_paint_beam_big>
     <mat_paint_beam_small type="Object">梁枋彩画.小额枋</mat_paint_beam_small>
     <mat_paint_pillerhead type="Object">柱头贴图</mat_paint_pillerhead>

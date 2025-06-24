@@ -52,7 +52,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         parent=baseRootObj
     )
     # 设置材质：方砖缦地
-    mat.setMat(floorInsideObj,aData.mat_brick_1)
+    mat.paint(floorInsideObj,con.M_PLATFORM_FLOOR)
     taimingList.append(floorInsideObj)
 
     # 2.2、阶条石
@@ -166,8 +166,8 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         ),
         parent=baseRootObj
     )
-    # 方砖横铺
-    mat.setMat(aroundbrickObj,aData.mat_brick_3)
+    # 条砖横铺
+    mat.paint(aroundbrickObj,con.M_PLATFORM_WALL)
     utils.addModifierMirror(
         object=aroundbrickObj,
         mirrorObj=baseRootObj,
@@ -190,8 +190,8 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         ),
         parent=baseRootObj
     )
-    # 方砖横铺
-    mat.setMat(aroundbrickObj,aData.mat_brick_3)
+    # 条砖横铺
+    mat.paint(aroundbrickObj,con.M_PLATFORM_WALL)
     utils.addModifierMirror(
         object=aroundbrickObj,
         mirrorObj=baseRootObj,
@@ -206,8 +206,8 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
             object=obj,
             width=con.BEVEL_EXHIGH
         )
-        # 设置材质
-        mat.setMat(obj,aData.mat_rock)
+        # 设置石材
+        mat.paint(obj,con.M_PLATFORM_ROCK)
     
     # 合并台基
     taimingJoined = utils.joinObjects(
@@ -443,7 +443,7 @@ def __drawStep(
             use_axis=(True,False,False)
         )
     # 设置材质：方砖横铺
-    mat.setMat(brickObj,aData.mat_brick_3)
+    mat.paint(brickObj,con.M_PLATFORM_WALL)
     taduoObjs.append(brickObj)
 
     # 2、垂带
@@ -545,7 +545,7 @@ def __drawStep(
             clamp=False,
         )
         # 设置材质
-        mat.setMat(obj,aData.mat_rock)
+        mat.paint(obj,con.M_PLATFORM_ROCK)
 
     # 合并对象
     stepJoined = utils.joinObjects(
@@ -596,7 +596,7 @@ def __addPlatformExpand(
         # 高度
         height = con.GROUND_BORDER
         # 材质
-        pfeMat = aData.mat_rock
+        pfeMat = con.M_PLATFORM_ROCK
     if type == 'sanshui':
         name = '散水' 
         # 拓展尺寸
@@ -606,7 +606,7 @@ def __addPlatformExpand(
         # 高度
         height = con.SANSHUI_HEIGHT 
         # 材质
-        pfeMat = aData.mat_brick_2
+        pfeMat = con.M_PLATFORM_EXPAND
 
     # 2、台明拓展，做为后续合并踏跺扩展的本体
     baseExpandObj = utils.addCube(
@@ -673,7 +673,7 @@ def __addPlatformExpand(
         bpy.data.objects.remove(stepExpandObj)
     
     # 5、设置材质
-    mat.setMat(baseExpandObj,pfeMat)
+    mat.paint(baseExpandObj,pfeMat)
 
     return baseExpandObj
 

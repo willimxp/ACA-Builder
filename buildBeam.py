@@ -471,16 +471,16 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             utils.addModifierBevel(hengfangObj,con.BEVEL_LOW)
 
         # 设色 =======================================================
-        # 根据需要刷红漆，否则默认做原木色       
-        # 无斗拱时，正心桁下刷红漆
+        # 根据需要刷漆，否则默认做原木色       
+        # 无斗拱时，正心桁下刷漆
         if n==0 and not bData.use_dg:
-            mat.setMat(dianbanObj,aData.mat_red)
+            mat.paint(dianbanObj,con.M_BEAM_PAINT)
 
-        # 金桁如果做承椽枋、垫板、枋，则涂红
+        # 金桁如果做承椽枋、垫板、枋，则刷漆
         if n==1 and bData.roof_style == con.ROOF_LUDING:
-            mat.setMat(hengFB,aData.mat_red)
-            mat.setMat(dianbanObj,aData.mat_red)
-            mat.setMat(hengfangObj,aData.mat_red)
+            mat.paint(hengFB,con.M_BEAM_PAINT)
+            mat.paint(dianbanObj,con.M_BEAM_PAINT)
+            mat.paint(hengfangObj,con.M_BEAM_PAINT)
 
     # 三、布置山面桁檩
     # 仅庑殿、歇山做山面桁檩，硬山、悬山不做山面桁檩
@@ -591,9 +591,9 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     parent=beamRootObj,
                 )
                 purlinFrameList.append(dianbanObj)
-                # 无斗拱，第一层垫板刷红漆
+                # 无斗拱，第一层垫板刷漆
                 if n==0 and not bData.use_dg:
-                    mat.setMat(dianbanObj,aData.mat_red)
+                    mat.paint(dianbanObj,con.M_BEAM_PAINT)
                 # 镜像
                 utils.addModifierMirror(
                     object=dianbanObj,
@@ -632,15 +632,15 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 # 倒角
                 utils.addModifierBevel(hengfangObj,con.BEVEL_LOW)
 
-            # 金桁如果做承椽枋、垫板、枋，则涂红
+            # 金桁如果做承椽枋、垫板、枋，则刷漆
             if n==1 and bData.roof_style == con.ROOF_LUDING:
-                mat.setMat(hengLR,aData.mat_red)
-                mat.setMat(dianbanObj,aData.mat_red)
-                mat.setMat(hengfangObj,aData.mat_red)
+                mat.paint(hengLR,con.M_BEAM_PAINT)
+                mat.paint(dianbanObj,con.M_BEAM_PAINT)
+                mat.paint(hengfangObj,con.M_BEAM_PAINT)
 
     # 设置材质
     for obj in purlinFrameList:
-        mat.setMat(obj,aData.mat_wood)
+        mat.paint(obj,con.M_BEAM_NOPAINT)
     # 合并桁对象
     purlinFrameObj = utils.joinObjects(purlinFrameList,'桁架')      
     return
@@ -756,7 +756,7 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
         # 传入id，便于后续做彩画时判断异色
         hengObj.ACA_data['fangID'] = purlin['id']
         # 设置梁枋彩画
-        mat.setMat(hengObj,aData.mat_paint_beam_small)
+        mat.paint(hengObj,con.M_FANG_ESMALL)
         # 设置对称
         utils.addModifierMirror(
             object=hengObj,
@@ -1174,9 +1174,9 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 )
                 beamCopyObj.parent= beamRootObj
                 beamObjects.append(beamCopyObj)
-                # 无斗拱的首层梁刷红漆，否则做木色
+                # 无斗拱的首层梁刷漆，否则做木色
                 if not bData.use_dg and n==0:
-                    mat.setMat(beamCopyObj,aData.mat_red)
+                    mat.paint(beamCopyObj,con.M_BEAM_PAINT)
                 
                 # 抱头梁做法
                 BaotouliangLength = 0
@@ -1342,7 +1342,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     if beamObjects != []:
         # 设置材质
         for beamobj in beamObjects:
-            mat.setMat(beamobj,aData.mat_wood)
+            mat.paint(beamobj,con.M_BEAM_NOPAINT)
         # 合并
         beamSetObj = utils.joinObjects(
             beamObjects,newName='梁架')

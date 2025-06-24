@@ -79,8 +79,7 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
         use_axis=(False,True,False)
     )
     # 设置材质:平板枋走龙
-    mat.setMat(pingbanfangObj,
-        aData.mat_paint_walkdragon)
+    mat.paint(pingbanfangObj,con.M_FANG_PINGBAN)
 
     # 山面平板枋
     loc = (net_x[0],0,con.PINGBANFANG_H*dk/2)
@@ -131,11 +130,8 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
             use_axis=(False,True,False),
         )
 
-
-
     # 设置材质:平板枋走龙
-    mat.setMat(pingbanfangObj,
-        aData.mat_paint_walkdragon)
+    mat.paint(pingbanfangObj,con.M_FANG_PINGBAN)
     return
 
 # 生成连接枋
@@ -216,15 +212,14 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
     # 设置材质
     if '挑檐枋' in fangSourceObj.name:
         # 设置工王云
-        mat.setMat(fangCopy,
-                   aData.mat_paint_cloud,
+        mat.paint(fangCopy,con.M_FANG_TIAOYAN,
                    override=True)
     else:
         # 根据缩放，更新UV
         mat.UvUnwrap(fangCopy,type='cube')
         # 设置斗栱配色
-        mat.setMat(fangCopy,
-            aData.mat_dougong,override=True)
+        mat.paint(fangCopy,con.M_FANG_DGCONNECT,
+                   override=True)
     
     # 做两山连接件(仅适用四坡顶，不适用于二坡顶)
     if bData.roof_style in (
@@ -254,15 +249,14 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         # 设置材质
         if '挑檐枋' in fangSourceObj.name:
             # 设置工王云
-            mat.setMat(fangCopy,
-                   aData.mat_paint_cloud,
+            mat.paint(fangCopy,con.M_FANG_TIAOYAN,
                    override=True)
         else:
             # 根据缩放，更新UV
             mat.UvUnwrap(fangCopy,type='cube')
             # 设置斗栱配色
-            mat.setMat(fangCopy,
-                aData.mat_dougong,override=True)
+            mat.paint(fangCopy,con.M_FANG_DGCONNECT,
+                       override=True)
     return
 
 # 生成连接枋
@@ -334,8 +328,8 @@ def __buildDGFangbyRoom(
         # 根据拉伸，更新UV平铺
         mat.UvUnwrap(fangCopy,mat.uvType.CUBE)
         # 设置斗栱配色
-        mat.setMat(fangCopy,
-            aData.mat_dougong,override=True)
+        mat.paint(fangCopy,con.M_FANG_DGCONNECT,
+                  override=True)
         # 设置对称
         utils.addModifierMirror(
             object=fangCopy,
@@ -347,13 +341,11 @@ def __buildDGFangbyRoom(
         if '栱垫板' in fangSourceObj.name:
             if bData.dg_extend == 0 :
                 # 一斗三升使用小号的栱垫板，只有一层正心瓜栱
-                mat.setMat(fangCopy,
-                        aData.mat_paint_dgfillboard_s,
+                mat.paint(fangCopy,con.M_BOARD_DG_S,
                         override=True)
             else:
                 # 普通的栱垫板有一层正心瓜栱，一层正心厢栱
-                mat.setMat(fangCopy,
-                        aData.mat_paint_dgfillboard,
+                mat.paint(fangCopy,con.M_BOARD_DG,
                         override=True)
             
     return
@@ -448,8 +440,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
             )
             dgCornerCopy.rotation_euler.z = math.radians(n * 90)
             # 设置斗栱配色
-            mat.setMat(dgCornerCopy,
-                aData.mat_dougong,override=True)
+            mat.paint(dgCornerCopy,con.M_DOUGONG,override=True)
 
     # 柱头斗栱
     if aData.dg_piller_source != None:
@@ -485,8 +476,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 tailExtend=taojianLength
             )
             # 设置斗栱配色
-            mat.setMat(dgPillerCopy,
-                aData.mat_dougong,override=True)
+            mat.paint(dgPillerCopy,con.M_DOUGONG,override=True)
 
             # 250621 硬山角柱上的柱头斗栱做裁剪，以免超出山墙
             if (bData.roof_style in (
@@ -533,8 +523,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                     tailExtend=taojianLength
                 )
                 # 设置斗栱配色
-                mat.setMat(dgPillerCopy,
-                    aData.mat_dougong,override=True)
+                mat.paint(dgPillerCopy,con.M_DOUGONG,override=True)
     
     # 补间斗栱/平身科
     if aData.dg_fillgap_source != '' :
@@ -584,8 +573,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                     )
                 dgFillCopy.rotation_euler.z = math.radians(180)
                 # 设置斗栱配色
-                mat.setMat(dgFillCopy,
-                    aData.mat_dougong,override=True)
+                mat.paint(dgFillCopy,con.M_DOUGONG,override=True)
                 utils.addModifierMirror(
                     object=dgFillCopy,
                     mirrorObj=dgrootObj,
@@ -630,8 +618,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                         )
                     dgFillCopy.rotation_euler.z = math.radians(270)
                     # 设置斗栱配色
-                    mat.setMat(dgFillCopy,
-                        aData.mat_dougong,override=True)
+                    mat.paint(dgFillCopy,con.M_DOUGONG,override=True)
                     utils.addModifierMirror(
                         object=dgFillCopy,
                         mirrorObj=dgrootObj,

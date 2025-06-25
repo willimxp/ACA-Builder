@@ -27,6 +27,7 @@ bl_info = {
 classes = (
     # 全局数据类
     data.TemplateListItem,
+    data.TemplateThumbItem,
     data.ACA_data_scene,    
     data.ACA_data_obj,
     data.ACA_data_template,

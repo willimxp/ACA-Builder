@@ -26,12 +26,25 @@ def initprop():
         type=ACA_data_obj,
         name="古建构件属性集"
     )
+
+    # 用于模板缩略图控件的载入
+    from . import template
+    bpy.types.Scene.image_browser_items = bpy.props.CollectionProperty(
+        type=TemplateThumbItem)
+    bpy.types.Scene.image_browser_enum = bpy.props.EnumProperty(
+        name="Images",
+        items=template.getThumbEnum
+    )
     return
 
 # 销毁自定义属性
 def delprop():
     del bpy.types.Scene.ACA_data
     del bpy.types.Object.ACA_data
+    
+    # 用于模板缩略图控件的载入
+    del bpy.types.Scene.image_browser_items
+    del bpy.types.Scene.image_browser_enum
 
 # # 筛选资产目录
 # def p_filter(self, object:bpy.types.Object):
@@ -917,6 +930,11 @@ class TemplateListItem(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(
         name="Name", default="Item"
     ) # type: ignore
+
+# 模板缩略图控件对象，绑定在template_view_icon上
+class TemplateThumbItem(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty()# type: ignore     
+    path: bpy.props.StringProperty()# type: ignore     
 
 # 场景范围的数据
 # 可绑定面板参数属性

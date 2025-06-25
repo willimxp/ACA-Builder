@@ -1158,11 +1158,14 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
         for templateName in templateList:
             item = scnData.templateItem.add()
             item.name = templateName
+
+        # 填充缩略图
+        template.loadThumb()
         
         # 弹出对话框
         return context.window_manager.invoke_props_dialog(
             self, 
-            width = 300,
+            width = 450,
             confirm_text='生成')
  
     def draw(self, context):
@@ -1180,9 +1183,16 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
             active_propname="templateIndex", 
             rows=10)
         
-        # 删除按钮
+        # 右侧边栏
         col = row.column(align=True)
-        col.operator("aca.del_template", icon='TRASH', text="")
+        # 缩略图展示，使用了blender内置的template_icon_view控件
+        scene = context.scene
+        col.template_icon_view(scene,
+                               "image_browser_enum",
+                               show_labels=True,
+                               scale=10)
+        # 删除按钮
+        col.operator("aca.del_template", icon='TRASH', text="删除模板")
 
         # 鼠标定位
         if not self.restored and self.center:

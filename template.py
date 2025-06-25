@@ -3,12 +3,14 @@
 # 功能概述：
 #   管理模板
 import bpy
+import os
 import pathlib
 import xml.etree.ElementTree as ET
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
 from . import utils
+import bpy.utils.previews
 
 
 xmlFileName = 'template.xml'
@@ -613,3 +615,61 @@ def delTemplate(templateName):
     tree.write(path, encoding='UTF-8',xml_declaration=True)
 
     return {'FINISHED'}
+
+# 载入缩略图，必须结合静态的集合操作
+preview_collections = {}
+def loadThumb():
+    # 定义缩略图目录
+    addonName = "ACA Builder"
+    thumbFolder = 'thumb'
+    USER = pathlib.Path(
+        bpy.utils.resource_path('USER'))
+    thumb_directory = USER / "scripts/addons" / addonName / thumbFolder
+
+    # 载入缩略图到场景参数集合
+    scene = bpy.context.scene
+    scene.image_browser_items.clear()
+    image_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.gif', '.svg')
+    for file in os.listdir(thumb_directory):
+        if file.lower().endswith(image_extensions):
+            item = scene.image_browser_items.add()
+            item.name = file
+            item.path = os.path.join(thumb_directory, file)
+
+    # 生成Blender内置的缩略图
+    global preview_collections
+    # 载入blender preview模块
+    if "main" not in preview_collections:
+        preview_collections["main"] = bpy.utils.previews.new()
+    pcoll = preview_collections["main"]
+
+    for item in scene.image_browser_items:
+        if os.path.exists(item.path):
+            try:
+                if not pcoll.get(item.name):
+                    pcoll.load(item.name, item.path, 'IMAGE')
+            except Exception as e:
+                utils.outputMsg(f"Failed to generate preview for {item.name}: {str(e)}")
+    # 强制刷新 EnumProperty
+    #scene.image_browser_enum = scene.image_browser_items[0].name
+    
+    return
+
+# 构造缩略图列表的enum属性
+# 因为使用了Blender的template_view_icon控件，需要构造这个结构
+def getThumbEnum(self, context):
+    items = []
+    global preview_collections
+
+    pcoll = preview_collections.get("main", None)
+    if not pcoll:
+        return items
+    from . import data
+    scene = context.scene
+    if not hasattr(scene, "image_browser_items"):
+        return items
+    for idx, item in enumerate(scene.image_browser_items):
+        thumb = pcoll.get(item.name)
+        icon_id = thumb.icon_id if thumb else 0
+        items.append((item.name, item.name, "", icon_id, idx))
+    return items

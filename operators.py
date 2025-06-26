@@ -1174,7 +1174,9 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
         
         # 模板列表    
         row = layout.row()
-        row.template_list(
+        col_left = row.column(align=True)
+        col_left.scale_x = 0.5  # 左侧占70%宽度
+        col_left.template_list(
             listtype_name="ACA_UL_Template_Items", 
             list_id="my_list", 
             dataptr=scnData, 
@@ -1184,15 +1186,16 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
             rows=10)
         
         # 右侧边栏
-        col = row.column(align=True)
+        col_right = row.column(align=True)
+        col_right.scale_x = 0.5 # 右侧占30%宽度
         # 缩略图展示，使用了blender内置的template_icon_view控件
         scene = context.scene
-        col.template_icon_view(scene,
+        col_right.template_icon_view(scene,
                                "image_browser_enum",
                                show_labels=True,
                                scale=10)
         # 删除按钮
-        col.operator("aca.del_template", icon='TRASH', text="删除模板")
+        col_right.operator("aca.del_template", icon='TRASH', text="删除模板")
 
         # 鼠标定位
         if not self.restored and self.center:

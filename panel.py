@@ -60,91 +60,7 @@ class ACA_PT_basic(bpy.types.Panel):
             text='从模板生成新建筑'
             )
         
-        if context.object == None and build.isFinished:
-            layout.label(text='Quick Start :')
-            layout.label(text='选择一个模板，生成古建筑',icon='KEYTYPE_JITTER_VEC')
-            layout.label(text='修改参数，定制你的样式',icon='KEYTYPE_MOVING_HOLD_VEC')
-        else:
-            # 追溯全局属性
-            buildingObj,bData,objData = utils.getRoot(context.object)
-            # 场景数据集
-            scnData : data.ACA_data_scene = context.scene.ACA_data
-            
-            if (buildingObj == None 
-                and build.isFinished
-                and objData.aca_type != con.ACA_TYPE_BUILDING_JOINED): 
-                # 如果不属于建筑构件，提示，并隐藏所有子面板
-                row = layout.row()
-                row.label(text='该对象不是ACA插件生成',icon='INFO')
-                return
-            
-            if build.isFinished:
-                box = layout.box()
-
-                # 合并的对象不显示这些控件，否则会报错
-                if objData.aca_type != con.ACA_TYPE_BUILDING_JOINED:
-                    toolBox = box.column(align=True)    
-                    
-                    #----------------------------
-                    toolBar = toolBox.grid_flow(columns=2, align=True)
-                    # 建筑名称
-                    col = toolBar.column(align=True)
-                    col.prop(buildingObj,"name",text="")
-                    # 聚焦根节点，右侧小按钮
-                    col = toolBar.column(align=True)
-                    col.operator("aca.focus_building",icon='FILE_PARENT')
-                    if (buildingObj == None
-                        or objData.aca_type == con.ACA_TYPE_BUILDING):
-                        col.enabled = False
-                    
-                    #----------------------------
-                    toolBox = box.row(align=True) 
-                    toolBar = toolBox.grid_flow(columns=2, align=True)
-                    # 保存模板
-                    col = toolBar.column(align=True)
-                    col.operator(
-                        "aca.save_template",icon='FILE_TICK',
-                        text='保存样式')
-                    # 更新建筑
-                    col = toolBar.column(align=True)
-                    col.operator(
-                        "aca.update_building",
-                        depress=True,text='更新建筑',
-                        icon='FILE_REFRESH',
-                    )              
-                    # 删除建筑
-                    col = toolBar.column(align=True)
-                    col.operator(
-                        "aca.del_building",icon='TRASH',
-                        text='删除建筑'
-                    ) 
-                    # 是否修改参数时，自动触发更新
-                    col = toolBar.column(align=True)
-                    if scnData.is_auto_rebuild:
-                        text = '暂停刷新'
-                    else:
-                        text = '自动刷新'
-                    col.prop(
-                        data=bpy.context.scene.ACA_data,
-                        property='is_auto_rebuild',
-                        toggle=True,
-                        icon='FF',
-                        text=text
-                    )
-
-                toolBox = box.column(align=True)
-                # 合并按钮
-                toolBar = toolBox.grid_flow(columns=1, align=True)
-                col = toolBar.column(align=True)
-                col.operator("aca.join",icon='PACKAGE')
-                # 导出按钮
-                toolBar = toolBox.grid_flow(columns=2, align=True)
-                col = toolBar.column(align=True)
-                col.operator("aca.export_fbx",icon='EXPORT')
-                col = toolBar.column(align=True)
-                col.operator("aca.export_glb",icon='EXPORT')   
-
-        # 运行中提示
+        # 2、运行中提示
         if not build.isFinished:
             row = layout.row()
             row.label(text='生成中：需要20~90秒，请耐心等待。',icon='INFO')
@@ -154,10 +70,97 @@ class ACA_PT_basic(bpy.types.Panel):
                 factor=build.progress,
                 text=build.buildStatus,
             )
-
             # 运行时，不显示以下的面板内容
             # 待运行结束后，才会显示
             return
+        
+        # 3. Quick Start提示框
+        isShowQS = False
+        # 无上下文时
+        if context.object == None:
+            isShowQS = True
+        # 有上下文
+        else:
+            buildingObj,bData,objData = utils.getRoot(context.object)
+            # 如果是ACA建筑，
+            if buildingObj == None: 
+                # 已经合并的不显示
+                if objData.aca_type != con.ACA_TYPE_BUILDING_JOINED:
+                    isShowQS = True
+        if isShowQS:
+            layout.label(text='Quick Start :')
+            layout.label(text='选择一个模板，生成古建筑',icon='KEYTYPE_JITTER_VEC')
+            layout.label(text='修改参数，定制你的样式',icon='KEYTYPE_MOVING_HOLD_VEC')
+            # 不再继续显示后续的设置面板
+            return
+        
+        # 3、详细设置面板
+        # 场景数据集
+        scnData : data.ACA_data_scene = context.scene.ACA_data
+        box = layout.box()
+        # 合并的对象不显示这些控件，否则会报错
+        if objData.aca_type != con.ACA_TYPE_BUILDING_JOINED:
+            toolBox = box.column(align=True)    
+            
+            #----------------------------
+            toolBar = toolBox.grid_flow(columns=2, align=True)
+            # 建筑名称
+            col = toolBar.column(align=True)
+            col.prop(buildingObj,"name",text="")
+            # 聚焦根节点，右侧小按钮
+            col = toolBar.column(align=True)
+            col.operator("aca.focus_building",icon='FILE_PARENT')
+            if (buildingObj == None
+                or objData.aca_type == con.ACA_TYPE_BUILDING):
+                col.enabled = False
+            
+            #----------------------------
+            toolBox = box.row(align=True) 
+            toolBar = toolBox.grid_flow(columns=2, align=True)
+            # 保存模板
+            col = toolBar.column(align=True)
+            col.operator(
+                "aca.save_template",icon='FILE_TICK',
+                text='保存样式')
+            # 更新建筑
+            col = toolBar.column(align=True)
+            col.operator(
+                "aca.update_building",
+                depress=True,text='更新建筑',
+                icon='FILE_REFRESH',
+            )              
+            # 删除建筑
+            col = toolBar.column(align=True)
+            col.operator(
+                "aca.del_building",icon='TRASH',
+                text='删除建筑'
+            ) 
+            # 是否修改参数时，自动触发更新
+            col = toolBar.column(align=True)
+            if scnData.is_auto_rebuild:
+                text = '暂停刷新'
+            else:
+                text = '自动刷新'
+            col.prop(
+                data=bpy.context.scene.ACA_data,
+                property='is_auto_rebuild',
+                toggle=True,
+                icon='FF',
+                text=text
+            )
+
+        toolBox = box.column(align=True)
+        # 合并按钮
+        toolBar = toolBox.grid_flow(columns=1, align=True)
+        col = toolBar.column(align=True)
+        col.operator("aca.join",icon='PACKAGE')
+        # 导出按钮
+        toolBar = toolBox.grid_flow(columns=2, align=True)
+        col = toolBar.column(align=True)
+        col.operator("aca.export_fbx",icon='EXPORT')
+        col = toolBar.column(align=True)
+        col.operator("aca.export_glb",icon='EXPORT')   
+
         # 性能分析按钮
         # row = layout.row()
         # row.operator("aca.profile",icon='HOME')

@@ -649,27 +649,81 @@ def loadThumb():
                 if not pcoll.get(item.name):
                     pcoll.load(item.name, item.path, 'IMAGE')
             except Exception as e:
-                utils.outputMsg(f"Failed to generate preview for {item.name}: {str(e)}")
-    # 强制刷新 EnumProperty
-    #scene.image_browser_enum = scene.image_browser_items[0].name
-    
+                utils.outputMsg(f"Failed to generate preview for {item.name}: {str(e)}")    
     return
 
 # 构造缩略图列表的enum属性
 # 因为使用了Blender的template_view_icon控件，需要构造这个结构
+# 为了解决Label显示的乱码问题，引入了一个_make_item()方法
+# https://github.com/bonjorno7/3dn-bip/issues/51
+_item_map = dict()
+def _make_item(id, name, descr, preview_id, uid):
+    lookup = f"{str(id)}\0{str(name)}\0{str(descr)}\0{str(preview_id)}\0{str(uid)}"
+    if not lookup in _item_map:
+        _item_map[lookup] = (id, name, descr, preview_id, uid)
+    return _item_map[lookup]
 def getThumbEnum(self, context):
+    # 引入了_make_item()方法后，不再需要全局声明items
     items = []
-    global preview_collections
+    # 不能直接clear，否则会产生乱码
+    # https://github.com/bonjorno7/3dn-bip/issues/51
+    #items.clear()
 
+    # 载入预览集合
+    global preview_collections
     pcoll = preview_collections.get("main", None)
     if not pcoll:
         return items
-    from . import data
+    
+    # 确认缩略图已载入
     scene = context.scene
     if not hasattr(scene, "image_browser_items"):
         return items
-    for idx, item in enumerate(scene.image_browser_items):
-        thumb = pcoll.get(item.name)
-        icon_id = thumb.icon_id if thumb else 0
-        items.append((item.name, item.name, "", icon_id, idx))
+
+    # 基于模板列表，逐一匹配缩略图，使之顺序一致
+    scnData = context.scene.ACA_data
+    templateItems = scnData.templateItem
+    thumbIndex = 0
+    # 获取模板列表
+    for template in templateItems:
+        # 模板名称
+        templateName = template.name
+        isFindThumb = False
+        for image in scene.image_browser_items:
+            # 图标ID
+            thumb = pcoll.get(image.name)
+            iconId = thumb.icon_id if thumb else 0
+
+            # 缩略图名称：图片文件去掉后缀
+            thumbName = image.name
+            thumbName = thumbName[:thumbName.rfind(".")]
+
+            # 如果找到则添加到Enum列表
+            if thumbName == templateName:
+                items.append(_make_item(
+                    thumbName, thumbName, thumbName, 
+                    iconId, thumbIndex))
+                isFindThumb = True
+                thumbIndex += 1
+                break
+        
+        # 如果没有找到缩略图，则添加一个nopreview.png
+        if not isFindThumb:
+            thumb = pcoll.get('nopreview.png')
+            iconId = thumb.icon_id if thumb else 0
+
+            items.append(_make_item(
+                templateName, templateName, templateName, 
+                iconId, thumbIndex))
+            thumbIndex += 1
+            
+    # print(repr(items))
     return items
+
+# 删除预览集合
+# 在__init__.py中的ungregister()中调用
+def releasePreview():
+    global preview_collections
+    for pcoll in preview_collections.values():
+        bpy.utils.previews.remove(pcoll)
+    preview_collections.clear()

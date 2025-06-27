@@ -110,6 +110,10 @@ def unregister():
     # 移除日志记录器
     removeLogger()
 
+    # 释放模板缩略图资源
+    from . import template
+    template.releasePreview()
+
     return
 
 # 仅用于在blender text editor中测试用途

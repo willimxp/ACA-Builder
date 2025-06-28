@@ -433,6 +433,9 @@ def __loadTemplateSingle(
                 bData[tag] = False
         elif type == 'EnumProperty':
             bData[tag] = int(value)
+        elif type == 'FloatVectorProperty':
+            # 将字符串'0,0,0'转换为元组(0,0,0)
+            bData[tag] = tuple(float(coord) for coord in value.split(','))
         else:
             print("can't convert:",node.tag, 
                     node.attrib['type'],node.text)
@@ -547,7 +550,13 @@ def saveTemplate(buildingObj:bpy.types.Object):
             value = templateName
         # 浮点数取3位精度
         if keyType == 'FloatProperty':
-            value = round(value,3)
+            # 简单的浮点数
+            if isinstance(value, float):
+                value = round(value,3)
+            # 浮点数组，对应于FloatVectorProperty
+            if type(value).__name__ == 'bpy_prop_array':
+                keyType = 'FloatVectorProperty'
+                value = ",".join(str(num) for num in value)
         if keyType == 'PointerProperty':
             # value目前未bpy.data.object对象
             object = getattr(bData, key)

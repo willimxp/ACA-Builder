@@ -1210,6 +1210,9 @@ def buildFloor(buildingObj:bpy.types.Object,
 
     # 载入数据
     bData:acaData = buildingObj.ACA_data
+    # 设置建筑的初始位移和旋转
+    buildingObj.location = bData.root_location
+    buildingObj.rotation_euler = bData.root_rotation
 
     # 生成柱网
     if bData.is_showPillers:

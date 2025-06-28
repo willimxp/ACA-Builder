@@ -370,6 +370,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     template_name : bpy.props.StringProperty(
             name = '模板名称'
         ) #type: ignore
+    root_location : bpy.props.FloatVectorProperty(
+            name = '根节点位移',
+        ) # type: ignore
+    root_rotation : bpy.props.FloatVectorProperty(
+            name = '根节点旋转',
+        ) # type: ignore
     DK: bpy.props.FloatProperty(
             name = "斗口",
             default=0.0,

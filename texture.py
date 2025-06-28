@@ -221,6 +221,13 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
     # 初始化 ############################################
     buildingObj = utils.getAcaParent(
         paintObj,con.ACA_TYPE_BUILDING)
+    # 尝试是否为院墙
+    if buildingObj is None:
+        buildingObj = utils.getAcaParent(
+            paintObj,con.ACA_TYPE_YARDWALL)
+        if buildingObj is None:
+            utils.outputMsg("paint函数异常，未找到建筑对象")
+            return
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     paintStyle = bData.paint_style

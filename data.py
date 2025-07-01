@@ -65,7 +65,8 @@ def update_building(self, context:bpy.types.Context):
         from . import build
         funproxy = partial(
                 build.updateBuilding,
-                buildingObj=buildingObj)
+                buildingObj=buildingObj,
+                reloadAssets=True)
         utils.fastRun(funproxy)
     else:
         utils.outputMsg("updated building failed, context.object should be buildingObj")

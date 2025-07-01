@@ -413,6 +413,10 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
     if paintStyle == '2': 
         mat = aData.mat_override
 
+    if mat == None:
+        utils.outputMsg(f"paint函数异常，未找到材质：{paintMat}")
+        return paintObj
+
     paintObj = __paintMat(paintObj, mat, slot)
 
     return paintObj

@@ -1376,6 +1376,13 @@ def setGlazeStyle(paintObj:bpy.types.Object,
     buildingObj,bData,objData = utils.getRoot(paintObj)
     paintName = paintObj.data.name
 
+    # 2. override，全局覆盖的着色方式
+    paintStyle = bData.paint_style
+    if paintStyle == '2': 
+        mat = aData.mat_override
+        paintObj = __paintMat(paintObj, mat)
+        return
+
     # 1、瓦面（筒瓦/板瓦）颜色
     tileColorIndex = int(bData.tile_color) 
     glazeMain = [

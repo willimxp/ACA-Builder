@@ -1181,7 +1181,8 @@ def resetFloor(buildingObj:bpy.types.Object):
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
 def buildFloor(buildingObj:bpy.types.Object,
                templateName = None,
-               reloadAssets = False):
+               reloadAssets = False,
+               comboset = False):
     # 定位到collection，如果没有则新建
     utils.setCollection(con.ROOT_COLL_NAME,
                         isRoot=True,colorTag=2)
@@ -1210,9 +1211,13 @@ def buildFloor(buildingObj:bpy.types.Object,
 
     # 载入数据
     bData:acaData = buildingObj.ACA_data
-    # 设置建筑的初始位移和旋转
-    buildingObj.location = bData.root_location
-    buildingObj.rotation_euler = bData.root_rotation
+    
+    # 组合建筑根据模板位移和旋转
+    if comboset:
+        buildingObj.location = (
+            bpy.context.scene.cursor.location 
+            + Vector(bData.root_location))
+        buildingObj.rotation_euler = bData.root_rotation
 
     # 生成柱网
     if bData.is_showPillers:

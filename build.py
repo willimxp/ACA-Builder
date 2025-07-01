@@ -16,10 +16,10 @@ isFinished = True
 buildStatus = ''
 progress = 0
 
-def __buildSingle(acaType,templateName):
+def __buildSingle(acaType,templateName,comboset=False):
     # 根据模板类型调用不同的入口
     if acaType == con.ACA_TYPE_BUILDING:
-        buildFloor.buildFloor(None,templateName)
+        buildFloor.buildFloor(None,templateName,comboset=comboset)
     elif acaType == con.ACA_TYPE_YARDWALL:
         buildYardWall.buildYardWall(None,templateName)
     else:
@@ -89,7 +89,8 @@ def build():
         for child in tempChildren:
             __buildSingle(
                 acaType=child['acaType'],
-                templateName=child['templateName']
+                templateName=child['templateName'],
+                comboset=True
             )
     
     isFinished = True

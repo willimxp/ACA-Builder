@@ -465,6 +465,9 @@ def addWall(buildingObj:bpy.types.Object,
                     # 将柱子交换，为下一次循环做准备
                     pFrom = piller
 
+    # 250702 添加隔断后，刷新额枋，隐藏雀替
+    buildFloor.__buildFang(buildingObj)
+
     # 聚焦在创建的门上
     utils.focusObj(wallObj)
 
@@ -492,6 +495,9 @@ def delWall(buildingObj:bpy.types.Object,
         if 'wallID' in wall.ACA_data:
             wallStr = wall.ACA_data['wallID']
             bData.wall_net += wallStr + ','
+
+    # 250702 添加隔断后，刷新额枋，重建雀替
+    buildFloor.__buildFang(buildingObj)
 
     utils.focusObj(buildingObj)
 

@@ -503,7 +503,6 @@ def saveTemplate(buildingObj:bpy.types.Object):
         # 辅助参数，无需处理
         'aca_obj',
         'wall_layout',
-        'wall_style',
         'roof_qiao_point',
         'tile_width_real',
         'dg_scale',

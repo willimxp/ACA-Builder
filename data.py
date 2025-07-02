@@ -565,15 +565,6 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_wall,
             options = {"ANIMATABLE"}
         ) # type: ignore
-    wall_style : bpy.props.EnumProperty(
-            name = "墙类型",
-            items = [
-                ("0","",""),
-                ("1","槛墙",""),
-                ("2","隔扇",""),
-                ("3","槛窗",""),
-            ],
-        ) # type: ignore
     wall_depth : bpy.props.FloatProperty(
             name="墙厚度",
             default=1.0,

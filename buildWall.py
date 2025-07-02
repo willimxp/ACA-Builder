@@ -179,13 +179,7 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     wData['aca_obj'] = True
     wData['aca_type'] = con.ACA_TYPE_WALL
     wData['wallID'] = wallID
-    if style == con.ACA_WALLTYPE_WALL:
-        wData['wall_style'] = 1
-    if style == con.ACA_WALLTYPE_DOOR:
-        wData['wall_style'] = 2
-        wData['use_KanWall'] = False
     if style == con.ACA_WALLTYPE_WINDOW:
-        wData['wall_style'] = 3
         wData['use_KanWall'] = True
     wData['wall_depth'] = bData.wall_depth
     wData['wall_span'] = bData.wall_span
@@ -380,14 +374,8 @@ def buildSingleWall(
             if obj.parent == wallproxy:
                 wData['aca_type'] = con.ACA_TYPE_WALL
             else:
-                wData['aca_type'] = con.ACA_TYPE_WALL_CHILD            
-            if wallType == con.ACA_WALLTYPE_WALL:
-                wData['wall_style'] = 1
-            if wallType == con.ACA_WALLTYPE_DOOR:
-                wData['wall_style'] = 2
-                wData['use_KanWall'] = False
+                wData['aca_type'] = con.ACA_TYPE_WALL_CHILD
             if wallType == con.ACA_WALLTYPE_WINDOW:
-                wData['wall_style'] = 3
                 wData['use_KanWall'] = True
             # 需留意：
             # 新建时buildingObj是建筑根节点，数据为全局参数

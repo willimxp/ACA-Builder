@@ -92,4 +92,7 @@
     <paoshou_9_source type="Object">9-斗牛</paoshou_9_source>
     <paoshou_10_source type="Object">10-行什</paoshou_10_source>
     <walleave type="Object">墙檐</walleave>
+    <door_pushou type="Object">铺首</door_pushou>
+    <door_ding type="Object">门钉</door_ding>
+    <door_zan type="Object">门簪</door_zan>
 </assets>

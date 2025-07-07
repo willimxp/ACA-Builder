@@ -67,6 +67,8 @@ classes = (
     operators.ACA_OT_del_wall,
     operators.ACA_OT_add_window,
     operators.ACA_OT_add_door,
+    operators.ACA_OT_add_maindoor,
+    operators.ACA_OT_add_barwindow,
     operators.ACA_OT_default_dk,
     operators.ACA_OT_save_template,
     operators.ACA_OT_del_template,

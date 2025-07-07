@@ -576,8 +576,26 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     wall_span : bpy.props.FloatProperty(
             name="走马板高度",
             default=0,
+            min=0,
             precision=3,
             description='重檐时，装修不做到柱头，用走马板填充，输入0则不做走马板',
+            update = update_wall,
+        )# type: ignore 
+    doorFrame_width_per : bpy.props.FloatProperty(
+            name="门口宽度比例",
+            default=1,
+            max=1,
+            min=0.1,
+            precision=3,
+            description='开间中的门口/窗口宽度比例，小于1则开间的部分做余塞板，不可大于1',
+            update = update_wall,
+        )# type: ignore 
+    doorFrame_height : bpy.props.FloatProperty(
+            name="门口高度",
+            default=3,
+            min=0.1,
+            precision=3,
+            description='开间中的门口高度，小于柱高的空间将自动布置横披窗/迎风板',
             update = update_wall,
         )# type: ignore 
     # 隔扇属性
@@ -604,6 +622,13 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             precision=3,
             update = update_wall,
             description="中槛中线到台面上皮的高度",
+        )# type: ignore 
+    door_ding_num : bpy.props.IntProperty(
+            name="门钉数量",
+            default=5,
+            min=0,max=9,
+            update = update_wall,
+            description="门钉的路数，最大9路，取0时不做门钉",
         )# type: ignore 
     # topwin_height : bpy.props.FloatProperty(
     #         name="横披窗高度",
@@ -1204,6 +1229,18 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "墙檐",
             type = bpy.types.Object,
         )# type: ignore     
+    door_pushou:bpy.props.PointerProperty(
+            name = "铺首",
+            type = bpy.types.Object,
+        )# type: ignore     
+    door_ding:bpy.props.PointerProperty(
+            name = "门钉",
+            type = bpy.types.Object,
+        )# type: ignore     
+    door_zan:bpy.props.PointerProperty(
+            name = "门簪",
+            type = bpy.types.Object,
+        )# type: ignore 
     
 # template下拉框已经废弃，本方法也随之废弃
 # # 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据

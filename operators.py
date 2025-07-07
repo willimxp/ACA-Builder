@@ -454,6 +454,52 @@ class ACA_OT_del_wall(bpy.types.Operator):
     #         icon='QUESTION'
     #         )
 
+# 单独生成一个板门
+class ACA_OT_add_maindoor(bpy.types.Operator):
+    bl_idname="aca.add_maindoor"
+    bl_label = "加门"
+    bl_description = "在柱间加板门（先选择2根以上的柱子）"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        piller = context.object
+        pillers = context.selected_objects
+        buildingObj = utils.getAcaParent(
+            piller,con.ACA_TYPE_BUILDING) 
+        funproxy = partial(
+                buildWall.addWall,
+                buildingObj=buildingObj,
+                pillers=pillers,
+                wallType=con.ACA_WALLTYPE_MAINDOOR)
+        result = utils.fastRun(funproxy)
+        if 'FINISHED' in result:
+                self.report({'INFO'},"添加板门。")
+
+        return {'FINISHED'}
+    
+# 单独生成一个直棂窗
+class ACA_OT_add_barwindow(bpy.types.Operator):
+    bl_idname="aca.add_barwindow"
+    bl_label = "加门"
+    bl_description = "在柱间加直棂窗（先选择2根以上的柱子）"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        piller = context.object
+        pillers = context.selected_objects
+        buildingObj = utils.getAcaParent(
+            piller,con.ACA_TYPE_BUILDING) 
+        funproxy = partial(
+                buildWall.addWall,
+                buildingObj=buildingObj,
+                pillers=pillers,
+                wallType=con.ACA_WALLTYPE_BARWINDOW)
+        result = utils.fastRun(funproxy)
+        if 'FINISHED' in result:
+                self.report({'INFO'},"添加直棂窗。")
+
+        return {'FINISHED'}
+
 
 # 生成斗栱
 class ACA_OT_build_dougong(bpy.types.Operator):

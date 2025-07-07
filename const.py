@@ -48,6 +48,8 @@ class ACA_Consts(object):
     ACA_WALLTYPE_WALL = 'wall'                                      # 隔断属性-墙
     ACA_WALLTYPE_WINDOW = 'window'                                  # 隔断属性-槛窗
     ACA_WALLTYPE_DOOR = 'door'                                      # 隔断属性-隔扇
+    ACA_WALLTYPE_BARWINDOW = 'barwindow'                            # 隔断属性-直棂窗
+    ACA_WALLTYPE_MAINDOOR = 'maindoor'                              # 隔断属性-板门
     ACA_TYPE_COMBO = 'combo'                                        # 组合样式
 
     # 默认斗口
@@ -134,7 +136,7 @@ class ACA_Consts(object):
     KAN_WIND_DEPTH = 0.3                # 风槛深度(PD)
     # 抱框宽度梁思成和马炳坚给出2/3D，汤崇平给出0.64，姜振鹏给出0.56
     # 实际看来0.56的观感更好，与相关的图纸数据也更加匹配
-    BAOKUANG_WIDTH = 0.56               # 抱框宽度(PD)
+    BAOKUANG_WIDTH = 0.5                # 抱框宽度(PD),酌减
     BAOKUANG_DEPTH = 0.3                # 抱框深度(PD)
     BORDER_WIDTH = 0.2                  # 边梃、抹头宽(PD)
     BORDER_DEPTH = BAOKUANG_DEPTH       # 边梃、抹头厚(PD)
@@ -145,10 +147,18 @@ class ACA_Consts(object):
     TABAN_EX = 0.1                      # 榻板金边(米)
     GESHAN_GAP = 0.02                   # 隔扇的间距/门缝(米)
     DOUGONG_SPAN = 11                   # 斗栱攒距(DK)
-    MENYIN_DEPTH = KAN_DOWN_DEPTH*1.8   # 门楹/窗楹厚(PD)
-    MENYIN_HEIGHT = KAN_DOWN_HEIGHT*0.5 # 门楹/窗楹高(PD)
-    MENYIN_WIDTH = MENYIN_DEPTH*2       # 门楹/窗楹宽(PD)
+    MENYIN_DEPTH = 0.56                 # 门楹/窗楹厚(PD)
+    MENYIN_HEIGHT = 0.3                 # 门楹/窗楹高(PD)
+    MENYIN_WIDTH = 1.12                 # 门楹/窗楹宽(PD)
     MENZHOU_R = BORDER_WIDTH/2          # 门轴(PD)
+    KANKUANG_INSET = 0.02               # 余塞板/走马板等于槛框的嵌入(米)
+    DOOR_YANFENG = 0.07                 # 板门掩缝(PD)
+    DOOR_MIDFENG = 0.01                 # 板门中缝(米)
+    MAINDOOR_DEPTH = 0.22               # 板门(PD)
+    DOOR_ZHEN_HEIGHT = 0.4              # 门枕高(PD),原为0.5，酌减
+    DOOR_ZHEN_WIDTH = 0.8               # 门枕宽(PD)，
+    DOOR_ZHEN_LENTH = 1.2               # 门枕长(PD)，原为1.9，酌减
+    DOOR_BIAN_WIDTH = 0.32              # 门边宽(PD)
 
     # 桁檩
     HENG_TIAOYAN_D = 4                          # 挑檐桁直径(DK)，梁思成数据

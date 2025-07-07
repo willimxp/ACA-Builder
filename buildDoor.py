@@ -1022,7 +1022,7 @@ def buildDoor(wallProxy:bpy.types.Object):
         mat.paint(wallHeadBoard,con.M_WINDOW)
         kankuangList.append(wallHeadBoard)
 
-    # 合并槛框
+    # 合并槛框、槛墙、走马板
     kankuangJoined = utils.joinObjects(kankuangList,'隔扇槛框')
     # 将隔扇挂入槛框父节点
     for geshan in geshanList:
@@ -1031,3 +1031,700 @@ def buildDoor(wallProxy:bpy.types.Object):
     utils.focusObj(kankuangJoined)
 
     return kankuangJoined
+
+# 营造板门
+def buildDoor2(wallProxy:bpy.types.Object):       
+    # 载入设计数据
+    buildingObj,bData,wData = utils.getRoot(wallProxy)
+    if buildingObj == None:
+        utils.popMessageBox(
+            "未找到建筑根节点或设计数据")
+        return
+
+    # 清理之前的子对象
+    utils.deleteHierarchy(wallProxy)
+    
+    # 3、构建槛框
+    kankuangObj = __buildKanKuang2(wallProxy)
+
+    # 4、构件板门
+    __buildMaindoor(kankuangObj)
+
+    utils.focusObj(kankuangObj)
+
+    return kankuangObj
+
+# 构建板门的槛框
+# 基于输入的槛框线框对象
+# 依赖于隔扇抹头计算出来的窗台高度
+def __buildKanKuang2(wallproxy):
+    # 载入数据
+    buildingObj,bData,wData = utils.getRoot(wallproxy)
+    aData:tmpData = bpy.context.scene.ACA_temp
+    if buildingObj == None:
+        utils.popMessageBox(
+            "未找到建筑根节点或设计数据")
+        return
+    # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
+    # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    pillerD = bData.piller_diameter
+    # 分解槛框的长、宽、高
+    frame_width,frame_depth,frame_height = wallproxy.dimensions
+    KankuangObjs = []
+    doorHeight = bData.doorFrame_height  # 门口高度
+    topBoardHeight = bData.wall_span # 走马板高度
+    doorWidth = ((frame_width
+                  - pillerD
+                  - con.BAOKUANG_WIDTH*pd*2)
+                 *bData.doorFrame_width_per)   # 门口宽度
+
+    # 定位参数-------------------------
+    # 门口宽度限制：不超过开间，去除两侧抱框，去除柱径
+    doorWMax = (frame_width
+                - con.BAOKUANG_WIDTH * pd * 2
+                - pillerD)
+    if doorWidth > doorWMax:
+        # 此时不做余塞板，门板直接做到抱框
+        doorWidth = doorWMax
+
+    # 门口高度限制：不能超过frame减上槛、下槛
+    doorHMax = (frame_height 
+                - con.KAN_DOWN_HEIGHT*pd
+                - con.KAN_UP_HEIGHT*pd)
+    if doorHeight > doorHMax:
+        # 做满门口
+        doorHeight = doorHMax
+
+    # 是否还有高度排布横披窗/迎风板高度？
+    bUseTopwin = False
+    bUseTopBoard = False
+    span = doorHMax - doorHeight
+    # 没空间了，门口已经满做，不再做横披窗(迎风板)和走马板
+    if span == 0 :
+        pass
+    # 空间不够横披窗，只做跑马板
+    elif 0 < span <  con.KAN_UP_HEIGHT*pd * 2 :
+        bUseTopBoard = True
+    # 还有空间，尝试做横披窗(迎风板)
+    else:
+        if topBoardHeight < span - con.KAN_UP_HEIGHT*pd:
+            bUseTopwin = True
+        if topBoardHeight > 0:
+            bUseTopBoard = True    
+
+    # 1、下槛 ---------------------
+    KanDownLoc = Vector((0,0,
+                con.KAN_DOWN_HEIGHT*pd/2))
+    KanDownDim = Vector((frame_width, # 长度随面宽
+                con.KAN_DOWN_DEPTH * pd, # 厚0.3D
+                con.KAN_DOWN_HEIGHT * pd, # 高0.8D
+                ))
+    KanDownObj = utils.addCube(
+        name="下槛",
+        location=KanDownLoc,
+        dimension=KanDownDim,
+        parent=wallproxy,
+    )
+    # 倒角
+    utils.addModifierBevel(KanDownObj,con.BEVEL_HIGH)
+    KankuangObjs.append(KanDownObj)
+
+    # 2、中槛 ---------------------
+    # 中槛底皮高度: 下槛高度 + 门口高度
+    midDownZ = doorHeight + con.KAN_DOWN_HEIGHT*pd
+    KanMidLoc = Vector((0,0,
+                midDownZ + con.KAN_MID_HEIGHT*pd/2))
+    KanMidDim = Vector((frame_width, # 长度随面宽
+                con.KAN_MID_DEPTH * pd, # 厚0.3D
+                con.KAN_MID_HEIGHT * pd, # 高0.8D
+                ))
+    KanMidObj = utils.addCube(
+        name="中槛",
+        location=KanMidLoc,
+        dimension=KanMidDim,
+        parent=wallproxy,
+    )
+    # 倒角
+    utils.addModifierBevel(KanMidObj,con.BEVEL_HIGH)
+    KankuangObjs.append(KanMidObj)
+        
+    # 3、上槛 ---------------------
+    # 有横披窗时才做中槛
+    if bUseTopwin:
+        # 上槛上皮高度
+        topUpZ = frame_height
+        # 减去跑马板高度
+        if bUseTopBoard:
+            topUpZ -= topBoardHeight
+        if (topUpZ - midDownZ) > con.KAN_UP_HEIGHT*pd:
+            KanUpLoc = Vector((0,0,
+                    topUpZ - con.KAN_UP_HEIGHT*pd/2))
+            KanUpDim = Vector((frame_width, # 长度随面宽
+                        con.KAN_UP_DEPTH * pd, # 厚0.3D
+                        con.KAN_UP_HEIGHT * pd, # 高0.8D
+                        ))
+            KanTopObj = utils.addCube(
+                name="上槛",
+                location=KanUpLoc,
+                dimension=KanUpDim,
+                parent=wallproxy,
+            )
+            # 倒角
+            utils.addModifierBevel(KanTopObj,con.BEVEL_HIGH)
+            KankuangObjs.append(KanTopObj)
+
+    # 4、门框 --------------------
+    # 门框始终存在，在100%满做时，取代下抱框
+    # 定高：下抱框做到中槛
+    KuangDoorH = (
+        midDownZ - con.KAN_DOWN_HEIGHT*pd)
+    kuangDoorDim = Vector((
+            con.BAOKUANG_WIDTH * pd, # 宽0.66D
+            con.BAOKUANG_DEPTH * pd - 0.01, # 厚0.3D
+            KuangDoorH, 
+            ))
+    # 根据门口大小定位
+    kuangDoorX = doorWidth/2 + con.BAOKUANG_WIDTH * pd /2
+    KuangDoorZ = (
+        KuangDoorH/2 + con.KAN_DOWN_HEIGHT*pd)
+    KuangDoorLoc = Vector((kuangDoorX,0,KuangDoorZ))
+    # 添加门框
+    KuangDoorObj = utils.addCube(
+        name="门框",
+        location=KuangDoorLoc,
+        dimension=kuangDoorDim,
+        parent=wallproxy,
+    )
+    # 添加mirror
+    utils.addModifierMirror(
+        KuangDoorObj, 
+        wallproxy, 
+        use_axis=(True,False,False)
+    )
+    # 倒角
+    utils.addModifierBevel(KuangDoorObj,con.BEVEL_HIGH)
+    KankuangObjs.append(KuangDoorObj)
+    
+    # 5、下抱框 ---------------------
+    if bData.doorFrame_width_per == 1:
+        # 门口满铺时，以门框与下抱框
+        pass
+    else:
+        # 定高：下抱框做到中槛
+        KuangDownH = (
+            midDownZ - con.KAN_DOWN_HEIGHT*pd)
+        KuangDownDim = Vector((
+                    con.BAOKUANG_WIDTH * pd, # 宽0.66D
+                    con.BAOKUANG_DEPTH * pd, # 厚0.3D
+                    KuangDownH, 
+                    ))
+        # 定位Z：从下槛 + 半下抱框高
+        KuangDownZ = (
+            KuangDownH/2 + con.KAN_DOWN_HEIGHT*pd)
+        # 定位X：半柱间距 - 半柱径 - 半抱框宽度
+        KuangDownX = frame_width/2 - pillerD/2 - con.BAOKUANG_WIDTH*pd/2
+        KuangDownLoc = Vector((KuangDownX,0,KuangDownZ))
+        # 添加下抱框
+        KuangDownObj = utils.addCube(
+            name="下抱框",
+            location=KuangDownLoc,
+            dimension=KuangDownDim,
+            parent=wallproxy,
+        )
+        # 添加mirror
+        utils.addModifierMirror(
+            KuangDownObj, 
+            wallproxy, 
+            use_axis=(True,False,False)
+        )
+        # 倒角
+        utils.addModifierBevel(KuangDownObj,con.BEVEL_HIGH)
+        KankuangObjs.append(KuangDownObj)
+
+    # 6、上抱框 ---------------------
+    # 仅在做横披窗时，才做上抱框
+    if bUseTopwin:      
+        KuangUpH = (
+            topUpZ - midDownZ
+            - con.KAN_UP_HEIGHT*pd
+            - con.KAN_MID_HEIGHT*pd)
+        KuangUpDim = Vector((
+                    con.BAOKUANG_WIDTH * pd, # 宽0.66D
+                    con.BAOKUANG_DEPTH * pd, # 厚0.3D
+                    KuangUpH, 
+                    ))
+        # 定位Z：从下槛 + 半下抱框高
+        KuangUpZ = (
+            midDownZ + KuangUpH/2 + con.KAN_MID_HEIGHT*pd)
+        # 定位X：半柱间距 - 半柱径 - 半抱框宽度
+        KuangUpX = frame_width/2 - pillerD/2 - con.BAOKUANG_WIDTH*pd/2
+        KuangUpLoc = Vector((KuangUpX,0,KuangUpZ))
+        # 添加上抱框
+        KuangUpObj = utils.addCube(
+            name="上抱框",
+            location=KuangUpLoc,
+            dimension=KuangUpDim,
+            parent=wallproxy,
+        )
+        # 添加mirror
+        utils.addModifierMirror(
+            KuangUpObj, 
+            wallproxy, 
+            use_axis=(True,False,False)
+        )
+        # 倒角
+        utils.addModifierBevel(KuangUpObj,con.BEVEL_HIGH)
+        KankuangObjs.append(KuangUpObj)
+
+    # 7、余塞板 ---------------------
+    if doorWidth > (frame_width 
+                    - con.BAOKUANG_WIDTH*pd*4
+                    - pillerD
+                    ):
+        # 在下抱框和门框都完整显示前，无需余塞板
+        pass
+    else:
+        boardYusaiWidth = (
+            frame_width/2 
+            - doorWidth/2
+            - pillerD/2
+            - con.BAOKUANG_WIDTH*pd*2
+            + con.KANKUANG_INSET*2)
+        boardYusaiDim = Vector((
+                    boardYusaiWidth,
+                    con.BOARD_YOUE_Y*dk, # 厚随由额垫板
+                    KuangDoorH + con.KANKUANG_INSET*2, 
+                    ))
+        boardYusaiX = (
+            doorWidth/2
+            + con.BAOKUANG_WIDTH * pd
+            + boardYusaiWidth/2
+            - con.KANKUANG_INSET)
+        boardYusaiLoc = Vector((boardYusaiX,0,KuangDownZ))
+        boardYusaiObj = utils.addCube(
+                    name = "余塞板",
+                    location=boardYusaiLoc,
+                    dimension=boardYusaiDim,
+                    parent=wallproxy,
+                )
+        # 添加mirror
+        utils.addModifierMirror(
+            boardYusaiObj, 
+            wallproxy, 
+            use_axis=(True,False,False)
+        )
+        KankuangObjs.append(boardYusaiObj)
+    
+    # 8、腰枋 ----------------------
+    if doorWidth > (frame_width 
+                    - con.BAOKUANG_WIDTH*pd*4
+                    - pillerD
+                    ):
+        # 在下抱框和门框都完整显示前，无需腰枋
+        pass
+    else:
+        fangMidWidth = (
+            frame_width/2 
+            - doorWidth/2
+            - pillerD/2
+            - con.BAOKUANG_WIDTH * pd * 2)
+        fangMidDim = Vector((
+                    fangMidWidth,
+                    con.KAN_MID_DEPTH * pd, # 厚随由额垫板
+                    con.KAN_MID_HEIGHT * pd, 
+                    ))
+        fangMidX = (
+            doorWidth/2
+            + con.BAOKUANG_WIDTH * pd
+            + fangMidWidth/2)
+        fangMidLoc = Vector((fangMidX,0,KuangDownZ))
+        fangMidObj = utils.addCube(
+            name="腰枋",
+            location=fangMidLoc,
+            dimension=fangMidDim,
+            parent=wallproxy,
+        )
+        # 添加mirror
+        utils.addModifierMirror(
+            fangMidObj, 
+            wallproxy, 
+            use_axis=(True,False,False)
+        )
+        # 倒角
+        utils.addModifierBevel(fangMidObj,con.BEVEL_HIGH)
+        KankuangObjs.append(fangMidObj)
+
+    # 9、迎风板 ---------------------
+    if bUseTopwin:
+        # 定高
+        boardWindH = (topUpZ 
+                    - midDownZ
+                    - con.KAN_UP_HEIGHT * pd
+                    - con.KAN_MID_HEIGHT * pd
+                    + con.KANKUANG_INSET*2)
+        boardWindW = (frame_width 
+                    - pillerD
+                    - con.BAOKUANG_WIDTH * pd * 2
+                    + con.KANKUANG_INSET*2)
+        boardWindDim = Vector((boardWindW, 
+                    con.BOARD_YOUE_Y*dk, 
+                    boardWindH,
+                    ))
+        boardWindZ = (topUpZ 
+                    - con.KAN_UP_HEIGHT * pd
+                    - boardWindH/2
+                    + con.KANKUANG_INSET)
+        boardWindLoc = (0,0,boardWindZ)
+        boardWindObj = utils.addCube(
+                    name = "迎风板",
+                    location=boardWindLoc,
+                    dimension=boardWindDim,
+                    parent=wallproxy,
+                )
+        KankuangObjs.append(boardWindObj)
+    
+    # 10、走马板 ---------------------
+    if bUseTopBoard:
+        # 定高
+        if bUseTopwin:
+            # 有横披窗时做到上槛
+            boardTopH = frame_height - topUpZ
+        else:
+            # 没有横披窗时做到中槛
+            boardTopH = (frame_height 
+                         - midDownZ 
+                         - con.KAN_MID_HEIGHT*pd)
+        boardTopDim = Vector((frame_width, # 长度随面宽
+                    con.BOARD_YOUE_Y*dk, # 厚随由额垫板
+                    boardTopH, # 高
+                    ))
+        boardTopZ = frame_height - boardTopH/2
+        boardTopLoc = (0,0,boardTopZ)
+        boardTopObj = utils.addCube(
+                    name = "走马板",
+                    location=boardTopLoc,
+                    dimension=boardTopDim,
+                    parent=wallproxy,
+                )
+        KankuangObjs.append(boardTopObj)
+
+    # 11、门枕 --------------------------
+    # 定位
+    zhenX = (doorWidth/2 
+            + con.MAINDOOR_DEPTH*pd/2 
+            + con.DOOR_YANFENG*pd
+             )
+    zhenZ = con.DOOR_ZHEN_HEIGHT*pd/2
+    zhenLoc = (zhenX,0,zhenZ)
+    # 尺寸
+    zhenDim = (con.DOOR_ZHEN_WIDTH*pd,
+               con.DOOR_ZHEN_LENTH*pd,
+               con.DOOR_ZHEN_HEIGHT*pd)
+    # 生成
+    zhenObj = utils.addCube(
+                    name = "门枕",
+                    location=zhenLoc,
+                    dimension=zhenDim,
+                    parent=wallproxy,
+                )
+    # 添加mirror
+    utils.addModifierMirror(
+        zhenObj, 
+        wallproxy, 
+        use_axis=(True,False,False)
+    )
+    # 倒角
+    utils.addModifierBevel(zhenObj,con.BEVEL_LOW)
+    # 着色
+    mat.paint(zhenObj,con.M_ROCK)
+    KankuangObjs.append(zhenObj)
+    
+    # 12、连楹 ------------------------
+    # 定位
+    yinY = con.KAN_DOWN_DEPTH*pd/2
+    yinZ = (doorHeight 
+            + con.KAN_DOWN_HEIGHT*pd
+            + con.KAN_MID_HEIGHT*pd
+            - con.MENYIN_HEIGHT*pd/2)
+    yinLoc = Vector((0,yinY,yinZ))
+    # 尺寸
+    yinDim = Vector((frame_width,
+              con.MENYIN_DEPTH*pd,
+              con.MENYIN_HEIGHT*pd))
+    # 生成
+    yinObj = utils.drawHexagon(
+                yinDim,
+                yinLoc,
+                half=True,
+                name='门楹',
+                parent=wallproxy)
+    # 倒角
+    utils.addModifierBevel(yinObj,con.BEVEL_LOW)
+    KankuangObjs.append(yinObj)
+
+    # 13、门簪 ------------------------
+    # 定位
+    span = (doorWidth 
+            + con.BAOKUANG_WIDTH*pd*2)/4
+    zanX = span*1.5
+    zanY = -con.KAN_UP_DEPTH*pd/2
+    zanZ = yinZ # 与连楹对齐
+    zanLoc = (zanX,zanY,zanZ)
+    # 导入门簪
+    zanObj = utils.copyObject(
+        sourceObj=aData.door_zan,
+        name='门簪',
+        parentObj=wallproxy,
+        location=zanLoc,
+        singleUser=True
+    )
+    # 尺寸与门楹匹配
+    zanObj.dimensions.z = con.MENYIN_HEIGHT*pd
+    utils.updateScene()
+    zanObj.scale.y = zanObj.scale.z
+    zanObj.scale.x = zanObj.scale.z
+    utils.applyTransfrom(zanObj,use_scale=True)
+    # Array
+    utils.addModifierArray(
+        object=zanObj,
+        count=4,
+        offset=(-span,0,0),
+    )
+    KankuangObjs.append(zanObj)
+
+    # 批量设置所有子对象材质
+    aData:tmpData = bpy.context.scene.ACA_temp
+    for ob in KankuangObjs:
+        # 全部设置为朱漆材质
+        # 其中槛窗的窗台为石质，并不会被覆盖
+        mat.paint(ob,con.M_WINDOW)
+
+    # 合并槛框
+    kankuangObj = utils.joinObjects(
+        KankuangObjs,
+        newName='槛框',
+        baseObj=KanDownObj,
+        )
+    utils.setOrigin(kankuangObj,
+        Vector((0,0,
+                -con.KAN_DOWN_HEIGHT * pd/2)))
+
+    # 输出下抱框，做为隔扇生成的参考
+    return kankuangObj
+
+# 营造板门
+def __buildMaindoor(kankuangObj):
+    # 载入数据
+    buildingObj,bData,wData = utils.getRoot(kankuangObj)
+    aData:tmpData = bpy.context.scene.ACA_temp
+    if buildingObj == None:
+        utils.popMessageBox(
+            "未找到建筑根节点或设计数据")
+        return
+    # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
+    # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    pillerD = bData.piller_diameter
+    # 分解槛框的长、宽、高
+    frame_width,frame_depth,frame_height = kankuangObj.dimensions
+    holeHeight = bData.doorFrame_height  # 门口高度
+    holeWidth = ((frame_width
+                  - pillerD
+                  - con.BAOKUANG_WIDTH*pd*2)
+                 *bData.doorFrame_width_per)   # 门口宽度
+    doorParts = []
+    
+    # 1、门板 --------
+    # 宽度考虑门轴
+    doorWidth = (holeWidth/2
+                 + con.MAINDOOR_DEPTH*pd # 考虑门轴长度取门厚
+                 + con.DOOR_YANFENG*pd
+                 - con.DOOR_MIDFENG
+                 )
+    # 高度增加2个掩缝
+    doorHeight = holeHeight + con.DOOR_YANFENG*pd*2
+    doorDim = (doorWidth,
+               con.MAINDOOR_DEPTH*pd,
+               doorHeight)
+    # 定位
+    doorX = doorWidth/2 + con.DOOR_MIDFENG
+    doorY = (con.KAN_DOWN_DEPTH*pd/2
+        + con.MAINDOOR_DEPTH*pd/2)
+    doorZ = (doorHeight/2 
+             + con.KAN_DOWN_HEIGHT*pd
+             - con.DOOR_YANFENG*pd)
+    doorLoc = (doorX,doorY,doorZ)
+    # 创建门板
+    doorObj = utils.addCube(
+                    name = "门扇",
+                    location=doorLoc,
+                    dimension=doorDim,
+                    parent=kankuangObj,
+                )
+    # 倒角
+    utils.addModifierBevel(doorObj,con.BEVEL_LOW)
+    doorParts.append(doorObj)
+
+    # 2、门轴 ----------------------
+    # 定位
+    zhouX = (holeWidth/2 
+            + con.MAINDOOR_DEPTH*pd/2 
+            + con.DOOR_YANFENG*pd
+             )
+    zhouLoc = (zhouX,doorY,doorZ)
+    # 半径
+    zhouR = (con.MAINDOOR_DEPTH*pd/2
+             - con.BEVEL_LOW)
+    # 长度
+    zhouHeight = (holeHeight
+                  + con.KAN_MID_HEIGHT*pd*2
+                  - con.BEVEL_HIGH*2)
+    # 生成
+    zhouObj = utils.addCylinder(
+        radius = zhouR,
+        depth = zhouHeight,
+        location=zhouLoc,
+        name='门轴',
+        root_obj=kankuangObj, 
+    )
+    doorParts.append(zhouObj)
+
+    # 3、门边 -------------------------
+    # 上碰头
+    headUp = (con.KAN_MID_HEIGHT*pd
+              - con.MENYIN_HEIGHT*pd)
+    # 下碰头
+    headDown = con.KAN_DOWN_HEIGHT*pd/2
+    # 定位
+    bianX = (con.DOOR_BIAN_WIDTH*pd/2
+            + con.DOOR_YANFENG*pd)
+    bianZ = (holeHeight/2 
+             + con.KAN_DOWN_HEIGHT*pd 
+             + headUp/2 - headDown/2)
+    bianLoc = (bianX,doorY,bianZ)
+    # 尺寸
+    bianDepth = (con.MAINDOOR_DEPTH*pd
+                 - con.BEVEL_EXLOW*2)
+    bianHeight = (holeHeight 
+                  + headUp 
+                  + headDown)
+    bianDim = (con.DOOR_BIAN_WIDTH*pd,
+               bianDepth,
+               bianHeight)
+    # 创建门边
+    bianObj = utils.addCube(
+                    name = "门边",
+                    location=bianLoc,
+                    dimension=bianDim,
+                    parent=kankuangObj,
+                )
+    # 倒角
+    utils.addModifierBevel(bianObj,con.BEVEL_LOW)
+    doorParts.append(bianObj)
+
+    # 4、门钉 ---------------------------
+    dingNum = bData.door_ding_num   # 实际的排布行数和列数 
+    if dingNum > 0:
+        # 导入门钉
+        dingObj = utils.copyObject(
+            sourceObj=aData.door_ding,
+            name='门钉',
+            parentObj=kankuangObj,
+            singleUser=True
+        )
+        # 根据门口宽度，调整门钉尺寸
+        # 门钉分布范围，门口一半，去掉门缝
+        dingTotalWidth = holeWidth/2 - con.DOOR_MIDFENG
+        # 这里按照最多9路门钉，门钉中到中2倍门钉直径计算
+        # 因为7路2.2D，5路4D，为了简化计算，就统一在9路定尺寸了
+        dingWidth = dingTotalWidth/18
+        dingObj.dimensions.x = dingWidth
+        utils.updateScene()
+        dingObj.scale.y = dingObj.scale.x
+        dingObj.scale.z = dingObj.scale.x
+        utils.applyTransfrom(dingObj,use_scale=True)
+        # 排布门钉
+        # 排布起点(右下角)，以门口进行计算，不能按门板进行计算
+        dingX = holeWidth/2 - dingTotalWidth/dingNum/2
+        dingY = doorY - con.MAINDOOR_DEPTH*pd/2
+        dingZ = con.KAN_DOWN_HEIGHT*pd + holeHeight/dingNum/2
+        dingObj.location = (dingX,dingY,dingZ)
+        # 添加Array
+        # X向
+        utils.addModifierArray(
+            object=dingObj,
+            count=dingNum,
+            offset=(-dingTotalWidth/dingNum,0,0),
+        )
+        # Z向
+        utils.addModifierArray(
+            object=dingObj,
+            count=dingNum,
+            offset=(0,0,holeHeight/dingNum),
+        )
+        doorParts.append(dingObj)
+
+    # 5、铺首 ---------------------------
+    # 导入铺首
+    pushouObj = utils.copyObject(
+        sourceObj=aData.door_pushou,
+        name='铺首',
+        parentObj=kankuangObj,
+        singleUser=True
+    )
+    # 尺寸
+    # 无门钉时，取腰枋高度
+    pushouH = con.KAN_MID_HEIGHT*pd
+    if dingNum > 0:
+        # 有门钉时，不超过门钉间距
+        span = holeHeight/dingNum - dingWidth
+        if pushouH > span:
+            pushouH = span
+    pushouObj.dimensions.z = pushouH
+    utils.updateScene()
+    pushouObj.scale.y = pushouObj.scale.z
+    pushouObj.scale.x = pushouObj.scale.z
+    utils.applyTransfrom(pushouObj,use_scale=True)
+    # 定位
+    pushouX = (
+        pushouObj.dimensions.x/2
+        + con.DOOR_MIDFENG
+        + doorWidth * 0.1
+        )
+    pushouY = doorY-con.MAINDOOR_DEPTH*pd/2
+    if dingNum == 0 :
+        # 无门钉时与腰枋对齐
+        pushouZ = doorZ
+    else:
+        # 有门钉时，放置在中间两行门钉间
+        pushouZ = (con.KAN_DOWN_HEIGHT*pd 
+                   + round(dingNum/2)*holeHeight/dingNum)
+    pushouObj.location = (pushouX,pushouY,pushouZ)
+    doorParts.append(pushouObj)
+
+    # 6、批量后处理 ----------------------
+    # 批量设置所有子对象材质
+    aData:tmpData = bpy.context.scene.ACA_temp
+    for ob in doorParts:
+        # 全部设置为朱漆材质
+        # 其中槛窗的窗台为石质，并不会被覆盖
+        mat.paint(ob,con.M_WINDOW)
+    # 合并板门
+    doorJoin = utils.joinObjects(
+        doorParts,
+        newName='板门门扇',
+        baseObj=zhouObj,
+        )
+    # 添加mirror
+    utils.addModifierMirror(
+        doorJoin, 
+        kankuangObj, 
+        use_axis=(True,False,False)
+    )
+    # 限制旋转轴，仅允许Z轴开窗、开门
+    doorJoin.lock_rotation = (True,True,False)
+
+    return doorJoin

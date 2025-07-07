@@ -500,10 +500,19 @@ class ACA_PT_wall(bpy.types.Panel):
             buttonWall = toolBar.column(align=True)
             buttonWall.operator(
                 "aca.add_wall",icon='MOD_BUILD',text='墙体')
-            # 按钮：加窗
+            # 按钮：加槛窗
             buttonWin = toolBar.column(align=True)
             buttonWin.operator(
                 "aca.add_window",icon='MOD_LATTICE',text='槛窗')
+            # 按钮：加直棂窗
+            buttonBarwindow = toolBar.column(align=True)
+            buttonBarwindow.operator(
+                "aca.add_barwindow",icon='MOD_LATTICE',text='直棂窗')
+            # 按钮：加板门
+            buttonMaindoor = toolBar.column(align=True)
+            buttonMaindoor.operator(
+                "aca.add_maindoor",icon='MOD_LATTICE',text='板门')
+            
             # 通栏宽度按钮
             toolBar = toolBox.grid_flow(columns=1, align=True)
             # 按钮：删除
@@ -519,6 +528,8 @@ class ACA_PT_wall(bpy.types.Panel):
                     buttonDoor.enabled=False
                     buttonWall.enabled=False
                     buttonWin.enabled=False
+                    buttonMaindoor.enabled=False
+                    buttonBarwindow.enabled=False
             # 删除按钮，是否选中个隔断对象
             if objData.aca_type not in (
                 con.ACA_TYPE_FANG,          # 枋对象
@@ -529,7 +540,6 @@ class ACA_PT_wall(bpy.types.Panel):
             # 附属参数框
             toolBox = box.column(align=True)
             toolBar = toolBox.grid_flow(align=True,columns=1)
-            
             
             # # 显示全区还是个体
             # selectRange = toolBar.column(align=True)
@@ -576,6 +586,22 @@ class ACA_PT_wall(bpy.types.Panel):
                 icon=checkbox_icon)
 
             toolBar = toolBox.grid_flow(align=True,columns=1)
+            # 门口宽度比例
+            inputDoorWidth = toolBar.column(align=True)
+            inputDoorWidth.prop(
+                bData, "doorFrame_width_per")
+            # 门口高度
+            inputDoorHeight = toolBar.column(align=True)
+            inputDoorHeight.prop(
+                bData, "doorFrame_height")
+            # 门钉数量
+            inputDingNum = toolBar.column(align=True)
+            inputDingNum.prop(
+                bData, "door_ding_num")
+            # 走马板高度（不区分）
+            inputTopHeight = toolBar.column(align=True)
+            inputTopHeight.prop(
+                bData, "wall_span")
             # 隔扇数量（区分了全局和个体）
             inputDoorNum = toolBar.column(align=True)
             inputDoorNum.prop(
@@ -584,12 +610,11 @@ class ACA_PT_wall(bpy.types.Panel):
             inputGapNum = toolBar.column(align=True)
             inputGapNum.prop(
                 dataSource, "gap_num",text='抹头数量')            
-            # 上槛高度（不区分）
-            inputTopHeight = toolBar.column(align=True)
-            inputTopHeight.prop(
-                bData, "wall_span")
+            
             
             # 彩画样式
+            toolBox = box.column(align=True)
+            toolBar = toolBox.grid_flow(align=True,columns=1)
             inputPaintStyle = toolBar.column(align=True)
             inputPaintStyle.prop(
                 bData, "paint_style",)

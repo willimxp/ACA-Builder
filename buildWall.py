@@ -89,6 +89,10 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
         wallName = '槛窗'
     elif wallType == con.ACA_WALLTYPE_DOOR:
         wallName = '隔扇'
+    elif wallType == con.ACA_WALLTYPE_BARWINDOW:
+        wallName = '直棂窗'
+    elif wallType == con.ACA_WALLTYPE_MAINDOOR:
+        wallName = '板门'
     wallName = "%s.%s#%s" % (wallName,setting[1],setting[2])
 
     # 获取实际柱高   
@@ -111,9 +115,9 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
         
     # 定义wallproxy尺寸
     wall_depth = 1 # 墙线框默认尺寸，后续被隐藏显示，所以没有实际影响
-    # 重檐时，装修不到柱头，留出走马板位置
-    if bData.wall_span != 0:
-            wall_height -= bData.wall_span
+    # # 重檐时，装修不到柱头，留出走马板位置
+    # if bData.wall_span != 0:
+    #         wall_height -= bData.wall_span
 
     # 样式为墙、门、窗
     style = setting[0]
@@ -357,10 +361,14 @@ def buildSingleWall(
     # 营造槛墙
     if wallType == con.ACA_WALLTYPE_WALL:
         wallObj = __drawWall(wallproxy)
-    # 营造隔扇、槛窗
+    # 营造隔扇、槛窗、直棂窗
     if wallType in (con.ACA_WALLTYPE_WINDOW,
-                    con.ACA_WALLTYPE_DOOR):
+                    con.ACA_WALLTYPE_DOOR,
+                    con.ACA_WALLTYPE_BARWINDOW,):
         wallObj = buildDoor.buildDoor(wallproxy)
+    # 营造板门
+    if wallType in (con.ACA_WALLTYPE_MAINDOOR,):
+        wallObj = buildDoor.buildDoor2(wallproxy)
     
     if wallObj != None:
         # 整理数据，包括槛框中的隔扇子对象
@@ -391,8 +399,10 @@ def buildSingleWall(
 
         # 挂入根节点
         utils.changeParent(wallObj,wallrootObj,resetOrigin=False)
+        wallname = wallproxy.name
         # 删除wallproxy
         utils.delObject(wallproxy)
+        wallObj.name = wallname
 
         utils.outputMsg("Building " + wallObj.name)
 

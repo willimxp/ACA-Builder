@@ -452,22 +452,26 @@ class ACA_PT_wall(bpy.types.Panel):
         if bData.aca_type != con.ACA_TYPE_BUILDING:
             layout.enabled = False
 
-    def draw_header_preset(self,context):
-        layout = self.layout
-        row = layout.row()
-        buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj == None: return
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
-            layout.enabled = False
-        # 显示为局部设置
-        if objData.aca_type in (
-                con.ACA_TYPE_WALL,con.ACA_TYPE_WALL_CHILD):
-            col = row.column()
-            col.label(text='['+context.object.name+']',icon='KEYTYPE_JITTER_VEC')
-        # 显示为全局设置
-        else:
-            col = row.column()
-            col.label(text='[全局]',icon='KEYTYPE_KEYFRAME_VEC')
+    # def draw_header_preset(self,context):
+    #     layout = self.layout
+    #     row = layout.row()
+    #     buildingObj,bData,objData = utils.getRoot(context.object)
+    #     if buildingObj == None: return
+    #     if bData.aca_type != con.ACA_TYPE_BUILDING:
+    #         layout.enabled = False
+    #     # 显示为局部设置
+    #     if objData.aca_type in (
+    #             con.ACA_TYPE_WALL,          # 槛墙
+    #             con.ACA_WALLTYPE_WINDOW,    # 槛窗
+    #             con.ACA_WALLTYPE_GESHAN,    # 隔扇
+    #             con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
+    #     ):
+    #         col = row.column()
+    #         col.label(text='['+context.object.name+']',icon='KEYTYPE_JITTER_VEC')
+    #     # 显示为全局设置
+    #     else:
+    #         col = row.column()
+    #         col.label(text='[全局]',icon='KEYTYPE_KEYFRAME_VEC')
 
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -485,6 +489,13 @@ class ACA_PT_wall(bpy.types.Panel):
             if bData.aca_type != con.ACA_TYPE_BUILDING:
                     box.enabled = False
 
+            # 彩画样式
+            toolBox = box.column(align=True)
+            toolBar = toolBox.grid_flow(align=True,columns=1)
+            inputPaintStyle = toolBar.column(align=True)
+            inputPaintStyle.prop(
+                bData, "paint_style",)
+
             # 工具栏：加枋、加墙、加门、加窗、删除
             toolBox = box.column(align=True)
             toolBar = toolBox.grid_flow(columns=2, align=True)
@@ -492,26 +503,28 @@ class ACA_PT_wall(bpy.types.Panel):
             buttonFang = toolBar.column(align=True)
             buttonFang.operator(
                 "aca.add_fang",icon='LINKED',text='额枋')
+            # 按钮：加板门
+            buttonMaindoor = toolBar.column(align=True)
+            buttonMaindoor.operator(
+                "aca.add_maindoor",icon='SPLIT_VERTICAL',text='板门')
             # 按钮：加门
             buttonDoor = toolBar.column(align=True)
             buttonDoor.operator(
-                "aca.add_door",icon='MOD_TRIANGULATE',text='隔扇')
+                "aca.add_door",icon='MOD_TRIANGULATE',text='隔扇门')
             # 按钮：加墙
             buttonWall = toolBar.column(align=True)
             buttonWall.operator(
                 "aca.add_wall",icon='MOD_BUILD',text='墙体')
-            # 按钮：加槛窗
-            buttonWin = toolBar.column(align=True)
-            buttonWin.operator(
-                "aca.add_window",icon='MOD_LATTICE',text='槛窗')
             # 按钮：加直棂窗
             buttonBarwindow = toolBar.column(align=True)
             buttonBarwindow.operator(
-                "aca.add_barwindow",icon='MOD_LATTICE',text='直棂窗')
-            # 按钮：加板门
-            buttonMaindoor = toolBar.column(align=True)
-            buttonMaindoor.operator(
-                "aca.add_maindoor",icon='MOD_LATTICE',text='板门')
+                "aca.add_barwindow",icon='FILE_VOLUME',text='直棂窗')
+            # 按钮：加槛窗
+            buttonWin = toolBar.column(align=True)
+            buttonWin.operator(
+                "aca.add_window",icon='MOD_LATTICE',text='隔扇窗')
+            
+            
             
             # 通栏宽度按钮
             toolBar = toolBox.grid_flow(columns=1, align=True)
@@ -533,28 +546,23 @@ class ACA_PT_wall(bpy.types.Panel):
             # 删除按钮，是否选中个隔断对象
             if objData.aca_type not in (
                 con.ACA_TYPE_FANG,          # 枋对象
-                con.ACA_TYPE_WALL,          # wallProxy
+                con.ACA_TYPE_WALL,          # 槛墙
+                con.ACA_WALLTYPE_WINDOW,    # 槛窗
+                con.ACA_WALLTYPE_GESHAN,    # 隔扇
+                con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
+                con.ACA_WALLTYPE_MAINDOOR,  # 板门
                 ):
                 buttonDel.enabled = False
 
-            # 附属参数框
-            toolBox = box.column(align=True)
-            toolBar = toolBox.grid_flow(align=True,columns=1)
-            
-            # # 显示全区还是个体
-            # selectRange = toolBar.column(align=True)
-            # if objData.aca_type in (
-            #     con.ACA_TYPE_WALL,con.ACA_TYPE_WALL_CHILD): 
-            #     selectRange.label(
-            #         text='['+context.object.name+']',
-            #         icon='KEYTYPE_JITTER_VEC')
-            # else:
-            #     selectRange.label(
-            #         text='[全局]',
-            #         icon='KEYTYPE_KEYFRAME_VEC')
-
             # 区分全局还是个体
-            if objData.aca_type == con.ACA_TYPE_WALL:     
+            isSetall = False
+            if objData.aca_type in (
+                con.ACA_TYPE_WALL,          # 槛墙
+                con.ACA_WALLTYPE_WINDOW,    # 槛窗
+                con.ACA_WALLTYPE_GESHAN,    # 隔扇
+                con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
+                con.ACA_WALLTYPE_MAINDOOR,  # 板门
+            ):     
                 # 如果用户选中了wallProxy
                 # 仅设置个体参数，取objData
                 dataSource = objData
@@ -562,8 +570,34 @@ class ACA_PT_wall(bpy.types.Panel):
                 dataSource = context.object.parent.ACA_data
             else:
                 dataSource = bData  
-
-            toolBar = toolBox.grid_flow(align=True,columns=2)
+                isSetall = True
+            
+            # 全局参数框
+            toolBox = box.column(align=True)
+            toolBar = toolBox.grid_flow(align=True,columns=1)
+            
+            # # 复选框：是否使用横披窗（区分了全局和个体）
+            # checkboxTopwin = toolBar.column(align=True)
+            # if dataSource.use_topwin:
+            #     checkbox_icon = 'CHECKBOX_HLT'
+            # else:
+            #     checkbox_icon = 'CHECKBOX_DEHLT'
+            # checkboxTopwin.prop(
+            #     bData, "use_topwin",
+            #     toggle=1,text='横披窗',
+            #     icon=checkbox_icon)
+            # 门口宽度比例
+            inputDoorWidth = toolBar.column(align=True)
+            inputDoorWidth.prop(
+                bData, "doorFrame_width_per")
+            # 门口高度
+            inputDoorHeight = toolBar.column(align=True)
+            inputDoorHeight.prop(
+                bData, "doorFrame_height")
+            # 走马板高度（不区分）
+            inputTopHeight = toolBar.column(align=True)
+            inputTopHeight.prop(
+                bData, "wall_span")
             # 复选框：是否使用小额枋（不区分）
             checkboxFang = toolBar.column(align=True)
             if dataSource.use_smallfang:
@@ -574,34 +608,27 @@ class ACA_PT_wall(bpy.types.Panel):
                 bData, "use_smallfang",
                 toggle=1,text="双重额枋",
                 icon=checkbox_icon) 
-            # 复选框：是否使用横披窗（区分了全局和个体）
-            checkboxTopwin = toolBar.column(align=True)
-            if dataSource.use_topwin:
-                checkbox_icon = 'CHECKBOX_HLT'
-            else:
-                checkbox_icon = 'CHECKBOX_DEHLT'
-            checkboxTopwin.prop(
-                bData, "use_topwin",
-                toggle=1,text='横披窗',
-                icon=checkbox_icon)
-
+            
+            # 个性参数
+            toolBox = box.column(align=True)
             toolBar = toolBox.grid_flow(align=True,columns=1)
-            # 门口宽度比例
-            inputDoorWidth = toolBar.column(align=True)
-            inputDoorWidth.prop(
-                bData, "doorFrame_width_per")
-            # 门口高度
-            inputDoorHeight = toolBar.column(align=True)
-            inputDoorHeight.prop(
-                bData, "doorFrame_height")
+
+            # 显示全区还是个体
+            selectRange = toolBar.column(align=True)
+            if isSetall: 
+                selectRange.label(
+                    text='[全局]',
+                    icon='KEYTYPE_KEYFRAME_VEC')
+            else:
+                selectRange.label(
+                    text='['+context.object.name+']',
+                    icon='KEYTYPE_JITTER_VEC')
+                
             # 门钉数量
             inputDingNum = toolBar.column(align=True)
             inputDingNum.prop(
                 bData, "door_ding_num")
-            # 走马板高度（不区分）
-            inputTopHeight = toolBar.column(align=True)
-            inputTopHeight.prop(
-                bData, "wall_span")
+            
             # 隔扇数量（区分了全局和个体）
             inputDoorNum = toolBar.column(align=True)
             inputDoorNum.prop(
@@ -610,14 +637,6 @@ class ACA_PT_wall(bpy.types.Panel):
             inputGapNum = toolBar.column(align=True)
             inputGapNum.prop(
                 dataSource, "gap_num",text='抹头数量')            
-            
-            
-            # 彩画样式
-            toolBox = box.column(align=True)
-            toolBar = toolBox.grid_flow(align=True,columns=1)
-            inputPaintStyle = toolBar.column(align=True)
-            inputPaintStyle.prop(
-                bData, "paint_style",)
         
         return
 

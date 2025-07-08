@@ -376,7 +376,7 @@ class ACA_OT_add_door(bpy.types.Operator):
                 buildWall.addWall,
                 buildingObj=buildingObj,
                 pillers=pillers,
-                wallType=con.ACA_WALLTYPE_DOOR)
+                wallType=con.ACA_WALLTYPE_GESHAN)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
                 self.report({'INFO'},"添加隔扇。")
@@ -416,8 +416,11 @@ class ACA_OT_del_wall(bpy.types.Operator):
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
         if objData.aca_type in (
-                con.ACA_TYPE_WALL, 
-                con.ACA_TYPE_WALL_CHILD,
+                con.ACA_TYPE_WALL,          # 槛墙
+                con.ACA_WALLTYPE_WINDOW,    # 槛窗
+                con.ACA_WALLTYPE_GESHAN,    # 隔扇
+                con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
+                con.ACA_WALLTYPE_MAINDOOR,  # 板门
                 ):
             funproxy = partial(
                 buildWall.delWall,

@@ -47,7 +47,7 @@ class ACA_Consts(object):
     ACA_TYPE_YARDWALL = 'yard_wall'                                 # ACA类型：院墙
     ACA_WALLTYPE_WALL = 'wall'                                      # 隔断属性-墙
     ACA_WALLTYPE_WINDOW = 'window'                                  # 隔断属性-槛窗
-    ACA_WALLTYPE_DOOR = 'door'                                      # 隔断属性-隔扇
+    ACA_WALLTYPE_GESHAN = 'geshan'                                  # 隔断属性-隔扇
     ACA_WALLTYPE_BARWINDOW = 'barwindow'                            # 隔断属性-直棂窗
     ACA_WALLTYPE_MAINDOOR = 'maindoor'                              # 隔断属性-板门
     ACA_TYPE_COMBO = 'combo'                                        # 组合样式

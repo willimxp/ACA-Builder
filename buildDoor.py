@@ -719,6 +719,14 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     pd = con.PILLER_D_EAVE * dk
     # 隔扇导角大小
     geshan_bevel = con.BEVEL_LOW
+    wallType = wData['wallID'].split('#')[0]
+    if wallType == con.ACA_WALLTYPE_GESHAN:
+        use_kanwall = False
+    elif wallType == con.ACA_WALLTYPE_WINDOW:
+        use_kanwall = True
+    else:
+        print("构建隔扇时无法判断是否使用槛墙")
+        return
 
     # 1、隔扇根对象
     geshan_root = utils.addEmpty(
@@ -734,7 +742,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         wallproxy=wallproxy,
         scale=scale,
         gapNum=wData.gap_num,
-        useKanwall=wData.use_KanWall,
+        useKanwall=use_kanwall,
         dir=dir
     )
 
@@ -781,7 +789,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         mat.paint(partObj,partMat)
             
     # 隔扇子对象合并
-    if bData.use_KanWall:
+    if use_kanwall:
         newName = '隔扇窗'
     else:
         newName = '隔扇门'
@@ -1043,12 +1051,30 @@ def buildDoor2(wallProxy:bpy.types.Object):
 
     # 清理之前的子对象
     utils.deleteHierarchy(wallProxy)
-    
+
+    # 解析wallProxy
+    wallID = wallProxy.ACA_data['wallID']
+    wallType = wallID.split('#')[0]
+
     # 3、构建槛框
     kankuangObj = __buildKanKuang2(wallProxy)
+    # 个性化设置参数的传递
+    utils.copyAcaData(wallProxy,kankuangObj)
+    # wallID不在propertyGroup中，需要单独传递
+    kankuangObj.ACA_data['wallID'] = wallID
 
-    # 4、构件板门
-    __buildMaindoor(kankuangObj)
+    # 4、构建子对象
+    if wallType == con.ACA_WALLTYPE_MAINDOOR:
+        # 构建板门
+        __addMaindoor(kankuangObj)
+    elif wallType == con.ACA_WALLTYPE_GESHAN:
+        # 构建隔扇
+        __addGeshan(kankuangObj)
+    elif wallType == con.ACA_WALLTYPE_WINDOW:
+        # 构建隔扇
+        __addGeshan(kankuangObj)
+    else:
+        print(f"无法构建子对象，未知的wallType：{wallType}")
 
     utils.focusObj(kankuangObj)
 
@@ -1515,7 +1541,7 @@ def __buildKanKuang2(wallproxy):
     return kankuangObj
 
 # 营造板门
-def __buildMaindoor(kankuangObj):
+def __addMaindoor(kankuangObj):
     # 载入数据
     buildingObj,bData,wData = utils.getRoot(kankuangObj)
     aData:tmpData = bpy.context.scene.ACA_temp
@@ -1728,3 +1754,60 @@ def __buildMaindoor(kankuangObj):
     doorJoin.lock_rotation = (True,True,False)
 
     return doorJoin
+
+# 添加隔扇
+def __addGeshan(kankuangObj):
+    # 载入数据
+    buildingObj,bData,wData = utils.getRoot(kankuangObj)
+    aData:tmpData = bpy.context.scene.ACA_temp
+    if buildingObj == None:
+        utils.popMessageBox(
+            "未找到建筑根节点或设计数据")
+        return
+    # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
+    # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    pillerD = bData.piller_diameter
+    # 分解槛框的长、宽、高
+    frame_width,frame_depth,frame_height = kankuangObj.dimensions
+    holeHeight = bData.doorFrame_height  # 门口高度
+    holeWidth = ((frame_width
+                  - pillerD
+                  - con.BAOKUANG_WIDTH*pd*2)
+                 *bData.doorFrame_width_per)   # 门口宽度
+    geshanParts = []
+
+    # 1、构建槛框内的每一扇隔扇
+    # 注意：先做隔扇是因为考虑到槛窗模式下，窗台高度依赖于隔扇抹头的计算结果
+    # 隔扇数量
+    geshan_num = wData.door_num
+    # 隔扇宽度
+    geshan_width = holeWidth/geshan_num
+    # 隔扇高度
+    geshan_height = holeHeight
+    geshanDim = Vector(
+                (geshan_width - con.GESHAN_GAP,
+                 con.BAOKUANG_DEPTH * pd,
+                 geshan_height - con.GESHAN_GAP))
+    # 隔扇z坐标
+    geshanZ = con.KAN_DOWN_HEIGHT*pd + geshan_height/2
+    for n in range(geshan_num):
+        # 位置
+        location = Vector(
+            (geshan_width*(geshan_num/2-n-0.5),   #向右半扇
+             0,geshanZ))
+        # 左开还是右开
+        if n%2 == 0: dir = 'L'
+        else: dir = 'R'
+        geshanObj,windowsillZ = __buildGeshan(
+            name='隔扇',
+            wallproxy=kankuangObj,
+            scale=geshanDim,
+            location=location,
+            dir=dir)
+        geshanParts.append(geshanObj)
+
+    
+
+    return

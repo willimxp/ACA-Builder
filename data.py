@@ -229,9 +229,15 @@ def update_wall(self, context:bpy.types.Context):
         funproxy = partial(buildWall.buildWallLayout,
                          buildingObj=refObj)
     # 更新个体的墙体
-    elif self.aca_type == con.ACA_TYPE_WALL:
-        funproxy = partial(buildWall.buildSingleWall,
-                                buildingObj=refObj)
+    elif self.aca_type in (
+                con.ACA_TYPE_WALL,          # 槛墙
+                con.ACA_WALLTYPE_WINDOW,    # 槛窗
+                con.ACA_WALLTYPE_GESHAN,    # 隔扇
+                con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
+                con.ACA_WALLTYPE_MAINDOOR,  # 板门
+            ):
+        funproxy = partial(buildWall.updateWall,
+                                wallObj=refObj)
     utils.fastRun(funproxy)
 
     return
@@ -582,7 +588,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_wall,
         )# type: ignore 
     doorFrame_width_per : bpy.props.FloatProperty(
-            name="门口宽度比例",
+            name="门口宽比",
             default=1,
             max=1,
             min=0.1,

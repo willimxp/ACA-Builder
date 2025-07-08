@@ -2267,3 +2267,26 @@ def push_purlinPos(purlinPos, L,direction='X'):
 
     return p3d
     # return purlinPos
+
+def copyAcaData(fromObj,toObj):
+    if (not hasattr(fromObj, "ACA_data") 
+        or not hasattr(toObj, "ACA_data")):
+        print("错误: 对象没有 ACA_data 属性组")
+        return False
+    
+    # 获取源和目标属性组
+    source_props = fromObj.ACA_data
+    target_props = toObj.ACA_data
+    
+    # 获取属性组中的所有属性
+    for prop_name in source_props.__annotations__:
+        if hasattr(target_props, prop_name):
+            # 获取源属性值
+            value = getattr(source_props, prop_name)
+            # 设置目标属性值
+            # setattr(target_props, prop_name, value)
+            target_props[prop_name] = value
+        else:
+            print(f"警告: copyAcaData,目标对象没有属性 '{prop_name}'")
+    
+    return True

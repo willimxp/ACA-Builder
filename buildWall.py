@@ -87,7 +87,7 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
         wallName = '墙体'
     elif wallType == con.ACA_WALLTYPE_WINDOW:
         wallName = '槛窗'
-    elif wallType == con.ACA_WALLTYPE_DOOR:
+    elif wallType == con.ACA_WALLTYPE_GESHAN:
         wallName = '隔扇'
     elif wallType == con.ACA_WALLTYPE_BARWINDOW:
         wallName = '直棂窗'
@@ -115,12 +115,6 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
         
     # 定义wallproxy尺寸
     wall_depth = 1 # 墙线框默认尺寸，后续被隐藏显示，所以没有实际影响
-    # # 重檐时，装修不到柱头，留出走马板位置
-    # if bData.wall_span != 0:
-    #         wall_height -= bData.wall_span
-
-    # 样式为墙、门、窗
-    style = setting[0]
     # 以柱编号定位
     # 起始柱子
     pFrom = setting[1].split('/')
@@ -177,27 +171,6 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
                 root_obj = wallrootObj,
                 origin_at_bottom = True
             )
-    
-    # 填充wallproxy的数据
-    wData:acaData = wallproxy.ACA_data
-    wData['aca_obj'] = True
-    wData['aca_type'] = con.ACA_TYPE_WALL
-    wData['wallID'] = wallID
-    if style == con.ACA_WALLTYPE_WINDOW:
-        wData['use_KanWall'] = True
-    wData['wall_depth'] = bData.wall_depth
-    wData['wall_span'] = bData.wall_span
-    wData['door_height'] = bData.door_height
-    wData['door_num'] = bData.door_num
-    wData['gap_num'] = bData.gap_num
-    wData['use_smallfang'] = bData.use_smallfang
-    wData['use_topwin'] = bData.use_topwin
-
-    # 验证是否做横披窗
-    # 如果中槛高度高于整个槛框高度，则不做横披窗
-    if wall_height < (bData.door_height
-                        +con.KAN_MID_HEIGHT*pd):
-        wData['use_topwin'] = False
     return wallproxy
 
 # 绘制墙体
@@ -326,7 +299,13 @@ def buildSingleWall(
         wallproxy = __tempWallproxy(buildingObj,wallID)
     
     # 个体修改，沿用现有的wall做为wallproxy
-    elif inputObjType == con.ACA_TYPE_WALL:
+    elif inputObjType in (
+        con.ACA_WALLTYPE_WALL,
+        con.ACA_WALLTYPE_WINDOW,
+        con.ACA_WALLTYPE_GESHAN,
+        con.ACA_WALLTYPE_BARWINDOW,
+        con.ACA_WALLTYPE_MAINDOOR,
+    ):
         # 装修根节点
         wallrootObj = utils.getAcaParent(buildingObj,con.ACA_TYPE_WALL_ROOT)
 
@@ -363,7 +342,7 @@ def buildSingleWall(
         wallObj = __drawWall(wallproxy)
     # 营造隔扇、槛窗、直棂窗
     if wallType in (con.ACA_WALLTYPE_WINDOW,
-                    con.ACA_WALLTYPE_DOOR,
+                    con.ACA_WALLTYPE_GESHAN,
                     con.ACA_WALLTYPE_BARWINDOW,):
         wallObj = buildDoor.buildDoor(wallproxy)
     # 营造板门
@@ -410,6 +389,85 @@ def buildSingleWall(
 
     return wallObj
 
+# 更新隔断
+def updateWall(wallObj:bpy.types.Object):
+    buildingObj = utils.getAcaParent(
+        wallObj,con.ACA_TYPE_BUILDING)
+    wallID = wallObj.ACA_data['wallID']
+    # 生成新隔断，额外传入wallObj，带入原始设置
+    __buildWall(buildingObj,wallID,wallObj)
+
+    # 删除老隔断
+    utils.deleteHierarchy(wallObj,del_parent=True)
+    return
+
+# 根据传入的wallID，生成对应的墙、板门、隔扇、槛窗等
+# wallID格式为wall#3/0#3/3,window#0/0#0/1,door#0/1#0/2,
+def __buildWall(buildingObj:bpy.types.Object,
+                wallID='',
+                origin_wallObj=None, # 待更新的墙体对象，可保留之前的设置
+                ):
+    # 0、准备 --------------------
+    # 锁定操作目录
+    buildingColl = buildingObj.users_collection[0]
+    utils.setCollection('装修',parentColl=buildingColl)
+    # 查找装修布局节点
+    wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
+    # 如果找不到“装修布局”根节点，重新创建
+    if wallrootObj == None:        
+        wallrootObj = __addWallrootNode(buildingObj)
+
+    # 解析wallID
+    wallType = wallID.split('#')[0]
+    
+    # 1、生成wallproxy，做为墙体生成的数据参考
+    wallproxy = __tempWallproxy(buildingObj,wallID)
+    # 将设置参数带入wallproxy，可进行个性化设置
+    if origin_wallObj == None:
+        # 新的wallproxy数据，继承buildingObj
+        utils.copyAcaData(buildingObj,wallproxy)
+    else:
+        # 老的wallproxy数据，从输入的对象中获取
+        utils.copyAcaData(origin_wallObj,wallproxy)
+    wallproxy.ACA_data['aca_type'] = wallType
+    wallproxy.ACA_data['wallID'] = wallID
+
+    # 2、生成对应的墙、板门、隔扇、槛窗等接口
+    # 营造槛墙
+    if wallType == con.ACA_WALLTYPE_WALL:
+        wallObj = __drawWall(wallproxy)
+    # 营造隔扇、槛窗、直棂窗
+    elif wallType in (
+                    con.ACA_WALLTYPE_BARWINDOW,):
+        wallObj = buildDoor.buildDoor(wallproxy)
+    # 营造板门
+    elif wallType in (con.ACA_WALLTYPE_MAINDOOR,
+                      con.ACA_WALLTYPE_GESHAN,
+                      con.ACA_WALLTYPE_WINDOW,):
+        wallObj = buildDoor.buildDoor2(wallproxy)
+    else:
+        utils.outputMsg(f"无法生成墙体类型:{wallType}")
+        return
+    # 个性化设置参数的传递
+    utils.copyAcaData(wallproxy,wallObj)
+    # wallID不在propertyGroup中，需要单独传递
+    wallObj.ACA_data['wallID'] = wallID
+    for child in wallObj.children:
+        utils.copyAcaData(wallproxy,child)
+        child.ACA_data['wallID'] = wallID
+        child.ACA_data['aca_type'] = con.ACA_TYPE_WALL_CHILD
+
+    # 3、最后的清理
+    # 挂入根节点
+    utils.changeParent(wallObj,wallrootObj,resetOrigin=False)
+    wallname = wallproxy.name
+    # 删除wallproxy
+    utils.delObject(wallproxy)
+    wallObj.name = wallname
+    utils.outputMsg("Building " + wallObj.name)
+    utils.focusObj(wallObj)
+    return wallObj
+
 # 手工添加隔断
 def addWall(buildingObj:bpy.types.Object,
               pillers:List[bpy.types.Object],
@@ -432,6 +490,7 @@ def addWall(buildingObj:bpy.types.Object,
     pFrom = None
     pTo= None
     wall_net = bData.wall_net
+    wallObj = None
     # 逐一生成墙体
     # 如果用户选择了2根以上的柱子，将依次生成多个墙体
     for piller in pillers:
@@ -455,7 +514,7 @@ def addWall(buildingObj:bpy.types.Object,
                     wallID = wallType+'#'+wallID
                     
                     # 生成墙体
-                    wallObj = buildSingleWall(buildingObj,wallID)
+                    wallObj = __buildWall(buildingObj,wallID)
 
                     # 将墙体加入整体布局中
                     bData.wall_net += wallID + ','            
@@ -463,11 +522,15 @@ def addWall(buildingObj:bpy.types.Object,
                     # 将柱子交换，为下一次循环做准备
                     pFrom = piller
 
-    # 250702 添加隔断后，刷新额枋，隐藏雀替
-    buildFloor.__buildFang(buildingObj)
+    
 
     # 聚焦在创建的门上
-    utils.focusObj(wallObj)
+    if wallObj != None:
+        # 250702 添加隔断后，刷新额枋，隐藏雀替
+        buildFloor.__buildFang(buildingObj)
+        utils.focusObj(wallObj)
+    else:
+        utils.outputMsg(f"无墙体需要生成")
 
     return {'FINISHED'}
 
@@ -482,7 +545,13 @@ def delWall(buildingObj:bpy.types.Object,
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
         if 'aca_type' in wall.ACA_data:
             # 删除wall
-            if wall.ACA_data['aca_type'] == con.ACA_TYPE_WALL:
+            if wall.ACA_data['aca_type'] in (
+                con.ACA_TYPE_WALL,          # 槛墙
+                con.ACA_WALLTYPE_WINDOW,    # 槛窗
+                con.ACA_WALLTYPE_GESHAN,    # 隔扇
+                con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
+                con.ACA_WALLTYPE_MAINDOOR,  # 板门
+            ):
                 utils.deleteHierarchy(wall,del_parent=True)
 
     # 重新生成wall_net
@@ -533,7 +602,7 @@ def buildWallLayout(buildingObj:bpy.types.Object):
     wallList = wallSetting.split(',')
     for wallID in wallList:
         if wallID == '': continue
-        buildSingleWall(buildingObj,wallID)
+        __buildWall(buildingObj,wallID)
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

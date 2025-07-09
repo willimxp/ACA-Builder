@@ -239,6 +239,7 @@ class ACA_Consts(object):
     M_ROCK = '石材'
     M_PAINT = '上漆'
     M_GOLD = '金漆'
+    M_GREEN = '绿漆'
     M_BRICK_WALL = '砖墙'
     M_PLATFORM_FLOOR = '台基地面'
     M_PLATFORM_WALL = '台基陡板'

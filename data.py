@@ -968,6 +968,10 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "漆.金",
             type = bpy.types.Object,
         )# type: ignore 
+    mat_green:bpy.props.PointerProperty(
+            name = "漆.绿",
+            type = bpy.types.Object,
+        )# type: ignore 
     mat_brick_1:bpy.props.PointerProperty(
             name = "方砖缦地",
             type = bpy.types.Object,

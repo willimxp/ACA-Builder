@@ -436,15 +436,12 @@ def __buildWall(buildingObj:bpy.types.Object,
     # 营造槛墙
     if wallType == con.ACA_WALLTYPE_WALL:
         wallObj = __drawWall(wallproxy)
-    # 营造隔扇、槛窗、直棂窗
-    elif wallType in (
-                    con.ACA_WALLTYPE_BARWINDOW,):
-        wallObj = buildDoor.buildDoor(wallproxy)
-    # 营造板门
+    # 营造板门、隔扇、槛窗、直棂窗
     elif wallType in (con.ACA_WALLTYPE_MAINDOOR,
                       con.ACA_WALLTYPE_GESHAN,
-                      con.ACA_WALLTYPE_WINDOW,):
-        wallObj = buildDoor.buildDoor2(wallproxy)
+                      con.ACA_WALLTYPE_WINDOW,
+                      con.ACA_WALLTYPE_BARWINDOW,):
+        wallObj = buildDoor.buildDoor(wallproxy)
     else:
         utils.outputMsg(f"无法生成墙体类型:{wallType}")
         return

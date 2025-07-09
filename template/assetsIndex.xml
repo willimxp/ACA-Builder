@@ -6,6 +6,7 @@
     <mat_stone type="Object">石头</mat_stone>
     <mat_oilpaint type="Object">漆.通用</mat_oilpaint>
     <mat_gold type="Object">漆.金</mat_gold>
+    <mat_green type="Object">漆.绿</mat_green>
     <mat_brick_1 type="Object">方砖缦地</mat_brick_1>
     <mat_brick_2 type="Object">条砖竖铺</mat_brick_2>
     <mat_brick_3 type="Object">条砖横铺</mat_brick_3>

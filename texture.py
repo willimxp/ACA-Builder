@@ -241,6 +241,10 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
         ):
             mat = aData.mat_gold # 金漆
     if paintMat in (
+            con.M_GREEN, # 绿漆
+        ):
+            mat = aData.mat_green # 绿漆
+    if paintMat in (
             con.M_PLATFORM_FLOOR, # 台基地面
         ):
             mat = aData.mat_brick_1 # 方砖缦地
@@ -445,6 +449,7 @@ def __paintMat(object:bpy.types.Object,
         aData.mat_brick_3,      # 条砖横铺
         aData.mat_dust_wall,    # 墙体抹灰
         aData.mat_gold,         # 漆.金
+        aData.mat_green,        # 漆.绿
     ):
         object = __setTileMat(object,
                      mat,

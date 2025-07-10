@@ -15,7 +15,12 @@ from . import utils
 # 构建扇心
 # 包括在槛框中嵌入的横披窗扇心
 # 也包括在隔扇中嵌入的隔扇扇心
-def __buildShanxin(parent,scale:Vector,location:Vector):
+def __buildShanxin(
+        parent,
+        scale:Vector,
+        location:Vector,
+        borderWidth=None,
+        lingxinMat=None,):
     # parent在横披窗中传入的wallproxy，但在隔扇中传入的geshanroot，所以需要重新定位
     # 载入数据
     buildingObj = utils.getAcaParent(parent,con.ACA_TYPE_BUILDING)
@@ -28,9 +33,13 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     pd = con.PILLER_D_EAVE * dk
     # 收集扇心对象
     linxingList = []
+    if borderWidth == None:
+        borderWidth = con.ZIBIAN_WIDTH*pd
+    if lingxinMat == None:
+        lingxinMat = con.M_WINDOW_INNER
 
     # 扇心高度校验，以免出现row=0的异常
-    linxingHeight = scale.z- con.ZIBIAN_WIDTH*2*pd
+    linxingHeight = scale.z - borderWidth*2
     unitWidth,unitDeepth,unitHeight = utils.getMeshDims(aData.lingxin_source)
     rows = math.ceil(linxingHeight/unitHeight)+1
     if rows<=0:
@@ -45,8 +54,8 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     # 三维的scale转为plane二维的scale
     zibianObj.rotation_euler.x = math.radians(90)
     zibianObj.scale = (
-        scale.x - con.ZIBIAN_WIDTH*pd,
-        scale.z - con.ZIBIAN_WIDTH*pd, # 旋转90度，原Zscale给Yscale
+        scale.x - borderWidth,
+        scale.z - borderWidth, # 旋转90度，原Zscale给Yscale
         1)
     # apply scale
     utils.applyTransfrom(zibianObj,use_rotation=True,use_scale=True)
@@ -59,7 +68,8 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     bpy.ops.object.editmode_toggle()
     # 设置Bevel
     zibianObj.data.bevel_mode = 'PROFILE'        
-    zibianObj.data.bevel_depth = con.ZIBIAN_WIDTH*pd  # 仔边宽度
+    zibianObj.data.bevel_depth = borderWidth  # 仔边宽度
+    zibianObj.data.bevel_resolution = 0
     # 转为mesh
     bpy.ops.object.convert(target='MESH')
     zibianObj = bpy.context.object
@@ -104,9 +114,9 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
     linxinObj.name = '棂心'
     linxinObj.data.name = '棂心'
     linxinObj.parent = parent
-    linxinObj.scale = (scale.x- con.ZIBIAN_WIDTH*2*pd,
-                   scale.z- con.ZIBIAN_WIDTH*2*pd,
-                   1)
+    linxinObj.scale = (scale.x- borderWidth*2,
+                       scale.z- borderWidth*2,
+                       1)
     linxinObj.rotation_euler.x = math.radians(90)
     # apply
     utils.applyTransfrom(linxinObj,
@@ -114,7 +124,7 @@ def __buildShanxin(parent,scale:Vector,location:Vector):
                          use_scale=True,
                          use_rotation=True)
     # 棂心贴图（三交六椀）
-    mat.paint(linxinObj,con.M_WINDOW_INNER)
+    mat.paint(linxinObj,lingxinMat)
     linxingList.append(linxinObj)
 
     # 合并扇心
@@ -429,25 +439,32 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     pillerD = bData.piller_diameter
     # 分解槛框的长、宽、高
     frame_width,frame_depth,frame_height = wallproxy.dimensions
+    # 解析wallProxy
+    wallID = wallproxy.ACA_data['wallID']
+    wallType = wallID.split('#')[0]
 
     kanQiangObjs = []
 
     # 风槛
-    scl1 = Vector((
-        dimension.x,
-        con.KAN_WIND_DEPTH*pd,
-        con.KAN_WIND_HEIGHT*pd
-    ))
-    loc1 = Vector((
-        0,0,dimension.z-scl1.z/2
-    ))
-    kanWindObj = utils.addCube(
-                name="风槛",
-                location=loc1,
-                dimension=scl1,
-                parent=wallproxy,
-            ) 
-    kanQiangObjs.append(kanWindObj)
+    if wallType == con.ACA_WALLTYPE_FLIPWINDOW:
+        # 支摘窗不做风槛
+        scl1 = Vector((0,0,0))
+    else:
+        scl1 = Vector((
+            dimension.x,
+            con.KAN_WIND_DEPTH*pd,
+            con.KAN_WIND_HEIGHT*pd
+        ))
+        loc1 = Vector((
+            0,0,dimension.z-scl1.z/2
+        ))
+        kanWindObj = utils.addCube(
+                    name="风槛",
+                    location=loc1,
+                    dimension=scl1,
+                    parent=wallproxy,
+                ) 
+        kanQiangObjs.append(kanWindObj)
 
     # 榻板
     scl2 = Vector((
@@ -531,6 +548,9 @@ def buildDoor(wallProxy:bpy.types.Object):
     elif wallType == con.ACA_WALLTYPE_BARWINDOW:
         # 构建直棂窗
         __addBarwindow(kankuangObj)
+    elif wallType == con.ACA_WALLTYPE_FLIPWINDOW:
+        # 构建支摘窗
+        __addFlipwindow(kankuangObj)
     else:
         print(f"无法构建子对象，未知的wallType：{wallType}")
 
@@ -606,7 +626,8 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     doorBottom = con.KAN_DOWN_HEIGHT*pd
     # 仅隔扇窗需要
     if wallType in (con.ACA_WALLTYPE_WINDOW,
-                    con.ACA_WALLTYPE_BARWINDOW,):
+                    con.ACA_WALLTYPE_BARWINDOW,
+                    con.ACA_WALLTYPE_FLIPWINDOW,):
         # 计算窗台高度
         frameDim = Vector((doorWidth,0,doorHeight))
         geshanData,windowsillZ = __getGeshanData(
@@ -623,6 +644,9 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
             + con.KAN_DOWN_HEIGHT*pd
             - con.GESHAN_GAP/2
         )
+        # 支摘窗不做风槛，向下调整
+        if wallType == con.ACA_WALLTYPE_FLIPWINDOW:
+            doorBottom -= con.KAN_WIND_HEIGHT*pd
         # 窗台高度
         windowsillDim = Vector((
             wallproxy.dimensions.x,
@@ -911,11 +935,13 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         
     # 10、横披窗 ---------------------
     if bUseTopwin:    
-        # 隔扇门/隔扇窗/直棂窗做横披窗
+        # 隔扇门/隔扇窗/直棂窗/支摘窗做横披窗
         if wallType in (
             con.ACA_WALLTYPE_WINDOW,
             con.ACA_WALLTYPE_GESHAN,
-            con.ACA_WALLTYPE_BARWINDOW):
+            con.ACA_WALLTYPE_BARWINDOW,
+            con.ACA_WALLTYPE_FLIPWINDOW,
+            ):
 
             if wallType in (
                     con.ACA_WALLTYPE_WINDOW,
@@ -924,7 +950,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
                 # 隔扇门/隔扇窗的横披窗数量比隔扇少一扇
                 window_top_num = wData.door_num - 1
             else:
-                # 直棂窗，始终做3面
+                # 直棂窗/支摘窗，始终做3面
                 window_top_num = 3
             # 横披窗宽度:(柱间距-柱径-抱框*(横披窗数量+1))/3
             window_top_width = ((frame_width 
@@ -960,13 +986,15 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
                 if wallType in (
                     con.ACA_WALLTYPE_WINDOW,
                     con.ACA_WALLTYPE_GESHAN,
+                    con.ACA_WALLTYPE_FLIPWINDOW,
                 ):
-                    # 隔扇门/隔扇窗填充棂心
+                    # 隔扇门/隔扇窗/支摘窗填充棂心
                     linxinObj = __buildShanxin(
                         wallproxy,WindowTopScale,WindowTopLoc)
                     # 倒角
                     utils.addModifierBevel(linxinObj,con.BEVEL_LOW)
                 else:
+                    # 直棂窗只用余塞板，不用棂条
                     yusaiScale = WindowTopScale + Vector((
                         con.KANKUANG_INSET*2,
                         0,
@@ -1115,7 +1143,6 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
             utils.addModifierBevel(menyinObj,con.BEVEL_LOW)
             KankuangObjs.append(menyinObj)
         
-
     # 14、门簪 ------------------------
     # 仅板门需要
     if wallType == con.ACA_WALLTYPE_MAINDOOR:
@@ -1148,6 +1175,24 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         )
         mat.paint(zanObj,con.M_MENZAN,override=True)
         KankuangObjs.append(zanObj)
+
+    # 15、间框 ------------------------
+    # 仅支摘窗需要
+    if wallType == con.ACA_WALLTYPE_FLIPWINDOW:
+        # 尺寸，复用门框尺寸
+        kuangMidDim = kuangDoorDim
+        # 定位，上下与门框对齐，水平居中
+        KuangMidLoc = Vector((0,0,KuangDoorZ))
+        # 添加门框
+        KuangMidObj = utils.addCube(
+            name="间框",
+            location=KuangMidLoc,
+            dimension=kuangMidDim,
+            parent=wallproxy,
+        )
+        # 倒角
+        utils.addModifierBevel(KuangMidObj,con.BEVEL_HIGH)
+        KankuangObjs.append(KuangMidObj)
 
     # 批量设置所有子对象材质
     aData:tmpData = bpy.context.scene.ACA_temp
@@ -1518,6 +1563,7 @@ def __addBarwindow(kankuangObj:bpy.types.Object):
     # 设置Bevel
     zibianObj.data.bevel_mode = 'PROFILE'        
     zibianObj.data.bevel_depth = con.ZIBIAN_WIDTH*pd  # 仔边宽度
+    zibianObj.data.bevel_resolution = 0
     # 转为mesh
     bpy.ops.object.convert(target='MESH')
     zibianObj = bpy.context.object
@@ -1562,3 +1608,166 @@ def __addBarwindow(kankuangObj:bpy.types.Object):
     mat.paint(zhilinObj,con.M_ZHILINGCHUANG)
 
     return zhilinObj
+
+# 添加支摘窗
+def __addFlipwindow(kankuangObj:bpy.types.Object):
+    # 载入数据
+    buildingObj,bData,wData = utils.getRoot(kankuangObj)
+    aData:tmpData = bpy.context.scene.ACA_temp
+    if buildingObj == None:
+        utils.popMessageBox(
+            "未找到建筑根节点或设计数据")
+        return
+    # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
+    # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
+    pillerD = bData.piller_diameter
+    # 分解槛框的长、宽、高
+    frame_width,frame_depth,frame_height = kankuangObj.dimensions
+    holeHeight = bData.doorFrame_height  # 门口高度
+    holeWidth = ((frame_width
+                  - pillerD
+                  - con.BAOKUANG_WIDTH*pd*2)
+                 *bData.doorFrame_width_per)   # 门口宽度
+    
+    # 计算窗台高度
+    frameDim = Vector((holeWidth,0,holeHeight))
+    geshanData,windowsillZ = __getGeshanData(
+        wallproxy=kankuangObj,
+        scale=frameDim,
+        gapNum=wData.gap_num,
+        useKanwall=True,
+        dir=dir
+    )
+    # 返回的窗台坐标是基于隔扇中心，转换到相对wallproxy位置
+    flipwinBottom = (
+        windowsillZ 
+        + holeHeight/2
+        + con.KAN_DOWN_HEIGHT*pd
+        - con.GESHAN_GAP/2
+        - con.KAN_WIND_HEIGHT*pd
+    )
+    # 尺寸
+    flipwinW = (holeWidth/2 
+                 - con.BAOKUANG_WIDTH*pd/2
+                 - con.GESHAN_GAP)
+    flipwinH = (holeHeight/2
+                - flipwinBottom/2 
+                + con.KAN_DOWN_HEIGHT*pd/2
+                - con.GESHAN_GAP*0.75)
+    flipwinDim = (flipwinW,0.01,flipwinH)
+    # 位置
+    flipwinX = (con.BAOKUANG_WIDTH*pd/2
+                + flipwinW/2
+                + con.GESHAN_GAP/2)
+    flipwinZ = (flipwinBottom 
+                + flipwinH/2 
+                + con.GESHAN_GAP/2)
+    flipwinLoc = (flipwinX,0,flipwinZ)
+
+    # 生成右下窗，做为四幅窗的模板
+    # flipwinObj_RightDown = utils.addCube(
+    #     location=flipwinLoc,
+    #     dimension=flipwinDim,
+    #     parent=kankuangObj
+    # )
+    
+    flipwinParts = []
+
+    # 仔边环绕
+    # 创建一个平面，转换为curve，设置curve的横截面
+    bpy.ops.mesh.primitive_plane_add(size=1,location=flipwinLoc)
+    zibianObj = bpy.context.object
+    zibianObj.name = '仔边'
+    zibianObj.parent = kankuangObj
+    # 三维的scale转为plane二维的scale
+    zibianObj.rotation_euler.x = math.radians(90)
+    zibianObj.scale = (
+        flipwinW - con.BORDER_WIDTH*pd,
+        flipwinH - con.BORDER_WIDTH*pd, # 旋转90度，原Zscale给Yscale
+        1)
+    # apply scale
+    utils.applyTransfrom(zibianObj,use_rotation=True,use_scale=True)
+    # 转换为Curve
+    bpy.ops.object.convert(target='CURVE')
+    # 旋转所有的点45度，形成四边形
+    bpy.ops.object.editmode_toggle()
+    bpy.ops.curve.select_all(action='SELECT')
+    bpy.ops.transform.tilt(value=math.radians(45))
+    bpy.ops.object.editmode_toggle()
+    # 设置Bevel
+    zibianObj.data.bevel_mode = 'PROFILE'        
+    zibianObj.data.bevel_depth = con.BORDER_WIDTH*pd  # 仔边宽度
+    zibianObj.data.bevel_resolution = 0
+    # 转为mesh
+    bpy.ops.object.convert(target='MESH')
+    zibianObj = bpy.context.object
+    # 仔边刷漆
+    mat.paint(zibianObj,con.M_WINDOW)
+    # 倒角
+    utils.addModifierBevel(
+        zibianObj,con.BEVEL_LOW)
+    flipwinParts.append(zibianObj)
+
+    # 做棂心
+    shanxinDim = (Vector(flipwinDim) 
+                  - Vector((
+                      con.BORDER_WIDTH*pd*2,
+                      0,
+                      con.BORDER_WIDTH*pd*2,
+                    ))
+                  )
+    shanxinObj = __buildShanxin(
+        kankuangObj,
+        shanxinDim,
+        Vector(flipwinLoc),
+        lingxinMat=con.M_LINXIN_WAN)
+    utils.addModifierBevel(
+        shanxinObj,con.BEVEL_LOW)
+    flipwinParts.append(shanxinObj)
+
+    # 合并
+    flipwinObj_RightDown = utils.joinObjects(
+        flipwinParts,"支摘窗")
+    
+    # 复制右上，左下，左上的三幅窗
+    flipwinObj_RightUp = utils.copySimplyObject(
+        flipwinObj_RightDown,
+        location=(Vector(flipwinLoc) 
+                  + Vector((0,0,flipwinH 
+                            + con.GESHAN_GAP*0.5))
+                  ),
+        singleUser=True,
+    )
+    flipwinObj_LeftDown = utils.copySimplyObject(
+        flipwinObj_RightDown,
+        location=Vector(flipwinLoc) * Vector((-1,1,1)),
+        singleUser=True,
+    )
+    flipwinObj_LeftUp = utils.copySimplyObject(
+        flipwinObj_RightDown,
+        location=(Vector(flipwinLoc) 
+                  * Vector((-1,1,1))  
+                  + Vector((0,0,flipwinH 
+                            + con.GESHAN_GAP*0.5))
+                  ),
+        singleUser=True,
+    )
+
+    # 移动origin到顶部
+    utils.setOrigin(flipwinObj_RightUp,
+                    Vector((0,
+                            - con.BORDER_WIDTH*pd/2,
+                            flipwinH/2))
+                    )
+    utils.setOrigin(flipwinObj_LeftUp,
+                    Vector((0,
+                            - con.BORDER_WIDTH*pd/2,
+                            flipwinH/2))
+                    )
+    # 锁定旋转
+    flipwinObj_RightUp.lock_rotation = (False,True,True)
+    flipwinObj_LeftUp.lock_rotation = (False,True,True)
+
+    return

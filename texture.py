@@ -312,6 +312,10 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
         ):
             mat = aData.mat_geshanxin 
         if paintMat in (
+            con.M_LINXIN_WAN, # 万字锦
+        ):
+            mat = aData.mat_geshanxin_wan 
+        if paintMat in (
             con.M_DOOR_RING, # 绦环板
         ):
             mat = aData.mat_paint_doorring 
@@ -413,6 +417,11 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
             mat = aData.mat_geshanxin 
             slot = 1
         if paintMat in (
+            con.M_LINXIN_WAN, # 万字锦
+        ):
+            mat = aData.mat_geshanxin_wan 
+            slot = 1
+        if paintMat in (
             con.M_FANG_TIAOYAN, # 挑檐枋
             con.M_FANG_DGCONNECT, # 拽枋
             con.M_DOUGONG, # 斗栱
@@ -469,6 +478,13 @@ def __paintMat(object:bpy.types.Object,
                      mat,
                      uvType=uvType.CUBE,
                      cubesize=0.1)  
+    
+    # 万字锦
+    if mat == aData.mat_geshanxin_wan:
+        object = __setTileMat(object,
+                     mat,
+                     uvType=uvType.CUBE,
+                     cubesize=0.3)  
 
     # 挑檐枋工王云，仅在前后两面做彩画
     if mat in (

@@ -50,6 +50,7 @@ class ACA_Consts(object):
     ACA_WALLTYPE_GESHAN = 'geshan'                                  # 隔断属性-隔扇
     ACA_WALLTYPE_BARWINDOW = 'barwindow'                            # 隔断属性-直棂窗
     ACA_WALLTYPE_MAINDOOR = 'maindoor'                              # 隔断属性-板门
+    ACA_WALLTYPE_FLIPWINDOW = 'flipwindow'                          # 隔断属性-支摘窗
     ACA_TYPE_COMBO = 'combo'                                        # 组合样式
 
     # 默认斗口
@@ -282,7 +283,7 @@ class ACA_Consts(object):
     M_XIANGYAN = '象眼板'
     M_ZHILINGCHUANG = '直棂窗'
     M_MENZAN = '门簪'
-    
+    M_LINXIN_WAN = '万字锦'
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

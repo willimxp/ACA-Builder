@@ -93,6 +93,11 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
         wallName = '直棂窗'
     elif wallType == con.ACA_WALLTYPE_MAINDOOR:
         wallName = '板门'
+    elif wallType == con.ACA_WALLTYPE_FLIPWINDOW:
+        wallName = '支摘窗'
+    else:
+        utils.outputMsg(f"无法生成wallproxy，walltype：{wallType}")
+        return
     wallName = "%s.%s#%s" % (wallName,setting[1],setting[2])
 
     # 获取实际柱高   
@@ -274,121 +279,6 @@ def __drawWall(wallProxy:bpy.types.Object):
 
     return bodyObj
 
-# 个性化设置一个墙体
-# 传入wallproxy
-def buildSingleWall(
-        buildingObj:bpy.types.Object,
-        wallID='',
-    ):
-    # 0、全局修改还是个体修改
-    inputObjType = buildingObj.ACA_data['aca_type']
-    
-    # 全局修改，生成新的wallproxy
-    if inputObjType == con.ACA_TYPE_BUILDING:
-        # 锁定操作目录
-        buildingColl = buildingObj.users_collection[0]
-        utils.setCollection('装修',parentColl=buildingColl)
-
-        # 查找装修布局节点
-        wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
-        # 如果找不到“装修布局”根节点，重新创建
-        if wallrootObj == None:        
-            wallrootObj = __addWallrootNode(buildingObj)
-
-        # 生成wallproxy，做为墙体生成的数据参考
-        wallproxy = __tempWallproxy(buildingObj,wallID)
-    
-    # 个体修改，沿用现有的wall做为wallproxy
-    elif inputObjType in (
-        con.ACA_WALLTYPE_WALL,
-        con.ACA_WALLTYPE_WINDOW,
-        con.ACA_WALLTYPE_GESHAN,
-        con.ACA_WALLTYPE_BARWINDOW,
-        con.ACA_WALLTYPE_MAINDOOR,
-    ):
-        # 装修根节点
-        wallrootObj = utils.getAcaParent(buildingObj,con.ACA_TYPE_WALL_ROOT)
-
-        # 重新生成wallproxy
-        wallID = buildingObj.ACA_data['wallID']
-        # 生成wallproxy，做为墙体生成的数据参考
-        bobj = utils.getAcaParent(buildingObj,con.ACA_TYPE_BUILDING)
-        wallproxy = __tempWallproxy(bobj,wallID)
-
-        # 将原有属性传递
-        wData = wallproxy.ACA_data
-        oData:acaData = buildingObj.ACA_data
-        wData['wall_depth'] = oData.wall_depth
-        wData['wall_span'] = oData.wall_span
-        wData['door_height'] = oData.door_height
-        wData['door_num'] = oData.door_num
-        wData['gap_num'] = oData.gap_num
-        wData['use_topwin'] = oData.use_topwin
-        wData['use_smallfang'] = oData.use_smallfang
-
-        # 删除老的隔扇
-        utils.deleteHierarchy(buildingObj,del_parent=True)
-        
-    else:
-        utils.outputMsg(
-            'Can not build wall by ' 
-            + buildingObj.name)
-        return        
-
-    wallType = wallID.split('#')[0]
-    wallObj = None
-    # 营造槛墙
-    if wallType == con.ACA_WALLTYPE_WALL:
-        wallObj = __drawWall(wallproxy)
-    # 营造隔扇、槛窗、直棂窗
-    if wallType in (con.ACA_WALLTYPE_WINDOW,
-                    con.ACA_WALLTYPE_GESHAN,
-                    con.ACA_WALLTYPE_BARWINDOW,):
-        wallObj = buildDoor.buildDoor(wallproxy)
-    # 营造板门
-    if wallType in (con.ACA_WALLTYPE_MAINDOOR,):
-        wallObj = buildDoor.buildDoor2(wallproxy)
-    
-    if wallObj != None:
-        # 整理数据，包括槛框中的隔扇子对象
-        dataObj = (wallObj,)
-        if len(wallObj.children) > 0:
-            dataObj += wallObj.children
-        for obj in dataObj:
-            wData:acaData = obj.ACA_data
-            wData['aca_obj'] = True
-            wData['wallID'] = wallID
-            if obj.parent == wallproxy:
-                wData['aca_type'] = con.ACA_TYPE_WALL
-            else:
-                wData['aca_type'] = con.ACA_TYPE_WALL_CHILD
-            if wallType == con.ACA_WALLTYPE_WINDOW:
-                wData['use_KanWall'] = True
-            # 需留意：
-            # 新建时buildingObj是建筑根节点，数据为全局参数
-            # 但更新时buildingObj传入了wallObj，数据为个体参数
-            bData:acaData = wallproxy.ACA_data
-            wData['wall_depth'] = bData.wall_depth
-            wData['wall_span'] = bData.wall_span
-            wData['door_height'] = bData.door_height
-            wData['door_num'] = bData.door_num
-            wData['gap_num'] = bData.gap_num
-            wData['use_topwin'] = bData.use_topwin
-            wData['use_smallfang'] = bData.use_smallfang
-
-        # 挂入根节点
-        utils.changeParent(wallObj,wallrootObj,resetOrigin=False)
-        wallname = wallproxy.name
-        # 删除wallproxy
-        utils.delObject(wallproxy)
-        wallObj.name = wallname
-
-        utils.outputMsg("Building " + wallObj.name)
-
-    utils.focusObj(wallObj)
-
-    return wallObj
-
 # 更新隔断
 def updateWall(wallObj:bpy.types.Object):
     buildingObj = utils.getAcaParent(
@@ -422,15 +312,16 @@ def __buildWall(buildingObj:bpy.types.Object,
     
     # 1、生成wallproxy，做为墙体生成的数据参考
     wallproxy = __tempWallproxy(buildingObj,wallID)
-    # 将设置参数带入wallproxy，可进行个性化设置
-    if origin_wallObj == None:
-        # 新的wallproxy数据，继承buildingObj
-        utils.copyAcaData(buildingObj,wallproxy)
-    else:
-        # 老的wallproxy数据，从输入的对象中获取
-        utils.copyAcaData(origin_wallObj,wallproxy)
-    wallproxy.ACA_data['aca_type'] = wallType
-    wallproxy.ACA_data['wallID'] = wallID
+    if wallproxy:
+        # 将设置参数带入wallproxy，可进行个性化设置
+        if origin_wallObj == None:
+            # 新的wallproxy数据，继承buildingObj
+            utils.copyAcaData(buildingObj,wallproxy)
+        else:
+            # 老的wallproxy数据，从输入的对象中获取
+            utils.copyAcaData(origin_wallObj,wallproxy)
+        wallproxy.ACA_data['aca_type'] = wallType
+        wallproxy.ACA_data['wallID'] = wallID
 
     # 2、生成对应的墙、板门、隔扇、槛窗等接口
     # 营造槛墙
@@ -440,7 +331,8 @@ def __buildWall(buildingObj:bpy.types.Object,
     elif wallType in (con.ACA_WALLTYPE_MAINDOOR,
                       con.ACA_WALLTYPE_GESHAN,
                       con.ACA_WALLTYPE_WINDOW,
-                      con.ACA_WALLTYPE_BARWINDOW,):
+                      con.ACA_WALLTYPE_BARWINDOW,
+                      con.ACA_WALLTYPE_FLIPWINDOW,):
         wallObj = buildDoor.buildDoor(wallproxy)
     else:
         utils.outputMsg(f"无法生成墙体类型:{wallType}")

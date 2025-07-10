@@ -27,7 +27,7 @@ class ACA_OT_focusBuilding(bpy.types.Operator):
         if buildingObj != None:
             utils.focusObj(buildingObj)
         else:
-            self.report({'ERROR'},"找不到根节点！")
+            self.report({'ERROR'},"找不到根节点")
 
         return {'FINISHED'}
 
@@ -134,7 +134,7 @@ class ACA_OT_reset_floor(bpy.types.Operator):
                     buildingObj=buildingObj)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-            self.report({'INFO'},"柱网已重新营造！")
+            self.report({'INFO'},"已重新营造柱网！")
         return {'FINISHED'}
     
     def invoke(self, context, event):
@@ -184,7 +184,7 @@ class ACA_OT_del_piller(bpy.types.Operator):
         pillers = context.selected_objects
         buildingObj = utils.getAcaParent(piller,con.ACA_TYPE_BUILDING)
         buildFloor.delPiller(buildingObj,pillers) 
-        self.report({'INFO'},"已删除柱子。")
+        self.report({'INFO'},"已删除柱子")
         return {'FINISHED'}
 
     def invoke(self, context, event):
@@ -238,7 +238,7 @@ class ACA_OT_add_step(bpy.types.Operator):
                 buildingObj=buildingObj,pillers=pillers)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已添加踏跺。")
+                self.report({'INFO'},"已添加踏跺")
         
         return {'FINISHED'}
 
@@ -274,7 +274,7 @@ class ACA_OT_del_step(bpy.types.Operator):
                 buildingObj=buildingObj,steps=steps)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已删除踏跺。")
+                self.report({'INFO'},"已删除踏跺")
         
         return {'FINISHED'}
 
@@ -294,7 +294,7 @@ class ACA_OT_add_fang(bpy.types.Operator):
                 buildingObj=buildingObj,pillers=pillers)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已添加枋。")
+                self.report({'INFO'},"已添加枋")
         
         return {'FINISHED'}
     
@@ -311,7 +311,7 @@ class ACA_OT_del_fang(bpy.types.Operator):
         buildingObj = utils.getAcaParent(
             fang,con.ACA_TYPE_BUILDING)
         buildFloor.delFang(buildingObj,fangs) 
-        self.report({'INFO'},"已删除枋。")
+        self.report({'INFO'},"已删除枋")
         return {'FINISHED'}
 
 # 批量重新生成装修布局，及所有墙体
@@ -356,14 +356,14 @@ class ACA_OT_add_wall(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_WALL)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"添加墙体。")
+                self.report({'INFO'},"已添加墙体")
 
         return {'FINISHED'}
     
 # 单独生成一个隔扇
 class ACA_OT_add_door(bpy.types.Operator):
     bl_idname="aca.add_door"
-    bl_label = "加门"
+    bl_label = "隔扇"
     bl_description = "在柱间加隔扇（先选择2根以上的柱子）"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -379,14 +379,14 @@ class ACA_OT_add_door(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_GESHAN)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"添加隔扇。")
+                self.report({'INFO'},"已添加隔扇")
 
         return {'FINISHED'}
 
 # 单独生成一个槛窗
 class ACA_OT_add_window(bpy.types.Operator):
     bl_idname="aca.add_window"
-    bl_label = "加窗"
+    bl_label = "槛窗"
     bl_description = "在柱间加槛窗（先选择2根以上的柱子）"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -402,7 +402,7 @@ class ACA_OT_add_window(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_WINDOW)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"添加槛窗。")
+                self.report({'INFO'},"已添加槛窗")
 
         return {'FINISHED'}
     
@@ -427,7 +427,7 @@ class ACA_OT_del_wall(bpy.types.Operator):
                 buildingObj=buildingObj,
                 walls = context.selected_objects)
             utils.fastRun(funproxy)
-            self.report({'INFO'},"已删除隔断。")
+            self.report({'INFO'},"已删除隔断")
         elif objData.aca_type in (
                 con.ACA_TYPE_FANG,
                 ):
@@ -460,7 +460,7 @@ class ACA_OT_del_wall(bpy.types.Operator):
 # 单独生成一个板门
 class ACA_OT_add_maindoor(bpy.types.Operator):
     bl_idname="aca.add_maindoor"
-    bl_label = "加门"
+    bl_label = "板门"
     bl_description = "在柱间加板门（先选择2根以上的柱子）"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -476,14 +476,14 @@ class ACA_OT_add_maindoor(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_MAINDOOR)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"添加板门。")
+                self.report({'INFO'},"已添加板门")
 
         return {'FINISHED'}
     
 # 单独生成一个直棂窗
 class ACA_OT_add_barwindow(bpy.types.Operator):
     bl_idname="aca.add_barwindow"
-    bl_label = "加门"
+    bl_label = "直棂窗"
     bl_description = "在柱间加直棂窗（先选择2根以上的柱子）"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -499,7 +499,30 @@ class ACA_OT_add_barwindow(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_BARWINDOW)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"添加直棂窗。")
+                self.report({'INFO'},"已添加直棂窗")
+
+        return {'FINISHED'}
+    
+# 单独生成一个支摘窗
+class ACA_OT_add_flipwindow(bpy.types.Operator):
+    bl_idname="aca.add_flipwindow"
+    bl_label = "支摘窗"
+    bl_description = "在柱间加支摘窗（先选择2根以上的柱子）"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        piller = context.object
+        pillers = context.selected_objects
+        buildingObj = utils.getAcaParent(
+            piller,con.ACA_TYPE_BUILDING) 
+        funproxy = partial(
+                buildWall.addWall,
+                buildingObj=buildingObj,
+                pillers=pillers,
+                wallType=con.ACA_WALLTYPE_FLIPWINDOW)
+        result = utils.fastRun(funproxy)
+        if 'FINISHED' in result:
+                self.report({'INFO'},"已添加支摘窗")
 
         return {'FINISHED'}
 

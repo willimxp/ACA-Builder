@@ -523,8 +523,10 @@ class ACA_PT_wall(bpy.types.Panel):
             buttonWin = toolBar.column(align=True)
             buttonWin.operator(
                 "aca.add_window",icon='MOD_LATTICE',text='隔扇窗')
-            
-            
+            # 按钮：加支摘窗
+            buttonFlipWin = toolBar.column(align=True)
+            buttonFlipWin.operator(
+                "aca.add_flipwindow",icon='MOD_LATTICE',text='支摘窗')
             
             # 通栏宽度按钮
             toolBar = toolBox.grid_flow(columns=1, align=True)
@@ -543,6 +545,7 @@ class ACA_PT_wall(bpy.types.Panel):
                     buttonWin.enabled=False
                     buttonMaindoor.enabled=False
                     buttonBarwindow.enabled=False
+                    buttonFlipWin.enabled=False
             # 删除按钮，是否选中个隔断对象
             if objData.aca_type not in (
                 con.ACA_TYPE_FANG,          # 枋对象
@@ -551,6 +554,7 @@ class ACA_PT_wall(bpy.types.Panel):
                 con.ACA_WALLTYPE_GESHAN,    # 隔扇
                 con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
                 con.ACA_WALLTYPE_MAINDOOR,  # 板门
+                con.ACA_WALLTYPE_FLIPWINDOW,# 支摘窗
                 ):
                 buttonDel.enabled = False
 
@@ -562,6 +566,7 @@ class ACA_PT_wall(bpy.types.Panel):
                 con.ACA_WALLTYPE_GESHAN,    # 隔扇
                 con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
                 con.ACA_WALLTYPE_MAINDOOR,  # 板门
+                con.ACA_WALLTYPE_FLIPWINDOW,# 支摘窗
             ):     
                 # 如果用户选中了wallProxy
                 # 仅设置个体参数，取objData

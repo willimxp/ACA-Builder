@@ -234,7 +234,7 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
     mat = None
     slot = None
 
-    # 作色 #############################################
+    # 着色 #############################################
     # 0. 通用样式，定义在各个配色方案中都通用的材质
     if paintMat in (
             con.M_GOLD, # 金漆
@@ -279,12 +279,12 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
     # 0. 金龙和玺样式
     if paintStyle == '0':
         if paintMat in (
-            con.M_PAINT, # 上漆
-            con.M_FANG_JIN, # 金枋
-            con.M_BOARD_WALLHEAD, # 走马板
-            con.M_WINDOW, # 窗框
-            con.M_BEAM_PAINT, # 梁架上漆
-            con.M_ROOF_PAINT, # 梁架上漆
+            con.M_PAINT,            # 上漆
+            con.M_FANG_JIN,         # 金枋
+            con.M_BOARD_WALLHEAD,   # 走马板
+            con.M_WINDOW,           # 窗框
+            con.M_BEAM_PAINT,       # 梁架上漆
+            con.M_ROOF_PAINT,       # 梁架上漆
         ):
             mat = aData.mat_oilpaint # 红漆
         if paintMat in (
@@ -356,40 +356,47 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
         ):
             mat = aData.mat_paint_shanhua
         if paintMat in (
-            con.M_FANG_DGCONNECT, # 拽枋
-            con.M_DOUGONG, # 斗栱
-            con.M_BAWANGQUAN, # 霸王拳
-            con.M_CORNERBEAM, # 老角梁
+            con.M_FANG_DGCONNECT,   # 拽枋
+            con.M_DOUGONG,          # 斗栱
+            con.M_BAWANGQUAN,       # 霸王拳
+            con.M_CORNERBEAM,       # 老角梁
+            con.M_MENZAN,           # 门簪
         ):
             # 直接使用原始贴图，不做改变
             pass
+        if paintMat in (
+            con.M_ZHILINGCHUANG, # 直棂窗
+        ):
+            mat = aData.mat_green # 绿漆
         
     
     # 1. 酱油漆样式
     if paintStyle == '1':
         if paintMat in (
-            con.M_PAINT, # 上漆
-            con.M_QUETI, # 雀替
-            con.M_FANG_CHUANCHA,#穿插枋
-            con.M_FANG_JIN,#金枋
-            con.M_FANG_EBIG, # 大额枋
-            con.M_FANG_ESMALL, # 小额枋
-            con.M_BOARD_YOUE, # 由额垫板
-            con.M_PILLER_HEAD, # 柱头
-            con.M_BOARD_WALLHEAD, # 走马板
-            con.M_WINDOW, # 窗框
-            con.M_DOOR_RING, # 绦环板
-            con.M_DOOR_BOTTOM, # 裙板
-            con.M_FANG_PINGBAN, # 平板枋
-            con.M_BAWANGQUAN, # 霸王拳
-            con.M_BEAM_PAINT, # 梁架-上漆
-            con.M_ROOF_PAINT, # 屋顶-上漆
-            con.M_CORNERBEAM, # 老角梁
-            con.M_CORNERBEAM_S, # 子角梁
-            con.M_RAFTER, # 檐椽
-            con.M_FLYRAFTER, # 飞椽
-            con.M_WANGBAN, # 望板
-            con.M_SHANHUA, # 山花板
+            con.M_PAINT,            # 上漆
+            con.M_QUETI,            # 雀替
+            con.M_FANG_CHUANCHA,    # 穿插枋
+            con.M_FANG_JIN,         # 金枋
+            con.M_FANG_EBIG,        # 大额枋
+            con.M_FANG_ESMALL,      # 小额枋
+            con.M_BOARD_YOUE,       # 由额垫板
+            con.M_PILLER_HEAD,      # 柱头
+            con.M_BOARD_WALLHEAD,   # 走马板
+            con.M_WINDOW,           # 窗框
+            con.M_DOOR_RING,        # 绦环板
+            con.M_DOOR_BOTTOM,      # 裙板
+            con.M_FANG_PINGBAN,     # 平板枋
+            con.M_BAWANGQUAN,       # 霸王拳
+            con.M_BEAM_PAINT,       # 梁架-上漆
+            con.M_ROOF_PAINT,       # 屋顶-上漆
+            con.M_CORNERBEAM,       # 老角梁
+            con.M_CORNERBEAM_S,     # 子角梁
+            con.M_RAFTER,           # 檐椽
+            con.M_FLYRAFTER,        # 飞椽
+            con.M_WANGBAN,          # 望板
+            con.M_SHANHUA,          # 山花板
+            con.M_ZHILINGCHUANG,    # 直棂窗
+            con.M_MENZAN,           # 门簪
         ):
             mat = aData.mat_oilpaint
             slot = 1

@@ -280,6 +280,8 @@ class ACA_Consts(object):
     M_WANGBAN = '望板'
     M_SHANHUA = '山花板'
     M_XIANGYAN = '象眼板'
+    M_ZHILINGCHUANG = '直棂窗'
+    M_MENZAN = '门簪'
     
 
     def __setattr__(self, name, value):

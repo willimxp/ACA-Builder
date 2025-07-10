@@ -1146,6 +1146,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
             count=4,
             offset=(-span,0,0),
         )
+        mat.paint(zanObj,con.M_MENZAN,override=True)
         KankuangObjs.append(zanObj)
 
     # 批量设置所有子对象材质
@@ -1295,6 +1296,7 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
             parentObj=kankuangObj,
             singleUser=True
         )
+        mat.paint(dingObj,con.M_GOLD,True)
         # 根据门口宽度，调整门钉尺寸
         # 门钉分布范围，门口一半，去掉门缝
         dingTotalWidth = holeWidth/2 - con.DOOR_MIDFENG
@@ -1335,6 +1337,7 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
         parentObj=kankuangObj,
         singleUser=True
     )
+    mat.paint(pushouObj,con.M_GOLD,True)
     # 尺寸
     # 无门钉时，取腰枋高度
     pushouH = con.KAN_MID_HEIGHT*pd
@@ -1518,8 +1521,6 @@ def __addBarwindow(kankuangObj:bpy.types.Object):
     # 转为mesh
     bpy.ops.object.convert(target='MESH')
     zibianObj = bpy.context.object
-    # 仔边刷漆
-    mat.paint(zibianObj,con.M_GREEN)
     # 倒角
     utils.addModifierBevel(zibianObj,con.BEVEL_LOW)
     zhilinParts.append(zibianObj)
@@ -1540,7 +1541,6 @@ def __addBarwindow(kankuangObj:bpy.types.Object):
         edge_num=3,
         rotation=((0,0,math.radians(180)))
     )
-    mat.paint(lintiaoObj,con.M_GREEN)
     # array排布
     utils.addModifierArray(
         object=lintiaoObj,
@@ -1559,5 +1559,6 @@ def __addBarwindow(kankuangObj:bpy.types.Object):
         newName='直棂窗',
         baseObj=zibianObj,
         )
+    mat.paint(zhilinObj,con.M_ZHILINGCHUANG)
 
     return zhilinObj

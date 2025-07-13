@@ -266,6 +266,12 @@ def update_dougong(self, context:bpy.types.Context):
         utils.outputMsg("updated dougong failed, context.object should be buildingObj")
     return
 
+def update_juzhe(self, context:bpy.types.Context):
+    # 如果为3-自定义屋架高度时，不触发刷新
+    if self.juzhe != '3':
+        update_roof(self,context)
+    return
+
 def update_roof(self, context:bpy.types.Context):
     # 判断自动重建开关
     isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
@@ -825,10 +831,20 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("0","   举折系数：默认","[0.5,0.7,0.8,0.9]"),
                 ("1","   举折系数：陡峭","[0.5,1,1.5,2]，慎用，一般用于亭子等建筑"),
                 ("2","   举折系数：平缓","[0.5,0.65,0.75,0.9]"),
+                ("3","   举折系数：按屋架高度推算","根据输入屋架高度，进行举折计算")
             ],
             description="决定了屋面坡度的曲率",
-            update = update_roof,
+            update = update_juzhe,
         ) # type: ignore
+    roof_height:bpy.props.FloatProperty(
+            name="屋架高度", 
+            default=3,
+            min=0.01,
+            max=10,
+            precision=3,
+            update = update_roof,
+            description="从正心桁到脊桁的垂直高度"
+        )# type: ignore
     roof_qiao_point : bpy.props.FloatVectorProperty(
         name="翼角起翘参考点",
         subtype='XYZ',

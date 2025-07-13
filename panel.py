@@ -499,10 +499,10 @@ class ACA_PT_wall(bpy.types.Panel):
             # 工具栏：加枋、加墙、加门、加窗、删除
             toolBox = box.column(align=True)
             toolBar = toolBox.grid_flow(columns=2, align=True)
-            # 按钮：加枋
-            buttonFang = toolBar.column(align=True)
-            buttonFang.operator(
-                "aca.add_fang",icon='LINKED',text='额枋')
+            # # 按钮：加枋
+            # buttonFang = toolBar.column(align=True)
+            # buttonFang.operator(
+            #     "aca.add_fang",icon='LINKED',text='额枋')
             # 按钮：加板门
             buttonMaindoor = toolBar.column(align=True)
             buttonMaindoor.operator(
@@ -526,7 +526,7 @@ class ACA_PT_wall(bpy.types.Panel):
             # 按钮：加支摘窗
             buttonFlipWin = toolBar.column(align=True)
             buttonFlipWin.operator(
-                "aca.add_flipwindow",icon='MOD_LATTICE',text='支摘窗')
+                "aca.add_flipwindow",icon='LIGHT_AREA',text='支摘窗')
             
             # 通栏宽度按钮
             toolBar = toolBox.grid_flow(columns=1, align=True)
@@ -539,7 +539,7 @@ class ACA_PT_wall(bpy.types.Panel):
             # 至少应选择两根柱子
             if objData.aca_type != con.ACA_TYPE_PILLER \
                 or len(context.selected_objects)<2:
-                    buttonFang.enabled=False
+                    # buttonFang.enabled=False
                     buttonDoor.enabled=False
                     buttonWall.enabled=False
                     buttonWin.enabled=False
@@ -845,7 +845,21 @@ class ACA_PT_beam(bpy.types.Panel):
             toolBox = box.column(align=True)
             toolBar = toolBox.grid_flow(
                 align=True,columns=1)
-
+            # 举折系数
+            droplistJuzhe = toolBar.column(align=True)
+            droplistJuzhe.prop(
+                bData, "juzhe",text='',)
+            if bData.juzhe == '3':
+                # 屋架高度
+                inputRoofHeight = toolBar.column(align=True)
+                inputRoofHeight.prop(
+                    bData,"roof_height"
+                )
+            # 步架数量          
+            inputRaftercount = toolBar.column(align=True)
+            inputRaftercount.prop(
+                bData, "rafter_count",
+                text='步架数量')
             # 做廊步架
             inputJujia= toolBar.column(align=True)
             if bData.y_rooms >= 3:
@@ -859,15 +873,10 @@ class ACA_PT_beam(bpy.types.Panel):
                     text='廊间举架做法',
                     toggle=True,
                     icon=checkbox_icon) 
-            # 步架数量          
-            inputRaftercount = toolBar.column(align=True)
-            inputRaftercount.prop(
-                bData, "rafter_count",
-                text='步架数量')
-            # 举折系数
-            droplistJuzhe = toolBar.column(align=True)
-            droplistJuzhe.prop(
-                bData, "juzhe",text='',)
+                
+            toolBox = box.column(align=True)
+            toolBar = toolBox.grid_flow(
+                align=True,columns=1)
             # 推山
             inputTuishan = toolBar.column(align=True)
             inputTuishan.prop(

@@ -58,6 +58,75 @@ def __addBeamRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
 
     return beamRootObj
 
+# 计算举架系数
+# 采用营造法式，以举高反推各个步架的举架斜率
+# https://www.doc88.com/p-3147460708263.html?s=rel&id=4
+def __getLiftRatio(buildingObj:bpy.types.Object,
+                 roof_height,       # 屋架举高
+                 room_depth,        # 房屋进深
+                 rafter_count,      # 步架数
+                 v1 = 0.1,          # 举折系数
+                 v2 = 0.5,          # 迭代公比
+                 ):
+    # 载入数据
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+
+    # 卷棚顶校验
+    if bData.roof_style in (
+            con.ROOF_XUANSHAN_JUANPENG,
+            con.ROOF_YINGSHAN_JUANPENG,
+            con.ROOF_XIESHAN_JUANPENG,
+        ):
+        # 卷棚椽架排除“顶步架”，如果为奇数，自动扣除一步架
+        room_depth -= con.JUANPENG_SPAN*dk
+        if rafter_count%2 != 0:
+            rafter_count -= 1
+
+    # 各个桁檩的位置，XY的二维平面坐标，对应三维空间里的x，z
+    jiaPoints = []
+
+    # 起始点
+    x = 0
+    h = roof_height
+    h_pre = h
+    jiaPoints.append((x,h))
+    
+    # 步架宽度，默认平均分配
+    rafter_span = room_depth / rafter_count
+    # 计算单侧步架数
+    # 总步架数除以2，如果有卷棚的顶步，直接忽略
+    jiaCount = round(rafter_count/2)
+    
+    # 开始迭代计算
+    for n in range(1,jiaCount):
+        # 水平移动一步架
+        x -= rafter_span
+        # 计算垂直折点，参考文档中的推导公式
+        # https://www.doc88.com/p-3147460708263.html?s=rel&id=4
+        h0 = roof_height*v1
+        h = (
+                 (jiaCount-n)/(jiaCount-n+1) * h_pre
+                 - v2**(n-1)*h0
+            )
+        h_pre = h
+        jiaPoints.append((x,h))
+
+    # 终点
+    x -= rafter_span
+    h = 0
+    jiaPoints.append((x,h))
+    
+    # 举架系数
+    lift_ratio = []
+    for n in range(len(jiaPoints)-1):
+        p = jiaPoints[n]
+        pnext = jiaPoints[n+1]
+        ju = (p[1] - pnext[1]) / (p[0] - pnext[0])
+        lift_ratio.insert(0,ju)
+
+    return lift_ratio
+
 # 计算举架数据
 # 1、根据不同的屋顶样式生成，自动判断了桁在檐面需要延长的长度
 #    其中包括了举折做法，以及庑殿推山、歇山收山的做法
@@ -70,6 +139,12 @@ def getPurlinPos(buildingObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
+    # 房屋总进深
+    roomDepth = bData.y_total
+    # 步架数量
+    rafterCount = bData.rafter_count
+    # 获取开间、进深数据
+    net_x,net_y = buildFloor.getFloorDate(buildingObj)
     # 屋顶样式，1-庑殿，2-歇山，3-悬山，4-硬山
     roofStyle = bData.roof_style
     # 三组举折系数，可供选择
@@ -80,6 +155,14 @@ def getPurlinPos(buildingObj:bpy.types.Object):
         lift_ratio = con.LIFT_RATIO_BIG
     if bData.juzhe == '2':
         lift_ratio = con.LIFT_RATIO_SMALL
+    if bData.juzhe == '3':
+        # 根据举高反推举架系数
+        # 采用了营造法式中的举折算法
+        lift_ratio = __getLiftRatio(
+            buildingObj=buildingObj,
+            roof_height=bData.roof_height,
+            room_depth=roomDepth,
+            rafter_count=rafterCount)
 
     # 开始构造槫子数据
     purlin_pos = []
@@ -129,12 +212,6 @@ def getPurlinPos(buildingObj:bpy.types.Object):
         )))
 
     # 3、构造下金桁、上金桁、脊桁
-    # 房屋总进深
-    roomDepth = bData.y_total
-    # 步架数量
-    rafterCount = bData.rafter_count
-    # 获取开间、进深数据
-    net_x,net_y = buildFloor.getFloorDate(buildingObj)
     # 卷棚顶：顶层桁檩间距3椽径，要从进深中减去后，平分椽架
     if roofStyle in (
             con.ROOF_XUANSHAN_JUANPENG,

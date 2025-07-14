@@ -603,6 +603,8 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     if doorHeight > doorHMax:
         # 做满门口
         doorHeight = doorHMax
+        # 自动更新门口高度
+        bData['doorFrame_height'] = doorHeight
 
     # 是否还有高度排布横披窗/迎风板高度？
     bUseTopwin = False

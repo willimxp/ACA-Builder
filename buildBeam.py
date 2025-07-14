@@ -61,16 +61,32 @@ def __addBeamRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
 # 计算举架系数
 # 采用营造法式，以举高反推各个步架的举架斜率
 # https://www.doc88.com/p-3147460708263.html?s=rel&id=4
-def __getLiftRatio(buildingObj:bpy.types.Object,
-                 roof_height,       # 屋架举高
-                 room_depth,        # 房屋进深
-                 rafter_count,      # 步架数
+def getLiftRatio(buildingObj:bpy.types.Object,
                  v1 = 0.1,          # 举折系数
                  v2 = 0.5,          # 迭代公比
                  ):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    lift_ratio = []
+
+    # 1、可直接返回的预设举架系数 -----------------
+    if bData.juzhe in ('0','1','2'):
+        if bData.juzhe == '0':
+            lift_ratio = con.LIFT_RATIO_DEFAULT
+        if bData.juzhe == '1':
+            lift_ratio = con.LIFT_RATIO_BIG
+        if bData.juzhe == '2':
+            lift_ratio = con.LIFT_RATIO_SMALL
+        return lift_ratio
+    
+    # 2、当bData.juzhe=='3'时，根据举高计算---------
     dk = bData.DK
+    # 屋架高度
+    roof_height = bData.roof_height
+    # 房屋总进深
+    room_depth = bData.y_total
+    # 步架数量
+    rafter_count = bData.rafter_count
 
     # 卷棚顶校验
     if bData.roof_style in (
@@ -118,7 +134,6 @@ def __getLiftRatio(buildingObj:bpy.types.Object,
     jiaPoints.append((x,h))
     
     # 举架系数
-    lift_ratio = []
     for n in range(len(jiaPoints)-1):
         p = jiaPoints[n]
         pnext = jiaPoints[n+1]
@@ -147,22 +162,10 @@ def getPurlinPos(buildingObj:bpy.types.Object):
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
     # 屋顶样式，1-庑殿，2-歇山，3-悬山，4-硬山
     roofStyle = bData.roof_style
-    # 三组举折系数，可供选择
-    lift_ratio = []
-    if bData.juzhe == '0':
-        lift_ratio = con.LIFT_RATIO_DEFAULT
-    if bData.juzhe == '1':
-        lift_ratio = con.LIFT_RATIO_BIG
-    if bData.juzhe == '2':
-        lift_ratio = con.LIFT_RATIO_SMALL
-    if bData.juzhe == '3':
-        # 根据举高反推举架系数
-        # 采用了营造法式中的举折算法
-        lift_ratio = __getLiftRatio(
-            buildingObj=buildingObj,
-            roof_height=bData.roof_height,
-            room_depth=roomDepth,
-            rafter_count=rafterCount)
+    # 载入举折系数
+    # 如果bData.juzhe在0，1，2则载入const中的固定数列
+    # 否则，根据进深、举高等参数进行动态计算
+    lift_ratio = getLiftRatio(buildingObj)
 
     # 开始构造槫子数据
     purlin_pos = []

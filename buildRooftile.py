@@ -2092,9 +2092,13 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     # 即，从正心桁上推瓦面+收山加斜+博脊高
     ridgeObj:bpy.types.Object = aData.ridgeFront_source
     ridgeHeight = ridgeObj.dimensions.z * tileScale
+    # 载入举折系数
+    lift_ratio = buildBeam.getLiftRatio(buildingObj)
+    # 收山举高，按第一层举架系数加斜
+    shouLift = bData.shoushan*lift_ratio[0]
     cutPoint = rafter_pos[0] \
         + Vector((0,0,
-            + bData.shoushan/2         # 收山按五举加斜
+            + shouLift                 # 收山举高
             + con.HENG_COMMON_D*dk/2   # 半桁径
             + con.YUANCHUAN_D*dk       # 椽径
             + con.WANGBAN_H*dk         # 望板
@@ -2416,8 +2420,12 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
     y = round(y/ridgeLength)* ridgeLength
     
     # Z坐标：从正心桁上推到瓦面，再添加推山影响
+    # 载入举折系数
+    lift_ratio = buildBeam.getLiftRatio(buildingObj)
+    # 收山举高，按第一层举架系数加斜
+    shouLift = bData.shoushan*lift_ratio[0]
     z = (zhengxinPoint.z 
-         + bData.shoushan/2         # 收山按五举加斜
+         + shouLift                 # 收山举高
          + con.HENG_COMMON_D*dk/2   # 半桁径
          + con.YUANCHUAN_D*dk       # 椽径
          + con.WANGBAN_H*dk         # 望板

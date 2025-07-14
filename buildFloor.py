@@ -353,6 +353,8 @@ def __buildCCFang(buildingObj:bpy.types.Object):
     aData:tmpData = bpy.context.scene.ACA_temp
     # 查找或新建地盘根节点
     floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
+    utils.deleteByName(floorRootObj,name='穿插枋')
+    
     # 获取开间、进深数据
     net_x,net_y = getFloorDate(buildingObj)
     # 穿插枋列表
@@ -370,14 +372,15 @@ def __buildCCFang(buildingObj:bpy.types.Object):
         # 前后檐（包括2坡顶和4坡顶）
         if (py in (1,bData.y_rooms-1)
              and px not in (0, bData.x_rooms) ):
+            # 250714是否存在相邻的柱子？
             if net_y[py] < 0:
                 # 南面
-                ccfangList.append("%d/%d#%d/%d" 
-                            % (px,py,px,py-1))
+                pillerNext = f"{px}/{py-1}"
             else:
                 # 北面
-                ccfangList.append("%d/%d#%d/%d" 
-                            % (px,py,px,py+1))              
+                pillerNext = f"{px}/{py+1}"   
+            if pillerNext in bData.piller_net:
+                ccfangList.append(f"{px}/{py}#{pillerNext}") 
         # 250703 两山不做穿插枋，用额枋取代
         # # 如果4坡顶，两山做穿插枋
         # # 对于2坡顶，两山廊间应该做金枋，而不是穿插枋
@@ -466,6 +469,8 @@ def __buildJinFang(buildingObj:bpy.types.Object):
     aData:tmpData = bpy.context.scene.ACA_temp
     # 查找或新建地盘根节点
     floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
+    utils.deleteByName(floorRootObj,name='金枋')
+    
     # 获取开间、进深数据
     net_x,net_y = getFloorDate(buildingObj)
     # 金枋列表
@@ -574,14 +579,18 @@ def __buildFang(buildingObj:bpy.types.Object):
         # 250703 在前后檐的金柱间也做额枋
         if (py in (0,1,bData.y_rooms-1,bData.y_rooms) 
                 and px != bData.x_rooms):
-            sfang = ("%d/%d#%d/%d," 
-                        % (px,py,px+1,py))
-            sfang_alt = ("%d/%d#%d/%d," 
-                        % (px+1,py,px,py))
-            # 判断该fangStr是否已经在fangNet中
-            if (sfang not in fangNet 
-                and sfang_alt not in fangNet):
-                fangNet += sfang
+            # 250714是否存在相邻的柱子？
+            pillerNext = f"{px+1}/{py}"
+            if pillerNext in bData.piller_net:
+                # 构造fangID
+                sfang = ("%d/%d#%d/%d," 
+                            % (px,py,px+1,py))
+                sfang_alt = ("%d/%d#%d/%d," 
+                            % (px+1,py,px,py))
+                # 判断该fangID是否已经在fangNet中
+                if (sfang not in fangNet 
+                    and sfang_alt not in fangNet):
+                    fangNet += sfang
         # 两山
         if (px in (0, bData.x_rooms) 
                 and py != bData.y_rooms):
@@ -1122,6 +1131,12 @@ def delPiller(buildingObj:bpy.types.Object,
             if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER:
                 pillerID = piller.ACA_data['pillerID']
                 bData.piller_net += pillerID + ','
+
+    # 更新额枋
+    bData.fang_net = ''
+    __buildFang(buildingObj)
+    __buildCCFang(buildingObj)
+    __buildJinFang(buildingObj)
 
     # 聚焦根节点
     utils.focusObj(buildingObj)

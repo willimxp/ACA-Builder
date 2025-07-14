@@ -424,6 +424,40 @@ def deleteHierarchy(parent_obj:bpy.types.Object,del_parent=False):
     # 数据清理
     updateScene()
 
+# 删除树状层次下的所有对象
+def deleteByName(
+        parent_obj:bpy.types.Object,
+        del_parent=False,
+        name=''):
+    #utils.outputMsg("deleting...")
+    if parent_obj == None:
+        # 没有可删除的对象
+        return
+    bpy.ops.object.select_all(action='DESELECT')
+    obj = bpy.data.objects[parent_obj.name]
+    obj.animation_data_clear()
+    names = set()
+    # Go over all the objects in the hierarchy like @zeffi suggested:
+    def get_child_names(obj):
+        for child in obj.children:
+            if child.name.startswith(name):
+                names.add(child.name)
+            if child.children:
+                get_child_names(child)
+    get_child_names(obj)
+    
+    # 是否删除根节点？
+    if del_parent:
+        names.add(parent_obj.name)
+    objects = bpy.data.objects
+    if names:
+        for child_name in names:
+            bpy.data.objects.remove(objects[child_name])
+
+    delOrphan()
+    # 数据清理
+    updateScene()
+
 # 计算两个点之间距离
 # 使用blender提供的mathutils库中的Vector类
 # https://sinestesia.co/blog/tutorials/calculating-distances-in-blender-with-python/

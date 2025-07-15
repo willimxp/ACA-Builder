@@ -416,11 +416,12 @@ class ACA_OT_del_wall(bpy.types.Operator):
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
         if objData.aca_type in (
-                con.ACA_TYPE_WALL,          # 槛墙
-                con.ACA_WALLTYPE_WINDOW,    # 槛窗
-                con.ACA_WALLTYPE_GESHAN,    # 隔扇
-                con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
-                con.ACA_WALLTYPE_MAINDOOR,  # 板门
+                con.ACA_TYPE_WALL,              # 槛墙
+                con.ACA_WALLTYPE_WINDOW,        # 槛窗
+                con.ACA_WALLTYPE_GESHAN,        # 隔扇
+                con.ACA_WALLTYPE_BARWINDOW,     # 直棂窗
+                con.ACA_WALLTYPE_MAINDOOR,      # 板门
+                con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
                 ):
             funproxy = partial(
                 buildWall.delWall,

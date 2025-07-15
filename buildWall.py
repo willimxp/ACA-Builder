@@ -190,10 +190,11 @@ def __drawWall(wallProxy:bpy.types.Object):
     wallDeepth = con.WALL_DEPTH * bData.piller_diameter
     # 退花碱厚度
     bodyShrink = con.WALL_SHRINK
+    # 预留走马板高度
+    if bData.wall_span > 0:
+        wallHeight -= bData.wall_span
 
     wallParts = []
-
-    
 
     # 1、创建下碱对象
     # 下碱一般取墙体高度的1/3

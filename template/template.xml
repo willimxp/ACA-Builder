@@ -15,7 +15,7 @@
 		<y_2 type="FloatProperty">3.52</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
 		<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/1,1/2,1/3,2/0,2/1,2/2,2/3,3/0,3/1,3/2,3/3,</piller_net>
-		<wall_net type="StringProperty">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<wall_net type="StringProperty">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,geshan#1/0#2/0,</wall_net>
 		<fang_net type="StringProperty">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
 		<piller_height type="FloatProperty">4.93</piller_height>
 		<piller_diameter type="FloatProperty">0.45</piller_diameter>
@@ -99,7 +99,7 @@
 		<y_2 type="FloatProperty">3.52</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
 		<piller_net type="StringProperty">0/0,0/1,0/2,0/3,0/4,0/5,1/0,1/1,1/2,1/3,1/4,1/5,2/0,2/1,2/2,2/3,2/4,2/5,3/0,3/1,3/2,3/3,3/4,3/5,4/0,4/1,4/2,4/3,4/4,4/5,5/0,5/1,5/2,5/3,5/4,5/5,6/0,6/1,6/2,6/3,6/4,6/5,7/0,7/1,7/2,7/3,7/4,7/5,</piller_net>
-		<wall_net type="StringProperty">door#2/1#3/1,door#3/1#4/1,door#4/1#5/1,door#2/4#3/4,door#3/4#4/4,door#4/4#5/4,door#6/2#6/3,door#1/2#1/3,window#1/3#1/4,window#1/4#2/4,window#5/4#6/4,window#6/3#6/4,window#6/1#6/2,window#5/1#6/1,window#1/1#2/1,window#1/1#1/2,door#3/3#4/3,</wall_net>
+		<wall_net type="StringProperty">geshan#2/1#3/1,geshan#3/1#4/1,geshan#4/1#5/1,geshan#2/4#3/4,geshan#3/4#4/4,geshan#4/4#5/4,geshan#6/2#6/3,geshan#1/2#1/3,window#1/3#1/4,window#1/4#2/4,window#5/4#6/4,window#6/3#6/4,window#6/1#6/2,window#5/1#6/1,window#1/1#2/1,window#1/1#1/2,geshan#3/3#4/3,</wall_net>
 		<fang_net type="StringProperty">0/0#0/1,0/0#1/0,0/1#0/2,0/2#0/3,0/3#0/4,0/4#0/5,0/5#1/5,1/0#2/0,1/1#1/2,1/1#2/1,1/2#1/3,1/3#1/4,1/4#2/4,1/5#2/5,2/0#3/0,2/1#3/1,2/4#3/4,2/5#3/5,3/0#4/0,3/1#4/1,3/4#4/4,3/5#4/5,4/1#5/1,4/4#5/4,4/5#5/5,5/0#6/0,5/1#6/1,5/4#6/4,5/5#6/5,6/0#7/0,6/1#6/2,6/2#6/3,6/3#6/4,6/5#7/5,7/0#7/1,7/1#7/2,7/2#7/3,7/3#7/4,7/4#7/5,4/0#5/0,</fang_net>
 		<piller_height type="FloatProperty">4.544</piller_height>
 		<piller_diameter type="FloatProperty">0.48</piller_diameter>
@@ -156,7 +156,7 @@
 		<y_2 type="FloatProperty">2.112</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
 		<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/1,1/2,1/3,2/0,2/1,2/2,2/3,3/0,3/1,3/2,3/3,4/0,4/1,4/2,4/3,5/0,5/1,5/2,5/3,</piller_net>
-		<wall_net type="StringProperty">wall#0/0#0/3,wall#5/0#5/3,door#1/1#2/1,door#2/1#3/1,door#3/1#4/1,window#0/1#1/1,window#4/1#5/1,door#1/2#2/2,door#2/2#3/2,door#3/2#4/2,window#0/2#1/2,window#4/2#5/2,</wall_net>
+		<wall_net type="StringProperty">wall#0/0#0/3,wall#5/0#5/3,geshan#1/1#2/1,geshan#2/1#3/1,geshan#3/1#4/1,window#0/1#1/1,window#4/1#5/1,geshan#1/2#2/2,geshan#2/2#3/2,geshan#3/2#4/2,window#0/2#1/2,window#4/2#5/2,</wall_net>
 		<fang_net type="StringProperty">0/0#0/1,0/1#0/2,0/2#0/3,5/0#5/1,5/1#5/2,5/2#5/3,0/3#1/3,1/3#2/3,2/3#3/3,3/3#4/3,4/3#5/3,0/0#1/0,1/0#2/0,2/0#3/0,3/0#4/0,4/0#5/0,1/1#2/1,2/1#3/1,3/1#4/1,1/2#2/2,2/2#3/2,3/2#4/2,4/1#4/2,1/1#1/2,</fang_net>
 		<piller_height type="FloatProperty">5.645</piller_height>
 		<piller_diameter type="FloatProperty">0.576</piller_diameter>
@@ -226,7 +226,7 @@
 		<y_2 type="FloatProperty">1.76</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
 		<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/1,1/2,1/3,2/0,2/1,2/2,2/3,3/0,3/1,3/2,3/3,4/0,4/1,4/2,4/3,5/0,5/1,5/2,5/3,6/0,6/1,6/2,6/3,7/0,7/1,7/2,7/3,</piller_net>
-		<wall_net type="StringProperty">wall#1/1#1/2,wall#6/1#6/2,door#2/2#3/2,door#3/2#4/2,door#4/2#5/2,door#2/1#3/1,door#3/1#4/1,door#4/1#5/1,window#1/2#2/2,window#5/2#6/2,window#5/1#6/1,window#1/1#2/1,</wall_net>
+		<wall_net type="StringProperty">wall#1/1#1/2,wall#6/1#6/2,geshan#2/2#3/2,geshan#3/2#4/2,geshan#4/2#5/2,geshan#2/1#3/1,geshan#3/1#4/1,geshan#4/1#5/1,window#1/2#2/2,window#5/2#6/2,window#5/1#6/1,window#1/1#2/1,</wall_net>
 		<fang_net type="StringProperty">0/0#0/1,0/0#1/0,0/1#0/2,0/2#0/3,0/3#1/3,1/0#2/0,1/1#1/2,1/1#2/1,1/2#2/2,1/3#2/3,2/0#3/0,2/1#3/1,2/2#3/2,2/3#3/3,3/0#4/0,3/1#4/1,3/2#4/2,3/3#4/3,4/0#5/0,4/1#5/1,4/2#5/2,4/3#5/3,5/0#6/0,5/1#6/1,5/2#6/2,5/3#6/3,6/0#7/0,6/3#7/3,7/0#7/1,7/1#7/2,7/2#7/3,6/1#6/2,</fang_net>
 		<piller_height type="FloatProperty">4.93</piller_height>
 		<piller_diameter type="FloatProperty">0.45</piller_diameter>
@@ -374,7 +374,7 @@
 			<y_2 type="FloatProperty">3.52</y_2>
 			<y_3 type="FloatProperty">1.76</y_3>
 			<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/1,1/2,1/3,2/0,2/1,2/2,2/3,3/0,3/1,3/2,3/3,4/0,4/1,4/2,4/3,5/0,5/1,5/2,5/3,</piller_net>
-			<wall_net type="StringProperty">wall#5/0#5/3,window#4/0#5/0,wall#0/0#0/3,door#2/3#3/3,door#1/3#2/3,door#3/3#4/3,window#0/3#1/3,window#4/3#5/3,window#0/0#1/0,door#1/0#2/0,door#2/0#3/0,door#3/0#4/0,</wall_net>
+			<wall_net type="StringProperty">wall#5/0#5/3,window#4/0#5/0,wall#0/0#0/3,geshan#2/3#3/3,geshan#1/3#2/3,geshan#3/3#4/3,window#0/3#1/3,window#4/3#5/3,window#0/0#1/0,geshan#1/0#2/0,geshan#2/0#3/0,geshan#3/0#4/0,</wall_net>
 			<fang_net type="StringProperty">0/3#1/3,1/3#2/3,2/3#3/3,3/3#4/3,4/3#5/3,0/0#1/0,1/0#2/0,2/0#3/0,3/0#4/0,4/0#5/0,5/0#5/1,5/1#5/2,5/2#5/3,0/0#0/1,0/1#0/2,0/2#0/3,</fang_net>
 			<piller_height type="FloatProperty">9.1</piller_height>
 			<piller_diameter type="FloatProperty">0.45</piller_diameter>
@@ -437,7 +437,7 @@
 		<y_2 type="FloatProperty">1.28</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
 		<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/1,1/2,1/3,2/0,2/1,2/2,2/3,3/0,3/1,3/2,3/3,4/0,4/1,4/2,4/3,5/0,5/1,5/2,5/3,</piller_net>
-		<wall_net type="StringProperty">window#0/2#1/2,window#1/2#2/2,wall#0/0#0/3,wall#5/0#5/3,window#3/2#4/2,window#4/2#5/2,window#0/1#1/1,window#1/1#2/1,window#3/1#4/1,window#4/1#5/1,door#2/1#3/1,door#2/2#3/2,</wall_net>
+		<wall_net type="StringProperty">window#0/2#1/2,window#1/2#2/2,wall#0/0#0/3,wall#5/0#5/3,window#3/2#4/2,window#4/2#5/2,window#0/1#1/1,window#1/1#2/1,window#3/1#4/1,window#4/1#5/1,geshan#2/1#3/1,geshan#2/2#3/2,</wall_net>
 		<fang_net type="StringProperty">0/0#0/1,0/0#1/0,0/1#0/2,0/1#1/1,0/2#0/3,0/2#1/2,0/3#1/3,1/0#2/0,1/1#2/1,1/2#2/2,1/3#2/3,2/0#3/0,2/1#3/1,2/2#3/2,2/3#3/3,3/0#4/0,3/1#4/1,3/2#4/2,3/3#4/3,4/0#5/0,4/1#5/1,4/2#5/2,4/3#5/3,5/0#5/1,5/1#5/2,5/2#5/3,</fang_net>
 		<piller_height type="FloatProperty">3.32</piller_height>
 		<piller_diameter type="FloatProperty">0.29</piller_diameter>
@@ -514,7 +514,7 @@
 		<y_2 type="FloatProperty">1.76</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
 		<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/1,1/2,1/3,2/0,2/1,2/2,2/3,3/0,3/1,3/2,3/3,</piller_net>
-		<wall_net type="StringProperty">wall#0/0#0/3,window#2/1#3/1,window#0/1#1/1,window#1/2#2/2,window#0/2#1/2,window#2/2#3/2,door#1/1#2/1,wall#3/0#3/3,</wall_net>
+		<wall_net type="StringProperty">wall#0/0#0/3,window#2/1#3/1,window#0/1#1/1,window#1/2#2/2,window#0/2#1/2,window#2/2#3/2,geshan#1/1#2/1,wall#3/0#3/3,</wall_net>
 		<fang_net type="StringProperty">0/1#1/1,1/1#2/1,2/1#3/1,0/2#1/2,1/2#2/2,2/2#3/2,0/3#1/3,1/3#2/3,2/3#3/3,0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,0/0#0/1,0/1#0/2,0/2#0/3,</fang_net>
 		<piller_height type="FloatProperty">4.93</piller_height>
 		<piller_diameter type="FloatProperty">0.45</piller_diameter>
@@ -660,7 +660,7 @@
 			<y_2 type="FloatProperty">1.76</y_2>
 			<y_3 type="FloatProperty">1.76</y_3>
 			<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/1,1/2,1/3,2/0,2/1,2/2,2/3,3/0,3/1,3/2,3/3,</piller_net>
-			<wall_net type="StringProperty">wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,wall#2/3#3/3,wall#0/3#1/3,door#1/3#2/3,</wall_net>
+			<wall_net type="StringProperty">wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,geshan#1/0#2/0,wall#2/3#3/3,wall#0/3#1/3,geshan#1/3#2/3,</wall_net>
 			<fang_net type="StringProperty">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
 			<piller_height type="FloatProperty">4.56</piller_height>
 			<piller_diameter type="FloatProperty">0.48</piller_diameter>
@@ -802,7 +802,7 @@
 		<y_2 type="FloatProperty">3.52</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
 		<piller_net type="StringProperty">0/0,0/1,1/0,1/1,2/0,2/1,3/0,3/1,4/0,4/1,5/0,5/1,</piller_net>
-		<wall_net type="StringProperty">wall#0/1#5/1,wall#5/0#5/1,wall#0/0#0/1,door#2/0#3/0,window#3/0#4/0,window#4/0#5/0,window#0/0#1/0,window#1/0#2/0,</wall_net>
+		<wall_net type="StringProperty">wall#0/0#0/1,wall#0/1#5/1,wall#5/0#5/1,geshan#2/0#3/0,flipwindow#0/0#1/0,flipwindow#1/0#2/0,flipwindow#3/0#4/0,flipwindow#4/0#5/0,</wall_net>
 		<fang_net type="StringProperty">0/1#1/1,1/1#2/1,2/1#3/1,3/1#4/1,4/1#5/1,0/0#1/0,1/0#2/0,2/0#3/0,3/0#4/0,4/0#5/0,5/0#5/1,0/0#0/1,</fang_net>
 		<piller_height type="FloatProperty">3.876</piller_height>
 		<piller_diameter type="FloatProperty">0.408</piller_diameter>
@@ -824,8 +824,8 @@
 		<rafter_count type="IntProperty">4</rafter_count>
 		<use_flyrafter type="BoolProperty">True</use_flyrafter>
 		<use_wangban type="BoolProperty">True</use_wangban>
-		<qiqiao type="IntProperty">4</qiqiao>
-		<chong type="IntProperty">3</chong>
+		<qiqiao type="FloatProperty">4.0</qiqiao>
+		<chong type="FloatProperty">3.0</chong>
 		<shengqi type="IntProperty">1</shengqi>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">0.544</shoushan>
@@ -844,6 +844,16 @@
 		<tile_color type="EnumProperty">0</tile_color>
 		<tile_alt_color type="EnumProperty">0</tile_alt_color>
 		<liangtou type="FloatProperty">0.4</liangtou>
+		<root_location type="FloatVectorProperty">0.0,0.0,0.0</root_location>
+		<root_rotation type="FloatVectorProperty">0.0,0.0,0.0</root_rotation>
+		<doorFrame_width_per type="FloatProperty">1.0</doorFrame_width_per>
+		<doorFrame_height type="FloatProperty">2.938</doorFrame_height>
+		<door_ding_num type="IntProperty">5</door_ding_num>
+		<paint_style type="EnumProperty">0</paint_style>
+		<dk_scale type="FloatProperty">1.0</dk_scale>
+		<use_pie type="BoolProperty">True</use_pie>
+		<roof_height type="FloatProperty">3.0</roof_height>
+		<tile_scale type="FloatProperty">1.0</tile_scale>
 	</template>
 	<template>
 		<aca_type type="StringProperty">building</aca_type>
@@ -871,8 +881,8 @@
 		<y_2 type="FloatProperty">3.52</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
 		<piller_net type="StringProperty">0/0,0/1,1/0,1/1,2/0,2/1,3/0,3/1,</piller_net>
-		<wall_net type="StringProperty">wall#0/1#3/1,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
-		<fang_net type="StringProperty">0/1#1/1,1/1#2/1,2/1#3/1,0/0#1/0,1/0#2/0,2/0#3/0,</fang_net>
+		<wall_net type="StringProperty">wall#0/1#3/1,geshan#1/0#2/0,flipwindow#0/0#1/0,flipwindow#2/0#3/0,</wall_net>
+		<fang_net type="StringProperty">0/1#1/1,1/1#2/1,2/1#3/1,0/0#1/0,1/0#2/0,2/0#3/0,0/0#0/1,3/0#3/1,</fang_net>
 		<piller_height type="FloatProperty">2.64</piller_height>
 		<piller_diameter type="FloatProperty">0.276</piller_diameter>
 		<use_smallfang type="BoolProperty">False</use_smallfang>
@@ -894,8 +904,8 @@
 		<rafter_count type="IntProperty">6</rafter_count>
 		<use_flyrafter type="BoolProperty">True</use_flyrafter>
 		<use_wangban type="BoolProperty">True</use_wangban>
-		<qiqiao type="IntProperty">4</qiqiao>
-		<chong type="IntProperty">3</chong>
+		<qiqiao type="FloatProperty">4.0</qiqiao>
+		<chong type="FloatProperty">3.0</chong>
 		<shengqi type="IntProperty">1</shengqi>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
@@ -913,6 +923,16 @@
 		<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 		<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
 		<liangtou type="FloatProperty">0.4</liangtou>
+		<root_location type="FloatVectorProperty">0.0,0.0,0.0</root_location>
+		<root_rotation type="FloatVectorProperty">0.0,0.0,0.0</root_rotation>
+		<doorFrame_width_per type="FloatProperty">1.0</doorFrame_width_per>
+		<doorFrame_height type="FloatProperty">2.005</doorFrame_height>
+		<door_ding_num type="IntProperty">5</door_ding_num>
+		<paint_style type="EnumProperty">0</paint_style>
+		<dk_scale type="FloatProperty">1.0</dk_scale>
+		<use_pie type="BoolProperty">True</use_pie>
+		<roof_height type="FloatProperty">3.0</roof_height>
+		<tile_scale type="FloatProperty">1.0</tile_scale>
 	</template>
 	<template>
 		<aca_type type="StringProperty">building</aca_type>
@@ -940,8 +960,8 @@
 		<y_2 type="FloatProperty">3.52</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
 		<piller_net type="StringProperty">0/0,0/1,1/0,1/1,2/0,2/1,3/0,3/1,</piller_net>
-		<wall_net type="StringProperty">wall#0/1#3/1,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
-		<fang_net type="StringProperty">0/1#1/1,1/1#2/1,2/1#3/1,0/0#1/0,1/0#2/0,2/0#3/0,</fang_net>
+		<wall_net type="StringProperty">wall#0/1#3/1,geshan#1/0#2/0,flipwindow#0/0#1/0,flipwindow#2/0#3/0,</wall_net>
+		<fang_net type="StringProperty">0/1#1/1,1/1#2/1,2/1#3/1,0/0#1/0,1/0#2/0,2/0#3/0,0/0#0/1,3/0#3/1,</fang_net>
 		<piller_height type="FloatProperty">3.648</piller_height>
 		<piller_diameter type="FloatProperty">0.384</piller_diameter>
 		<use_smallfang type="BoolProperty">False</use_smallfang>
@@ -957,14 +977,14 @@
 		<dg_style type="EnumProperty">0</dg_style>
 		<dg_extend type="FloatProperty">0.0</dg_extend>
 		<dg_height type="FloatProperty">0.333</dg_height>
-		<dg_gap type="FloatProperty">0.66</dg_gap>
+		<dg_gap type="FloatProperty">0.704</dg_gap>
 		<roof_style type="EnumProperty">4</roof_style>
 		<use_hallway type="BoolProperty">False</use_hallway>
 		<rafter_count type="IntProperty">6</rafter_count>
 		<use_flyrafter type="BoolProperty">True</use_flyrafter>
 		<use_wangban type="BoolProperty">True</use_wangban>
-		<qiqiao type="IntProperty">4</qiqiao>
-		<chong type="IntProperty">3</chong>
+		<qiqiao type="FloatProperty">4.0</qiqiao>
+		<chong type="FloatProperty">3.0</chong>
 		<shengqi type="IntProperty">1</shengqi>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
@@ -982,6 +1002,16 @@
 		<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 		<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
 		<liangtou type="FloatProperty">0.4</liangtou>
+		<root_location type="FloatVectorProperty">0.0,0.0,0.0</root_location>
+		<root_rotation type="FloatVectorProperty">0.0,0.0,0.0</root_rotation>
+		<doorFrame_width_per type="FloatProperty">1.0</doorFrame_width_per>
+		<doorFrame_height type="FloatProperty">2.765</doorFrame_height>
+		<door_ding_num type="IntProperty">5</door_ding_num>
+		<paint_style type="EnumProperty">0</paint_style>
+		<dk_scale type="FloatProperty">1.0</dk_scale>
+		<use_pie type="BoolProperty">True</use_pie>
+		<roof_height type="FloatProperty">3.0</roof_height>
+		<tile_scale type="FloatProperty">1.0</tile_scale>
 	</template>
 	<template>
 		<aca_type type="StringProperty">building</aca_type>
@@ -1009,7 +1039,7 @@
 		<y_2 type="FloatProperty">3.52</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
 		<piller_net type="StringProperty">0/0,0/1,1/0,1/1,2/0,2/1,3/0,3/1,</piller_net>
-		<wall_net type="StringProperty">wall#0/1#3/1,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<wall_net type="StringProperty">wall#0/1#3/1,geshan#1/0#2/0,flipwindow#0/0#1/0,flipwindow#2/0#3/0,</wall_net>
 		<fang_net type="StringProperty">0/1#1/1,1/1#2/1,2/1#3/1,0/0#1/0,1/0#2/0,2/0#3/0,0/0#0/1,3/0#3/1,</fang_net>
 		<piller_height type="FloatProperty">2.28</piller_height>
 		<piller_diameter type="FloatProperty">0.24</piller_diameter>
@@ -1032,8 +1062,8 @@
 		<rafter_count type="IntProperty">4</rafter_count>
 		<use_flyrafter type="BoolProperty">True</use_flyrafter>
 		<use_wangban type="BoolProperty">True</use_wangban>
-		<qiqiao type="IntProperty">4</qiqiao>
-		<chong type="IntProperty">3</chong>
+		<qiqiao type="FloatProperty">4.0</qiqiao>
+		<chong type="FloatProperty">3.0</chong>
 		<shengqi type="IntProperty">1</shengqi>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
@@ -1051,6 +1081,16 @@
 		<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 		<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
 		<liangtou type="FloatProperty">0.4</liangtou>
+		<root_location type="FloatVectorProperty">0.0,0.0,0.0</root_location>
+		<root_rotation type="FloatVectorProperty">0.0,0.0,0.0</root_rotation>
+		<doorFrame_width_per type="FloatProperty">1.0</doorFrame_width_per>
+		<doorFrame_height type="FloatProperty">1.728</doorFrame_height>
+		<door_ding_num type="IntProperty">5</door_ding_num>
+		<paint_style type="EnumProperty">0</paint_style>
+		<dk_scale type="FloatProperty">1.0</dk_scale>
+		<use_pie type="BoolProperty">True</use_pie>
+		<roof_height type="FloatProperty">3.0</roof_height>
+		<tile_scale type="FloatProperty">1.0</tile_scale>
 	</template>
 	<template>
 		<aca_type type="StringProperty">building</aca_type>
@@ -1291,7 +1331,7 @@
 		<y_2 type="FloatProperty">3.52</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
 		<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
-		<wall_net type="StringProperty">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<wall_net type="StringProperty">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,geshan#1/0#2/0,</wall_net>
 		<fang_net type="StringProperty">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
 		<piller_height type="FloatProperty">4.93</piller_height>
 		<piller_diameter type="FloatProperty">0.45</piller_diameter>
@@ -1364,7 +1404,7 @@
 		<y_2 type="FloatProperty">3.52</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
 		<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/3,2/0,2/3,3/0,3/1,3/2,3/3,</piller_net>
-		<wall_net type="StringProperty">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,door#1/0#2/0,</wall_net>
+		<wall_net type="StringProperty">wall#0/3#3/3,wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,geshan#1/0#2/0,</wall_net>
 		<fang_net type="StringProperty">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
 		<piller_height type="FloatProperty">4.93</piller_height>
 		<piller_diameter type="FloatProperty">0.45</piller_diameter>

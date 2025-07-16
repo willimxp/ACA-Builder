@@ -155,7 +155,11 @@ def initLogger():
     # 设置日志路径
     USER = pathlib.Path(
         bpy.utils.resource_path('USER'))
-    log_file_path = USER / "scripts/addons/ACA Builder/aca_log.txt"
+    log_dir = USER / "scripts/addons/ACA Builder"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file_path = log_dir / "aca_log.txt"
+    if not log_file_path.exists():
+        log_file_path.touch()
     log_handler = logging.FileHandler(
         filename=log_file_path,
         mode='w',                   # 每次清空上一次的日志

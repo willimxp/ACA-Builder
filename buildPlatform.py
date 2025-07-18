@@ -652,11 +652,11 @@ def __addPlatformExpand(
     
     # 4、在台明扩展本体上，添加踏跺拓展对象
     for stepExpandObj in stepExpandList:
-        modBool:bpy.types.BooleanModifier = \
-            baseExpandObj.modifiers.new('合并','BOOLEAN')
-        modBool.object = stepExpandObj
-        modBool.solver = 'EXACT'
-        modBool.operation = 'UNION'
+        utils.addModifierBoolean(
+            object=baseExpandObj,
+            boolObj=stepExpandObj,
+            operation='UNION'
+        )
     # 应用boolean modifier
     utils.applyAllModifer(baseExpandObj)
 

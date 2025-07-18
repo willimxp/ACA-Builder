@@ -145,12 +145,12 @@ def buildSingleWall(
     mat.paint(bodyObj,con.M_WALL)
 
     # 合并
-    modBool:bpy.types.BooleanModifier = \
-            bodyObj.modifiers.new('合并','BOOLEAN')
-    modBool.object = bottomObj
-    modBool.solver = 'EXACT'
-    modBool.operation = 'UNION'
-    modBool.material_mode = 'TRANSFER'
+    utils.addModifierBoolean(
+        object=bodyObj,
+        boolObj=bottomObj,
+        operation='UNION'
+    )
+
     utils.applyAllModifer(bodyObj)
     utils.delObject(bottomObj)
 

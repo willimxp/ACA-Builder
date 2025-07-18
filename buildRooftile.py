@@ -830,10 +830,11 @@ def __drawTileBool(
     utils.subdivideObject(tileboolObj,level=3)
 
     # 添加镜像
-    mod = tileboolObj.modifiers.new(name='mirror', type='MIRROR')
-    mod.use_axis[0] = True
-    mod.use_axis[1] = False
-    mod.mirror_object = tileRootObj
+    utils.addModifierMirror(
+        object=tileboolObj,
+        mirrorObj=tileRootObj,
+        use_axis=(True,False,False),
+    )
 
     return tileboolObj
 
@@ -1071,19 +1072,22 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING,):
-        mod:bpy.types.BooleanModifier = tileSet.modifiers.new("由戗裁剪","BOOLEAN")
-        mod.object = tile_bool_obj
-        mod.solver = con.BOOLEAN_TYPE # FAST / EXACT
         if isBoolInside:
-            mod.operation = 'INTERSECT'
+            operation = 'INTERSECT'
         else:
-            mod.operation = 'DIFFERENCE'
+            operation = 'DIFFERENCE'
+        utils.addModifierBoolean(
+            object=tileSet,
+            boolObj=tile_bool_obj,
+            operation=operation,
+        )
     # 添加镜像
     utils.addModifierMirror(
         object=tileSet,
         mirrorObj=tileRootObj,
         use_axis=(True,True,False),
         use_bisect=(True,True,False),
+        use_merge=True, # 合并接缝的点，实现水密
     )
 
     # 250110 重展UV
@@ -1218,11 +1222,14 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     modArray.fit_type = 'FIT_LENGTH' 
     modArray.fit_length = zhengji_length
 
-    mod:bpy.types.MirrorModifier = \
-        roofRidgeObj.modifiers.new('X向对称','MIRROR')
-    mod.mirror_object = tileRootObj
-    mod.use_axis = (True,False,False)
-    mod.use_bisect_axis = (True,False,False)
+    # 镜像
+    utils.addModifierMirror(
+        object=roofRidgeObj,
+        mirrorObj=tileRootObj,
+        use_axis=(True,False,False),
+        use_bisect=(True,False,False),
+        use_merge=True,
+    )
 
     # 250113 设置正脊材质
     mat.setGlazeStyle(roofRidgeObj)
@@ -1302,11 +1309,13 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     modArray.fit_type = 'FIT_LENGTH' 
     modArray.fit_length = zhengji_length
     # 镜像
-    mod:bpy.types.MirrorModifier = \
-        roofRidgeObj.modifiers.new('XY对称','MIRROR')
-    mod.mirror_object = tileRootObj
-    mod.use_axis = (True,True,False)
-    mod.use_bisect_axis = (True,True,False)
+    utils.addModifierMirror(
+        object=roofRidgeObj,
+        mirrorObj=tileRootObj,
+        use_axis=(True,True,False),
+        use_bisect=(True,True,False),
+        use_merge=True,
+    )
     # 250113 设置材质
     mat.setGlazeStyle(roofRidgeObj)
 
@@ -1337,11 +1346,13 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     modArray.fit_type = 'FIT_LENGTH' 
     modArray.fit_length = zhengji_length
     # 镜像
-    mod:bpy.types.MirrorModifier = \
-        roofRidgeObj.modifiers.new('XY对称','MIRROR')
-    mod.mirror_object = tileRootObj
-    mod.use_axis = (True,True,False)
-    mod.use_bisect_axis = (True,True,False)
+    utils.addModifierMirror(
+        object=roofRidgeObj,
+        mirrorObj=tileRootObj,
+        use_axis=(True,True,False),
+        use_bisect=(True,True,False),
+        use_merge=True,
+    )
     # 250113 设置材质
     mat.setGlazeStyle(roofRidgeObj)
 
@@ -1364,11 +1375,14 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
         singleUser=True)
     # 根据斗口调整尺度
     utils.resizeObj(chiwenObj,tileScale *0.75)
-    mod:bpy.types.MirrorModifier = \
-        chiwenObj.modifiers.new('45度对称','MIRROR')
-    mod.mirror_object = diagnalObj
-    mod.use_axis = (False,True,False)
-    mod.use_bisect_axis = (False,True,False)
+    # 镜像
+    utils.addModifierMirror(
+        object=chiwenObj,
+        mirrorObj=diagnalObj,
+        use_axis=(False,True,False),
+        use_bisect=(False,True,False),
+        use_merge=True,
+    )
     # 镜像
     utils.addModifierMirror(
         object=chiwenObj,
@@ -1623,6 +1637,7 @@ def __arrayRidgeByCurve(buildingObj: bpy.types.Object,
                     ridgeCurve:bpy.types.Curve,
                     ridgeName='垂脊',
                     arrayCount=0,
+                    userMerge=True,
                  ):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
@@ -1655,17 +1670,22 @@ def __arrayRidgeByCurve(buildingObj: bpy.types.Object,
         modArray.fit_type = 'FIT_CURVE'
         modArray.curve = ridgeCurve
     
+    # 250718 脊筒间略作间隙，以确保在裁剪时保持水密
+    modArray.relative_offset_displace = (1.001,0,0)
+    
     # 沿垂脊曲线变形
     modCurve: bpy.types.CurveModifier = \
         frontRidgeObj.modifiers.new('曲线变形','CURVE')
     modCurve.object = ridgeCurve
 
     # 四面镜像
-    modMirror: bpy.types.MirrorModifier = \
-        frontRidgeObj.modifiers.new('镜像','MIRROR')
-    modMirror.mirror_object = tileRootObj
-    modMirror.use_axis = (True,True,False)
-    modMirror.use_bisect_axis = (True,True,False)
+    utils.addModifierMirror(
+        object=frontRidgeObj,
+        mirrorObj=tileRootObj,
+        use_axis=(True,True,False),
+        use_bisect=(True,True,False),
+        use_merge=userMerge,
+    )
 
     return frontRidgeObj
 
@@ -1934,10 +1954,11 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
             ridgeEndObj.modifiers.new('曲线变形','CURVE')
         modCurve.object = frontRidgeCurve
         # 四面镜像
-        modMirror: bpy.types.MirrorModifier = \
-            ridgeEndObj.modifiers.new('镜像','MIRROR')
-        modMirror.mirror_object = tileRootObj
-        modMirror.use_axis = (True,True,False)
+        utils.addModifierMirror(
+            object=ridgeEndObj,
+            mirrorObj=tileRootObj,
+            use_axis=(True,True,False),
+        )
 
         # 构造垂脊兽前的脊筒，仅根据需要的跑兽数量排布
         frontRidgeBeforeObj = __arrayRidgeByCurve(buildingObj,
@@ -2078,7 +2099,8 @@ def __buildSideTile(buildingObj: bpy.types.Object,
         object=dripTileObj,
         mirrorObj=tileRootObj,
         use_axis=(True,True,False),
-        use_bisect=(False,True,False)
+        use_bisect=(False,True,False),
+        use_merge=True, # 合并裁剪点，以实现水密
     )
     utils.addModifierMirror(
         object=eaveTileObj,
@@ -2307,6 +2329,9 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
         paoLength = (ridgeEnd_Length
             + ridgeUnit_Length * bData.paoshou_count)
         cornerRidgeAfterObj.location.x += paoLength +ridgeUnit_Length
+
+        # 盝顶戗脊兽后的跑兽偏移处理
+        # 不做裁剪，仅修改垂脊长度
         if bData.roof_style == con.ROOF_LUDING:
             modArray:bpy.types.ArrayModifier \
                   = cornerRidgeAfterObj.modifiers['曲线平铺']
@@ -2314,6 +2339,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
             curveLength = cornerRidgeCurve.data.splines[0].calc_length()
             ridegLength = curveLength - paoLength - ridgeUnit_Length
             modArray.fit_length = ridegLength
+
         # 摆放垂兽
         loc = cornerRidgeCurve.location + Vector((paoLength,0,0))
         chuishouObj = utils.copyObject(
@@ -2335,7 +2361,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
             use_axis=(True,True,False)
         )
         # 设置垂兽材质
-        mat.setGlazeStyle(chuishouObj)
+        mat.setGlazeStyle(chuishouObj)        
 
     # 歇山戗脊，沿垂脊裁剪
     if bData.roof_style in (con.ROOF_XIESHAN,
@@ -2343,6 +2369,8 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
         pcut = tileRootObj.matrix_world @ rafter_pos[-1]
         # 偏移半垄，与垂脊相交
         pcut += Vector((-bData.tile_width_real/2,0,0))
+        
+        # 裁剪戗脊-兽前
         utils.addBisect(
             object=cornerRidgeBeforeObj,
             pStart=tileRootObj.matrix_world @ Vector((0,-1,0)),
@@ -2351,6 +2379,14 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
             clear_outer=True,
             direction='Z'
         )
+        # 重建戗脊-兽前的左右镜像
+        utils.addModifierMirror(
+            object=cornerRidgeBeforeObj,
+            mirrorObj=tileRootObj,
+            use_axis=(True,False,False)
+        )
+
+        # 裁剪戗脊-兽后
         if bData.paoshou_count > 0:
             utils.addBisect(
                 object=cornerRidgeAfterObj,
@@ -2360,13 +2396,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
                 clear_outer=True,
                 direction='Z'
             )
-        # 重建左右镜像
-        utils.addModifierMirror(
-            object=cornerRidgeBeforeObj,
-            mirrorObj=tileRootObj,
-            use_axis=(True,False,False)
-        )
-        if bData.paoshou_count > 0:
+            # 重建戗脊-兽后的左右镜像
             utils.addModifierMirror(
                 object=cornerRidgeAfterObj,
                 mirrorObj=tileRootObj,
@@ -2464,7 +2494,8 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
         buildingObj=buildingObj,
         sourceObj=aData.ridgeFront_source,
         ridgeCurve=sideRidgeCurve,
-        ridgeName='博脊'
+        ridgeName='博脊',
+        userMerge=False
     )
 
     # 250113 设置琉璃材质

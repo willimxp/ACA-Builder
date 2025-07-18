@@ -1431,6 +1431,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object,
     eaveCurveData:bpy.types.Curve = rafterEaveObj.data
     eaveCurveData.bevel_mode = 'OBJECT'
     eaveCurveData.bevel_object = bevel_object
+    eaveCurveData.use_fill_caps = True  # 封头已实现水密
     # 控制分辨率
     eaveCurveData.resolution_u = 16
     # 关闭平滑导致的法线不佳
@@ -1467,6 +1468,8 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object,
     )
     # 设置材质
     mat.paint(rafterEaveObj,con.M_ROOF_PAINT)
+    # 合并重合点，已实现水密
+    utils.mergeByDistance(rafterEaveObj)
 
     return rafterEaveObj
 
@@ -1890,6 +1893,7 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
     eaveCurveData:bpy.types.Curve = flyrafterEaveObj.data
     eaveCurveData.bevel_mode = 'OBJECT'
     eaveCurveData.bevel_object = bevel_object
+    eaveCurveData.use_fill_caps = True  # 封头已实现水密
     # 控制分辨率
     eaveCurveData.resolution_u = 16
     # 控制扭转方式
@@ -1933,6 +1937,8 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
     )
     # 设置材质
     mat.paint(flyrafterEaveObj,con.M_ROOF_PAINT)
+    # 合并重合点，已实现水密
+    utils.mergeByDistance(flyrafterEaveObj)
 
 # 营造翘飞椽定位线
 # 250316 做为大连檐和翘飞椽共用的定位参考
@@ -2807,6 +2813,16 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
                 use_axis=(True,True,False)
             )
 
+        # 250718 裁剪翼角椽，逐一裁剪以保证水密
+        for cr in cornerRafterColl:
+            utils.addBisect(
+                    object=cr,
+                    pStart=buildingObj.matrix_world @ purlin_pos[0],
+                    pEnd=buildingObj.matrix_world @ purlin_pos[1],
+                    pCut=buildingObj.matrix_world @ purlin_pos[0] - \
+                        Vector((con.JIAOLIANG_Y*dk/2*math.sqrt(2),0,0)),
+                    clear_outer=True
+            ) 
         # 合并翼角椽
         crSet = utils.joinObjects(
             cornerRafterColl,newName='翼角椽')
@@ -2819,14 +2835,6 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             width=con.BEVEL_EXLOW,
             segments=2
         )
-        utils.addBisect(
-                object=crSet,
-                pStart=buildingObj.matrix_world @ purlin_pos[0],
-                pEnd=buildingObj.matrix_world @ purlin_pos[1],
-                pCut=buildingObj.matrix_world @ purlin_pos[0] - \
-                    Vector((con.JIAOLIANG_Y*dk/2*math.sqrt(2),0,0)),
-                clear_outer=True
-        ) 
         # 角梁45度对称
         utils.addModifierMirror(
             object=crSet,
@@ -3029,10 +3037,14 @@ def __buildShanhuaBan(buildingObj: bpy.types.Object,
 
     # 山花板板做到椽架
     # 从正心桁做收山加斜，再上移半桁+1椽
+    # 载入举折系数
+    lift_ratio = buildBeam.getLiftRatio(buildingObj)
+    # 收山举高，按第一层举架系数加斜
+    shouLift = bData.shoushan*lift_ratio[0]
     cutPoint = purlin_pos[0] + Vector((
         0,0,
-        ( bData.shoushan/2          # 收山加斜
-         + con.XYB_WIDTH*dk/2       # 山花厚度加斜
+        ( shouLift                  # 收山加斜
+         + con.XYB_WIDTH*dk*lift_ratio[0]       # 山花厚度加斜
          + con.WANGBAN_H*dk         # 望板
          + con.HENG_COMMON_D*dk/2   # 半桁径
          + con.YUANCHUAN_D*dk       # 椽径
@@ -3341,7 +3353,14 @@ def __buildBofengNails(
     nails = []
     
     # 根据槫子位置，摆放雪花钉
-    for rafter in rafter_pos:
+    for n,rafter in enumerate(rafter_pos):
+        # 歇山雪花钉只做到下金桁以上
+        if bData.roof_style in (con.ROOF_XIESHAN,
+                            con.ROOF_XIESHAN_JUANPENG,):
+            if n < 1:
+                # 不做雪花钉
+                continue
+
         # 定位: 与博缝板外皮相切
         loc_x = bofengObj.location.x + con.BOFENG_WIDTH*dk
         # 大小
@@ -3430,9 +3449,9 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         bofengObj.modifiers.new('曲线拟合','CURVE')
     modCurve.object = bofengCurve
 
-    # 歇山的博缝板裁剪，避免与角梁打架
     if bData.roof_style in (con.ROOF_XIESHAN,
                             con.ROOF_XIESHAN_JUANPENG,):
+        # 歇山的博缝板裁剪，避免与角梁打架
         # 做沿角梁的45度裁剪，避免博缝板与角梁交叉
         pCut = Vector((
             (bData.x_total/2
@@ -3448,6 +3467,34 @@ def __buildBofeng(buildingObj: bpy.types.Object,
             clear_outer=True,
             direction='Z'
         )
+
+        # 歇山的博缝板裁剪，仅做到椽架
+        # 从正心桁做收山加斜，再上移半桁+1椽
+        # 载入举折系数
+        lift_ratio = buildBeam.getLiftRatio(buildingObj)
+        # 收山举高，按第一层举架系数加斜
+        shouLift = bData.shoushan*lift_ratio[0]
+        cutPoint = rafter_pos[0] + Vector((
+            0,0,
+            ( shouLift                  # 收山加斜
+            + con.WANGBAN_H*dk         # 望板
+            + con.HENG_COMMON_D*dk/2   # 半桁径
+            + con.YUANCHUAN_D*dk       # 椽径
+            )
+        ))
+        utils.addBisect(
+            object=bofengObj,
+            pCut=rafterRootObj.matrix_world @ cutPoint,
+            clear_outer=True,
+            direction='V'
+        )
+    
+    # 博缝板倒角
+    utils.addModifierBevel(
+        object=bofengObj,
+        width=con.BEVEL_HIGH,
+        clamp=True,
+    )
 
     # 根据槫子位置，摆放雪花钉
     nailsSet = __buildBofengNails(buildingObj,
@@ -3472,32 +3519,10 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         object=bofengObj,
         mirrorObj=rafterRootObj,
         use_axis=(True,True,False),
-        use_bisect=(False,True,False)
+        use_bisect=(False,True,False),
+        use_merge=True,     # 合并以实现水密
     )
-
-    # 歇山的博缝板裁剪，仅做到椽架
-    # 从正心桁做收山加斜，再上移半桁+1椽
-    if bData.roof_style in (con.ROOF_XIESHAN,
-                            con.ROOF_XIESHAN_JUANPENG,):
-        cutPoint = rafter_pos[0] + Vector((
-            0,0,
-            ( bData.shoushan/2         # 收山加斜
-            + con.WANGBAN_H*dk         # 望板
-            + con.HENG_COMMON_D*dk/2   # 半桁径
-            + con.YUANCHUAN_D*dk       # 椽径
-            )
-        ))
-        utils.addBisect(
-            object=bofengObj,
-            pCut=rafterRootObj.matrix_world @ cutPoint,
-            clear_outer=True,
-            direction='V'
-        )
-    utils.addModifierBevel(
-        object=bofengObj,
-        width=con.BEVEL_HIGH,
-        clamp=True,
-    )
+    utils.applyAllModifer(bofengObj)
 
     # 山花板
     if (bData.roof_style in (
@@ -3541,7 +3566,8 @@ def __buildBofeng(buildingObj: bpy.types.Object,
             object=shanhuaObj,
             mirrorObj=rafterRootObj,
             use_axis=(True,True,False),
-            use_bisect=(False,True,False)
+            use_bisect=(False,True,False),
+            use_merge=True,     # 确保水密
         )
 
         # 6、裁剪，只做到山花与檐椽架的交点，以下的部分剪掉
@@ -3551,10 +3577,14 @@ def __buildBofeng(buildingObj: bpy.types.Object,
                      -(con.BOFENG_WIDTH*dk + con.XYB_WIDTH*dk)/2)
             Py = 0
             # 从正心桁做收山加斜，再上移半桁+1椽
-            Pz = rafter_pos[0].z + ( bData.shoushan/2         # 收山加斜
-                                + con.WANGBAN_H*dk         # 望板
-                                + con.HENG_COMMON_D*dk/2   # 半桁径
-                                + con.YUANCHUAN_D*dk       # 椽径
+            # 载入举折系数
+            lift_ratio = buildBeam.getLiftRatio(buildingObj)
+            # 收山举高，按第一层举架系数加斜
+            shouLift = bData.shoushan*lift_ratio[0]
+            Pz = rafter_pos[0].z + ( shouLift               # 收山加斜
+                                + con.WANGBAN_H*dk          # 望板
+                                + con.HENG_COMMON_D*dk/2    # 半桁径
+                                + con.YUANCHUAN_D*dk        # 椽径
                                 )
             cutPoint = Vector((Px,Py,Pz))
             utils.addBisect(

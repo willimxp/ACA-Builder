@@ -956,6 +956,7 @@ def addModifierMirror(object:bpy.types.Object,
                       use_axis=(False,False,False),
                       use_bisect=(False,False,False),
                       use_flip=(False,False,False),
+                      use_merge=False,
                       name='Mirror',):
     mod:bpy.types.MirrorModifier = \
             object.modifiers.new(name,'MIRROR')
@@ -963,6 +964,7 @@ def addModifierMirror(object:bpy.types.Object,
     mod.use_axis = use_axis
     mod.use_bisect_axis = use_bisect
     mod.use_bisect_flip_axis = use_flip
+    mod.use_mirror_merge = use_merge
 
 # 添加倒角修改器
 def addModifierBevel(object:bpy.types.Object,
@@ -994,6 +996,27 @@ def addModifierBevel(object:bpy.types.Object,
     modBevel.offset_type = type
 
     return modBevel
+
+# 添加boolean修改器
+def addModifierBoolean(
+        object:bpy.types.Object,
+        boolObj:bpy.types.Object,
+        name='Boolean',
+        operation='DIFFERENCE', # 'INTERSECT','UNION'
+):
+    if bpy.app.version >= (4,5,0):
+        # blender 4.5新提供了MANIFOLD算法，优先使用
+        solver = 'MANIFOLD'
+    else:
+        # 老版本仍然使用EXACT算法
+        solver = 'EXACT'
+    modBool:bpy.types.BooleanModifier = \
+            object.modifiers.new(name,'BOOLEAN')
+    modBool.object = boolObj
+    modBool.solver = solver
+    modBool.operation = operation
+    modBool.material_mode = 'TRANSFER'
+    return
 
 # 应用所有修改器
 def applyAllModifer(object:bpy.types.Object):
@@ -1707,6 +1730,27 @@ def dissolveEdge(object:bpy.types.Object,
         bm.edges[e].select = True
     bpy.ops.mesh.dissolve_edges()
     bmesh.update_edit_mesh(bpy.context.object.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+    return
+
+# 调用blender的Mesh-Clean Up - Merge by Distance
+def mergeByDistance(object:bpy.types.Object,
+                    mergeDistance=0.0001,):
+    # 预备
+    focusObj(object)
+    updateScene()
+    # 切换到edit模式，全选
+    bpy.ops.object.mode_set(mode='EDIT')
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh(object.data)
+    bpy.ops.mesh.select_mode(type = 'EDGE')
+    bm.edges.ensure_lookup_table()
+    bpy.ops.mesh.select_all(action = 'SELECT')
+    # 调用合并
+    bpy.ops.mesh.remove_doubles(
+        threshold=mergeDistance)
+    bmesh.update_edit_mesh(object.data) 
     bm.free() 
     bpy.ops.object.mode_set( mode = 'OBJECT' )
     return

@@ -109,20 +109,29 @@ def __buildShanxin(
     # utils.applyAllModifer(lingxin)
 
     # 添加简化版的棂心（平面贴图方式）
-    bpy.ops.mesh.primitive_plane_add(location=location,size=1)
-    linxinObj = bpy.context.object
-    linxinObj.name = '棂心'
-    linxinObj.data.name = '棂心'
-    linxinObj.parent = parent
-    linxinObj.scale = (scale.x- borderWidth*2,
-                       scale.z- borderWidth*2,
-                       1)
-    linxinObj.rotation_euler.x = math.radians(90)
-    # apply
-    utils.applyTransfrom(linxinObj,
-                         use_location=True,
-                         use_scale=True,
-                         use_rotation=True)
+    # 250717 为了实现水密，做成cube
+    # bpy.ops.mesh.primitive_plane_add(location=location,size=1)
+    # linxinObj = bpy.context.object
+    # linxinObj.name = '棂心'
+    # linxinObj.data.name = '棂心'
+    # linxinObj.parent = parent
+    # linxinObj.scale = (scale.x- borderWidth*2,
+    #                    scale.z- borderWidth*2,
+    #                    1)
+    # linxinObj.rotation_euler.x = math.radians(90)
+    # # apply
+    # utils.applyTransfrom(linxinObj,
+    #                      use_location=True,
+    #                      use_scale=True,
+    #                      use_rotation=True)
+    linxinDim = (scale.x- borderWidth*2,
+                0.005,  # 5毫米厚度
+                scale.z- borderWidth*2,)
+    linxinObj = utils.addCube(
+        location=location,
+        dimension=linxinDim,
+        parent=parent
+    )
     # 棂心贴图（三交六椀）
     mat.paint(linxinObj,lingxinMat)
     linxingList.append(linxinObj)

@@ -250,12 +250,11 @@ def __drawWall(wallProxy:bpy.types.Object):
     
     # 合并
     # wallObj = utils.joinObjects(wallParts,'墙体')
-    modBool:bpy.types.BooleanModifier = \
-            bodyObj.modifiers.new('合并','BOOLEAN')
-    modBool.object = bottomObj
-    modBool.solver = 'EXACT'
-    modBool.operation = 'UNION'
-    modBool.material_mode = 'TRANSFER'
+    utils.addModifierBoolean(
+        object=bodyObj,
+        boolObj=bottomObj,
+        operation='UNION'
+    )
     utils.applyAllModifer(bodyObj)
     utils.delObject(bottomObj)
     # 导角

@@ -889,7 +889,7 @@ class ACA_OT_JOIN(bpy.types.Operator):
             for childObj in buildingObj.children:
                 useObj = True
                 # 仅处理可见的实体对象
-                if childObj.type not in ('MESH','CURVE'):
+                if childObj.type not in ('MESH'):
                     useObj = False
                 if childObj.hide_viewport or childObj.hide_render:
                     useObj = False

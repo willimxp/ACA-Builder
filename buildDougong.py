@@ -478,30 +478,32 @@ def __buildDougong(dgrootObj:bpy.types.Object):
             # 设置斗栱配色
             mat.paint(dgPillerCopy,con.M_DOUGONG,override=True)
 
-            # 250621 硬山角柱上的柱头斗栱做裁剪，以免超出山墙
-            if (bData.roof_style in (
-                con.ROOF_YINGSHAN,
-                con.ROOF_YINGSHAN_JUANPENG,)
-                and n in (0,len(net_x)-1)):
-                    # 计算裁剪点
-                    pStart = Vector((0,0,0))
-                    pEnd = Vector((0,1,0))
-                    pCut = Vector((net_x[n],net_y[0],0))
-                    # 第一个斗栱裁掉左侧，最后一个斗栱裁掉右侧
-                    if n == 0:
-                        clear_outer = True
-                        clear_inner = False
-                    else:
-                        clear_outer = False
-                        clear_inner = True
-                    utils.addBisect(
-                        object=dgPillerCopy,
-                        pStart=dgrootObj.matrix_world @ pStart,
-                        pEnd=dgrootObj.matrix_world @ pEnd,
-                        pCut=dgrootObj.matrix_world @ pCut,
-                        clear_outer = clear_outer,
-                        clear_inner = clear_inner,
-                    )
+            # 250718 暂时取消以下处理，会产生难以修复的破口，导致无法水密
+            # 目前的各个斗栱的大小也暂时没有超出山墙
+            # # 250621 硬山角柱上的柱头斗栱做裁剪，以免超出山墙
+            # if (bData.roof_style in (
+            #     con.ROOF_YINGSHAN,
+            #     con.ROOF_YINGSHAN_JUANPENG,)
+            #     and n in (0,len(net_x)-1)):
+            #         # 计算裁剪点
+            #         pStart = Vector((0,0,0))
+            #         pEnd = Vector((0,1,0))
+            #         pCut = Vector((net_x[n],net_y[0],0))
+            #         # 第一个斗栱裁掉左侧，最后一个斗栱裁掉右侧
+            #         if n == 0:
+            #             clear_outer = True
+            #             clear_inner = False
+            #         else:
+            #             clear_outer = False
+            #             clear_inner = True
+            #         utils.addBisect(
+            #             object=dgPillerCopy,
+            #             pStart=dgrootObj.matrix_world @ pStart,
+            #             pEnd=dgrootObj.matrix_world @ pEnd,
+            #             pCut=dgrootObj.matrix_world @ pCut,
+            #             clear_outer = clear_outer,
+            #             clear_inner = clear_inner,
+            #         )
         
         # 两山的柱头斗栱，仅庑殿/歇山做两山的斗栱
         if bData.roof_style in (

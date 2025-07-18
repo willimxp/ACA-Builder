@@ -3602,10 +3602,11 @@ def __buildBofeng(buildingObj: bpy.types.Object,
                 direction='V'
             )
         
-        # 7、消除破面
-        modDecimate : bpy.types.DecimateModifier = \
-            shanhuaObj.modifiers.new('Decimate','DECIMATE')
-        modDecimate.ratio = 0.99
+        # 250718 优化了博缝板的几何构造，不再会有交叠面
+        # # 7、消除破面
+        # modDecimate : bpy.types.DecimateModifier = \
+        #     shanhuaObj.modifiers.new('Decimate','DECIMATE')
+        # modDecimate.ratio = 0.99
         
         # 8、将几何中心放在裁切点上，做为后续做山花材质时的定位参考
         utils.applyTransfrom(shanhuaObj,

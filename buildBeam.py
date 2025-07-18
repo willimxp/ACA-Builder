@@ -1384,7 +1384,18 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     dimension=shuzhu_dimensions,
                     parent=beamRootObj,
                 )
-                if n!=len(purlin_pos)-2:    # 脊槫下不做镜像
+                # 蜀柱镜像
+                if roofStyle in (
+                            con.ROOF_XUANSHAN_JUANPENG,
+                            con.ROOF_YINGSHAN_JUANPENG,
+                            con.ROOF_XIESHAN_JUANPENG,
+                        ):
+                    # 卷棚全部需要镜像
+                    loopLength = len(purlin_pos)
+                else:
+                    # 非卷棚的脊桁下不做镜像
+                    loopLength = len(purlin_pos)-1
+                if n < loopLength:
                     #镜像
                     utils.addModifierMirror(
                         shuzhuCopyObj,
@@ -1397,7 +1408,15 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                 # 蜀柱添加角背
                 # 验证梁的长度是否需要缴背
                 # 缴背长度取一步架，与梁的一半长度做比较
-                if beam_l/2 > bData.y_total/bData.rafter_count:
+                if (roofStyle in (
+                            con.ROOF_XUANSHAN_JUANPENG,
+                            con.ROOF_YINGSHAN_JUANPENG,
+                            con.ROOF_XIESHAN_JUANPENG,
+                        )
+                    and n == len(purlin_pos)-2):
+                    # 卷棚顶层不做缴背
+                        pass
+                elif beam_l/2 > bData.y_total/bData.rafter_count:
                     jiaobeiObj = __drawJiaobei(shuzhuCopyObj)
                     if jiaobeiObj != None:
                         beamObjects.append(jiaobeiObj)

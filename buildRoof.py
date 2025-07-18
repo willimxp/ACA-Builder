@@ -541,7 +541,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
     wangban_pos = utils.push_purlinPos(
                     purlin_pos, -offset, 'X')
 
-    # 望板只做1象限半幅，然后镜像
+    # 望板做屋面宽度
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
         # 望板宽度
@@ -556,15 +556,15 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             width = purlin_pos[-1].x
         # 起点在上层桁檩
         pstart = wangban_pos[n+1].copy()
-        pstart.x = width/2
+        pstart.x = 0
         # 终点在本层桁檩
         pend = wangban_pos[n].copy()
-        pend.x = width/2
+        pend.x = 0
         # 摆放望板
         wangbanObj = utils.addCubeBy2Points(
             start_point=pstart,
             end_point=pend,
-            depth=width,
+            depth=width*2,
             height=con.WANGBAN_H*dk,
             name="望板",
             root_obj=rafterRootObj,
@@ -603,7 +603,9 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
         utils.addModifierMirror(
             object=wangbanObj,
             mirrorObj=rafterRootObj,
-            use_axis=(True,True,False)
+            use_axis=(True,True,False),
+            use_bisect=(True,False,False),
+            use_merge=True,
         )
         wangbanObjs.append(wangbanObj)
 
@@ -662,12 +664,16 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
                     width=purlin_pos[-1].x *2,
                     resolution=2,
                     )
+            # 水密验证：转成mesh，并合并重合点
+            utils.focusObj(wangbanJuanpeng)
+            bpy.ops.object.convert(target='MESH')
+            utils.mergeByDistance(wangbanJuanpeng)
             # 四方镜像，Y向裁剪
             utils.addModifierMirror(
                 object=wangbanJuanpeng,
                 mirrorObj=rafterRootObj,
                 use_axis=(False,True,False),
-                use_bisect=(False,True,False)
+                use_bisect=(False,True,False),
             )
             wangbanObjs.append(wangbanJuanpeng)
             
@@ -728,15 +734,15 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
             width = purlin_pos[n].y
         # 起点在上层桁檩
         pstart = wangban_pos[n+1].copy()
-        pstart.y = width/2
+        pstart.y = 0
         # 终点在本层桁檩
         pend = wangban_pos[n].copy()
-        pend.y = width/2
+        pend.y = 0
         # 摆放望板
         wangbanObj = utils.addCubeBy2Points(
             start_point=pstart,
             end_point=pend,
-            depth=width,
+            depth=width*2,
             height=con.WANGBAN_H*dk,
             name="望板",
             root_obj=rafterRootObj,
@@ -774,7 +780,9 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
         utils.addModifierMirror(
             object=wangbanObj,
             mirrorObj=rafterRootObj,
-            use_axis=(True,True,False)
+            use_axis=(True,True,False),
+            use_bisect=(False,True,False),
+            use_merge=True,
         )  
         wangbanObjs.append(wangbanObj)
     

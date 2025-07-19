@@ -379,6 +379,8 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             ))
             # p3再回退一半
             p3 = p2 + Vector((0,-rafter_pos[-1].y/2,0))
+            # 跨界交错，以便后续mirror bisect，保证水密
+            p3 += Vector((0,-0.01,0))
             # 三点生成曲线
             curveRafter:bpy.types.Object = \
                 utils.addCurveByPoints(
@@ -402,10 +404,14 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                 object=curveRafter,
                 mirrorObj=rafterRootObj,
                 use_axis=(True,True,False),
-                use_bisect=(False,True,False)
+                use_bisect=(False,True,False),
+                use_merge=True,
             )
             # 平滑
             utils.shaderSmooth(curveRafter)
+            # 转为实体
+            utils.applyAllModifer(curveRafter)
+            utils.mergeByDistance(curveRafter)
 
         # 平滑
         utils.shaderSmooth(fbRafterObj)

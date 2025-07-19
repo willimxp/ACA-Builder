@@ -826,8 +826,13 @@ def __drawTileBool(
     tileboolObj.data.update()
     bm.free()
 
-    # 添加细分，可以减少裁剪瓦片时出现的异常毛刺点
-    utils.subdivideObject(tileboolObj,level=3)
+    # 是否添加细分？
+    if bpy.app.version < (4,5,0):
+        # 添加细分，可以减少裁剪瓦片时出现的异常毛刺点
+        utils.subdivideObject(tileboolObj,level=3)
+    else:
+        # 4.5以上不要细分，否则反而破坏水密
+        pass
 
     # 添加镜像
     utils.addModifierMirror(

@@ -1003,13 +1003,15 @@ def addModifierBoolean(
         boolObj:bpy.types.Object,
         name='Boolean',
         operation='DIFFERENCE', # 'INTERSECT','UNION'
+        solver=None,    # 'FAST','EXACT','MANIFOLD'
 ):
-    if bpy.app.version >= (4,5,0):
-        # blender 4.5新提供了MANIFOLD算法，优先使用
-        solver = 'MANIFOLD'
-    else:
-        # 老版本仍然使用EXACT算法
-        solver = 'EXACT'
+    if solver == None:
+        if bpy.app.version >= (4,5,0):
+            # blender 4.5新提供了MANIFOLD算法，优先使用
+            solver = 'MANIFOLD'
+        else:
+            # 老版本仍然使用EXACT算法
+            solver = 'EXACT'
     modBool:bpy.types.BooleanModifier = \
             object.modifiers.new(name,'BOOLEAN')
     modBool.object = boolObj

@@ -1391,10 +1391,10 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                             con.ROOF_XIESHAN_JUANPENG,
                         ):
                     # 卷棚全部需要镜像
-                    loopLength = len(purlin_pos)
+                    loopLength = len(purlin_pos)-1
                 else:
                     # 非卷棚的脊桁下不做镜像
-                    loopLength = len(purlin_pos)-1
+                    loopLength = len(purlin_pos)-2
                 if n < loopLength:
                     #镜像
                     utils.addModifierMirror(

@@ -213,7 +213,7 @@ def __drawBWQ(fangObj:bpy.types.Object,
     # 250613 根据斗口的缩放，调整霸王拳的位置
     bawangquanObj.location.x += \
         (bData.piller_diameter - pd)/2*utils.getSign(bwqX)
-    utils.applyTransfrom(bawangquanObj,use_scale=True)
+    utils.applyTransform(bawangquanObj,use_scale=True)
     # 霸王拳着色
     mat.paint(bawangquanObj,con.M_BAWANGQUAN,override=True)
     return
@@ -331,7 +331,7 @@ def __buildQueti(fangObj):
     quetiObj.scale.y = dk / con.DEFAULT_DK
     quetiObj.scale.z = dk / con.DEFAULT_DK
     # 250613 有GN的对象不能应用缩放
-    # utils.applyTransfrom(quetiObj,use_scale=True)
+    # utils.applyTransform(quetiObj,use_scale=True)
     # 应用GN修改器
     utils.applyAllModifer(quetiObj)
     # 设置雀替外观
@@ -1038,7 +1038,7 @@ def buildPillers(buildingObj:bpy.types.Object):
             pillerObj.dimensions.z = getPillerHeight(
                     buildingObj,pillerID)
             # 应用拉伸
-            utils.applyTransfrom(pillerObj,use_scale=True)
+            utils.applyTransform(pillerObj,use_scale=True)
 
             # 柱头贴图，注意此方法会破坏原有柱对象，并返回新对象
             newPillerObj = mat.paint(pillerObj,con.M_PILLER_HEAD,

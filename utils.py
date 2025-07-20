@@ -338,7 +338,18 @@ def applyScale(object:bpy.types.Object):
         isolate_users=True) # apply多用户对象时可能失败，所以要加上这个强制单用户
 
 # 应用缩放、旋转、位置
-def applyTransfrom(ob, 
+def applyTransform2(ob, 
+                    use_location=False, 
+                    use_rotation=False, 
+                    use_scale=False):
+    focusObj(ob)
+    bpy.ops.object.transform_apply(
+        scale=use_scale,
+        rotation=use_rotation,
+        location=use_location,
+        isolate_users=True)
+    
+def applyTransform(ob, 
                     use_location=False, 
                     use_rotation=False, 
                     use_scale=False):
@@ -906,7 +917,7 @@ def addCylinderHorizontal(radius,depth,name,root_obj,
         edge_num=edge_num
     )
     # apply rotation
-    applyTransfrom(cylinder,use_rotation=True)
+    applyTransform(cylinder,use_rotation=True)
     # 旋转到实际角度
     cylinder.rotation_euler = rotation
     return cylinder
@@ -1323,7 +1334,7 @@ def changeOriginRotation(RotationChange,Object:bpy.types.Object):
         -change_rot_y,
         -change_rot_z),'XYZ')
     # Apply
-    applyTransfrom(ob=Object,use_rotation=True)
+    applyTransform(ob=Object,use_rotation=True)
     Object.rotation_euler = Euler(
         (old_rot_x+change_rot_x,
          old_rot_y+change_rot_y,
@@ -1423,7 +1434,7 @@ def addBezierByPoints(
         bevel_object.parent = root_obj
         # 设置大小
         bevel_object.scale = (width,height,0)
-        applyTransfrom(bevel_object,use_scale=True)
+        applyTransform(bevel_object,use_scale=True)
         updateScene()
         # 移动origin
         bpy.ops.object.mode_set(mode = 'EDIT')
@@ -1534,7 +1545,7 @@ def addCurveByPoints(CurvePoints,
         bevel_object.name = name + '.bevel'
         bevel_object.parent = root_obj
         # 将Plane Mesh转换为Curve，才能绑定到curve上
-        applyTransfrom(bevel_object,use_scale=True)
+        applyTransform(bevel_object,use_scale=True)
         bpy.ops.object.convert(target='CURVE')
         # 翻转curve，否则会导致连檐的face朝向不对
         bpy.ops.object.editmode_toggle()
@@ -1834,7 +1845,7 @@ def replaceObject(
     if use_Dimension:
         toObj.dimensions = getMeshDims(fromObj) # 排除modifier的尺寸
         # 250613 对于使用了GN的对象，如穿插枋，应用缩放后导致尺寸错误
-        #applyTransfrom(toObj,use_scale=True)
+        #applyTransform(toObj,use_scale=True)
     
     if use_Modifier:
         copyModifiers(fromObj,toObj)
@@ -1881,7 +1892,7 @@ def changeParent(object:bpy.types.Object,
     
     # 应用所有transform
     if resetOrigin:
-        applyTransfrom(
+        applyTransform(
             object,
             use_location=True,
             use_rotation=True,

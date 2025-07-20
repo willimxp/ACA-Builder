@@ -495,7 +495,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     use_axis=(False,True,False)
                 )
             # 导角
-            utils.applyTransfrom(dianbanObj,use_scale=True)
+            utils.applyTransform(dianbanObj,use_scale=True)
             utils.addModifierBevel(dianbanObj,con.BEVEL_EXLOW)
         
         # 桁枋 =======================================================
@@ -546,7 +546,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     mirrorObj=beamRootObj,
                     use_axis=(False,True,False)
                 )  
-            utils.applyTransfrom(hengfangObj,use_scale=True)
+            utils.applyTransform(hengfangObj,use_scale=True)
             # 倒角
             utils.addModifierBevel(hengfangObj,con.BEVEL_LOW)
 
@@ -681,7 +681,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     use_axis=(True,False,False)
                 )
                 # 导角
-                utils.applyTransfrom(dianbanObj,use_scale=True)
+                utils.applyTransform(dianbanObj,use_scale=True)
                 # 倒角
                 utils.addModifierBevel(dianbanObj,con.BEVEL_EXLOW)
             # 桁枋
@@ -708,7 +708,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     mirrorObj=beamRootObj,
                     use_axis=(True,False,False)
                 )
-                utils.applyTransfrom(hengfangObj,use_scale=True)
+                utils.applyTransform(hengfangObj,use_scale=True)
                 # 倒角
                 utils.addModifierBevel(hengfangObj,con.BEVEL_LOW)
 

@@ -1176,12 +1176,12 @@ def __setDgBoard(dgBoardObj:bpy.types.Object,
             (n+0.5)*boardLength-totalLength/2)
         newDgBoard.location.y = 0
         newDgBoard.location.z = 0
-        utils.applyTransfrom(newDgBoard,use_scale=True)
+        utils.applyTransform(newDgBoard,use_scale=True)
         newDgBoardList.append(newDgBoard)
 
     # 合并栱垫板
     joinedDgBoard = utils.joinObjects(newDgBoardList)
-    utils.applyTransfrom(joinedDgBoard,use_location=True)
+    utils.applyTransform(joinedDgBoard,use_location=True)
     utils.replaceObject(
         dgBoardObj,
         joinedDgBoard,

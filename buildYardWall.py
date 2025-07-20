@@ -67,7 +67,7 @@ def __arrayTile(
         singleUser=True)
     # 根据斗口调整尺度
     utils.resizeObj(tileObj,tileScale)
-    utils.applyTransfrom(tileObj,use_scale=True)
+    utils.applyTransform(tileObj,use_scale=True)
     # 应用所有的modifier，以免后续快速合并时丢失
     utils.applyAllModifer(tileObj)
 
@@ -118,7 +118,7 @@ def buildSingleWall(
     if use_cut:
         cutExtend = 0.22    # 改变这个值，可以看到转角合并的瓦的变化
         wallProxy.dimensions.x += cutExtend*2
-        utils.applyTransfrom(wallProxy,use_scale=True)
+        utils.applyTransform(wallProxy,use_scale=True)
     # 墙体的长宽高，以wallproxy为依据
     (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
 
@@ -232,7 +232,7 @@ def buildSingleWall(
     )
     # 根据斗口调整尺度
     utils.resizeObj(bofengObj,tileScale)
-    utils.applyTransfrom(bofengObj,use_scale=True)
+    utils.applyTransform(bofengObj,use_scale=True)
     # 镜像
     utils.addModifierMirror(
         object=bofengObj,
@@ -272,7 +272,7 @@ def buildSingleWall(
     span = ridgeLength / count + 0.0001
     # 缩放墙檐宽度
     ridgeObj.dimensions.x = span
-    utils.applyTransfrom(ridgeObj,use_scale=True)
+    utils.applyTransform(ridgeObj,use_scale=True)
     # 定位正脊排布起点
     ridgeObj.location = (
         -ridgeLength/2,
@@ -312,7 +312,7 @@ def buildSingleWall(
     span = wallLength/count
     # 缩放墙檐宽度
     walleaveObj.dimensions.x = span*0.99    #留出一些间隙
-    utils.applyTransfrom(walleaveObj,use_scale=True)
+    utils.applyTransform(walleaveObj,use_scale=True)
     # 根据缩放结果，摆放起始位置
     walleaveObj.location = (
         -wallLength/2+ span/2, 

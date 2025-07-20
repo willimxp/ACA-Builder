@@ -913,7 +913,7 @@ class ACA_OT_JOIN(bpy.types.Operator):
             joinedModel.parent.matrix_world 
             @ joinedModel.location)
         joinedModel.parent = None
-        utils.applyTransfrom(joinedModel,use_location=True)
+        utils.applyTransform2(joinedModel,use_location=True)
 
         # 标示为ACA对象
         joinedModel.ACA_data['aca_obj'] = True

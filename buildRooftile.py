@@ -419,7 +419,7 @@ def __drawEaveCurveByCCB(buildingObj:bpy.types.Object,
         pivot = (bData.x_total/2-bData.y_total/2,0,0)
         utils.mirror45(eaveCurve,pivot)
         # 应用变换
-        utils.applyTransfrom(eaveCurve,
+        utils.applyTransform(eaveCurve,
                              use_location=True,
                              use_rotation=True,
                              use_scale=True)  
@@ -893,10 +893,10 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     circularTile = utils.resizeObj(circularTile,tileScale)
     eaveTile = utils.resizeObj(eaveTile,tileScale)
     dripTile = utils.resizeObj(dripTile,tileScale)
-    utils.applyTransfrom(flatTile,use_scale=True)
-    utils.applyTransfrom(circularTile,use_scale=True)
-    utils.applyTransfrom(eaveTile,use_scale=True)
-    utils.applyTransfrom(dripTile,use_scale=True)
+    utils.applyTransform(flatTile,use_scale=True)
+    utils.applyTransform(circularTile,use_scale=True)
+    utils.applyTransform(eaveTile,use_scale=True)
+    utils.applyTransform(dripTile,use_scale=True)
     # 应用所有的modifier，以免后续快速合并时丢失
     utils.applyAllModifer(flatTile)
     utils.applyAllModifer(circularTile)
@@ -1215,7 +1215,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     utils.resizeObj(roofRidgeObj,tileScale)
     # 与瓦垄宽度匹配
     roofRidgeObj.dimensions.x = bData.tile_width_real
-    utils.applyTransfrom(roofRidgeObj,use_scale=True)
+    utils.applyTransform(roofRidgeObj,use_scale=True)
     # 脊筒坐中
     roofRidgeObj.location.x = - roofRidgeObj.dimensions.x/2
     
@@ -1302,7 +1302,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     utils.resizeObj(roofRidgeObj,tileScale)
     # 与瓦垄宽度匹配
     roofRidgeObj.dimensions.x = bData.tile_width_real
-    utils.applyTransfrom(roofRidgeObj,use_scale=True)
+    utils.applyTransform(roofRidgeObj,use_scale=True)
     # 脊筒坐中
     roofRidgeObj.location.x = - roofRidgeObj.dimensions.x/2
     # 横向平铺
@@ -1339,7 +1339,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     utils.resizeObj(roofRidgeObj,tileScale)
     # 与瓦垄宽度匹配
     roofRidgeObj.dimensions.x = bData.tile_width_real
-    utils.applyTransfrom(roofRidgeObj,use_scale=True)
+    utils.applyTransform(roofRidgeObj,use_scale=True)
     # 脊筒坐中
     roofRidgeObj.location.y = - roofRidgeObj.dimensions.x/2
     # 横向平铺
@@ -1662,7 +1662,7 @@ def __arrayRidgeByCurve(buildingObj: bpy.types.Object,
     # 根据斗口调整尺度
     utils.resizeObj(frontRidgeObj,tileScale)
     # 应用缩放，以便平铺到曲线长度
-    utils.applyTransfrom(
+    utils.applyTransform(
         frontRidgeObj,use_scale=True)
     
     # 沿垂脊曲线平铺
@@ -1719,7 +1719,7 @@ def __arraySideTile(buildingObj: bpy.types.Object,
         singleUser=True)
     # 根据斗口调整尺度
     tileObj = utils.resizeObj(tileObj,tileScale)
-    utils.applyTransfrom(tileObj,use_scale=True)
+    utils.applyTransform(tileObj,use_scale=True)
     # 旋转
     tileObj.rotation_euler.x = math.radians(90)
     
@@ -1951,7 +1951,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         # 根据斗口调整尺度
         utils.resizeObj(ridgeEndObj,tileScale)
         # 应用缩放，以便平铺到曲线长度
-        utils.applyTransfrom(
+        utils.applyTransform(
             ridgeEndObj,use_scale=True)
         ridgeEnd_Length = ridgeEndObj.dimensions.x
         # 沿垂脊曲线变形，适配曲线仰角
@@ -2290,7 +2290,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     # 根据斗口调整尺度
     utils.resizeObj(ridgeEndObj,tileScale)
     # 应用缩放，以便平铺到曲线长度
-    utils.applyTransfrom(
+    utils.applyTransform(
         ridgeEndObj,use_scale=True)
     ridgeEnd_Length = ridgeEndObj.dimensions.x
     # 沿垂脊曲线变形，适配曲线仰角

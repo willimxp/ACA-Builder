@@ -58,7 +58,7 @@ def __buildShanxin(
         scale.z - borderWidth, # 旋转90度，原Zscale给Yscale
         1)
     # apply scale
-    utils.applyTransfrom(zibianObj,use_rotation=True,use_scale=True)
+    utils.applyTransform(zibianObj,use_rotation=True,use_scale=True)
     # 转换为Curve
     bpy.ops.object.convert(target='CURVE')
     # 旋转所有的点45度，形成四边形
@@ -120,7 +120,7 @@ def __buildShanxin(
     #                    1)
     # linxinObj.rotation_euler.x = math.radians(90)
     # # apply
-    # utils.applyTransfrom(linxinObj,
+    # utils.applyTransform(linxinObj,
     #                      use_location=True,
     #                      use_scale=True,
     #                      use_rotation=True)
@@ -1177,7 +1177,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         utils.updateScene()
         zanObj.scale.y = zanObj.scale.z
         zanObj.scale.x = zanObj.scale.z
-        utils.applyTransfrom(zanObj,use_scale=True)
+        utils.applyTransform(zanObj,use_scale=True)
         # Array
         utils.addModifierArray(
             object=zanObj,
@@ -1363,7 +1363,7 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
         utils.updateScene()
         dingObj.scale.y = dingObj.scale.x
         dingObj.scale.z = dingObj.scale.x
-        utils.applyTransfrom(dingObj,use_scale=True)
+        utils.applyTransform(dingObj,use_scale=True)
         # 排布门钉
         # 排布起点(右下角)，以门口进行计算，不能按门板进行计算
         dingX = holeWidth/2 - dingTotalWidth/dingNum/2
@@ -1406,7 +1406,7 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
     utils.updateScene()
     pushouObj.scale.y = pushouObj.scale.z
     pushouObj.scale.x = pushouObj.scale.z
-    utils.applyTransfrom(pushouObj,use_scale=True)
+    utils.applyTransform(pushouObj,use_scale=True)
     # 定位
     pushouX = (
         pushouObj.dimensions.x/2
@@ -1563,7 +1563,7 @@ def __addBarwindow(kankuangObj:bpy.types.Object):
         barwinH - con.ZIBIAN_WIDTH*pd, # 旋转90度，原Zscale给Yscale
         1)
     # apply scale
-    utils.applyTransfrom(zibianObj,use_rotation=True,use_scale=True)
+    utils.applyTransform(zibianObj,use_rotation=True,use_scale=True)
     # 转换为Curve
     bpy.ops.object.convert(target='CURVE')
     # 旋转所有的点45度，形成四边形
@@ -1606,7 +1606,7 @@ def __addBarwindow(kankuangObj:bpy.types.Object):
     )
     # Y向缩小50%
     lintiaoObj.scale.y = 0.5
-    utils.applyTransfrom(lintiaoObj,use_scale=True,use_rotation=True)
+    utils.applyTransform(lintiaoObj,use_scale=True,use_rotation=True)
     utils.applyAllModifer(lintiaoObj)
     zhilinParts.append(lintiaoObj)
 
@@ -1699,7 +1699,7 @@ def __addFlipwindow(kankuangObj:bpy.types.Object):
         flipwinH - con.BORDER_WIDTH*pd, # 旋转90度，原Zscale给Yscale
         1)
     # apply scale
-    utils.applyTransfrom(zibianObj,use_rotation=True,use_scale=True)
+    utils.applyTransform(zibianObj,use_rotation=True,use_scale=True)
     # 转换为Curve
     bpy.ops.object.convert(target='CURVE')
     # 旋转所有的点45度，形成四边形

@@ -202,7 +202,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
     fangCopy.scale = bData.dg_scale
     utils.updateScene()
     fangCopy.dimensions.x = bData.x_total + extendLength
-    utils.applyTransfrom(fangCopy,use_scale=True)
+    utils.applyTransform(fangCopy,use_scale=True)
     # 镜像
     utils.addModifierMirror(
         object=fangCopy,
@@ -238,7 +238,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         fangCopy.scale = bData.dg_scale
         utils.updateScene()
         fangCopy.dimensions.x = bData.y_total + extendLength
-        utils.applyTransfrom(fangCopy,use_scale=True)
+        utils.applyTransform(fangCopy,use_scale=True)
         fangCopy.rotation_euler.z = math.radians(90)
         # 镜像
         utils.addModifierMirror(
@@ -324,7 +324,7 @@ def __buildDGFangbyRoom(
         utils.updateScene()
         # 拉伸到开间面阔
         fangCopy.dimensions.x = fang['len']
-        utils.applyTransfrom(fangCopy,use_scale=True)
+        utils.applyTransform(fangCopy,use_scale=True)
         # 根据拉伸，更新UV平铺
         mat.UvUnwrap(fangCopy,mat.uvType.CUBE)
         # 设置斗栱配色

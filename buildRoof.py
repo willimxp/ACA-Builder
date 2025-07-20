@@ -244,7 +244,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
 
             # 加斜计算
             fbRafterObj.dimensions.x += yan_rafter_ex / yan_rafter_angle
-            utils.applyTransfrom(fbRafterObj,use_scale=True) # 便于后续做望板时获取真实长度
+            utils.applyTransform(fbRafterObj,use_scale=True) # 便于后续做望板时获取真实长度
 
         # 4、歇山顶在山花处再加一层檐椽
         if (bData.roof_style in (con.ROOF_XIESHAN,
@@ -481,7 +481,7 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
                 yan_rafter_ex += bData.dg_extend
             # 檐椽加斜长度
             lrRafterObj.dimensions.x += yan_rafter_ex / yan_rafter_angle
-            utils.applyTransfrom(lrRafterObj,use_scale=True) # 便于后续做望板时获取真实长度
+            utils.applyTransform(lrRafterObj,use_scale=True) # 便于后续做望板时获取真实长度
 
         # 平铺Array
         if bData.roof_style == con.ROOF_WUDIAN and n != 0:
@@ -592,7 +592,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
                     + con.LIKOUMU_Y)* dk    # 里口木避让
             # 加斜计算
             wangbanObj.dimensions.x += extend_hyp
-            utils.applyTransfrom(wangbanObj,use_scale=True) 
+            utils.applyTransform(wangbanObj,use_scale=True) 
 
         # 仅庑殿需要裁剪望板
         if bData.roof_style == con.ROOF_WUDIAN:
@@ -770,7 +770,7 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
                         + con.LIKOUMU_Y)* dk    # 里口木避让
             # 加斜计算
             wangbanObj.dimensions.x += extend_hyp
-            utils.applyTransfrom(wangbanObj,use_scale=True)
+            utils.applyTransform(wangbanObj,use_scale=True)
 
         # 仅庑殿需要裁剪望板
         if bData.roof_style == con.ROOF_WUDIAN:
@@ -1347,7 +1347,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             # 立面加斜老角梁扣金角度   
             ex_length = ex_length / math.cos(CornerBeamObj.rotation_euler.y)
             CornerBeamObj.dimensions.x += ex_length
-            utils.applyTransfrom(CornerBeamObj,use_scale=True)
+            utils.applyTransform(CornerBeamObj,use_scale=True)
             utils.addModifierBevel(
                 object=CornerBeamObj,
                 width=con.BEVEL_LOW
@@ -1417,7 +1417,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object,
     bevel_object.parent = rafterRootObj
     # 设置大小
     bevel_object.scale = (width,height,0)
-    utils.applyTransfrom(bevel_object,use_scale=True)
+    utils.applyTransform(bevel_object,use_scale=True)
     utils.updateScene()
     # 移动origin到下皮外沿
     bpy.ops.object.mode_set(mode = 'EDIT')
@@ -1876,7 +1876,7 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
     bevel_object.parent = rafterRootObj
     # 设置大小
     bevel_object.scale = (width,height,0)
-    utils.applyTransfrom(bevel_object,use_scale=True)
+    utils.applyTransform(bevel_object,use_scale=True)
     utils.updateScene()
     # 移动origin到下皮外沿
     bpy.ops.object.mode_set(mode = 'EDIT')
@@ -3615,7 +3615,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         # modDecimate.ratio = 0.99
         
         # 8、将几何中心放在裁切点上，做为后续做山花材质时的定位参考
-        utils.applyTransfrom(shanhuaObj,
+        utils.applyTransform(shanhuaObj,
                              use_location=True,
                              use_rotation=True,
                              use_scale=True)

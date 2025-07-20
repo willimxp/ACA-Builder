@@ -95,7 +95,10 @@ def __arrayTile(
         use_axis=(False,True,False),
         use_bisect=(False,True,False),
         use_flip=(False,True,False),
+        use_merge=True,
     )
+    # 应用所有修改器
+    utils.applyAllModifer(tileObj)
     return tileObj
 
 def buildSingleWall(
@@ -118,6 +121,8 @@ def buildSingleWall(
         utils.applyTransfrom(wallProxy,use_scale=True)
     # 墙体的长宽高，以wallproxy为依据
     (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
+
+    wallParts = []
 
     # 1、创建下碱对象
     height = wallHeight * con.WALL_BOTTOM_RATE
@@ -150,9 +155,9 @@ def buildSingleWall(
         boolObj=bottomObj,
         operation='UNION'
     )
-
     utils.applyAllModifer(bodyObj)
     utils.delObject(bottomObj)
+    wallParts.append(bodyObj)
 
     # 3、瓦顶
     # 瓦件缩放
@@ -165,7 +170,7 @@ def buildSingleWall(
     colWidth = wallLength / col
     
     # 3.1、滴水
-    __arrayTile(
+    dishuiObj = __arrayTile(
         name = '滴水',
         sourceObj=aData.dripTile_source,
         location=(-wallLength/2+colWidth/2,
@@ -174,9 +179,10 @@ def buildSingleWall(
         rotation=(tileAngle,0,0),
         wallProxy=wallProxy,
         arrayLength=wallLength-colWidth/2,)
+    wallParts.append(dishuiObj)
 
     # 3.2、瓦当
-    __arrayTile(
+    wadangObj = __arrayTile(
         name = '瓦当',
         sourceObj=aData.eaveTile_source,
         location=(-wallLength/2,
@@ -185,9 +191,10 @@ def buildSingleWall(
         rotation=(tileAngle,0,0),
         wallProxy=wallProxy,
         arrayLength=wallLength,)
+    wallParts.append(wadangObj)
 
     # 3.3、板瓦
-    __arrayTile(
+    banwaObj = __arrayTile(
         name = '板瓦',
         sourceObj=aData.flatTile_source,
         location=(-wallLength/2+colWidth/2,
@@ -197,9 +204,10 @@ def buildSingleWall(
         wallProxy=wallProxy,
         arrayLength=wallLength-colWidth/2,
         arrayWidth=wallDeepth,)
+    wallParts.append(banwaObj)
 
     # 3.4、筒瓦
-    __arrayTile(
+    tongwaObj = __arrayTile(
         name = '筒瓦',
         sourceObj=aData.circularTile_source,
         location=(-wallLength/2,
@@ -209,6 +217,7 @@ def buildSingleWall(
         wallProxy=wallProxy,
         arrayLength=wallLength,
         arrayWidth=wallDeepth,)
+    wallParts.append(tongwaObj)
     
     # 4、端头做博缝板
     bofengObj = utils.copyObject(
@@ -231,7 +240,10 @@ def buildSingleWall(
         use_axis=(True,True,False),
         use_bisect=(False,True,False),
         use_flip=(False,True,False),
+        use_merge=True,
     )
+    utils.applyAllModifer(bofengObj)
+    wallParts.append(bofengObj)
 
     # 5、正脊 
     # 正脊长度，与瓦顶的出梢匹配
@@ -246,6 +258,8 @@ def buildSingleWall(
         name="正脊",
         parentObj=wallProxy,
         singleUser=True)
+    # 应用模板中的bevel，以免再调整斗口后出现bevel破裂
+    utils.applyAllModifer(ridgeObj)
     # 根据斗口调整尺度
     utils.resizeObj(ridgeObj,tileScale)
     # 脊筒在正脊长度上整数排布，微调其长度
@@ -254,8 +268,8 @@ def buildSingleWall(
     count = math.floor(ridgeLength/ridgeWidth)
     # count最小不能为0，否则导致异常
     if count == 0 : count = 1
-    # 每段平铺长度
-    span = ridgeLength / count
+    # 每段平铺长度，添加间隙，防止破坏水密
+    span = ridgeLength / count + 0.0001
     # 缩放墙檐宽度
     ridgeObj.dimensions.x = span
     utils.applyTransfrom(ridgeObj,use_scale=True)
@@ -270,6 +284,8 @@ def buildSingleWall(
         count=count,
         offset=(span,0,0)
     )
+    utils.applyAllModifer(ridgeObj)
+    wallParts.append(ridgeObj)
 
     # 6、墙檐
     walleaveObj = utils.copyObject(
@@ -307,32 +323,18 @@ def buildSingleWall(
         count=count,
         offset=(span,0,0)
     )
+    utils.applyAllModifer(walleaveObj)
+    wallParts.append(walleaveObj)
 
     # 7、做裁剪
+    # if use_cut:
+    #     for wallObj in wallParts:
+    #         __wallCutDiagnal(wallObj,wallProxy)
     # 合并子对象
     wallObj = utils.joinObjects(
-        wallProxy.children,newName=wallProxy.name)
-    if use_cut:
-        # 左侧剪切
-        utils.addBisect(
-            object=wallObj,
-            pStart=wallProxy.matrix_world @Vector((0,0,0)),
-            pEnd=wallProxy.matrix_world @Vector((-1,-1,0)),
-            pCut=wallProxy.matrix_world @ \
-                Vector((-wallLength/2+wallDeepth/2+cutExtend,0,0)),
-            clear_inner=True,
-            use_fill=True,
-        )
-        # 右侧剪切
-        utils.addBisect(
-            object=wallObj,
-            pStart=wallProxy.matrix_world @Vector((0,0,0)),
-            pEnd=wallProxy.matrix_world @Vector((-1,1,0)),
-            pCut=wallProxy.matrix_world @ \
-                Vector((wallLength/2-wallDeepth/2-cutExtend,0,0)),
-            clear_inner=True,
-            use_fill=True,
-        )
+        wallParts,newName=wallProxy.name)
+    __wallBoolDiagnal(wallObj,wallProxy)
+    
     # 挂入根节点
     utils.changeParent(wallObj,buildingObj,resetOrigin=False)
     # 删除wallproxy
@@ -340,23 +342,77 @@ def buildSingleWall(
 
     return
 
+# 墙体裁剪
+def __wallCutDiagnal(wallObj:bpy.types.Object,
+                   wallProxy:bpy.types.Object):
+    # 墙体的长宽高，以wallproxy为依据
+    (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
+    cutExtend = 0.22    # 改变这个值，可以看到转角合并的瓦的变化
+
+    # 左侧剪切
+    utils.addBisect(
+        object=wallObj,
+        pStart=wallProxy.matrix_world @Vector((0,0,0)),
+        pEnd=wallProxy.matrix_world @Vector((-1,-1,0)),
+        pCut=wallProxy.matrix_world @ \
+            Vector((-wallLength/2+wallDeepth/2+cutExtend,0,0)),
+        clear_inner=True,
+        use_fill=True,
+    )
+    # 右侧剪切
+    utils.addBisect(
+        object=wallObj,
+        pStart=wallProxy.matrix_world @Vector((0,0,0)),
+        pEnd=wallProxy.matrix_world @Vector((-1,1,0)),
+        pCut=wallProxy.matrix_world @ \
+            Vector((wallLength/2-wallDeepth/2-cutExtend,0,0)),
+        clear_inner=True,
+        use_fill=True,
+    )
+
+# 墙体裁剪
+def __wallBoolDiagnal(wallObj:bpy.types.Object,
+                   wallProxy:bpy.types.Object):
+    # 墙体的长宽高，以wallproxy为依据
+    (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
+    cutExtend = 0.22    # 改变这个值，可以看到转角合并的瓦的变化
+
+    x,y,z = wallProxy.location
+    boolOffset = abs(x)+abs(y)
+    boolSize = boolOffset*4/math.sqrt(2)
+    boolCube = utils.addCube(
+        name='boolCube',
+        location=(0,-boolOffset,0),
+        dimension=(boolSize,boolSize,boolSize),
+        parent=wallProxy,
+        rotation=(0,0,math.radians(45))
+    )
+    utils.addModifierBoolean(
+        object=wallObj,
+        boolObj=boolCube,
+        operation='INTERSECT',
+    )
+    utils.applyAllModifer(wallObj)
+    utils.delObject(boolCube)
+
 def buildYardWall(buildingObj:bpy.types.Object,
                   templateName = None,
                   reloadAssets = False):
     # 定位到根目录，如果没有则新建
-    utils.setCollection(con.ROOT_COLL_NAME,
+    buildingColl = utils.setCollection(con.ROOT_COLL_NAME,
                         isRoot=True,colorTag=2)
+    
+    if templateName == None:
+        # 获取panel上选择的模板
+        from . import data
+        scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
+        templateList = scnData.templateItem
+        templateIndex = scnData.templateIndex
+        templateName = templateList[templateIndex].name
 
     # 新建还是刷新？
     if buildingObj == None:
         utils.outputMsg("创建新建筑...")
-        if templateName == None:
-            # 获取panel上选择的模板
-            from . import data
-            scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
-            templateList = scnData.templateItem
-            templateIndex = scnData.templateIndex
-            templateName = templateList[templateIndex].name
         # 添加建筑根节点，同时载入模板
         buildingObj = __addBuildingRoot(templateName)
         # 在buldingObj上绑定模板bData和资产库aData
@@ -368,6 +424,10 @@ def buildYardWall(buildingObj:bpy.types.Object,
         if reloadAssets:
             # 刷新buildingObj中绑定的资产库aData
             template.loadAssetByBuilding(buildingObj) 
+
+    # 定位到对象目录    
+    utils.setCollection(templateName,
+                        parentColl=buildingColl)
 
     # 载入数据
     bData:acaData = buildingObj.ACA_data

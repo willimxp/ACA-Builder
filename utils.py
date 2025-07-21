@@ -1022,7 +1022,7 @@ def addModifierBoolean(
             solver = 'MANIFOLD'
         else:
             # 老版本仍然使用EXACT算法
-            solver = 'EXACT'
+            solver = 'FAST'
     modBool:bpy.types.BooleanModifier = \
             object.modifiers.new(name,'BOOLEAN')
     modBool.object = boolObj

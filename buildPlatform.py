@@ -655,7 +655,8 @@ def __addPlatformExpand(
         utils.addModifierBoolean(
             object=baseExpandObj,
             boolObj=stepExpandObj,
-            operation='UNION'
+            operation='UNION',
+            solver='EXACT'
         )
     # 应用boolean modifier
     utils.applyAllModifer(baseExpandObj)

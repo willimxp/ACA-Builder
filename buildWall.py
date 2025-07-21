@@ -211,6 +211,8 @@ def __drawWall(wallProxy:bpy.types.Object):
         location=Vector((0,0,height/2-heightOffset)),
         parent=wallProxy,
     )
+    # 导角
+    utils.addModifierBevel(bottomObj, width=con.BEVEL_HIGH)
     # 赋材质
     mat.paint(bottomObj,con.M_WALL_BOTTOM)
     wallParts.append(bottomObj)
@@ -246,6 +248,8 @@ def __drawWall(wallProxy:bpy.types.Object):
 
     # 赋材质
     mat.paint(bodyObj,con.M_WALL)
+    # 导角
+    utils.addModifierBevel(bodyObj, width=con.BEVEL_HIGH)
     wallParts.append(bodyObj)
     
     # 合并
@@ -253,12 +257,11 @@ def __drawWall(wallProxy:bpy.types.Object):
     utils.addModifierBoolean(
         object=bodyObj,
         boolObj=bottomObj,
-        operation='UNION'
+        operation='UNION',
+        solver='EXACT',
     )
     utils.applyAllModifer(bodyObj)
     utils.delObject(bottomObj)
-    # 导角
-    utils.addModifierBevel(bodyObj, width=con.BEVEL_HIGH)
 
     # 针对重檐，装修不一定做到柱头，用走马板填充
     if bData.wall_span != 0 :

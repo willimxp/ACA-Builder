@@ -619,20 +619,36 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
         if (bData.roof_style in (con.ROOF_XIESHAN,
                                  con.ROOF_XIESHAN_JUANPENG)
             and n ==0):
-            tympanumWangban:bpy.types.Object = wangbanObj.copy()
-            tympanumWangban.data = wangbanObj.data.copy()
-            tympanumWangban.name = '山花补齐望板'
-            tympanumWangban.modifiers.clear()
-            tympanumWangban.ACA_data['aca_type'] = ''
-            tympanumWangban.dimensions.y = purlin_pos[-1].x
-            tympanumWangban.location.x += (purlin_pos[-1].x - purlin_pos[1].x)/2
-            bpy.context.collection.objects.link(tympanumWangban)
+            # 起点在上层桁檩
+            pstart = wangban_pos[1].copy()
+            pstart.x = 0
+            # 终点在本层桁檩
+            pend = wangban_pos[0].copy()
+            pend.x = 0
+            width = purlin_pos[-1].x
+            # 摆放望板
+            tympanumWangban = utils.addCubeBy2Points(
+                start_point=pstart,
+                end_point=pend,
+                depth=width*2,
+                height=con.WANGBAN_H*dk,
+                name="山花补齐望板",
+                root_obj=rafterRootObj,
+                origin_at_start=True
+            )
+
             # 裁剪
+            # 裁剪点在金交点偏移半根角梁（加斜）
+            pCut = (buildingObj.matrix_world @ purlin_pos[0]
+                    + Vector((
+                        con.JIAOLIANG_Y*dk/2*math.sqrt(2),
+                        0,0))
+                    )
             utils.addBisect(
                     object=tympanumWangban,
                     pStart=buildingObj.matrix_world @ Vector((0,0,0)),
                     pEnd=buildingObj.matrix_world @ Vector((-1,-1,0)),
-                    pCut=buildingObj.matrix_world @ purlin_pos[0],
+                    pCut=pCut,
                     clear_inner=True
             )
             # 望板镜像

@@ -17,19 +17,22 @@ from . import texture as mat
 def __addDougongRoot(buildingObj:bpy.types.Object):
     # 设置目录
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('斗栱',parentColl=buildingColl) 
+    utils.setCollection(
+        con.COLL_NAME_DOUGONG,
+        parentColl=buildingColl) 
 
     # 新建或清空根节点
     dgrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_DG_ROOT)
-    if dgrootObj == None:
-        # 绑定在屋顶根节点下
-        roofRootObj = utils.getAcaChild(
-            buildingObj,con.ACA_TYPE_ROOF_ROOT)
+    if dgrootObj == None:       
+        # 计算位置
+        bData : acaData = buildingObj.ACA_data
+        zLoc = bData.platform_height + bData.piller_height 
         # 创建根对象（empty）
         dgrootObj = utils.addEmpty(
-            name='斗栱层',
-            parent=roofRootObj)
+            name=con.COLL_NAME_DOUGONG,
+            parent=buildingObj,
+            location=(0,0,zLoc),)
         dgrootObj.ACA_data['aca_obj'] = True
         dgrootObj.ACA_data['aca_type'] = con.ACA_TYPE_DG_ROOT
     else:

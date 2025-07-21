@@ -149,15 +149,22 @@ class ACA_PT_basic(bpy.types.Panel):
                 text=text
             )
 
+        # 工具箱 ------------------------------
         toolBox = box.column(align=True)
-        # 合并按钮
-        toolBar = toolBox.grid_flow(columns=1, align=True)
+        # 第一行 ------------------------------
+        toolBar = toolBox.grid_flow(columns=2, align=True)
+        # 合并整体
         col = toolBar.column(align=True)
         col.operator("aca.join",icon='PACKAGE')
-        # 导出按钮
+        # 合并分层
+        col = toolBar.column(align=True)
+        col.operator("aca.join_layer",icon='PACKAGE')
+        # 第二行 ------------------------------
         toolBar = toolBox.grid_flow(columns=2, align=True)
+        # 导出FBX
         col = toolBar.column(align=True)
         col.operator("aca.export_fbx",icon='EXPORT')
+        # 导出GLB
         col = toolBar.column(align=True)
         col.operator("aca.export_glb",icon='EXPORT')   
 

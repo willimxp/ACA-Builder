@@ -403,8 +403,9 @@ def buildYardWall(buildingObj:bpy.types.Object,
                   templateName = None,
                   reloadAssets = False):
     # 定位到根目录，如果没有则新建
-    buildingColl = utils.setCollection(con.ROOT_COLL_NAME,
-                        isRoot=True,colorTag=2)
+    buildingColl = utils.setCollection(
+        con.COLL_NAME_ROOT,
+        isRoot=True,colorTag=2)
     
     if templateName == None:
         # 获取panel上选择的模板

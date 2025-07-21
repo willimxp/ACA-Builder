@@ -393,7 +393,9 @@ def __drawStep(
     aData:tmpData = bpy.context.scene.ACA_temp
     # 固定在台基目录中
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('台基',parentColl=buildingColl)
+    utils.setCollection(
+        con.COLL_NAME_BASE,
+        parentColl=buildingColl)
 
     bevel = con.BEVEL_HIGH
     # 根据stepID生成踏跺（如，’3/0#4/0‘）
@@ -771,7 +773,9 @@ def buildPlatform(buildingObj:bpy.types.Object):
     if bData.platform_height <= 0.01: return 
     # 固定在台基目录中
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('台基',parentColl=buildingColl)
+    utils.setCollection(
+        con.COLL_NAME_BASE,
+        parentColl=buildingColl)
 
     # 1、查找或新建台基根节点
     baseRootObj = utils.getAcaChild(
@@ -779,7 +783,7 @@ def buildPlatform(buildingObj:bpy.types.Object):
     if baseRootObj == None:        
         # 创建新台基对象（empty）
         baseRootObj = utils.addEmpty(
-            name="台基层",
+            name=con.COLL_NAME_BASE,
             parent = buildingObj,
             location = (0,0,0) # 台基以地平基线为原点
         )
@@ -833,23 +837,36 @@ def resizePlatform(buildingObj:bpy.types.Object):
     wallRoot = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_WALL_ROOT)
     if wallRoot != None:
-        wallRoot.location.z = bData.platform_height
-    # 屋顶层
-    roofRoot = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_ROOF_ROOT)
-    if roofRoot != None:
-        tile_base = bData.platform_height \
-                    + bData.piller_height
-        # 如果有斗栱，抬高斗栱高度
-        if bData.use_dg:
-            tile_base += bData.dg_height
-            # 是否使用平板枋
-            if bData.use_pingbanfang:
-                tile_base += con.PINGBANFANG_H*dk
-        else:
-            # 以大梁抬升, 实际为檐桁垫板高度+半桁
-            tile_base += con.BOARD_YANHENG_H*dk + con.HENG_COMMON_D*dk/2
-        roofRoot.location.z = tile_base
+        wallRoot.location.z = bData.platform_height    
+    # 柱头高度
+    roofBaseZ = (bData.platform_height
+                    + bData.piller_height)
+    # 斗栱层
+    dgrootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_DG_ROOT)
+    if dgrootObj != None: 
+        dgrootObj.location.z = roofBaseZ
+    # 如果有斗栱，抬高斗栱高度
+    if bData.use_dg:
+        roofBaseZ += bData.dg_height
+        # 是否使用平板枋
+        if bData.use_pingbanfang:
+            roofBaseZ += con.PINGBANFANG_H*dk
+    # 梁架层
+    beamRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_BEAM_ROOT)
+    if beamRootObj != None: 
+        beamRootObj.location.z = roofBaseZ
+    # 椽望层
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+    if rafterRootObj != None: 
+        rafterRootObj.location.z = roofBaseZ
+    # 瓦作层
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT)
+    if tileRootObj != None: 
+        tileRootObj.location.z = roofBaseZ
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

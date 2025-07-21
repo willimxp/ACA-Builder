@@ -21,18 +21,17 @@ from . import texture as mat
 def __setTileRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 设置目录
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('瓦作',parentColl=buildingColl) 
+    utils.setCollection(
+        con.COLL_NAME_TILE,
+        parentColl=buildingColl) 
     
     # 新建或清空根节点
     tileRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_TILE_ROOT)
     if tileRootObj == None:
-        # 绑定在屋顶根节点下
-        roofRootObj = utils.getAcaChild(
-            buildingObj,con.ACA_TYPE_ROOF_ROOT) 
         # 创建屋顶根对象
         tileRootObj = utils.addEmpty(
-            name = "瓦作层",
-            parent = roofRootObj,
+            name = con.COLL_NAME_TILE,
+            parent = buildingObj,
             location=(0,0,0)
         )
         tileRootObj.ACA_data['aca_obj'] = True
@@ -44,7 +43,7 @@ def __setTileRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 250108 屋顶层原点改为柱头，椽望层相应抬高到斗栱高度
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    zLoc = 0
+    zLoc = bData.platform_height + bData.piller_height 
     # 如果有斗栱，抬高斗栱高度
     if bData.use_dg:
         zLoc += bData.dg_height
@@ -695,9 +694,8 @@ def __drawTileBool(
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
-    roofRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_ROOF_ROOT
-    )
+    roofBaseZ = (bData.platform_height 
+                 + bData.piller_height )
 
     # 任意添加一个对象，具体几何数据在bmesh中建立
     bpy.ops.mesh.primitive_cube_add(
@@ -718,7 +716,7 @@ def __drawTileBool(
     # 为了保险起见，切割体做到建筑的地平高度
     offsetz = (p0.z 
                + tileRootObj.location.z 
-               + roofRootObj.location.z)
+               + roofBaseZ)
     p0 += Vector((6*dk,6*dk,-offsetz))
     # 插入前点
     vectors.insert(0,p0)
@@ -813,7 +811,7 @@ def __drawTileBool(
     # 简化计算即屋顶层的起点高度+举架高度
     # 举架高度进一步简化为通进深*5举
     # 另外考虑斗栱高度，灰泥高度，正脊高度等，粗暴的再加100DK
-    height = (roofRootObj.location.z 
+    height = (roofBaseZ
               + bData.y_total * 0.5
               + 100*dk)
     return_geo = bmesh.ops.extrude_face_region(bm, geom=bm.faces)

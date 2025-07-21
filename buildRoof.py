@@ -17,52 +17,22 @@ from . import buildBeam
 from . import buildRooftile
 from . import texture as mat
 
-# 添加屋顶根节点
-def __addRoofRoot(buildingObj:bpy.types.Object):
-    # 设置目录
-    buildingColl = buildingObj.users_collection[0]
-    utils.focusCollection(buildingColl.name)
-
-    # 设置根节点
-    roofRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_ROOF_ROOT) 
-    if roofRootObj != None:
-        utils.deleteHierarchy(roofRootObj)
-    else:
-        # 250108 以柱头为屋顶层的起始点
-        # 台基高度 + 柱高
-        bData : acaData = buildingObj.ACA_data # 载入数据
-        tile_base = bData.platform_height \
-                    + bData.piller_height 
-        
-        # 创建根节点
-        roofRootObj = utils.addEmpty(
-            name='屋顶层',
-            parent = buildingObj,
-            location=(0,0,tile_base),
-        )
-        roofRootObj.ACA_data['aca_obj'] = True
-        roofRootObj.ACA_data['aca_type'] = con.ACA_TYPE_ROOF_ROOT
-
-    return roofRootObj
-
 # 设置“椽望”根节点
 def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 设置目录
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('椽望',parentColl=buildingColl) 
+    utils.setCollection(
+        con.COLL_NAME_RAFTER,
+        parentColl=buildingColl) 
     
     # 新建或清空根节点
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
-    if rafterRootObj == None:
-        # 绑定在屋顶根节点下
-        roofRootObj = utils.getAcaChild(
-            buildingObj,con.ACA_TYPE_ROOF_ROOT)
-        
+    if rafterRootObj == None:        
         # 创建椽望根对象
         rafterRootObj = utils.addEmpty(
-            name = "椽望层",
-            parent = roofRootObj,
+            name = con.COLL_NAME_RAFTER,
+            parent = buildingObj,
             location=(0,0,0)
         )
         rafterRootObj.ACA_data['aca_obj'] = True
@@ -75,7 +45,7 @@ def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 250108 屋顶层原点改为柱头，椽望层相应抬高到斗栱高度
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    zLoc = 0
+    zLoc = bData.platform_height + bData.piller_height 
     # 如果有斗栱，抬高斗栱高度
     if bData.use_dg:
         zLoc += bData.dg_height
@@ -3854,18 +3824,41 @@ def __buildRafterFrame(buildingObj:bpy.types.Object):
         
     return
 
+def __clearRoof(buildingObj:bpy.types.Object):
+    # 斗栱层
+    dgrootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_DG_ROOT)
+    if dgrootObj != None: 
+        utils.deleteHierarchy(dgrootObj)
+    
+    # 梁架层
+    beamRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_BEAM_ROOT)
+    if beamRootObj != None: 
+        utils.deleteHierarchy(beamRootObj)
+
+    # 椽望层
+    rafterRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+    if rafterRootObj != None: 
+        utils.deleteHierarchy(rafterRootObj)
+    
+    # 瓦作层
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT)
+    if tileRootObj != None: 
+        utils.deleteHierarchy(tileRootObj)
+    
+    return
+
+
 # 营造整个房顶
 def buildRoof(buildingObj:bpy.types.Object):
+    # 刷新屋顶
+    __clearRoof(buildingObj)
+    
     # 载入数据
-    bData:acaData = buildingObj.ACA_data
-    # 添加“屋顶层”根节点
-    # 斗栱层、梁架、椽望、瓦作都绑定在该节点下，便于统一重新生成
-    # 这三层的结构紧密相连，无法解耦，只能一起生成，一起刷新
-    if (bData.is_showDougong 
-        or bData.is_showBeam
-        or bData.is_showRafter
-        or bData.is_showTiles):
-        __addRoofRoot(buildingObj)
+    bData:acaData = buildingObj.ACA_data    
 
     # 层间的依赖，自动处理
     # 斗栱层、梁架层、椽望层都已经分别解耦，可以独立生成

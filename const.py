@@ -8,8 +8,17 @@ class ACA_Consts(object):
     # 继承object类，提供了__setattr__等方法
     # https://www.jb51.net/article/274253.htm
 
+    # 目录名称
+    COLL_NAME_ROOT = 'ACA筑韵古建'
+    COLL_NAME_BASE = '1-台基层'
+    COLL_NAME_PILLER = '2-柱网层'
+    COLL_NAME_WALL = '3-装修层'
+    COLL_NAME_DOUGONG = '4-斗栱层'
+    COLL_NAME_BEAM = '5-梁架层'
+    COLL_NAME_RAFTER = '6-椽望层'
+    COLL_NAME_TILE = '7-瓦作层'
+    
     # 系统参数
-    ROOT_COLL_NAME = 'ACA筑韵古建'                                   # 根目录名称
     PLATFORM_NAME = '台基'                                           # 台基名称
     ACA_TYPE_BUILDING = 'building'                                  # ACA类型：建筑根节点
     ACA_TYPE_BUILDING_JOINED = 'joined'                             # ACA类型：已合并建筑
@@ -23,7 +32,6 @@ class ACA_Consts(object):
     ACA_TYPE_WALL = 'wall'                                          # ACA类型：墙体
     ACA_TYPE_WALL_CHILD = 'wall_child'                              # ACA类型：墙体子对象
     ACA_TYPE_DG_ROOT ='dg_root'                                     # ACA类型：斗栱根节点
-    ACA_TYPE_ROOF_ROOT ='roof_root'                                 # ACA类型：屋顶根节点
     ACA_TYPE_BEAM_ROOT = 'beam_root'                                # ACA类型：梁架根节点
     ACA_TYPE_RAFTER_ROOT = 'rafter_root'                            # ACA类型：椽望根节点
     ACA_TYPE_RAFTER_FB = 'rafter_fb'                                # ACA类型：前后檐椽

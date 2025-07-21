@@ -18,7 +18,9 @@ from . import texture as mat
 def __addBeamRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 设置目录
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('梁架',parentColl=buildingColl) 
+    utils.setCollection(
+        con.COLL_NAME_BEAM,
+        parentColl=buildingColl) 
     
     # 新建或清空根节点
     beamRootObj = utils.getAcaChild(
@@ -28,15 +30,11 @@ def __addBeamRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
         utils.deleteHierarchy(beamRootObj)
         utils.focusCollByObj(beamRootObj)
         return
-    
-    # 绑定在屋顶根节点下
-    roofRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_ROOF_ROOT)
 
     # 250108 屋顶层原点改为柱头，椽望层相应抬高到斗栱高度
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    zLoc = 0
+    zLoc = bData.platform_height + bData.piller_height
     # 如果有斗栱，抬高斗栱高度
     if bData.use_dg:
         zLoc += bData.dg_height
@@ -49,9 +47,9 @@ def __addBeamRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
 
     # 创建梁架根对象
     beamRootObj = utils.addEmpty(
-        name='梁架层',
+        name=con.COLL_NAME_BEAM,
         location=(0,0,zLoc),
-        parent=roofRootObj
+        parent=buildingObj
     )
     beamRootObj.ACA_data['aca_obj'] = True
     beamRootObj.ACA_data['aca_type'] = con.ACA_TYPE_BEAM_ROOT

@@ -21,7 +21,7 @@ def __addWallrootNode(buildingObj:bpy.types.Object):
     wall_z = buildingObj.ACA_data.platform_height
     # 创建新地盘对象（empty）
     wallrootObj = utils.addEmpty(
-        name = "装修层",
+        name = con.COLL_NAME_WALL,
         parent = buildingObj,
         location = (0,0,wall_z),
     )
@@ -74,7 +74,9 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     wallrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_WALL_ROOT)
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('装修',parentColl=buildingColl)
+    utils.setCollection(
+        con.COLL_NAME_WALL,
+        parentColl=buildingColl)
     
     # 获取柱网数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
@@ -303,7 +305,9 @@ def __buildWall(buildingObj:bpy.types.Object,
     # 0、准备 --------------------
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('装修',parentColl=buildingColl)
+    utils.setCollection(
+        con.COLL_NAME_WALL,
+        parentColl=buildingColl)
     # 查找装修布局节点
     wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)
     # 如果找不到“装修布局”根节点，重新创建
@@ -475,7 +479,9 @@ def buildWallLayout(buildingObj:bpy.types.Object):
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('装修',parentColl=buildingColl)
+    utils.setCollection(
+        con.COLL_NAME_WALL,
+        parentColl=buildingColl)
     
     # 查找装修布局节点
     wallrootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL_ROOT)

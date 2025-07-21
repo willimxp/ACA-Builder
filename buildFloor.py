@@ -618,7 +618,9 @@ def __buildFang(buildingObj:bpy.types.Object):
     # 获取开间、进深数据
     net_x,net_y = getFloorDate(buildingObj)
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('柱网',parentColl=buildingColl)
+    utils.setCollection(
+        con.COLL_NAME_PILLER,
+        parentColl=buildingColl)
 
     # 删除现有枋
     for obj in floorRootObj.children:
@@ -965,7 +967,9 @@ def buildPillers(buildingObj:bpy.types.Object):
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]
-    utils.setCollection('柱网',parentColl=buildingColl)
+    utils.setCollection(
+        con.COLL_NAME_PILLER,
+        parentColl=buildingColl)
 
     # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
     if bData.x_rooms % 2 == 0:
@@ -980,7 +984,7 @@ def buildPillers(buildingObj:bpy.types.Object):
         floor_z = bData.platform_height
         # 创建新地盘对象（empty）
         floorRootObj = utils.addEmpty(
-            name="柱网层",
+            name=con.COLL_NAME_PILLER,
             parent=buildingObj,
             location = (0,0,floor_z)
         )
@@ -1209,8 +1213,9 @@ def buildFloor(buildingObj:bpy.types.Object,
                reloadAssets = False,
                comboset = False):
     # 定位到collection，如果没有则新建
-    utils.setCollection(con.ROOT_COLL_NAME,
-                        isRoot=True,colorTag=2)
+    utils.setCollection(
+        con.COLL_NAME_ROOT,
+        isRoot=True,colorTag=2)
 
     # 新建还是刷新？
     if buildingObj == None:

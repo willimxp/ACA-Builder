@@ -57,7 +57,7 @@ def build():
     bpy.context.preferences.view.use_translate_new_dataname = False
     
     # 创建或锁定根目录（ACA筑韵古建）
-    rootColl = utils.setCollection(con.ROOT_COLL_NAME,
+    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
                         isRoot=True,colorTag=2)
     
     # 待营造的模板，来自用户界面上的选择
@@ -110,7 +110,7 @@ def updateBuilding(buildingObj:bpy.types.Object,
     bpy.context.preferences.view.use_translate_new_dataname = False
     
     # 创建或锁定根目录（ACA筑韵古建）
-    rootColl = utils.setCollection(con.ROOT_COLL_NAME,
+    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
                         isRoot=True,colorTag=2)
     
     # 载入数据
@@ -145,7 +145,7 @@ def delBuilding(buildingObj:bpy.types.Object):
     # 找到对应的目录
     buildingColl = buildingObj.users_collection[0]
     # 从“ACA筑韵古建”目录查找
-    rootcoll = bpy.context.scene.collection.children[con.ROOT_COLL_NAME]
+    rootcoll = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
     # 删除该目录
     rootcoll.children.unlink(buildingColl)
     bpy.data.collections.remove(buildingColl)
@@ -156,7 +156,7 @@ def delBuilding(buildingObj:bpy.types.Object):
 # 清除所有的装修、踏跺等，重新生成地盘
 def resetFloor(buildingObj:bpy.types.Object):
     # 创建或锁定根目录（ACA筑韵古建）
-    rootColl = utils.setCollection(con.ROOT_COLL_NAME,
+    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
                         isRoot=True,colorTag=2)
     
     # 调用进度条
@@ -176,7 +176,7 @@ def resetFloor(buildingObj:bpy.types.Object):
 # 重新生成屋顶
 def resetRoof(buildingObj:bpy.types.Object):
     # 创建或锁定根目录（ACA筑韵古建）
-    rootColl = utils.setCollection(con.ROOT_COLL_NAME,
+    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
                         isRoot=True,colorTag=2)
     
     # 调用进度条

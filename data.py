@@ -329,29 +329,44 @@ def update_rooftile(self, context:bpy.types.Context):
             buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
-        utils.outputMsg("updated platform failed, context.object should be buildingObj")
+        utils.outputMsg(
+            "updated platform failed, context.object should be buildingObj")
     return
 
 def hide_platform(self, context:bpy.types.Context):
-    utils.hideLayer(context,'台基',self.is_showPlatform)
+    utils.hideLayer(
+        context,con.COLL_NAME_BASE,
+        self.is_showPlatform)
 
 def hide_pillers(self, context:bpy.types.Context):
-    utils.hideLayer(context,'柱网',self.is_showPillers)
+    utils.hideLayer(
+        context,con.COLL_NAME_PILLER,
+        self.is_showPillers)
 
 def hide_walls(self, context:bpy.types.Context):
-    utils.hideLayer(context,'装修',self.is_showWalls)
+    utils.hideLayer(
+        context,con.COLL_NAME_WALL,
+        self.is_showWalls)
 
 def hide_dougong(self, context:bpy.types.Context):
-    utils.hideLayer(context,'斗栱',self.is_showDougong)
+    utils.hideLayer(
+        context,con.COLL_NAME_DOUGONG,
+        self.is_showDougong)
 
 def hide_beam(self, context:bpy.types.Context):
-    utils.hideLayer(context,'梁架',self.is_showBeam)
+    utils.hideLayer(
+        context,con.COLL_NAME_BEAM,
+        self.is_showBeam)
 
 def hide_rafter(self, context:bpy.types.Context):
-    utils.hideLayer(context,'椽望',self.is_showRafter)
+    utils.hideLayer(
+        context,con.COLL_NAME_RAFTER,
+        self.is_showRafter)
 
 def hide_tiles(self, context:bpy.types.Context):
-    utils.hideLayer(context,'瓦作',self.is_showTiles)
+    utils.hideLayer(
+        context,con.COLL_NAME_TILE,
+        self.is_showTiles)
 
 # 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据
 # https://docs.blender.org/api/current/bpy.props.html

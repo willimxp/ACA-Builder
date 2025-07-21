@@ -292,12 +292,19 @@ def __buildQueti(fangObj):
     
     # 判断仅在檐面、且无装修的开间摆放
     isQueti = False
-    # 是否为前后檐？
-    if pFrom_x == pTo_x and pFrom_x in (0,len(net_x)-1):
-        isQueti = True
-    # 是否为两山
+    # 是否为前后檐
     if pFrom_y == pTo_y and pFrom_y in (0,len(net_y)-1):
         isQueti = True
+    # 是否为两山
+    if pFrom_x == pTo_x and pFrom_x in (0,len(net_x)-1):
+        isQueti = True
+        # 硬山的两山不做雀替
+        if bData.roof_style in (
+            con.ROOF_YINGSHAN,
+            con.ROOF_YINGSHAN_JUANPENG):
+            isQueti = False
+        else:
+            isQueti = True
     # 是否有装修（槛墙、隔扇、槛窗等）
     # 解析模板输入的墙体设置，格式如下
     # "wall#3/0#3/3,wall#0/0#3/0,wall#0/3#3/3,window#0/0#0/1,window#0/2#0/3,door#0/1#0/2,"

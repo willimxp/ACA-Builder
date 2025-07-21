@@ -153,7 +153,8 @@ def buildSingleWall(
     utils.addModifierBoolean(
         object=bodyObj,
         boolObj=bottomObj,
-        operation='UNION'
+        operation='UNION',
+        solver='EXACT',
     )
     utils.applyAllModifer(bodyObj)
     utils.delObject(bottomObj)
@@ -326,15 +327,13 @@ def buildSingleWall(
     utils.applyAllModifer(walleaveObj)
     wallParts.append(walleaveObj)
 
-    # 7、做裁剪
-    # if use_cut:
-    #     for wallObj in wallParts:
-    #         __wallCutDiagnal(wallObj,wallProxy)
+    # 7、后处理
     # 合并子对象
     wallObj = utils.joinObjects(
         wallParts,newName=wallProxy.name)
-    __wallBoolDiagnal(wallObj,wallProxy)
-    
+    # 做裁剪
+    if use_cut:
+        __wallBoolDiagnal(wallObj,wallProxy)    
     # 挂入根节点
     utils.changeParent(wallObj,buildingObj,resetOrigin=False)
     # 删除wallproxy
@@ -373,6 +372,11 @@ def __wallCutDiagnal(wallObj:bpy.types.Object,
 # 墙体裁剪
 def __wallBoolDiagnal(wallObj:bpy.types.Object,
                    wallProxy:bpy.types.Object):
+    # 老版本用bisect，新版本用boolean
+    if bpy.app.version < (4,5,0):
+        __wallCutDiagnal(wallObj,wallProxy)
+        return
+
     # 墙体的长宽高，以wallproxy为依据
     (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
     cutExtend = 0.22    # 改变这个值，可以看到转角合并的瓦的变化

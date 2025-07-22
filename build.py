@@ -4,6 +4,7 @@
 #   营造的主入口
 #   判断是建造一个新的单体建筑，还是院墙等附加建筑
 import bpy
+from mathutils import Vector,Euler,Matrix,geometry
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from . import utils
@@ -192,3 +193,116 @@ def resetRoof(buildingObj:bpy.types.Object):
     # 取消排除目录下的其他建筑
     __excludeOther(rootColl,False,buildingObj)
     return  {'FINISHED'}
+
+# 纵剖视图
+def addSection(joinedObj:bpy.types.Object,
+               sectionPlan='X+',):
+    sectionModName = 'Section'
+    
+    # 确认建筑已经合并
+    bData = joinedObj.ACA_data
+    if bData.aca_type != con.ACA_TYPE_BUILDING_JOINED:
+        print("不是一个合并后的ACA对象，无法做剖视图")
+        return
+    
+    # 指定在合并目录中操作
+    coll:bpy.types.Collection = utils.setCollection(
+                'ACA古建.合并',isRoot=True,colorTag=3)
+    
+    # 寻找剖视对象
+    sectionObjs = []
+    if joinedObj.children:
+        # 针对子对象做剖视
+        for child in joinedObj.children:
+            sectionObjs.append(child)
+    else:
+        # 针对根对象做剖视
+        sectionObjs.append(joinedObj)
+
+    # 逐个对象添加剖视修改器
+    for sectionObj in sectionObjs:
+        # 确认该对象是否已经有boolean
+        mod = sectionObj.modifiers.get(sectionModName)
+        # 已有boolean的直接复用boolObj
+        if mod != None:
+            # 删除布尔对象
+            utils.delObject(mod.object)
+            # 删除修改器
+            sectionObj.modifiers.remove(mod)
+        
+        # 命名
+        boolName = 'b.' + sectionObj.name
+        # 略作放大
+        sectionDim = (Vector(sectionObj.dimensions) 
+                * Vector((1.1,1.1,1.1))
+                )
+        sectionLoc = utils.getBoundCenter(sectionObj)
+        # 创建剖视布尔对象
+        boolObj = utils.addCube(
+            name=boolName,
+            dimension=sectionDim,
+            location=sectionLoc,
+            parent=sectionObj
+        )
+        # 标注aca_type，以便控制panel
+        boolObj.ACA_data['aca_type'] = con.ACA_TYPE_BOOL
+        # 设置外观
+        boolObj.display_type = 'WIRE'   # 只显示框线
+        boolObj.hide_render = True  # 不渲染输出
+        # boolObj.hide_select = True    # 禁止选中
+        # 回写已经完成的剖视方案
+        boolObj.ACA_data['sectionPlan']=sectionPlan 
+
+        # 设置剖视方案
+        offset = __getSectionPlan(boolObj,sectionPlan)
+        boolObj.location += offset
+
+        # 添加boolean
+        utils.addModifierBoolean(
+            name=sectionModName,
+            object=sectionObj,
+            boolObj=boolObj,
+            operation='INTERSECT',
+        )
+    
+        # 回写已经完成的剖视方案
+        sectionObj.ACA_data['sectionPlan']=sectionPlan 
+    
+    joinedObj.ACA_data['sectionPlan']=sectionPlan 
+    utils.focusObj(joinedObj)
+    return
+
+# 剖面图方案
+def __getSectionPlan(boolObj:bpy.types.Object,
+                     sectionType='X+',):
+    Y_reserve = -0.35
+    offset = Vector((0,0,0))
+    origin_loc = boolObj.location.copy()
+
+    # Y剖面正方向
+    if sectionType == 'Y+':
+        offset = Vector((
+            0,
+            boolObj.dimensions.y/2 + Y_reserve - origin_loc.y,
+            0
+        ))
+    elif sectionType == 'Y-':
+        offset = Vector((
+            0,
+            -boolObj.dimensions.y/2 - Y_reserve - origin_loc.y,
+            0
+        ))
+    elif sectionType == 'X+':
+        offset = Vector((
+            boolObj.dimensions.x/2 - origin_loc.x,
+            0,
+            0
+        ))
+    elif sectionType == 'X-':
+        offset = Vector((
+            -boolObj.dimensions.x/2 - origin_loc.x,
+            0,
+            0
+        ))
+
+    return offset

@@ -2381,3 +2381,32 @@ def copyAcaData(fromObj,toObj):
             print(f"警告: copyAcaData,目标对象没有属性 '{prop_name}'")
     
     return True
+
+# 应用origin到几何中心
+# https://docs.blender.org/api/current/bpy.ops.object.html#bpy.ops.object.origin_set
+def setOrigin2Geometry(ob):
+    focusObj(ob)
+    bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+    return
+
+"""计算对象边界框的中心坐标"""
+# 来自豆包
+def getBoundCenter(obj):
+    # 获取对象的边界框（8个顶点坐标）
+    bounds = obj.bound_box
+    
+    # 初始化坐标总和
+    sum_x = sum_y = sum_z = 0.0
+    
+    # 计算所有顶点坐标的总和
+    for v in bounds:
+        sum_x += v[0]
+        sum_y += v[1]
+        sum_z += v[2]
+    
+    # 计算平均值，即边界框中心
+    center_x = sum_x / 8.0
+    center_y = sum_y / 8.0
+    center_z = sum_z / 8.0
+    
+    return (center_x, center_y, center_z)

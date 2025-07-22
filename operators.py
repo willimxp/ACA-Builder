@@ -947,14 +947,15 @@ class ACA_OT_JOIN_LAYER(bpy.types.Operator):
             self.report({'INFO'},'合并失败，请选择一个建筑。')
             return {'CANCELLED'}
         
+        # 锁定在合并目录中操作
+        collJoined = utils.setCollection(
+                'ACA古建.合并',isRoot=True,colorTag=3)
+        # 复制根节点
         buildingName = buildingObj.name
         buildingObjCopy = utils.copySimplyObject(
             buildingObj,
             name=buildingName + '.joined',)
-
-        coll:bpy.types.Collection = utils.setCollection(
-                'ACA古建.合并',isRoot=True,colorTag=3)
-        coll.objects.link(buildingObjCopy)
+        buildingObjCopy.ACA_data['aca_type'] = con.ACA_TYPE_BUILDING_JOINED
         
         partObjList = []
         def addChild(buildingObj):
@@ -984,28 +985,27 @@ class ACA_OT_JOIN_LAYER(bpy.types.Operator):
                     partObjList,
                     buildingName + '.' + layer.name)
                 
-            # 摆脱buildingObj父节点
-            # location归零
-            joinedModel.location = (
-                joinedModel.parent.matrix_world 
-                @ joinedModel.location)
-            joinedModel.parent = buildingObjCopy
-            utils.applyTransform2(joinedModel,use_location=True)
+                # 摆脱buildingObj父节点
+                # location归零
+                joinedModel.location = (
+                    joinedModel.parent.matrix_local 
+                    @ joinedModel.location)
+                joinedModel.parent = buildingObjCopy
+                utils.applyTransform(joinedModel,
+                                    use_location=True,
+                                    use_rotation=True)
 
-            # 标示为ACA对象
-            joinedModel.ACA_data['aca_obj'] = True
-            joinedModel.ACA_data['aca_type'] = con.ACA_TYPE_BUILDING_JOINED
+                # 标示为ACA对象
+                joinedModel.ACA_data['aca_obj'] = True
+                joinedModel.ACA_data['aca_type'] = con.ACA_TYPE_BUILDING_JOINED
 
-            # 移到导出目录
-            coll:bpy.types.Collection = utils.setCollection(
-                'ACA古建.合并',isRoot=True,colorTag=3)
-            coll.objects.link(joinedModel)
+                collJoined.objects.link(joinedModel)
 
         # 删除原目录
         build.delBuilding(buildingObj)
 
         # 聚焦
-        utils.focusObj(joinedModel)
+        utils.focusObj(buildingObjCopy)
 
         return {'FINISHED'}
 
@@ -1352,3 +1352,47 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
             context.window.cursor_warp(self.orig_x, self.orig_y)
             self.restored = True
 
+# 纵剖视图
+class ACA_OT_SECTION(bpy.types.Operator):
+    bl_idname="aca.section"
+    bl_label = "纵剖视图"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    # 参数：剖视方案
+    sectionPlan: bpy.props.StringProperty(
+        name="剖视方案",
+        default="X+"
+    ) # type: ignore
+
+    def execute(self, context): 
+        # 上下文对象
+        selectObj = context.object
+
+        # 查找建筑根节点 ---------------------
+        # 1、如果是布尔对象，直接向上一级
+        if hasattr(selectObj, 'ACA_data'):
+            objData:data.ACA_data_obj = selectObj.ACA_data
+            if 'aca_type' in objData:
+                # 如果是布尔对象
+                if objData['aca_type'] == con.ACA_TYPE_BOOL:
+                    # 向上一级
+                    selectObj = selectObj.parent
+
+        # 2、如果是合并对象，查看是否有父节点
+        if hasattr(selectObj, 'ACA_data'):
+            objData:data.ACA_data_obj = selectObj.ACA_data
+            if 'aca_type' in objData:                
+                # 如果是合并对象
+                if objData['aca_type'] == con.ACA_TYPE_BUILDING_JOINED:
+                    # 是否有父节点
+                    if selectObj.parent != None:
+                        # 从父节点开始分层剖视
+                        joinedObj = selectObj.parent
+                    else:
+                        # 直接以当前节点剖视
+                        joinedObj = selectObj
+
+        # 生成剖视系统，传入剖视方案
+        build.addSection(joinedObj,self.sectionPlan)
+        
+        return {'FINISHED'}

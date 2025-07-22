@@ -85,7 +85,9 @@ class ACA_PT_basic(bpy.types.Panel):
             # 如果是ACA建筑，
             if buildingObj == None: 
                 # 已经合并的不显示
-                if objData.aca_type != con.ACA_TYPE_BUILDING_JOINED:
+                if objData.aca_type not in(
+                    con.ACA_TYPE_BUILDING_JOINED,
+                    con.ACA_TYPE_BOOL,):
                     isShowQS = True
         if isShowQS:
             layout.label(text='Quick Start :')
@@ -99,7 +101,9 @@ class ACA_PT_basic(bpy.types.Panel):
         scnData : data.ACA_data_scene = context.scene.ACA_data
         box = layout.box()
         # 合并的对象不显示这些控件，否则会报错
-        if objData.aca_type != con.ACA_TYPE_BUILDING_JOINED:
+        if objData.aca_type not in (
+            con.ACA_TYPE_BUILDING_JOINED,
+            con.ACA_TYPE_BOOL):
             toolBox = box.column(align=True)    
             
             #----------------------------
@@ -149,16 +153,19 @@ class ACA_PT_basic(bpy.types.Panel):
                 text=text
             )
 
-        # 工具箱 ------------------------------
+        # 合并/导出工具箱 ------------------------------
         toolBox = box.column(align=True)
-        # 第一行 ------------------------------
-        toolBar = toolBox.grid_flow(columns=2, align=True)
-        # 合并整体
-        col = toolBar.column(align=True)
-        col.operator("aca.join",icon='PACKAGE')
-        # 合并分层
-        col = toolBar.column(align=True)
-        col.operator("aca.join_layer",icon='PACKAGE')
+        if objData.aca_type not in (
+            con.ACA_TYPE_BUILDING_JOINED,
+            con.ACA_TYPE_BOOL) :
+            # 第一行 ------------------------------
+            toolBar = toolBox.grid_flow(columns=2, align=True)
+            # 合并整体
+            col = toolBar.column(align=True)
+            col.operator("aca.join",icon='PACKAGE')
+            # 合并分层
+            col = toolBar.column(align=True)
+            col.operator("aca.join_layer",icon='PACKAGE')
         # 第二行 ------------------------------
         toolBar = toolBox.grid_flow(columns=2, align=True)
         # 导出FBX
@@ -167,6 +174,48 @@ class ACA_PT_basic(bpy.types.Panel):
         # 导出GLB
         col = toolBar.column(align=True)
         col.operator("aca.export_glb",icon='EXPORT')   
+
+        # 剖视图工具箱 ------------------------------
+        if objData.aca_type in (
+            con.ACA_TYPE_BUILDING_JOINED,
+            con.ACA_TYPE_BOOL):
+            
+            # 获取当前剖视模式
+            currentPlan = None
+            if 'sectionPlan' in objData:     
+                currentPlan = objData['sectionPlan']
+
+            toolBox = box.column(align=True)
+            toolBox.label(text='添加剖视图：')
+            # 第一行 ------------------------------
+            toolBar = toolBox.grid_flow(columns=4, align=True)
+            # X+
+            buttonX_p = toolBar.column(align=True)
+            op1 = buttonX_p.operator("aca.section",
+                        depress=(currentPlan=='X+'),
+                        text='X+',)
+            op1.sectionPlan = 'X+'
+            # X-
+            col = toolBar.column(align=True)
+            op = col.operator(
+                "aca.section",
+                depress=(currentPlan=='X-'),
+                text='X-')
+            op.sectionPlan = 'X-'  
+            # Y+
+            col = toolBar.column(align=True)
+            op = col.operator(
+                "aca.section",
+                depress=(currentPlan=='Y+'),
+                text='Y+')
+            op.sectionPlan = 'Y+'
+            # Y-
+            col = toolBar.column(align=True)
+            op = col.operator(
+                "aca.section",
+                depress=(currentPlan=='Y-'),
+                text='Y-')
+            op.sectionPlan = 'Y-'  
 
         # 性能分析按钮
         # row = layout.row()

@@ -99,7 +99,7 @@ def recurLayerCollection(layerColl, collName,is_like = False):
 
 # 隐藏目录
 def hideCollection(coll_name:str,
-                   isShow=False,
+                   isExclude = True,
                    parentColl:bpy.types.Collection=None):
     if parentColl == None:
         layer_collection = bpy.context.view_layer.layer_collection
@@ -109,16 +109,17 @@ def hideCollection(coll_name:str,
             parentColl.name
         )
         layer_collection = parentLayerColl
-    # 模糊匹配，因为目录名可能带“.001”后缀
+    # # 模糊匹配，因为目录名可能带“.001”后缀
+    # layerColl = recurLayerCollection(
+    #     layer_collection, coll_name,is_like=True)
+    # 不做模糊匹配
     layerColl = recurLayerCollection(
-        layer_collection, coll_name,is_like=True)
+         layer_collection, coll_name)
     if layerColl != None:
-        if isShow:
-            layerColl.exclude = False
-            #layerColl.hide_viewport = False
-        else:
-            layerColl.exclude = True
-            #layerColl.hide_viewport = True
+        layerColl.exclude = isExclude
+        for child in layerColl.children:
+            child.exclude = isExclude
+        #layerColl.hide_viewport = not isShow
 
 # 聚焦选中指定名称的目录
 def focusCollection(coll_name:str):
@@ -1778,7 +1779,7 @@ def hideLayer(context,name,isShow):
     buildingColl = buildingObj.users_collection[0]
     # 隐藏
     hideCollection(name,
-        isShow=isShow,
+        isExclude=not isShow,
         parentColl=buildingColl)
     # 恢复聚焦到根节点
     focusObj(buildingObj)

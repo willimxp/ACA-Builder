@@ -430,9 +430,11 @@ def buildYardWall(buildingObj:bpy.types.Object,
             # 刷新buildingObj中绑定的资产库aData
             template.loadAssetByBuilding(buildingObj) 
 
-    # 定位到对象目录    
-    utils.setCollection(templateName,
-                        parentColl=buildingColl)
+    # 定位到对象目录
+    # 不要用templateName，可能因为有001等后缀
+    # utils.setCollection(templateName,
+    #                     parentColl=buildingColl)
+    utils.focusCollection(buildingObj.users_collection[0].name)
 
     # 载入数据
     bData:acaData = buildingObj.ACA_data

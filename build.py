@@ -13,9 +13,15 @@ from . import buildFloor
 from . import buildYardWall
 from . import buildRoof
 
+# 全局参数 -----------------
+# 是否在运行
 isFinished = True
+# 当前状态提示文字
 buildStatus = ''
+# 进度百分比
 progress = 0
+# 集合的排除属性备份
+collExclude = {}
 
 def __buildSingle(acaType,templateName,comboset=False):
     # 根据模板类型调用不同的入口
@@ -28,25 +34,54 @@ def __buildSingle(acaType,templateName,comboset=False):
     return
 
 # 排除目录下的其他建筑
-def __excludeOther(rootColl,isExclude,buildingObj=None):
+def __excludeOther(rootColl:bpy.types.Collection,
+                   isExclude,
+                   buildingObj=None,
+    ):
     # 查找当前建筑所在的目录
     if buildingObj != None:
         currentColl = buildingObj.users_collection[0]
     else:
         currentColl = None
+    
+    # 全局参数，缓存的集合可见性
+    global collExclude
+    # 排除时，更新缓存
+    if isExclude:
+        collExclude.clear()
+        for coll in rootColl.children:
+            layerColl = utils.recurLayerCollection(
+                bpy.context.view_layer.layer_collection, 
+                coll.name,)
+            # 将键值对存入字典
+            collExclude[coll.name] = layerColl.exclude
 
     # 排除其他建筑
     for coll in rootColl.children:
         # 如果是当前建筑所在的目录，跳过
         if coll == currentColl:
             continue
-        # 根据名称查找对应的视图层目录
-        layerColl = utils.recurLayerCollection(
-            bpy.context.view_layer.layer_collection,
-            coll.name)
-        # 如果找到了，设置排除属性
-        if layerColl != None:
-            layerColl.exclude = isExclude
+        
+        # 排除集合时，将集合状态存入缓存
+        if isExclude:
+            layerColl = utils.recurLayerCollection(
+                bpy.context.view_layer.layer_collection, 
+                coll.name,)
+            # 将键值对存入字典
+            collExclude[coll.name] = layerColl.exclude
+            print(f"write collexclude {coll.name}:{layerColl.exclude}")
+        # 恢复集合时，从缓存判断
+        else:
+            # 缓存有滞后性，本次新增的集合没有键值
+            if coll.name in collExclude:
+                layerExclude = collExclude[coll.name]
+                print(f"read collexclude {coll.name}:{layerExclude}")
+                # 如果原始状态就是隐藏，则跳出本次循环
+                if layerExclude:
+                    print(f"collexclude skip {coll.name}")
+                    continue
+
+        utils.hideCollection(coll.name,isExclude=isExclude)
     utils.redrawViewport() # 刷新视图
     return
 
@@ -456,7 +491,7 @@ def __undoJoin(buildingObj:bpy.types.Object):
 
     # 恢复目录显示
     collName = buildingObj.name.removesuffix(joinSuffix)
-    utils.hideCollection(collName,isShow=True)
+    utils.hideCollection(collName,isExclude=False)
 
     # 彻底删除原来的合并对象
     utils.deleteHierarchy(buildingObj,

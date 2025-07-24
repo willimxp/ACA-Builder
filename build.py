@@ -375,6 +375,10 @@ def joinBuilding(buildingObj:bpy.types.Object,
         __undoJoin(buildingObj)
         return
     
+    # 墙体只有一级层次，不区分是否分层
+    if bData.aca_type == con.ACA_TYPE_YARDWALL:
+        useLayer = False
+    
     # 开始合并处理 --------------------------------------
     # 1、复制建筑的整个集合，在复制集合上进行合并
     # 这样不会影响原有的生成模型
@@ -452,8 +456,14 @@ def joinBuilding(buildingObj:bpy.types.Object,
         else:
             # 合并到了buildingObj根节点
             layerParent = None
-            # 直接取全局坐标
-            matrix = joinedModel.matrix_world
+            # 墙体只有一级层次，不区分是否分层
+            if joinedModel.parent.ACA_data.aca_type == \
+                con.ACA_TYPE_YARDWALL:
+                matrix = joinedModel.parent.matrix_world
+            else:
+                # 直接取全局坐标
+                matrix = joinedModel.matrix_world
+
         # 重新绑定父级对象
         joinedModel.parent = layerParent
         # 重新映射坐标

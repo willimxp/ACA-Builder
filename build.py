@@ -306,3 +306,91 @@ def __getSectionPlan(boolObj:bpy.types.Object,
         ))
 
     return offset
+
+# 组合建筑为一个实体
+# 或者解除组合恢复
+def joinBuilding(buildingObj:bpy.types.Object):
+    # 合并对象的名称后缀
+    joinSuffix = '.joined'
+    collcopySuffix = '.collcopy'
+    
+    # 判断组合或解除组合
+    buildingObj,bData,objData = utils.getRoot(buildingObj)
+    if bData.aca_type == con.ACA_TYPE_BUILDING_JOINED:
+        # 恢复目录显示
+        collName = buildingObj.name.removesuffix(joinSuffix)
+        utils.hideCollection(collName,isShow=True)
+
+        # 彻底删除原来的合并对象
+        utils.deleteHierarchy(buildingObj,
+                del_parent=True)
+
+        # 选择目录中的所有构件
+        src_coll = bpy.data.collections.get(collName)
+        oldbuildingObj = src_coll.objects[0]
+        utils.selectAll(oldbuildingObj)
+        bpy.context.view_layer.objects.active = oldbuildingObj
+        return {'FINISHED'}
+    
+    # 开始合并处理 --------------------------------------
+
+    # 1、复制建筑的整个集合，在复制集合上进行合并
+    # 这样不会影响原有的生成模型
+    collName = buildingObj.users_collection[0].name
+    collCopy = utils.copyCollection(collName,collName + collcopySuffix)
+    # 第一个对象就是建筑根节点，这样判断可能不够安全
+    buildingObjCopy = collCopy.objects[0]
+
+    # 2、合并对象
+    partObjList = []
+    
+    # 2.1、选择所有下级层次对象
+    def addChild(buildingObjCopy):
+        for childObj in buildingObjCopy.children:
+            useObj = True
+            # 仅处理可见的实体对象
+            if childObj.type not in ('MESH'):
+                useObj = False
+            if childObj.hide_viewport or childObj.hide_render:
+                useObj = False
+            # 记录对象名称
+            if useObj:
+                partObjList.append(childObj)
+            # 次级递归
+            if childObj.children:
+                addChild(childObj)
+    addChild(buildingObjCopy)
+    
+    # 2.2、合并对象
+    if len(partObjList) > 0 :
+        joinedModel = utils.joinObjects(
+            objList=partObjList,
+            newName=buildingObj.name + joinSuffix,)
+        # 标示为ACA对象
+        joinedModel.ACA_data['aca_obj'] = True
+        joinedModel.ACA_data['aca_type'] = \
+            con.ACA_TYPE_BUILDING_JOINED
+        
+    # 2.3、摆脱buildingObj父节点
+    # location归零
+    joinedModel.location = (
+        joinedModel.parent.matrix_world 
+        @ joinedModel.location)
+    joinedModel.parent = None
+    #utils.applyTransform(joinedModel,use_location=True)
+
+    # 2.4、移到导出目录
+    coll:bpy.types.Collection = utils.setCollection(
+        'ACA古建.合并',isRoot=True,colorTag=3)
+    coll.objects.link(joinedModel)
+
+    # 3、删除复制的建筑，包括复制的集合
+    delBuilding(buildingObjCopy)
+
+    # 4、隐藏原建筑
+    utils.hideCollection(collName)
+
+    # 5、聚焦
+    utils.focusObj(joinedModel)
+
+    return {'FINISHED'}

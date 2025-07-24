@@ -100,72 +100,88 @@ class ACA_PT_basic(bpy.types.Panel):
         # 场景数据集
         scnData : data.ACA_data_scene = context.scene.ACA_data
         box = layout.box()
-        # 合并的对象不显示这些控件，否则会报错
-        if objData.aca_type not in (
+
+        toolBox = box.column(align=True)    
+        
+        #----------------------------
+        toolBar = toolBox.grid_flow(columns=2, align=True)
+        # 建筑名称
+        col = toolBar.column(align=True)
+        col.prop(buildingObj,"name",text="")
+        # 聚焦根节点，右侧小按钮
+        col = toolBar.column(align=True)
+        col.operator("aca.focus_building",icon='FILE_PARENT')
+        if (buildingObj == None
+            or objData.aca_type in (
+                con.ACA_TYPE_BUILDING,
+                con.ACA_TYPE_YARDWALL,
+                con.ACA_TYPE_BUILDING_JOINED,)
+            ):
+            col.enabled = False
+        
+        #----------------------------
+        toolBox = box.row(align=True) 
+        toolBar = toolBox.grid_flow(columns=2, align=True)
+        # 保存模板
+        btnSaveTemplate = toolBar.column(align=True)
+        btnSaveTemplate.operator(
+            "aca.save_template",icon='FILE_TICK',
+            text='保存样式')
+        # 更新建筑
+        btnUpdate = toolBar.column(align=True)
+        btnUpdate.operator(
+            "aca.update_building",
+            depress=True,text='更新建筑',
+            icon='FILE_REFRESH',
+        )              
+        # 删除建筑
+        btnDelete = toolBar.column(align=True)
+        btnDelete.operator(
+            "aca.del_building",icon='TRASH',
+            text='删除建筑'
+        ) 
+        # 是否修改参数时，自动触发更新
+        btnRefresh = toolBar.column(align=True)
+        if scnData.is_auto_rebuild:
+            text = '暂停刷新'
+        else:
+            text = '自动刷新'
+        btnRefresh.prop(
+            data=bpy.context.scene.ACA_data,
+            property='is_auto_rebuild',
+            toggle=True,
+            icon='FF',
+            text=text
+        )
+
+        # 合并对象禁用以上按钮
+        if objData.aca_type in (
             con.ACA_TYPE_BUILDING_JOINED,
             con.ACA_TYPE_BOOL):
-            toolBox = box.column(align=True)    
-            
-            #----------------------------
-            toolBar = toolBox.grid_flow(columns=2, align=True)
-            # 建筑名称
-            col = toolBar.column(align=True)
-            col.prop(buildingObj,"name",text="")
-            # 聚焦根节点，右侧小按钮
-            col = toolBar.column(align=True)
-            col.operator("aca.focus_building",icon='FILE_PARENT')
-            if (buildingObj == None
-                or objData.aca_type == con.ACA_TYPE_BUILDING):
-                col.enabled = False
-            
-            #----------------------------
-            toolBox = box.row(align=True) 
-            toolBar = toolBox.grid_flow(columns=2, align=True)
-            # 保存模板
-            col = toolBar.column(align=True)
-            col.operator(
-                "aca.save_template",icon='FILE_TICK',
-                text='保存样式')
-            # 更新建筑
-            col = toolBar.column(align=True)
-            col.operator(
-                "aca.update_building",
-                depress=True,text='更新建筑',
-                icon='FILE_REFRESH',
-            )              
-            # 删除建筑
-            col = toolBar.column(align=True)
-            col.operator(
-                "aca.del_building",icon='TRASH',
-                text='删除建筑'
-            ) 
-            # 是否修改参数时，自动触发更新
-            col = toolBar.column(align=True)
-            if scnData.is_auto_rebuild:
-                text = '暂停刷新'
-            else:
-                text = '自动刷新'
-            col.prop(
-                data=bpy.context.scene.ACA_data,
-                property='is_auto_rebuild',
-                toggle=True,
-                icon='FF',
-                text=text
-            )
+            btnSaveTemplate.enabled = False
+            btnUpdate.enabled = False
+            btnDelete.enabled = False
+            btnRefresh.enabled = False
 
-        # 合并/导出工具箱 ------------------------------
+        ###################################################
+        # 第二工具箱
+        box = layout.box()
+
+        # 合并/导出 ------------------------------
         toolBox = box.column(align=True)
-        if objData.aca_type not in (
-            con.ACA_TYPE_BUILDING_JOINED,
-            con.ACA_TYPE_BOOL) :
-            # 第一行 ------------------------------
-            toolBar = toolBox.grid_flow(columns=2, align=True)
-            # 合并整体
-            col = toolBar.column(align=True)
-            col.operator("aca.join",icon='PACKAGE')
-            # 合并分层
-            col = toolBar.column(align=True)
-            col.operator("aca.join_layer",icon='PACKAGE')
+        # 第一行 ------------------------------
+        toolBar = toolBox.grid_flow(columns=1, align=True)
+        # 合并整体
+        btnJoin = toolBar.column(align=True)
+        isJoined = (objData.aca_type == \
+                    con.ACA_TYPE_BUILDING_JOINED)
+        if not isJoined:
+            btnJoinName = '合并'
+        else:
+            btnJoinName = '取消合并'
+        btnJoin.operator("aca.join",icon='PACKAGE',
+                         text=btnJoinName,
+                         depress=isJoined)
         # 第二行 ------------------------------
         toolBar = toolBox.grid_flow(columns=2, align=True)
         # 导出FBX
@@ -175,47 +191,47 @@ class ACA_PT_basic(bpy.types.Panel):
         col = toolBar.column(align=True)
         col.operator("aca.export_glb",icon='EXPORT')   
 
-        # 剖视图工具箱 ------------------------------
-        if objData.aca_type in (
-            con.ACA_TYPE_BUILDING_JOINED,
-            con.ACA_TYPE_BOOL):
+        # 剖视图 ------------------------------
+        # if objData.aca_type in (
+        #     con.ACA_TYPE_BUILDING_JOINED,
+        #     con.ACA_TYPE_BOOL):
             
-            # 获取当前剖视模式
-            currentPlan = None
-            if 'sectionPlan' in objData:     
-                currentPlan = objData['sectionPlan']
+        # 获取当前剖视模式
+        currentPlan = None
+        if 'sectionPlan' in objData:     
+            currentPlan = objData['sectionPlan']
 
-            toolBox = box.column(align=True)
-            toolBox.label(text='添加剖视图：')
-            # 第一行 ------------------------------
-            toolBar = toolBox.grid_flow(columns=4, align=True)
-            # X+
-            buttonX_p = toolBar.column(align=True)
-            op1 = buttonX_p.operator("aca.section",
-                        depress=(currentPlan=='X+'),
-                        text='X+',)
-            op1.sectionPlan = 'X+'
-            # X-
-            col = toolBar.column(align=True)
-            op = col.operator(
-                "aca.section",
-                depress=(currentPlan=='X-'),
-                text='X-')
-            op.sectionPlan = 'X-'  
-            # Y+
-            col = toolBar.column(align=True)
-            op = col.operator(
-                "aca.section",
-                depress=(currentPlan=='Y+'),
-                text='Y+')
-            op.sectionPlan = 'Y+'
-            # Y-
-            col = toolBar.column(align=True)
-            op = col.operator(
-                "aca.section",
-                depress=(currentPlan=='Y-'),
-                text='Y-')
-            op.sectionPlan = 'Y-'  
+        toolBox = box.column(align=True)
+        toolBox.label(text='添加剖视图：')
+        # 第一行 ------------------------------
+        toolBar = toolBox.grid_flow(columns=4, align=True)
+        # X+
+        buttonX_p = toolBar.column(align=True)
+        op1 = buttonX_p.operator("aca.section",
+                    depress=(currentPlan=='X+'),
+                    text='X+',)
+        op1.sectionPlan = 'X+'
+        # X-
+        col = toolBar.column(align=True)
+        op = col.operator(
+            "aca.section",
+            depress=(currentPlan=='X-'),
+            text='X-')
+        op.sectionPlan = 'X-'  
+        # Y+
+        col = toolBar.column(align=True)
+        op = col.operator(
+            "aca.section",
+            depress=(currentPlan=='Y+'),
+            text='Y+')
+        op.sectionPlan = 'Y+'
+        # Y-
+        col = toolBar.column(align=True)
+        op = col.operator(
+            "aca.section",
+            depress=(currentPlan=='Y-'),
+            text='Y-')
+        op.sectionPlan = 'Y-'  
 
         # 性能分析按钮
         # row = layout.row()

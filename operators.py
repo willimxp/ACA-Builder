@@ -875,60 +875,24 @@ class ACA_OT_JOIN(bpy.types.Operator):
     bl_description = '将所有的建筑构件合并为一个整体，便于做导出等操作'
 
     def execute(self, context):  
-        # 预处理
-        buildingObj,bData,objData = utils.getRoot(context.object)
+        timeStart = time.time()
+        
         # 验证是否选中了建筑
-        if buildingObj == None:
-            # 没有可合并的对象
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        if not buildingObj:
             self.report({'INFO'},'合并失败，请选择一个建筑。')
             return {'CANCELLED'}
         
-        # 选择所有下级层次对象
-        partObjList = []
-        def addChild(buildingObj):
-            for childObj in buildingObj.children:
-                useObj = True
-                # 仅处理可见的实体对象
-                if childObj.type not in ('MESH'):
-                    useObj = False
-                if childObj.hide_viewport or childObj.hide_render:
-                    useObj = False
-                # 记录对象名称
-                if useObj:
-                    partObjList.append(childObj)
-                # 次级递归
-                if childObj.children:
-                    addChild(childObj)
-        addChild(buildingObj)
-        
-        # 合并对象
-        if len(partObjList) > 0 :
-            joinedModel = utils.joinObjects(
-                partObjList,
-                buildingObj.name+'.joined')
-            
-        # 摆脱buildingObj父节点
-        # location归零
-        joinedModel.location = (
-            joinedModel.parent.matrix_world 
-            @ joinedModel.location)
-        joinedModel.parent = None
-        utils.applyTransform2(joinedModel,use_location=True)
+        funproxy = partial(
+            build.joinBuilding,
+            buildingObj=buildingObj)
+        result = utils.fastRun(funproxy)
 
-        # 标示为ACA对象
-        joinedModel.ACA_data['aca_obj'] = True
-        joinedModel.ACA_data['aca_type'] = con.ACA_TYPE_BUILDING_JOINED
-
-        # 移到导出目录
-        coll:bpy.types.Collection = utils.setCollection(
-            'ACA古建.合并',isRoot=True,colorTag=3)
-        coll.objects.link(joinedModel)
-
-        # 删除原目录
-        build.delBuilding(buildingObj)
-
-        # 聚焦
-        utils.focusObj(joinedModel)
+        if 'FINISHED' in result:
+            timeEnd = time.time()
+            self.report(
+                {'INFO'},"合并完成(%.1f秒)" 
+                % (timeEnd-timeStart))
 
         return {'FINISHED'}
 

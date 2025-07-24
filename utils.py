@@ -282,6 +282,52 @@ def copyObject(
     
     return newObj
 
+# 复制一个集合
+def copyCollection(src_coll_name, new_coll_name):
+    # 查找原始集合
+    src_coll = bpy.data.collections.get(src_coll_name)
+    if not src_coll:
+        raise ValueError(f"Collection '{src_coll_name}' not found.")
+
+    # 创建新集合
+    new_coll = bpy.data.collections.new(new_coll_name)
+    # 新集合匹配原始集合的层次位置
+    parent_collection = None
+    for collection in bpy.data.collections:
+        if src_coll_name in collection.children:
+            parent_collection = collection
+    # 如果找到了父级 Collection，则将新 Collection 添加到所有父级中
+    if parent_collection:
+        parent_collection.children.link(new_coll)
+    else:
+        # 否则添加到场景主 Collection
+        bpy.context.scene.collection.children.link(new_coll)
+
+    obj_map = {}  # 原对象到新对象的映射
+
+    def copy_objects_recursive(src_coll, dst_coll):
+        for obj in src_coll.objects:
+            obj_copy = obj.copy()
+            if obj.data:
+                obj_copy.data = obj.data.copy()
+            dst_coll.objects.link(obj_copy)
+            obj_map[obj] = obj_copy
+        for child_coll in src_coll.children:
+            child_copy = bpy.data.collections.new(child_coll.name)
+            dst_coll.children.link(child_copy)
+            copy_objects_recursive(child_coll, child_copy)
+
+    copy_objects_recursive(src_coll, new_coll)
+
+    # 修正父子关系
+    for src_obj, new_obj in obj_map.items():
+        if src_obj.parent and src_obj.parent in obj_map:
+            new_parent = obj_map[src_obj.parent]
+            new_obj.parent = new_parent
+            new_obj.matrix_parent_inverse = src_obj.matrix_parent_inverse.copy()
+
+    return new_coll
+
 # 查找当前对象的兄弟节点
 # 如，根据台基对象，找到对应的柱网对象
 def getAcaSibling(object:bpy.types.Object,
@@ -774,7 +820,7 @@ def fastRun(func):
     try:
         _BPyOpsSubModOp._view_layer_update = dummy_view_layer_update
         result = func()
-        outputMsg("执行成功-------------------------")
+        outputMsg(f"{func.func.__name__} 执行成功-------------------------")
     except Exception as e:
         # 输出到console
         print(e)
@@ -1682,30 +1728,46 @@ def getRoot(object:bpy.types.Object):
     buildingObj = None
     bData = None
     objData = None
-    isRoot = False
-    if hasattr(object, 'ACA_data'):
-        objData:data.ACA_data_obj = object.ACA_data
-        if 'aca_type' in object.ACA_data:
-            if objData['aca_type'] in (
-                    con.ACA_TYPE_BUILDING,
-                    con.ACA_TYPE_YARDWALL,
-                ):
-                isRoot = True
 
-        if isRoot:
-            buildingObj = object
-            bData = objData
-        else:
-            buildingObj = getAcaParent(
-                    object,con.ACA_TYPE_BUILDING)
-            if buildingObj != None:
-                bData:data.ACA_data_obj = buildingObj.ACA_data
-            else:
-                buildingObj = getAcaParent(
-                    object,con.ACA_TYPE_YARDWALL
-                )
-                if buildingObj != None:
-                    bData:data.ACA_data_obj = buildingObj.ACA_data
+    # 验证ACA_data数据集
+    if not hasattr(object, 'ACA_data'):
+        return buildingObj,bData,objData
+    
+    # 载入objData
+    objData:data.ACA_data_obj = object.ACA_data
+    
+    # 验证aca_type属性
+    if not hasattr(objData, 'aca_type'):
+        return buildingObj,bData,objData
+
+    # 是否是建筑、院墙、合并类型的根节点
+    if objData.aca_type in (
+            con.ACA_TYPE_BUILDING,
+            con.ACA_TYPE_YARDWALL,
+            con.ACA_TYPE_BUILDING_JOINED,
+        ):
+        buildingObj = object
+
+    # 追溯到建筑根节点？
+    if not buildingObj:
+        buildingObj = getAcaParent(
+                object,con.ACA_TYPE_BUILDING)
+
+    # 追溯到墙体节点？   
+    if not buildingObj:
+        buildingObj = getAcaParent(
+            object,con.ACA_TYPE_YARDWALL
+        )
+
+    # 追溯合并根节点
+    if not buildingObj:
+        buildingObj = getAcaParent(
+            object,con.ACA_TYPE_BUILDING_JOINED
+        )
+    
+    # 输入bData
+    if buildingObj:
+        bData:data.ACA_data_obj = buildingObj.ACA_data
 
     return buildingObj,bData,objData
 
@@ -2410,3 +2472,59 @@ def getBoundCenter(obj):
     center_z = sum_z / 8.0
     
     return (center_x, center_y, center_z)
+
+# 应用集合中的所有对象的修改器
+# 以免再复制或导出时，因为丢失mirror的参考对象等异常情况
+def applyCollModifier(buildingObj):
+    ObjList = []
+    def addChild(buildingObj):
+        for childObj in buildingObj.children:
+            useObj = True
+            # 仅处理可见的实体对象
+            if childObj.type not in ('MESH','CURVE'):
+                useObj = False
+            if childObj.hide_viewport or childObj.hide_render:
+                useObj = False
+            if hasattr(childObj, 'modifiers'):
+                if len(childObj.modifiers) == 0:
+                    useObj = False
+            else:
+                useObj = False
+            # 记录对象名称
+            if useObj:
+                ObjList.append(childObj)
+            # 次级递归
+            if childObj.children:
+                addChild(childObj)
+    addChild(buildingObj)
+
+    bpy.ops.object.select_all(action='DESELECT')
+    for obj in ObjList:
+        obj.select_set(True)
+    bpy.ops.object.convert(target='MESH')
+    return
+
+# 选择所有建筑子对象
+def selectAll(buildingObj:bpy.types.Object):
+    ObjList = []
+    def addChild(buildingObj):
+        for childObj in buildingObj.children:
+            useObj = True
+            # 仅处理可见的实体对象
+            if childObj.type not in ('MESH','CURVE'):
+                useObj = False
+            if childObj.hide_viewport or childObj.hide_render:
+                useObj = False
+            # 记录对象名称
+            if useObj:
+                ObjList.append(childObj)
+            # 次级递归
+            if childObj.children:
+                addChild(childObj)
+    addChild(buildingObj)
+
+    bpy.ops.object.select_all(action='DESELECT')
+    for obj in ObjList:
+        obj.select_set(True)
+    
+    return

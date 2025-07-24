@@ -1267,6 +1267,9 @@ def buildFloor(buildingObj:bpy.types.Object,
     # 生成屋顶
     buildRoof.buildRoof(buildingObj)
 
+    # 应用所有子对象的修改器
+    utils.applyCollModifier(buildingObj)
+
     # 重新聚焦回根节点
     utils.focusObj(buildingObj)
 

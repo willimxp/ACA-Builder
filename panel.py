@@ -84,10 +84,7 @@ class ACA_PT_basic(bpy.types.Panel):
             buildingObj,bData,objData = utils.getRoot(context.object)
             # 如果是ACA建筑，
             if buildingObj == None: 
-                # 已经合并的不显示
-                if bData.aca_type != \
-                    con.ACA_TYPE_BUILDING_JOINED:
-                    isShowQS = True
+                isShowQS = True
         if isShowQS:
             layout.label(text='Quick Start :')
             layout.label(text='选择一个模板，生成古建筑',icon='KEYTYPE_JITTER_VEC')
@@ -111,7 +108,7 @@ class ACA_PT_basic(bpy.types.Panel):
         col = toolBar.column(align=True)
         col.operator("aca.focus_building",icon='FILE_PARENT')
         if (buildingObj == None
-            or bData.aca_type in (
+            or bData.aca_type not in (
                 con.ACA_TYPE_BUILDING,
                 con.ACA_TYPE_YARDWALL,
                 con.ACA_TYPE_BUILDING_JOINED,)
@@ -168,15 +165,25 @@ class ACA_PT_basic(bpy.types.Panel):
         # 合并/导出 ------------------------------
         toolBox = box.column(align=True)
         # 第一行 ------------------------------
-        toolBar = toolBox.grid_flow(columns=1, align=True)
+        toolBar = toolBox.grid_flow(columns=2, align=True)
         # 合并整体
         btnJoin = toolBar.column(align=True)
         isJoined = (bData.aca_type == \
                     con.ACA_TYPE_BUILDING_JOINED)
         btnJoinName = '取消合并' if isJoined else '合并'
-        btnJoin.operator("aca.join",icon='PACKAGE',
+        op = btnJoin.operator("aca.join",icon='PACKAGE',
                          text=btnJoinName,
                          depress=isJoined)
+        op.useLayer = False
+        
+        # 分层合并
+        btnJoinLayer = toolBar.column(align=True)
+        btnJoinLayerName = '取消分层合并' if isJoined else '分层合并'
+        op = btnJoinLayer.operator("aca.join",icon='PACKAGE',
+                         text=btnJoinLayerName,
+                         depress=isJoined)
+        op.useLayer = True
+        
         # 第二行 ------------------------------
         toolBar = toolBox.grid_flow(columns=2, align=True)
         # 导出FBX

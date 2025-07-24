@@ -327,7 +327,9 @@ def __getSectionPlan(boolObj:bpy.types.Object,
 
 # 组合建筑为一个实体
 # 或者解除组合恢复
-def joinBuilding(buildingObj:bpy.types.Object):
+def joinBuilding(buildingObj:bpy.types.Object,
+                 useLayer=False, # 是否分层合并
+                ):
     # 合并对象的名称后缀
     joinSuffix = '.joined'
     collcopySuffix = '.collcopy'
@@ -339,18 +341,19 @@ def joinBuilding(buildingObj:bpy.types.Object):
         return
     
     # 开始合并处理 --------------------------------------
-
     # 1、复制建筑的整个集合，在复制集合上进行合并
     # 这样不会影响原有的生成模型
     collName = buildingObj.users_collection[0].name
     collCopy = utils.copyCollection(collName,collName + collcopySuffix)
     # 第一个对象就是建筑根节点，这样判断可能不够安全
     buildingObjCopy = collCopy.objects[0]
+    # 新建/绑定合并集合
+    collJoined = utils.setCollection(
+            'ACA古建.合并',isRoot=True,colorTag=3)
 
     # 2、合并对象
-    partObjList = []
-    
     # 2.1、选择所有下级层次对象
+    partObjList = []    # 在addChild中递归填充
     def addChild(buildingObjCopy):
         for childObj in buildingObjCopy.children:
             useObj = True
@@ -365,30 +368,71 @@ def joinBuilding(buildingObj:bpy.types.Object):
             # 次级递归
             if childObj.children:
                 addChild(childObj)
-    addChild(buildingObjCopy)
     
     # 2.2、合并对象
-    if len(partObjList) > 0 :
+    # 判断是否需要分层合并
+    layerList = []
+    if useLayer:
+        layerList = buildingObjCopy.children
+        # 复制生成分层合并的父节点
+        joinedRoot = utils.copySimplyObject(buildingObjCopy)
+        # 设置名称
+        joinedRoot.name = buildingObj.name + joinSuffix
+        # 标示为ACA对象
+        joinedRoot.ACA_data['aca_obj'] = True
+        joinedRoot.ACA_data['aca_type'] = \
+            con.ACA_TYPE_BUILDING_JOINED
+    else:
+        layerList.append(buildingObjCopy)
+
+    # 分层合并
+    for layer in layerList:
+        # 递归填充待合并对象
+        partObjList.clear()
+        addChild(layer)
+        if len(partObjList) == 0 :
+            print("失败，递归查询未找到待合并对象")
+            return
+        
+        # 区分是否分层的不同命名规则
+        if useLayer:
+            # 合并名称以层标注
+            joinedName = (buildingObj.name 
+                          + '.' 
+                          + layer.name)
+        else:
+            # 合并名称直接加'joined'后缀
+            joinedName = buildingObj.name + joinSuffix
+        # 合并对象
         joinedModel = utils.joinObjects(
             objList=partObjList,
-            newName=buildingObj.name + joinSuffix,)
+            newName=joinedName,)
+        
+        # 区分是否分层的坐标映射
+        if useLayer:
+            # 绑定在以前复制生成的根节点
+            layerParent = joinedRoot
+            # 取各个分层的局部坐标
+            matrix = joinedModel.parent.matrix_local  
+        else:
+            # 合并到了buildingObj根节点
+            layerParent = None
+            # 直接取全局坐标
+            matrix = joinedModel.matrix_world
+        # 重新绑定父级对象
+        joinedModel.parent = layerParent
+        # 重新映射坐标
+        joinedModel.location = matrix @ joinedModel.location
+        if useLayer:
+            utils.applyTransform2(joinedModel,use_location=True)
+
         # 标示为ACA对象
         joinedModel.ACA_data['aca_obj'] = True
         joinedModel.ACA_data['aca_type'] = \
             con.ACA_TYPE_BUILDING_JOINED
-        
-    # 2.3、摆脱buildingObj父节点
-    # location归零
-    joinedModel.location = (
-        joinedModel.parent.matrix_world 
-        @ joinedModel.location)
-    joinedModel.parent = None
-    #utils.applyTransform(joinedModel,use_location=True)
 
-    # 2.4、移到导出目录
-    coll:bpy.types.Collection = utils.setCollection(
-        'ACA古建.合并',isRoot=True,colorTag=3)
-    coll.objects.link(joinedModel)
+        # 2、添加到合并目录
+        collJoined.objects.link(joinedModel)
 
     # 3、删除复制的建筑，包括复制的集合
     delBuilding(buildingObjCopy)
@@ -397,7 +441,11 @@ def joinBuilding(buildingObj:bpy.types.Object):
     utils.hideCollection(collName)
 
     # 5、聚焦
-    utils.focusObj(joinedModel)
+    if useLayer:
+        focusObj = joinedRoot
+    else:
+        focusObj = joinedModel
+    utils.focusObj(focusObj)
 
     return joinedModel
 

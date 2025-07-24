@@ -888,11 +888,11 @@ class ACA_OT_JOIN(bpy.types.Operator):
             buildingObj=buildingObj)
         result = utils.fastRun(funproxy)
 
-        if 'FINISHED' in result:
-            timeEnd = time.time()
-            self.report(
-                {'INFO'},"合并完成(%.1f秒)" 
-                % (timeEnd-timeStart))
+        # if 'FINISHED' in result:
+        #     timeEnd = time.time()
+        #     self.report(
+        #         {'INFO'},"合并完成(%.1f秒)" 
+        #         % (timeEnd-timeStart))
 
         return {'FINISHED'}
 
@@ -1329,34 +1329,12 @@ class ACA_OT_SECTION(bpy.types.Operator):
     ) # type: ignore
 
     def execute(self, context): 
-        # 上下文对象
-        selectObj = context.object
-
-        # 查找建筑根节点 ---------------------
-        # 1、如果是布尔对象，直接向上一级
-        if hasattr(selectObj, 'ACA_data'):
-            objData:data.ACA_data_obj = selectObj.ACA_data
-            if 'aca_type' in objData:
-                # 如果是布尔对象
-                if objData['aca_type'] == con.ACA_TYPE_BOOL:
-                    # 向上一级
-                    selectObj = selectObj.parent
-
-        # 2、如果是合并对象，查看是否有父节点
-        if hasattr(selectObj, 'ACA_data'):
-            objData:data.ACA_data_obj = selectObj.ACA_data
-            if 'aca_type' in objData:                
-                # 如果是合并对象
-                if objData['aca_type'] == con.ACA_TYPE_BUILDING_JOINED:
-                    # 是否有父节点
-                    if selectObj.parent != None:
-                        # 从父节点开始分层剖视
-                        joinedObj = selectObj.parent
-                    else:
-                        # 直接以当前节点剖视
-                        joinedObj = selectObj
-
+        buildingObj,bData,objData = utils.getRoot(context.object)
         # 生成剖视系统，传入剖视方案
-        build.addSection(joinedObj,self.sectionPlan)
+        funproxy = partial(
+            build.addSection,
+            buildingObj=buildingObj,
+            sectionPlan=self.sectionPlan)
+        result = utils.fastRun(funproxy)
         
         return {'FINISHED'}

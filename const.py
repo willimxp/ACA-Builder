@@ -60,7 +60,6 @@ class ACA_Consts(object):
     ACA_WALLTYPE_MAINDOOR = 'maindoor'                              # 隔断属性-板门
     ACA_WALLTYPE_FLIPWINDOW = 'flipwindow'                          # 隔断属性-支摘窗
     ACA_TYPE_COMBO = 'combo'                                        # 组合样式
-    ACA_TYPE_BOOL = 'bool'                                          # 布尔对象
 
     # 默认斗口
     DEFAULT_DK = 0.08   # 单位(m)

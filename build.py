@@ -195,16 +195,41 @@ def resetRoof(buildingObj:bpy.types.Object):
     return  {'FINISHED'}
 
 # 纵剖视图
-def addSection(joinedObj:bpy.types.Object,
-               sectionPlan='X+',):
+def addSection(buildingObj:bpy.types.Object,
+               sectionPlan='X+'):
     sectionModName = 'Section'
-    
-    # 确认建筑已经合并
-    bData = joinedObj.ACA_data
+
+    # 1、确认是否已经合并 ------------------------
+    bData = buildingObj.ACA_data
+    # 如果未合并，则先自动合并
     if bData.aca_type != con.ACA_TYPE_BUILDING_JOINED:
-        print("不是一个合并后的ACA对象，无法做剖视图")
-        return
+        joinedObj = joinBuilding(buildingObj)
+    else:
+        joinedObj = buildingObj
     
+    # 2、确认是否已经做了剖视 -----------------------
+    jData = joinedObj.ACA_data
+    # 获取当前剖视模式
+    currentPlan = None
+    if 'sectionPlan' in jData:     
+        currentPlan = jData['sectionPlan']
+    # 判断是否已做剖视
+    if currentPlan == None:
+        # 未作剖视的新合并对象，无需特殊处理
+        pass
+    else:
+        # 如果剖视方案相同，解除剖视
+        if sectionPlan == currentPlan:
+            # 这里解除合并的同时，就会解除剖视
+            __undoJoin(buildingObj)
+            return
+        # 剖视方案不同，重新合并
+        else:
+            buildingObj = __undoJoin(buildingObj)
+            joinedObj = joinBuilding(buildingObj)
+
+    
+    # 3、开始做剖视 -----------------------
     # 指定在合并目录中操作
     coll:bpy.types.Collection = utils.setCollection(
                 'ACA古建.合并',isRoot=True,colorTag=3)
@@ -244,14 +269,10 @@ def addSection(joinedObj:bpy.types.Object,
             location=sectionLoc,
             parent=sectionObj
         )
-        # 标注aca_type，以便控制panel
-        boolObj.ACA_data['aca_type'] = con.ACA_TYPE_BOOL
         # 设置外观
         boolObj.display_type = 'WIRE'   # 只显示框线
         boolObj.hide_render = True  # 不渲染输出
         # boolObj.hide_select = True    # 禁止选中
-        # 回写已经完成的剖视方案
-        boolObj.ACA_data['sectionPlan']=sectionPlan 
 
         # 设置剖视方案
         offset = __getSectionPlan(boolObj,sectionPlan)
@@ -264,9 +285,6 @@ def addSection(joinedObj:bpy.types.Object,
             boolObj=boolObj,
             operation='INTERSECT',
         )
-    
-        # 回写已经完成的剖视方案
-        sectionObj.ACA_data['sectionPlan']=sectionPlan 
     
     joinedObj.ACA_data['sectionPlan']=sectionPlan 
     utils.focusObj(joinedObj)
@@ -317,20 +335,8 @@ def joinBuilding(buildingObj:bpy.types.Object):
     # 判断组合或解除组合
     buildingObj,bData,objData = utils.getRoot(buildingObj)
     if bData.aca_type == con.ACA_TYPE_BUILDING_JOINED:
-        # 恢复目录显示
-        collName = buildingObj.name.removesuffix(joinSuffix)
-        utils.hideCollection(collName,isShow=True)
-
-        # 彻底删除原来的合并对象
-        utils.deleteHierarchy(buildingObj,
-                del_parent=True)
-
-        # 选择目录中的所有构件
-        src_coll = bpy.data.collections.get(collName)
-        oldbuildingObj = src_coll.objects[0]
-        utils.selectAll(oldbuildingObj)
-        bpy.context.view_layer.objects.active = oldbuildingObj
-        return {'FINISHED'}
+        __undoJoin(buildingObj)
+        return
     
     # 开始合并处理 --------------------------------------
 
@@ -393,4 +399,25 @@ def joinBuilding(buildingObj:bpy.types.Object):
     # 5、聚焦
     utils.focusObj(joinedModel)
 
-    return {'FINISHED'}
+    return joinedModel
+
+# 解除建筑合并
+def __undoJoin(buildingObj:bpy.types.Object):
+    # 合并对象的名称后缀
+    joinSuffix = '.joined'
+
+    # 恢复目录显示
+    collName = buildingObj.name.removesuffix(joinSuffix)
+    utils.hideCollection(collName,isShow=True)
+
+    # 彻底删除原来的合并对象
+    utils.deleteHierarchy(buildingObj,
+            del_parent=True)
+
+    # 选择目录中的所有构件
+    src_coll = bpy.data.collections.get(collName)
+    oldbuildingObj = src_coll.objects[0]
+    utils.selectAll(oldbuildingObj)
+    bpy.context.view_layer.objects.active = oldbuildingObj
+
+    return oldbuildingObj

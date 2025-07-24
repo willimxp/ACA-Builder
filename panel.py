@@ -85,9 +85,8 @@ class ACA_PT_basic(bpy.types.Panel):
             # 如果是ACA建筑，
             if buildingObj == None: 
                 # 已经合并的不显示
-                if objData.aca_type not in(
-                    con.ACA_TYPE_BUILDING_JOINED,
-                    con.ACA_TYPE_BOOL,):
+                if bData.aca_type != \
+                    con.ACA_TYPE_BUILDING_JOINED:
                     isShowQS = True
         if isShowQS:
             layout.label(text='Quick Start :')
@@ -112,7 +111,7 @@ class ACA_PT_basic(bpy.types.Panel):
         col = toolBar.column(align=True)
         col.operator("aca.focus_building",icon='FILE_PARENT')
         if (buildingObj == None
-            or objData.aca_type in (
+            or bData.aca_type in (
                 con.ACA_TYPE_BUILDING,
                 con.ACA_TYPE_YARDWALL,
                 con.ACA_TYPE_BUILDING_JOINED,)
@@ -155,9 +154,8 @@ class ACA_PT_basic(bpy.types.Panel):
         )
 
         # 合并对象禁用以上按钮
-        if objData.aca_type in (
-            con.ACA_TYPE_BUILDING_JOINED,
-            con.ACA_TYPE_BOOL):
+        if bData.aca_type == \
+            con.ACA_TYPE_BUILDING_JOINED:
             btnSaveTemplate.enabled = False
             btnUpdate.enabled = False
             btnDelete.enabled = False
@@ -173,12 +171,9 @@ class ACA_PT_basic(bpy.types.Panel):
         toolBar = toolBox.grid_flow(columns=1, align=True)
         # 合并整体
         btnJoin = toolBar.column(align=True)
-        isJoined = (objData.aca_type == \
+        isJoined = (bData.aca_type == \
                     con.ACA_TYPE_BUILDING_JOINED)
-        if not isJoined:
-            btnJoinName = '合并'
-        else:
-            btnJoinName = '取消合并'
+        btnJoinName = '取消合并' if isJoined else '合并'
         btnJoin.operator("aca.join",icon='PACKAGE',
                          text=btnJoinName,
                          depress=isJoined)
@@ -191,15 +186,11 @@ class ACA_PT_basic(bpy.types.Panel):
         col = toolBar.column(align=True)
         col.operator("aca.export_glb",icon='EXPORT')   
 
-        # 剖视图 ------------------------------
-        # if objData.aca_type in (
-        #     con.ACA_TYPE_BUILDING_JOINED,
-        #     con.ACA_TYPE_BOOL):
-            
+        # 剖视图 ------------------------------            
         # 获取当前剖视模式
         currentPlan = None
-        if 'sectionPlan' in objData:     
-            currentPlan = objData['sectionPlan']
+        if 'sectionPlan' in bData:     
+            currentPlan = bData['sectionPlan']
 
         toolBox = box.column(align=True)
         toolBox.label(text='添加剖视图：')

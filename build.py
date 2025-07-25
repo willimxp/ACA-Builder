@@ -232,39 +232,40 @@ def resetRoof(buildingObj:bpy.types.Object):
 # 纵剖视图
 def addSection(buildingObj:bpy.types.Object,
                sectionPlan='X+'):
-    sectionModName = 'Section'
-
-    # 1、确认是否已经合并 ------------------------
     bData = buildingObj.ACA_data
-    # 如果未合并，则先自动合并
-    if bData.aca_type != con.ACA_TYPE_BUILDING_JOINED:
-        joinedObj = joinBuilding(buildingObj)
-    else:
-        joinedObj = buildingObj
-    
-    # 2、确认是否已经做了剖视 -----------------------
-    jData = joinedObj.ACA_data
-    # 获取当前剖视模式
+    # 剖视修改器名称，便于找回
+    sectionModName = 'Section'
+    # 当前剖视模式
     currentPlan = None
-    if 'sectionPlan' in jData:     
-        currentPlan = jData['sectionPlan']
-    # 判断是否已做剖视
-    if currentPlan == None:
-        # 未作剖视的新合并对象，无需特殊处理
-        pass
-    else:
-        # 如果剖视方案相同，解除剖视
-        if sectionPlan == currentPlan:
-            # 这里解除合并的同时，就会解除剖视
-            __undoJoin(buildingObj)
-            return
-        # 剖视方案不同，重新合并
-        else:
-            buildingObj = __undoJoin(buildingObj)
-            joinedObj = joinBuilding(buildingObj)
 
+    # 1、验证是否合并？是否剖视？ -----------------------
+    # 1.1、如果还未合并，先做合并
+    if bData.aca_type != con.ACA_TYPE_BUILDING_JOINED:
+        joinedObj = joinBuilding(
+            buildingObj,sectionPlan=sectionPlan)
+    # 1.2、如果已经合并，确认是否已经做了剖视
+    else:
+        # 当前剖视模式
+        if 'sectionPlan' in bData:     
+            currentPlan = bData['sectionPlan']
+        # 1.2.1、已合并但未作剖视的新合并对象，无需特殊处理
+        if currentPlan == None:
+            joinedObj = buildingObj
+        # 1.2.2、已合并已剖视的对象，需要重新处理
+        else:
+            # 1.2.2.1、如果剖视方案相同，解除剖视
+            if sectionPlan == currentPlan:
+                # 这里解除合并的同时，就会解除剖视
+                __undoJoin(buildingObj)
+                return
+            # 1.2.2.2、剖视方案不同，重新合并
+            else:
+                # 解除合并
+                buildingObj = __undoJoin(buildingObj)
+                joinedObj = joinBuilding(
+                    buildingObj,sectionPlan=sectionPlan)
     
-    # 3、开始做剖视 -----------------------
+    # 2、开始做剖视 -----------------------
     # 指定在合并目录中操作
     coll:bpy.types.Collection = utils.setCollection(
                 'ACA古建.合并',isRoot=True,colorTag=3)
@@ -281,15 +282,17 @@ def addSection(buildingObj:bpy.types.Object,
 
     # 逐个对象添加剖视修改器
     for sectionObj in sectionObjs:
+        # 1、清除老的bool ---------------------------
         # 确认该对象是否已经有boolean
         mod = sectionObj.modifiers.get(sectionModName)
-        # 已有boolean的直接复用boolObj
+        # 已有boolean的删除boolCube和modifier
         if mod != None:
             # 删除布尔对象
             utils.delObject(mod.object)
             # 删除修改器
             sectionObj.modifiers.remove(mod)
         
+        # 2、新建bool对象 -------------------------------
         # 命名
         boolName = 'b.' + sectionObj.name
         # 略作放大
@@ -309,16 +312,20 @@ def addSection(buildingObj:bpy.types.Object,
         boolObj.hide_render = True  # 不渲染输出
         # boolObj.hide_select = True    # 禁止选中
 
+        # 3、载入剖视方案 --------------------------
         # 设置剖视方案
-        offset = __getSectionPlan(boolObj,sectionPlan)
-        boolObj.location += offset
-
+        boolPlan = __getSectionPlan(boolObj,sectionPlan)
+        # 无需布尔的层直接跳过
+        if not boolPlan['bool']:
+            continue
+        
+        boolObj.location += boolPlan['offset']
         # 添加boolean
         utils.addModifierBoolean(
             name=sectionModName,
             object=sectionObj,
             boolObj=boolObj,
-            operation='INTERSECT',
+            operation=boolPlan['operation'],
         )
     
     joinedObj.ACA_data['sectionPlan']=sectionPlan 
@@ -331,39 +338,109 @@ def __getSectionPlan(boolObj:bpy.types.Object,
     Y_reserve = -0.35
     offset = Vector((0,0,0))
     origin_loc = boolObj.location.copy()
+    layerName = boolObj.name
+
+    # 每一层对象的布尔处理存入字典
+    boolPlan = {}
+    boolPlan['bool'] = False
+    # 默认无位移
+    boolPlan['offset'] = 0
+    # 操作类型，DIFFERENCE，INTERSECT，UNION
+    boolPlan['operation'] = 'DIFFERENCE'
 
     # Y剖面正方向
     if sectionType == 'Y+':
-        offset = Vector((
+        boolPlan['bool'] = True
+        boolPlan['offset'] = Vector((
             0,
-            boolObj.dimensions.y/2 + Y_reserve - origin_loc.y,
+            boolObj.dimensions.y/2 - Y_reserve - origin_loc.y,
             0
         ))
     elif sectionType == 'Y-':
-        offset = Vector((
+        boolPlan['bool'] = True
+        boolPlan['offset'] = Vector((
             0,
-            -boolObj.dimensions.y/2 - Y_reserve - origin_loc.y,
+            -boolObj.dimensions.y/2 + Y_reserve - origin_loc.y,
             0
         ))
     elif sectionType == 'X+':
-        offset = Vector((
+        boolPlan['bool'] = True
+        boolPlan['offset'] = Vector((
             boolObj.dimensions.x/2 - origin_loc.x,
             0,
             0
         ))
     elif sectionType == 'X-':
-        offset = Vector((
+        boolPlan['bool'] = True
+        boolPlan['offset'] = Vector((
             -boolObj.dimensions.x/2 - origin_loc.x,
             0,
             0
         ))
+    # 穿墙透壁模式
+    elif sectionType == 'A':
+        # 1-台基层，不裁剪
+        if con.COLL_NAME_BASE in layerName:
+            pass
+        # 2-柱网层
+        elif con.COLL_NAME_PILLER in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.75 - origin_loc.x,
+                -boolObj.dimensions.y*0.5 + Y_reserve,
+                boolObj.dimensions.z/2
+            ))
+        # 3-装修层
+        # 因为装修没有做到柱头（额枋），所以实际比柱网层裁剪更低
+        elif con.COLL_NAME_WALL in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x/2 - origin_loc.x,
+                -boolObj.dimensions.y*0.5 + Y_reserve,
+                boolObj.dimensions.z/2,
+            ))
+        # 4-斗栱层
+        elif con.COLL_NAME_DOUGONG in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.75 - origin_loc.x,
+                -boolObj.dimensions.y*0.5 + Y_reserve,
+                0,
+            ))
+        # 5-梁架层
+        elif con.COLL_NAME_BEAM in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x/2 - origin_loc.x,
+                -boolObj.dimensions.y*0.5 + Y_reserve,
+                0,
+            ))
+        # 6-椽望层
+        elif con.COLL_NAME_RAFTER in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x/2 - origin_loc.x,
+                -boolObj.dimensions.y*0.5,
+                0,
+            ))
+        # 7-瓦作层，裁剪整个右侧
+        elif con.COLL_NAME_TILE in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.35 - origin_loc.x,
+                0,
+                0,
+            ))
 
-    return offset
+    
+
+    return boolPlan
 
 # 组合建筑为一个实体
 # 或者解除组合恢复
 def joinBuilding(buildingObj:bpy.types.Object,
                  useLayer=False, # 是否分层合并
+                 sectionPlan=None, # 可根据剖视方案自动决定是否分层
                 ):
     # 合并对象的名称后缀
     joinSuffix = '.joined'
@@ -378,6 +455,12 @@ def joinBuilding(buildingObj:bpy.types.Object,
     # 墙体只有一级层次，不区分是否分层
     if bData.aca_type == con.ACA_TYPE_YARDWALL:
         useLayer = False
+    # 根据剖视方案决定是否分层
+    if sectionPlan != None:
+        if sectionPlan in ('X+','X-','Y+','Y-'):
+            useLayer = False
+        else:
+            useLayer = True
     
     # 开始合并处理 --------------------------------------
     # 1、复制建筑的整个集合，在复制集合上进行合并
@@ -490,14 +573,12 @@ def joinBuilding(buildingObj:bpy.types.Object,
     # 4、隐藏原建筑
     utils.hideCollection(collName)
 
-    # 5、聚焦
-    if useLayer:
-        focusObj = joinedRoot
-    else:
-        focusObj = joinedModel
-    utils.focusObj(focusObj)
+    # 5、聚焦根节点
+    if not useLayer:
+        joinedRoot = joinedModel
+    utils.focusObj(joinedRoot)
 
-    return joinedModel
+    return joinedRoot
 
 # 解除建筑合并
 def __undoJoin(buildingObj:bpy.types.Object):

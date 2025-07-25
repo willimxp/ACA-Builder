@@ -176,13 +176,13 @@ class ACA_PT_basic(bpy.types.Panel):
                          depress=isJoined)
         op.useLayer = False
         
-        # 分层合并
-        btnJoinLayer = toolBar.column(align=True)
-        btnJoinLayerName = '取消分层合并' if isJoined else '分层合并'
-        op = btnJoinLayer.operator("aca.join",icon='PACKAGE',
-                         text=btnJoinLayerName,
-                         depress=isJoined)
-        op.useLayer = True
+        # # 分层合并
+        # btnJoinLayer = toolBar.column(align=True)
+        # btnJoinLayerName = '取消分层合并' if isJoined else '分层合并'
+        # op = btnJoinLayer.operator("aca.join",icon='PACKAGE',
+        #                  text=btnJoinLayerName,
+        #                  depress=isJoined)
+        # op.useLayer = True
         
         # 第二行 ------------------------------
         toolBar = toolBox.grid_flow(columns=2, align=True)
@@ -230,6 +230,15 @@ class ACA_PT_basic(bpy.types.Panel):
             depress=(currentPlan=='Y-'),
             text='Y-')
         op.sectionPlan = 'Y-'  
+        # 第二行 ------------------------------
+        toolBar = toolBox.grid_flow(columns=4, align=True)
+        # 透视A
+        col = toolBar.column(align=True)
+        op = col.operator(
+            "aca.section",
+            depress=(currentPlan=='A'),
+            text='透视A')
+        op.sectionPlan = 'A'  
 
         # 性能分析按钮
         # row = layout.row()

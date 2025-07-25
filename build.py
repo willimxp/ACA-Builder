@@ -469,12 +469,17 @@ def joinBuilding(buildingObj:bpy.types.Object,
         # 重新映射坐标
         joinedModel.location = matrix @ joinedModel.location
         if useLayer:
-            utils.applyTransform2(joinedModel,use_location=True)
+            utils.applyTransform(joinedModel,
+                                  use_location=True,
+                                  use_rotation=True)
 
-        # 标示为ACA对象
-        joinedModel.ACA_data['aca_obj'] = True
-        joinedModel.ACA_data['aca_type'] = \
-            con.ACA_TYPE_BUILDING_JOINED
+        # 如果不分层，合并的节点标记为joined根节点
+        # 分层时，已经在前面添加过joined根节点
+        if not useLayer:
+            # 标示为ACA对象
+            joinedModel.ACA_data['aca_obj'] = True
+            joinedModel.ACA_data['aca_type'] = \
+                con.ACA_TYPE_BUILDING_JOINED
 
         # 2、添加到合并目录
         collJoined.objects.link(joinedModel)

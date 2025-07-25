@@ -339,7 +339,12 @@ def buildSingleWall(
     # 删除wallproxy
     utils.delObject(wallProxy)
 
-    return
+    # 8、应用矩阵
+    utils.applyTransform(wallObj,
+                         use_location=True,
+                         use_rotation=True,)
+
+    return wallObj
 
 # 墙体裁剪
 def __wallCutDiagnal(wallObj:bpy.types.Object,

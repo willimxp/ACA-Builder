@@ -367,6 +367,9 @@ def hide_tiles(self, context:bpy.types.Context):
     utils.hideLayer(
         context,con.COLL_NAME_TILE,
         self.is_showTiles)
+    utils.hideLayer(
+        context,con.COLL_NAME_BOARD,
+        self.is_showTiles)
 
 # 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据
 # https://docs.blender.org/api/current/bpy.props.html

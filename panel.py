@@ -993,7 +993,7 @@ class ACA_PT_beam(bpy.types.Panel):
                 inputLudingBujia.enabled = False
                 buttonDefaultLDBJ.enabled = False
 
-# “椽望属性”子面板
+# “椽架属性”子面板
 class ACA_PT_rafter(bpy.types.Panel):
     # 常规属性
     bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
@@ -1019,7 +1019,7 @@ class ACA_PT_rafter(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
-        row.prop(bData, "is_showRafter",text='椽望属性')
+        row.prop(bData, "is_showRafter",text='椽架属性')
         if bData.aca_type != con.ACA_TYPE_BUILDING:
             layout.enabled = False
 
@@ -1074,16 +1074,16 @@ class ACA_PT_rafter(bpy.types.Panel):
             ):
                 checkboxUseflyrafter.enabled = False
 
-            # 是否使用望板
-            if bData.use_wangban:
-                checkbox_icon = 'CHECKBOX_HLT'
-            else:
-                checkbox_icon = 'CHECKBOX_DEHLT'
-            checkboxUseWangban = toolBar.column(align=True)
-            checkboxUseWangban.prop(
-                bData, "use_wangban",
-                toggle=True,text='使用望板',
-                icon=checkbox_icon) 
+            # # 是否使用望板
+            # if bData.use_wangban:
+            #     checkbox_icon = 'CHECKBOX_HLT'
+            # else:
+            #     checkbox_icon = 'CHECKBOX_DEHLT'
+            # checkboxUseWangban = toolBar.column(align=True)
+            # checkboxUseWangban.prop(
+            #     bData, "use_wangban",
+            #     toggle=True,text='使用望板',
+            #     icon=checkbox_icon) 
             
             # 只有庑殿、歇山，可以设置冲、翘
             if bData.roof_style not in (

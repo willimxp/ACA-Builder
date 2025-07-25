@@ -15,8 +15,9 @@ class ACA_Consts(object):
     COLL_NAME_WALL = '3-装修层'
     COLL_NAME_DOUGONG = '4-斗栱层'
     COLL_NAME_BEAM = '5-梁架层'
-    COLL_NAME_RAFTER = '6-椽望层'
-    COLL_NAME_TILE = '7-瓦作层'
+    COLL_NAME_RAFTER = '6-椽架层'
+    COLL_NAME_BOARD = '7-山花/望板'
+    COLL_NAME_TILE = '8-瓦作层'
     
     # 系统参数
     PLATFORM_NAME = '台基'                                           # 台基名称
@@ -33,7 +34,8 @@ class ACA_Consts(object):
     ACA_TYPE_WALL_CHILD = 'wall_child'                              # ACA类型：墙体子对象
     ACA_TYPE_DG_ROOT ='dg_root'                                     # ACA类型：斗栱根节点
     ACA_TYPE_BEAM_ROOT = 'beam_root'                                # ACA类型：梁架根节点
-    ACA_TYPE_RAFTER_ROOT = 'rafter_root'                            # ACA类型：椽望根节点
+    ACA_TYPE_RAFTER_ROOT = 'rafter_root'                            # ACA类型：椽架根节点
+    ACA_TYPE_BOARD_ROOT = 'board_root'                              # ACA类型：望板根节点
     ACA_TYPE_RAFTER_FB = 'rafter_fb'                                # ACA类型：前后檐椽
     ACA_TYPE_RAFTER_LR = 'rafter_lr'                                # ACA类型：两山檐椽
     ACA_TYPE_FLYRAFTER_FB = 'flyrafter_fb'                          # 前后檐飞椽

@@ -264,6 +264,10 @@ def addSection(buildingObj:bpy.types.Object,
                 buildingObj = __undoJoin(buildingObj)
                 joinedObj = joinBuilding(
                     buildingObj,sectionPlan=sectionPlan)
+                
+    # 合并的结果需要进行一次刷新
+    # 否则可能出现getBoundCenter时结果错误
+    utils.updateScene()
     
     # 2、开始做剖视 -----------------------
     # 指定在合并目录中操作
@@ -386,24 +390,24 @@ def __getSectionPlan(boolObj:bpy.types.Object,
         elif con.COLL_NAME_PILLER in layerName:
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
-                boolObj.dimensions.x*0.75 - origin_loc.x,
+                boolObj.dimensions.x*0.7 - origin_loc.x,
                 -boolObj.dimensions.y*0.5 + Y_reserve,
-                boolObj.dimensions.z/2
+                boolObj.dimensions.z*0.3
             ))
         # 3-装修层
         # 因为装修没有做到柱头（额枋），所以实际比柱网层裁剪更低
         elif con.COLL_NAME_WALL in layerName:
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
-                boolObj.dimensions.x/2 - origin_loc.x,
-                -boolObj.dimensions.y*0.5 + Y_reserve,
-                boolObj.dimensions.z/2,
+                boolObj.dimensions.x*0.5 - origin_loc.x,
+                0, #-boolObj.dimensions.y*0.5 + Y_reserve,
+                boolObj.dimensions.z*0.2,
             ))
         # 4-斗栱层
         elif con.COLL_NAME_DOUGONG in layerName:
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
-                boolObj.dimensions.x*0.75 - origin_loc.x,
+                boolObj.dimensions.x*0.7 - origin_loc.x,
                 -boolObj.dimensions.y*0.5 + Y_reserve,
                 0,
             ))
@@ -411,23 +415,31 @@ def __getSectionPlan(boolObj:bpy.types.Object,
         elif con.COLL_NAME_BEAM in layerName:
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
-                boolObj.dimensions.x/2 - origin_loc.x,
+                boolObj.dimensions.x*0.7 - origin_loc.x,
                 -boolObj.dimensions.y*0.5 + Y_reserve,
                 0,
             ))
-        # 6-椽望层
+        # 6-椽架层
         elif con.COLL_NAME_RAFTER in layerName:
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
-                boolObj.dimensions.x/2 - origin_loc.x,
+                boolObj.dimensions.x*0.5 - origin_loc.x,
                 -boolObj.dimensions.y*0.5,
                 0,
             ))
-        # 7-瓦作层，裁剪整个右侧
+        # 7-山花望板层
+        elif con.COLL_NAME_BOARD in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.4 - origin_loc.x,
+                0,
+                0,
+            ))
+        # 8-瓦作层，裁剪整个右侧
         elif con.COLL_NAME_TILE in layerName:
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
-                boolObj.dimensions.x*0.35 - origin_loc.x,
+                boolObj.dimensions.x*0.3 - origin_loc.x,
                 0,
                 0,
             ))
@@ -442,25 +454,25 @@ def joinBuilding(buildingObj:bpy.types.Object,
                  useLayer=False, # 是否分层合并
                  sectionPlan=None, # 可根据剖视方案自动决定是否分层
                 ):
-    # 合并对象的名称后缀
-    joinSuffix = '.joined'
-    collcopySuffix = '.collcopy'
-    
     # 判断组合或解除组合
     buildingObj,bData,objData = utils.getRoot(buildingObj)
     if bData.aca_type == con.ACA_TYPE_BUILDING_JOINED:
         __undoJoin(buildingObj)
         return
     
-    # 墙体只有一级层次，不区分是否分层
-    if bData.aca_type == con.ACA_TYPE_YARDWALL:
-        useLayer = False
+    # 合并对象的名称后缀
+    joinSuffix = '.joined'
+    collcopySuffix = '.collcopy'
+
     # 根据剖视方案决定是否分层
     if sectionPlan != None:
         if sectionPlan in ('X+','X-','Y+','Y-'):
             useLayer = False
         else:
             useLayer = True
+    # 墙体只有一级层次，不区分是否分层
+    if bData.aca_type == con.ACA_TYPE_YARDWALL:
+        useLayer = False
     
     # 开始合并处理 --------------------------------------
     # 1、复制建筑的整个集合，在复制集合上进行合并
@@ -552,9 +564,10 @@ def joinBuilding(buildingObj:bpy.types.Object,
         # 重新映射坐标
         joinedModel.location = matrix @ joinedModel.location
         if useLayer:
-            utils.applyTransform(joinedModel,
+            utils.applyTransform2(joinedModel,
                                   use_location=True,
-                                  use_rotation=True)
+                                  use_rotation=True,
+                                  use_scale=True)
 
         # 如果不分层，合并的节点标记为joined根节点
         # 分层时，已经在前面添加过joined根节点

@@ -17,7 +17,7 @@ from . import buildBeam
 from . import buildRooftile
 from . import texture as mat
 
-# 设置“椽望”根节点
+# 设置“椽架”根节点
 def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 设置目录
     buildingColl = buildingObj.users_collection[0]
@@ -58,6 +58,47 @@ def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     rafterRootObj.location.z = zLoc
 
     return rafterRootObj
+
+# 设置“山花/望板”根节点
+def __addBoardRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
+    # 设置目录
+    buildingColl = buildingObj.users_collection[0]
+    utils.setCollection(
+        con.COLL_NAME_BOARD,
+        parentColl=buildingColl) 
+    
+    # 新建或清空根节点
+    boardRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_BOARD_ROOT)
+    if boardRootObj == None:        
+        # 创建椽望根对象
+        boardRootObj = utils.addEmpty(
+            name = con.COLL_NAME_BOARD,
+            parent = buildingObj,
+            location=(0,0,0)
+        )
+        boardRootObj.ACA_data['aca_obj'] = True
+        boardRootObj.ACA_data['aca_type'] = con.ACA_TYPE_BOARD_ROOT
+    else:
+        utils.deleteHierarchy(boardRootObj)
+        utils.focusCollByObj(boardRootObj)
+
+    # 250108 屋顶层原点改为柱头，椽望层相应抬高到斗栱高度
+    bData : acaData = buildingObj.ACA_data
+    dk = bData.DK
+    zLoc = bData.platform_height + bData.piller_height 
+    # 如果有斗栱，抬高斗栱高度
+    if bData.use_dg:
+        zLoc += bData.dg_height
+        # 是否使用平板枋
+        if bData.use_pingbanfang:
+            zLoc += con.PINGBANFANG_H*dk
+    else:
+        # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
+        zLoc += con.BOARD_YANHENG_H*dk
+    boardRootObj.location.z = zLoc
+
+    return boardRootObj
 
 # 根据给定的宽度，计算最佳的椽当宽度
 # 采用一椽一当，椽当略大于椽径
@@ -2856,6 +2897,19 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     if useWangban:
         wangbanSet = utils.joinObjects(
             wangbanObjs,newName='望板')
+        
+        # 将望板挂接到山花望板层
+        boardRootObj = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_BOARD_ROOT)
+        if boardRootObj == None:  
+            boardRootObj = __addBoardRoot(buildingObj)
+        wangbanSet.parent = boardRootObj
+        # 移动到望板collection
+        thisColl = wangbanSet.users_collection[0]
+        thisColl.objects.unlink(wangbanSet)
+        boardColl = boardRootObj.users_collection[0]
+        boardColl.objects.link(wangbanSet)
+
         # 设置材质
         mat.paint(wangbanSet,con.M_WANGBAN)
         utils.shaderSmooth(wangbanSet)
@@ -3524,6 +3578,18 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     )
     utils.applyAllModifer(bofengObj)
 
+    # 将博缝板挂接到山花望板层
+    boardRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_BOARD_ROOT)
+    if boardRootObj == None:  
+        boardRootObj = __addBoardRoot(buildingObj)
+    bofengObj.parent = boardRootObj
+    # 移动到望板collection
+    thisColl = bofengObj.users_collection[0]
+    thisColl.objects.unlink(bofengObj)
+    boardColl = boardRootObj.users_collection[0]
+    boardColl.objects.link(bofengObj)
+
     # 山花板
     if (bData.roof_style in (
             con.ROOF_XIESHAN,
@@ -3611,6 +3677,18 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         # 9、贴山花板贴材质
         mat.paint(shanhuaObj,con.M_SHANHUA,
                    override=True)
+        
+        # 将山花板挂接到山花望板层
+        boardRootObj = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_BOARD_ROOT)
+        if boardRootObj == None:  
+            boardRootObj = __addBoardRoot(buildingObj)
+        shanhuaObj.parent = boardRootObj
+        # 移动到望板collection
+        thisColl = shanhuaObj.users_collection[0]
+        thisColl.objects.unlink(shanhuaObj)
+        boardColl = boardRootObj.users_collection[0]
+        boardColl.objects.link(shanhuaObj)
 
     return bofengObj
 
@@ -3776,7 +3854,10 @@ def __buildShanWall(
 
 # 营造椽望层
 def __buildRafterFrame(buildingObj:bpy.types.Object):
-    # 设定“椽望”根节点
+    # 设定“山花望板”根节点
+    # 先做这个节点，以免后续的营造目录跳转到山花层
+    boardRootObj = __addBoardRoot(buildingObj)
+    # 设定“椽架”根节点
     rafterRootObj = __addRafterRoot(buildingObj)
 
     # 载入数据
@@ -3837,11 +3918,17 @@ def __clearRoof(buildingObj:bpy.types.Object):
     if beamRootObj != None: 
         utils.deleteHierarchy(beamRootObj)
 
-    # 椽望层
+    # 椽架层
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     if rafterRootObj != None: 
         utils.deleteHierarchy(rafterRootObj)
+
+    # 山花望板层
+    boardRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_BOARD_ROOT)
+    if boardRootObj != None: 
+        utils.deleteHierarchy(boardRootObj)
     
     # 瓦作层
     tileRootObj = utils.getAcaChild(

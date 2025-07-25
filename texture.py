@@ -21,8 +21,6 @@ class uvType:
     CYLINDER  = 'cylinder'
     WIN = 'win'
 
-
-
 # 二维点阵基于p点的缩放
 # v：待缩放的向量（vx，vy）
 # s: 缩放比例（sx，sy）
@@ -225,12 +223,14 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
     if buildingObj is None:
         buildingObj = utils.getAcaParent(
             paintObj,con.ACA_TYPE_YARDWALL)
-        if buildingObj is None:
-            utils.outputMsg("paint函数异常，未找到建筑对象")
-            return
-    bData:acaData = buildingObj.ACA_data
+    # 获取配色方案
+    if buildingObj != None:
+        # 有匹配的建筑类型，以建筑的配色为准
+        paintStyle = buildingObj.ACA_data.paint_style
+    else:
+        # 没有匹配的建筑类型，指定默认值
+        paintStyle = '0'
     aData:tmpData = bpy.context.scene.ACA_temp
-    paintStyle = bData.paint_style
     mat = None
     slot = None
 
@@ -265,11 +265,13 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
         ):
             mat = aData.mat_brick_2 # 条砖竖铺
     if paintMat in (
+            con.M_STONE, # 石头
             con.M_PILLER_BASE, # 柱顶石
             con.M_XIANGYAN, # 象眼板
         ):
             mat = aData.mat_stone # 石头
     if paintMat in (
+            con.M_WOOD, # 原木
             con.M_BEAM_NOPAINT, # 梁架-无漆
             con.M_ROOF_NOPAINT, # 屋顶-无漆
         ):

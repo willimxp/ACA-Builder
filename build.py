@@ -12,6 +12,7 @@ from . import template
 from . import buildFloor
 from . import buildYardWall
 from . import buildRoof
+from . import texture as mat
 
 # 全局参数 -----------------
 # 是否在运行
@@ -311,26 +312,27 @@ def addSection(buildingObj:bpy.types.Object,
             location=sectionLoc,
             parent=sectionObj
         )
-        # 设置外观
-        boolObj.display_type = 'WIRE'   # 只显示框线
-        boolObj.hide_render = True  # 不渲染输出
-        # boolObj.hide_select = True    # 禁止选中
-
+        
         # 3、载入剖视方案 --------------------------
         # 设置剖视方案
         boolPlan = __getSectionPlan(boolObj,sectionPlan)
-        # 无需布尔的层直接跳过
-        if not boolPlan['bool']:
-            continue
-        
+        # 布尔材质
+        mat.paint(boolObj,boolPlan['mat'])
+        # 布尔位移
         boolObj.location += boolPlan['offset']
-        # 添加boolean
-        utils.addModifierBoolean(
-            name=sectionModName,
-            object=sectionObj,
-            boolObj=boolObj,
-            operation=boolPlan['operation'],
-        )
+        # 设置外观
+        utils.hideObjFace(boolObj)
+        # boolObj.hide_select = True    # 禁止选中
+
+        # 仅对需要布尔的对象添加修改器
+        if boolPlan['bool']:
+            # 添加boolean
+            utils.addModifierBoolean(
+                name=sectionModName,
+                object=sectionObj,
+                boolObj=boolObj,
+                operation=boolPlan['operation'],
+            )
     
     joinedObj.ACA_data['sectionPlan']=sectionPlan 
     utils.focusObj(joinedObj)
@@ -348,9 +350,10 @@ def __getSectionPlan(boolObj:bpy.types.Object,
     boolPlan = {}
     boolPlan['bool'] = False
     # 默认无位移
-    boolPlan['offset'] = 0
+    boolPlan['offset'] = Vector((0,0,0))
     # 操作类型，DIFFERENCE，INTERSECT，UNION
     boolPlan['operation'] = 'DIFFERENCE'
+    boolPlan['mat'] = con.M_STONE
 
     # Y剖面正方向
     if sectionType == 'Y+':
@@ -394,6 +397,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
                 -boolObj.dimensions.y*0.5 + Y_reserve,
                 boolObj.dimensions.z*0.3
             ))
+            boolPlan['mat'] = con.M_WOOD
         # 3-装修层
         # 因为装修没有做到柱头（额枋），所以实际比柱网层裁剪更低
         elif con.COLL_NAME_WALL in layerName:
@@ -403,6 +407,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
                 0, #-boolObj.dimensions.y*0.5 + Y_reserve,
                 boolObj.dimensions.z*0.2,
             ))
+            boolPlan['mat'] = con.M_STONE
         # 4-斗栱层
         elif con.COLL_NAME_DOUGONG in layerName:
             boolPlan['bool'] = True
@@ -411,6 +416,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
                 -boolObj.dimensions.y*0.5 + Y_reserve,
                 0,
             ))
+            boolPlan['mat'] = con.M_WOOD
         # 5-梁架层
         elif con.COLL_NAME_BEAM in layerName:
             boolPlan['bool'] = True
@@ -419,6 +425,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
                 -boolObj.dimensions.y*0.5 + Y_reserve,
                 0,
             ))
+            boolPlan['mat'] = con.M_WOOD
         # 6-椽架层
         elif con.COLL_NAME_RAFTER in layerName:
             boolPlan['bool'] = True
@@ -427,6 +434,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
                 -boolObj.dimensions.y*0.5,
                 0,
             ))
+            boolPlan['mat'] = con.M_WOOD
         # 7-山花望板层
         elif con.COLL_NAME_BOARD in layerName:
             boolPlan['bool'] = True
@@ -435,6 +443,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
                 0,
                 0,
             ))
+            boolPlan['mat'] = con.M_WOOD
         # 8-瓦作层，裁剪整个右侧
         elif con.COLL_NAME_TILE in layerName:
             boolPlan['bool'] = True
@@ -443,6 +452,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
                 0,
                 0,
             ))
+            boolPlan['mat'] = con.M_STONE
 
     
 

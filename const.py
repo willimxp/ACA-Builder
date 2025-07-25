@@ -251,6 +251,8 @@ class ACA_Consts(object):
     M_PAINT = '上漆'
     M_GOLD = '金漆'
     M_GREEN = '绿漆'
+    M_STONE = '石头'
+    M_WOOD = '原木'
     M_BRICK_WALL = '砖墙'
     M_PLATFORM_FLOOR = '台基地面'
     M_PLATFORM_WALL = '台基陡板'

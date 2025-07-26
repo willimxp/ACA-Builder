@@ -101,6 +101,11 @@ def UvUnwrap(object:bpy.types.Object,
     # 非Mesh对象不能展UV
     if object.type not in ('MESH'):
         return
+    
+    # 聚焦对象
+    utils.focusObj(object)
+    # 应用modifier
+    utils.applyAllModifer(object)
 
     # 验证对象是否可以展UV，至少应该有一个以上的面
     bm = bmesh.new()
@@ -110,12 +115,6 @@ def UvUnwrap(object:bpy.types.Object,
     if faceCount == 0 : 
         utils.outputMsg("展UV异常，该对象不存在几何面")
         return
-    
-    # 聚焦对象
-    utils.focusObj(object)
-
-    # 应用modifier
-    utils.applyAllModifer(object)
 
     # 仅针对活跃材质active material
     if onlyActiveMat:

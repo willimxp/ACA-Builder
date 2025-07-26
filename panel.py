@@ -194,51 +194,65 @@ class ACA_PT_basic(bpy.types.Panel):
         col.operator("aca.export_glb",icon='EXPORT')   
 
         # 剖视图 ------------------------------            
-        # 获取当前剖视模式
-        currentPlan = None
-        if 'sectionPlan' in bData:     
-            currentPlan = bData['sectionPlan']
-
-        toolBox = box.column(align=True)
-        toolBox.label(text='添加剖视图：')
-        # 第一行 ------------------------------
-        toolBar = toolBox.grid_flow(columns=4, align=True)
-        # X+
-        buttonX_p = toolBar.column(align=True)
-        op1 = buttonX_p.operator("aca.section",
-                    depress=(currentPlan=='X+'),
-                    text='X+',)
-        op1.sectionPlan = 'X+'
-        # X-
-        col = toolBar.column(align=True)
-        op = col.operator(
-            "aca.section",
-            depress=(currentPlan=='X-'),
-            text='X-')
-        op.sectionPlan = 'X-'  
-        # Y+
-        col = toolBar.column(align=True)
-        op = col.operator(
-            "aca.section",
-            depress=(currentPlan=='Y+'),
-            text='Y+')
-        op.sectionPlan = 'Y+'
-        # Y-
-        col = toolBar.column(align=True)
-        op = col.operator(
-            "aca.section",
-            depress=(currentPlan=='Y-'),
-            text='Y-')
-        op.sectionPlan = 'Y-'  
-        # 第二行 ------------------------------
-        toolBar = toolBox.grid_flow(columns=4, align=True)
-        # 透视A
-        col = toolBar.column(align=True)
-        op = col.operator(
-            "aca.section",
-            depress=(currentPlan=='A'),
-            text='透视A')
-        op.sectionPlan = 'A'  
+        if bpy.app.version >= (4,5,0):
+            toolBox = box.column(align=True)
+            toolBox.label(text='添加剖视图：')
+            # 获取当前剖视模式
+            currentPlan = None
+            if 'sectionPlan' in bData:     
+                currentPlan = bData['sectionPlan']
+            # 第一行 ------------------------------
+            toolBar = toolBox.grid_flow(columns=4, align=True)
+            # X+
+            buttonX_p = toolBar.column(align=True)
+            op1 = buttonX_p.operator("aca.section",
+                        depress=(currentPlan=='X+'),
+                        text='侧视图',)
+            op1.sectionPlan = 'X+'
+            # # X-
+            # col = toolBar.column(align=True)
+            # op = col.operator(
+            #     "aca.section",
+            #     depress=(currentPlan=='X-'),
+            #     text='X-')
+            # op.sectionPlan = 'X-'  
+            # # Y+
+            # col = toolBar.column(align=True)
+            # op = col.operator(
+            #     "aca.section",
+            #     depress=(currentPlan=='Y+'),
+            #     text='Y+')
+            # op.sectionPlan = 'Y+'
+            # Y-
+            col = toolBar.column(align=True)
+            op = col.operator(
+                "aca.section",
+                depress=(currentPlan=='Y-'),
+                text='正视图')
+            op.sectionPlan = 'Y-'  
+            # 第二行 ------------------------------
+            toolBar = toolBox.grid_flow(columns=4, align=True)
+            # 透视A
+            col = toolBar.column(align=True)
+            op = col.operator(
+                "aca.section",
+                depress=(currentPlan=='A'),
+                text='透视A')
+            op.sectionPlan = 'A'  
+            # 透视B
+            col = toolBar.column(align=True)
+            op = col.operator(
+                "aca.section",
+                depress=(currentPlan=='B'),
+                text='透视B')
+            op.sectionPlan = 'B' 
+            # 透视C
+            col = toolBar.column(align=True)
+            op = col.operator(
+                "aca.section",
+                depress=(currentPlan=='C'),
+                text='透视C')
+            op.sectionPlan = 'C' 
 
         # 性能分析按钮
         # row = layout.row()

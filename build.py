@@ -391,9 +391,53 @@ def __getSectionPlan(boolObj:bpy.types.Object,
             pass
         # 2-柱网层
         elif con.COLL_NAME_PILLER in layerName:
+            pass
+        # 3-装修层
+        # 因为装修没有做到柱头（额枋），所以实际比柱网层裁剪更低
+        elif con.COLL_NAME_WALL in layerName:
+            pass
+        # 4-斗栱层
+        elif con.COLL_NAME_DOUGONG in layerName:
+            pass
+        # 5-梁架层
+        elif con.COLL_NAME_BEAM in layerName:
+            pass
+        # 6-椽架层
+        elif con.COLL_NAME_RAFTER in layerName:
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
-                boolObj.dimensions.x*0.7 - origin_loc.x,
+                boolObj.dimensions.x*0.5 - origin_loc.x,
+                -boolObj.dimensions.y*0.5,
+                0,
+            ))
+            boolPlan['mat'] = con.M_WOOD
+        # 7-山花望板层
+        elif con.COLL_NAME_BOARD in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.4 - origin_loc.x,
+                0,
+                0,
+            ))
+            boolPlan['mat'] = con.M_WOOD
+        # 8-瓦作层，裁剪整个右侧
+        elif con.COLL_NAME_TILE in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.35 - origin_loc.x,
+                0,
+                0,
+            ))
+            boolPlan['mat'] = con.M_STONE
+    elif sectionType == 'B':
+        # 1-台基层，不裁剪
+        if con.COLL_NAME_BASE in layerName:
+            pass
+        # 2-柱网层
+        elif con.COLL_NAME_PILLER in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.5 - origin_loc.x,
                 -boolObj.dimensions.y*0.5 + Y_reserve,
                 boolObj.dimensions.z*0.3
             ))
@@ -404,7 +448,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
                 boolObj.dimensions.x*0.5 - origin_loc.x,
-                0, #-boolObj.dimensions.y*0.5 + Y_reserve,
+                -boolObj.dimensions.y*0.5 + Y_reserve,
                 boolObj.dimensions.z*0.2,
             ))
             boolPlan['mat'] = con.M_STONE
@@ -412,7 +456,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
         elif con.COLL_NAME_DOUGONG in layerName:
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
-                boolObj.dimensions.x*0.7 - origin_loc.x,
+                boolObj.dimensions.x*0.5 - origin_loc.x,
                 -boolObj.dimensions.y*0.5 + Y_reserve,
                 0,
             ))
@@ -421,7 +465,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
         elif con.COLL_NAME_BEAM in layerName:
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
-                boolObj.dimensions.x*0.7 - origin_loc.x,
+                boolObj.dimensions.x*0.5 - origin_loc.x,
                 -boolObj.dimensions.y*0.5 + Y_reserve,
                 0,
             ))
@@ -448,7 +492,75 @@ def __getSectionPlan(boolObj:bpy.types.Object,
         elif con.COLL_NAME_TILE in layerName:
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
-                boolObj.dimensions.x*0.3 - origin_loc.x,
+                boolObj.dimensions.x*0.35 - origin_loc.x,
+                0,
+                0,
+            ))
+            boolPlan['mat'] = con.M_STONE
+    elif sectionType == 'C':
+        # 1-台基层，不裁剪
+        if con.COLL_NAME_BASE in layerName:
+            pass
+        # 2-柱网层
+        elif con.COLL_NAME_PILLER in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.5 - origin_loc.x,
+                0,
+                boolObj.dimensions.z*0.3
+            ))
+            boolPlan['mat'] = con.M_WOOD
+        # 3-装修层
+        # 因为装修没有做到柱头（额枋），所以实际比柱网层裁剪更低
+        elif con.COLL_NAME_WALL in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.5 - origin_loc.x,
+                0, 
+                boolObj.dimensions.z*0.2,
+            ))
+            boolPlan['mat'] = con.M_STONE
+        # 4-斗栱层
+        elif con.COLL_NAME_DOUGONG in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.5 - origin_loc.x,
+                0,
+                0,
+            ))
+            boolPlan['mat'] = con.M_WOOD
+        # 5-梁架层
+        elif con.COLL_NAME_BEAM in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.5 - origin_loc.x,
+                0,
+                0,
+            ))
+            boolPlan['mat'] = con.M_WOOD
+        # 6-椽架层
+        elif con.COLL_NAME_RAFTER in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.5 - origin_loc.x,
+                0,
+                0,
+            ))
+            boolPlan['mat'] = con.M_WOOD
+        # 7-山花望板层
+        elif con.COLL_NAME_BOARD in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.4 - origin_loc.x,
+                0,
+                0,
+            ))
+            boolPlan['mat'] = con.M_WOOD
+        # 8-瓦作层，裁剪整个右侧
+        elif con.COLL_NAME_TILE in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.35 - origin_loc.x,
                 0,
                 0,
             ))

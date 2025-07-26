@@ -3938,14 +3938,32 @@ def __clearRoof(buildingObj:bpy.types.Object):
     
     return
 
+# 屋顶设置参数的合法性校验
+# 因为屋顶参数很多，互相牵连，需要进行约束
+def __checkRoofSettings(buildingObj:bpy.types.Object):
+    bData:acaData = buildingObj.ACA_data
+    
+    # 验证廊间举架
+    isValid = True
+    if bData.use_hallway:
+        # 至少应该进深3间
+        if bData.y_rooms<3:
+            isValid = False
+        if not isValid:
+            bData['use_hallway'] = False
+            utils.outputMsg("进深小于3间，已自动禁止廊间举架")
+    return
 
 # 营造整个房顶
 def buildRoof(buildingObj:bpy.types.Object):
     # 刷新屋顶
     __clearRoof(buildingObj)
     
+    # 屋顶设置校验
+    __checkRoofSettings(buildingObj)
+
     # 载入数据
-    bData:acaData = buildingObj.ACA_data    
+    bData:acaData = buildingObj.ACA_data
 
     # 层间的依赖，自动处理
     # 斗栱层、梁架层、椽望层都已经分别解耦，可以独立生成

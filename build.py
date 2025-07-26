@@ -238,6 +238,7 @@ def addSection(buildingObj:bpy.types.Object,
     sectionModName = 'Section'
     # 当前剖视模式
     currentPlan = None
+    joinedObj = None
 
     # 1、验证是否合并？是否剖视？ -----------------------
     # 1.1、如果还未合并，先做合并
@@ -265,7 +266,12 @@ def addSection(buildingObj:bpy.types.Object,
                 buildingObj = __undoJoin(buildingObj)
                 joinedObj = joinBuilding(
                     buildingObj,sectionPlan=sectionPlan)
-                
+    
+    # 验证是否合并成功
+    if joinedObj == None:
+        utils.outputMsg("合并失败，无法继续做剖视图")
+        return
+    
     # 合并的结果需要进行一次刷新
     # 否则可能出现getBoundCenter时结果错误
     utils.updateScene()
@@ -582,6 +588,7 @@ def joinBuilding(buildingObj:bpy.types.Object,
         __undoJoin(buildingObj)
         return
     
+    # 1、参数和变量 --------------------------
     # 合并对象的名称后缀
     joinSuffix = '.joined'
     collcopySuffix = '.collcopy'
@@ -596,19 +603,30 @@ def joinBuilding(buildingObj:bpy.types.Object,
     if bData.aca_type == con.ACA_TYPE_YARDWALL:
         useLayer = False
     
-    # 开始合并处理 --------------------------------------
-    # 1、复制建筑的整个集合，在复制集合上进行合并
+    # 2、准备合并的组织结构 ------------------------------------
+    # 2.1、复制建筑的整个集合，在复制集合上进行合并
     # 这样不会影响原有的生成模型
     collName = buildingObj.users_collection[0].name
     collCopy = utils.copyCollection(collName,collName + collcopySuffix)
-    # 第一个对象就是建筑根节点，这样判断可能不够安全
-    buildingObjCopy = collCopy.objects[0]
-    # 新建/绑定合并集合
+
+    # 2.2、新建/绑定合并集合
     collJoined = utils.setCollection(
             'ACA古建.合并',isRoot=True,colorTag=3)
+    
+    # 2.3、复制原始建筑根节点，做为合并对象的根节点
+    # 第一个对象就是建筑根节点，这样判断可能不够安全
+    buildingObjCopy = collCopy.objects[0]    
+    # 复制生成分层合并的父节点
+    joinedRoot = utils.copySimplyObject(buildingObjCopy)
+    # 设置名称
+    joinedRoot.name = buildingObj.name + joinSuffix
+    # 标示为ACA对象
+    joinedRoot.ACA_data['aca_obj'] = True
+    joinedRoot.ACA_data['aca_type'] = \
+        con.ACA_TYPE_BUILDING_JOINED
 
-    # 2、合并对象
-    # 2.1、选择所有下级层次对象
+    # 3、开始合并对象 -------------------------------------
+    # 3.1、选择所有下级层次对象
     partObjList = []    # 在addChild中递归填充
     def addChild(buildingObjCopy):
         for childObj in buildingObjCopy.children:
@@ -625,30 +643,22 @@ def joinBuilding(buildingObj:bpy.types.Object,
             if childObj.children:
                 addChild(childObj)
     
-    # 2.2、合并对象
+    # 3.2、合并对象
     # 判断是否需要分层合并
     layerList = []
     if useLayer:
         layerList = buildingObjCopy.children
-        # 复制生成分层合并的父节点
-        joinedRoot = utils.copySimplyObject(buildingObjCopy)
-        # 设置名称
-        joinedRoot.name = buildingObj.name + joinSuffix
-        # 标示为ACA对象
-        joinedRoot.ACA_data['aca_obj'] = True
-        joinedRoot.ACA_data['aca_type'] = \
-            con.ACA_TYPE_BUILDING_JOINED
     else:
         layerList.append(buildingObjCopy)
 
-    # 分层合并
+    # 3.3、分层合并
     for layer in layerList:
         # 递归填充待合并对象
         partObjList.clear()
         addChild(layer)
         if len(partObjList) == 0 :
-            print("失败，递归查询未找到待合并对象")
-            return
+            print(f"{layer.name}没有需要合并的对象，继续...")
+            continue
         
         # 区分是否分层的不同命名规则
         if useLayer:
@@ -659,6 +669,12 @@ def joinBuilding(buildingObj:bpy.types.Object,
         else:
             # 合并名称直接加'joined'后缀
             joinedName = buildingObj.name + joinSuffix
+
+        # 合并前提取第一个子对象的父节点矩阵
+        # 为后续重新绑定父节点做准备
+        # 一般可能是台基层，或柱网层根节点
+        baseMatrix = partObjList[0].parent.matrix_local.copy()
+
         # 合并对象
         joinedModel = utils.joinObjects(
             objList=partObjList,
@@ -666,38 +682,25 @@ def joinBuilding(buildingObj:bpy.types.Object,
         
         # 区分是否分层的坐标映射
         if useLayer:
-            # 绑定在以前复制生成的根节点
-            layerParent = joinedRoot
             # 取各个分层的局部坐标
             matrix = joinedModel.parent.matrix_local  
         else:
-            # 合并到了buildingObj根节点
-            layerParent = None
             # 墙体只有一级层次，不区分是否分层
             if joinedModel.parent.ACA_data.aca_type == \
                 con.ACA_TYPE_YARDWALL:
-                matrix = joinedModel.parent.matrix_world
-            else:
-                # 直接取全局坐标
-                matrix = joinedModel.matrix_world
+                matrix = joinedModel.matrix_local
+            else:                
+                # 不分层的建筑体，取合并基准的父节点坐标系
+                matrix = baseMatrix
 
         # 重新绑定父级对象
-        joinedModel.parent = layerParent
+        joinedModel.parent = joinedRoot
         # 重新映射坐标
         joinedModel.location = matrix @ joinedModel.location
-        if useLayer:
-            utils.applyTransform2(joinedModel,
-                                  use_location=True,
-                                  use_rotation=True,
-                                  use_scale=True)
-
-        # 如果不分层，合并的节点标记为joined根节点
-        # 分层时，已经在前面添加过joined根节点
-        if not useLayer:
-            # 标示为ACA对象
-            joinedModel.ACA_data['aca_obj'] = True
-            joinedModel.ACA_data['aca_type'] = \
-                con.ACA_TYPE_BUILDING_JOINED
+        utils.applyTransform2(joinedModel,
+                                use_location=True,
+                                use_rotation=True,
+                                use_scale=True)
 
         # 2、添加到合并目录
         collJoined.objects.link(joinedModel)
@@ -709,8 +712,6 @@ def joinBuilding(buildingObj:bpy.types.Object,
     utils.hideCollection(collName)
 
     # 5、聚焦根节点
-    if not useLayer:
-        joinedRoot = joinedModel
     utils.focusObj(joinedRoot)
 
     return joinedRoot

@@ -714,9 +714,7 @@ def __drawTileBool(
     # 起始点，从子角梁头向外延伸，确保包住所有瓦片
     p0 = bData.roof_qiao_point.copy()
     # 为了保险起见，切割体做到建筑的地平高度
-    offsetz = (p0.z 
-               + tileRootObj.location.z 
-               + roofBaseZ)
+    offsetz = p0.z + tileRootObj.location.z
     p0 += Vector((6*dk,6*dk,-offsetz))
     # 插入前点
     vectors.insert(0,p0)

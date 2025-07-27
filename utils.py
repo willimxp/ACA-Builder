@@ -1602,6 +1602,7 @@ def addCurveByPoints(CurvePoints,
         curveData.bevel_mode = 'OBJECT'
         curveData.bevel_object = bevel_object
         polyline.use_smooth = False
+        hideObj(bevel_object)
 
     # 曲线对象加入场景
     curveOBJ = bpy.data.objects.new(name, curveData)

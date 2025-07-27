@@ -233,22 +233,22 @@ class ACA_PT_basic(bpy.types.Panel):
             # 第二行 ------------------------------
             toolBar = toolBox.grid_flow(columns=4, align=True)
             # 透视A
-            col = toolBar.column(align=True)
-            op = col.operator(
+            btnSectionA = toolBar.column(align=True)
+            op = btnSectionA.operator(
                 "aca.section",
                 depress=(currentPlan=='A'),
                 text='透视A')
             op.sectionPlan = 'A'  
             # 透视B
-            col = toolBar.column(align=True)
-            op = col.operator(
+            btnSectionB = toolBar.column(align=True)
+            op = btnSectionB.operator(
                 "aca.section",
                 depress=(currentPlan=='B'),
                 text='透视B')
             op.sectionPlan = 'B' 
             # 透视C
-            col = toolBar.column(align=True)
-            op = col.operator(
+            btnSectionC = toolBar.column(align=True)
+            op = btnSectionC.operator(
                 "aca.section",
                 depress=(currentPlan=='C'),
                 text='透视C')

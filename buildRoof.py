@@ -12,6 +12,7 @@ from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
 from . import utils
+from . import buildWall
 from . import buildDougong
 from . import buildBeam
 from . import buildRooftile
@@ -3849,6 +3850,25 @@ def __buildShanWall(
         mirrorObj=rafterRootObj,
         use_axis=(True,False,False)
     )
+
+    # 将山墙挂接到装修层
+    wallrootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_WALL_ROOT)
+    if wallrootObj == None:  
+        wallrootObj = buildWall.__addWallrootNode(buildingObj)
+    shanwallJoin.location = (
+        wallrootObj.matrix_local.inverted() 
+        @ shanwallJoin.parent.matrix_world 
+        @ shanWallObj.location)
+    shanwallJoin.parent = wallrootObj
+    # 移动到望板collection
+    thisColl = shanwallJoin.users_collection[0]
+    thisColl.objects.unlink(shanwallJoin)
+    wallColl = wallrootObj.users_collection[0]
+    wallColl.objects.link(shanwallJoin)
+    # 标注类型，便于重新生成屋顶时，及时清理
+    shanwallJoin.ACA_data['aca_type'] = \
+        con.ACA_TYPE_WALL_SHAN
     
     return
 
@@ -3935,6 +3955,12 @@ def __clearRoof(buildingObj:bpy.types.Object):
         buildingObj,con.ACA_TYPE_TILE_ROOT)
     if tileRootObj != None: 
         utils.deleteHierarchy(tileRootObj)
+
+    # 硬山的山墙
+    shanwallObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_WALL_SHAN)
+    if tileRootObj != None: 
+        utils.delObject(shanwallObj)
     
     return
 

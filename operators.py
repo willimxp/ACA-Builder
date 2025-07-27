@@ -65,6 +65,7 @@ class ACA_OT_add_building(bpy.types.Operator):
         if message != '':
             utils.popMessageBox(message)
             self.report(type,message)
+            utils.outputMsg(message)
         return {'FINISHED'}
 
 # 更新建筑
@@ -97,6 +98,7 @@ class ACA_OT_update_building(bpy.types.Operator):
         if message != '':
             utils.popMessageBox(message)
             self.report(type,message)
+            utils.outputMsg(message)
 
         return {'FINISHED'}
     

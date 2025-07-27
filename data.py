@@ -744,7 +744,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     roof_style : bpy.props.EnumProperty(
             name = "屋顶类型",
             items = [
-                ("","",""),
+                ("0","",""),
                 ("1","庑殿顶",""),
                 ("2","歇山顶",""),
                 ("3","悬山顶",""),

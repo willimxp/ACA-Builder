@@ -1022,6 +1022,7 @@ def buildPillers(buildingObj:bpy.types.Object):
     net_x,net_y = getFloorDate(buildingObj)
     x_rooms = bData.x_rooms   # 面阔几间
     y_rooms = bData.y_rooms   # 进深几间
+    pillerList = []
     for y in range(y_rooms + 1):
         for x in range(x_rooms + 1):
             # 统一命名为“柱.x/y”，以免更换不同柱形时，减柱设置失效
@@ -1051,12 +1052,9 @@ def buildPillers(buildingObj:bpy.types.Object):
             pillerObj.dimensions = (
                 pd,pd,pillerHeight
             )
-            # 应用拉伸
-            utils.applyTransform(pillerObj,use_scale=True)
-
-            # 柱头贴图，注意此方法会破坏原有柱对象，并返回新对象
-            newPillerObj = mat.paint(pillerObj,con.M_PILLER_HEAD,
-                       override=True)
+            # 应用拉伸，不要立即刷新
+            utils.applyTransform(pillerObj,use_scale=True,autoUpdate=False)
+            pillerList.append(pillerObj)
 
             # 复制柱础
             pillerbase_basemesh:bpy.types.Object = utils.copySimplyObject(
@@ -1067,7 +1065,7 @@ def buildPillers(buildingObj:bpy.types.Object):
                         pd/piller_source.dimensions.y,
                         pd/piller_source.dimensions.x,
                     ),
-                parentObj=newPillerObj
+                parentObj=pillerObj
             )
             # 柱础材质：石头
             mat.paint(pillerbase_basemesh,con.M_PILLER_BASE)
@@ -1075,10 +1073,18 @@ def buildPillers(buildingObj:bpy.types.Object):
             # 复制柱顶石
             pillerBottomObj = utils.copySimplyObject(
                 sourceObj=pillerBottom_basemesh,
-                parentObj=newPillerObj
+                parentObj=pillerObj
             )
-        utils.outputMsg("Builded piller in line ...")
+        # utils.outputMsg("Builded piller in line ...")
 
+    # 做柱头彩画
+    # 将排布柱子循环中对柱高的修改，批量评估，极高的提高效率
+    utils.updateScene()
+    for piller in pillerList:
+        # 柱头贴图，注意此方法会破坏原有柱对象，并返回新对象
+        newPillerObj = mat.paint(piller,con.M_PILLER_HEAD,
+                    override=True)
+    
     # 移除柱子和柱顶石模板    
     bpy.data.objects.remove(pillerBottom_basemesh)
     utils.delObject(piller_source)

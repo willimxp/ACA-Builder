@@ -399,7 +399,8 @@ def applyTransform2(ob,
 def applyTransform(ob, 
                     use_location=False, 
                     use_rotation=False, 
-                    use_scale=False):
+                    use_scale=False,
+                    autoUpdate=True):
     mb = ob.matrix_basis
     I = Matrix()
     loc, rot, scale = mb.decompose()
@@ -442,7 +443,8 @@ def applyTransform(ob,
         
     ob.matrix_basis = basis[0] @ basis[1] @ basis[2]
     # 强制一次刷新，以便对象的dimension能够准确应用
-    updateScene()
+    if autoUpdate:
+        updateScene()
 
 # 强制聚焦到对象
 def focusObj(object:bpy.types.Object):
@@ -845,6 +847,10 @@ def fastRun(func):
     
     # 再次清理数据
     delOrphan()
+
+    # 回收内存
+    import gc
+    gc.collect()              
 
     return result
 

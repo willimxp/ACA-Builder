@@ -1249,7 +1249,7 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
 # 纵剖视图
 class ACA_OT_SECTION(bpy.types.Operator):
     bl_idname="aca.section"
-    bl_label = "纵剖视图"
+    bl_label = "添加剖视图"
     bl_options = {'REGISTER', 'UNDO'}
 
     # 参数：剖视方案

@@ -963,7 +963,6 @@ def buildPillers(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     pd = bData.piller_diameter
-    ph = bData.piller_height
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]
@@ -994,7 +993,10 @@ def buildPillers(buildingObj:bpy.types.Object):
         # 清空地盘下所有的柱子、柱础
         utils.deleteHierarchy(floorRootObj)
 
-    # 2、生成柱顶石模板，因为是简单立方体，就不做模板导入了
+    # 2、柱子素材准备
+    piller_source = utils.copySimplyObject(
+        aData.piller_source,singleUser=True)
+    # 生成柱顶石模板，因为是简单立方体，就不做模板导入了
     pillerBase_h = 0.3
     pillerBase_popup = 0.02
     # 柱顶石边长（为了防止与方砖缦地交叠，做了1/10000的放大）
@@ -1020,7 +1022,6 @@ def buildPillers(buildingObj:bpy.types.Object):
     net_x,net_y = getFloorDate(buildingObj)
     x_rooms = bData.x_rooms   # 面阔几间
     y_rooms = bData.y_rooms   # 进深几间
-    piller_source = aData.piller_source
     for y in range(y_rooms + 1):
         for x in range(x_rooms + 1):
             # 统一命名为“柱.x/y”，以免更换不同柱形时，减柱设置失效
@@ -1034,11 +1035,10 @@ def buildPillers(buildingObj:bpy.types.Object):
                     continue    # 结束本次循环
 
             # 复制柱子，仅instance，包含modifier
-            pillerObj = utils.copyObject(
+            pillerObj = utils.copySimplyObject(
                 sourceObj = piller_source,
                 name = '柱子.'+pillerID,
                 location=(net_x[x],net_y[y],0),
-                dimensions=(pd,pd,ph),
                 parentObj = floorRootObj,
                 singleUser=True # 内外柱不等高，为避免打架，全部
             )
@@ -1046,8 +1046,11 @@ def buildPillers(buildingObj:bpy.types.Object):
             pillerObj.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
             pillerObj.ACA_data['pillerID'] = pillerID
             # 250212 金柱的升高处理（包含廊间举架）
-            pillerObj.dimensions.z = getPillerHeight(
+            pillerHeight = getPillerHeight(
                     buildingObj,pillerID)
+            pillerObj.dimensions = (
+                pd,pd,pillerHeight
+            )
             # 应用拉伸
             utils.applyTransform(pillerObj,use_scale=True)
 
@@ -1074,9 +1077,11 @@ def buildPillers(buildingObj:bpy.types.Object):
                 sourceObj=pillerBottom_basemesh,
                 parentObj=newPillerObj
             )
+        utils.outputMsg("Builded piller in line ...")
 
-    # 移除柱顶石模板    
+    # 移除柱子和柱顶石模板    
     bpy.data.objects.remove(pillerBottom_basemesh)
+    utils.delObject(piller_source)
 
     # 重新生成柱网配置
     floorChildren:List[bpy.types.Object] = floorRootObj.children

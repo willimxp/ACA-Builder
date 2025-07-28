@@ -1333,12 +1333,6 @@ def redrawViewport():
     if do:
         bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
 
-    # 提升刷新的稳定性，之前经常出现刷新无响应
-    # 用定时器控制刷新器，避免重复创建，并确保使用后清理
-    if bpy.app.timers.is_registered(redrawViewport):
-        bpy.app.timers.unregister(redrawViewport)
-    bpy.app.timers.register(redrawViewport, first_interval=0.5)
-
 # 删除所有无用数据，以免拖累性能
 def delOrphan():
     bpy.ops.outliner.orphans_purge(

@@ -898,7 +898,12 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
     else:
         # 庑殿的趴梁
         if bData.roof_style == con.ROOF_WUDIAN:
-            beamRange = range(0,len(purlin_pos)-2)
+            # 廊间举架的区别
+            if bData.use_hallway:
+                # 廊间不做趴梁
+                beamRange = range(1,len(purlin_pos)-2)
+            else:
+                beamRange = range(0,len(purlin_pos)-2)
         # 歇山的趴梁只从正心桁向上做一根
         if bData.roof_style in (con.ROOF_XIESHAN,
                      con.ROOF_XIESHAN_JUANPENG):

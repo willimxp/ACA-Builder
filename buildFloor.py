@@ -933,15 +933,8 @@ def getPillerHeight(buildingObj,pillerID):
         if bData.use_dg:
             rafterSpan += bData.dg_extend
         # 乘以举折系数
-        lift_ratio = []
-        if bData.juzhe == '0':
-            lift_ratio = con.LIFT_RATIO_DEFAULT
-        if bData.juzhe == '1':
-            lift_ratio = con.LIFT_RATIO_BIG
-        if bData.juzhe == '2':
-            lift_ratio = con.LIFT_RATIO_SMALL
-        if bData.juzhe == '3':
-            lift_ratio = con.LIFT_RATIO_FLAT
+        from . import buildBeam
+        lift_ratio = buildBeam.getLiftRatio(buildingObj)
         pillerHeight += rafterSpan*lift_ratio[0]  
 
         # 250225 补偿檐桁垫板与金桁垫板的高度差
@@ -1052,21 +1045,19 @@ def buildPillers(buildingObj:bpy.types.Object):
             pillerObj.dimensions = (
                 pd,pd,pillerHeight
             )
-            # 应用拉伸，不要立即刷新
-            utils.applyTransform(pillerObj,use_scale=True,autoUpdate=False)
             pillerList.append(pillerObj)
 
             # 复制柱础
             pillerbase_basemesh:bpy.types.Object = utils.copySimplyObject(
                 sourceObj=aData.pillerbase_source,
                 location=(0,0,0),
-                scale=(
+                parentObj=pillerObj
+            )
+            pillerbase_basemesh.dimensions = (
                         pd/piller_source.dimensions.x,
                         pd/piller_source.dimensions.y,
                         pd/piller_source.dimensions.x,
-                    ),
-                parentObj=pillerObj
-            )
+                    )
             # 柱础材质：石头
             mat.paint(pillerbase_basemesh,con.M_PILLER_BASE)
             
@@ -1075,7 +1066,6 @@ def buildPillers(buildingObj:bpy.types.Object):
                 sourceObj=pillerBottom_basemesh,
                 parentObj=pillerObj
             )
-        # utils.outputMsg("Builded piller in line ...")
 
     # 做柱头彩画
     # 将排布柱子循环中对柱高的修改，批量评估，极高的提高效率

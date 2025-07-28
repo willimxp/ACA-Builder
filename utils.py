@@ -814,6 +814,13 @@ def drawHexagon(dimensions:Vector,
 def fastRun(func):
     # 清理垃圾数据
     delOrphan()
+
+    # 禁用细分
+    # 防止由于频繁调用evaluated_depsgraph_get导致的内存泄漏
+    # 比如，点击更新建筑7次以后，内存突然耗尽，导致blender失去响应，最终崩溃
+    # 经过反复的实验，启用simplify以后可以有效规避此问题，具体原因不详
+    bpy.context.scene.render.use_simplify = True
+    bpy.context.scene.render.simplify_subdivision = 0
     
     # 关闭viewlayer的刷新
     from bpy.ops import _BPyOpsSubModOp
@@ -850,7 +857,11 @@ def fastRun(func):
 
     # 回收内存
     import gc
-    gc.collect()              
+    gc.collect()  
+
+    # 恢复细分
+    bpy.context.scene.render.use_simplify = False
+    bpy.context.scene.render.simplify_subdivision = 6
 
     return result
 

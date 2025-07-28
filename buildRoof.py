@@ -3959,7 +3959,7 @@ def __clearRoof(buildingObj:bpy.types.Object):
     # 硬山的山墙
     shanwallObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_WALL_SHAN)
-    if tileRootObj != None: 
+    if shanwallObj != None: 
         utils.delObject(shanwallObj)
     
     return

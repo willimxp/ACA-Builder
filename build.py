@@ -648,6 +648,15 @@ def joinBuilding(buildingObj:bpy.types.Object,
         useLayer = False
     
     # 2、准备合并的组织结构 ------------------------------------
+    # 2.0、combo组合替换根对象
+    isCombo = False
+    if buildingObj.parent is not None:
+        buildingObj = buildingObj.parent
+        isCombo = True
+    if buildingObj.ACA_data.aca_type == \
+        con.ACA_TYPE_COMBO:
+        isCombo = True
+
     # 2.1、复制建筑的整个集合，在复制集合上进行合并
     # 这样不会影响原有的生成模型
     collName = buildingObj.users_collection[0].name
@@ -691,8 +700,15 @@ def joinBuilding(buildingObj:bpy.types.Object,
     # 判断是否需要分层合并
     layerList = []
     if useLayer:
-        layerList = buildingObjCopy.children
+        # 如果组合建筑，将每个单体的每一层都独立追加
+        if isCombo:
+            for singleBuilding in buildingObjCopy.children:
+                layerList += singleBuilding.children
+        # 单体建筑以本身的分层处理
+        else:
+            layerList = buildingObjCopy.children
     else:
+        # 不分层
         layerList.append(buildingObjCopy)
 
     # 3.3、分层合并
@@ -726,8 +742,13 @@ def joinBuilding(buildingObj:bpy.types.Object,
         
         # 区分是否分层的坐标映射
         if useLayer:
-            # 取各个分层的局部坐标
-            matrix = joinedModel.parent.matrix_local  
+            if isCombo:
+                # 组合建筑要分别取两层的转换
+                matrix = (joinedModel.parent.parent.matrix_local 
+                          @ joinedModel.parent.matrix_local)
+            else:
+                # 取各个分层的局部坐标
+                matrix = joinedModel.parent.matrix_local  
         else:
             # 墙体只有一级层次，不区分是否分层
             if joinedModel.parent.ACA_data.aca_type == \

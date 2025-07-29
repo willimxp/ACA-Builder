@@ -355,17 +355,20 @@ class ACA_PT_props(bpy.types.Panel):
                 row.label(text='没有设置项',icon='INFO')
                 row = layout.row()
                 row.label(text='请先选择一个或多个建筑对象')
-                return             
-
-            # 斗口值
-            if bData!= None:
-                box = layout.box()
-                row = box.row(align=True)
-                col = row.column(align=True)
-                col.prop(bData,'DK')
-                # 计算默认斗口值
-                col = row.column(align=True)
-                col.operator("aca.default_dk",icon='SHADERFX',text='')
+                return 
+            else:
+                if bData.aca_type == con.ACA_TYPE_COMBO:
+                    row = layout.row()
+                    row.label(text='当前为组合对象，请选择子建筑',icon='INFO')
+                if bData.aca_type == con.ACA_TYPE_BUILDING:
+                    # 斗口值
+                    box = layout.box()
+                    row = box.row(align=True)
+                    col = row.column(align=True)
+                    col.prop(bData,'DK')
+                    # 计算默认斗口值
+                    col = row.column(align=True)
+                    col.operator("aca.default_dk",icon='SHADERFX',text='')
         
         return
 
@@ -386,7 +389,7 @@ class ACA_PT_platform(bpy.types.Panel):
     @classmethod 
     def poll(self, context):
         buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj != None:
+        if bData.aca_type == con.ACA_TYPE_BUILDING:
             return True
         return
 
@@ -452,7 +455,7 @@ class ACA_PT_pillers(bpy.types.Panel):
     @classmethod 
     def poll(self, context):
         buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj != None:
+        if bData.aca_type == con.ACA_TYPE_BUILDING:
             return True
         return
     
@@ -537,7 +540,7 @@ class ACA_PT_wall(bpy.types.Panel):
     @classmethod 
     def poll(self, context):
         buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj != None:
+        if bData.aca_type == con.ACA_TYPE_BUILDING:
             return True
         return
 
@@ -788,20 +791,21 @@ class ACA_PT_roof_props(bpy.types.Panel):
                 row.label(text='请先选择一个或多个建筑对象')
                 return
             else:
+                if bData.aca_type == con.ACA_TYPE_COMBO:
+                    row = layout.row()
+                    row.label(text='当前为组合对象，请选择子建筑',icon='INFO')
                 # 屋顶属性
-                box = layout.box()
-                if bData.aca_type not in (con.ACA_TYPE_BUILDING,
-                                      con.ACA_TYPE_COMBO,):
-                    box.enabled = False
-                # 屋顶样式
-                droplistRoofstyle = box.row()
-                droplistRoofstyle.prop(
-                    bData, "roof_style",text='') 
-                # 屋顶营造按钮
-                buttonBuildroof = box.row()
-                buttonBuildroof.operator(
-                    "aca.build_roof",icon='HOME',
-                    text='重新生成屋顶',depress=True)# 
+                if bData.aca_type == con.ACA_TYPE_BUILDING:
+                    box = layout.box()
+                    # 屋顶样式
+                    droplistRoofstyle = box.row()
+                    droplistRoofstyle.prop(
+                        bData, "roof_style",text='') 
+                    # 屋顶营造按钮
+                    buttonBuildroof = box.row()
+                    buttonBuildroof.operator(
+                        "aca.build_roof",icon='HOME',
+                        text='重新生成屋顶',depress=True)# 
 
 # “斗栱属性”子面板
 class ACA_PT_dougong(bpy.types.Panel):
@@ -820,7 +824,7 @@ class ACA_PT_dougong(bpy.types.Panel):
     @classmethod 
     def poll(self, context):
         buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj != None:
+        if bData.aca_type == con.ACA_TYPE_BUILDING:
             return True
         return
     
@@ -920,7 +924,7 @@ class ACA_PT_beam(bpy.types.Panel):
     @classmethod 
     def poll(self, context):
         buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj != None:
+        if bData.aca_type == con.ACA_TYPE_BUILDING:
             return True
         return
     
@@ -1038,7 +1042,7 @@ class ACA_PT_rafter(bpy.types.Panel):
     @classmethod 
     def poll(self, context):
         buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj != None:
+        if bData.aca_type == con.ACA_TYPE_BUILDING:
             return True
         return
     
@@ -1153,7 +1157,7 @@ class ACA_PT_tiles(bpy.types.Panel):
     @classmethod 
     def poll(self, context):
         buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj != None:
+        if bData.aca_type == con.ACA_TYPE_BUILDING:
             return True
         return
     

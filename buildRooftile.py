@@ -1194,7 +1194,9 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
             sourceObj=aData.baoding_source,
             name='宝顶',
             location=(0,0,zhengji_z),
-            parentObj=tileRootObj)
+            parentObj=tileRootObj,
+            singleUser=True,
+            )
         # 根据斗口调整尺度
         utils.resizeObj(baodingObj,tileScale)
         # 退出，不再做后续的正脊和螭吻

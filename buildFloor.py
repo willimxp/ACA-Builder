@@ -1057,15 +1057,17 @@ def buildPillers(buildingObj:bpy.types.Object):
             pillerObj.dimensions = (
                 pd,pd,pillerHeight
             )
+            utils.applyTransform(pillerObj,use_scale=True,autoUpdate=False)
             pillerList.append(pillerObj)
 
             # 复制柱础
             pillerbase_basemesh:bpy.types.Object = utils.copySimplyObject(
                 sourceObj=aData.pillerbase_source,
                 location=(0,0,0),
+
                 parentObj=pillerObj
             )
-            pillerbase_basemesh.dimensions = (
+            pillerbase_basemesh.scale = (
                         pd/piller_source.dimensions.x,
                         pd/piller_source.dimensions.y,
                         pd/piller_source.dimensions.x,

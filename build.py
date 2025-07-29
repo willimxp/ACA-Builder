@@ -172,21 +172,38 @@ def updateBuilding(buildingObj:bpy.types.Object,
     rootColl = utils.setCollection(con.COLL_NAME_ROOT,
                         isRoot=True,colorTag=2)
     
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
-
-    # 暂时排除目录下的其他建筑，以加快执行速度
-    __excludeOther(rootColl,True,buildingObj)
-
     # 调用进度条
     global isFinished,progress
     isFinished = False
     progress = 0
 
+    # 查找是否存在comboRoot
+    if buildingObj.parent is not None:
+        # 用combo节点替换buildingObj
+        buildingObj = buildingObj.parent
+    
+    # 暂时排除目录下的其他建筑，以加快执行速度
+    __excludeOther(rootColl,True,buildingObj)
+
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+
     # 根据模板类型调用不同的入口
-    if bData.aca_type == con.ACA_TYPE_BUILDING:
+    # 组合建筑
+    if bData.aca_type == con.ACA_TYPE_COMBO:
+        # 循环清空各个建筑构件
+        for childBuilding in buildingObj.children:
+            utils.deleteHierarchy(childBuilding)
+            
+        # 循环生成各个单体
+        for childBuilding in buildingObj.children:
+            buildFloor.buildFloor(childBuilding,
+                    reloadAssets=reloadAssets)
+    # 单体建筑
+    elif bData.aca_type == con.ACA_TYPE_BUILDING:
         buildFloor.buildFloor(buildingObj,
                     reloadAssets=reloadAssets)
+    # 围墙
     elif bData.aca_type == con.ACA_TYPE_YARDWALL:
         buildYardWall.buildYardWall(buildingObj,
                     reloadAssets=reloadAssets)

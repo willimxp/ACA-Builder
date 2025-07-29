@@ -24,12 +24,37 @@ progress = 0
 # 集合的排除属性备份
 collExclude = {}
 
-def __buildSingle(acaType,templateName,comboset=False):
+# 添加combo根节点
+def __addComboRoot(templateName):
+    # 创建或锁定根目录
+    coll = utils.setCollection(templateName)
+    # 创建buildObj根节点
+    # 原点摆放在3D Cursor位置
+    comboObj = utils.addEmpty(
+        name=templateName,
+        location=bpy.context.scene.cursor.location
+    )
+    cData:acaData = comboObj.ACA_data
+    cData['template_name'] = templateName
+    cData['aca_type'] = con.ACA_TYPE_COMBO
+
+    return comboObj
+
+def __buildSingle(acaType,
+                  templateName,
+                  comboObj = None):
     # 根据模板类型调用不同的入口
     if acaType == con.ACA_TYPE_BUILDING:
-        buildFloor.buildFloor(None,templateName,comboset=comboset)
+        buildFloor.buildFloor(
+            buildingObj = None,
+            templateName = templateName,
+            comboObj = comboObj,
+        )
     elif acaType == con.ACA_TYPE_YARDWALL:
-        buildYardWall.buildYardWall(None,templateName)
+        buildYardWall.buildYardWall(
+            buildingObj = None,
+            templateName = templateName
+        )
     else:
         utils.popMessageBox("无法创建该类型的建筑：" + templateName)
     return
@@ -117,17 +142,20 @@ def build():
     if acaType != con.ACA_TYPE_COMBO:
         # 单体建筑
         __buildSingle(
-            acaType=acaType,
-            templateName=templateName
+            acaType = acaType,
+            templateName = templateName
         )
     else:
+        # 添加combo根节点
+        comboObj = __addComboRoot(templateName)
+        
         # 组合建筑
         tempChildren = template.getTemplateChild(templateName)
         for child in tempChildren:
             __buildSingle(
-                acaType=child['acaType'],
-                templateName=child['templateName'],
-                comboset=True
+                acaType = child['acaType'],
+                templateName = child['templateName'],
+                comboObj = comboObj
             )
     
     isFinished = True

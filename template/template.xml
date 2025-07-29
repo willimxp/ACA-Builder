@@ -646,7 +646,7 @@
 			<is_showDougong type="BoolProperty">True</is_showDougong>
 			<is_showBeam type="BoolProperty">True</is_showBeam>
 			<is_showRafter type="BoolProperty">True</is_showRafter>
-			<is_showTiles type="BoolProperty">True</is_showTiles>
+			<is_showTiles type="BoolProperty">False</is_showTiles>
 			<platform_height type="FloatProperty">0.9</platform_height>
 			<platform_extend type="FloatProperty">1.3</platform_extend>
 			<step_net type="StringProperty">1/3#2/3,</step_net>

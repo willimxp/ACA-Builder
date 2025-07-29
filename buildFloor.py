@@ -21,9 +21,18 @@ from . import buildRoof
 # 添加建筑empty根节点，并绑定设计模板
 # 返回建筑empty根节点对象
 # 被ACA_OT_add_newbuilding类调用
-def __addBuildingRoot(templateName):
+def __addBuildingRoot(templateName,
+                      comboObj = None,
+                      ):
     # 创建或锁定根目录
-    coll = utils.setCollection(templateName)
+    if comboObj is not None:
+        comboColl = comboObj.users_collection[0]
+    else:
+        comboColl = None
+    coll = utils.setCollection(
+        name = templateName,
+        parentColl = comboColl,)
+    
     # 创建buildObj根节点
     # 原点摆放在3D Cursor位置
     buildingObj = utils.addEmpty(
@@ -32,6 +41,9 @@ def __addBuildingRoot(templateName):
     )
     bData:acaData = buildingObj.ACA_data
     bData['template_name'] = templateName
+
+    if comboObj is not None:
+        buildingObj.parent = comboObj
 
     return buildingObj
 
@@ -1212,11 +1224,14 @@ def resetFloor(buildingObj:bpy.types.Object):
 def buildFloor(buildingObj:bpy.types.Object,
                templateName = None,
                reloadAssets = False,
-               comboset = False):
+               comboObj:bpy.types.Object = None,
+               ):
     # 定位到collection，如果没有则新建
     utils.setCollection(
-        con.COLL_NAME_ROOT,
-        isRoot=True,colorTag=2)
+        name = con.COLL_NAME_ROOT,
+        isRoot=True,
+        colorTag=2,
+        )
 
     # 新建还是刷新？
     if buildingObj == None:
@@ -1229,7 +1244,10 @@ def buildFloor(buildingObj:bpy.types.Object,
             templateIndex = scnData.templateIndex
             templateName = templateList[templateIndex].name
         # 添加建筑根节点，同时载入模板
-        buildingObj = __addBuildingRoot(templateName)
+        buildingObj = __addBuildingRoot(
+            templateName = templateName,
+            comboObj = comboObj
+            )
         # 在buldingObj上绑定模板bData和资产库aData
         template.loadTemplate(buildingObj)
     else:
@@ -1244,7 +1262,7 @@ def buildFloor(buildingObj:bpy.types.Object,
     bData:acaData = buildingObj.ACA_data
     
     # 组合建筑根据模板位移和旋转
-    if comboset:
+    if comboObj != None:
         buildingObj.location = (
             bpy.context.scene.cursor.location 
             + Vector(bData.root_location))

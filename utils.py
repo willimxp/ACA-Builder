@@ -1764,6 +1764,7 @@ def getRoot(object:bpy.types.Object):
             con.ACA_TYPE_BUILDING,
             con.ACA_TYPE_YARDWALL,
             con.ACA_TYPE_BUILDING_JOINED,
+            con.ACA_TYPE_COMBO,
         ):
         buildingObj = object
 

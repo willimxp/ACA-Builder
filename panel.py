@@ -336,7 +336,9 @@ class ACA_PT_props(bpy.types.Panel):
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj != None: 
-                if bData.aca_type == con.ACA_TYPE_BUILDING:
+                if bData.aca_type in (
+                    con.ACA_TYPE_BUILDING,
+                    con.ACA_TYPE_COMBO,):
                     isAcaObj = True
         if isAcaObj and build.isFinished:
             return True
@@ -393,7 +395,8 @@ class ACA_PT_platform(bpy.types.Panel):
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showPlatform",text='台基属性')
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
+        if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                con.ACA_TYPE_COMBO,):
             layout.enabled = False
 
     def draw(self, context):
@@ -406,7 +409,8 @@ class ACA_PT_platform(bpy.types.Panel):
 
             # 台基属性
             box = layout.box()
-            if bData.aca_type != con.ACA_TYPE_BUILDING:
+            if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
                     box.enabled = False
 
             col = box.column(align=True)
@@ -457,7 +461,8 @@ class ACA_PT_pillers(bpy.types.Panel):
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showPillers",text='柱网属性')
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
+        if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                con.ACA_TYPE_COMBO,):
             layout.enabled = False
 
     def draw(self, context):
@@ -472,7 +477,8 @@ class ACA_PT_pillers(bpy.types.Panel):
             #if objData.aca_type == con.ACA_TYPE_BUILDING:
             # 柱网属性
             box = layout.box()
-            if bData.aca_type != con.ACA_TYPE_BUILDING:
+            if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
                     box.enabled = False
 
             row = box.column(align=True)
@@ -542,7 +548,8 @@ class ACA_PT_wall(bpy.types.Panel):
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showWalls",text='装修属性')
 
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
+        if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
             layout.enabled = False
 
     # def draw_header_preset(self,context):
@@ -579,7 +586,8 @@ class ACA_PT_wall(bpy.types.Panel):
                 layout.enabled = False
 
             box = layout.box() 
-            if bData.aca_type != con.ACA_TYPE_BUILDING:
+            if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
                     box.enabled = False
 
             # 彩画样式
@@ -760,7 +768,8 @@ class ACA_PT_roof_props(bpy.types.Panel):
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj != None: 
-                if bData.aca_type == con.ACA_TYPE_BUILDING:
+                if bData.aca_type in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO):
                     isAcaObj = True
         if isAcaObj and build.isFinished:
             return True
@@ -781,7 +790,8 @@ class ACA_PT_roof_props(bpy.types.Panel):
             else:
                 # 屋顶属性
                 box = layout.box()
-                if bData.aca_type != con.ACA_TYPE_BUILDING:
+                if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
                     box.enabled = False
                 # 屋顶样式
                 droplistRoofstyle = box.row()
@@ -820,7 +830,8 @@ class ACA_PT_dougong(bpy.types.Panel):
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showDougong",text='斗栱属性')
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
+        if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
             layout.enabled = False
 
     def draw(self, context):
@@ -831,7 +842,8 @@ class ACA_PT_dougong(bpy.types.Panel):
             if buildingObj == None: return
 
             layout = self.layout
-            if bData.aca_type != con.ACA_TYPE_BUILDING:
+            if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
                 layout.enabled = False
             if not bData.is_showDougong:
                 layout.enabled = False
@@ -918,7 +930,8 @@ class ACA_PT_beam(bpy.types.Panel):
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showBeam",text='梁架属性')
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
+        if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
             layout.enabled = False
 
     def draw(self, context):
@@ -929,7 +942,8 @@ class ACA_PT_beam(bpy.types.Panel):
             if buildingObj == None: return
 
             layout = self.layout
-            if bData.aca_type != con.ACA_TYPE_BUILDING:
+            if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
                 layout.enabled = False
             if not bData.is_showBeam:
                 layout.enabled = False
@@ -1034,7 +1048,8 @@ class ACA_PT_rafter(bpy.types.Panel):
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showRafter",text='椽架属性')
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
+        if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
             layout.enabled = False
 
     def draw(self, context):
@@ -1045,7 +1060,8 @@ class ACA_PT_rafter(bpy.types.Panel):
             if buildingObj == None: return
 
             layout = self.layout
-            if bData.aca_type != con.ACA_TYPE_BUILDING:
+            if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
                 layout.enabled = False
             if not bData.is_showRafter:
                 layout.enabled = False
@@ -1147,7 +1163,8 @@ class ACA_PT_tiles(bpy.types.Panel):
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
         row.prop(bData, "is_showTiles",text='瓦作属性')
-        if bData.aca_type != con.ACA_TYPE_BUILDING:
+        if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
             layout.enabled = False
 
     def draw(self, context):
@@ -1157,7 +1174,8 @@ class ACA_PT_tiles(bpy.types.Panel):
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
-            if bData.aca_type != con.ACA_TYPE_BUILDING:
+            if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                                      con.ACA_TYPE_COMBO,):
                 layout.enabled = False
             
             # 瓦作属性

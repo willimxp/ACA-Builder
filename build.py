@@ -207,6 +207,11 @@ def updateBuilding(buildingObj:bpy.types.Object,
 
 # 删除建筑
 def delBuilding(buildingObj:bpy.types.Object):
+    # 查找是否存在comboRoot
+    if buildingObj.parent is not None:
+        # 用combo节点替换buildingObj
+        buildingObj = buildingObj.parent
+        
     # 找到对应的目录
     buildingColl = buildingObj.users_collection[0]
     # 从“ACA筑韵古建”目录查找

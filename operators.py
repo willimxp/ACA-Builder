@@ -24,8 +24,17 @@ class ACA_OT_focusBuilding(bpy.types.Operator):
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
+
         if buildingObj != None:
-            utils.focusObj(buildingObj)
+            # 如果context选择的构件，则聚焦到建筑节点
+            if context.object != buildingObj:
+                # 聚焦构件对应的建筑
+                utils.focusObj(buildingObj)
+            # 如果context已经是建筑节点，查看是否有combo父级
+            else:
+                if buildingObj.parent is not None:
+                    # 聚焦Combo
+                    utils.focusObj(buildingObj.parent)                
         else:
             self.report({'ERROR'},"找不到根节点")
 

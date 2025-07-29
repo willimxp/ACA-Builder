@@ -646,7 +646,7 @@
 			<is_showDougong type="BoolProperty">True</is_showDougong>
 			<is_showBeam type="BoolProperty">True</is_showBeam>
 			<is_showRafter type="BoolProperty">True</is_showRafter>
-			<is_showTiles type="BoolProperty">False</is_showTiles>
+			<is_showTiles type="BoolProperty">True</is_showTiles>
 			<platform_height type="FloatProperty">0.9</platform_height>
 			<platform_extend type="FloatProperty">1.3</platform_extend>
 			<step_net type="StringProperty">1/3#2/3,</step_net>
@@ -661,7 +661,7 @@
 			<y_3 type="FloatProperty">1.76</y_3>
 			<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/1,1/2,1/3,2/0,2/1,2/2,2/3,3/0,3/1,3/2,3/3,</piller_net>
 			<wall_net type="StringProperty">wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,geshan#1/0#2/0,wall#2/3#3/3,wall#0/3#1/3,geshan#1/3#2/3,</wall_net>
-			<fang_net type="StringProperty">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,</fang_net>
+			<fang_net type="StringProperty">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,0/1#1/1,0/2#1/2,1/1#2/1,1/2#2/2,2/1#3/1,2/2#3/2,</fang_net>
 			<piller_height type="FloatProperty">4.56</piller_height>
 			<piller_diameter type="FloatProperty">0.48</piller_diameter>
 			<use_smallfang type="BoolProperty">False</use_smallfang>
@@ -682,8 +682,8 @@
 			<rafter_count type="IntProperty">6</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
-			<qiqiao type="IntProperty">4</qiqiao>
-			<chong type="IntProperty">3</chong>
+			<qiqiao type="FloatProperty">4.0</qiqiao>
+			<chong type="FloatProperty">3.0</chong>
 			<shengqi type="IntProperty">1</shengqi>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.336</shoushan>
@@ -704,11 +704,21 @@
 			<tile_color type="EnumProperty">0</tile_color>
 			<tile_alt_color type="EnumProperty">0</tile_alt_color>
 			<liangtou type="FloatProperty">0.4</liangtou>
+			<root_location type="FloatVectorProperty">0.0,0.0,0.0</root_location>
+			<root_rotation type="FloatVectorProperty">0.0,0.0,0.0</root_rotation>
+			<doorFrame_width_per type="FloatProperty">1.0</doorFrame_width_per>
+			<doorFrame_height type="FloatProperty">3.0</doorFrame_height>
+			<door_ding_num type="IntProperty">5</door_ding_num>
+			<paint_style type="EnumProperty">0</paint_style>
+			<dk_scale type="FloatProperty">1.0</dk_scale>
+			<use_pie type="BoolProperty">True</use_pie>
+			<roof_height type="FloatProperty">3.0</roof_height>
+			<tile_scale type="FloatProperty">1.0</tile_scale>
 		</template>
 		<template>
 			<aca_type type="StringProperty">building</aca_type>
 			<template_name type="StringProperty">月台</template_name>
-			<root_location type="FloatVectorProperty">0.0,-9.26,0.0</root_location>
+			<root_location type="FloatVectorProperty">0.0,-9.260000228881836,0.0</root_location>
 			<DK type="FloatProperty">0.08</DK>
 			<is_showPlatform type="BoolProperty">True</is_showPlatform>
 			<is_showPillers type="BoolProperty">False</is_showPillers>
@@ -752,8 +762,8 @@
 			<rafter_count type="IntProperty">6</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
-			<qiqiao type="IntProperty">4</qiqiao>
-			<chong type="IntProperty">3</chong>
+			<qiqiao type="FloatProperty">4.0</qiqiao>
+			<chong type="FloatProperty">3.0</chong>
 			<shengqi type="IntProperty">1</shengqi>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">2.0</shoushan>
@@ -774,6 +784,15 @@
 			<tile_color type="EnumProperty">0</tile_color>
 			<tile_alt_color type="EnumProperty">0</tile_alt_color>
 			<liangtou type="FloatProperty">0.4</liangtou>
+			<root_rotation type="FloatVectorProperty">0.0,0.0,0.0</root_rotation>
+			<doorFrame_width_per type="FloatProperty">1.0</doorFrame_width_per>
+			<doorFrame_height type="FloatProperty">3.0</doorFrame_height>
+			<door_ding_num type="IntProperty">5</door_ding_num>
+			<paint_style type="EnumProperty">0</paint_style>
+			<dk_scale type="FloatProperty">1.0</dk_scale>
+			<use_pie type="BoolProperty">True</use_pie>
+			<roof_height type="FloatProperty">3.0</roof_height>
+			<tile_scale type="FloatProperty">1.0</tile_scale>
 		</template>
 	</template>
 	<template>

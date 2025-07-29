@@ -459,40 +459,111 @@ def loadTemplate(buildingObj:bpy.types.Object):
     root = tree.getroot()
     
     # 读取所有根节点模板
-    templates = root.findall('template')
-    if templates == None:
+    templateNodeList = root.findall('template')
+    if templateNodeList == None:
         utils.outputMsg("模板解析失败")
         return
     
+    # 查找是否有子模版
+    parent = buildingObj.parent
+    if parent is not None:
+        isComboNode = False
+        # 遍历查找对应的combo节点
+        for templateNode in templateNodeList:
+            nameNode = templateNode.find('template_name')
+            if nameNode != None:
+                if nameNode.text == parent.name:
+                    # 找到对应模板
+                    isComboNode = True
+                    break
+        if isComboNode:
+            # 把combo父节点装载入templateNodeList
+            # 供下面的循环遍历
+            root = templateNode
+            templateNodeList = root.findall('template')
+        else:
+            print(f"找不到父模板{parent.name}，无法载入子模版")
+            return
+    
     # 在根层次中查找对应名称的那个模板
-    for template in templates:
+    for template in templateNodeList:
         # 查看是否有子模版
-        tType = template.find('aca_type')
-        if tType != None:
-            # 如果 aca_type=combo，则继续查找子模板
-            if tType.text == con.ACA_TYPE_COMBO:
-                # 查找子模板XML节点
-                tempChildren = template.findall('template')
-                for tempChild in tempChildren:
-                    nameNode = tempChild.find('template_name')
-                    if nameNode != None:
-                        if nameNode.text == templateName:
-                            __loadTemplateSingle(
-                                buildingObj,tempChild)
-                            return
-            else:
-                nameNode = template.find('template_name')
-                if nameNode != None:
-                    if nameNode.text == templateName:
-                        __loadTemplateSingle(
-                            buildingObj,template)
-                        return
+        nameNode = template.find('template_name')
+        if nameNode != None:
+            if nameNode.text == templateName:
+                __loadTemplateSingle(
+                    buildingObj,template)
+                return
                     
     # 经过经过以上循环，没有符合条件的模板，抛出异常
     raise Exception('无法载入模板')
 
+# 保存带Combo的组合模板
+def saveTemplateWithCombo(buildingObj:bpy.types.Object):
+    # 载入输入
+    bData:acaData = buildingObj.ACA_data
+
+    # 保存单体模板
+    if bData.aca_type in (
+        con.ACA_TYPE_BUILDING,
+        con.ACA_TYPE_YARDWALL):
+        __saveTemplate(buildingObj)
+    
+    # 验证是否为组合模板
+    if bData.aca_type != con.ACA_TYPE_COMBO:
+        print("f保存模板失败，未知的建筑类型{bData.aca_type}")
+        return
+    comboObj = buildingObj
+    
+    # 保存组合模板-----------------------
+    # 解析XML配置模板
+    path = __getPath(xmlFileName)
+    tree = ET.parse(path)
+    root = tree.getroot()   # <templates>根节点
+    # 验证根节点
+    templateNodeList = root.findall('template')
+    if templateNodeList == None:
+        utils.outputMsg("模板解析失败")
+        return
+    
+    # 遍历查找对应的combo节点
+    templateName = comboObj.name
+    isNewTemplate = True
+    for templateNode in templateNodeList:
+        nameNode = templateNode.find('template_name')
+        if nameNode != None:
+            if nameNode.text == templateName:
+                # 找到对应模板
+                isNewTemplate = False
+                break
+    # 如果没有找到，则新建combo节点
+    if isNewTemplate:
+        templateNode = ET.SubElement(root,'template')
+
+        # <template_name type="StringProperty">name</template_name>
+        node = ET.SubElement(templateNode,'template_name')
+        node.attrib['type'] = 'StringProperty'
+        node.text = comboObj.name
+
+        # <aca_type type="StringProperty">combo</aca_type>
+        node = ET.SubElement(templateNode,'aca_type')
+        node.attrib['type'] = 'StringProperty'
+        node.text = 'combo'
+
+        # 缩进美化
+        # https://stackoverflow.com/questions/28813876/how-do-i-get-pythons-elementtree-to-pretty-print-to-an-xml-file
+        ET.indent(tree, space="\t", level=0)
+        # 保存
+        tree.write(path, encoding='UTF-8',xml_declaration=True)
+
+    # 保存子模板
+    for buildingObj in comboObj.children:
+        __saveTemplate(buildingObj)
+
+    return {'FINISHED'}
+
 # 保存模板修改
-def saveTemplate(buildingObj:bpy.types.Object):
+def __saveTemplate(buildingObj:bpy.types.Object):
     # 载入输入
     bData:acaData = buildingObj.ACA_data
     # 模板名称取当前建筑的名称
@@ -517,6 +588,27 @@ def saveTemplate(buildingObj:bpy.types.Object):
     if templateNodeList == None:
         utils.outputMsg("模板解析失败")
         return
+    
+    # 查找是否有子模版
+    parent = buildingObj.parent
+    if parent is not None:
+        isComboNode = False
+        # 遍历查找对应的combo节点
+        for templateNode in templateNodeList:
+            nameNode = templateNode.find('template_name')
+            if nameNode != None:
+                if nameNode.text == parent.name:
+                    # 找到对应模板
+                    isComboNode = True
+                    break
+        if isComboNode:
+            # 把combo父节点装载入templateNodeList
+            # 供下面的循环遍历
+            root = templateNode
+            templateNodeList = root.findall('template')
+        else:
+            print(f"找不到父模板{parent.name}，无法保存子模版")
+            return
     
     # 遍历查找对应模板
     isNewTemplate = True

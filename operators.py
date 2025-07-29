@@ -635,8 +635,13 @@ class ACA_OT_save_template(bpy.types.Operator):
             utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
             return {'FINISHED'}
         
+        # 查找是否存在comboRoot
+        if buildingObj.parent is not None:
+            # 用combo节点替换buildingObj
+            buildingObj = buildingObj.parent
+        
         from . import template
-        result = template.saveTemplate(buildingObj)
+        result = template.saveTemplateWithCombo(buildingObj)
         if 'FINISHED' in result:
             utils.popMessageBox(f"【{buildingObj.name}】模板样式保存成功")
 
@@ -648,6 +653,12 @@ class ACA_OT_save_template(bpy.types.Operator):
         templateList = template.getTemplateList(onlyname=True)
         # 确认当前建筑名称是否与模板冲突
         buildingObj,bData,objData = utils.getRoot(context.object)
+
+        # 查找是否存在comboRoot
+        if buildingObj.parent is not None:
+            # 用combo节点替换buildingObj
+            buildingObj = buildingObj.parent
+
         buildingName = buildingObj.name
         for templateItem in templateList:
             if templateItem == buildingName:
@@ -662,6 +673,11 @@ class ACA_OT_save_template(bpy.types.Operator):
 
     def draw(self, context):
         buildingObj,bData,objData = utils.getRoot(context.object)
+        # 查找是否存在comboRoot
+        if buildingObj.parent is not None:
+            # 用combo节点替换buildingObj
+            buildingObj = buildingObj.parent
+
         buildingName = buildingObj.name
         row = self.layout.row()
         row.label(

@@ -117,9 +117,14 @@ def hideCollection(coll_name:str,
          layer_collection, coll_name)
     if layerColl != None:
         layerColl.exclude = isExclude
-        for child in layerColl.children:
-            child.exclude = isExclude
         #layerColl.hide_viewport = not isShow
+        # 递归循环子目录
+        if layerColl.children:
+            for child in layerColl.children:
+                hideCollection(coll_name=child.name,
+                            isExclude=isExclude,
+                            parentColl=parentColl)
+        
 
 # 聚焦选中指定名称的目录
 def focusCollection(coll_name:str):

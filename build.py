@@ -75,12 +75,6 @@ def __excludeOther(rootColl:bpy.types.Collection,
     # 排除时，更新缓存
     if isExclude:
         collExclude.clear()
-        for coll in rootColl.children:
-            layerColl = utils.recurLayerCollection(
-                bpy.context.view_layer.layer_collection, 
-                coll.name,)
-            # 将键值对存入字典
-            collExclude[coll.name] = layerColl.exclude
 
     # 排除其他建筑
     for coll in rootColl.children:
@@ -95,16 +89,16 @@ def __excludeOther(rootColl:bpy.types.Collection,
                 coll.name,)
             # 将键值对存入字典
             collExclude[coll.name] = layerColl.exclude
-            print(f"write collexclude {coll.name}:{layerColl.exclude}")
+            # print(f"write collexclude {coll.name}:{layerColl.exclude}")
         # 恢复集合时，从缓存判断
         else:
             # 缓存有滞后性，本次新增的集合没有键值
             if coll.name in collExclude:
                 layerExclude = collExclude[coll.name]
-                print(f"read collexclude {coll.name}:{layerExclude}")
+                # print(f"read collexclude {coll.name}:{layerExclude}")
                 # 如果原始状态就是隐藏，则跳出本次循环
                 if layerExclude:
-                    print(f"collexclude skip {coll.name}")
+                    # print(f"collexclude skip {coll.name}")
                     continue
 
         utils.hideCollection(coll.name,isExclude=isExclude)
@@ -211,7 +205,7 @@ def delBuilding(buildingObj:bpy.types.Object):
     if buildingObj.parent is not None:
         # 用combo节点替换buildingObj
         buildingObj = buildingObj.parent
-        
+
     # 找到对应的目录
     buildingColl = buildingObj.users_collection[0]
     # 从“ACA筑韵古建”目录查找

@@ -1851,6 +1851,8 @@ def __buildPaoshou(buildingObj: bpy.types.Object,
             mirrorObj=tileRootObj,
             use_axis=(True,True,False),
         )
+        utils.applyAllModifer(shouObj)
+        utils.applyTransform(shouObj,use_location=True)
 
         # 250113 跑兽材质
         mat.setGlazeStyle(shouObj,resetUV=False)
@@ -2312,6 +2314,8 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     # 戗脊兽前与端头盘子相接
     cornerRidgeBeforeObj.location.x += \
         ridgeEnd_Length
+    utils.applyAllModifer(cornerRidgeBeforeObj)
+    utils.applyTransform(cornerRidgeBeforeObj,use_location=True)
     
     if bData.paoshou_count > 0:
         # 放置跑兽
@@ -2342,6 +2346,8 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
             curveLength = cornerRidgeCurve.data.splines[0].calc_length()
             ridegLength = curveLength - paoLength - ridgeUnit_Length
             modArray.fit_length = ridegLength
+        utils.applyAllModifer(cornerRidgeAfterObj)
+        utils.applyTransform(cornerRidgeAfterObj,use_location=True)
 
         # 摆放垂兽
         loc = cornerRidgeCurve.location + Vector((paoLength,0,0))
@@ -2363,6 +2369,9 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
             mirrorObj=tileRootObj,
             use_axis=(True,True,False)
         )
+        utils.applyAllModifer(chuishouObj)
+        utils.applyTransform2(chuishouObj,use_location=True)
+
         # 设置垂兽材质
         mat.setGlazeStyle(chuishouObj)        
 

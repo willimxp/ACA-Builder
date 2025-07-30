@@ -37,6 +37,35 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
     # 收集待合并的台明构件
     taimingList = []    
 
+    # 2.0、夯土，填充在台基内部，以免剖视图中空心很奇怪
+    stoneWidth = (bData.platform_extend
+                  - bData.piller_diameter)
+    width = (bData.x_total 
+         + bData.piller_diameter*2
+         + stoneWidth*2
+         - con.STEP_HEIGHT*2
+         - 0.02)
+    deepth = (bData.y_total 
+         + bData.piller_diameter*2
+         + stoneWidth*2
+         - con.STEP_HEIGHT*2
+         - 0.02)
+    height = (pHeight 
+         - con.STEP_HEIGHT 
+         - con.GROUND_BORDER
+         - 0.02)
+    z = (con.GROUND_BORDER 
+         + height/2
+         + 0.01 )
+    earthObj = utils.addCube(
+        name = '夯土',
+        location=(0,0,z),
+        dimension=(width,deepth,height),
+        parent=baseRootObj
+    )
+    mat.paint(earthObj,con.M_ROCK)
+    taimingList.append(earthObj)
+
     # 2.1、方砖缦地
     floorInsideObj = utils.addCube(
         name='方砖缦地',

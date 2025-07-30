@@ -62,11 +62,15 @@ def __buildSingle(acaType,
 # 排除目录下的其他建筑
 def __excludeOther(rootColl:bpy.types.Collection,
                    isExclude,
-                   buildingObj=None,
+                   buildingObj:bpy.types.Object=None,
     ):
     # 查找当前建筑所在的目录
     if buildingObj != None:
-        currentColl = buildingObj.users_collection[0]
+        if buildingObj.parent is not None:
+            comboObj = buildingObj.parent
+            currentColl = comboObj.users_collection[0]
+        else:
+            currentColl = buildingObj.users_collection[0]
     else:
         currentColl = None
     

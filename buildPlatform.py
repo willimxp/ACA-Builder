@@ -261,12 +261,42 @@ def __buildSteps(baseRootObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     stepObjList = []
 
+    # 验证是否已经有月台
+    hasTerrace = False
+    comboObj = None
+    if buildingObj.parent is not None:
+        parent = buildingObj.parent
+        if parent.ACA_data.aca_type == con.ACA_TYPE_COMBO:
+            comboObj = parent
+    if comboObj is not None:
+        for building in comboObj.children:
+            if building.ACA_data.combo_type == con.COMBO_TERRACE:
+                hasTerrace = True
+
     # 解析模板输入的踏跺设置，格式如下
     # "3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
     stepStr = bData.step_net
     stepList = stepStr.split(',')
     for stepID in stepList:
         if stepID == '': continue
+
+        # 如果有月台，不做前出踏跺
+        if hasTerrace:
+            # 解析踏跺配置参数
+            setting = stepID.split('#')
+            # 起始柱子
+            pFrom = setting[0].split('/')
+            pFrom_x = int(pFrom[0])
+            pFrom_y = int(pFrom[1])
+            # 结束柱子
+            pTo = setting[1].split('/')
+            pTo_x = int(pTo[0])
+            pTo_y = int(pTo[1])
+
+            if pFrom_y == pTo_y == 0:
+                # 不做此踏跺
+                continue
+
         # 生成踏跺对象
         stepObj = __drawStep(baseRootObj,stepID)
         stepObjList.append(stepObj)
@@ -907,7 +937,7 @@ def terraceDelete(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     # 获取主建筑
     mainBuilding = utils.getMainBuilding(buildingObj)
-    
+
     if bData.combo_type == con.COMBO_TERRACE:
         from . import build
         build.delBuilding(buildingObj,
@@ -917,6 +947,9 @@ def terraceDelete(buildingObj:bpy.types.Object):
     # 组合建筑降级
     from . import build
     build.delCombo(mainBuilding)
+
+    # 更新主建筑台基
+    buildPlatform(mainBuilding)
 
     # 聚焦主建筑的台基
     mainPlatform = utils.getAcaChild(
@@ -950,7 +983,7 @@ def terraceAdd(buildingObj:bpy.types.Object):
         if building.ACA_data.combo_type == con.COMBO_TERRACE:
             utils.popMessageBox("已经有一个月台，不能再生成新的月台了。")
             return
-
+    
     # 1、开始构建月台 ----------------------------
     # 构建月台根节点
     from . import buildFloor
@@ -983,16 +1016,21 @@ def terraceAdd(buildingObj:bpy.types.Object):
         mData.platform_extend 
         - con.STEP_HEIGHT*2
         )
-    # 月台进深，保留1间
-    bData['y_rooms'] = 1
+    # 月台进深，五间以上减2间
+    if mData.y_rooms > 2:
+        bData['y_rooms'] = mData.y_rooms - 2
     # 月台面阔，五间以上做“凸”形月台，减2间
     if mData.x_rooms > 5:
         bData['x_rooms'] = mData.x_rooms - 2
+    # 不从主建筑继承踏跺（柱网不一样了）
+    bData['step_net'] = ''
 
     # 相对位置
+    # 更新月台地盘数据，获得y_total
+    buildFloor.getFloorDate(terraceRoot)
     offsetY = (mData.y_total/2 
                + mData.platform_extend
-               + bData.y_1/2 
+               + bData.y_total/2 
                + bData.platform_extend
                )
     terraceLoc = Vector((0,-offsetY,0))
@@ -1003,6 +1041,9 @@ def terraceAdd(buildingObj:bpy.types.Object):
 
     # 调用月台营造
     buildPlatform(terraceRoot)
+
+    # 更新主建筑台基
+    buildPlatform(buildingObj)
 
     # 聚焦主建筑的台基
     terraceObj = utils.getAcaChild(

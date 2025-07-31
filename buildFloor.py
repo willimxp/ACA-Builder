@@ -1265,9 +1265,7 @@ def buildFloor(buildingObj:bpy.types.Object,
     
     # 组合建筑根据模板位移和旋转
     if comboObj != None:
-        buildingObj.location = (
-            bpy.context.scene.cursor.location 
-            + Vector(bData.root_location))
+        buildingObj.location = bData.root_location
         buildingObj.rotation_euler = bData.root_rotation
 
     # 生成柱网

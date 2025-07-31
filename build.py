@@ -745,8 +745,12 @@ def joinBuilding(buildingObj:bpy.types.Object,
 
         # 合并前提取第一个子对象的父节点矩阵
         # 为后续重新绑定父节点做准备
-        # 一般可能是台基层，或柱网层根节点
-        baseMatrix = partObjList[0].parent.matrix_local.copy()
+        if isCombo:
+            # 组合建筑要分别取两层的转换
+            baseMatrix = partObjList[0].parent.parent.matrix_local.copy()
+        else:
+            # 一般可能是台基层，或柱网层根节点
+            baseMatrix = partObjList[0].parent.matrix_local.copy()
 
         # 合并对象
         joinedModel = utils.joinObjects(

@@ -914,6 +914,10 @@ def terraceDelete(buildingObj:bpy.types.Object):
             withCombo=False,# 仅删除个体
         )
 
+    # 组合建筑降级
+    from . import build
+    build.delCombo(mainBuilding)
+
     # 聚焦主建筑的台基
     mainPlatform = utils.getAcaChild(
         mainBuilding,con.ACA_TYPE_PLATFORM
@@ -931,9 +935,10 @@ def terraceAdd(buildingObj:bpy.types.Object):
         parent = buildingObj.parent
         if parent.ACA_data.aca_type == con.ACA_TYPE_COMBO:
             comboObj = parent
+    # 如果不存在combo则新建
     if comboObj is None:
-        utils.outputMsg("未找到组织建筑根节点")
-        return
+        from . import build
+        comboObj = build.addCombo(buildingObj)
     
     # 验证是否为主体建筑
     if buildingObj.ACA_data.combo_type != con.COMBO_MAIN:

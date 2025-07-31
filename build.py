@@ -818,3 +818,78 @@ def __undoJoin(buildingObj:bpy.types.Object):
     bpy.context.view_layer.objects.active = oldbuildingObj
 
     return oldbuildingObj
+
+# 基于单一建筑，添加组合建筑
+def addCombo(buildingObj:bpy.types.Object):
+    # 校验建筑为单一建筑
+    buildingObj,bData,objData = utils.getRoot(buildingObj)
+    if buildingObj.parent is not None:
+        comboObj = buildingObj.parent
+    else:
+        comboObj = buildingObj
+    if comboObj.ACA_data.aca_type == con.ACA_TYPE_COMBO:
+        utils.outputMsg("添加组合建筑失败，已经为组合建筑。")
+        return
+        
+    # 添加组合建筑
+    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
+                        isRoot=True,colorTag=2)
+    # 添加combo根节点
+    comboObj = __addComboRoot(buildingObj.name + '.combo')
+
+    # 更改对象父节点
+    m = buildingObj.matrix_world.copy()
+    buildingObj.parent = comboObj
+
+    # 更改映射
+    comboObj.matrix_world = m
+    import mathutils
+    buildingObj.matrix_local = mathutils.Matrix()
+
+    # 更改目录级别
+    buildingColl = buildingObj.users_collection[0]
+    # 关联到combo目录
+    comboColl = comboObj.users_collection[0]
+    comboColl.children.link(buildingColl)
+    # 从根目录移除
+    rootColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
+    rootColl.children.unlink(buildingColl)
+
+    return comboObj
+
+# 组合建筑降级为单一建筑
+def delCombo(buildingObj:bpy.types.Object):
+    # 校验建筑为单一建筑
+    buildingObj,bData,objData = utils.getRoot(buildingObj)
+    if buildingObj.parent is None:
+        utils.outputMsg("删除组合建筑失败，当前建筑没有父节点。")
+        return
+    else: 
+        comboObj = buildingObj.parent
+    
+    if comboObj.ACA_data.aca_type != con.ACA_TYPE_COMBO:
+        utils.outputMsg("删除组合建筑失败，不是组合建筑。")
+        return
+    
+    # 是否只剩一个建筑？
+    if len(comboObj.children) > 1:
+        utils.outputMsg("删除组合建筑失败，不止一个建筑存在。")
+        return
+    
+    # 更改目录级别
+    buildingColl = buildingObj.users_collection[0]
+    # 关联到根目录
+    rootColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
+    rootColl.children.link(buildingColl)
+    # 删除父集合
+    comboColl = comboObj.users_collection[0]
+    comboColl.children.unlink(buildingColl)
+    bpy.data.collections.remove(comboColl)    
+
+    # 删除父节点
+    buildingObj.parent = None
+    # 更改映射
+    buildingObj.matrix_world = comboObj.matrix_world.copy()
+    utils.delObject(comboObj)
+
+    return

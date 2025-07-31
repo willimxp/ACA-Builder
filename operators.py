@@ -922,11 +922,10 @@ class ACA_OT_JOIN(bpy.types.Operator):
             useLayer=self.useLayer,)
         result = utils.fastRun(funproxy)
 
-        # if 'FINISHED' in result:
-        #     timeEnd = time.time()
-        #     self.report(
-        #         {'INFO'},"合并完成(%.1f秒)" 
-        #         % (timeEnd-timeStart))
+        timeEnd = time.time()
+        self.report(
+            {'INFO'},"合并完成(%.1f秒)" 
+            % (timeEnd-timeStart))
 
         return {'FINISHED'}
 
@@ -1273,7 +1272,7 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
             context.window.cursor_warp(self.orig_x, self.orig_y)
             self.restored = True
 
-# 纵剖视图
+# 添加剖视图
 class ACA_OT_SECTION(bpy.types.Operator):
     bl_idname="aca.section"
     bl_label = "添加剖视图"
@@ -1293,5 +1292,57 @@ class ACA_OT_SECTION(bpy.types.Operator):
             buildingObj=buildingObj,
             sectionPlan=self.sectionPlan)
         result = utils.fastRun(funproxy)
+        
+        return {'FINISHED'}
+    
+# 删除月台
+class ACA_OT_TERRACE_DEL(bpy.types.Operator):
+    bl_idname="aca.terrace_del"
+    bl_label = "删除月台"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '删除月台（请先选择月台）'
+
+    def execute(self, context): 
+        timeStart = time.time()
+
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        
+        from . import buildPlatform
+        funproxy = partial(
+            buildPlatform.terraceDelete,
+            buildingObj=buildingObj,
+        )
+        result = utils.fastRun(funproxy)
+
+        timeEnd = time.time()
+        self.report(
+            {'INFO'},"月台删除(%.1f秒)" 
+            % (timeEnd-timeStart))
+        
+        return {'FINISHED'}
+    
+# 添加月台
+class ACA_OT_TERRACE_ADD(bpy.types.Operator):
+    bl_idname="aca.terrace_add"
+    bl_label = "添加月台"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '添加月台（请先选择台基）'
+
+    def execute(self, context): 
+        timeStart = time.time()
+
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        
+        from . import buildPlatform
+        funproxy = partial(
+            buildPlatform.terraceAdd,
+            buildingObj=buildingObj,
+        )
+        result = utils.fastRun(funproxy)
+
+        timeEnd = time.time()
+        self.report(
+            {'INFO'},"月台添加(%.1f秒)" 
+            % (timeEnd-timeStart))
         
         return {'FINISHED'}

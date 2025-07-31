@@ -900,3 +900,110 @@ def resizePlatform(buildingObj:bpy.types.Object):
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
     utils.outputMsg("Platform updated")
+
+# 删除月台
+def terraceDelete(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    # 获取主建筑
+    mainBuilding = utils.getMainBuilding(buildingObj)
+    
+    if bData.combo_type == con.COMBO_TERRACE:
+        from . import build
+        build.delBuilding(buildingObj,
+            withCombo=False,# 仅删除个体
+        )
+
+    # 聚焦主建筑的台基
+    mainPlatform = utils.getAcaChild(
+        mainBuilding,con.ACA_TYPE_PLATFORM
+    )
+    if mainPlatform is not None:
+        utils.focusObj(mainPlatform)
+
+    return
+
+def terraceAdd(buildingObj:bpy.types.Object):
+    # 0、合法性验证 -----------------------
+    # 验证组合根节点
+    comboObj = None
+    if buildingObj.parent is not None:
+        parent = buildingObj.parent
+        if parent.ACA_data.aca_type == con.ACA_TYPE_COMBO:
+            comboObj = parent
+    if comboObj is None:
+        utils.outputMsg("未找到组织建筑根节点")
+        return
+    
+    # 验证是否为主体建筑
+    if buildingObj.ACA_data.combo_type != con.COMBO_MAIN:
+        utils.popMessageBox("不能添加月台，只有主体建筑可以添加月台")
+        return
+    
+    # 验证是否已经有月台
+    for building in comboObj.children:
+        if building.ACA_data.combo_type == con.COMBO_TERRACE:
+            utils.popMessageBox("已经有一个月台，不能再生成新的月台了。")
+            return
+
+    # 1、开始构建月台 ----------------------------
+    # 构建月台根节点
+    from . import buildFloor
+    terraceRoot = buildFloor.__addBuildingRoot(
+        templateName = '月台',
+        comboObj = comboObj
+    )
+
+    # 构建月台数据
+    mData:acaData = buildingObj.ACA_data
+    bData:acaData = terraceRoot.ACA_data
+    # 继承主建筑属性
+    utils.copyAcaData(buildingObj,terraceRoot)
+
+    # 月台组合类型
+    bData['combo_type'] = con.COMBO_TERRACE
+    # 不做其他层次
+    bData['is_showPillers'] = False
+    bData['is_showWalls'] = False
+    bData['is_showDougong'] = False
+    bData['is_showBeam'] = False
+    bData['is_showRafter'] = False
+    bData['is_showTiles'] = False
+    
+    # 月台高度，比主体低1踏步
+    bData['platform_height'] = (
+        mData.platform_height - con.STEP_HEIGHT)
+    # 月台下出，比主体窄2踏步（未见规则）
+    bData['platform_extend'] = (
+        mData.platform_extend 
+        - con.STEP_HEIGHT*2
+        )
+    # 月台进深，保留1间
+    bData['y_rooms'] = 1
+    # 月台面阔，五间以上做“凸”形月台，减2间
+    if mData.x_rooms > 5:
+        bData['x_rooms'] = mData.x_rooms - 2
+
+    # 相对位置
+    offsetY = (mData.y_total/2 
+               + mData.platform_extend
+               + bData.y_1/2 
+               + bData.platform_extend
+               )
+    terraceLoc = Vector((0,-offsetY,0))
+    # 本次移动
+    terraceRoot.location = terraceLoc
+    # 存入属性，以便存入模板
+    bData['root_location'] = terraceLoc
+
+    # 调用月台营造
+    buildPlatform(terraceRoot)
+
+    # 聚焦主建筑的台基
+    terraceObj = utils.getAcaChild(
+        terraceRoot,con.ACA_TYPE_PLATFORM
+    )
+    if terraceObj is not None:
+        utils.focusObj(terraceObj)
+
+    return

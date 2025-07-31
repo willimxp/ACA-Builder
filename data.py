@@ -399,6 +399,10 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     aca_type : bpy.props.StringProperty(
             name = '对象类型',
         ) # type: ignore
+    combo_type : bpy.props.StringProperty(
+            name = '组合类型',
+            default = 'combo_main',
+        ) # type: ignore
     template_name : bpy.props.StringProperty(
             name = '模板名称'
         ) #type: ignore

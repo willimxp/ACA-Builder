@@ -416,23 +416,53 @@ class ACA_PT_platform(bpy.types.Panel):
                                       con.ACA_TYPE_COMBO,):
                     box.enabled = False
 
-            col = box.column(align=True)
-            grid = col.grid_flow(columns=1, align=True)
-            grid.prop(bData, "platform_height")
-            grid.prop(bData, "platform_extend")
+            # 1、属性工具箱 -----------------
+            toolbox = box.column(align=True)
             
-            col = box.column(align=True)
-            grid = col.grid_flow(columns=2, align=True)
-            col = grid.column(align=True)
-            col.operator(operator='aca.add_step',
+            # 台基高度、台基下出
+            group = toolbox.grid_flow(columns=1, align=True)
+            group.prop(bData, "platform_height")
+            group.prop(bData, "platform_extend")
+            
+            # 2、按钮工具箱 -----------------
+            toolbox = box.column(align=True)
+
+            # 添加踏跺、删除踏跺            
+            group = toolbox.grid_flow(columns=2, align=True)
+            btnAddTaduo = group.column(align=True)
+            btnAddTaduo.operator(operator='aca.add_step',
                          text='添加踏跺',
-                         depress=True,
                          icon='PACKAGE')
-            col = grid.column(align=True)
-            col.operator(operator='aca.del_step',
+            btnDelTaduo = group.column(align=True)
+            btnDelTaduo.operator(operator='aca.del_step',
                          text='删除踏跺',
-                         depress=True,
                          icon='TRASH')
+            
+            # 添加月台、删除月台
+            group = toolbox.grid_flow(columns=2, align=True)
+            btnAddTerrace = group.column(align=True)
+            btnAddTerrace.operator(operator='aca.terrace_add',
+                         text='添加月台',
+                         icon='PACKAGE')
+            btnDelTerrace = group.column(align=True)
+            btnDelTerrace.operator(operator='aca.terrace_del',
+                         text='删除月台',
+                         icon='TRASH')
+            
+            # 添加踏跺，至少应选择两根柱子
+            if objData.aca_type != con.ACA_TYPE_PILLER \
+                or len(context.selected_objects)<2:
+                btnAddTaduo.enabled = False
+            # 删除踏跺，必须选中踏跺
+            if objData.aca_type != con.ACA_TYPE_STEP:
+                btnDelTaduo.enabled = False
+            # 添加月台，必须选中主体建筑的台基
+            if (bData.combo_type != con.COMBO_MAIN
+                or objData.aca_type != con.ACA_TYPE_PLATFORM):
+                btnAddTerrace.enabled = False
+            # 删除月台，必须选中月台
+            if bData.combo_type != con.COMBO_TERRACE:
+                btnDelTerrace.enabled = False
 
             # 切换显示/隐藏台基
             if not bData.is_showPlatform:

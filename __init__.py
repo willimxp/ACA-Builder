@@ -83,6 +83,8 @@ classes = (
     operators.ACA_UL_Template_Items,
     operators.ACA_OT_SELECT_TEMPLATE_DIALOG,
     operators.ACA_OT_SECTION,
+    operators.ACA_OT_TERRACE_DEL,
+    operators.ACA_OT_TERRACE_ADD,
 )
 
 def register():   

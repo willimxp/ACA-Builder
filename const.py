@@ -299,6 +299,10 @@ class ACA_Consts(object):
     M_MENZAN = '门簪'
     M_LINXIN_WAN = '万字锦'
 
+    # 组合类型
+    COMBO_MAIN = 'combo_main'
+    COMBO_TERRACE = 'combo_terrace'
+
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")
 

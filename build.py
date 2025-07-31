@@ -221,18 +221,27 @@ def updateBuilding(buildingObj:bpy.types.Object,
     return {'FINISHED'}
 
 # 删除建筑
-def delBuilding(buildingObj:bpy.types.Object):
-    # 查找是否存在comboRoot
-    if buildingObj.parent is not None:
-        # 用combo节点替换buildingObj
-        buildingObj = buildingObj.parent
-
+def delBuilding(buildingObj:bpy.types.Object,
+                withCombo = True,
+                ):
+    # 1、获取建筑目录
+    # 如果删除combo，自动用上级combo节点替换
+    if withCombo:
+        if buildingObj.parent is not None:
+            buildingObj = buildingObj.parent
     # 找到对应的目录
     buildingColl = buildingObj.users_collection[0]
-    # 从“ACA筑韵古建”目录查找
-    rootcoll = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
+    
+    # 2、父级目录
+    if withCombo:
+        # “ACA筑韵古建”根目录
+        parentColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
+    else:
+        # 单体的父目录
+        parentColl = buildingObj.parent.users_collection[0]
+
     # 删除该目录
-    rootcoll.children.unlink(buildingColl)
+    parentColl.children.unlink(buildingColl)
     bpy.data.collections.remove(buildingColl)
     # 清理垃圾  
     utils.delOrphan()

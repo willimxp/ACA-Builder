@@ -1034,19 +1034,13 @@ def terraceAdd(buildingObj:bpy.types.Object):
     # 不从主建筑继承踏跺（柱网不一样了）
     bData['step_net'] = ''
 
-    # 相对位置
-    # 更新月台地盘数据，获得y_total
-    buildFloor.getFloorDate(terraceRoot)
-    offsetY = (mData.y_total/2 
-               + mData.platform_extend
-               + bData.y_total/2 
-               + bData.platform_extend
-               )
-    terraceLoc = Vector((0,-offsetY,0))
-    # 本次移动
-    terraceRoot.location = terraceLoc
+    # 月台位置
+    terraceLoc = getTerraceLoc(buildingObj,
+                                terraceRoot,)
     # 存入属性，以便存入模板
     bData['root_location'] = terraceLoc
+    # 本次移动
+    terraceRoot.location = terraceLoc
 
     # 更新主建筑台基
     mData['use_terrace'] = True
@@ -1072,3 +1066,21 @@ def terraceAdd(buildingObj:bpy.types.Object):
         utils.focusObj(terraceObj)
 
     return
+
+def getTerraceLoc(mainBuildingObj:bpy.types.Object,
+                  terraceObj:bpy.types.Object,):
+    # 更新地盘数据，计算当前的y_total
+    buildFloor.getFloorDate(mainBuildingObj)
+    buildFloor.getFloorDate(terraceObj)
+    mData:acaData = mainBuildingObj.ACA_data
+    bData:acaData = terraceObj.ACA_data
+
+    offsetY = (mData.y_total/2 
+               + mData.platform_extend
+               + bData.y_total/2 
+               + bData.platform_extend
+               )
+    
+    terraceLoc = Vector((0,-offsetY,0))
+
+    return terraceLoc

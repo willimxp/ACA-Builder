@@ -2557,10 +2557,10 @@ def selectAll(buildingObj:bpy.types.Object):
 # 查找组合建筑的主建筑
 def getMainBuilding(buildingObj:bpy.types.Object):
     if buildingObj.parent is None:
-        print("查找主建筑时，未找到父节点")
-        return
-    
-    comboObj = buildingObj.parent
+        comboObj = buildingObj
+    else:
+        comboObj = buildingObj.parent
+        
     if comboObj.ACA_data.aca_type != con.ACA_TYPE_COMBO:
         print("查找主建筑时，未找到父节点")
 

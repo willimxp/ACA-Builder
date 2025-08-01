@@ -85,6 +85,8 @@ classes = (
     operators.ACA_OT_SECTION,
     operators.ACA_OT_TERRACE_DEL,
     operators.ACA_OT_TERRACE_ADD,
+    operators.ACA_OT_DOUBLE_EAVE_ADD,
+    operators.ACA_OT_DOUBLE_EAVE_DEL,
 )
 
 def register():   

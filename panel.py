@@ -829,15 +829,37 @@ class ACA_PT_roof_props(bpy.types.Panel):
                 # 屋顶属性
                 if bData.aca_type == con.ACA_TYPE_BUILDING:
                     box = layout.box()
+                    toolBox = box.column(align=True)  
+                    toolBar = toolBox.grid_flow(columns=2, align=True)
+
                     # 屋顶样式
-                    droplistRoofstyle = box.row()
+                    droplistRoofstyle = toolBar.column(align=True)
                     droplistRoofstyle.prop(
                         bData, "roof_style",text='') 
+                    
+                    toolBar = toolBox.grid_flow(columns=2, align=True)
+
+                    # 添加/取消重檐
+                    btnDoubleEave = toolBar.column(align=True)
+                    if not bData.use_double_eave:
+                        btnDoubleEave.operator(
+                            "aca.double_eave_add",
+                            icon='TRIA_UP_BAR',
+                            text='使用重檐')
+                    else:
+                        btnDoubleEave.operator(
+                            "aca.double_eave_del",
+                            icon='TRIA_UP_BAR',
+                            depress=True,
+                            text='取消重檐')
+
                     # 屋顶营造按钮
-                    buttonBuildroof = box.row()
+                    buttonBuildroof = toolBar.column(align=True)
                     buttonBuildroof.operator(
-                        "aca.build_roof",icon='HOME',
-                        text='重新生成屋顶',depress=True)# 
+                        "aca.build_roof",icon='FILE_REFRESH',
+                        text='更新屋顶',depress=True)
+                    
+                    
 
 # “斗栱属性”子面板
 class ACA_PT_dougong(bpy.types.Panel):

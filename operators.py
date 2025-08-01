@@ -1346,3 +1346,55 @@ class ACA_OT_TERRACE_ADD(bpy.types.Operator):
             % (timeEnd-timeStart))
         
         return {'FINISHED'}
+    
+# 添加重檐
+class ACA_OT_DOUBLE_EAVE_ADD(bpy.types.Operator):
+    bl_idname="aca.double_eave_add"
+    bl_label = "添加重檐"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '添加重檐'
+
+    def execute(self, context): 
+        timeStart = time.time()
+
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        
+        from . import buildRoof
+        funproxy = partial(
+            buildRoof.doubleEaveAdd,
+            buildingObj=buildingObj,
+        )
+        result = utils.fastRun(funproxy)
+
+        timeEnd = time.time()
+        self.report(
+            {'INFO'},"重檐添加(%.1f秒)" 
+            % (timeEnd-timeStart))
+        
+        return {'FINISHED'}
+    
+# 取消重檐
+class ACA_OT_DOUBLE_EAVE_DEL(bpy.types.Operator):
+    bl_idname="aca.double_eave_del"
+    bl_label = "取消重檐"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '取消重檐'
+
+    def execute(self, context): 
+        timeStart = time.time()
+
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        
+        from . import buildRoof
+        funproxy = partial(
+            buildRoof.doubleEaveDel,
+            buildingObj=buildingObj,
+        )
+        result = utils.fastRun(funproxy)
+
+        timeEnd = time.time()
+        self.report(
+            {'INFO'},"重檐取消(%.1f秒)" 
+            % (timeEnd-timeStart))
+        
+        return {'FINISHED'}

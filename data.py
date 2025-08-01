@@ -766,6 +766,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_roofstyle,
             description="请选择一种屋顶样式",
         ) # type: ignore
+    use_double_eave: bpy.props.BoolProperty(
+            default=False,
+            name="使用重檐",
+            update = update_roof,
+            description="使用重檐形式的屋顶",
+        )# type: ignore 
     use_hallway : bpy.props.BoolProperty(
             default=False,
             name="做廊步架",

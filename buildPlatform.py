@@ -269,7 +269,9 @@ def __buildSteps(baseRootObj:bpy.types.Object):
         if stepID == '': continue
 
         # 如果有月台，不做前出踏跺
-        if bData.use_terrace:
+        if (bData.use_terrace and 
+            bData.combo_type!=con.COMBO_TERRACE # 非月台，月台本身不受限制
+            ):
             # 解析踏跺配置参数
             setting = stepID.split('#')
             # 起始柱子
@@ -758,10 +760,26 @@ def addStep(buildingObj:bpy.types.Object,
                     continue #暂存起点
                 else:
                     pTo = piller
-                    stepID = pFrom.ACA_data['pillerID'] \
-                        + '#' + pTo.ACA_data['pillerID'] 
-                    stepID_alt = pTo.ACA_data['pillerID'] \
-                         + '#' + pFrom.ACA_data['pillerID'] 
+
+                    # 校验柱子是否相邻
+                    # 起始柱子
+                    pFromID = pFrom.ACA_data['pillerID']
+                    pFrom_s = pFromID.split('/')
+                    pFrom_x = int(pFrom_s[0])
+                    pFrom_y = int(pFrom_s[1])
+                    # 结束柱子
+                    pToID = pTo.ACA_data['pillerID']
+                    pTo_s = pToID.split('/')
+                    pTo_x = int(pTo_s[0])
+                    pTo_y = int(pTo_s[1])
+                    pValid = (pFrom_x-pTo_x) + (pFrom_y-pTo_y)
+                    if abs(pValid) > 1:
+                        utils.outputMsg(
+                            f"无法生成踏跺，{pFromID}，{pToID}不是相邻的柱子")
+                        continue
+
+                    stepID = pFromID + '#' + pToID 
+                    stepID_alt = pToID + '#' + pFromID
                     # 验证踏跺是否已经存在
                     if stepID in stepStr or stepID_alt in stepStr:
                         print(stepID + " is in stepstr:" + stepStr)
@@ -993,7 +1011,6 @@ def terraceAdd(buildingObj:bpy.types.Object):
     # 月台组合类型
     bData['combo_type'] = con.COMBO_TERRACE
     # 不做其他层次
-    bData['is_showPillers'] = False
     bData['is_showWalls'] = False
     bData['is_showDougong'] = False
     bData['is_showBeam'] = False
@@ -1039,6 +1056,13 @@ def terraceAdd(buildingObj:bpy.types.Object):
     # 添加月台，复用的buildPlatform
     # 但传入terraceRoot，做为组合建筑的子对象
     buildPlatform(terraceRoot)
+
+    # 要做柱网，但只显示柱定位点
+    bData['is_showPillers'] = True
+    bData['piller_net'] = ''    # 柱网不从主建筑继承
+    buildFloor.buildPillers(terraceRoot,
+                            onlyProxy=True, # 只显示柱定位点
+    )
 
     # 聚焦主建筑的台基
     terraceObj = utils.getAcaChild(

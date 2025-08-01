@@ -963,7 +963,8 @@ def getPillerHeight(buildingObj,pillerID):
 # 3. 修改柱样式时，也会重排柱子
 # 建筑根节点（内带设计参数集）
 # 不涉及墙体重建，很快
-def buildPillers(buildingObj:bpy.types.Object):
+def buildPillers(buildingObj:bpy.types.Object,
+                 onlyProxy = False):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
@@ -1040,6 +1041,22 @@ def buildPillers(buildingObj:bpy.types.Object):
                         and piller_list_str != "" :
                     continue    # 结束本次循环
 
+            # 只做柱标识（用在月台上）
+            if onlyProxy:
+                pillerObj = utils.addEmpty(
+                    name = '柱定位点.' + pillerID,
+                    type='CONE',
+                    radius=pd,
+                    location = (net_x[x],net_y[y],0),
+                    parent = floorRootObj,
+                    rotation=(math.radians(90),0,0)
+                )
+                pillerObj.ACA_data['aca_obj'] = True
+                pillerObj.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
+                pillerObj.ACA_data['pillerID'] = pillerID
+                # 不再继续做柱实体
+                continue
+
             # 复制柱子，仅instance，包含modifier
             pillerObj = utils.copySimplyObject(
                 sourceObj = piller_source,
@@ -1058,13 +1075,15 @@ def buildPillers(buildingObj:bpy.types.Object):
                 pd,pd,pillerHeight
             )
             utils.applyTransform(pillerObj,use_scale=True,autoUpdate=False)
+            # 做柱头彩画
+            mat.paint(pillerObj,con.M_PILLER_HEAD,
+                        override=True)
             pillerList.append(pillerObj)
 
             # 复制柱础
             pillerbase_basemesh:bpy.types.Object = utils.copySimplyObject(
                 sourceObj=aData.pillerbase_source,
                 location=(0,0,0),
-
                 parentObj=pillerObj
             )
             pillerbase_basemesh.scale = (
@@ -1081,16 +1100,8 @@ def buildPillers(buildingObj:bpy.types.Object):
                 parentObj=pillerObj
             )
 
-    # 做柱头彩画
-    # 将排布柱子循环中对柱高的修改，批量评估，极高的提高效率
-    utils.updateScene()
-    for piller in pillerList:
-        # 柱头贴图，注意此方法会破坏原有柱对象，并返回新对象
-        newPillerObj = mat.paint(piller,con.M_PILLER_HEAD,
-                    override=True)
-    
     # 移除柱子和柱顶石模板    
-    bpy.data.objects.remove(pillerBottom_basemesh)
+    utils.delObject(pillerBottom_basemesh)
     utils.delObject(piller_source)
 
     # 重新生成柱网配置
@@ -1102,17 +1113,18 @@ def buildPillers(buildingObj:bpy.types.Object):
                 pillerID = piller.ACA_data['pillerID']
                 bData.piller_net += pillerID + ','
 
-    # 添加柱间的额枋
-    # 函数内部会自动生成默认额枋
-    utils.outputMsg("Building Fangs...")
-    __buildFang(buildingObj)
+    if not onlyProxy:
+        # 添加柱间的额枋
+        # 函数内部会自动生成默认额枋
+        utils.outputMsg("Building Fangs...")
+        __buildFang(buildingObj)
 
-    # 250227 始终调用穿插枋处理
-    # 函数内部会判断是否满足做穿插枋的条件
-    __buildCCFang(buildingObj)
+        # 250227 始终调用穿插枋处理
+        # 函数内部会判断是否满足做穿插枋的条件
+        __buildCCFang(buildingObj)
 
-    # 250302 添加金柱间的金枋
-    __buildJinFang(buildingObj)
+        # 250302 添加金柱间的金枋
+        __buildJinFang(buildingObj)
 
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
@@ -1271,7 +1283,14 @@ def buildFloor(buildingObj:bpy.types.Object,
     # 生成柱网
     if bData.is_showPillers:
         utils.outputMsg("Building Pillers...")
-        buildPillers(buildingObj)
+        if (bData.use_terrace and 
+            bData.combo_type == con.COMBO_TERRACE
+            ):
+            onlyProxy = True
+        else:
+            onlyProxy = False
+        buildPillers(buildingObj,
+                     onlyProxy=onlyProxy)
     
     # 生成台基
     if bData.is_showPlatform:

@@ -261,18 +261,6 @@ def __buildSteps(baseRootObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     stepObjList = []
 
-    # 验证是否已经有月台
-    hasTerrace = False
-    comboObj = None
-    if buildingObj.parent is not None:
-        parent = buildingObj.parent
-        if parent.ACA_data.aca_type == con.ACA_TYPE_COMBO:
-            comboObj = parent
-    if comboObj is not None:
-        for building in comboObj.children:
-            if building.ACA_data.combo_type == con.COMBO_TERRACE:
-                hasTerrace = True
-
     # 解析模板输入的踏跺设置，格式如下
     # "3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
     stepStr = bData.step_net
@@ -281,7 +269,7 @@ def __buildSteps(baseRootObj:bpy.types.Object):
         if stepID == '': continue
 
         # 如果有月台，不做前出踏跺
-        if hasTerrace:
+        if bData.use_terrace:
             # 解析踏跺配置参数
             setting = stepID.split('#')
             # 起始柱子
@@ -937,7 +925,14 @@ def terraceDelete(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     # 获取主建筑
     mainBuilding = utils.getMainBuilding(buildingObj)
+    mData:acaData = mainBuilding.ACA_data
 
+    # 更新主建筑台基
+    mData['use_terrace'] = False
+    bData['use_terrace'] = False
+    buildPlatform(mainBuilding)
+
+    # 删除月台
     if bData.combo_type == con.COMBO_TERRACE:
         from . import build
         build.delBuilding(buildingObj,
@@ -947,9 +942,6 @@ def terraceDelete(buildingObj:bpy.types.Object):
     # 组合建筑降级
     from . import build
     build.delCombo(mainBuilding)
-
-    # 更新主建筑台基
-    buildPlatform(mainBuilding)
 
     # 聚焦主建筑的台基
     mainPlatform = utils.getAcaChild(
@@ -1039,11 +1031,14 @@ def terraceAdd(buildingObj:bpy.types.Object):
     # 存入属性，以便存入模板
     bData['root_location'] = terraceLoc
 
-    # 调用月台营造
-    buildPlatform(terraceRoot)
-
     # 更新主建筑台基
+    mData['use_terrace'] = True
+    bData['use_terrace'] = True
     buildPlatform(buildingObj)
+    
+    # 添加月台，复用的buildPlatform
+    # 但传入terraceRoot，做为组合建筑的子对象
+    buildPlatform(terraceRoot)
 
     # 聚焦主建筑的台基
     terraceObj = utils.getAcaChild(

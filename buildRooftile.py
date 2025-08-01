@@ -1997,18 +1997,16 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     if frontRidgeAfterObj != None:
         mat.setGlazeStyle(frontRidgeAfterObj)
         utils.shaderSmooth(frontRidgeAfterObj)
+        utils.applyTransform(frontRidgeAfterObj,use_location=True)
     if frontRidgeBeforeObj != None:
         mat.setGlazeStyle(frontRidgeBeforeObj)
         utils.shaderSmooth(frontRidgeBeforeObj)
+        utils.applyTransform(frontRidgeBeforeObj,use_location=True)
     if ridgeEndObj != None:
         mat.setGlazeStyle(ridgeEndObj)
     if chuishouObj != None:
         mat.setGlazeStyle(chuishouObj)
-    
-    # 消除因为位移在UI上难看的关系线
-    utils.applyTransform(frontRidgeAfterObj,use_location=True)
-    utils.applyTransform(frontRidgeBeforeObj,use_location=True)
-    utils.applyTransform2(chuishouObj,use_location=True)
+        utils.applyTransform2(chuishouObj,use_location=True) 
 
     return {'FINISHED'}
 

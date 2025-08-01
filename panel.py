@@ -437,18 +437,6 @@ class ACA_PT_platform(bpy.types.Panel):
             btnDelTaduo.operator(operator='aca.del_step',
                          text='删除踏跺',
                          icon='TRASH')
-            
-            # 添加月台、删除月台
-            group = toolbox.grid_flow(columns=2, align=True)
-            btnAddTerrace = group.column(align=True)
-            btnAddTerrace.operator(operator='aca.terrace_add',
-                         text='添加月台',
-                         icon='PACKAGE')
-            btnDelTerrace = group.column(align=True)
-            btnDelTerrace.operator(operator='aca.terrace_del',
-                         text='删除月台',
-                         icon='TRASH')
-            
             # 添加踏跺，至少应选择两根柱子
             if objData.aca_type != con.ACA_TYPE_PILLER \
                 or len(context.selected_objects)<2:
@@ -456,13 +444,27 @@ class ACA_PT_platform(bpy.types.Panel):
             # 删除踏跺，必须选中踏跺
             if objData.aca_type != con.ACA_TYPE_STEP:
                 btnDelTaduo.enabled = False
-            # 添加月台，必须选中主体建筑的台基
-            if (bData.combo_type != con.COMBO_MAIN
-                or objData.aca_type != con.ACA_TYPE_PLATFORM):
-                btnAddTerrace.enabled = False
-            # 删除月台，必须选中月台
-            if bData.combo_type != con.COMBO_TERRACE:
-                btnDelTerrace.enabled = False
+            
+            # 添加月台、删除月台
+            group = toolbox.grid_flow(columns=2, align=True)
+            if not bData.use_terrace:
+                btnAddTerrace = group.column(align=True)
+                btnAddTerrace.operator(operator='aca.terrace_add',
+                            text='添加月台',
+                            icon='ALIGN_BOTTOM')
+                # 添加月台，必须选中主体建筑的台基
+                if (bData.combo_type != con.COMBO_MAIN
+                    or objData.aca_type != con.ACA_TYPE_PLATFORM):
+                    btnAddTerrace.enabled = False
+            else:
+                btnDelTerrace = group.column(align=True)
+                btnDelTerrace.operator(operator='aca.terrace_del',
+                            text='删除月台',
+                            depress=True,
+                            icon='ALIGN_BOTTOM')
+                # 删除月台，必须选中月台
+                if bData.combo_type != con.COMBO_TERRACE:
+                    btnDelTerrace.enabled = False
 
             # 切换显示/隐藏台基
             if not bData.is_showPlatform:

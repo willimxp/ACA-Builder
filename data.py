@@ -476,6 +476,10 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     step_net : bpy.props.StringProperty(
             name = "保存的踏跺列表"
         )# type: ignore
+    use_terrace: bpy.props.BoolProperty(
+            default = False,
+            name = "是否有月台",
+        ) # type: ignore
     
     # 柱网对象属性
     x_total : bpy.props.FloatProperty(

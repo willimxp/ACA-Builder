@@ -100,7 +100,9 @@ def recurLayerCollection(layerColl, collName,is_like = False):
 # 隐藏目录
 def hideCollection(coll_name:str,
                    isExclude = True,
-                   parentColl:bpy.types.Collection=None):
+                   parentColl:bpy.types.Collection=None,
+                   isLike = False # 模糊匹配
+                   ):
     if parentColl == None:
         layer_collection = bpy.context.view_layer.layer_collection
     else:
@@ -109,12 +111,10 @@ def hideCollection(coll_name:str,
             parentColl.name
         )
         layer_collection = parentLayerColl
-    # # 模糊匹配，因为目录名可能带“.001”后缀
-    # layerColl = recurLayerCollection(
-    #     layer_collection, coll_name,is_like=True)
-    # 不做模糊匹配
     layerColl = recurLayerCollection(
-         layer_collection, coll_name)
+         layer_collection, coll_name,
+         is_like= isLike, # 是否模糊匹配
+         )
     if layerColl != None:
         layerColl.exclude = isExclude
         #layerColl.hide_viewport = not isShow
@@ -123,7 +123,9 @@ def hideCollection(coll_name:str,
             for child in layerColl.children:
                 hideCollection(coll_name=child.name,
                             isExclude=isExclude,
-                            parentColl=parentColl)
+                            parentColl=parentColl,
+                            isLike=isLike,
+                            )
         
 
 # 聚焦选中指定名称的目录
@@ -1804,7 +1806,9 @@ def hideLayer(context,name,isShow):
     # 隐藏
     hideCollection(name,
         isExclude=not isShow,
-        parentColl=buildingColl)
+        parentColl=buildingColl,
+        isLike=True, # 模糊匹配
+        )
     # 恢复聚焦到根节点
     focusObj(buildingObj)
     # 立即刷新显示，否则可能因为需要刷新所有panel而有延迟感

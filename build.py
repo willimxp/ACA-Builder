@@ -958,9 +958,6 @@ def __syncComboData(comboObj:bpy.types.Object,
         # 月台数据更新
         if bData.combo_type == con.COMBO_TERRACE:
             from . import buildPlatform
-            terraceLoc = buildPlatform.getTerraceLoc(
-                mainBuildingObj,childBuilding)
-            # 存入属性，以便存入模板
-            bData['root_location'] = terraceLoc
+            buildPlatform.setTerraceData(childBuilding)
 
     return

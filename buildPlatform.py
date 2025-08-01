@@ -994,71 +994,42 @@ def terraceAdd(buildingObj:bpy.types.Object):
             utils.popMessageBox("已经有一个月台，不能再生成新的月台了。")
             return
     
+    # 0、初始化主建筑数据
+    mData:acaData = buildingObj.ACA_data
+    mData['use_terrace'] = True
+
     # 1、开始构建月台 ----------------------------
-    # 构建月台根节点
+    # 1.1、构建月台根节点
     from . import buildFloor
     terraceRoot = buildFloor.__addBuildingRoot(
         templateName = '月台',
         comboObj = comboObj
     )
-
-    # 构建月台数据
-    mData:acaData = buildingObj.ACA_data
+    
+    # 1.2、月台数据集
     bData:acaData = terraceRoot.ACA_data
     # 继承主建筑属性
     utils.copyAcaData(buildingObj,terraceRoot)
-
     # 月台组合类型
     bData['combo_type'] = con.COMBO_TERRACE
-    # 不做其他层次
-    bData['is_showWalls'] = False
-    bData['is_showDougong'] = False
-    bData['is_showBeam'] = False
-    bData['is_showRafter'] = False
-    bData['is_showTiles'] = False
+    # 设置月台逻辑数据
+    terraceRoot = setTerraceData(terraceRoot)
     
-    # 月台高度，比主体低1踏步
-    bData['platform_height'] = (
-        mData.platform_height - con.STEP_HEIGHT)
-    # 月台下出，比主体窄2踏步（未见规则）
-    bData['platform_extend'] = (
-        mData.platform_extend 
-        - con.STEP_HEIGHT*2
-        )
-    # 月台进深，五间以上减2间
-    if mData.y_rooms > 2:
-        bData['y_rooms'] = mData.y_rooms - 2
-    # 月台面阔，五间以上做“凸”形月台，减2间
-    if mData.x_rooms > 5:
-        bData['x_rooms'] = mData.x_rooms - 2
-    # 不从主建筑继承踏跺（柱网不一样了）
-    bData['step_net'] = ''
-
-    # 月台位置
-    terraceLoc = getTerraceLoc(buildingObj,
-                                terraceRoot,)
-    # 存入属性，以便存入模板
-    bData['root_location'] = terraceLoc
-    # 本次移动
-    terraceRoot.location = terraceLoc
-
-    # 更新主建筑台基
-    mData['use_terrace'] = True
-    bData['use_terrace'] = True
+    # 2、刷新主建筑月台（隐藏前出踏跺）
     buildPlatform(buildingObj)
     
-    # 添加月台，复用的buildPlatform
+    # 3、添加月台，复用的buildPlatform
     # 但传入terraceRoot，做为组合建筑的子对象
     buildPlatform(terraceRoot)
+    # 移动月台根节点
+    terraceRoot.location = bData.root_location
 
-    # 要做柱网，但只显示柱定位点
-    bData['is_showPillers'] = True
-    bData['piller_net'] = ''    # 柱网不从主建筑继承
+    # 4、重做柱网（显示柱定位标识）
     buildFloor.buildPillers(terraceRoot,
                             onlyProxy=True, # 只显示柱定位点
     )
 
-    # 聚焦主建筑的台基
+    # 5、聚焦新生成的月台
     terraceObj = utils.getAcaChild(
         terraceRoot,con.ACA_TYPE_PLATFORM
     )
@@ -1067,20 +1038,55 @@ def terraceAdd(buildingObj:bpy.types.Object):
 
     return
 
-def getTerraceLoc(mainBuildingObj:bpy.types.Object,
-                  terraceObj:bpy.types.Object,):
+# 设置月台数据
+# 在terraceAdd和bulld.__syncComboData中复用
+def setTerraceData(terraceObj:bpy.types.Object):
+    # 月台数据集
+    bData:acaData = terraceObj.ACA_data
+    # 主建筑数据集
+    mainBuildingObj = utils.getMainBuilding(terraceObj)
+    mData:acaData = mainBuildingObj.ACA_data
+
+    # 更新主建筑台基
+    # 不做其他层次
+    bData['is_showWalls'] = False
+    bData['is_showDougong'] = False
+    bData['is_showBeam'] = False
+    bData['is_showRafter'] = False
+    bData['is_showTiles'] = False
+    # 不从主建筑继承踏跺（柱网不一样了）
+    bData['step_net'] = ''
+
+    # 月台高度，比主体低1踏步
+    bData['platform_height'] = (
+        mData.platform_height - con.STEP_HEIGHT)
+    # 月台下出，比主体窄2踏步（未见规则）
+    bData['platform_extend'] = (
+        mData.platform_extend 
+        - con.STEP_HEIGHT*2
+        )
+    
+    # 月台进深，五间以上减2间
+    if mData.y_rooms > 2:
+        bData['y_rooms'] = mData.y_rooms - 2
+    # 月台面阔，五间以上做“凸”形月台，减2间
+    if mData.x_rooms > 5:
+        bData['x_rooms'] = mData.x_rooms - 2
+    
+    # 月台定位
     # 更新地盘数据，计算当前的y_total
     buildFloor.getFloorDate(mainBuildingObj)
     buildFloor.getFloorDate(terraceObj)
-    mData:acaData = mainBuildingObj.ACA_data
-    bData:acaData = terraceObj.ACA_data
-
     offsetY = (mData.y_total/2 
                + mData.platform_extend
                + bData.y_total/2 
                + bData.platform_extend
                )
-    
     terraceLoc = Vector((0,-offsetY,0))
+    bData['root_location'] = terraceLoc
 
-    return terraceLoc
+    # 启用柱网，但只显示柱定位点
+    bData['is_showPillers'] = True
+    bData['piller_net'] = ''    # 柱网不从主建筑继承
+
+    return terraceObj

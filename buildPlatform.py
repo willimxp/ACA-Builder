@@ -1025,9 +1025,7 @@ def terraceAdd(buildingObj:bpy.types.Object):
     terraceRoot.location = bData.root_location
 
     # 4、重做柱网（显示柱定位标识）
-    buildFloor.buildPillers(terraceRoot,
-                            onlyProxy=True, # 只显示柱定位点
-    )
+    buildFloor.buildPillers(terraceRoot)
 
     # 5、聚焦新生成的月台
     terraceObj = utils.getAcaChild(
@@ -1054,7 +1052,13 @@ def setTerraceData(terraceObj:bpy.types.Object):
     bData['is_showBeam'] = False
     bData['is_showRafter'] = False
     bData['is_showTiles'] = False
-    # 不从主建筑继承踏跺（柱网不一样了）
+    # 启用柱网，但只显示柱定位点
+    bData['is_showPillers'] = True
+    # 柱网不从主建筑继承
+    # 传入一个非空字符，要求柱网不要重建，仅显示定位点
+    bData['piller_net'] = 'new'
+    bData['fang_net'] = ''      # 额枋不从主建筑继承
+    bData['wall_net'] = ''      # 墙体不继承
     bData['step_net'] = ''
 
     # 月台高度，比主体低1踏步
@@ -1084,9 +1088,5 @@ def setTerraceData(terraceObj:bpy.types.Object):
                )
     terraceLoc = Vector((0,-offsetY,0))
     bData['root_location'] = terraceLoc
-
-    # 启用柱网，但只显示柱定位点
-    bData['is_showPillers'] = True
-    bData['piller_net'] = ''    # 柱网不从主建筑继承
 
     return terraceObj

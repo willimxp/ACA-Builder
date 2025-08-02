@@ -389,36 +389,25 @@ def __buildCCFang(buildingObj:bpy.types.Object):
 
         # 判断柱子是否为金柱，并向相邻的檐柱做穿插枋
         # 前后檐（包括2坡顶和4坡顶）
-        if (py in (1,bData.y_rooms-1)
+        if (py in (0,bData.y_rooms-1)
              and px not in (0, bData.x_rooms) ):
-            # 250714是否存在相邻的柱子？
-            if net_y[py] < 0:
-                # 南面
-                pillerNext = f"{px}/{py-1}"
-            else:
-                # 北面
-                pillerNext = f"{px}/{py+1}"   
+            pillerNext = f"{px}/{py+1}" 
             if pillerNext in bData.piller_net:
                 ccfangList.append(f"{px}/{py}#{pillerNext}") 
-        # 250703 两山不做穿插枋，用额枋取代
-        # # 如果4坡顶，两山做穿插枋
-        # # 对于2坡顶，两山廊间应该做金枋，而不是穿插枋
-        # if bData.roof_style in (
-        #     con.ROOF_LUDING,
-        #     con.ROOF_WUDIAN,
-        #     con.ROOF_XIESHAN,
-        #     con.ROOF_XIESHAN_JUANPENG,
-        # ):
-        #     if (px in (1, bData.x_rooms-1) 
-        #         and py not in (0,bData.y_rooms)):
-        #         if net_x[px] < 0:
-        #             # 西面
-        #             ccfangList.append("%d/%d#%d/%d" 
-        #                         % (px,py,px-1,py))
-        #         else:
-        #             # 东面
-        #             ccfangList.append("%d/%d#%d/%d" 
-        #                         % (px,py,px+1,py))
+
+        # 如果4坡顶，两山做穿插枋
+        # 对于2坡顶，两山廊间应该做金枋，而不是穿插枋
+        if bData.roof_style in (
+            con.ROOF_LUDING,
+            con.ROOF_WUDIAN,
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,
+        ):
+            if (px in (0, bData.x_rooms-1) and 
+                py not in (0,bData.y_rooms)):
+                pillerNext = f"{px+1}/{py}"  
+                if pillerNext in bData.piller_net:
+                    ccfangList.append(f"{px}/{py}#{pillerNext}")
 
 
     # 循环生成穿插枋
@@ -504,29 +493,37 @@ def __buildJinFang(buildingObj:bpy.types.Object):
         py = int(py)
 
         # 判断柱子是否为金柱，并向相邻的金柱做金枋
-        # 250703 横向金枋用额枋取代
-        # # 横向金枋，仅做外金柱之间的横向金枋，不做内金柱之间的横向金枋
-        # useJinfang = False
-        # if py in (1,bData.y_rooms-1):
-        #     if bData.roof_style in (con.ROOF_YINGSHAN,
-        #                             con.ROOF_YINGSHAN_JUANPENG,
-        #                             con.ROOF_XUANSHAN,
-        #                             con.ROOF_XUANSHAN_JUANPENG,):
-        #         # 2坡顶，横向都做金枋
-        #         if px != bData.x_rooms:
-        #             useJinfang = True
-        #     else:
-        #         # 4坡顶，横向在廊间不做金枋
-        #         if px not in (0, bData.x_rooms-1, bData.x_rooms):
-        #             useJinfang =True
-        # if useJinfang:  
-        #     jinfangList.append("%d/%d#%d/%d" 
-        #                             % (px,py,px+1,py))
+        # 横向金枋，檐柱和金柱不做，仅做内金柱间
+        # 四坡顶廊间不做横向金枋，改作穿插枋
+        if bData.roof_style in (con.ROOF_LUDING,
+                                con.ROOF_WUDIAN,
+                                con.ROOF_XIESHAN,
+                                con.ROOF_XIESHAN_JUANPENG):
+            pxRangeNot = (0,bData.x_rooms-1,bData.x_rooms)
+        else:
+            pxRangeNot = (bData.x_rooms,)
+        if (px not in pxRangeNot and 
+            py not in (0,1,bData.y_rooms-1,bData.y_rooms)):  
+            # 250802 是否存在相邻的柱子？
+            pillerNext = f"{px+1}/{py}"  
+            if pillerNext in bData.piller_net:
+                jinfangList.append(f"{px}/{py}#{pillerNext}")
+        
         # 纵向金枋，无论内外金柱，都做纵向金枋
-        if (px not in (0, bData.x_rooms) 
-            and py not in (0,1,bData.y_rooms-1, bData.y_rooms)):
-            jinfangList.append("%d/%d#%d/%d" 
-                            % (px,py,px,py+1))
+        # 四坡顶廊间不做纵向金枋，改作额枋
+        if bData.roof_style in (con.ROOF_LUDING,
+                                con.ROOF_WUDIAN,
+                                con.ROOF_XIESHAN,
+                                con.ROOF_XIESHAN_JUANPENG):
+            pxRangeNot = (0,1,bData.x_rooms-1,bData.x_rooms)
+        else:
+            pxRangeNot = (0,bData.x_rooms,)
+        if (px not in pxRangeNot and 
+            py not in (0,bData.y_rooms-1, bData.y_rooms)):
+            # 250802 是否存在相邻的柱子？
+            pillerNext = f"{px}/{py+1}"   
+            if pillerNext in bData.piller_net:
+                jinfangList.append(f"{px}/{py}#{pillerNext}")
 
     # 循环生成金枋（金枋在柱头）
     for jinfang in jinfangList:
@@ -582,7 +579,9 @@ def __buildFang(buildingObj:bpy.types.Object):
 
     # 根据fang_net判断是否需要自动生成
     # '0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,'
-    fangNet = bData.fang_net
+    # fangNet = bData.fang_net
+    # 250802 不再保留以前用户手工创建的额枋，而完全按照柱网自动判断
+    fangNet = ''
 
     # 自动生成fangstr
     # 提取柱网列表
@@ -594,9 +593,22 @@ def __buildFang(buildingObj:bpy.types.Object):
 
         # 判断柱子是否为檐柱，并向相邻的檐柱做额枋
         # 前后檐
-        # 250703 在前后檐的金柱间也做额枋
-        if (py in (0,1,bData.y_rooms-1,bData.y_rooms) 
-                and px != bData.x_rooms):
+        # 外檐都做额枋
+        waiyan_range = (py in (0,bData.y_rooms) 
+                and px not in (bData.x_rooms,))
+        # 內檐为了适配內檐装修，也做额枋
+        if bData.roof_style in (con.ROOF_LUDING,
+                                con.ROOF_WUDIAN,
+                                con.ROOF_XIESHAN,
+                                con.ROOF_XIESHAN_JUANPENG):
+            # 四坡顶廊间不做
+            neiyan_range = (py in (1,bData.y_rooms-1) 
+                    and px not in (0,bData.x_rooms-1,bData.x_rooms))
+        else:
+            # 2坡顶廊间也做
+            neiyan_range = (py in (1,bData.y_rooms-1) 
+                    and px not in (bData.x_rooms,))
+        if (waiyan_range or neiyan_range):
             # 250714是否存在相邻的柱子？
             pillerNext = f"{px+1}/{py}"
             if pillerNext in bData.piller_net:
@@ -609,9 +621,22 @@ def __buildFang(buildingObj:bpy.types.Object):
                 if (sfang not in fangNet 
                     and sfang_alt not in fangNet):
                     fangNet += sfang
+
         # 两山
-        if (px in (0, bData.x_rooms) 
-                and py != bData.y_rooms):
+        # 外檐都做额枋
+        waiyan_range = (px in (0, bData.x_rooms) 
+                and py != bData.y_rooms)
+        # 內檐为了适配四坡顶的內檐装修，也做额枋（但是廊间不做）
+        if bData.roof_style in (con.ROOF_LUDING,
+                                con.ROOF_WUDIAN,
+                                con.ROOF_XIESHAN,
+                                con.ROOF_XIESHAN_JUANPENG):
+            neiyan_range = (px in (1, bData.x_rooms-1) 
+                    and py not in (0,bData.x_rooms-1,bData.x_rooms))
+        else:
+            neiyan_range = False
+        
+        if (waiyan_range or neiyan_range):
             sfang = ("%d/%d#%d/%d," 
                         % (px,py,px,py+1))
             sfang_alt = ("%d/%d#%d/%d," 

@@ -194,7 +194,12 @@ class ACA_OT_del_piller(bpy.types.Operator):
         piller = context.object
         pillers = context.selected_objects
         buildingObj = utils.getAcaParent(piller,con.ACA_TYPE_BUILDING)
-        buildFloor.delPiller(buildingObj,pillers) 
+
+        funproxy = partial(buildFloor.delPiller,
+                    buildingObj=buildingObj,
+                    pillers=pillers)
+        result = utils.fastRun(funproxy)
+
         self.report({'INFO'},"已删除柱子")
         return {'FINISHED'}
 

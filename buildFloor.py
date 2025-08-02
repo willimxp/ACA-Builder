@@ -524,10 +524,9 @@ def __buildJinFang(buildingObj:bpy.types.Object):
         #                             % (px,py,px+1,py))
         # 纵向金枋，无论内外金柱，都做纵向金枋
         if (px not in (0, bData.x_rooms) 
-            and py not in (0,bData.y_rooms-1, bData.y_rooms)):
-            # 西面
+            and py not in (0,1,bData.y_rooms-1, bData.y_rooms)):
             jinfangList.append("%d/%d#%d/%d" 
-                        % (px,py,px,py+1))
+                            % (px,py,px,py+1))
 
     # 循环生成金枋（金枋在柱头）
     for jinfang in jinfangList:

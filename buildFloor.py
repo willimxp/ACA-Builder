@@ -1227,10 +1227,13 @@ def resizePiller(buildingObj:bpy.types.Object):
     utils.outputMsg("Piller resized")
 
 # 重设柱网设置，让减柱重新显示
-def resetFloor(buildingObj:bpy.types.Object):
+def resetFloor(buildingObj:bpy.types.Object,
+               comboObj:bpy.types.Object = None,
+               ):
     # 清空柱网、额枋、装修的设置
     bData:acaData = buildingObj.ACA_data
-    bData.piller_net = ''
+    if bData.piller_net != con.ACA_PILLER_HIDE:
+        bData.piller_net = ''
     bData.fang_net = ''
     bData.wall_net = ''
     
@@ -1247,7 +1250,8 @@ def resetFloor(buildingObj:bpy.types.Object):
     # 调用
     isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
     if isRebuild:
-        result = buildFloor(buildingObj)
+        result = buildFloor(buildingObj,
+                            comboObj=comboObj)
     else:
         result = {'CANCELLED'}
     return result

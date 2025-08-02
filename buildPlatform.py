@@ -1055,8 +1055,7 @@ def setTerraceData(terraceObj:bpy.types.Object):
     # 启用柱网，但只显示柱定位点
     bData['is_showPillers'] = True
     # 柱网不从主建筑继承
-    # 传入一个非空字符，要求柱网不要重建，仅显示定位点
-    bData['piller_net'] = 'new'
+    bData['piller_net'] = con.ACA_PILLER_HIDE   # 仅显示定位点
     bData['fang_net'] = ''      # 额枋不从主建筑继承
     bData['wall_net'] = ''      # 墙体不继承
     bData['step_net'] = ''

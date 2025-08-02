@@ -255,6 +255,11 @@ def delBuilding(buildingObj:bpy.types.Object,
 
 # 清除所有的装修、踏跺等，重新生成地盘
 def resetFloor(buildingObj:bpy.types.Object):
+    # 250311 发现在中文版中UV贴图异常
+    # 最终发现是该选项会导致生成的'UVMap'变成'UV贴图'
+    # 禁用语言-翻译-新建数据
+    bpy.context.preferences.view.use_translate_new_dataname = False
+    
     # 创建或锁定根目录（ACA筑韵古建）
     rootColl = utils.setCollection(con.COLL_NAME_ROOT,
                         isRoot=True,colorTag=2)
@@ -263,14 +268,44 @@ def resetFloor(buildingObj:bpy.types.Object):
     global isFinished,progress
     isFinished = False
     progress = 0
+
+    # 查找是否存在comboRoot
+    if buildingObj.parent is not None:
+        # 用combo节点替换buildingObj
+        rootObj = buildingObj.parent
+    else:
+        rootObj = buildingObj
+
     # 暂时排除目录下的其他建筑，以加快执行速度
     __excludeOther(rootColl,True,buildingObj)
 
-    buildFloor.resetFloor(buildingObj)
+    # 载入数据
+    bData:acaData = rootObj.ACA_data
+
+    # 根据模板类型调用不同的入口
+    # 组合建筑
+    if bData.aca_type == con.ACA_TYPE_COMBO:
+        # 循环清空各个建筑构件
+        for childBuilding in rootObj.children:
+            utils.deleteHierarchy(childBuilding)
+        
+        # 同步combo子建筑数据
+        __syncComboData(rootObj,buildingObj)
+            
+        # 循环生成各个单体
+        for childBuilding in rootObj.children:
+            buildFloor.resetFloor(childBuilding,
+                    comboObj=rootObj)
+    # 单体建筑
+    elif bData.aca_type == con.ACA_TYPE_BUILDING:
+        buildFloor.resetFloor(rootObj)
+    else:
+        utils.popMessageBox("无法创建该类型的建筑：" + bData.aca_type)
 
     isFinished = True
     # 取消排除目录下的其他建筑
     __excludeOther(rootColl,False,buildingObj)
+
     return  {'FINISHED'}
 
 # 重新生成屋顶

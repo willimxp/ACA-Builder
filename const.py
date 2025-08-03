@@ -103,6 +103,7 @@ class ACA_Consts(object):
     ROOM_Y1 = 44    # 明间宽(DK)
     ROOM_Y2 = 44    # 明间宽(DK)
     ROOM_Y3 = 22    # 明间宽(DK)
+    HALLWAY_DEEPTH = 22 # 廊间面阔/进深(DK)
 
     # 柱子
     PILLER_D_EAVE = 6       # 檐柱直径(DK)

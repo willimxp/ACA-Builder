@@ -4019,17 +4019,3 @@ def buildRoof(buildingObj:bpy.types.Object):
     
     utils.focusObj(buildingObj)
     return {'FINISHED'}
-
-# 添加重檐
-def doubleEaveAdd(buildingObj:bpy.types.Object):
-    print("添加重檐")
-    bData:acaData = buildingObj.ACA_data
-    bData['use_double_eave'] = True
-    return
-
-# 取消重檐
-def doubleEaveDel(buildingObj:bpy.types.Object):
-    print("取消重檐")
-    bData:acaData = buildingObj.ACA_data
-    bData['use_double_eave'] = False
-    return

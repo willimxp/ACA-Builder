@@ -13,6 +13,7 @@ from . import buildFloor
 from . import buildYardWall
 from . import buildRoof
 from . import texture as mat
+from . import buildCombo
 
 # 全局参数 -----------------
 # 是否在运行
@@ -24,23 +25,7 @@ progress = 0
 # 集合的排除属性备份
 collExclude = {}
 
-# 添加combo根节点
-def __addComboRoot(templateName):
-    # 创建或锁定根目录
-    coll = utils.setCollection(templateName)
-    # 创建buildObj根节点
-    # 原点摆放在3D Cursor位置
-    comboObj = utils.addEmpty(
-        name=templateName,
-        location=bpy.context.scene.cursor.location
-    )
-    cData:acaData = comboObj.ACA_data
-    cData['template_name'] = templateName
-    cData['aca_type'] = con.ACA_TYPE_COMBO
-
-    return comboObj
-
-def __buildSingle(acaType,
+def buildSingle(acaType,
                   templateName,
                   comboObj = None):
     # 根据模板类型调用不同的入口
@@ -139,22 +124,13 @@ def build():
 
     if acaType != con.ACA_TYPE_COMBO:
         # 单体建筑
-        __buildSingle(
+        buildSingle(
             acaType = acaType,
             templateName = templateName
         )
     else:
-        # 添加combo根节点
-        comboObj = __addComboRoot(templateName)
-        
         # 组合建筑
-        tempChildren = template.getTemplateChild(templateName)
-        for child in tempChildren:
-            __buildSingle(
-                acaType = child['acaType'],
-                templateName = child['templateName'],
-                comboObj = comboObj
-            )
+        buildCombo.buildCombo(templateName)
     
     isFinished = True
     # 取消排除目录下的其他建筑
@@ -197,18 +173,8 @@ def updateBuilding(buildingObj:bpy.types.Object,
     # 根据模板类型调用不同的入口
     # 组合建筑
     if bData.aca_type == con.ACA_TYPE_COMBO:
-        # 循环清空各个建筑构件
-        for childBuilding in rootObj.children:
-            utils.deleteHierarchy(childBuilding)
-        
-        # 同步combo子建筑数据
-        __syncComboData(rootObj,buildingObj)
-            
-        # 循环生成各个单体
-        for childBuilding in rootObj.children:
-            buildFloor.buildFloor(childBuilding,
-                    reloadAssets=reloadAssets,
-                    comboObj=rootObj)
+        buildCombo.updateCombo(rootObj,
+                    reloadAssets=reloadAssets)
     # 单体建筑
     elif bData.aca_type == con.ACA_TYPE_BUILDING:
         buildFloor.buildFloor(rootObj,
@@ -285,17 +251,7 @@ def resetFloor(buildingObj:bpy.types.Object):
     # 根据模板类型调用不同的入口
     # 组合建筑
     if bData.aca_type == con.ACA_TYPE_COMBO:
-        # 循环清空各个建筑构件
-        for childBuilding in rootObj.children:
-            utils.deleteHierarchy(childBuilding)
-        
-        # 同步combo子建筑数据
-        __syncComboData(rootObj,buildingObj)
-            
-        # 循环生成各个单体
-        for childBuilding in rootObj.children:
-            buildFloor.resetFloor(childBuilding,
-                    comboObj=rootObj)
+        buildCombo.updateCombo(rootObj)
     # 单体建筑
     elif bData.aca_type == con.ACA_TYPE_BUILDING:
         buildFloor.resetFloor(rootObj)
@@ -670,8 +626,6 @@ def __getSectionPlan(boolObj:bpy.types.Object,
             ))
             boolPlan['mat'] = con.M_STONE
 
-    
-
     return boolPlan
 
 # 组合建筑为一个实体
@@ -859,140 +813,3 @@ def __undoJoin(buildingObj:bpy.types.Object):
     bpy.context.view_layer.objects.active = oldbuildingObj
 
     return oldbuildingObj
-
-# 基于单一建筑，添加组合建筑
-def addCombo(buildingObj:bpy.types.Object):
-    # 校验建筑为单一建筑
-    buildingObj,bData,objData = utils.getRoot(buildingObj)
-    if buildingObj.parent is not None:
-        comboObj = buildingObj.parent
-    else:
-        comboObj = buildingObj
-    if comboObj.ACA_data.aca_type == con.ACA_TYPE_COMBO:
-        utils.outputMsg("添加组合建筑失败，已经为组合建筑。")
-        return
-        
-    # 添加组合建筑
-    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
-                        isRoot=True,colorTag=2)
-    # 添加combo根节点
-    comboObj = __addComboRoot(buildingObj.name + '.combo')
-
-    # 更改对象父节点
-    m = buildingObj.matrix_world.copy()
-    buildingObj.parent = comboObj
-
-    # 更改映射
-    comboObj.matrix_world = m
-    import mathutils
-    buildingObj.matrix_local = mathutils.Matrix()
-
-    # 更改目录级别
-    buildingColl = buildingObj.users_collection[0]
-    # 关联到combo目录
-    comboColl = comboObj.users_collection[0]
-    comboColl.children.link(buildingColl)
-    # 从根目录移除
-    rootColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
-    rootColl.children.unlink(buildingColl)
-
-    return comboObj
-
-# 组合建筑降级为单一建筑
-def delCombo(buildingObj:bpy.types.Object):
-    # 校验建筑为单一建筑
-    buildingObj,bData,objData = utils.getRoot(buildingObj)
-    if buildingObj.parent is None:
-        utils.outputMsg("删除组合建筑失败，当前建筑没有父节点。")
-        return
-    else: 
-        comboObj = buildingObj.parent
-    
-    if comboObj.ACA_data.aca_type != con.ACA_TYPE_COMBO:
-        utils.outputMsg("删除组合建筑失败，不是组合建筑。")
-        return
-    
-    # 是否只剩一个建筑？
-    if len(comboObj.children) > 1:
-        utils.outputMsg("删除组合建筑失败，不止一个建筑存在。")
-        return
-    
-    # 更改目录级别
-    buildingColl = buildingObj.users_collection[0]
-    # 关联到根目录
-    rootColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
-    rootColl.children.link(buildingColl)
-    # 删除父集合
-    comboColl = comboObj.users_collection[0]
-    comboColl.children.unlink(buildingColl)
-    bpy.data.collections.remove(comboColl)    
-
-    # 删除父节点
-    buildingObj.parent = None
-    # 更改映射
-    buildingObj.matrix_world = comboObj.matrix_world.copy()
-    utils.delObject(comboObj)
-
-    return
-
-# 同步combo组合建筑中的各个子建筑数据
-# 仅在updateBuilding中调用
-def __syncComboData(comboObj:bpy.types.Object,
-                    buildingObj:bpy.types.Object):
-    syncKeys = [
-        'DK',
-        'x_1',
-        'x_2',
-        'x_3',
-        'x_4',
-        'y_1',
-        'y_2',
-        'y_3',
-        'paint_style',
-        'dg_scale',
-        'dg_gap',
-        'tile_scale',
-        'tile_color',
-        'tile_alt_color',
-        'tile_width',
-        'tile_length',
-        # 间数不能同步
-        # 'x_rooms',
-        # 'y_rooms',
-    ]
-
-    # combo的数据集
-    cData:acaData = comboObj.ACA_data
-    mainBuildingObj = utils.getMainBuilding(comboObj)
-    if mainBuildingObj is None:
-        utils.outputMsg("combo数据同步失败，未找到主建筑")
-        return
-    # 主建筑数据集
-    mData:acaData = mainBuildingObj.ACA_data
-
-    # 验证修改的数据是否是主建筑
-    if mainBuildingObj == buildingObj:
-        # 确认传入的是主建筑，向各个子建筑同步
-        needSync = True
-    else:
-        # 可能传入的是月台之类的子建筑，不向主建筑同步
-        needSync = False
-
-    # 循环同步
-    for childBuilding in comboObj.children:
-        # 待同步的建筑数据集
-        bData:acaData = childBuilding.ACA_data
-
-        if needSync:
-            # 验证是否与修改对象为同一建筑
-            if childBuilding != buildingObj:
-                for key in syncKeys:
-                    if hasattr(mData,key):
-                        bData[key] = getattr(mData,key)
-
-        # 月台数据更新
-        if bData.combo_type == con.COMBO_TERRACE:
-            from . import buildPlatform
-            buildPlatform.setTerraceData(childBuilding)
-
-    return

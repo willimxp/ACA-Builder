@@ -1312,9 +1312,9 @@ class ACA_OT_TERRACE_DEL(bpy.types.Operator):
 
         buildingObj,bData,objData = utils.getRoot(context.object)
         
-        from . import buildPlatform
+        from . import buildCombo
         funproxy = partial(
-            buildPlatform.terraceDelete,
+            buildCombo.terraceDelete,
             buildingObj=buildingObj,
         )
         result = utils.fastRun(funproxy)
@@ -1338,9 +1338,9 @@ class ACA_OT_TERRACE_ADD(bpy.types.Operator):
 
         buildingObj,bData,objData = utils.getRoot(context.object)
         
-        from . import buildPlatform
+        from . import buildCombo
         funproxy = partial(
-            buildPlatform.terraceAdd,
+            buildCombo.terraceAdd,
             buildingObj=buildingObj,
         )
         result = utils.fastRun(funproxy)
@@ -1364,9 +1364,9 @@ class ACA_OT_DOUBLE_EAVE_ADD(bpy.types.Operator):
 
         buildingObj,bData,objData = utils.getRoot(context.object)
         
-        from . import buildRoof
+        from . import buildCombo
         funproxy = partial(
-            buildRoof.doubleEaveAdd,
+            buildCombo.doubleEaveAdd,
             buildingObj=buildingObj,
         )
         result = utils.fastRun(funproxy)
@@ -1390,9 +1390,9 @@ class ACA_OT_DOUBLE_EAVE_DEL(bpy.types.Operator):
 
         buildingObj,bData,objData = utils.getRoot(context.object)
         
-        from . import buildRoof
+        from . import buildCombo
         funproxy = partial(
-            buildRoof.doubleEaveDel,
+            buildCombo.doubleEaveDel,
             buildingObj=buildingObj,
         )
         result = utils.fastRun(funproxy)

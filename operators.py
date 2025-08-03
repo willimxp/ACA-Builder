@@ -32,9 +32,10 @@ class ACA_OT_focusBuilding(bpy.types.Operator):
                 utils.focusObj(buildingObj)
             # 如果context已经是建筑节点，查看是否有combo父级
             else:
-                if buildingObj.parent is not None:
+                comboObj = utils.getComboRoot(buildingObj)
+                if comboObj is not None:
                     # 聚焦Combo
-                    utils.focusObj(buildingObj.parent)                
+                    utils.focusObj(comboObj)                
         else:
             self.report({'ERROR'},"找不到根节点")
 
@@ -641,14 +642,17 @@ class ACA_OT_save_template(bpy.types.Operator):
             return {'FINISHED'}
         
         # 查找是否存在comboRoot
-        if buildingObj.parent is not None:
+        comboObj = utils.getComboRoot(buildingObj)
+        if comboObj is not None:
             # 用combo节点替换buildingObj
-            buildingObj = buildingObj.parent
+            buildingObj = comboObj
         
         from . import template
         result = template.saveTemplateWithCombo(buildingObj)
         if 'FINISHED' in result:
-            utils.popMessageBox(f"【{buildingObj.name}】模板样式保存成功")
+            msg = f"【{buildingObj.name}】模板样式保存成功"
+            utils.outputMsg(msg)
+            self.report({'INFO'},msg)
 
         return {'FINISHED'}
     
@@ -660,9 +664,10 @@ class ACA_OT_save_template(bpy.types.Operator):
         buildingObj,bData,objData = utils.getRoot(context.object)
 
         # 查找是否存在comboRoot
-        if buildingObj.parent is not None:
+        comboObj = utils.getComboRoot(buildingObj)
+        if comboObj is not None:
             # 用combo节点替换buildingObj
-            buildingObj = buildingObj.parent
+            buildingObj = comboObj
 
         buildingName = buildingObj.name
         for templateItem in templateList:
@@ -679,9 +684,10 @@ class ACA_OT_save_template(bpy.types.Operator):
     def draw(self, context):
         buildingObj,bData,objData = utils.getRoot(context.object)
         # 查找是否存在comboRoot
-        if buildingObj.parent is not None:
+        comboObj = utils.getComboRoot(buildingObj)
+        if comboObj is not None:
             # 用combo节点替换buildingObj
-            buildingObj = buildingObj.parent
+            buildingObj = comboObj
 
         buildingName = buildingObj.name
         row = self.layout.row()

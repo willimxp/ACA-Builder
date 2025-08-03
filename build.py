@@ -51,11 +51,11 @@ def __excludeOther(rootColl:bpy.types.Collection,
     ):
     # 查找当前建筑所在的目录
     if buildingObj != None:
-        if buildingObj.parent is not None:
-            comboObj = buildingObj.parent
-            currentColl = comboObj.users_collection[0]
-        else:
+        comboObj = utils.getComboRoot(buildingObj)
+        if comboObj is None:
             currentColl = buildingObj.users_collection[0]
+        else:
+            currentColl = comboObj.users_collection[0]
     else:
         currentColl = None
     
@@ -148,47 +148,42 @@ def updateBuilding(buildingObj:bpy.types.Object,
     # 禁用语言-翻译-新建数据
     bpy.context.preferences.view.use_translate_new_dataname = False
     
-    # 创建或锁定根目录（ACA筑韵古建）
-    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
-                        isRoot=True,colorTag=2)
-    
     # 调用进度条
     global isFinished,progress
     isFinished = False
     progress = 0
 
-    # 查找是否存在comboRoot
-    if buildingObj.parent is not None:
-        # 用combo节点替换buildingObj
-        rootObj = buildingObj.parent
-    else:
-        rootObj = buildingObj
-    
-    # 暂时排除目录下的其他建筑，以加快执行速度
-    __excludeOther(rootColl,True,rootObj)
+    # 创建或锁定根目录（ACA筑韵古建）
+    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
+                        isRoot=True,colorTag=2)
 
-    # 载入数据
-    bData:acaData = rootObj.ACA_data
+    # 暂时排除目录下的其他建筑，以加快执行速度
+    __excludeOther(rootColl,True,buildingObj)
 
     # 根据模板类型调用不同的入口
+    # 查找是否存在comboRoot
+    comboObj = utils.getComboRoot(buildingObj)
     # 组合建筑
-    if bData.aca_type == con.ACA_TYPE_COMBO:
-        buildCombo.updateCombo(rootObj,
+    if comboObj is not None:
+        buildCombo.updateCombo(buildingObj,
                     reloadAssets=reloadAssets)
     # 单体建筑
-    elif bData.aca_type == con.ACA_TYPE_BUILDING:
-        buildFloor.buildFloor(rootObj,
-                    reloadAssets=reloadAssets)
-    # 围墙
-    elif bData.aca_type == con.ACA_TYPE_YARDWALL:
-        buildYardWall.buildYardWall(rootObj,
-                    reloadAssets=reloadAssets)
     else:
-        utils.popMessageBox("无法创建该类型的建筑：" + bData.aca_type)
+        # 载入数据
+        bData:acaData = buildingObj.ACA_data
+        if bData.aca_type == con.ACA_TYPE_BUILDING:
+            buildFloor.buildFloor(buildingObj,
+                        reloadAssets=reloadAssets)
+        # 围墙
+        elif bData.aca_type == con.ACA_TYPE_YARDWALL:
+            buildYardWall.buildYardWall(buildingObj,
+                        reloadAssets=reloadAssets)
+        else:
+            utils.popMessageBox(f"无法创建该类型的建筑,{bData.aca_type}")
 
     isFinished = True
     # 取消排除目录下的其他建筑
-    __excludeOther(rootColl,False,rootObj)
+    __excludeOther(rootColl,False,buildingObj)
 
     return {'FINISHED'}
 
@@ -196,25 +191,32 @@ def updateBuilding(buildingObj:bpy.types.Object,
 def delBuilding(buildingObj:bpy.types.Object,
                 withCombo = True,
                 ):
-    # 1、获取建筑目录
-    # 如果删除combo，自动用上级combo节点替换
-    if withCombo:
-        if buildingObj.parent is not None:
-            buildingObj = buildingObj.parent
-    # 找到对应的目录
-    buildingColl = buildingObj.users_collection[0]
-    
-    # 2、父级目录
-    if withCombo:
-        # “ACA筑韵古建”根目录
+    # 判断是否为组合建筑
+    comboObj = utils.getComboRoot(buildingObj)
+    # 如果是单体建筑，从根目录删除
+    if comboObj is None:
+        # 父目录是“ACA筑韵古建”
         parentColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
+        # 删除单体目录
+        delColl = buildingObj.users_collection[0]
+    # 如果是组合建筑，判断删单体还是全删
     else:
-        # 单体的父目录
-        parentColl = buildingObj.parent.users_collection[0]
+        # 全删
+        if withCombo:
+            # 父目录是“ACA筑韵古建”
+            parentColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
+            # 删除combo目录
+            delColl = comboObj.users_collection[0]
+        # 仅删个体
+        else:
+            # 父目录就是combo目录
+            parentColl = comboObj.users_collection[0]
+            # 删除单体目录
+            delColl = buildingObj.users_collection[0]
 
-    # 删除该目录
-    parentColl.children.unlink(buildingColl)
-    bpy.data.collections.remove(buildingColl)
+    # 删除目录
+    parentColl.children.unlink(delColl)
+    bpy.data.collections.remove(delColl)
     # 清理垃圾  
     utils.delOrphan()
     return {'FINISHED'}
@@ -226,37 +228,32 @@ def resetFloor(buildingObj:bpy.types.Object):
     # 禁用语言-翻译-新建数据
     bpy.context.preferences.view.use_translate_new_dataname = False
     
-    # 创建或锁定根目录（ACA筑韵古建）
-    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
-                        isRoot=True,colorTag=2)
-    
     # 调用进度条
     global isFinished,progress
     isFinished = False
     progress = 0
 
-    # 查找是否存在comboRoot
-    if buildingObj.parent is not None:
-        # 用combo节点替换buildingObj
-        rootObj = buildingObj.parent
-    else:
-        rootObj = buildingObj
+    # 创建或锁定根目录（ACA筑韵古建）
+    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
+                        isRoot=True,colorTag=2)
 
     # 暂时排除目录下的其他建筑，以加快执行速度
     __excludeOther(rootColl,True,buildingObj)
 
-    # 载入数据
-    bData:acaData = rootObj.ACA_data
-
+    # 查找是否存在comboRoot
+    comboObj = utils.getComboRoot(buildingObj)
     # 根据模板类型调用不同的入口
     # 组合建筑
-    if bData.aca_type == con.ACA_TYPE_COMBO:
-        buildCombo.updateCombo(rootObj)
-    # 单体建筑
-    elif bData.aca_type == con.ACA_TYPE_BUILDING:
-        buildFloor.resetFloor(rootObj)
+    if comboObj is not None:
+        buildCombo.updateCombo(buildingObj,reset=True)
     else:
-        utils.popMessageBox("无法创建该类型的建筑：" + bData.aca_type)
+        # 载入数据
+        bData:acaData = buildingObj.ACA_data
+        # 单体建筑
+        if bData.aca_type == con.ACA_TYPE_BUILDING:
+            buildFloor.resetFloor(buildingObj)
+        else:
+            utils.popMessageBox("无法创建该类型的建筑：" + bData.aca_type)
 
     isFinished = True
     # 取消排除目录下的其他建筑
@@ -658,11 +655,9 @@ def joinBuilding(buildingObj:bpy.types.Object,
     # 2、准备合并的组织结构 ------------------------------------
     # 2.0、combo组合替换根对象
     isCombo = False
-    if buildingObj.parent is not None:
-        buildingObj = buildingObj.parent
-        isCombo = True
-    if buildingObj.ACA_data.aca_type == \
-        con.ACA_TYPE_COMBO:
+    comboObj = utils.getComboRoot(buildingObj)
+    if comboObj is not None:
+        buildingObj = comboObj
         isCombo = True
 
     # 2.1、复制建筑的整个集合，在复制集合上进行合并

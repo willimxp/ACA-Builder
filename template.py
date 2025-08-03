@@ -508,11 +508,12 @@ def saveTemplateWithCombo(buildingObj:bpy.types.Object):
         con.ACA_TYPE_BUILDING,
         con.ACA_TYPE_YARDWALL):
         __saveTemplate(buildingObj)
+        return {'FINISHED'}
     
     # 验证是否为组合模板
     if bData.aca_type != con.ACA_TYPE_COMBO:
         print("f保存模板失败，未知的建筑类型{bData.aca_type}")
-        return
+        return {'CANCELLED'}
     comboObj = buildingObj
     
     # 保存组合模板-----------------------

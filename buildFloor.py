@@ -1056,25 +1056,40 @@ def buildPillers(buildingObj:bpy.types.Object):
         for x in range(x_rooms + 1):
             # 统一命名为“柱.x/y”，以免更换不同柱形时，减柱设置失效
             pillerID = str(x) + '/' + str(y)
+
+            # 是否仅显示柱定位点
+            # 明确指定隐藏柱网，如，月台
+            if bData.piller_net == con.ACA_PILLER_HIDE:
+                useEmptyPiller = True
+            else:
+                # 廊间举架不减柱
+                if bData.use_hallway:
+                    useEmptyPiller = False
+                # 柱网reset为''时不减柱
+                elif bData.piller_net == '':
+                    useEmptyPiller = False
+                # 判断减柱
+                else:
+                    if pillerID not in bData.piller_net:
+                        useEmptyPiller = True
+                    else:
+                        useEmptyPiller = False
             
             # 减柱验证（廊间举架时恢复所有柱体）
-            if not bData.use_hallway:
-                piller_list_str = bData.piller_net
-                if pillerID not in piller_list_str \
-                        and piller_list_str != "" :
-                    pillerObj = utils.addEmpty(
-                        name = '柱定位点.' + pillerID,
-                        type='CONE',
-                        radius=pd,
-                        location = (net_x[x],net_y[y],0),
-                        parent = floorRootObj,
-                        rotation=(math.radians(90),0,0)
-                    )
-                    pillerObj.ACA_data['aca_obj'] = True
-                    pillerObj.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
-                    pillerObj.ACA_data['pillerID'] = pillerID
-                    # 不再继续做柱实体
-                    continue    # 结束本次循环
+            if useEmptyPiller:
+                pillerObj = utils.addEmpty(
+                    name = '柱定位点.' + pillerID,
+                    type='CONE',
+                    radius=pd,
+                    location = (net_x[x],net_y[y],0),
+                    parent = floorRootObj,
+                    rotation=(math.radians(90),0,0)
+                )
+                pillerObj.ACA_data['aca_obj'] = True
+                pillerObj.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
+                pillerObj.ACA_data['pillerID'] = pillerID
+                # 不再继续做柱实体
+                continue    # 结束本次循环
 
             # 复制柱子，仅instance，包含modifier
             pillerObj = utils.copySimplyObject(

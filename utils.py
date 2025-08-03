@@ -2574,3 +2574,23 @@ def getMainBuilding(buildingObj:bpy.types.Object):
             return childBuilding
 
     return None
+
+# 传入任意context.Object，查找可能存在的comboRoot
+def getComboRoot(obj:bpy.types.Object):
+    comboRoot = None
+
+    # 验证是否已经选中了combo根节点
+    if hasattr(obj, 'ACA_data'):
+        if obj.ACA_data.aca_type == con.ACA_TYPE_COMBO:
+            comboRoot = obj
+            return comboRoot
+    
+    # 先找到建筑根节点
+    buildingObj,bData,objData = getRoot(obj)
+    # 查找建筑是否有上层combo
+    if buildingObj.parent is not None:
+        parent = buildingObj.parent
+        if parent.ACA_data.aca_type == con.ACA_TYPE_COMBO:
+            comboRoot = parent        
+
+    return comboRoot

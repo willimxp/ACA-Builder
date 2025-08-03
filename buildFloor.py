@@ -414,21 +414,27 @@ def __buildCCFang(buildingObj:bpy.types.Object):
     # 从柱头向下一个大额枋
     ccfangOffset = con.EFANG_LARGE_H*dk
     for ccfang in ccfangList:
-        jinPillerID,yanPillerID = ccfang.split('#')
         # 找到相对较矮的柱高
-        yanPillerHeight = getPillerHeight(
-                    buildingObj,yanPillerID)
+        startPillerID,endPillerID = ccfang.split('#')
+        startPillerHeight = getPillerHeight(
+                    buildingObj,startPillerID)
+        endPillerHeight = getPillerHeight(
+                    buildingObj,endPillerID)
+        if startPillerHeight > endPillerHeight:
+            pillerHeight = endPillerHeight
+        else:
+            pillerHeight = startPillerHeight
         # 起点檐柱
-        px1,py1 = yanPillerID.split('/')
+        px1,py1 = startPillerID.split('/')
         pStart = Vector((
             net_x[int(px1)],net_y[int(py1)],
-            yanPillerHeight-ccfangOffset
+            pillerHeight-ccfangOffset
         ))
         # 终点金柱
-        px2,py2 = jinPillerID.split('/')
+        px2,py2 = endPillerID.split('/')
         pEnd = Vector((
             net_x[int(px2)],net_y[int(py2)],
-            yanPillerHeight-ccfangOffset
+            pillerHeight-ccfangOffset
         ))
         # 做穿插枋proxy，定下尺寸、位置、大小
         ccFangProxy = utils.addCubeBy2Points(

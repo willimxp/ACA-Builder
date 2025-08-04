@@ -394,7 +394,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
              and px not in (0, bData.x_rooms) ):
             pillerNext = f"{px}/{py+1}" 
             if pillerNext in bData.piller_net:
-                ccfangList.append(f"{px}/{py}#{pillerNext}") 
+                ccfangList.append(f"{pillerID}#{pillerNext}") 
 
         # 如果4坡顶，两山做穿插枋
         # 对于2坡顶，两山廊间应该做金枋，而不是穿插枋
@@ -408,7 +408,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
                 py not in (0,bData.y_rooms)):
                 pillerNext = f"{px+1}/{py}"  
                 if pillerNext in bData.piller_net:
-                    ccfangList.append(f"{px}/{py}#{pillerNext}")
+                    ccfangList.append(f"{pillerID}#{pillerNext}")
 
 
     # 循环生成穿插枋
@@ -514,7 +514,7 @@ def __buildJinFang(buildingObj:bpy.types.Object):
             # 250802 是否存在相邻的柱子？
             pillerNext = f"{px+1}/{py}"  
             if pillerNext in bData.piller_net:
-                jinfangList.append(f"{px}/{py}#{pillerNext}")
+                jinfangList.append(f"{pillerID}#{pillerNext}")
         
         # 纵向金枋，无论内外金柱，都做纵向金枋
         # 四坡顶廊间不做纵向金枋，改作额枋
@@ -530,7 +530,7 @@ def __buildJinFang(buildingObj:bpy.types.Object):
             # 250802 是否存在相邻的柱子？
             pillerNext = f"{px}/{py+1}"   
             if pillerNext in bData.piller_net:
-                jinfangList.append(f"{px}/{py}#{pillerNext}")
+                jinfangList.append(f"{pillerID}#{pillerNext}")
 
     # 循环生成金枋（金枋在柱头）
     for jinfang in jinfangList:
@@ -599,7 +599,7 @@ def __buildFang(buildingObj:bpy.types.Object):
         py = int(py)
 
         # 判断柱子是否为檐柱，并向相邻的檐柱做额枋
-        # 前后檐
+        # 横向
         # 外檐都做额枋
         waiyan_range = (py in (0,bData.y_rooms) 
                 and px not in (bData.x_rooms,))
@@ -620,16 +620,14 @@ def __buildFang(buildingObj:bpy.types.Object):
             pillerNext = f"{px+1}/{py}"
             if pillerNext in bData.piller_net:
                 # 构造fangID
-                sfang = ("%d/%d#%d/%d," 
-                            % (px,py,px+1,py))
-                sfang_alt = ("%d/%d#%d/%d," 
-                            % (px+1,py,px,py))
+                sfang = f"{pillerID}#{pillerNext},"
+                sfang_alt = f"{pillerNext}#{pillerID},"
                 # 判断该fangID是否已经在fangNet中
                 if (sfang not in fangNet 
                     and sfang_alt not in fangNet):
                     fangNet += sfang
 
-        # 两山
+        # 纵向
         # 外檐都做额枋
         waiyan_range = (px in (0, bData.x_rooms) 
                 and py != bData.y_rooms)
@@ -639,15 +637,13 @@ def __buildFang(buildingObj:bpy.types.Object):
                                 con.ROOF_XIESHAN,
                                 con.ROOF_XIESHAN_JUANPENG):
             neiyan_range = (px in (1, bData.x_rooms-1) 
-                    and py not in (0,bData.x_rooms-1,bData.x_rooms))
+                    and py not in (0,bData.y_rooms-1,bData.y_rooms))
         else:
             neiyan_range = False
-        
         if (waiyan_range or neiyan_range):
-            sfang = ("%d/%d#%d/%d," 
-                        % (px,py,px,py+1))
-            sfang_alt = ("%d/%d#%d/%d," 
-                        % (px,py+1,px,py))
+            pillerNext = f"{px}/{py+1}"
+            sfang = f"{pillerID}#{pillerNext},"
+            sfang_alt = f"{pillerNext}#{pillerID},"
             # 判断该fangStr是否已经在fangNet中
             if (sfang not in fangNet 
                 and sfang_alt not in fangNet):

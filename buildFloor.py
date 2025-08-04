@@ -40,6 +40,7 @@ def __addBuildingRoot(templateName,
         location=bpy.context.scene.cursor.location
     )
     bData:acaData = buildingObj.ACA_data
+    bData['aca_type'] = con.ACA_TYPE_BUILDING
     bData['template_name'] = templateName
 
     if comboObj is not None:

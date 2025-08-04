@@ -380,6 +380,22 @@ def getAcaParent(object:bpy.types.Object,
     
     return parent
 
+# 查找组合建筑中指定类型的子建筑
+def getComboChild(obj:bpy.types.Object,
+                  combo_type,
+):
+    comboObj = getComboRoot(obj)
+    if comboObj is None:
+        print("组合建筑查找子建筑失败，找不到combo根节点")
+        return None
+    
+    for childBuilding in comboObj.children:
+        if hasattr(childBuilding, 'ACA_data'):
+            if childBuilding.ACA_data.combo_type == combo_type:
+                return childBuilding
+            
+    return None
+
 # 应用缩放(有时ops.object会乱跑，这里确保针对台基对象)      
 def applyScale(object:bpy.types.Object):
     bpy.ops.object.select_all(action='DESELECT')
@@ -2451,7 +2467,10 @@ def push_purlinPos(purlinPos, L,direction='X'):
     # return purlinPos
 
 # 在两个对象间复制ACA_data
-def copyAcaData(fromObj,toObj):
+def copyAcaData(fromObj,toObj,
+                keys = None,    # 限定的范围
+                skip = None,    # 跳过的范围
+                ):
     if (not hasattr(fromObj, "ACA_data") 
         or not hasattr(toObj, "ACA_data")):
         print("错误: 对象没有 ACA_data 属性组")
@@ -2463,6 +2482,16 @@ def copyAcaData(fromObj,toObj):
     
     # 获取属性组中的所有属性
     for prop_name in source_props.__annotations__:
+        # 判断是否限制了键值范围
+        if keys is not None:
+            if prop_name not in keys:
+                # 不做拷贝，跳过
+                continue
+        if skip is not None:
+            if prop_name in skip:
+                # 不做拷贝，跳过
+                continue
+            
         if hasattr(target_props, prop_name):
             # 获取源属性值
             value = getattr(source_props, prop_name)

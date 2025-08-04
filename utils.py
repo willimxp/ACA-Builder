@@ -2450,6 +2450,7 @@ def push_purlinPos(purlinPos, L,direction='X'):
     return p3d
     # return purlinPos
 
+# 在两个对象间复制ACA_data
 def copyAcaData(fromObj,toObj):
     if (not hasattr(fromObj, "ACA_data") 
         or not hasattr(toObj, "ACA_data")):
@@ -2465,8 +2466,19 @@ def copyAcaData(fromObj,toObj):
         if hasattr(target_props, prop_name):
             # 获取源属性值
             value = getattr(source_props, prop_name)
+            
             # 设置目标属性值
+            # 不能用setattr或target_props.attr，都会触发update
             # setattr(target_props, prop_name, value)
+            
+            # 获取属性类型，如，FloatProperty，EnumProperty
+            bnaPropertys = source_props.bl_rna.properties
+            keyType = bnaPropertys[prop_name].rna_type.identifier
+            # 枚举属性需要通过int值传递
+            if keyType == 'EnumProperty':
+                value = int(value)
+
+            # 这样不会触发update，但需要单独处理enum
             target_props[prop_name] = value
         else:
             print(f"警告: copyAcaData,目标对象没有属性 '{prop_name}'")

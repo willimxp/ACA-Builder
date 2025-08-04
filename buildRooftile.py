@@ -1852,7 +1852,7 @@ def __buildPaoshou(buildingObj: bpy.types.Object,
             use_axis=(True,True,False),
         )
         utils.applyAllModifer(shouObj)
-        utils.applyTransform(shouObj,use_location=True)
+        utils.applyTransform2(shouObj,use_location=True)
 
         # 250113 跑兽材质
         mat.setGlazeStyle(shouObj,resetUV=False)

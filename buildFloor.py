@@ -390,9 +390,12 @@ def __buildCCFang(buildingObj:bpy.types.Object):
 
         # 判断柱子是否为金柱，并向相邻的檐柱做穿插枋
         # 前后檐（包括2坡顶和4坡顶）
-        if (py in (0,bData.y_rooms-1)
+        if (py in (0,bData.y_rooms)
              and px not in (0, bData.x_rooms) ):
-            pillerNext = f"{px}/{py+1}" 
+            if net_y[py] > 0: # 北面
+                pillerNext = f"{px}/{py-1}" 
+            else: # 南面
+                pillerNext = f"{px}/{py+1}" 
             if pillerNext in bData.piller_net:
                 ccfangList.append(f"{pillerID}#{pillerNext}") 
 
@@ -404,9 +407,12 @@ def __buildCCFang(buildingObj:bpy.types.Object):
             con.ROOF_XIESHAN,
             con.ROOF_XIESHAN_JUANPENG,
         ):
-            if (px in (0, bData.x_rooms-1) and 
+            if (px in (0, bData.x_rooms) and 
                 py not in (0,bData.y_rooms)):
-                pillerNext = f"{px+1}/{py}"  
+                if net_x[px] > 0: # 东面
+                    pillerNext = f"{px-1}/{py}" 
+                else: # 西面
+                    pillerNext = f"{px+1}/{py}" 
                 if pillerNext in bData.piller_net:
                     ccfangList.append(f"{pillerID}#{pillerNext}")
 
@@ -642,12 +648,13 @@ def __buildFang(buildingObj:bpy.types.Object):
             neiyan_range = False
         if (waiyan_range or neiyan_range):
             pillerNext = f"{px}/{py+1}"
-            sfang = f"{pillerID}#{pillerNext},"
-            sfang_alt = f"{pillerNext}#{pillerID},"
-            # 判断该fangStr是否已经在fangNet中
-            if (sfang not in fangNet 
-                and sfang_alt not in fangNet):
-                fangNet += sfang
+            if pillerNext in bData.piller_net:
+                sfang = f"{pillerID}#{pillerNext},"
+                sfang_alt = f"{pillerNext}#{pillerID},"
+                # 判断该fangStr是否已经在fangNet中
+                if (sfang not in fangNet 
+                    and sfang_alt not in fangNet):
+                    fangNet += sfang
     # 将fangstr存入bdata
     bData['fang_net'] = fangNet
 

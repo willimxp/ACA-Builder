@@ -380,9 +380,18 @@ def __buildCCFang(buildingObj:bpy.types.Object):
     # 穿插枋列表
     ccfangList = []
 
+    # 解析柱网
+    # 如果是重檐建筑,且为主建筑（下檐）
+    # 拼接上檐柱网，以便穿插枋连接上檐和下檐柱网
+    if (bData.use_double_eave and 
+        bData.combo_type == con.COMBO_MAIN):
+        pillerNet = __getComboPillerNet(buildingObj)
+    else:
+        pillerNet = bData.piller_net
+    # 柱网列表
+    pillerList = pillerNet.rstrip(',').split(',')
+
     # 循环所有的柱子
-    # 解析piller_net,如：
-    pillerList = bData.piller_net.rstrip(',').split(',')
     for pillerID in pillerList:
         px,py = pillerID.split('/')
         px = int(px)
@@ -396,7 +405,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
                 pillerNext = f"{px}/{py-1}" 
             else: # 南面
                 pillerNext = f"{px}/{py+1}" 
-            if pillerNext in bData.piller_net:
+            if pillerNext in pillerNet:
                 ccfangList.append(f"{pillerID}#{pillerNext}") 
 
         # 如果4坡顶，两山做穿插枋
@@ -413,7 +422,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
                     pillerNext = f"{px-1}/{py}" 
                 else: # 西面
                     pillerNext = f"{px+1}/{py}" 
-                if pillerNext in bData.piller_net:
+                if pillerNext in pillerNet:
                     ccfangList.append(f"{pillerID}#{pillerNext}")
 
 
@@ -1353,3 +1362,41 @@ def buildFloor(buildingObj:bpy.types.Object,
     utils.focusObj(buildingObj)
 
     return {'FINISHED'}
+
+# 获取重檐柱网
+# 在做穿插枋时，需要连接下檐柱网和上檐柱网
+def __getComboPillerNet(buildingObj:bpy.types.Object):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    # 下檐柱网
+    pillerNet = bData.piller_net
+    
+    # 验证是否为重檐
+    if not bData.use_double_eave:
+        utils.outputMsg("穿插枋拼接上檐柱网失败，该建筑没有做重檐")
+        return pillerNet
+    
+    # 查找上檐
+    doubleEaveObj = utils.getComboChild(
+        buildingObj,con.COMBO_DOUBLE_EAVE)
+    if doubleEaveObj is None:
+        utils.outputMsg("穿插枋拼接上檐柱网失败，未找到上檐柱网")
+        return pillerNet
+
+    # 处理上檐柱网
+    dData:acaData = doubleEaveObj.ACA_data
+    innerPillerNet = dData.piller_net
+    # 所有柱编号按照一廊间做偏移
+    innerPillerOffset = ''
+    pillerList = innerPillerNet.rstrip(',').split(',')
+    for pillerID in pillerList:
+        px,py = pillerID.split('/')
+        px = int(px) + 1
+        py = int(py) + 1
+        # 重新拼接新柱网
+        innerPillerOffset += f"{px}/{py},"
+
+    # 最终的拼接柱网
+    pillerNet += innerPillerOffset
+
+    return pillerNet

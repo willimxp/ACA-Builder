@@ -1281,7 +1281,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
                 + con.YUANCHUAN_D*dk    # 椽架厚度
                 + con.WANGBAN_H*dk      # 望板厚度
                 + con.ROOFMUD_H*dk      # 灰泥厚度
-                - 1.2*dk                # 手工微调
+                - con.RIDGE_SURR_OFFSET*dk # 手工微调
             )
         ))
     ridgeCross += offset

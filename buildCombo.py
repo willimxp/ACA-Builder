@@ -97,12 +97,14 @@ def updateCombo(buildingObj:bpy.types.Object,
     # 重檐数据更新
     doubleEaveObj = utils.getComboChild(
         buildingObj,con.COMBO_DOUBLE_EAVE)
-    setDoubleEaveData(doubleEaveObj)
+    if doubleEaveObj is not None:
+        __setDoubleEaveData(doubleEaveObj)
 
     # 月台数据更新
     terraceObj = utils.getComboChild(
         buildingObj,con.COMBO_TERRACE)
-    setTerraceData(terraceObj)            
+    if terraceObj is not None:
+        __setTerraceData(terraceObj)            
         
     # 循环生成各个单体
     for childBuilding in comboObj.children:
@@ -252,7 +254,7 @@ def addTerrace(buildingObj:bpy.types.Object):
     # 基于主建筑属性，进行初始化
     __syncComboData(terraceRoot,isInit=True)
     # 设置月台逻辑数据
-    setTerraceData(terraceRoot)
+    __setTerraceData(terraceRoot)
     
     # 3、开始营造 ------------------------------
     # 刷新主建筑月台（隐藏前出踏跺）
@@ -313,7 +315,7 @@ def delTerrace(buildingObj:bpy.types.Object):
 
 # 设置月台数据
 # 在addTerrace和__syncComboData中复用
-def setTerraceData(terraceObj:bpy.types.Object):
+def __setTerraceData(terraceObj:bpy.types.Object):
     # 初始化数据集
     # 月台数据集
     bData:acaData = terraceObj.ACA_data
@@ -414,20 +416,23 @@ def addDoubleEave(buildingObj:bpy.types.Object):
     )
 
     # 2、构造重檐数据集 ----------------------
-    # 基于主建筑属性，进行初始化
-    __syncComboData(doubleEaveRoot,isInit=True)    
+    # 初始化上檐数据，继承了主建筑的原始地盘/装修/屋顶等设定
+    __syncComboData(doubleEaveRoot,isInit=True)
+
     # 设置重檐逻辑数据
-    setDoubleEaveData(doubleEaveRoot,
+    # 包括下檐的廊间扩展、盝顶
+    # 包括上檐的柱高抬升
+    __setDoubleEaveData(doubleEaveRoot,
                       isInit=True, # 标识初始化
                       )
 
     # 3、开始营造 ------------------------------
-    # 重新生成月台（地盘变化了）
+    # 如果有月台，则联动重新生成月台（地盘变化了）
     terraceObj = utils.getComboChild(
         buildingObj,con.COMBO_TERRACE)
     if terraceObj is not None:
         __syncComboData(terraceObj)
-        setTerraceData(terraceObj)
+        __setTerraceData(terraceObj)
         buildFloor.buildFloor(
             terraceObj,
             comboObj=comboObj # 传入combo以便及时更新位置
@@ -441,32 +446,55 @@ def addDoubleEave(buildingObj:bpy.types.Object):
 
     return
 
+# 取消重檐
+def delDoubleEave(buildingObj:bpy.types.Object):
+    print("取消重檐")
+    bData:acaData = buildingObj.ACA_data
+    bData['use_double_eave'] = False
+    return
+
 # 设置重檐数据
-def setDoubleEaveData(doubleEaveObj:bpy.types.Object,
+def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
                       isInit = False, # 初始化标识，区分是新建还是更新
                       ):
     # 初始化数据集
-    # 重檐
+    # 重檐数据（上檐）
     bData:acaData = doubleEaveObj.ACA_data
-    # 主建筑
+    # 主建筑数据（下檐）
     mainBuildingObj = utils.getMainBuilding(doubleEaveObj)
     mData:acaData = mainBuildingObj.ACA_data
 
-    # 1、主建筑(下檐)数据更新 -----------------------------
+    # 0、基本属性标注 ------------------------
     mData['use_double_eave'] = True
-    # 分层显示控制
+    bData['use_double_eave'] = True
+    bData['combo_type'] = con.COMBO_DOUBLE_EAVE
+       
+    # 1、分层显示控制 -------------------------
+    # 下檐分层显示
     mData['is_showPlatform'] = True
     mData['is_showPillers'] = True
     mData['is_showWalls'] = True
     mData['is_showDougong'] = True
     mData['is_showBeam'] = True
     mData['is_showRafter'] = True
-    mData['is_showTiles'] = True
+    mData['is_showTiles'] = True    
+    # 上檐分层显示
+    bData['is_showPillers'] = True
+    bData['is_showWalls'] = True
+    bData['is_showDougong'] = True
+    bData['is_showBeam'] = True
+    bData['is_showRafter'] = True
+    bData['is_showTiles'] = True
 
+    # 2、重檐做法 ------------------------------
+    # 2.1、总体结构做法
     # 主建筑改用盝顶
     mData['roof_style'] = int(con.ROOF_LUDING)
+    # 上檐不做台基，复用下檐台基
+    bData['is_showPlatform'] = False
     
-    # 第一次新建时，没有重置柱网
+    # 2.2、地盘控制
+    # 第一次新建时，采用下檐主动扩展的做法
     if isInit:
         # 主建筑在面阔、进深扩展一廊间
         mData['x_rooms'] = bData['x_rooms'] + 2
@@ -476,6 +504,15 @@ def setDoubleEaveData(doubleEaveObj:bpy.types.Object,
         mData['step_net'] = ''
         mData['wall_net'] = ''
         mData['fang_net'] = ''
+    # 建筑更新，采用上檐被动的缩减1廊间
+    else:
+        # 将用户通过UI修改的主建筑地盘，同步到combo下所有对象
+        # 包括上檐、月台等
+        __syncComboData(doubleEaveObj,isAll=True)
+
+        # 主建筑在面阔、进深扩展一廊间
+        bData['x_rooms'] = mData['x_rooms'] - 2
+        bData['y_rooms'] = mData['y_rooms'] - 2
 
     # 设置廊间宽度,22DK
     hallway_deepth = mData.DK * con.HALLWAY_DEEPTH
@@ -496,48 +533,71 @@ def setDoubleEaveData(doubleEaveObj:bpy.types.Object,
         mData['y_3'] = hallway_deepth
         if mData['y_2'] == hallway_deepth:
             mData['y_2'] = mData['y_1']
-
-    # 主建筑内部柱网全部减柱
-
-    # 主数据同步到combo下所有对象
-    __syncComboData(doubleEaveObj,isAll=True)
-    
-    # 2、重檐（上檐）数据更新 ----------------------------    
-    bData['use_double_eave'] = True
-    bData['combo_type'] = con.COMBO_DOUBLE_EAVE
-    # 分层显示控制
-    bData['is_showPillers'] = True
-    bData['is_showWalls'] = True
-    bData['is_showDougong'] = True
-    bData['is_showBeam'] = True
-    bData['is_showRafter'] = True
-    bData['is_showTiles'] = True
-
-    # 上檐不做台基，复用下檐台基
-    bData['is_showPlatform'] = False
-
-    # 重置柱网，上檐跟随主建筑
-    if not isInit:
-        # 主建筑在面阔、进深扩展一廊间
-        bData['x_rooms'] = mData['x_rooms'] - 2
-        bData['y_rooms'] = mData['y_rooms'] - 2
-
     # 矫正梢间，不使用主建筑的廊间数据
     if mData.use_double_eave:
         if bData.x_rooms >= 7:
             bData['x_4'] = mData.x_3
             bData['x_3'] = mData.x_2
 
-    # 柱高抬升
-    pillerLift = 3.0
+    # 2.3、柱网控制
+    # 主建筑内部柱网全部减柱
+    x_rooms = mData.x_rooms   # 面阔几间
+    y_rooms = mData.y_rooms   # 进深几间
+    pillerNet = ''
+    for y in range(y_rooms + 1):
+        for x in range(x_rooms + 1):
+            if x in (0,x_rooms) or y in (0,y_rooms):
+                pillerID = str(x) + '/' + str(y)
+                pillerNet += pillerID
+    mData.piller_net = pillerNet
+
+    # 2.4、上檐柱高抬升
+    pillerLift = 0.0
+    dk = mData.DK
+    if mData.use_dg:
+        # 平板枋
+        if mData.use_pingbanfang:
+            pillerLift += con.PINGBANFANG_H*dk
+        # 斗栱高度(dg_height已经按dg_Scale放大了)
+        pillerLift += mData.dg_height
+    else:
+        # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
+        pillerLift += con.BOARD_YANHENG_H*dk
+
+    # 挑檐桁(斗栱高度到挑檐桁下皮)
+    pillerLift += con.HENG_COMMON_D*dk
+
+    # 檐椽架加斜
+    netX,netY = buildFloor.getFloorDate(mainBuildingObj)
+    hallway = netY[1] - netY[0]
+    from . import buildBeam
+    lift_radio = buildBeam.getLiftRatio(mainBuildingObj)
+    # （廊间+出跳）加斜
+    pillerLift += (hallway + bData.dg_extend) * lift_radio[0]
+
+    # 屋瓦层抬升
+    pillerLift += (con.YUANCHUAN_D*dk   # 椽架
+                   + con.WANGBAN_H*dk   # 望板
+                   + con.ROOFMUD_H*dk   # 灰泥
+                   )
+    
+    # 盝顶围脊高度
+    aData = bpy.context.scene.ACA_temp
+    ridgeObj:bpy.types.Object = aData.ridgeBack_source
+    ridgeH = ridgeObj.dimensions.z
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = mData.DK / con.DEFAULT_DK  * mData.tile_scale
+    ridgeH = ridgeH * tileScale
+    pillerLift += ridgeH
+    pillerLift -= con.RIDGE_SURR_OFFSET*dk   # 围脊调整
+
+    # 额枋高度
+    pillerLift += con.EFANG_LARGE_H*dk
+    if mData.use_smallfang:
+        pillerLift += con.EFANG_SMALL_H*dk
+    
+    # 应用上檐柱高
     bData['piller_height'] = (mData.piller_height 
                               + pillerLift)
     
-    return
-
-# 取消重檐
-def delDoubleEave(buildingObj:bpy.types.Object):
-    print("取消重檐")
-    bData:acaData = buildingObj.ACA_data
-    bData['use_double_eave'] = False
     return

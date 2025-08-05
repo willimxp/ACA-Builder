@@ -381,11 +381,14 @@ def __buildCCFang(buildingObj:bpy.types.Object):
     ccfangList = []
 
     # 解析柱网
-    # 如果是重檐建筑,且为主建筑（下檐）
-    # 拼接上檐柱网，以便穿插枋连接上檐和下檐柱网
-    if (bData.use_double_eave and 
-        bData.combo_type == con.COMBO_MAIN):
-        pillerNet = __getComboPillerNet(buildingObj)
+    # 如果是重檐建筑
+    if bData.use_double_eave:
+        # 重檐主建筑(下檐)，柱网拼接，以便穿插枋连接上檐和下檐柱网
+        if bData.combo_type == con.COMBO_MAIN:
+            pillerNet = __getComboPillerNet(buildingObj)
+        # 重檐的上檐，不做穿插枋
+        if bData.combo_type == con.COMBO_DOUBLE_EAVE:
+            return {'CANCELLED'}
     else:
         pillerNet = bData.piller_net
     # 柱网列表
@@ -546,6 +549,43 @@ def __buildJinFang(buildingObj:bpy.types.Object):
             pillerNext = f"{px}/{py+1}"   
             if pillerNext in bData.piller_net:
                 jinfangList.append(f"{pillerID}#{pillerNext}")
+
+    # 重檐上檐代替穿插枋做的金枋
+    if (bData.use_double_eave and 
+        bData.combo_type == con.COMBO_DOUBLE_EAVE):
+        # 循环所有的柱子
+        for pillerID in pillerList:
+            px,py = pillerID.split('/')
+            px = int(px)
+            py = int(py)
+
+            # 判断柱子是否为金柱，并向相邻的檐柱做穿插枋
+            # 前后檐（包括2坡顶和4坡顶）
+            if (py in (0,bData.y_rooms)
+                and px not in (0, bData.x_rooms) ):
+                if net_y[py] > 0: # 北面
+                    pillerNext = f"{px}/{py-1}" 
+                else: # 南面
+                    pillerNext = f"{px}/{py+1}" 
+                if pillerNext in bData.piller_net:
+                    jinfangList.append(f"{pillerID}#{pillerNext}") 
+
+            # 如果4坡顶，两山做穿插枋
+            # 对于2坡顶，两山廊间应该做金枋，而不是穿插枋
+            if bData.roof_style in (
+                con.ROOF_LUDING,
+                con.ROOF_WUDIAN,
+                con.ROOF_XIESHAN,
+                con.ROOF_XIESHAN_JUANPENG,
+            ):
+                if (px in (0, bData.x_rooms) and 
+                    py not in (0,bData.y_rooms)):
+                    if net_x[px] > 0: # 东面
+                        pillerNext = f"{px-1}/{py}" 
+                    else: # 西面
+                        pillerNext = f"{px+1}/{py}" 
+                    if pillerNext in bData.piller_net:
+                        jinfangList.append(f"{pillerID}#{pillerNext}")
 
     # 循环生成金枋（金枋在柱头）
     for jinfang in jinfangList:

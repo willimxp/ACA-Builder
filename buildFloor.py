@@ -1325,6 +1325,10 @@ def buildFloor(buildingObj:bpy.types.Object,
         # 在buldingObj上绑定模板bData和资产库aData
         template.loadTemplate(buildingObj)
     else:
+        # 聚焦对象集合
+        # 避免因为手工排除该集合导致后续构建掉落在集合外
+        buildingColl = buildingObj.users_collection[0]
+        utils.focusCollection(buildingColl.name)
         utils.outputMsg("更新建筑...")
         # 简单粗暴的全部删除
         utils.deleteHierarchy(buildingObj)

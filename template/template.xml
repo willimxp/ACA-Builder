@@ -683,7 +683,7 @@
 			<y_3 type="FloatProperty">1.76</y_3>
 			<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/1,1/2,1/3,2/0,2/1,2/2,2/3,3/0,3/1,3/2,3/3,</piller_net>
 			<wall_net type="StringProperty">wall#0/0#0/3,wall#3/3#3/0,window#0/0#1/0,window#2/0#3/0,geshan#1/0#2/0,wall#2/3#3/3,wall#0/3#1/3,geshan#1/3#2/3,</wall_net>
-			<fang_net type="StringProperty">0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,0/1#1/1,0/2#1/2,1/1#2/1,1/2#2/2,2/1#3/1,2/2#3/2,</fang_net>
+			<fang_net type="StringProperty">0/0#1/0,0/0#0/1,0/1#0/2,0/2#0/3,0/3#1/3,1/0#2/0,1/1#2/1,1/1#1/2,1/2#2/2,1/3#2/3,2/0#3/0,2/1#2/2,2/3#3/3,3/0#3/1,3/1#3/2,3/2#3/3,</fang_net>
 			<piller_height type="FloatProperty">4.56</piller_height>
 			<piller_diameter type="FloatProperty">0.48</piller_diameter>
 			<use_smallfang type="BoolProperty">False</use_smallfang>
@@ -736,37 +736,40 @@
 			<use_pie type="BoolProperty">True</use_pie>
 			<roof_height type="FloatProperty">3.0</roof_height>
 			<tile_scale type="FloatProperty">1.0</tile_scale>
+			<combo_type type="StringProperty">combo_main</combo_type>
+			<use_terrace type="BoolProperty">True</use_terrace>
+			<use_double_eave type="BoolProperty">False</use_double_eave>
 		</template>
 		<template>
 			<aca_type type="StringProperty">building</aca_type>
 			<template_name type="StringProperty">月台</template_name>
-			<root_location type="FloatVectorProperty">0.0,-9.260000228881836,0.0</root_location>
+			<root_location type="FloatVectorProperty">0.0,-11.079999923706055,0.0</root_location>
 			<DK type="FloatProperty">0.08</DK>
 			<is_showPlatform type="BoolProperty">True</is_showPlatform>
-			<is_showPillers type="BoolProperty">False</is_showPillers>
+			<is_showPillers type="BoolProperty">True</is_showPillers>
 			<is_showWalls type="BoolProperty">False</is_showWalls>
 			<is_showDougong type="BoolProperty">False</is_showDougong>
 			<is_showBeam type="BoolProperty">False</is_showBeam>
 			<is_showRafter type="BoolProperty">False</is_showRafter>
 			<is_showTiles type="BoolProperty">False</is_showTiles>
-			<platform_height type="FloatProperty">0.8</platform_height>
-			<platform_extend type="FloatProperty">1.08</platform_extend>
-			<step_net type="StringProperty">0/1#0/2,1/0#2/0,3/1#3/2,</step_net>
+			<platform_height type="FloatProperty">0.74</platform_height>
+			<platform_extend type="FloatProperty">0.98</platform_extend>
+			<step_net type="StringProperty">1/0#2/0,</step_net>
 			<x_rooms type="IntProperty">3</x_rooms>
 			<x_1 type="FloatProperty">6.16</x_1>
-			<x_2 type="FloatProperty">3.515</x_2>
+			<x_2 type="FloatProperty">5.28</x_2>
 			<x_3 type="FloatProperty">5.28</x_3>
 			<x_4 type="FloatProperty">1.76</x_4>
 			<y_rooms type="IntProperty">3</y_rooms>
-			<y_1 type="FloatProperty">2.0</y_1>
-			<y_2 type="FloatProperty">0.6</y_2>
+			<y_1 type="FloatProperty">7.04</y_1>
+			<y_2 type="FloatProperty">1.76</y_2>
 			<y_3 type="FloatProperty">1.76</y_3>
 			<piller_net type="StringProperty" />
 			<wall_net type="StringProperty" />
 			<fang_net type="StringProperty" />
-			<piller_height type="FloatProperty">4.93</piller_height>
-			<piller_diameter type="FloatProperty">0.45</piller_diameter>
-			<use_smallfang type="BoolProperty">True</use_smallfang>
+			<piller_height type="FloatProperty">4.56</piller_height>
+			<piller_diameter type="FloatProperty">0.48</piller_diameter>
+			<use_smallfang type="BoolProperty">False</use_smallfang>
 			<wall_depth type="FloatProperty">1.0</wall_depth>
 			<wall_span type="FloatProperty">0.0</wall_span>
 			<door_height type="FloatProperty">3.36</door_height>
@@ -775,12 +778,12 @@
 			<use_topwin type="BoolProperty">False</use_topwin>
 			<use_KanWall type="BoolProperty">True</use_KanWall>
 			<use_dg type="BoolProperty">True</use_dg>
-			<use_pingbanfang type="BoolProperty">False</use_pingbanfang>
-			<dg_extend type="FloatProperty">0.72</dg_extend>
-			<dg_height type="FloatProperty">0.896</dg_height>
+			<use_pingbanfang type="BoolProperty">True</use_pingbanfang>
+			<dg_extend type="FloatProperty">0.48</dg_extend>
+			<dg_height type="FloatProperty">0.736</dg_height>
 			<dg_gap type="FloatProperty">0.88</dg_gap>
-			<roof_style type="EnumProperty">3</roof_style>
-			<use_hallway type="BoolProperty">False</use_hallway>
+			<roof_style type="EnumProperty">1</roof_style>
+			<use_hallway type="BoolProperty">True</use_hallway>
 			<rafter_count type="IntProperty">6</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
@@ -788,7 +791,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<shengqi type="IntProperty">1</shengqi>
 			<tuishan type="FloatProperty">0.9</tuishan>
-			<shoushan type="FloatProperty">2.0</shoushan>
+			<shoushan type="FloatProperty">1.336</shoushan>
 			<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
 			<juzhe type="EnumProperty">0</juzhe>
 			<tile_width type="FloatProperty">0.387</tile_width>
@@ -800,9 +803,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
-			<x_total type="FloatProperty">13.19</x_total>
-			<y_total type="FloatProperty">3.2</y_total>
-			<dg_style type="EnumProperty">0</dg_style>
+			<x_total type="FloatProperty">16.72</x_total>
+			<y_total type="FloatProperty">7.04</y_total>
+			<dg_style type="EnumProperty">2</dg_style>
 			<tile_color type="EnumProperty">0</tile_color>
 			<tile_alt_color type="EnumProperty">0</tile_alt_color>
 			<liangtou type="FloatProperty">0.4</liangtou>
@@ -815,6 +818,9 @@
 			<use_pie type="BoolProperty">True</use_pie>
 			<roof_height type="FloatProperty">3.0</roof_height>
 			<tile_scale type="FloatProperty">1.0</tile_scale>
+			<combo_type type="StringProperty">combo_terrace</combo_type>
+			<use_terrace type="BoolProperty">True</use_terrace>
+			<use_double_eave type="BoolProperty">False</use_double_eave>
 		</template>
 	</template>
 	<template>

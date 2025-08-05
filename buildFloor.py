@@ -1085,7 +1085,10 @@ def buildPillers(buildingObj:bpy.types.Object):
                 useEmptyPiller = True
             else:
                 # 廊间举架不减柱
-                if bData.use_hallway:
+                # 但是重檐主建筑(下檐)不判断廊间举架
+                isDoubleEave = (bData.use_double_eave and 
+                    bData.combo_type == con.COMBO_MAIN)
+                if bData.use_hallway and not isDoubleEave:
                     useEmptyPiller = False
                 # 柱网reset为''时不减柱
                 elif bData.piller_net == '':

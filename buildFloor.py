@@ -761,7 +761,10 @@ def __buildFang(buildingObj:bpy.types.Object):
             con.ROOF_XIESHAN_JUANPENG,
             con.ROOF_LUDING,
         ):
-            __buildFangBWQ(bigFangObj)
+            # 重檐的上檐不做霸王拳
+            if (bData.use_double_eave and
+                bData.combo_type != con.COMBO_DOUBLE_EAVE):
+                __buildFangBWQ(bigFangObj)
 
         # 是否需要做小额枋
         if bData.use_smallfang:

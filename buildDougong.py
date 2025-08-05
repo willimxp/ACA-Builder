@@ -55,7 +55,11 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
 
     # 平板枋，在根节点平面之下，便于整体控制
-    extendLength = bData.piller_diameter*2
+    if (bData.use_double_eave and
+        bData.combo_type == con.COMBO_DOUBLE_EAVE):
+        extendLength = 0
+    else:
+        extendLength = bData.piller_diameter*2
     # 檐面平板枋
     loc = (0,net_y[0],con.PINGBANFANG_H*dk/2)
     dimensions =(

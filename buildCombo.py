@@ -595,7 +595,10 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     bData['piller_height'] = (mData.piller_height 
                               + pillerLift)
     
-    # 2.4、主建筑改用盝顶
+    # 2.4、装修层设置跑马板
+    bData['wall_span'] = pillerLift
+    
+    # 2.5、主建筑改用盝顶
     mData['roof_style'] = int(con.ROOF_LUDING)
     
     return

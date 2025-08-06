@@ -1203,9 +1203,14 @@ def buildPillers(buildingObj:bpy.types.Object):
     utils.delObject(pillerBottom_basemesh)
     utils.delObject(piller_source)
 
-    # 重新生成柱网配置
-    floorChildren:List[bpy.types.Object] = floorRootObj.children
+    # 4、后处理 ---------------------
+    # 月台隐藏柱网时，无需后处理
+    if bData.piller_net == con.ACA_PILLER_HIDE:
+        return
+    
+    # 4.1、重新生成柱网配置
     bData.piller_net = ''
+    floorChildren:List[bpy.types.Object] = floorRootObj.children
     for piller in floorChildren:
         if piller.type == 'EMPTY': continue
         if 'aca_type' in piller.ACA_data:
@@ -1214,6 +1219,7 @@ def buildPillers(buildingObj:bpy.types.Object):
                 bData.piller_net += pillerID + ','
 
 
+    # 4.2、重新生成额枋、穿插枋、金枋
     if bData.piller_net != '':
         # 添加柱间的额枋
         # 函数内部会自动生成默认额枋

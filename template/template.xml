@@ -760,11 +760,11 @@
 			<x_2 type="FloatProperty">5.28</x_2>
 			<x_3 type="FloatProperty">5.28</x_3>
 			<x_4 type="FloatProperty">1.76</x_4>
-			<y_rooms type="IntProperty">3</y_rooms>
+			<y_rooms type="IntProperty">1</y_rooms>
 			<y_1 type="FloatProperty">7.04</y_1>
 			<y_2 type="FloatProperty">1.76</y_2>
 			<y_3 type="FloatProperty">1.76</y_3>
-			<piller_net type="StringProperty" />
+			<piller_net type="StringProperty">piller_hide</piller_net>
 			<wall_net type="StringProperty" />
 			<fang_net type="StringProperty" />
 			<piller_height type="FloatProperty">4.56</piller_height>
@@ -783,7 +783,7 @@
 			<dg_height type="FloatProperty">0.736</dg_height>
 			<dg_gap type="FloatProperty">0.88</dg_gap>
 			<roof_style type="EnumProperty">1</roof_style>
-			<use_hallway type="BoolProperty">True</use_hallway>
+			<use_hallway type="BoolProperty">False</use_hallway>
 			<rafter_count type="IntProperty">6</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>

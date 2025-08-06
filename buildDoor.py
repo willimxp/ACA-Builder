@@ -351,7 +351,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     elif wallType == con.ACA_WALLTYPE_WINDOW:
         use_kanwall = True
     else:
-        print("构建隔扇时无法判断是否使用槛墙")
+        raise Exception("构建隔扇时无法判断是否使用槛墙")
         return
 
     # 1、隔扇根对象
@@ -561,7 +561,7 @@ def buildDoor(wallProxy:bpy.types.Object):
         # 构建支摘窗
         __addFlipwindow(kankuangObj)
     else:
-        print(f"无法构建子对象，未知的wallType：{wallType}")
+        raise Exception(f"无法构建子对象，未知的wallType：{wallType}")
 
     utils.focusObj(kankuangObj)
 

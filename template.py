@@ -472,7 +472,7 @@ def loadTemplate(buildingObj:bpy.types.Object):
         for templateNode in templateNodeList:
             nameNode = templateNode.find('template_name')
             if nameNode != None:
-                if nameNode.text == parent.name:
+                if nameNode.text == parent.ACA_data.template_name:
                     # 找到对应模板
                     isComboNode = True
                     break
@@ -482,8 +482,7 @@ def loadTemplate(buildingObj:bpy.types.Object):
             root = templateNode
             templateNodeList = root.findall('template')
         else:
-            print(f"找不到父模板{parent.name}，无法载入子模版")
-            return
+            raise Exception(f"找不到父模板{parent.name}，无法载入子模版")
     
     # 在根层次中查找对应名称的那个模板
     for template in templateNodeList:
@@ -512,7 +511,7 @@ def saveTemplateWithCombo(buildingObj:bpy.types.Object):
     
     # 验证是否为组合模板
     if bData.aca_type != con.ACA_TYPE_COMBO:
-        print("f保存模板失败，未知的建筑类型{bData.aca_type}")
+        raise Exception("f保存模板失败，未知的建筑类型{bData.aca_type}")
         return {'CANCELLED'}
     comboObj = buildingObj
     
@@ -608,7 +607,7 @@ def __saveTemplate(buildingObj:bpy.types.Object):
             root = templateNode
             templateNodeList = root.findall('template')
         else:
-            print(f"找不到父模板{parent.name}，无法保存子模版")
+            raise Exception(f"找不到父模板{parent.name}，无法保存子模版")
             return
     
     # 遍历查找对应模板

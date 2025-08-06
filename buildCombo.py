@@ -471,29 +471,24 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
        
     # 1、分层显示控制 -------------------------
     # 下檐分层显示
-    mData['is_showPlatform'] = True
-    mData['is_showPillers'] = True
-    mData['is_showWalls'] = True
-    mData['is_showDougong'] = True
-    mData['is_showBeam'] = True
-    mData['is_showRafter'] = True
-    mData['is_showTiles'] = True    
+    # mData['is_showPlatform'] = True
+    # mData['is_showPillers'] = True
+    # mData['is_showWalls'] = True
+    # mData['is_showDougong'] = True
+    # mData['is_showBeam'] = True
+    # mData['is_showRafter'] = True
+    # mData['is_showTiles'] = True    
     # 上檐分层显示
-    bData['is_showPillers'] = True
-    bData['is_showWalls'] = True
-    bData['is_showDougong'] = True
-    bData['is_showBeam'] = True
-    bData['is_showRafter'] = True
-    bData['is_showTiles'] = True
+    bData['is_showPlatform'] = False    # 上檐不做台基，复用下檐台基
+    # bData['is_showPillers'] = True
+    # bData['is_showWalls'] = True
+    # bData['is_showDougong'] = True
+    # bData['is_showBeam'] = True
+    # bData['is_showRafter'] = True
+    # bData['is_showTiles'] = True
 
     # 2、重檐做法 ------------------------------
-    # 2.1、总体结构做法
-    # 主建筑改用盝顶
-    mData['roof_style'] = int(con.ROOF_LUDING)
-    # 上檐不做台基，复用下檐台基
-    bData['is_showPlatform'] = False
-    
-    # 2.2、地盘控制
+    # 2.1、地盘控制
     # 第一次新建时，采用下檐主动扩展的做法
     if isInit:
         # 主建筑在面阔、进深扩展一廊间
@@ -510,7 +505,7 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
         # 包括上檐、月台等
         __syncComboData(doubleEaveObj,isAll=True)
 
-        # 主建筑在面阔、进深扩展一廊间
+        # 主建筑在面阔、进深缩减一廊间
         bData['x_rooms'] = mData['x_rooms'] - 2
         bData['y_rooms'] = mData['y_rooms'] - 2
 
@@ -539,7 +534,7 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
             bData['x_4'] = mData.x_3
             bData['x_3'] = mData.x_2
 
-    # 2.3、柱网控制
+    # 2.2、柱网控制
     # 主建筑内部柱网全部减柱
     x_rooms = mData.x_rooms   # 面阔几间
     y_rooms = mData.y_rooms   # 进深几间
@@ -547,11 +542,11 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     for y in range(y_rooms + 1):
         for x in range(x_rooms + 1):
             if x in (0,x_rooms) or y in (0,y_rooms):
-                pillerID = str(x) + '/' + str(y)
+                pillerID = f"{x}/{y},"
                 pillerNet += pillerID
-    mData.piller_net = pillerNet
+    mData['piller_net'] = pillerNet
 
-    # 2.4、上檐柱高抬升
+    # 2.3、上檐柱高抬升
     pillerLift = 0.0
     dk = mData.DK
     if mData.use_dg:
@@ -599,5 +594,8 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     # 应用上檐柱高
     bData['piller_height'] = (mData.piller_height 
                               + pillerLift)
+    
+    # 2.4、主建筑改用盝顶
+    mData['roof_style'] = int(con.ROOF_LUDING)
     
     return

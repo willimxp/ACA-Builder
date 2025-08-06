@@ -386,7 +386,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
         # 重檐主建筑(下檐)，柱网拼接，以便穿插枋连接上檐和下檐柱网
         if bData.combo_type == con.COMBO_MAIN:
             pillerNet = __getComboPillerNet(buildingObj)
-        # 重檐的上檐，不做穿插枋
+        # 重檐的上檐，不做穿插枋，由金枋代替
         if bData.combo_type == con.COMBO_DOUBLE_EAVE:
             return {'CANCELLED'}
     else:

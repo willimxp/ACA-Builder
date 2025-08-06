@@ -1368,6 +1368,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
         location=ridgeCross
     )
     diagnalObj.rotation_euler.z = math.radians(45)   
+    utils.hideObj(diagnalObj)
     # 螭吻对象
     chiwenObj = utils.copyObject(
         sourceObj=aData.chiwen_source,

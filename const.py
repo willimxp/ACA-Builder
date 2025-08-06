@@ -243,7 +243,7 @@ class ACA_Consts(object):
     JUANPENG_PUMP = 4           # 卷棚瓦作的囊(DK)，为了使屋顶更加圆润饱满
     JUANPENG_POP = 4            # 卷棚瓦作向上的蓬起(DK)
     RIDGE_OFFSET = -0.5         # 正脊与瓦面的距离调整(DK)
-    RIDGE_SURR_OFFSET = -1.2    # 围脊与瓦面的距离调整(DK)
+    RIDGE_SURR_OFFSET = 1.3    # 围脊与瓦面的距离调整(DK)
 
     # 导角尺度(m)
     BEVEL_EXHIGH = 0.04

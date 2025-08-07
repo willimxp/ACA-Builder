@@ -364,6 +364,7 @@
 			<tile_scale type="FloatProperty">1.0</tile_scale>
 			<use_terrace type="BoolProperty">False</use_terrace>
 			<use_double_eave type="BoolProperty">True</use_double_eave>
+			<topwin_height type="FloatProperty">0.0</topwin_height>
 		</template>
 		<template>
 			<aca_type type="StringProperty">building</aca_type>
@@ -392,7 +393,7 @@
 			<piller_height type="FloatProperty">9.065</piller_height>
 			<piller_diameter type="FloatProperty">0.45</piller_diameter>
 			<use_smallfang type="BoolProperty">True</use_smallfang>
-			<door_height type="FloatProperty">3.5</door_height>
+			<door_height type="FloatProperty">8.585</door_height>
 			<door_num type="IntProperty">4</door_num>
 			<gap_num type="IntProperty">6</gap_num>
 			<use_topwin type="BoolProperty">True</use_topwin>
@@ -437,7 +438,7 @@
 			<root_location type="FloatVectorProperty">0.0,0.0,0.0</root_location>
 			<root_rotation type="FloatVectorProperty">0.0,0.0,0.0</root_rotation>
 			<doorFrame_width_per type="FloatProperty">1.0</doorFrame_width_per>
-			<doorFrame_height type="FloatProperty">3.0</doorFrame_height>
+			<doorFrame_height type="FloatProperty">2.921</doorFrame_height>
 			<door_ding_num type="IntProperty">5</door_ding_num>
 			<paint_style type="EnumProperty">0</paint_style>
 			<dk_scale type="FloatProperty">1.0</dk_scale>
@@ -446,6 +447,7 @@
 			<tile_scale type="FloatProperty">1.0</tile_scale>
 			<use_terrace type="BoolProperty">False</use_terrace>
 			<use_double_eave type="BoolProperty">True</use_double_eave>
+			<topwin_height type="FloatProperty">1.2</topwin_height>
 		</template>
 	</template>
 	<template>

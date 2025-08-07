@@ -88,9 +88,14 @@ def updateCombo(buildingObj:bpy.types.Object,
     mainBuildingObj = utils.getMainBuilding(buildingObj)
 
     # 判断全局更新还是局部更新
-    if mainBuildingObj == buildingObj:
+    if comboObj == buildingObj:
+        # 选中combo根节点时，全局更新
+        isUpdateAll = True
+    elif mainBuildingObj == buildingObj:
+        # 选中主建筑时，全局更新
         isUpdateAll = True
     else:
+        # 局部更新
         isUpdateAll = False
     
     # 全局更新时，
@@ -607,10 +612,10 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     pillerLift += ridgeH
     pillerLift -= con.RIDGE_SURR_OFFSET*dk   # 围脊调整
 
-    # 额枋高度
-    pillerLift += con.EFANG_LARGE_H*dk
-    if mData.use_smallfang:
-        pillerLift += con.EFANG_SMALL_H*dk
+    # # 额枋高度
+    # pillerLift += con.EFANG_LARGE_H*dk
+    # if mData.use_smallfang:
+    #     pillerLift += con.EFANG_SMALL_H*dk
     
     # 应用上檐柱高
     bData['piller_height'] = (mData.piller_height 

@@ -389,7 +389,7 @@
 			<piller_net type="StringProperty">0/0,0/1,0/2,0/3,1/0,1/1,1/2,1/3,2/0,2/1,2/2,2/3,3/0,3/1,3/2,3/3,4/0,4/1,4/2,4/3,5/0,5/1,5/2,5/3,</piller_net>
 			<wall_net type="StringProperty">wall#5/0#5/3,window#4/0#5/0,wall#0/0#0/3,geshan#2/3#3/3,geshan#1/3#2/3,geshan#3/3#4/3,window#0/3#1/3,window#4/3#5/3,window#0/0#1/0,geshan#1/0#2/0,geshan#2/0#3/0,geshan#3/0#4/0,</wall_net>
 			<fang_net type="StringProperty">0/0#1/0,0/0#0/1,0/1#0/2,0/2#0/3,0/3#1/3,1/0#2/0,1/1#2/1,1/1#1/2,1/2#2/2,1/3#2/3,2/0#3/0,2/1#3/1,2/2#3/2,2/3#3/3,3/0#4/0,3/1#4/1,3/2#4/2,3/3#4/3,4/0#5/0,4/1#4/2,4/3#5/3,5/0#5/1,5/1#5/2,5/2#5/3,</fang_net>
-			<piller_height type="FloatProperty">9.1</piller_height>
+			<piller_height type="FloatProperty">9.065</piller_height>
 			<piller_diameter type="FloatProperty">0.45</piller_diameter>
 			<use_smallfang type="BoolProperty">True</use_smallfang>
 			<door_height type="FloatProperty">3.5</door_height>

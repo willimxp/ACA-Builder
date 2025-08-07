@@ -612,10 +612,14 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     pillerLift += ridgeH
     pillerLift -= con.RIDGE_SURR_OFFSET*dk   # 围脊调整
 
-    # # 额枋高度
-    # pillerLift += con.EFANG_LARGE_H*dk
-    # if mData.use_smallfang:
-    #     pillerLift += con.EFANG_SMALL_H*dk
+    # 额枋高度
+    # 大额枋
+    pillerLift += con.EFANG_LARGE_H*dk
+    if mData.use_smallfang:
+        # 由额垫板
+        pillerLift += con.BOARD_YOUE_H*dk
+        # 小额枋
+        pillerLift += con.EFANG_SMALL_H*dk
     
     # 应用上檐柱高
     bData['piller_height'] = (mData.piller_height 

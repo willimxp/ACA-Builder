@@ -586,8 +586,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     # 分解槛框的长、宽、高
     frame_width,frame_depth,frame_height = wallproxy.dimensions
     KankuangObjs = []
-    doorHeight = bData.doorFrame_height  # 门口高度
-    topBoardHeight = bData.wall_span # 走马板高度
+    
     doorWidth = ((frame_width
                   - pillerD
                   - con.BAOKUANG_WIDTH*pd*2)
@@ -604,33 +603,28 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     if doorWidth > doorWMax:
         # 此时不做余塞板，门板直接做到抱框
         doorWidth = doorWMax
-
-    # 门口高度限制：不能超过frame减上槛、下槛
-    doorHMax = (frame_height 
+    
+    # 门高从额枋之下，减去上槛、下槛
+    doorHeight = (frame_height 
                 - con.KAN_DOWN_HEIGHT*pd
                 - con.KAN_UP_HEIGHT*pd)
-    if doorHeight > doorHMax:
-        # 做满门口
-        doorHeight = doorHMax
-        # 自动更新门口高度
-        bData['doorFrame_height'] = doorHeight
-
-    # 是否还有高度排布横披窗/迎风板高度？
+    # 是否使用横披窗
+    topWinH = bData.topwin_height
     bUseTopwin = False
+    if topWinH > 0:
+        bUseTopwin = True
+        # 减去中槛和横披窗高度
+        doorHeight -= (topWinH
+                       + con.KAN_MID_HEIGHT*pd)
+    # 是否使用走马板
+    topBoardHeight = bData.wall_span 
     bUseTopBoard = False
-    span = doorHMax - doorHeight
-    # 没空间了，门口已经满做，不再做横披窗(迎风板)和走马板
-    if span == 0 :
-        pass
-    # 空间不够横披窗，只做跑马板
-    elif 0 < span <  con.KAN_UP_HEIGHT*pd * 2 :
+    if topBoardHeight > 0:
         bUseTopBoard = True
-    # 还有空间，尝试做横披窗(迎风板)
-    else:
-        if topBoardHeight < span - con.KAN_UP_HEIGHT*pd:
-            bUseTopwin = True
-        if topBoardHeight > 0:
-            bUseTopBoard = True    
+        # 走马板
+        doorHeight -= topBoardHeight
+    # 自动更新门口高度
+    bData['doorFrame_height'] = doorHeight
 
     # 0、槛墙 ------------------------
     # 放在最前面做，影响到后续的下槛、下抱框等
@@ -1021,15 +1015,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     
     # 11、走马板 ---------------------
     if bUseTopBoard:
-        # 定高
-        if bUseTopwin:
-            # 有横披窗时做到上槛
-            boardTopH = frame_height - topUpZ
-        else:
-            # 没有横披窗时做到中槛
-            boardTopH = (frame_height 
-                         - midDownZ 
-                         - con.KAN_MID_HEIGHT*pd)
+        boardTopH = topBoardHeight
         boardTopDim = Vector((frame_width, # 长度随面宽
                     con.BOARD_YOUE_Y*dk, # 厚随由额垫板
                     boardTopH, # 高

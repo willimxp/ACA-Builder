@@ -731,10 +731,13 @@ class ACA_PT_wall(bpy.types.Panel):
             inputDoorWidth = toolBar.column(align=True)
             inputDoorWidth.prop(
                 bData, "doorFrame_width_per")
-            # 门口高度
-            inputDoorHeight = toolBar.column(align=True)
-            inputDoorHeight.prop(
-                bData, "doorFrame_height")
+            # # 门口高度
+            # inputDoorHeight = toolBar.column(align=True)
+            # inputDoorHeight.prop(
+            #     bData, "doorFrame_height")
+            # 横披窗高度
+            inputTopwinHeight = toolBar.column(align=True)
+            inputTopwinHeight.prop(bData,'topwin_height')
             # 走马板高度（不区分）
             inputTopHeight = toolBar.column(align=True)
             inputTopHeight.prop(

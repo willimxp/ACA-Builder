@@ -669,13 +669,13 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_wall,
             description="门钉的路数，最大9路，取0时不做门钉",
         )# type: ignore 
-    # topwin_height : bpy.props.FloatProperty(
-    #         name="横披窗高度",
-    #         default=0,
-    #         precision=3,
-    #         update = update_topwin,
-    #         description="横披窗（棂心）的高度，输入0则不做横披窗",
-    #     )# type: ignore 
+    topwin_height : bpy.props.FloatProperty(
+            name="横披窗高度",
+            default=0,
+            precision=3,
+            update = update_topwin,
+            description="横披窗（棂心）的高度，输入0则不做横披窗",
+        )# type: ignore 
     use_KanWall: bpy.props.BoolProperty(
             default=False,
             name="添加槛墙"

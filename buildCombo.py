@@ -140,15 +140,9 @@ def updateCombo(buildingObj:bpy.types.Object,
 
 # 组合建筑降级为单一建筑
 def delCombo(buildingObj:bpy.types.Object):
-    # 校验建筑为单一建筑
-    buildingObj,bData,objData = utils.getRoot(buildingObj)
-    if buildingObj.parent is None:
-        utils.outputMsg("删除组合建筑失败，当前建筑没有父节点。")
-        return
-    else: 
-        comboObj = buildingObj.parent
+    comboObj = utils.getComboRoot(buildingObj)
     
-    if comboObj.ACA_data.aca_type != con.ACA_TYPE_COMBO:
+    if comboObj is None:
         utils.outputMsg("删除组合建筑失败，不是组合建筑。")
         return
     
@@ -322,7 +316,7 @@ def delTerrace(buildingObj:bpy.types.Object):
             withCombo=False,# 仅删除个体
         )
 
-    # 组合建筑降级
+    # 是否需要组合降级
     from . import build
     delCombo(mainBuilding)
 
@@ -436,10 +430,26 @@ def addDoubleEave(buildingObj:bpy.types.Object):
         return
 
     # 构建重檐子节点
+    doubleEaveName = buildingObj.ACA_data.template_name + '.重檐'
+    # 找到根目录
+    utils.setCollection(
+        name = con.COLL_NAME_ROOT,
+        isRoot=True,
+        colorTag=2,
+        )
+    # 创建重檐目录
+    utils.setCollection(
+        name = doubleEaveName,
+        isRoot=True,
+        colorTag=2,
+        )
+    # 创建重檐根节点
     doubleEaveRoot = buildFloor.__addBuildingRoot(
-        templateName = '重檐',
+        templateName = doubleEaveName,
         comboObj = comboObj
     )
+    # 立即设置combo_type，否则后续可能在区分combo_main时混乱
+    doubleEaveRoot.ACA_data['combo_type'] = con.COMBO_DOUBLE_EAVE
 
     # 2、构造重檐数据集 ----------------------
     # 初始化上檐数据，继承了主建筑的原始地盘/装修/屋顶等设定
@@ -474,9 +484,39 @@ def addDoubleEave(buildingObj:bpy.types.Object):
 
 # 取消重檐
 def delDoubleEave(buildingObj:bpy.types.Object):
-    print("取消重檐")
-    bData:acaData = buildingObj.ACA_data
-    bData['use_double_eave'] = False
+    # 重檐对象
+    doubleEaveObj = utils.getComboChild(
+        buildingObj,con.COMBO_DOUBLE_EAVE
+    )
+    # 主建筑对象
+    mainBuilding = utils.getComboChild(
+        buildingObj,con.COMBO_MAIN
+    )
+    # combo根对象
+    comboObj = utils.getComboRoot(buildingObj)
+
+    # 反向处理combo数据
+    __undoDoubleEaveData(buildingObj)
+
+    # 删除重檐对象
+    if doubleEaveObj is not None:
+        from . import build
+        build.delBuilding(doubleEaveObj,
+            withCombo=False,# 仅删除个体
+        )
+
+    # 重建主建筑    
+    if mainBuilding is not None:
+        buildFloor.buildFloor(mainBuilding,
+                        comboObj=comboObj)
+    
+    # 是否需要组合降级
+    from . import build
+    delCombo(mainBuilding)
+
+    # 聚焦主建筑
+    utils.focusObj(mainBuilding)
+
     return
 
 # 设置重檐数据
@@ -573,8 +613,63 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     mData['piller_net'] = pillerNet
 
     # 2.3、上檐柱高抬升
+    doubleEaveLift = __getDoubleEaveLift(doubleEaveObj)
+    
+    # 应用上檐柱高
+    bData['piller_height'] = (mData.piller_height 
+                              + doubleEaveLift)
+    
+    # 2.4、装修层设置跑马板
+    bData['wall_span'] = doubleEaveLift
+    
+    # 2.5、主建筑改用盝顶
+    mData['roof_style'] = int(con.ROOF_LUDING)
+    
+    return
+
+# 移除重檐数据
+def __undoDoubleEaveData(buildingObj:bpy.types.Object):
+    # 1、数据回传 -----------------------
+    # 传递数据回主建筑
+    # 属性跳过，保持柱高，保持跑马板高度
+    skip = ['piller_height',
+            'wall_span',]
+    
+    # 重檐数据（上檐）
+    doubleEaveObj = utils.getComboChild(
+        buildingObj,con.COMBO_DOUBLE_EAVE
+    )
+    # 主建筑数据（下檐）
+    mainBuildingObj = utils.getComboChild(
+        buildingObj,con.COMBO_MAIN
+    )
+    # 数据传递
+    utils.copyAcaData(
+            fromObj = doubleEaveObj,
+            toObj = mainBuildingObj,
+            skip=skip)
+    
+    # 2、标识位更新 ----------------------------
+    mData:acaData = mainBuildingObj.ACA_data
+    # 主建筑标识
+    mData['combo_type'] = con.COMBO_MAIN
+    # 重檐标识(取消)
+    mData['use_double_eave'] = False
+    # 显示台基
+    mData['is_showPlatform'] = True
+    
+    return
+
+# 计算重檐抬升高度
+def __getDoubleEaveLift(buildingObj:bpy.types.Object):
+    # 主建筑数据（下檐）
+    mainBuildingObj = utils.getComboChild(
+        buildingObj,con.COMBO_MAIN
+    )
+    mData:acaData = mainBuildingObj.ACA_data
     pillerLift = 0.0
     dk = mData.DK
+
     if mData.use_dg:
         # 平板枋
         if mData.use_pingbanfang:
@@ -594,7 +689,7 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     from . import buildBeam
     lift_radio = buildBeam.getLiftRatio(mainBuildingObj)
     # （廊间+出跳）加斜
-    pillerLift += (hallway + bData.dg_extend) * lift_radio[0]
+    pillerLift += (hallway + mData.dg_extend) * lift_radio[0]
 
     # 屋瓦层抬升
     pillerLift += (con.YUANCHUAN_D*dk   # 椽架
@@ -621,14 +716,4 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
         # 小额枋
         pillerLift += con.EFANG_SMALL_H*dk
     
-    # 应用上檐柱高
-    bData['piller_height'] = (mData.piller_height 
-                              + pillerLift)
-    
-    # 2.4、装修层设置跑马板
-    bData['wall_span'] = pillerLift
-    
-    # 2.5、主建筑改用盝顶
-    mData['roof_style'] = int(con.ROOF_LUDING)
-    
-    return
+    return pillerLift

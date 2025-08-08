@@ -264,13 +264,15 @@ def addTerrace(buildingObj:bpy.types.Object):
     terraceRoot = buildFloor.__addBuildingRoot(
         templateName = '月台',
         comboObj = comboObj
-    )    
+    ) 
+    # 务必及时标注combo_type,后续的数据同步和数据设置时都要判断主建筑
+    terraceRoot.ACA_data['combo_type'] = con.COMBO_TERRACE
     
     # 2、构造月台数据集 --------------------------
     # 基于主建筑属性，进行初始化
     __syncChildData(terraceRoot,isInit=True)
     # 设置月台逻辑数据
-    __setTerraceData(terraceRoot)
+    __setTerraceData(terraceRoot,isInit=True)
     
     # 3、开始营造 ------------------------------
     # 刷新主建筑月台（隐藏前出踏跺）
@@ -344,7 +346,6 @@ def __setTerraceData(terraceObj:bpy.types.Object,
     # 0、基本属性标注 ------------------------
     mData['use_terrace'] = True
     bData['use_terrace'] = True
-    bData['combo_type'] = con.COMBO_TERRACE
 
     # 1、分层显示控制 --------------------------
     # 分层显示控制
@@ -448,7 +449,7 @@ def addDoubleEave(buildingObj:bpy.types.Object):
         templateName = doubleEaveName,
         comboObj = comboObj
     )
-    # 立即设置combo_type，否则后续可能在区分combo_main时混乱
+    # 务必及时标注combo_type,后续的数据同步和数据设置时都要判断主建筑
     doubleEaveRoot.ACA_data['combo_type'] = con.COMBO_DOUBLE_EAVE
 
     # 2、构造重檐数据集 ----------------------
@@ -558,7 +559,6 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     # 0、基本属性标注 ------------------------
     mData['use_double_eave'] = True
     bData['use_double_eave'] = True
-    bData['combo_type'] = con.COMBO_DOUBLE_EAVE
        
     # 1、分层显示控制 -------------------------
     # 下檐分层显示

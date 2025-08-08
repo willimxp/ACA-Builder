@@ -700,6 +700,9 @@ def __getDoubleEaveLift(buildingObj:bpy.types.Object):
         if mData.use_pingbanfang:
             pillerLift += con.PINGBANFANG_H*dk
         # 斗栱高度(dg_height已经按dg_Scale放大了)
+        # 更新斗栱数据，以免修改DK，斗栱类型等操作时未及时更新
+        from . import template
+        template.updateDougongData(mainBuildingObj)
         pillerLift += mData.dg_height
     else:
         # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置

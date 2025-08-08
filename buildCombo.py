@@ -432,13 +432,13 @@ def addDoubleEave(buildingObj:bpy.types.Object):
     # 构建重檐子节点
     doubleEaveName = buildingObj.ACA_data.template_name + '.重檐'
     # 找到根目录
-    utils.setCollection(
+    rootColl = utils.setCollection(
         name = con.COLL_NAME_ROOT,
         isRoot=True,
         colorTag=2,
         )
     # 创建重檐目录
-    utils.setCollection(
+    doubleEaveColl = utils.setCollection(
         name = doubleEaveName,
         isRoot=True,
         colorTag=2,
@@ -463,6 +463,12 @@ def addDoubleEave(buildingObj:bpy.types.Object):
                       )
 
     # 3、开始营造 ------------------------------
+    from . import build
+    build.isFinished = False
+    build.progress = 0
+    # 暂时排除目录下的其他建筑，以加快执行速度
+    build.__excludeOther(rootColl,True,buildingObj)
+
     # 如果有月台，则联动重新生成月台（地盘变化了）
     terraceObj = utils.getComboChild(
         buildingObj,con.COMBO_TERRACE)
@@ -479,6 +485,10 @@ def addDoubleEave(buildingObj:bpy.types.Object):
 
     # 重新生成上檐
     buildFloor.buildFloor(doubleEaveRoot)
+
+    build.isFinished = True
+    # 取消排除目录下的其他建筑
+    build.__excludeOther(rootColl,False,buildingObj)
 
     return
 
@@ -505,10 +515,25 @@ def delDoubleEave(buildingObj:bpy.types.Object):
             withCombo=False,# 仅删除个体
         )
 
+    from . import build
+    build.isFinished = False
+    build.progress = 0
+    rootColl = utils.setCollection(
+        name = con.COLL_NAME_ROOT,
+        isRoot=True,
+        colorTag=2,
+        )
+    # 暂时排除目录下的其他建筑，以加快执行速度
+    build.__excludeOther(rootColl,True,mainBuilding)
+
     # 重建主建筑    
     if mainBuilding is not None:
         buildFloor.buildFloor(mainBuilding,
                         comboObj=comboObj)
+    
+    build.isFinished = True
+    # 取消排除目录下的其他建筑
+    build.__excludeOther(rootColl,False,mainBuilding)
     
     # 是否需要组合降级
     from . import build

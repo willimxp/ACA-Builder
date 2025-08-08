@@ -69,9 +69,8 @@ def console_clear():
 # 实际调用的是operator.py中的ACA_OT_Show_Message_Box
 # 因为使用了模态对话框，必须按照blender的operator声明，并在init中注册绑定
 def popMessageBox(message = "", icon = 'INFO'):
-    # 写入日志
-    logger = logging.getLogger('ACA')
-    logger.info(message)
+    # 输出到debug console(同时记入日志)
+    outputMsg(message)
 
     bpy.ops.aca.show_message_box('INVOKE_DEFAULT', 
         message=message, 

@@ -307,8 +307,12 @@ def delTerrace(buildingObj:bpy.types.Object):
     mData:acaData = mainBuilding.ACA_data
 
     # 更新主建筑台基
-    mData['use_terrace'] = False
-    bData['use_terrace'] = False
+    # 批量还原标识
+    comboObj = utils.getComboRoot(buildingObj)
+    for childBuilding in comboObj.children:
+        cData:acaData = childBuilding.ACA_data
+        # 重檐标识(取消)
+        cData['use_terrace'] = False
     buildPlatform.buildPlatform(mainBuilding)
 
     # 删除月台
@@ -676,10 +680,15 @@ def __undoDoubleEaveData(buildingObj:bpy.types.Object):
     mData:acaData = mainBuildingObj.ACA_data
     # 主建筑标识
     mData['combo_type'] = con.COMBO_MAIN
-    # 重檐标识(取消)
-    mData['use_double_eave'] = False
     # 显示台基
     mData['is_showPlatform'] = True
+
+    # 批量还原标识
+    comboObj = utils.getComboRoot(buildingObj)
+    for childBuilding in comboObj.children:
+        cData:acaData = childBuilding.ACA_data
+        # 重檐标识(取消)
+        cData['use_double_eave'] = False
     
     return
 

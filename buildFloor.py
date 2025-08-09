@@ -23,15 +23,21 @@ from . import buildRoof
 # 被ACA_OT_add_newbuilding类调用
 def __addBuildingRoot(templateName,
                       comboObj = None,
-                      ):
-    # 创建或锁定根目录
-    if comboObj is not None:
-        comboColl = comboObj.users_collection[0]
+                      ):    
+    # 新建建筑目录，强制新建，遇到重名自动添加.001后缀
+    buildingColl = bpy.data.collections.new(templateName)
+    # 建筑目录的父目录
+    if comboObj is not None:        
+        # 组合建筑，挂接在combo根目录下
+        parentColl = comboObj.users_collection[0]
     else:
-        comboColl = None
-    coll = utils.setCollection(
-        name = templateName,
-        parentColl = comboColl,)
+        # 单体建筑，挂接在ACA根目录下
+        parentColl = utils.setCollection(
+            con.COLL_NAME_ROOT,isRoot=True)
+    # 关联父目录
+    parentColl.children.link(buildingColl)
+    # 聚焦父目录
+    utils.focusCollection(buildingColl.name)
     
     # 创建buildObj根节点
     # 原点摆放在3D Cursor位置
@@ -44,6 +50,7 @@ def __addBuildingRoot(templateName,
     bData['template_name'] = templateName
 
     if comboObj is not None:
+        # 绑定Combo对象父子关系
         buildingObj.parent = comboObj
 
     return buildingObj

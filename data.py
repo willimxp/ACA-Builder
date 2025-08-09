@@ -6,6 +6,7 @@
 #   触发控件数据更新
 
 import bpy
+import time 
 from functools import partial
 
 from .const import ACA_Consts as con
@@ -62,12 +63,19 @@ def update_building(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
+        timeStart = time.time()
+
         from . import build
         funproxy = partial(
                 build.updateBuilding,
                 buildingObj=buildingObj,
                 reloadAssets=True)
         utils.fastRun(funproxy)
+
+        runTime = time.time() - timeStart
+        msg = '更新建筑完成 | 运行时间【%.1f秒】' % runTime
+        utils.popMessageBox(msg)
+
     else:
         utils.outputMsg("updated building failed, context.object should be buildingObj")
     return

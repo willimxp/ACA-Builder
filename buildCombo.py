@@ -262,7 +262,7 @@ def addTerrace(buildingObj:bpy.types.Object):
 
     # 构建月台子节点
     terraceRoot = buildFloor.__addBuildingRoot(
-        templateName = '月台',
+        templateName = buildingObj.ACA_data.template_name + '.月台',
         comboObj = comboObj
     ) 
     # 务必及时标注combo_type,后续的数据同步和数据设置时都要判断主建筑
@@ -432,18 +432,6 @@ def addDoubleEave(buildingObj:bpy.types.Object):
 
     # 构建重檐子节点
     doubleEaveName = buildingObj.ACA_data.template_name + '.重檐'
-    # 找到根目录
-    rootColl = utils.setCollection(
-        name = con.COLL_NAME_ROOT,
-        isRoot=True,
-        colorTag=2,
-        )
-    # 创建重檐目录
-    doubleEaveColl = utils.setCollection(
-        name = doubleEaveName,
-        isRoot=True,
-        colorTag=2,
-        )
     # 创建重檐根节点
     doubleEaveRoot = buildFloor.__addBuildingRoot(
         templateName = doubleEaveName,
@@ -468,7 +456,7 @@ def addDoubleEave(buildingObj:bpy.types.Object):
     build.isFinished = False
     build.progress = 0
     # 暂时排除目录下的其他建筑，以加快执行速度
-    build.__excludeOther(rootColl,True,buildingObj)
+    build.__excludeOther(keepObj=buildingObj)
 
     # 如果有月台，则联动重新生成月台（地盘变化了）
     terraceObj = utils.getComboChild(
@@ -487,9 +475,11 @@ def addDoubleEave(buildingObj:bpy.types.Object):
     # 重新生成上檐
     buildFloor.buildFloor(doubleEaveRoot)
 
+    # 关闭进度条
     build.isFinished = True
     # 取消排除目录下的其他建筑
-    build.__excludeOther(rootColl,False,buildingObj)
+    build.__excludeOther(isExclude=False,
+                         keepObj=buildingObj)
 
     return
 
@@ -516,25 +506,33 @@ def delDoubleEave(buildingObj:bpy.types.Object):
             withCombo=False,# 仅删除个体
         )
 
+    # 显示进度条
     from . import build
     build.isFinished = False
     build.progress = 0
-    rootColl = utils.setCollection(
-        name = con.COLL_NAME_ROOT,
-        isRoot=True,
-        colorTag=2,
-        )
     # 暂时排除目录下的其他建筑，以加快执行速度
-    build.__excludeOther(rootColl,True,mainBuilding)
+    build.__excludeOther(keepObj=mainBuilding)
 
+    # 重建月台
+    terraceObj = utils.getComboChild(
+        mainBuilding,con.COMBO_TERRACE)
+    if terraceObj is not None:
+        __setTerraceData(terraceObj,
+                         isInit=True # 重建月台地盘
+                         )
+        buildFloor.buildFloor(terraceObj,
+                        comboObj=comboObj)
+    
     # 重建主建筑    
     if mainBuilding is not None:
         buildFloor.buildFloor(mainBuilding,
                         comboObj=comboObj)
     
+    # 关闭进度条
     build.isFinished = True
     # 取消排除目录下的其他建筑
-    build.__excludeOther(rootColl,False,mainBuilding)
+    build.__excludeOther(isExclude=False,
+                         keepObj=mainBuilding)
     
     # 是否需要组合降级
     from . import build

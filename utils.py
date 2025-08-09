@@ -151,6 +151,9 @@ def focusCollByObj(obj:bpy.types.Object):
 
 # 新建或聚焦当前场景下的目录
 # 所有对象建立在插件目录下，以免与用户自建的内容冲突
+# isRoot时，创建在scene根目录下
+# parentColl为空，根据上下文创建子目录
+# parentColl不为空，创建在parentColl下层
 def setCollection(name:str, 
                   IsClear=False,
                   isRoot=False,
@@ -159,6 +162,8 @@ def setCollection(name:str,
     coll_name = name  # 在大纲中的目录名称
     coll_found = False
     coll = bpy.types.Collection
+    
+    # 查找coll是否存在
     if parentColl == None:
         searchColl = bpy.context.scene.collection
     else:
@@ -170,19 +175,26 @@ def setCollection(name:str,
             coll_name = coll.name
             break   # 找到第一个匹配的目录
 
+    # 创建目录
     if not coll_found:    
         # 新建collection，不与其他用户自建的模型打架
         # outputMsg("Add Collection: " + coll_name)
         coll = bpy.data.collections.new(coll_name)
+
         if isRoot:
+            # 创建在scene根目录下
             bpy.context.scene.collection.children.link(coll)
         else:
             if parentColl==None:
+                # 根据上下文，创建子目录
                 bpy.context.collection.children.link(coll)
             else:
+                # 创建在parentColl下
                 parentColl.children.link(coll)
         # 聚焦到新目录上
         focusCollection(coll.name)
+    
+    # 聚焦目录
     else:
         # 根据IsClear入参，决定是否要清空目录
         if IsClear:
@@ -2599,15 +2611,15 @@ def selectAll(buildingObj:bpy.types.Object):
     return
 
 # 查找组合建筑的主建筑
-def getMainBuilding(buildingObj:bpy.types.Object):
-    if buildingObj.parent is None:
-        comboObj = buildingObj
-    else:
-        comboObj = buildingObj.parent
-        
-    if comboObj.ACA_data.aca_type != con.ACA_TYPE_COMBO:
-        print("查找主建筑时，未找到父节点")
+def getMainBuilding(contextObj:bpy.types.Object):
+    # 查找combo根节点
+    comboObj = getComboRoot(contextObj)
+    # 不是组合建筑，直接返回当前建筑
+    if comboObj is None:
+        buildingObj,bData,oData = getRoot(contextObj)
+        return buildingObj
 
+    # 查找主建筑
     for childBuilding in comboObj.children:
         comboType = childBuilding.ACA_data.combo_type
         if comboType == con.COMBO_MAIN:

@@ -45,15 +45,20 @@ def buildSingle(acaType,
     return
 
 # 排除目录下的其他建筑
-def __excludeOther(rootColl:bpy.types.Collection,
-                   isExclude,
-                   buildingObj:bpy.types.Object=None,
+# isExclude=True是排除，False恢复
+# keepObj非必须，传入时当前目录不排除
+def __excludeOther(isExclude=True,
+                   keepObj:bpy.types.Object=None,
     ):
+    # 根目录
+    rootColl = utils.setCollection(
+        con.COLL_NAME_ROOT,isRoot=True)
+    
     # 查找当前建筑所在的目录
-    if buildingObj != None:
-        comboObj = utils.getComboRoot(buildingObj)
+    if keepObj != None:
+        comboObj = utils.getComboRoot(keepObj)
         if comboObj is None:
-            currentColl = buildingObj.users_collection[0]
+            currentColl = keepObj.users_collection[0]
         else:
             currentColl = comboObj.users_collection[0]
     else:
@@ -101,10 +106,6 @@ def build():
     # 禁用语言-翻译-新建数据
     bpy.context.preferences.view.use_translate_new_dataname = False
     
-    # 创建或锁定根目录（ACA筑韵古建）
-    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
-                        isRoot=True,colorTag=2)
-    
     # 待营造的模板，来自用户界面上的选择
     from . import data
     scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
@@ -120,7 +121,7 @@ def build():
     isFinished = False
     progress = 0
     # 暂时排除目录下的其他建筑，以加快执行速度
-    __excludeOther(rootColl,True)
+    __excludeOther()
 
     if acaType != con.ACA_TYPE_COMBO:
         # 单体建筑
@@ -132,9 +133,10 @@ def build():
         # 组合建筑
         buildCombo.buildCombo(templateName)
     
+    # 关闭进度条
     isFinished = True
     # 取消排除目录下的其他建筑
-    __excludeOther(rootColl,False)
+    __excludeOther(isExclude=False)
 
     # 关闭视角自动锁定
     scnData['is_auto_viewall'] = False
@@ -152,13 +154,8 @@ def updateBuilding(buildingObj:bpy.types.Object,
     global isFinished,progress
     isFinished = False
     progress = 0
-
-    # 创建或锁定根目录（ACA筑韵古建）
-    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
-                        isRoot=True,colorTag=2)
-
     # 暂时排除目录下的其他建筑，以加快执行速度
-    __excludeOther(rootColl,True,buildingObj)
+    __excludeOther(keepObj=buildingObj)
 
     # 根据模板类型调用不同的入口
     # 查找是否存在comboRoot
@@ -181,9 +178,11 @@ def updateBuilding(buildingObj:bpy.types.Object,
         else:
             utils.popMessageBox(f"无法创建该类型的建筑,{bData.aca_type}")
 
+    # 关闭进度条
     isFinished = True
     # 取消排除目录下的其他建筑
-    __excludeOther(rootColl,False,buildingObj)
+    __excludeOther(isExclude=False,
+                   keepObj=buildingObj)
 
     return {'FINISHED'}
 
@@ -232,13 +231,8 @@ def resetFloor(buildingObj:bpy.types.Object):
     global isFinished,progress
     isFinished = False
     progress = 0
-
-    # 创建或锁定根目录（ACA筑韵古建）
-    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
-                        isRoot=True,colorTag=2)
-
     # 暂时排除目录下的其他建筑，以加快执行速度
-    __excludeOther(rootColl,True,buildingObj)
+    __excludeOther(keepObj=buildingObj)
 
     # 查找是否存在comboRoot
     comboObj = utils.getComboRoot(buildingObj)
@@ -255,30 +249,31 @@ def resetFloor(buildingObj:bpy.types.Object):
         else:
             utils.popMessageBox("无法创建该类型的建筑：" + bData.aca_type)
 
+    # 关闭进度条
     isFinished = True
     # 取消排除目录下的其他建筑
-    __excludeOther(rootColl,False,buildingObj)
+    __excludeOther(isExclude=False,
+                   keepObj=buildingObj)
 
     return  {'FINISHED'}
 
 # 重新生成屋顶
-def resetRoof(buildingObj:bpy.types.Object):
-    # 创建或锁定根目录（ACA筑韵古建）
-    rootColl = utils.setCollection(con.COLL_NAME_ROOT,
-                        isRoot=True,colorTag=2)
-    
+def resetRoof(buildingObj:bpy.types.Object):    
     # 调用进度条
     global isFinished,progress
     isFinished = False
     progress = 0
     # 暂时排除目录下的其他建筑，以加快执行速度
-    __excludeOther(rootColl,True,buildingObj)
+    __excludeOther(keepObj=buildingObj)
 
+    # 调用屋顶生成
     buildRoof.buildRoof(buildingObj)
 
+    # 关闭进度条
     isFinished = True
     # 取消排除目录下的其他建筑
-    __excludeOther(rootColl,False,buildingObj)
+    __excludeOther(isExclude=False,
+                   keepObj=buildingObj)
     return  {'FINISHED'}
 
 # 纵剖视图

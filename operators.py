@@ -1378,7 +1378,7 @@ class ACA_OT_DOUBLE_EAVE_ADD(bpy.types.Operator):
         result = utils.fastRun(funproxy)
 
         runTime = time.time() - timeStart
-        msg = '添加重檐完成 | 运行时间【%.1f】' % runTime
+        msg = '添加重檐完成 | 运行时间【%.1f秒】' % runTime
         self.report({'INFO'},msg)
         utils.popMessageBox(msg)
         
@@ -1404,7 +1404,7 @@ class ACA_OT_DOUBLE_EAVE_DEL(bpy.types.Operator):
         result = utils.fastRun(funproxy)
 
         runTime = time.time() - timeStart
-        msg = '取消重檐完成 | 运行时间【%.1f】' % runTime
+        msg = '取消重檐完成 | 运行时间【%.1f秒】' % runTime
         self.report({'INFO'},msg)
         utils.popMessageBox(msg)
         

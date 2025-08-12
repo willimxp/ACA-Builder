@@ -72,7 +72,7 @@ def update_building(self, context:bpy.types.Context):
         funproxy = partial(
                 build.updateBuilding,
                 buildingObj=buildingObj,
-                reloadAssets=True)
+                reloadAssets=False) # 250812 修改参数时，不重新载入素材库
         utils.fastRun(funproxy)
 
         runTime = time.time() - timeStart

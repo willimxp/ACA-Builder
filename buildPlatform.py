@@ -961,6 +961,24 @@ def resizePlatform(buildingObj:bpy.types.Object):
             childBuilding,con.ACA_TYPE_TILE_ROOT)
         if tileRootObj != None: 
             tileRootObj.location.z = roofBaseZ
+
+    # 实时更新月台
+    terraceObj = utils.getComboChild(
+        buildingObj,con.COMBO_TERRACE)
+    if terraceObj is not None:
+        # 更新地盘数据，计算当前的y_total
+        mainBuildingObj = utils.getComboChild(
+            buildingObj,con.COMBO_MAIN)
+        mData:acaData = mainBuildingObj.ACA_data
+        bData:acaData = terraceObj.ACA_data
+        buildFloor.getFloorDate(mainBuildingObj)
+        buildFloor.getFloorDate(terraceObj)
+        offsetY = (mData.y_total/2 
+                + mData.platform_extend
+                + bData.y_total/2 
+                + bData.platform_extend
+                )
+        terraceObj.location = Vector((0,-offsetY,0))
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

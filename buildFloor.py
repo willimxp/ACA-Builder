@@ -1126,28 +1126,30 @@ def buildPillers(buildingObj:bpy.types.Object):
             # 统一命名为“柱.x/y”，以免更换不同柱形时，减柱设置失效
             pillerID = str(x) + '/' + str(y)
 
-            # 是否仅显示柱定位点
-            # 明确指定隐藏柱网，如，月台
+            # 1、减柱逻辑 ----------------------------
+            # 包括：用户在单体减柱中手工减柱，或在月台/重檐场景中自动减柱
+            useEmptyPiller = False
+            # 1.1、pillernet为hide，月台场景，全部自动减柱
             if bData.piller_net == con.ACA_PILLER_HIDE:
                 useEmptyPiller = True
+            # 1.2、pillernet为''时，柱网全部重建
+            elif bData.piller_net == '':
+                # 重檐下檐，內檐金柱全部自动减柱
+                if (bData.use_double_eave and 
+                    bData.combo_type == con.COMBO_MAIN):
+                    if not (x in (0,x_rooms) 
+                            or y in (0,y_rooms)):
+                        useEmptyPiller = True
+            # 1.3、pillernet不为空，按照pillernet判断减柱
             else:
-                # 廊间举架不减柱
-                # 但是重檐主建筑(下檐)不判断廊间举架
-                isDoubleEave = (bData.use_double_eave and 
-                    bData.combo_type == con.COMBO_MAIN)
-                if bData.use_hallway and not isDoubleEave:
-                    useEmptyPiller = False
-                # 柱网reset为''时不减柱
-                elif bData.piller_net == '':
-                    useEmptyPiller = False
-                # 判断减柱
-                else:
+                # 廊间举架，不做减柱
+                if not bData.use_hallway:
+                    # 柱ID是否在piller_net，就减柱
                     if pillerID not in bData.piller_net:
                         useEmptyPiller = True
-                    else:
-                        useEmptyPiller = False
             
-            # 减柱验证（廊间举架时恢复所有柱体）
+            # 2、减柱的，显示empty标识 -------------------
+            # 空柱位上用Empty标识，以便添加踏跺等操作
             if useEmptyPiller:
                 pillerObj = utils.addEmpty(
                     name = '柱定位点.' + pillerID,
@@ -1163,6 +1165,7 @@ def buildPillers(buildingObj:bpy.types.Object):
                 # 不再继续做柱实体
                 continue    # 结束本次循环
 
+            # 3、非减柱的，显示正常柱体 ----------------
             # 复制柱子，仅instance，包含modifier
             pillerObj = utils.copySimplyObject(
                 sourceObj = piller_source,

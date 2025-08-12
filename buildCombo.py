@@ -685,29 +685,16 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
         if bData.y_rooms >= 5:
             bData['y_3'] = mData.y_2
 
-    # 2.2、柱网控制
-    # 主建筑内部柱网全部减柱
-    x_rooms = mData.x_rooms   # 面阔几间
-    y_rooms = mData.y_rooms   # 进深几间
-    pillerNet = ''
-    for y in range(y_rooms + 1):
-        for x in range(x_rooms + 1):
-            if x in (0,x_rooms) or y in (0,y_rooms):
-                pillerID = f"{x}/{y},"
-                pillerNet += pillerID
-    mData['piller_net'] = pillerNet
-
-    # 2.3、上檐柱高抬升
+    # 2.2、上檐柱高抬升
     doubleEaveLift = __getDoubleEaveLift(doubleEaveObj)
-    
     # 应用上檐柱高
     bData['piller_height'] = (mData.piller_height 
                               + doubleEaveLift)
     
-    # 2.4、装修层设置跑马板
+    # 2.3、装修层设置跑马板
     bData['wall_span'] = doubleEaveLift
     
-    # 2.5、主建筑改用盝顶
+    # 2.4、主建筑改用盝顶
     mData['roof_style'] = int(con.ROOF_LUDING)
     
     # 3、数据汇总到combo ------------------------

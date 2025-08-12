@@ -42,11 +42,6 @@ def __addComboLevel(buildingObj:bpy.types.Object):
                         isRoot=True,colorTag=2)
     # 添加combo根节点
     comboObj = __addComboRoot(buildingObj.name + '.combo')
-    
-    # 数据上传到comboRoot
-    __syncData(fromBuilding=buildingObj,
-               toBuilding=comboObj,
-               syncAll = True)
 
     # 更改对象父节点
     m = buildingObj.matrix_world.copy()
@@ -65,6 +60,11 @@ def __addComboLevel(buildingObj:bpy.types.Object):
     # 从根目录移除
     rootColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
     rootColl.children.unlink(buildingColl)
+
+    # 数据上传到comboRoot
+    # 放在层级结构生成后再处理数据，否则可能找不到combo节点
+    utils.outputMsg("添加组合根节点...")
+    __uploadData(fromBuilding=buildingObj)
 
     return comboObj
 
@@ -113,9 +113,7 @@ def updateCombo(buildingObj:bpy.types.Object,
         # 全部更新，重檐柱网变化应该传递到月台
         updateBuildingList = comboObj.children
         # 重檐数据上传到comboRoot
-        __syncData(fromBuilding=buildingObj,
-                toBuilding=comboObj,
-                syncAll = True)
+        __uploadData(fromBuilding=buildingObj)
         
     # 其他子建筑，如，月台，独立更新
     else:
@@ -194,6 +192,7 @@ def __syncData(fromBuilding:bpy.types.Object,
                syncKeys = None, # 同步的字段
                skipKeys = None, # 跳过的字段
                ):
+    utils.outputMsg(f"-- syncData fromBuilding={fromBuilding.name},toBuilding={toBuilding.name},syncAll={syncAll},syncKeys={syncKeys},skipKeys={skipKeys}")
     defaultSkipKeys = [
                 'aca_type',
                 'combo_type',
@@ -204,10 +203,13 @@ def __syncData(fromBuilding:bpy.types.Object,
                 'is_showBeam',
                 'is_showRafter',
                 'is_showTiles',
-                'step_net',
-                'piller_net',
-                'wall_net',
-                'fang_net',
+                # 250812 重檐上檐需要同步pillernet，
+                # 所以默认的数据上传需要上传这些字段
+                # 月台不需要pillernet，不要用这个skip
+                # 'step_net',
+                # 'piller_net',
+                # 'wall_net',
+                # 'fang_net',
             ]
     defaultSyncKeys = [
                 'DK',
@@ -286,10 +288,9 @@ def addTerrace(buildingObj:bpy.types.Object):
     terraceRoot.ACA_data['combo_type'] = con.COMBO_TERRACE
     
     # 2、构造月台数据集 --------------------------
-    # 基于根节点数据初始化
-    __syncData(fromBuilding=comboObj,
-               toBuilding=terraceRoot,
-               syncAll=True)
+    # 从Combo根节点继承数据
+    utils.outputMsg("添加月台子建筑...")
+    __downloadData(toBuilding=terraceRoot)
     # 设置月台逻辑数据
     __setTerraceData(terraceRoot,isInit=True)
     
@@ -368,10 +369,6 @@ def __setTerraceData(terraceObj:bpy.types.Object,
     comboObj = utils.getComboRoot(terraceObj)
     cData:acaData = comboObj.ACA_data
     
-    # 0、基本属性标注 ------------------------
-    bData['use_terrace'] = True
-    mData['use_terrace'] = True
-
     # 1、分层显示控制 --------------------------
     # 分层显示控制
     bData['is_showPlatform'] = True
@@ -382,26 +379,7 @@ def __setTerraceData(terraceObj:bpy.types.Object,
     bData['is_showRafter'] = False
     bData['is_showTiles'] = False
     
-    # 2、仅在新建时的初始化处理，更新时跳过 -------------
-    if isInit:
-        # 不做踏跺
-        bData['step_net'] = ''
-        # 柱网仅显示定位点
-        bData['piller_net'] = con.ACA_PILLER_HIDE
-        # 不做额枋
-        bData['fang_net'] = ''
-        # 不做墙体
-        bData['wall_net'] = ''
-    
-        # 月台高度，比主体低1踏步
-        bData['platform_height'] = (
-            cData.platform_height - con.STEP_HEIGHT)
-        # 月台下出，比主体窄2踏步（未见规则）
-        bData['platform_extend'] = (
-            cData.platform_extend 
-            - con.STEP_HEIGHT*2
-            )
-    
+    # 2、月台开间与主建筑联动 -------------
     # 月台进深，五间以上减2间
     yRooms = cData.y_rooms
     if cData.use_double_eave:
@@ -428,6 +406,15 @@ def __setTerraceData(terraceObj:bpy.types.Object,
             bData['x_4'] = cData.x_3
             bData['x_3'] = cData.x_2
     
+    # 月台高度，比主体低1踏步
+    bData['platform_height'] = (
+        cData.platform_height - con.STEP_HEIGHT)
+    # 月台下出，比主体窄2踏步（未见规则）
+    bData['platform_extend'] = (
+        cData.platform_extend 
+        - con.STEP_HEIGHT*2
+        )
+    
     # 3、月台定位 ------------------------
     # 更新地盘数据，计算当前的y_total
     buildFloor.getFloorDate(mainBuildingObj)
@@ -440,11 +427,24 @@ def __setTerraceData(terraceObj:bpy.types.Object,
     terraceLoc = Vector((0,-offsetY,0))
     bData['root_location'] = terraceLoc
 
-    # 4、数据汇总到combo ------------------------
-    # 绝大部分数据从主建筑采集
-    __syncData(fromBuilding=mainBuildingObj,
-               toBuilding=comboObj,
-               syncAll=True)
+    # 4、仅在新建时的初始化处理，更新时跳过 -------------
+    if isInit:
+        # 基本属性标注
+        bData['use_terrace'] = True
+        mData['use_terrace'] = True
+        
+        # 不做踏跺
+        bData['step_net'] = ''
+        # 柱网仅显示定位点
+        bData['piller_net'] = con.ACA_PILLER_HIDE
+        # 不做额枋
+        bData['fang_net'] = ''
+        # 不做墙体
+        bData['wall_net'] = ''
+        
+        # 数据上报到combo ------------------------
+        utils.outputMsg("月台数据修改上报...")
+        __uploadData(fromBuilding=mainBuildingObj)
 
     return terraceObj
 
@@ -481,10 +481,10 @@ def addDoubleEave(buildingObj:bpy.types.Object):
     doubleEaveRoot.ACA_data['combo_type'] = con.COMBO_DOUBLE_EAVE
 
     # 2、构造重檐数据集 ----------------------
-    # 初始化上檐数据，继承了主建筑的原始地盘/装修/屋顶等设定
-    __syncData(fromBuilding=comboObj,
-               toBuilding=doubleEaveRoot,
-               syncAll=True)
+    # 初始化上檐数据，继承ComboRoot数据
+    # 包括主建筑的原始地盘/装修/屋顶等设定
+    utils.outputMsg("添加重檐子建筑...")
+    __downloadData(toBuilding=doubleEaveRoot)
     # 设置重檐逻辑数据
     # 包括下檐的廊间扩展、盝顶
     # 包括上檐的柱高抬升
@@ -503,10 +503,10 @@ def addDoubleEave(buildingObj:bpy.types.Object):
     terraceObj = utils.getComboChild(
         buildingObj,con.COMBO_TERRACE)
     if terraceObj is not None:
-        __syncData(fromBuilding=comboObj,
-                    toBuilding=terraceObj,
-                    syncAll=False)
-        
+        utils.outputMsg("重檐联动月台更新...")
+        # 不要同步柱网piller_net，保持为隐藏柱网状态
+        __downloadData(toBuilding=terraceObj,
+                       skipKeys=['piller_net',])
         __setTerraceData(terraceObj)
         buildFloor.buildFloor(
             terraceObj,
@@ -561,9 +561,12 @@ def delDoubleEave(buildingObj:bpy.types.Object):
     terraceObj = utils.getComboChild(
         mainBuilding,con.COMBO_TERRACE)
     if terraceObj is not None:
-        __setTerraceData(terraceObj,
-                         isInit=True # 重建月台地盘
-                         )
+        # __setTerraceData(terraceObj,
+        #                  isInit=True # 重建月台地盘
+        #                  )
+        # 250812 似乎没有必须重新初始化
+        __setTerraceData(terraceObj)
+        
         buildFloor.buildFloor(terraceObj,
                         comboObj=comboObj)
     
@@ -626,11 +629,9 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     else:
         # 将用户通过UI修改的主建筑地盘，同步到combo下所有对象
         # 主建筑数据下发到各个子建筑
+        utils.outputMsg("主建筑数据下发到各个子建筑")
         for child in comboObj.children:
-            __syncData(fromBuilding=comboObj,
-                    toBuilding=child,
-                    syncAll=True
-                    )
+            __downloadData(toBuilding=child)
 
         # 主建筑在面阔、进深缩减一廊间
         bData['x_rooms'] = mData['x_rooms'] - 2
@@ -688,9 +689,9 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     
     # 3、数据汇总到combo ------------------------
     # 绝大部分数据从下檐采集
-    __syncData(fromBuilding=mainBuildingObj,
-               toBuilding=comboObj,
-               syncAll=True)
+    utils.outputMsg("重檐数据修改上报...")
+    __uploadData(fromBuilding=mainBuildingObj)
+
     # 例外，屋顶类型采用上檐类型
     cData['roof_style'] = bData['roof_style']
     
@@ -708,6 +709,7 @@ def __undoDoubleEaveData(buildingObj:bpy.types.Object):
         buildingObj,con.COMBO_MAIN
     )
     # 数据传递，保持柱高，保持跑马板高度
+    utils.outputMsg("重檐移除，上檐数据传给下檐...")
     skipKeys = ['piller_height','wall_span',]
     __syncData(fromBuilding=doubleEaveObj,
                toBuilding=mainBuildingObj,
@@ -724,10 +726,9 @@ def __undoDoubleEaveData(buildingObj:bpy.types.Object):
     # 3、数据汇总到combo ------------------------
     comboObj = utils.getComboRoot(buildingObj)
     cData:acaData = comboObj.ACA_data
-    # 绝大部分数据从下檐采集
-    __syncData(fromBuilding=mainBuildingObj,
-               toBuilding=comboObj,
-               syncAll=True)
+    # 下檐数据上报
+    utils.outputMsg("重檐移除，下檐数据上报...")
+    __uploadData(fromBuilding=mainBuildingObj)
     
     return
 
@@ -791,3 +792,83 @@ def __getDoubleEaveLift(buildingObj:bpy.types.Object):
         pillerLift += con.EFANG_SMALL_H*dk
     
     return pillerLift
+
+# 将建筑数据上传至comboRoot根节点
+# 调用方：
+# __addComboLevel：组合建筑初始化时，将主建筑数据上传comboRoot
+# __setTerraceData：月台创建后，对主建筑修改(添加use_terrace标识)，需要更新到comboRoot
+# updateCombo：重檐修改后，及时更新comboRoot
+def __uploadData(fromBuilding:bpy.types.Object):
+    # 跳过的字段
+    skipKeys = [
+                'aca_type',
+                'combo_type',
+                'is_showPlatform',
+                'is_showPillers',
+                'is_showWalls',
+                'is_showDougong',
+                'is_showBeam',
+                'is_showRafter',
+                'is_showTiles',
+                # 250812 comboRoot中需要与主建筑同步pillernet
+                # 子建筑可以自行决定是否要继承该柱网，
+                # 如，月台初始化时继承，修改更新时不继承，
+                # 如，重檐上檐始终继承
+                # 'step_net',
+                # 'piller_net',
+                # 'wall_net',
+                # 'fang_net',
+            ]
+    
+    utils.outputMsg(f"-- Upload Data from [{fromBuilding.name}]...")
+    comboObj = utils.getComboRoot(fromBuilding)
+    # 拷贝字段
+    utils.copyAcaData(
+        fromObj = fromBuilding,
+        toObj = comboObj,
+        skip = skipKeys,
+    )
+
+    return
+
+# 从comboRoot下载数据，各个子建筑再决定如何二次加工
+# 调用方：
+# addTerrace,新建月台时从comboRoot初始化，但后续就数据独立了
+def __downloadData(toBuilding:bpy.types.Object,
+                   skipKeys = None):
+    # 跳过的字段
+    defaultSkipKeys = [
+                'aca_type',
+                'combo_type',
+                'is_showPlatform',
+                'is_showPillers',
+                'is_showWalls',
+                'is_showDougong',
+                'is_showBeam',
+                'is_showRafter',
+                'is_showTiles',
+                # 250812 comboRoot中需要与主建筑同步pillernet
+                # 子建筑可以自行决定是否要继承该柱网，
+                # 如，月台初始化时继承，修改更新时不继承，
+                # 如，重檐上檐始终继承
+                # 'step_net',
+                # 'piller_net',
+                # 'wall_net',
+                # 'fang_net',
+            ]
+    
+    if skipKeys is None:
+        skipKeys = defaultSkipKeys
+    else:
+        skipKeys += defaultSkipKeys
+    
+    utils.outputMsg(f"-- Download data to [{toBuilding.name}]...")
+    comboObj = utils.getComboRoot(toBuilding)
+    # 拷贝字段
+    utils.copyAcaData(
+        fromObj = comboObj,
+        toObj = toBuilding,
+        skip = skipKeys,
+    )
+
+    return

@@ -651,30 +651,39 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
 
     # 设置廊间宽度,22DK
     hallway_deepth = mData.DK * con.HALLWAY_DEEPTH
+    # 下檐盝顶檐步进深
     mData['luding_rafterspan'] = hallway_deepth
+    # 下檐面阔廊间宽度
     if mData.x_rooms <= 3:
         mData['x_2'] = hallway_deepth
     elif mData.x_rooms <= 5:
         mData['x_3'] = hallway_deepth
         if mData['x_2'] == hallway_deepth:
-            mData['x_2'] = mData['x_1']
+            mData['x_2'] = mData['x_1'] - 11*mData.DK
     else:
         mData['x_4'] = hallway_deepth
         if mData['x_3'] == hallway_deepth:
             mData['x_3'] = mData['x_2']
+    # 下檐进深廊间面阔
     if mData.y_rooms <= 3:
         mData['y_2'] = hallway_deepth
     else:
         mData['y_3'] = hallway_deepth
         if mData['y_2'] == hallway_deepth:
             mData['y_2'] = mData['y_1']
-    # 矫正梢间，不使用主建筑的廊间数据
+    # 矫正上檐的次间、梢间，不使用主建筑的廊间数据
     if mData.use_double_eave:
+        # 上檐面阔同步
         if bData.x_rooms >= 3:
             bData['x_2'] = mData.x_2
+        if bData.x_rooms >= 5:
+            bData['x_3'] = mData.x_3
         if bData.x_rooms >= 7:
             bData['x_4'] = mData.x_3
             bData['x_3'] = mData.x_2
+        # 上檐进深同步
+        if bData.y_rooms >= 5:
+            bData['y_3'] = mData.y_2
 
     # 2.2、柱网控制
     # 主建筑内部柱网全部减柱

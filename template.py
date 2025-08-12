@@ -108,7 +108,8 @@ def getDougongList():
 # 动态初始化斗栱属性和样式
 # 根据当前建筑所定义的斗栱样式进行更新
 # 在建筑新建、重新生成屋顶、单独生成斗栱层时，都应该使用此方法
-def updateDougongData(buildingObj:bpy.types.Object):
+def updateDougongData(buildingObj:bpy.types.Object,
+                      reloadAssets = True):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
@@ -124,18 +125,19 @@ def updateDougongData(buildingObj:bpy.types.Object):
         bData['dg_style'] = '0'
     
     # 1.2、更新aData中的斗栱样式
-    __updateAssetStyle(
-        buildingObj,'dg_piller_source',
-        parent=dgrootObj)
-    __updateAssetStyle(
-        buildingObj,'dg_fillgap_source',
-        parent=dgrootObj)
-    __updateAssetStyle(
-        buildingObj,'dg_fillgap_alt_source',
-        parent=dgrootObj)
-    __updateAssetStyle(
-        buildingObj,'dg_corner_source',
-        parent=dgrootObj)
+    if reloadAssets:
+        __updateAssetStyle(
+            buildingObj,'dg_piller_source',
+            parent=dgrootObj)
+        __updateAssetStyle(
+            buildingObj,'dg_fillgap_source',
+            parent=dgrootObj)
+        __updateAssetStyle(
+            buildingObj,'dg_fillgap_alt_source',
+            parent=dgrootObj)
+        __updateAssetStyle(
+            buildingObj,'dg_corner_source',
+            parent=dgrootObj)
     if (aData.dg_piller_source == None
             or aData.dg_fillgap_source == None
             or aData.dg_fillgap_alt_source == None

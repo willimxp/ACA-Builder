@@ -99,34 +99,36 @@ def updateCombo(buildingObj:bpy.types.Object,
     updateBuildingList = []
 
     # 如果基于combo根节点，全部更新
+    # 用户点击“更新建筑”时会传入根节点，或激活再根节点上的修改
     if bData.aca_type == con.ACA_TYPE_COMBO:
         updateBuildingList = comboObj.children
-        # 主建筑数据下发到各个子建筑
-        for child in comboObj.children:
-            __syncData(fromBuilding=comboObj,
-                    toBuilding=child,
-                    syncAll=False    # 小范围同步
-                    )
-
     # 如果基于重檐的上檐或下檐
     elif bData.combo_type in doubleEaveType:
         # 全部更新，重檐柱网变化应该传递到月台
         updateBuildingList = comboObj.children
-        # 重檐数据上传到comboRoot
-        __uploadData(fromBuilding=buildingObj)
-        
     # 其他子建筑，如，月台，独立更新
     else:
         updateBuildingList.append(buildingObj)
-    
-    # 立即刷新界面，全部删除重做
-    for childBuilding in updateBuildingList:
-        utils.deleteHierarchy(childBuilding)
+
+    # ComboRoot通用数据下发
+    # 通用数据是通过panel暴露在combo层次的属性
+    # 包括DK，roof_style，paint_style，梁架/椽架/瓦作层数据
+    # 不包括地盘、台基、装修、斗栱的数据
+    utils.outputMsg("更新组合建筑：ComboRoot【通用数据】下发...")
+    for child in comboObj.children:
+        __downloadCommonData(toBuilding=child)
+
+    # 主建筑数据同步，先上传到comboRoot，再下发到重檐对象
+    # 主建筑数据是通过panel暴露在mainBuilding层次的属性
+    utils.outputMsg("更新组合建筑：MainBuilding【通用数据】上传...")
+    __syncMainData(toBuilding=comboObj)
 
     # 重檐数据更新
     doubleEaveObj = utils.getComboChild(
         buildingObj,con.COMBO_DOUBLE_EAVE)
     if doubleEaveObj is not None:
+        utils.outputMsg("更新组合建筑：MainBuilding【通用数据】下发...")
+        __syncMainData(toBuilding=doubleEaveObj)
         __setDoubleEaveData(doubleEaveObj)
 
     # 月台数据更新
@@ -138,9 +140,15 @@ def updateCombo(buildingObj:bpy.types.Object,
     else:
         initTerrace = False
     if terraceObj is not None:
+        utils.outputMsg("更新组合建筑：MainBuilding【通用数据】下发...")
+        __syncMainData(toBuilding=terraceObj)
         __setTerraceData(terraceObj,
                          isInit=initTerrace
-                         )            
+                         )         
+
+    # 立即刷新界面，全部删除重做
+    for childBuilding in updateBuildingList:
+        utils.deleteHierarchy(childBuilding)   
         
     # 循环生成各个单体
     for childBuilding in updateBuildingList:
@@ -442,9 +450,11 @@ def __setTerraceData(terraceObj:bpy.types.Object,
         # 不做墙体
         bData['wall_net'] = ''
         
-        # 数据上报到combo ------------------------
-        utils.outputMsg("月台数据修改上报...")
-        __uploadData(fromBuilding=mainBuildingObj)
+        # 这里不要上报了，仅仅为了use_terrace
+        # 反而导致roof_style被覆盖
+        # # 数据上报到combo ------------------------
+        # utils.outputMsg("月台数据修改上报...")
+        # __uploadData(fromBuilding=mainBuildingObj)
 
     return terraceObj
 
@@ -566,7 +576,7 @@ def delDoubleEave(buildingObj:bpy.types.Object):
         #                  )
         # 250812 似乎没有必须重新初始化
         __setTerraceData(terraceObj)
-        
+
         buildFloor.buildFloor(terraceObj,
                         comboObj=comboObj)
     
@@ -627,11 +637,13 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
         mData['fang_net'] = ''
     # 建筑更新，采用上檐被动的缩减1廊间
     else:
-        # 将用户通过UI修改的主建筑地盘，同步到combo下所有对象
-        # 主建筑数据下发到各个子建筑
-        utils.outputMsg("主建筑数据下发到各个子建筑")
-        for child in comboObj.children:
-            __downloadData(toBuilding=child)
+        # # 将用户通过UI修改的主建筑地盘，同步到combo下所有对象
+        # # 主建筑数据下发到各个子建筑
+        # utils.outputMsg("更新重檐，主建筑数据下发到各个子建筑...")
+        # for child in comboObj.children:
+        #     __downloadData(toBuilding=child,
+        #                    skipKeys=['piller_net',])
+        #     # 为了避免上檐柱网丢失，导致穿插枋计算失败，跳过柱网同步
 
         # 主建筑在面阔、进深缩减一廊间
         bData['x_rooms'] = mData['x_rooms'] - 2
@@ -658,6 +670,8 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
             mData['y_2'] = mData['y_1']
     # 矫正梢间，不使用主建筑的廊间数据
     if mData.use_double_eave:
+        if bData.x_rooms >= 3:
+            bData['x_2'] = mData.x_2
         if bData.x_rooms >= 7:
             bData['x_4'] = mData.x_3
             bData['x_3'] = mData.x_2
@@ -692,7 +706,9 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     utils.outputMsg("重檐数据修改上报...")
     __uploadData(fromBuilding=mainBuildingObj)
 
-    # 例外，屋顶类型采用上檐类型
+    # 这里上报的时候会把盝顶写入comboRoot，导致后续更新时再下发
+    # 所以，需要改写上报数据
+    # ComboRoot记录的屋顶类型不继承主建筑，而是使用上檐的屋顶类型
     cData['roof_style'] = bData['roof_style']
     
     return
@@ -748,8 +764,10 @@ def __getDoubleEaveLift(buildingObj:bpy.types.Object):
             pillerLift += con.PINGBANFANG_H*dk
         # 斗栱高度(dg_height已经按dg_Scale放大了)
         # 更新斗栱数据，以免修改DK，斗栱类型等操作时未及时更新
+        # reloadAssets=False，以免重复载入重复的斗栱资产
         from . import template
-        template.updateDougongData(mainBuildingObj)
+        template.updateDougongData(mainBuildingObj,
+                                   reloadAssets=False)
         pillerLift += mData.dg_height
     else:
         # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
@@ -818,6 +836,7 @@ def __uploadData(fromBuilding:bpy.types.Object):
                 # 'piller_net',
                 # 'wall_net',
                 # 'fang_net',
+                # 'roof_style',   # 250812 不上传屋顶类型，将始终保留继承的主建筑屋顶类型
             ]
     
     utils.outputMsg(f"-- Upload Data from [{fromBuilding.name}]...")
@@ -869,6 +888,82 @@ def __downloadData(toBuilding:bpy.types.Object,
         fromObj = comboObj,
         toObj = toBuilding,
         skip = skipKeys,
+    )
+
+    return
+
+# 从comboRoot下载通用数据，以反映用户在UI上的修改
+# 通用数据是通过panel直接暴露修改的属性
+# 包括DK，roof_style，paint_style，梁架/椽架/瓦作层数据
+# 不包括地盘、台基、装修、斗栱的数据
+# 调用方：
+# updateCombo
+def __downloadCommonData(toBuilding:bpy.types.Object):
+    defaultSyncKeys = [
+                'DK',
+                'paint_style',
+                'roof_style',
+                'use_hallway',
+                'rafter_count',
+                'use_flyrafter',
+                'use_wangban',
+                'qiqiao',
+                'chong',
+                'use_pie',
+                'shengqi',
+                'liangtou',
+                'tuishan',
+                'shoushan',
+                'luding_rafterspan',
+                'juzhe',
+                'roof_height',
+                'tile_scale',
+                'tile_color',
+                'tile_alt_color',
+                'paoshou_count',
+            ]
+    
+    utils.outputMsg(f"-- Download common data to [{toBuilding.name}]...")
+    comboObj = utils.getComboRoot(toBuilding)
+    # 拷贝字段
+    utils.copyAcaData(
+        fromObj = comboObj,
+        toObj = toBuilding,
+        keys =defaultSyncKeys,
+    )
+
+    return
+
+# 从主建筑同步数据到根节点以及其他子建筑
+# 这些数据允许各个子建筑自行设定，如，月台的地盘与主建筑就可以不一样
+# 所以在UI上支持暴露子建筑属性，提供灵活性
+# 但在update时，这些数据也会更新到comboRoot中保证一致性
+# 但是不包括个性化数据，如，wall_span，door_num等
+# 调用方：
+# updateCombo
+def __syncMainData(toBuilding:bpy.types.Object,):
+    syncKeys = [
+                'x_rooms',
+                'x_1',
+                'x_2',
+                'x_3',
+                'x_4',
+                'y_rooms',
+                'y_1',
+                'y_2',
+                'y_3',
+                'piller_height',
+                'piller_diameter',
+                'use_smallfang',
+            ]
+    
+    utils.outputMsg(f"-- Download main data to [{toBuilding.name}]...")
+    mainBuildingObj = utils.getMainBuilding(toBuilding)
+    # 拷贝字段
+    utils.copyAcaData(
+        fromObj = mainBuildingObj,
+        toObj = toBuilding,
+        keys =syncKeys,
     )
 
     return

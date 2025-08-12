@@ -568,10 +568,14 @@ class ACA_PT_wall(bpy.types.Panel):
             layout = self.layout
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
-            mainBuilding = utils.getMainBuilding(context.object)
-            mData:acaData = mainBuilding.ACA_data
-
             if buildingObj == None: return
+            
+            # 彩画类型统一在comboRoot中管理
+            comboObj = utils.getComboRoot(buildingObj)
+            if comboObj is not None:
+                cData:acaData = comboObj.ACA_data
+            else:
+                cData = bData
 
             # 控制是否允许修改
             if not bData.is_showWalls:
@@ -587,7 +591,7 @@ class ACA_PT_wall(bpy.types.Panel):
             toolBar = toolBox.grid_flow(align=True,columns=1)
             inputPaintStyle = toolBar.column(align=True)
             inputPaintStyle.prop(
-                mData, "paint_style",)
+                cData, "paint_style",)
 
             # 工具栏：加枋、加墙、加门、加窗、删除
             toolBox = box.column(align=True)

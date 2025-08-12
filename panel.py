@@ -5,6 +5,7 @@
 
 import bpy
 from . import data
+from .data import ACA_data_obj as acaData
 from .const import ACA_Consts as con
 from . import utils
 from . import build
@@ -276,20 +277,7 @@ class ACA_PT_props(bpy.types.Panel):
 
     @classmethod 
     def poll(self, context):
-        if bpy.app.version < (4,2,0):return
-        
-        isAcaObj = False
-        # 从当前场景中载入数据集
-        if context.object != None:
-            # 追溯全局属性
-            buildingObj,bData,objData = utils.getRoot(context.object)
-            if buildingObj != None: 
-                if bData.aca_type in (
-                    con.ACA_TYPE_BUILDING,
-                    con.ACA_TYPE_COMBO,):
-                    isAcaObj = True
-        if isAcaObj and build.isFinished:
-            return True
+        return genericPoll(self,context)
     
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -297,6 +285,12 @@ class ACA_PT_props(bpy.types.Panel):
             layout = self.layout
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
+            comboObj = utils.getComboRoot(buildingObj)
+            if comboObj is not None:
+                cData:acaData = comboObj.ACA_data
+            else:
+                cData = bData
+
             if buildingObj == None: 
                 # 如果不属于建筑构件，提示，并隐藏所有子面板
                 row = layout.row()
@@ -305,18 +299,14 @@ class ACA_PT_props(bpy.types.Panel):
                 row.label(text='请先选择一个或多个建筑对象')
                 return 
             else:
-                if bData.aca_type == con.ACA_TYPE_COMBO:
-                    row = layout.row()
-                    row.label(text='当前为组合对象，请选择子建筑',icon='INFO')
-                if bData.aca_type == con.ACA_TYPE_BUILDING:
-                    # 斗口值
-                    box = layout.box()
-                    row = box.row(align=True)
-                    col = row.column(align=True)
-                    col.prop(bData,'DK')
-                    # 计算默认斗口值
-                    col = row.column(align=True)
-                    col.operator("aca.default_dk",icon='SHADERFX',text='')
+                # 斗口值
+                box = layout.box()
+                row = box.row(align=True)
+                col = row.column(align=True)
+                col.prop(cData,'DK')
+                # 计算默认斗口值
+                col = row.column(align=True)
+                col.operator("aca.default_dk",icon='SHADERFX',text='')
         
         return
 
@@ -336,17 +326,23 @@ class ACA_PT_platform(bpy.types.Panel):
     # 仅在选中建筑根节点时显示该面板
     @classmethod 
     def poll(self, context):
-        buildingObj,bData,objData = utils.getRoot(context.object)
-        if bData.aca_type == con.ACA_TYPE_BUILDING:
-            return True
-        return
+        return genericPoll(self,context)
 
     def draw_header(self,context):
         layout = self.layout
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
-        row.prop(bData, "is_showPlatform",text='台基属性')
-        if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+        
+        # 统一重檐上下檐设置
+        if bData.combo_type == con.COMBO_DOUBLE_EAVE:
+            mainBuilding = utils.getMainBuilding(buildingObj)
+            # 用主建筑(下檐)的地盘统一设定
+            mData:acaData = mainBuilding.ACA_data
+        else:
+            mData = bData
+
+        row.prop(mData, "is_showPlatform",text='台基属性')
+        if mData.aca_type not in (con.ACA_TYPE_BUILDING,
                                 con.ACA_TYPE_COMBO,):
             layout.enabled = False
 
@@ -357,6 +353,14 @@ class ACA_PT_platform(bpy.types.Panel):
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
+
+            # 统一重檐上下檐设置
+            if bData.combo_type == con.COMBO_DOUBLE_EAVE:
+                mainBuilding = utils.getMainBuilding(buildingObj)
+                # 用主建筑(下檐)的地盘统一设定
+                mData:acaData = mainBuilding.ACA_data
+            else:
+                mData = bData
 
             # 台基属性
             box = layout.box()
@@ -369,8 +373,8 @@ class ACA_PT_platform(bpy.types.Panel):
             
             # 台基高度、台基下出
             group = toolbox.grid_flow(columns=1, align=True)
-            group.prop(bData, "platform_height")
-            group.prop(bData, "platform_extend")
+            group.prop(mData, "platform_height")
+            group.prop(mData, "platform_extend")
             
             # 2、按钮工具箱 -----------------
             toolbox = box.column(align=True)
@@ -415,7 +419,7 @@ class ACA_PT_platform(bpy.types.Panel):
                     btnDelTerrace.enabled = False
 
             # 切换显示/隐藏台基
-            if not bData.is_showPlatform:
+            if not mData.is_showPlatform:
                 layout.enabled = False
                 
 # “柱网属性”子面板
@@ -434,10 +438,7 @@ class ACA_PT_pillers(bpy.types.Panel):
     # 仅在选中建筑根节点时显示该面板
     @classmethod 
     def poll(self, context):
-        buildingObj,bData,objData = utils.getRoot(context.object)
-        if bData.aca_type == con.ACA_TYPE_BUILDING:
-            return True
-        return
+        return genericPoll(self,context)
     
     def draw_header(self,context):
         layout = self.layout
@@ -456,6 +457,14 @@ class ACA_PT_pillers(bpy.types.Panel):
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
 
+            # 统一重檐上下檐设置
+            if bData.combo_type == con.COMBO_DOUBLE_EAVE:
+                mainBuilding = utils.getMainBuilding(buildingObj)
+                # 用主建筑(下檐)的地盘统一设定
+                mData:acaData = mainBuilding.ACA_data
+            else:
+                mData = bData
+
             # 全局属性
             #if objData.aca_type == con.ACA_TYPE_BUILDING:
             # 柱网属性
@@ -465,30 +474,30 @@ class ACA_PT_pillers(bpy.types.Panel):
                     box.enabled = False
 
             row = box.column(align=True)
-            row.prop(bData, "x_rooms")      # 面阔间数
-            row.prop(bData, "x_1")          # 明间宽度
-            if bData.x_rooms >= 3:
-                row.prop(bData, "x_2")      # 次间宽度
-            if bData.x_rooms >= 5:
-                row.prop(bData, "x_3")      # 梢间宽度
-            if bData.x_rooms >= 7:
-                row.prop(bData, "x_4")      # 尽间宽度
+            row.prop(mData, "x_rooms")      # 面阔间数
+            row.prop(mData, "x_1")          # 明间宽度
+            if mData.x_rooms >= 3:
+                row.prop(mData, "x_2")      # 次间宽度
+            if mData.x_rooms >= 5:
+                row.prop(mData, "x_3")      # 梢间宽度
+            if mData.x_rooms >= 7:
+                row.prop(mData, "x_4")      # 尽间宽度
                 
             col = box.column(align=True)
-            col.prop(bData, "y_rooms")      # 进深间数
-            col.prop(bData, "y_1")          # 明间深度
-            if bData.y_rooms >= 3:
-                col.prop(bData, "y_2")      # 次间深度
-            if bData.y_rooms >= 5:
-                col.prop(bData, "y_3")      # 梢间深度
+            col.prop(mData, "y_rooms")      # 进深间数
+            col.prop(mData, "y_1")          # 明间深度
+            if mData.y_rooms >= 3:
+                col.prop(mData, "y_2")      # 次间深度
+            if mData.y_rooms >= 5:
+                col.prop(mData, "y_3")      # 梢间深度
 
             # 柱子属性
             col = box.column(align=True)
             grid = col.grid_flow(columns=1, align=True)
             # 柱高
-            grid.prop(bData, "piller_height") 
+            grid.prop(mData, "piller_height") 
             # 柱径   
-            grid.prop(bData, "piller_diameter")  
+            grid.prop(mData, "piller_diameter")  
             grid = col.grid_flow(columns=2, align=True)
             # 按钮:减柱
             col = grid.column(align=True)
@@ -519,10 +528,7 @@ class ACA_PT_wall(bpy.types.Panel):
     # 仅在选中建筑根节点时显示该面板
     @classmethod 
     def poll(self, context):
-        buildingObj,bData,objData = utils.getRoot(context.object)
-        if bData.aca_type == con.ACA_TYPE_BUILDING:
-            return True
-        return
+        return genericPoll(self,context)
 
     # 在标题栏中添加显示/隐藏开关
     def draw_header(self,context):
@@ -562,6 +568,9 @@ class ACA_PT_wall(bpy.types.Panel):
             layout = self.layout
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
+            mainBuilding = utils.getMainBuilding(context.object)
+            mData:acaData = mainBuilding.ACA_data
+
             if buildingObj == None: return
 
             # 控制是否允许修改
@@ -578,7 +587,7 @@ class ACA_PT_wall(bpy.types.Panel):
             toolBar = toolBox.grid_flow(align=True,columns=1)
             inputPaintStyle = toolBar.column(align=True)
             inputPaintStyle.prop(
-                bData, "paint_style",)
+                mData, "paint_style",)
 
             # 工具栏：加枋、加墙、加门、加窗、删除
             toolBox = box.column(align=True)
@@ -745,20 +754,7 @@ class ACA_PT_roof_props(bpy.types.Panel):
 
     @classmethod 
     def poll(self, context):
-        # 限制最低版本
-        if bpy.app.version < (4,2,0):return
-
-        isAcaObj = False
-        # 从当前场景中载入数据集
-        if context.object != None:
-            # 追溯全局属性
-            buildingObj,bData,objData = utils.getRoot(context.object)
-            if buildingObj != None: 
-                if bData.aca_type in (con.ACA_TYPE_BUILDING,
-                                      con.ACA_TYPE_COMBO):
-                    isAcaObj = True
-        if isAcaObj and build.isFinished:
-            return True
+        return genericPoll(self,context)
             
     def draw(self, context):
         # 从当前场景中载入数据集
@@ -766,6 +762,14 @@ class ACA_PT_roof_props(bpy.types.Panel):
             layout = self.layout
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
+
+            # 屋顶数据统一在comboRoot中管理
+            comboObj = utils.getComboRoot(buildingObj)
+            if comboObj is not None:
+                cData:acaData = comboObj.ACA_data
+            else:
+                cData = bData
+
             if buildingObj == None: 
                 # 如果不属于建筑构件，提示，并隐藏所有子面板
                 row = layout.row()
@@ -774,41 +778,42 @@ class ACA_PT_roof_props(bpy.types.Panel):
                 row.label(text='请先选择一个或多个建筑对象')
                 return
             else:
-                if bData.aca_type == con.ACA_TYPE_COMBO:
-                    row = layout.row()
-                    row.label(text='当前为组合对象，请选择子建筑',icon='INFO')
-                # 屋顶属性
-                if bData.aca_type == con.ACA_TYPE_BUILDING:
-                    box = layout.box()
-                    toolBox = box.column(align=True)  
-                    toolBar = toolBox.grid_flow(columns=2, align=True)
+                box = layout.box()
+                toolBox = box.column(align=True)  
+                toolBar = toolBox.grid_flow(columns=2, align=True)
 
-                    # 屋顶样式
-                    droplistRoofstyle = toolBar.column(align=True)
-                    droplistRoofstyle.prop(
-                        bData, "roof_style",text='') 
+                # 屋顶样式
+                droplistRoofstyle = toolBar.column(align=True)
+                droplistRoofstyle.prop(
+                    cData, "roof_style",text='') 
+                
+                toolBar = toolBox.grid_flow(columns=2, align=True)
+
+                # 添加/取消重檐
+                btnDoubleEave = toolBar.column(align=True)
+                if not bData.use_double_eave:
+                    btnDoubleEave.operator(
+                        "aca.double_eave_add",
+                        icon='TRIA_UP_BAR',
+                        text='添加重檐')
+                else:
+                    btnDoubleEave.operator(
+                        "aca.double_eave_del",
+                        icon='TRIA_UP_BAR',
+                        depress=True,
+                        text='移除重檐')
                     
-                    toolBar = toolBox.grid_flow(columns=2, align=True)
+                # 必须聚焦在主建筑或重檐上，才可以添加/删除重檐
+                if bData.combo_type not in (
+                    con.COMBO_MAIN,con.COMBO_DOUBLE_EAVE
+                ):
+                    btnDoubleEave.enabled = False
 
-                    # 添加/取消重檐
-                    btnDoubleEave = toolBar.column(align=True)
-                    if not bData.use_double_eave:
-                        btnDoubleEave.operator(
-                            "aca.double_eave_add",
-                            icon='TRIA_UP_BAR',
-                            text='使用重檐')
-                    else:
-                        btnDoubleEave.operator(
-                            "aca.double_eave_del",
-                            icon='TRIA_UP_BAR',
-                            depress=True,
-                            text='取消重檐')
-
-                    # 屋顶营造按钮
-                    buttonBuildroof = toolBar.column(align=True)
-                    buttonBuildroof.operator(
-                        "aca.build_roof",icon='FILE_REFRESH',
-                        text='更新屋顶',depress=True)
+                # 屋顶营造按钮
+                buttonBuildroof = toolBar.column(align=True)
+                buttonBuildroof.operator(
+                    "aca.build_roof",icon='FILE_REFRESH',
+                    text='更新屋顶',depress=True)
                     
                     
 
@@ -828,10 +833,7 @@ class ACA_PT_dougong(bpy.types.Panel):
     # 仅在选中建筑根节点时显示该面板
     @classmethod 
     def poll(self, context):
-        buildingObj,bData,objData = utils.getRoot(context.object)
-        if bData.aca_type == con.ACA_TYPE_BUILDING:
-            return True
-        return
+        return genericPoll(self,context)
     
     # 在标题栏中添加显示/隐藏开关
     def draw_header(self,context):
@@ -928,10 +930,7 @@ class ACA_PT_beam(bpy.types.Panel):
     # 仅在选中建筑根节点时显示该面板
     @classmethod 
     def poll(self, context):
-        buildingObj,bData,objData = utils.getRoot(context.object)
-        if bData.aca_type == con.ACA_TYPE_BUILDING:
-            return True
-        return
+        return genericPoll(self,context)
     
     # 在标题栏中添加显示/隐藏开关
     def draw_header(self,context):
@@ -950,6 +949,20 @@ class ACA_PT_beam(bpy.types.Panel):
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
 
+            # # 统一重檐上下檐设置
+            # if bData.combo_type == con.COMBO_DOUBLE_EAVE:
+            #     mainBuilding = utils.getMainBuilding(buildingObj)
+            #     # 用主建筑(下檐)的地盘统一设定
+            #     mData:acaData = mainBuilding.ACA_data
+            # else:
+            #     mData = bData
+            # 梁架属性统一在ComboRoot中管理
+            comboObj = utils.getComboRoot(buildingObj)
+            if comboObj is not None:
+                cData:acaData = comboObj.ACA_data
+            else:
+                cData = bData
+
             layout = self.layout
             if bData.aca_type not in (con.ACA_TYPE_BUILDING,
                                       con.ACA_TYPE_COMBO,):
@@ -964,28 +977,28 @@ class ACA_PT_beam(bpy.types.Panel):
             # 举折系数
             droplistJuzhe = toolBar.column(align=True)
             droplistJuzhe.prop(
-                bData, "juzhe",text='',)
-            if bData.juzhe == '3':
+                cData, "juzhe",text='',)
+            if cData.juzhe == '3':
                 # 屋架高度
                 inputRoofHeight = toolBar.column(align=True)
                 inputRoofHeight.prop(
-                    bData,"roof_height"
+                    cData,"roof_height"
                 )
             # 步架数量          
             inputRaftercount = toolBar.column(align=True)
             inputRaftercount.prop(
-                bData, "rafter_count",
+                cData, "rafter_count",
                 text='步架数量')
             # 做廊步架
             inputJujia= toolBar.column(align=True)
-            if bData.y_rooms >= 3:
-                if bData.use_hallway:
+            if cData.y_rooms >= 3:
+                if cData.use_hallway:
                     checkbox_icon = 'CHECKBOX_HLT'
                 else:
                     checkbox_icon = 'CHECKBOX_DEHLT'
                 #checkUseHallway = box.column(align=True)
                 inputJujia.prop(
-                    bData, "use_hallway",
+                    cData, "use_hallway",
                     text='廊间举架做法',
                     toggle=True,
                     icon=checkbox_icon) 
@@ -996,11 +1009,11 @@ class ACA_PT_beam(bpy.types.Panel):
             # 推山
             inputTuishan = toolBar.column(align=True)
             inputTuishan.prop(
-                bData, "tuishan",text='庑殿推山系数',slider=True)
+                cData, "tuishan",text='庑殿推山系数',slider=True)
             # 收山
             inputShoushan = toolBar.column(align=True)
             inputShoushan.prop(
-                bData, "shoushan",text='歇山收山尺寸')
+                cData, "shoushan",text='歇山收山尺寸')
             
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)
@@ -1046,10 +1059,7 @@ class ACA_PT_rafter(bpy.types.Panel):
     # 仅在选中建筑根节点时显示该面板
     @classmethod 
     def poll(self, context):
-        buildingObj,bData,objData = utils.getRoot(context.object)
-        if bData.aca_type == con.ACA_TYPE_BUILDING:
-            return True
-        return
+        return genericPoll(self,context)
     
     # 在标题栏中添加显示/隐藏开关
     def draw_header(self,context):
@@ -1068,6 +1078,22 @@ class ACA_PT_rafter(bpy.types.Panel):
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
 
+            # # 统一重檐上下檐设置
+            # if bData.combo_type == con.COMBO_DOUBLE_EAVE:
+            #     mainBuilding = utils.getMainBuilding(buildingObj)
+            #     # 用主建筑(下檐)的地盘统一设定
+            #     mData:acaData = mainBuilding.ACA_data
+            # else:
+            #     mData = bData
+
+            # 椽架统一在ComboRoot中管理
+            comboObj = utils.getComboRoot(buildingObj)
+            if comboObj is not None:
+                cData:acaData = comboObj.ACA_data
+            else:
+                cData = bData
+
+
             layout = self.layout
             if bData.aca_type not in (con.ACA_TYPE_BUILDING,
                                       con.ACA_TYPE_COMBO,):
@@ -1082,30 +1108,30 @@ class ACA_PT_rafter(bpy.types.Panel):
             # 出冲
             inputChong = toolBar.column(align=True)
             inputChong.prop(
-                bData, "chong",text='出冲(椽径)') 
+                cData, "chong",text='出冲(椽径)') 
             # 起翘
             inputQiao = toolBar.column(align=True)
             inputQiao.prop(
-                bData, "qiqiao",text='起翘(椽径)')
+                cData, "qiqiao",text='起翘(椽径)')
             # 梁头系数
             inputLiangtou = toolBar.column(align=True)
             inputLiangtou.prop(
-                bData, "liangtou",text='梁头系数')
+                cData, "liangtou",text='梁头系数')
 
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)
             # 是否使用飞椽
-            if bData.use_flyrafter:
+            if cData.use_flyrafter:
                 checkbox_icon = 'CHECKBOX_HLT'
             else:
                 checkbox_icon = 'CHECKBOX_DEHLT'
             checkboxUseflyrafter = toolBar.column(align=True)
             checkboxUseflyrafter.prop(
-                bData, "use_flyrafter",
+                cData, "use_flyrafter",
                 text='使用飞椽',toggle=True,
                 icon=checkbox_icon) 
             # 庑殿、歇山不可以不做飞椽
-            if bData.roof_style in (
+            if cData.roof_style in (
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
@@ -1114,18 +1140,18 @@ class ACA_PT_rafter(bpy.types.Panel):
                 checkboxUseflyrafter.enabled = False
 
             # # 是否使用望板
-            # if bData.use_wangban:
+            # if deData.use_wangban:
             #     checkbox_icon = 'CHECKBOX_HLT'
             # else:
             #     checkbox_icon = 'CHECKBOX_DEHLT'
             # checkboxUseWangban = toolBar.column(align=True)
             # checkboxUseWangban.prop(
-            #     bData, "use_wangban",
+            #     deData, "use_wangban",
             #     toggle=True,text='使用望板',
             #     icon=checkbox_icon) 
             
             # 只有庑殿、歇山，可以设置冲、翘
-            if bData.roof_style not in (
+            if cData.roof_style not in (
                     con.ROOF_WUDIAN,
                     con.ROOF_XIESHAN,
                     con.ROOF_XIESHAN_JUANPENG,
@@ -1135,13 +1161,13 @@ class ACA_PT_rafter(bpy.types.Panel):
                 inputQiao.enabled = False
 
             # 瞥向处理
-            if bData.use_pie:
+            if cData.use_pie:
                 checkbox_icon = 'CHECKBOX_HLT'
             else:
                 checkbox_icon = 'CHECKBOX_DEHLT'
             checkboxUsePie = toolBar.column(align=True)
             checkboxUsePie.prop(
-                bData, "use_pie",
+                cData, "use_pie",
                 text='撇向处理',toggle=True,
                 icon=checkbox_icon) 
 
@@ -1161,10 +1187,7 @@ class ACA_PT_tiles(bpy.types.Panel):
     # 仅在选中建筑根节点时显示该面板
     @classmethod 
     def poll(self, context):
-        buildingObj,bData,objData = utils.getRoot(context.object)
-        if bData.aca_type == con.ACA_TYPE_BUILDING:
-            return True
-        return
+        return genericPoll(self,context)
     
     # 在标题栏中添加显示/隐藏开关
     def draw_header(self,context):
@@ -1186,6 +1209,15 @@ class ACA_PT_tiles(bpy.types.Panel):
             if bData.aca_type not in (con.ACA_TYPE_BUILDING,
                                       con.ACA_TYPE_COMBO,):
                 layout.enabled = False
+            if not bData.is_showTiles:
+                layout.enabled = False
+
+            # 瓦作属性统一在comboRoot中管理
+            comboObj = utils.getComboRoot(buildingObj)
+            if comboObj is not None:
+                cData:acaData = comboObj.ACA_data
+            else:
+                cData = bData
             
             # 瓦作属性
             box = layout.box()
@@ -1196,16 +1228,13 @@ class ACA_PT_tiles(bpy.types.Panel):
             # row = box.row()
             # row.prop(bData, "tile_width_real") # 瓦垄宽度
             row = box.row()
-            row.prop(bData, "tile_scale") # 瓦作缩放
+            row.prop(cData, "tile_scale") # 瓦作缩放
             row = box.row()
-            row.prop(bData, "paoshou_count") # 跑兽数量
+            row.prop(cData, "paoshou_count") # 跑兽数量
             row = box.row()
-            row.prop(bData, "tile_color") # 瓦面颜色
+            row.prop(cData, "tile_color") # 瓦面颜色
             row = box.row()
-            row.prop(bData, "tile_alt_color") # 瓦面剪边颜色
-
-            if not bData.is_showTiles:
-                layout.enabled = False
+            row.prop(cData, "tile_alt_color") # 瓦面剪边颜色
 
 # “院墙参数”面板
 class ACA_PT_yardwall_props(bpy.types.Panel):
@@ -1296,3 +1325,26 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
                     icon='PLAY',
                     depress=True,
                     text='重新生成院墙')
+                
+# 面板可见性的通用验证
+def genericPoll(self,context:bpy.types.Context):
+    # 版本验证
+    if bpy.app.version < (4,2,0): return False
+
+    # 运行状态验证
+    if not build.isFinished: return False
+
+    # 活动对象验证
+    if context.object == None: return False
+
+    # ACA建筑验证
+    buildingObj,bData,objData = utils.getRoot(context.object)
+    if buildingObj == None: return False
+
+    # ACA对象对量验证        
+    if bData.aca_type not in (con.ACA_TYPE_BUILDING,
+                              con.ACA_TYPE_YARDWALL,
+                              con.ACA_TYPE_COMBO,):
+        return False
+
+    return True

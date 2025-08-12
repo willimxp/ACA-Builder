@@ -59,9 +59,12 @@ def update_building(self, context:bpy.types.Context):
     isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
     if not isRebuild:
         return
-    
-    # 确认选中为building节点
-    buildingObj,bdata,odata = utils.getRoot(context.object)
+
+    # 根据数据集合，找到对应的建筑
+    # 在panel中指定bData时，指向context.object,
+    # 在panel中指定为mData时，指向主建筑
+    buildingObj = self.id_data
+
     if buildingObj != None:
         timeStart = time.time()
 
@@ -341,42 +344,56 @@ def update_rooftile(self, context:bpy.types.Context):
             "updated platform failed, context.object should be buildingObj")
     return
 
+# 显示/隐藏台基层
 def hide_platform(self, context:bpy.types.Context):
+    buildingObj = self.id_data
     utils.hideLayer(
-        context,con.COLL_NAME_BASE,
+        buildingObj,con.COLL_NAME_BASE,
         self.is_showPlatform)
 
+# 显示/隐藏柱网层
 def hide_pillers(self, context:bpy.types.Context):
+    buildingObj = self.id_data
     utils.hideLayer(
-        context,con.COLL_NAME_PILLER,
+        buildingObj,con.COLL_NAME_PILLER,
         self.is_showPillers)
 
+# 显示/隐藏装修层
 def hide_walls(self, context:bpy.types.Context):
+    buildingObj = self.id_data
     utils.hideLayer(
-        context,con.COLL_NAME_WALL,
+        buildingObj,con.COLL_NAME_WALL,
         self.is_showWalls)
 
+# 显示/隐藏斗栱层
 def hide_dougong(self, context:bpy.types.Context):
+    buildingObj = self.id_data
     utils.hideLayer(
-        context,con.COLL_NAME_DOUGONG,
+        buildingObj,con.COLL_NAME_DOUGONG,
         self.is_showDougong)
 
+# 显示/隐藏梁架层
 def hide_beam(self, context:bpy.types.Context):
+    buildingObj = self.id_data
     utils.hideLayer(
-        context,con.COLL_NAME_BEAM,
+        buildingObj,con.COLL_NAME_BEAM,
         self.is_showBeam)
 
+# 显示/隐藏椽架层
 def hide_rafter(self, context:bpy.types.Context):
+    buildingObj = self.id_data
     utils.hideLayer(
-        context,con.COLL_NAME_RAFTER,
+        buildingObj,con.COLL_NAME_RAFTER,
         self.is_showRafter)
 
+# 显示/隐藏瓦作层
 def hide_tiles(self, context:bpy.types.Context):
+    buildingObj = self.id_data
     utils.hideLayer(
-        context,con.COLL_NAME_TILE,
+        buildingObj,con.COLL_NAME_TILE,
         self.is_showTiles)
     utils.hideLayer(
-        context,con.COLL_NAME_BOARD,
+        buildingObj,con.COLL_NAME_BOARD,
         self.is_showTiles)
 
 # 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据

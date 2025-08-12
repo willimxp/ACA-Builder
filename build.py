@@ -239,7 +239,7 @@ def resetFloor(buildingObj:bpy.types.Object):
     # 根据模板类型调用不同的入口
     # 组合建筑
     if comboObj is not None:
-        buildCombo.updateCombo(buildingObj,reset=True)
+        buildCombo.updateCombo(comboObj,reset=True)
     else:
         # 载入数据
         bData:acaData = buildingObj.ACA_data
@@ -266,8 +266,33 @@ def resetRoof(buildingObj:bpy.types.Object):
     # 暂时排除目录下的其他建筑，以加快执行速度
     __excludeOther(keepObj=buildingObj)
 
+    # 获取有屋顶的所有子建筑
+    roofBuildingList = []
+    comboObj = utils.getComboRoot(buildingObj)
+    doubleEaveType = (con.COMBO_MAIN,
+                      con.COMBO_DOUBLE_EAVE,)
+    if comboObj is not None:
+        for child in comboObj.children:
+            cData:acaData = child.ACA_data
+            if cData.combo_type in doubleEaveType:
+                roofBuildingList.append(child)
+    else:
+        roofBuildingList.append(buildingObj)
+
+    # 主建筑数据下发到各个子建筑
+    for child in comboObj.children:
+        buildCombo.__syncData(fromBuilding=comboObj,
+                toBuilding=child,
+                syncAll=False    # 小范围同步
+                )
+
+    # 立即界面刷新，全部删除重做
+    for roof in roofBuildingList:
+        buildRoof.__clearRoof(roof)
+
     # 调用屋顶生成
-    buildRoof.buildRoof(buildingObj)
+    for roof in roofBuildingList:
+        buildRoof.buildRoof(roof)
 
     # 关闭进度条
     isFinished = True

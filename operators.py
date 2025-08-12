@@ -75,13 +75,12 @@ class ACA_OT_add_building(bpy.types.Operator):
         if message != '':
             utils.popMessageBox(message)
             self.report(type,message)
-            utils.outputMsg(message)
         return {'FINISHED'}
 
 # 更新建筑
 class ACA_OT_update_building(bpy.types.Operator):
     bl_idname="aca.update_building"
-    bl_label = "添加新建筑"
+    bl_label = "更新建筑"
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = '根据参数的修改，重新生成建筑'
 
@@ -90,7 +89,13 @@ class ACA_OT_update_building(bpy.types.Operator):
         if buildingObj == None:
             utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
             return {'FINISHED'}
-        buildingName = buildingObj.name
+        
+        # 如果是组合建筑，直接传入comboRoot
+        comboObj = utils.getComboRoot(buildingObj)
+        # 组合建筑
+        if comboObj is not None:
+            buildingObj = comboObj
+
         # 更新新建筑
         timeStart = time.time()
         funproxy = partial(build.updateBuilding,
@@ -98,17 +103,14 @@ class ACA_OT_update_building(bpy.types.Operator):
                     reloadAssets=True)
         result = utils.fastRun(funproxy)
 
-        message=''
+        # 结果提示
         type = {'INFO'}
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
-            message = "更新建筑完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
-                        % (buildingName,runTime)
-
-        if message != '':
-            utils.popMessageBox(message)
-            self.report(type,message)
-            utils.outputMsg(message)
+            msg = "更新建筑完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
+                        % (buildingObj.name,runTime)
+            utils.popMessageBox(msg)
+            self.report(type,msg)
 
         return {'FINISHED'}
     
@@ -1316,12 +1318,12 @@ class ACA_OT_TERRACE_DEL(bpy.types.Operator):
     def execute(self, context): 
         timeStart = time.time()
 
-        buildingObj,bData,objData = utils.getRoot(context.object)
+        terraceObj,bData,objData = utils.getRoot(context.object)
         
         from . import buildCombo
         funproxy = partial(
             buildCombo.delTerrace,
-            buildingObj=buildingObj,
+            terraceObj=terraceObj,
         )
         result = utils.fastRun(funproxy)
 

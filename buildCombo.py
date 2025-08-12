@@ -25,6 +25,7 @@ def __addComboRoot(templateName):
     cData:acaData = comboObj.ACA_data
     cData['template_name'] = templateName
     cData['aca_type'] = con.ACA_TYPE_COMBO
+    cData['combo_type'] = con.COMBO_ROOT
 
     return comboObj
 
@@ -34,14 +35,18 @@ def __addComboLevel(buildingObj:bpy.types.Object):
     buildingObj,bData,objData = utils.getRoot(buildingObj)
     comboObj = utils.getComboRoot(buildingObj)
     if comboObj is not None:
-        utils.outputMsg("添加组合建筑失败，已经为组合建筑。")
-        return
+        raise Exception("__addComboLevel失败，已经为组合建筑。")
         
-    # 添加组合建筑
+    # ACA根目录
     rootColl = utils.setCollection(con.COLL_NAME_ROOT,
                         isRoot=True,colorTag=2)
     # 添加combo根节点
     comboObj = __addComboRoot(buildingObj.name + '.combo')
+    
+    # 数据上传到comboRoot
+    __syncData(fromBuilding=buildingObj,
+               toBuilding=comboObj,
+               syncAll = True)
 
     # 更改对象父节点
     m = buildingObj.matrix_world.copy()
@@ -68,6 +73,8 @@ def buildCombo(
 ):
     # 添加combo根节点
     comboObj = __addComboRoot(templateName)
+    # 在comboObj上绑定模板bData
+    template.loadTemplate(comboObj)
     
     # 组合建筑
     tempChildren = template.getTemplateChild(templateName)
@@ -85,28 +92,38 @@ def updateCombo(buildingObj:bpy.types.Object,
                 reloadAssets=False,
                 reset=False):
     comboObj = utils.getComboRoot(buildingObj)
-    mainBuildingObj = utils.getMainBuilding(buildingObj)
+    bData:acaData = buildingObj.ACA_data
+    doubleEaveType = (con.COMBO_MAIN,
+                      con.COMBO_DOUBLE_EAVE,)
+    # 更新的对象范围
+    updateBuildingList = []
 
-    # 判断全局更新还是局部更新
-    if comboObj == buildingObj:
-        # 选中combo根节点时，全局更新
-        isUpdateAll = True
-    elif mainBuildingObj == buildingObj:
-        # 选中主建筑时，全局更新
-        isUpdateAll = True
+    # 如果基于combo根节点，全部更新
+    if bData.aca_type == con.ACA_TYPE_COMBO:
+        updateBuildingList = comboObj.children
+        # 主建筑数据下发到各个子建筑
+        for child in comboObj.children:
+            __syncData(fromBuilding=comboObj,
+                    toBuilding=child,
+                    syncAll=False    # 小范围同步
+                    )
+
+    # 如果基于重檐的上檐或下檐
+    elif bData.combo_type in doubleEaveType:
+        # 全部更新，重檐柱网变化应该传递到月台
+        updateBuildingList = comboObj.children
+        # 重檐数据上传到comboRoot
+        __syncData(fromBuilding=buildingObj,
+                toBuilding=comboObj,
+                syncAll = True)
+        
+    # 其他子建筑，如，月台，独立更新
     else:
-        # 局部更新
-        isUpdateAll = False
+        updateBuildingList.append(buildingObj)
     
-    # 全局更新时，
-    if isUpdateAll:
-        # 立即界面刷新，全部删除重做
-        for childBuilding in comboObj.children:
-            utils.deleteHierarchy(childBuilding)
-    
-        # 所有子建筑从主建筑同步数据
-        __syncChildData(buildingObj,
-                    isAll=True,)
+    # 立即刷新界面，全部删除重做
+    for childBuilding in updateBuildingList:
+        utils.deleteHierarchy(childBuilding)
 
     # 重檐数据更新
     doubleEaveObj = utils.getComboChild(
@@ -117,18 +134,18 @@ def updateCombo(buildingObj:bpy.types.Object,
     # 月台数据更新
     terraceObj = utils.getComboChild(
         buildingObj,con.COMBO_TERRACE)
+    # 跟随重檐变化
+    if bData.combo_type in doubleEaveType:
+        initTerrace = True
+    else:
+        initTerrace = False
     if terraceObj is not None:
         __setTerraceData(terraceObj,
-                         isInit=isUpdateAll # 全局更新时重新初始化
+                         isInit=initTerrace
                          )            
         
     # 循环生成各个单体
-    for childBuilding in comboObj.children:
-        # 局部更新
-        if not isUpdateAll:
-            if childBuilding != buildingObj:
-                continue
-        
+    for childBuilding in updateBuildingList:
         # 区分是否重做地盘
         if reset:
             buildFloor.resetFloor(childBuilding,
@@ -139,9 +156,9 @@ def updateCombo(buildingObj:bpy.types.Object,
                     comboObj=comboObj)
 
 # 组合建筑降级为单一建筑
-def delCombo(buildingObj:bpy.types.Object):
-    comboObj = utils.getComboRoot(buildingObj)
-    
+def delCombo(comboObj:bpy.types.Object):
+    # 输入验证
+    comboObj = utils.getComboRoot(comboObj)
     if comboObj is None:
         utils.outputMsg("删除组合建筑失败，不是组合建筑。")
         return
@@ -152,7 +169,8 @@ def delCombo(buildingObj:bpy.types.Object):
         return
     
     # 更改目录级别
-    buildingColl = buildingObj.users_collection[0]
+    mainBuilding = utils.getMainBuilding(comboObj)
+    buildingColl = mainBuilding.users_collection[0]
     # 关联到根目录
     rootColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
     rootColl.children.link(buildingColl)
@@ -162,79 +180,78 @@ def delCombo(buildingObj:bpy.types.Object):
     bpy.data.collections.remove(comboColl)    
 
     # 删除父节点
-    buildingObj.parent = None
+    mainBuilding.parent = None
     # 更改映射
-    buildingObj.matrix_world = comboObj.matrix_world.copy()
+    mainBuilding.matrix_world = comboObj.matrix_world.copy()
     utils.delObject(comboObj)
 
     return
 
-# 同步combo组合建筑中的各个子建筑数据
-# 调用方：addTerrace,doubleEaveadd,updateCombo
-# syncKeys限制同步的键值范围，None即全部拷贝
-def __syncChildData(buildingObj:bpy.types.Object,
-                  isInit = False, # 是否初始同步，区分新建和更新建筑的调用
-                  isAll = False, # 是否同步combo下的所有子建筑
-                  ):
-    # 同步combo子建筑数据
-    # 仅限于以下的共性化属性
-    # 保留各个子建筑的个性化设置
-    keys = [
-        'DK',
-        'x_1',
-        'x_2',
-        'x_3',
-        'x_4',
-        'y_1',
-        'y_2',
-        'y_3',
-        'paint_style',
-        'dg_scale',
-        'dg_gap',
-        'tile_scale',
-        'tile_color',
-        'tile_alt_color',
-        'tile_width',
-        'tile_length',
-        'x_rooms',
-        'y_rooms',
-    ]
-
-    # 不做同步的字段
-    skip = ['combo_type',]
-
-    # combo的数据集
-    comboObj = utils.getComboRoot(buildingObj)
-    mainBuildingObj = utils.getMainBuilding(comboObj)
-    if mainBuildingObj is None:
-        utils.outputMsg("combo数据同步失败，未找到主建筑")
-        return
-
-    # 主建筑数据同步
-    for childBuilding in comboObj.children:
-        # 主建筑无需同步
-        if childBuilding == mainBuildingObj:
-            continue
-        
-        # 默认只同步buildingObj
-        if not isAll:
-            if childBuilding != buildingObj:
-                continue
-
-        if isInit:
-            # 新建时，全量同步
-            keys = None
+# 建筑间的数据同步
+def __syncData(fromBuilding:bpy.types.Object,
+               toBuilding:bpy.types.Object,
+               syncAll = True,  # 默认同步所有，使用defaultSkipKeys
+               syncKeys = None, # 同步的字段
+               skipKeys = None, # 跳过的字段
+               ):
+    defaultSkipKeys = [
+                'aca_type',
+                'combo_type',
+                'is_showPlatform',
+                'is_showPillers',
+                'is_showWalls',
+                'is_showDougong',
+                'is_showBeam',
+                'is_showRafter',
+                'is_showTiles',
+                'step_net',
+                'piller_net',
+                'wall_net',
+                'fang_net',
+            ]
+    defaultSyncKeys = [
+                'DK',
+                'x_1',
+                'x_2',
+                'x_3',
+                'x_4',
+                'y_1',
+                'y_2',
+                'y_3',
+                'paint_style',
+                'dg_scale',
+                'dg_gap',
+                'tile_scale',
+                'tile_color',
+                'tile_alt_color',
+                'tile_width',
+                'tile_length',
+                'x_rooms',
+                'y_rooms',
+            ]
+    
+    # 除了skipKeys同步其他所有字段
+    if syncAll:
+        if skipKeys is not None:
+            # 跳过以下字段，同步其他所有字段
+            skipKeys += defaultSkipKeys
         else:
-            # 更新时，小范围同步
-            skip = None
+            skipKeys = defaultSkipKeys
+    # 只同步syncKeys
+    else:
+        if syncKeys is not None:
+            syncKeys += defaultSyncKeys
+        else:
+            syncKeys = defaultSyncKeys
+    
+    # 拷贝字段
+    utils.copyAcaData(
+        fromObj = fromBuilding,
+        toObj = toBuilding,
+        keys = syncKeys,
+        skip = skipKeys,
+    )
 
-        # 其他子建筑都要从主建筑同步
-        utils.copyAcaData(
-            fromObj = mainBuildingObj,
-            toObj = childBuilding,
-            keys = keys,
-            skip = skip,
-        )
     return
 
 # 添加月台
@@ -269,8 +286,10 @@ def addTerrace(buildingObj:bpy.types.Object):
     terraceRoot.ACA_data['combo_type'] = con.COMBO_TERRACE
     
     # 2、构造月台数据集 --------------------------
-    # 基于主建筑属性，进行初始化
-    __syncChildData(terraceRoot,isInit=True)
+    # 基于根节点数据初始化
+    __syncData(fromBuilding=comboObj,
+               toBuilding=terraceRoot,
+               syncAll=True)
     # 设置月台逻辑数据
     __setTerraceData(terraceRoot,isInit=True)
     
@@ -299,33 +318,33 @@ def addTerrace(buildingObj:bpy.types.Object):
     return
 
 # 删除月台
-def delTerrace(buildingObj:bpy.types.Object):
+def delTerrace(terraceObj:bpy.types.Object):
     # 载入数据
-    bData:acaData = buildingObj.ACA_data
-    # 获取主建筑
-    mainBuilding = utils.getMainBuilding(buildingObj)
-    mData:acaData = mainBuilding.ACA_data
+    bData:acaData = terraceObj.ACA_data
 
-    # 更新主建筑台基
     # 批量还原标识
-    comboObj = utils.getComboRoot(buildingObj)
-    for childBuilding in comboObj.children:
-        cData:acaData = childBuilding.ACA_data
-        # 重檐标识(取消)
-        cData['use_terrace'] = False
-    buildPlatform.buildPlatform(mainBuilding)
+    comboObj = utils.getComboRoot(terraceObj)
+    cData:acaData = comboObj.ACA_data
+    cData['use_terrace'] = False
+    for child in comboObj.children:
+        child.ACA_data.use_terrace = False
 
     # 删除月台
     if bData.combo_type == con.COMBO_TERRACE:
         from . import build
-        build.delBuilding(buildingObj,
+        build.delBuilding(terraceObj,
             withCombo=False,# 仅删除个体
         )
 
+    # 预先找到主建筑，否则下一步删除comboRoot以后就找不到了
+    mainBuilding = utils.getMainBuilding(comboObj)
+
     # 是否需要组合降级
     from . import build
-    delCombo(mainBuilding)
+    delCombo(comboObj)
 
+    # 更新主建筑台基
+    buildPlatform.buildPlatform(mainBuilding)
     # 聚焦主建筑的台基
     mainPlatform = utils.getAcaChild(
         mainBuilding,con.ACA_TYPE_PLATFORM
@@ -336,7 +355,6 @@ def delTerrace(buildingObj:bpy.types.Object):
     return
 
 # 设置月台数据
-# 在addTerrace和__syncChildData中复用
 def __setTerraceData(terraceObj:bpy.types.Object,
                      isInit = False, # 初始化标识，区分是新建还是更新
                      ):
@@ -346,10 +364,13 @@ def __setTerraceData(terraceObj:bpy.types.Object,
     # 主建筑数据集
     mainBuildingObj = utils.getMainBuilding(terraceObj)
     mData:acaData = mainBuildingObj.ACA_data
+    # comboRoot数据集
+    comboObj = utils.getComboRoot(terraceObj)
+    cData:acaData = comboObj.ACA_data
     
     # 0、基本属性标注 ------------------------
-    mData['use_terrace'] = True
     bData['use_terrace'] = True
+    mData['use_terrace'] = True
 
     # 1、分层显示控制 --------------------------
     # 分层显示控制
@@ -374,41 +395,56 @@ def __setTerraceData(terraceObj:bpy.types.Object,
     
         # 月台高度，比主体低1踏步
         bData['platform_height'] = (
-            mData.platform_height - con.STEP_HEIGHT)
+            cData.platform_height - con.STEP_HEIGHT)
         # 月台下出，比主体窄2踏步（未见规则）
         bData['platform_extend'] = (
-            mData.platform_extend 
+            cData.platform_extend 
             - con.STEP_HEIGHT*2
             )
     
-        # 月台进深，五间以上减2间
-        if mData.y_rooms > 2:
-            bData['y_rooms'] = mData.y_rooms - 2
-        else:
-            bData['y_rooms'] = mData.y_rooms
-        # 月台面阔，五间以上做“凸”形月台，减2间
-        if mData.x_rooms > 5:
-            bData['x_rooms'] = mData.x_rooms - 2
-        else:
-            bData['x_rooms'] = mData.x_rooms
-    
-        # 矫正梢间，不使用主建筑的廊间数据
-        if mData.use_double_eave:
-            if bData.x_rooms >= 7:
-                bData['x_4'] = mData.x_3
-                bData['x_3'] = mData.x_2
+    # 月台进深，五间以上减2间
+    yRooms = cData.y_rooms
+    if cData.use_double_eave:
+        # 重檐不考虑廊间
+        yRooms -= 2
+    if yRooms > 2:
+        bData['y_rooms'] = yRooms - 2
+    else:
+        bData['y_rooms'] = yRooms
+
+    # 月台面阔，五间以上做“凸”形月台，减2间
+    xRooms = cData.x_rooms
+    if cData.use_double_eave:
+        # 重檐不考虑廊间
+        xRooms -= 2
+    if xRooms > 5:
+        bData['x_rooms'] = xRooms - 2
+    else:
+        bData['x_rooms'] = xRooms
+
+    # 矫正梢间，不使用主建筑的廊间数据
+    if cData.use_double_eave:
+        if bData.x_rooms >= 7:
+            bData['x_4'] = cData.x_3
+            bData['x_3'] = cData.x_2
     
     # 3、月台定位 ------------------------
     # 更新地盘数据，计算当前的y_total
     buildFloor.getFloorDate(mainBuildingObj)
     buildFloor.getFloorDate(terraceObj)
-    offsetY = (mData.y_total/2 
-               + mData.platform_extend
+    offsetY = (cData.y_total/2 
+               + cData.platform_extend
                + bData.y_total/2 
                + bData.platform_extend
                )
     terraceLoc = Vector((0,-offsetY,0))
     bData['root_location'] = terraceLoc
+
+    # 4、数据汇总到combo ------------------------
+    # 绝大部分数据从主建筑采集
+    __syncData(fromBuilding=mainBuildingObj,
+               toBuilding=comboObj,
+               syncAll=True)
 
     return terraceObj
 
@@ -446,8 +482,9 @@ def addDoubleEave(buildingObj:bpy.types.Object):
 
     # 2、构造重檐数据集 ----------------------
     # 初始化上檐数据，继承了主建筑的原始地盘/装修/屋顶等设定
-    __syncChildData(doubleEaveRoot,isInit=True)
-
+    __syncData(fromBuilding=comboObj,
+               toBuilding=doubleEaveRoot,
+               syncAll=True)
     # 设置重檐逻辑数据
     # 包括下檐的廊间扩展、盝顶
     # 包括上檐的柱高抬升
@@ -466,7 +503,10 @@ def addDoubleEave(buildingObj:bpy.types.Object):
     terraceObj = utils.getComboChild(
         buildingObj,con.COMBO_TERRACE)
     if terraceObj is not None:
-        __syncChildData(terraceObj)
+        __syncData(fromBuilding=comboObj,
+                    toBuilding=terraceObj,
+                    syncAll=False)
+        
         __setTerraceData(terraceObj)
         buildFloor.buildFloor(
             terraceObj,
@@ -548,37 +588,27 @@ def delDoubleEave(buildingObj:bpy.types.Object):
     return
 
 # 设置重檐数据
+# 先分别设置上下檐数据，然后汇总到comboRoot中
 def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
                     isInit = False, # 初始化标识，区分是新建还是更新
                     ):
     # 初始化数据集
     # 重檐数据（上檐）
     bData:acaData = doubleEaveObj.ACA_data
-    # 主建筑数据（下檐）
+    # 主建筑数据集
     mainBuildingObj = utils.getMainBuilding(doubleEaveObj)
     mData:acaData = mainBuildingObj.ACA_data
+    # comboRoot根节点
+    comboObj = utils.getComboRoot(doubleEaveObj)
+    cData:acaData = comboObj.ACA_data
 
     # 0、基本属性标注 ------------------------
-    mData['use_double_eave'] = True
     bData['use_double_eave'] = True
+    mData['use_double_eave'] = True
        
     # 1、分层显示控制 -------------------------
-    # 下檐分层显示
-    # mData['is_showPlatform'] = True
-    # mData['is_showPillers'] = True
-    # mData['is_showWalls'] = True
-    # mData['is_showDougong'] = True
-    # mData['is_showBeam'] = True
-    # mData['is_showRafter'] = True
-    # mData['is_showTiles'] = True    
-    # 上檐分层显示
-    bData['is_showPlatform'] = False    # 上檐不做台基，复用下檐台基
-    # bData['is_showPillers'] = True
-    # bData['is_showWalls'] = True
-    # bData['is_showDougong'] = True
-    # bData['is_showBeam'] = True
-    # bData['is_showRafter'] = True
-    # bData['is_showTiles'] = True
+    # 上檐不做台基，复用下檐台基
+    bData['is_showPlatform'] = False    
 
     # 2、重檐做法 ------------------------------
     # 2.1、地盘控制
@@ -595,8 +625,12 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     # 建筑更新，采用上檐被动的缩减1廊间
     else:
         # 将用户通过UI修改的主建筑地盘，同步到combo下所有对象
-        # 包括上檐、月台等
-        __syncChildData(doubleEaveObj,isAll=True)
+        # 主建筑数据下发到各个子建筑
+        for child in comboObj.children:
+            __syncData(fromBuilding=comboObj,
+                    toBuilding=child,
+                    syncAll=True
+                    )
 
         # 主建筑在面阔、进深缩减一廊间
         bData['x_rooms'] = mData['x_rooms'] - 2
@@ -652,16 +686,19 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     # 2.5、主建筑改用盝顶
     mData['roof_style'] = int(con.ROOF_LUDING)
     
+    # 3、数据汇总到combo ------------------------
+    # 绝大部分数据从下檐采集
+    __syncData(fromBuilding=mainBuildingObj,
+               toBuilding=comboObj,
+               syncAll=True)
+    # 例外，屋顶类型采用上檐类型
+    cData['roof_style'] = bData['roof_style']
+    
     return
 
 # 移除重檐数据
 def __undoDoubleEaveData(buildingObj:bpy.types.Object):
     # 1、数据回传 -----------------------
-    # 传递数据回主建筑
-    # 属性跳过，保持柱高，保持跑马板高度
-    skip = ['piller_height',
-            'wall_span',]
-    
     # 重檐数据（上檐）
     doubleEaveObj = utils.getComboChild(
         buildingObj,con.COMBO_DOUBLE_EAVE
@@ -670,11 +707,11 @@ def __undoDoubleEaveData(buildingObj:bpy.types.Object):
     mainBuildingObj = utils.getComboChild(
         buildingObj,con.COMBO_MAIN
     )
-    # 数据传递
-    utils.copyAcaData(
-            fromObj = doubleEaveObj,
-            toObj = mainBuildingObj,
-            skip=skip)
+    # 数据传递，保持柱高，保持跑马板高度
+    skipKeys = ['piller_height','wall_span',]
+    __syncData(fromBuilding=doubleEaveObj,
+               toBuilding=mainBuildingObj,
+               skipKeys=skipKeys)
     
     # 2、标识位更新 ----------------------------
     mData:acaData = mainBuildingObj.ACA_data
@@ -682,13 +719,15 @@ def __undoDoubleEaveData(buildingObj:bpy.types.Object):
     mData['combo_type'] = con.COMBO_MAIN
     # 显示台基
     mData['is_showPlatform'] = True
+    mData['use_double_eave'] = False
 
-    # 批量还原标识
+    # 3、数据汇总到combo ------------------------
     comboObj = utils.getComboRoot(buildingObj)
-    for childBuilding in comboObj.children:
-        cData:acaData = childBuilding.ACA_data
-        # 重檐标识(取消)
-        cData['use_double_eave'] = False
+    cData:acaData = comboObj.ACA_data
+    # 绝大部分数据从下檐采集
+    __syncData(fromBuilding=mainBuildingObj,
+               toBuilding=comboObj,
+               syncAll=True)
     
     return
 

@@ -303,6 +303,7 @@ class ACA_Consts(object):
     M_LINXIN_WAN = '万字锦'
 
     # 组合类型
+    COMBO_ROOT = 'combo_root'
     COMBO_MAIN = 'combo_main'
     COMBO_TERRACE = 'combo_terrace'
     COMBO_DOUBLE_EAVE = 'combo_double_eave'

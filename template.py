@@ -395,6 +395,10 @@ def __loadTemplateSingle(
 
     # 遍历所有子节点，并绑定到对应属性
     for node in template:
+        # 针对combo模板，跳过子模板解析
+        if node.tag == 'template':
+            continue
+
         tag = node.tag
         type = node.attrib['type']
         value = node.text
@@ -461,7 +465,7 @@ def loadTemplate(buildingObj:bpy.types.Object):
     # 读取所有根节点模板
     templateNodeList = root.findall('template')
     if templateNodeList == None:
-        utils.outputMsg("模板解析失败")
+        raise Exception("模板解析失败")
         return
     
     # 查找是否有子模版
@@ -538,23 +542,8 @@ def saveTemplateWithCombo(buildingObj:bpy.types.Object):
                 break
     # 如果没有找到，则新建combo节点
     if isNewTemplate:
-        templateNode = ET.SubElement(root,'template')
-
-        # <template_name type="StringProperty">name</template_name>
-        node = ET.SubElement(templateNode,'template_name')
-        node.attrib['type'] = 'StringProperty'
-        node.text = comboObj.name
-
-        # <aca_type type="StringProperty">combo</aca_type>
-        node = ET.SubElement(templateNode,'aca_type')
-        node.attrib['type'] = 'StringProperty'
-        node.text = 'combo'
-
-        # 缩进美化
-        # https://stackoverflow.com/questions/28813876/how-do-i-get-pythons-elementtree-to-pretty-print-to-an-xml-file
-        ET.indent(tree, space="\t", level=0)
-        # 保存
-        tree.write(path, encoding='UTF-8',xml_declaration=True)
+        # 将根节点bData存入模板
+        __saveTemplate(comboObj)
 
     # 保存子模板
     for buildingObj in comboObj.children:

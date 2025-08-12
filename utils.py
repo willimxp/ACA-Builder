@@ -397,7 +397,7 @@ def getComboChild(obj:bpy.types.Object,
 ):
     comboObj = getComboRoot(obj)
     if comboObj is None:
-        print("组合建筑查找子建筑失败，找不到combo根节点")
+        # print("组合建筑查找子建筑失败，找不到combo根节点")
         return None
     
     for childBuilding in comboObj.children:
@@ -1826,9 +1826,7 @@ def getRoot(object:bpy.types.Object):
     return buildingObj,bData,objData
 
 # 隐藏显示目录
-def hideLayer(context,name,isShow):
-    # 查找对应的建筑根节点，以便能区分不同建筑的组件，互不干扰
-    buildingObj,bData,objData = getRoot(context.object)
+def hideLayer(buildingObj,name,isShow):
     buildingColl = buildingObj.users_collection[0]
     # 隐藏
     hideCollection(name,

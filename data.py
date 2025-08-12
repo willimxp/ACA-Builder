@@ -111,18 +111,18 @@ def update_platform(self, context:bpy.types.Context):
     if not isRebuild:
         return
     
-    # 确认选中为building节点
-    buildingObj,bdata,odata = utils.getRoot(context.object)
-    if buildingObj != None:
-        # 调用台基缩放
-        from . import buildPlatform
-        # buildPlatform.resizePlatform(buildingObj)
-        funproxy = partial(
-                buildPlatform.resizePlatform,
-                buildingObj=buildingObj)
-        utils.fastRun(funproxy)
-    else:
-        utils.outputMsg("updated platform failed, context should be buildingObj")
+    # 从self属性找到对应的Object，用self.id_data
+    # https://blender.stackexchange.com/questions/145245/how-to-access-object-instance-from-property-instance-in-update-callback
+    refObj = self.id_data
+    
+    # 调用台基缩放
+    from . import buildPlatform
+    # buildPlatform.resizePlatform(buildingObj)
+    funproxy = partial(
+            buildPlatform.resizePlatform,
+            buildingObj=refObj)
+    utils.fastRun(funproxy)
+
     return
 
 # 仅更新柱体样式，不触发其他重建

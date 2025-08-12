@@ -892,46 +892,75 @@ def resizePlatform(buildingObj:bpy.types.Object):
     # 刷新台基
     pfObj = buildPlatform(buildingObj)
 
-    # 对齐其他各个层
-    # 柱网层
-    floorRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_FLOOR_ROOT)
-    if floorRootObj != None:
-        floorRootObj.location.z =  bData.platform_height
-    # 墙体层
-    wallRoot = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_WALL_ROOT)
-    if wallRoot != None:
-        wallRoot.location.z = bData.platform_height    
-    # 柱头高度
-    roofBaseZ = (bData.platform_height
-                    + bData.piller_height)
-    # 斗栱层
-    dgrootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_DG_ROOT)
-    if dgrootObj != None: 
-        dgrootObj.location.z = roofBaseZ
-    # 如果有斗栱，抬高斗栱高度
-    if bData.use_dg:
-        roofBaseZ += bData.dg_height
-        # 是否使用平板枋
-        if bData.use_pingbanfang:
-            roofBaseZ += con.PINGBANFANG_H*dk
-    # 梁架层
-    beamRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_BEAM_ROOT)
-    if beamRootObj != None: 
-        beamRootObj.location.z = roofBaseZ
-    # 椽望层
-    rafterRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
-    if rafterRootObj != None: 
-        rafterRootObj.location.z = roofBaseZ
-    # 瓦作层
-    tileRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_TILE_ROOT)
-    if tileRootObj != None: 
-        tileRootObj.location.z = roofBaseZ
+    updateBuilding = []
+    comboObj = utils.getComboRoot(buildingObj)
+    # 组合建筑处理
+    if comboObj is not None:
+        # 重檐建筑
+        if (bData.use_double_eave 
+            and bData.combo_type in (
+                con.COMBO_MAIN,con.COMBO_DOUBLE_EAVE)
+            ):
+            mainBuilding = utils.getComboChild(buildingObj,con.COMBO_MAIN)
+            doubleEave = utils.getComboChild(buildingObj,con.COMBO_DOUBLE_EAVE)
+            updateBuilding.append(mainBuilding)
+            updateBuilding.append(doubleEave)
+        # 月台
+        elif (bData.use_terrace and
+            bData.combo_type == con.COMBO_TERRACE):
+            updateBuilding.append(buildingObj)
+    # 单体建筑处理
+    else:
+        updateBuilding.append(buildingObj)
+
+    platformHeight = bData.platform_height
+    for childBuilding in updateBuilding:
+        cData:acaData = childBuilding.ACA_data
+        # 对齐其他各个层
+        # 柱网层
+        floorRootObj = utils.getAcaChild(
+            childBuilding,con.ACA_TYPE_FLOOR_ROOT)
+        if floorRootObj != None:
+            floorRootObj.location.z =  bData.platform_height
+        # 墙体层
+        wallRoot = utils.getAcaChild(
+            childBuilding,con.ACA_TYPE_WALL_ROOT)
+        if wallRoot != None:
+            wallRoot.location.z = bData.platform_height    
+        # 柱头高度
+        roofBaseZ = (bData.platform_height
+                        + cData.piller_height)
+        # 斗栱层
+        dgrootObj = utils.getAcaChild(
+            childBuilding,con.ACA_TYPE_DG_ROOT)
+        if dgrootObj != None: 
+            dgrootObj.location.z = roofBaseZ
+        # 如果有斗栱，抬高斗栱高度
+        if cData.use_dg:
+            roofBaseZ += cData.dg_height
+            # 是否使用平板枋
+            if cData.use_pingbanfang:
+                roofBaseZ += con.PINGBANFANG_H*dk
+        # 梁架层
+        beamRootObj = utils.getAcaChild(
+            childBuilding,con.ACA_TYPE_BEAM_ROOT)
+        if beamRootObj != None: 
+            beamRootObj.location.z = roofBaseZ
+        # 椽架层
+        rafterRootObj = utils.getAcaChild(
+            childBuilding,con.ACA_TYPE_RAFTER_ROOT)
+        if rafterRootObj != None: 
+            rafterRootObj.location.z = roofBaseZ
+        # 望板层
+        boardRootObj = utils.getAcaChild(
+            childBuilding,con.ACA_TYPE_BOARD_ROOT)
+        if boardRootObj != None: 
+            boardRootObj.location.z = roofBaseZ
+        # 瓦作层
+        tileRootObj = utils.getAcaChild(
+            childBuilding,con.ACA_TYPE_TILE_ROOT)
+        if tileRootObj != None: 
+            tileRootObj.location.z = roofBaseZ
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

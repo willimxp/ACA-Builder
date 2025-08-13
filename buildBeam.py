@@ -444,17 +444,21 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             # 倒角
             utils.addModifierBevel(hengFB,con.BEVEL_LOW)
         
-        # 桁垫板 =======================================================
+        # 4、桁垫板 =======================================================
         # 250225 区分檐桁、金桁的不同垫板高度
         if n == 0 :
             board_h = con.BOARD_YANHENG_H
         else:
             board_h = con.BOARD_JINHENG_H
-        # 有斗拱时，正心桁下不做垫板
-        if (not (bData.use_dg and n == 0)
-            # 盝顶下不做垫板
-            and bData.roof_style != con.ROOF_LUDING):
-            # 4、桁垫板
+        # 250813 判断是否做垫板
+        use_dianban = True
+        if bData.use_dg and n == 0:
+            # 有斗拱时，正心桁下不做垫板
+            use_dianban = False
+        if bData.roof_style == con.ROOF_LUDING and n>0:
+            # 盝顶的金桁下不做垫板
+            use_dianban = False
+        if use_dianban:
             # 定位
             loc = (0,pCross.y,
                 (pCross.z - con.HENG_COMMON_D*dk/2
@@ -483,8 +487,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                             con.ROOF_XUANSHAN_JUANPENG,
                             con.ROOF_YINGSHAN_JUANPENG,
                             con.ROOF_XIESHAN_JUANPENG,
-                         )
-                     )
+                            )
+                        )
                     # 或者盝顶的下金桁
                     or (n==len(purlin_pos)-1 and    
                         bData.roof_style==con.ROOF_LUDING)
@@ -647,7 +651,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 if bData.use_dg:
                     use_dianban = False
             # 盝顶不做垫板和枋
-            if roofStyle == con.ROOF_LUDING:
+            if roofStyle == con.ROOF_LUDING and n>0:
                 use_fang = False
                 use_dianban = False
             # 4坡顶，金桁下不做枋（排除盝顶）

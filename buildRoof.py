@@ -3551,10 +3551,6 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         clamp=True,
     )
 
-    # 根据槫子位置，摆放雪花钉
-    nailsSet = __buildBofengNails(buildingObj,
-                bofengObj,
-                rafter_pos)
     # 博缝板硬山做石材色，其他做漆色
     if bData.roof_style in (
         con.ROOF_YINGSHAN,
@@ -3564,10 +3560,19 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         bofengMat = con.M_PAINT
     mat.paint(bofengObj,
         bofengMat,override=True)
-    # 雪花钉刷成金色
-    mat.paint(nailsSet,con.M_GOLD)
-    # 合并博缝板和雪花钉
-    bofengObj = utils.joinObjects([bofengObj,nailsSet])
+    
+    # 250813 硬山顶不做雪花钉
+    if bData.roof_style not in (
+        con.ROOF_YINGSHAN,
+        con.ROOF_YINGSHAN_JUANPENG,):
+        # 根据槫子位置，摆放雪花钉
+        nailsSet = __buildBofengNails(buildingObj,
+                    bofengObj,
+                    rafter_pos)
+        # 雪花钉刷成金色
+        mat.paint(nailsSet,con.M_GOLD)
+        # 合并博缝板和雪花钉
+        bofengObj = utils.joinObjects([bofengObj,nailsSet])
 
     # 应用镜像
     utils.addModifierMirror(

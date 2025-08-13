@@ -264,9 +264,17 @@ def update_dougong(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bData,odata = utils.getRoot(context.object)
     if buildingObj != None:
-        # 初始化斗栱数据，避免跨建筑时公用的aData干扰
-        from . import template
-        template.updateDougongData(buildingObj)
+        # 250813 禁用以下处理
+        # 1、在重檐建筑中，如果修改上檐斗栱，导致重檐抬升计算错误
+        # 2、因为这里抢先用上檐柱头科替换掉了aData.dg_piller_source
+        # 从而导致buildCombo.__getDoubleEaveLift时获取了错误的dg_extend
+        # 3、同时，在buildDougong.__buildDougong中已经调用了updateDougongData，
+        # 所以，这里直接禁用掉，目前看起来没有问题
+        # 以观后效
+        # -------------
+        # # 初始化斗栱数据，避免跨建筑时公用的aData干扰
+        # from . import template
+        # template.updateDougongData(buildingObj)
         
         # 241125 修改斗栱时，涉及到柱高的变化，最好是全屋更新
         from . import build

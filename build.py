@@ -266,33 +266,16 @@ def resetRoof(buildingObj:bpy.types.Object):
     # 暂时排除目录下的其他建筑，以加快执行速度
     __excludeOther(keepObj=buildingObj)
 
-    # 获取有屋顶的所有子建筑
-    roofBuildingList = []
+    # 区分是否是Combo组合建筑
     comboObj = utils.getComboRoot(buildingObj)
-    doubleEaveType = (con.COMBO_MAIN,
-                      con.COMBO_DOUBLE_EAVE,)
+    # 组合建筑
     if comboObj is not None:
-        for child in comboObj.children:
-            cData:acaData = child.ACA_data
-            if cData.combo_type in doubleEaveType:
-                roofBuildingList.append(child)
+        buildCombo.updateCombo(buildingObj,
+                               resetRoof=True)
+    # 单体建筑
     else:
-        roofBuildingList.append(buildingObj)
-
-    # 主建筑数据下发到各个子建筑
-    for child in comboObj.children:
-        buildCombo.__syncData(fromBuilding=comboObj,
-                toBuilding=child,
-                syncAll=False    # 小范围同步
-                )
-
-    # 立即界面刷新，全部删除重做
-    for roof in roofBuildingList:
-        buildRoof.__clearRoof(roof)
-
-    # 调用屋顶生成
-    for roof in roofBuildingList:
-        buildRoof.buildRoof(roof)
+        buildRoof.__clearRoof(buildingObj)
+        buildRoof.buildRoof(buildingObj)
 
     # 关闭进度条
     isFinished = True

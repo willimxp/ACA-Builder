@@ -11,6 +11,7 @@ from .data import ACA_data_obj as acaData
 from . import template
 from . import buildFloor
 from . import buildPlatform
+from . import buildRoof
 
 # 添加combo根节点
 def __addComboRoot(templateName):
@@ -90,7 +91,8 @@ def buildCombo(
 # 刷新组合建筑
 def updateCombo(buildingObj:bpy.types.Object,
                 reloadAssets=False,
-                reset=False):
+                resetFloor=False,
+                resetRoof=False,):
     comboObj = utils.getComboRoot(buildingObj)
     bData:acaData = buildingObj.ACA_data
     doubleEaveType = (con.COMBO_MAIN,
@@ -146,16 +148,25 @@ def updateCombo(buildingObj:bpy.types.Object,
                          isInit=initTerrace
                          )         
 
-    # 立即刷新界面，全部删除重做
+    # 立即刷新界面
     for childBuilding in updateBuildingList:
-        utils.deleteHierarchy(childBuilding)   
+        # 重建屋顶时，仅清除屋顶
+        if resetRoof:
+            buildRoof.__clearRoof(childBuilding)
+        # 否则全部清除
+        else:
+            utils.deleteHierarchy(childBuilding)   
         
     # 循环生成各个单体
     for childBuilding in updateBuildingList:
-        # 区分是否重做地盘
-        if reset:
+        # 重做地盘
+        if resetFloor:
             buildFloor.resetFloor(childBuilding,
                 comboObj=comboObj)
+        # 重做屋顶
+        if resetRoof:
+            buildRoof.buildRoof(childBuilding)
+        # 全部重做
         else:
             buildFloor.buildFloor(childBuilding,
                     reloadAssets=reloadAssets,

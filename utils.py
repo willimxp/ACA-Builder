@@ -1074,6 +1074,8 @@ def addModifierMirror(object:bpy.types.Object,
     mod.use_bisect_axis = use_bisect
     mod.use_bisect_flip_axis = use_flip
     mod.use_mirror_merge = use_merge
+    # 250813 用一个极小的合并阈值，尽可能避免导致的不水密问题
+    mod.merge_threshold = 0.000001
 
 # 添加倒角修改器
 def addModifierBevel(object:bpy.types.Object,

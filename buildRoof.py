@@ -4021,6 +4021,11 @@ def buildRoof(buildingObj:bpy.types.Object):
     if bData.is_showTiles:
         utils.outputMsg("Building Tiles...")
         buildRooftile.buildTile(buildingObj)
+
+    # 望板层联动瓦作层
+    utils.hideLayer(
+        buildingObj,con.COLL_NAME_BOARD,
+        bData.is_showTiles)
     
     utils.focusObj(buildingObj)
     return {'FINISHED'}

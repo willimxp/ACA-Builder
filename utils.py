@@ -2581,7 +2581,11 @@ def applyCollModifier(buildingObj):
 
     bpy.ops.object.select_all(action='DESELECT')
     for obj in ObjList:
-        obj.select_set(True)
+        # 检查对象是否在当前视图层，否则会报错
+        if obj.visible_get():
+            obj.select_set(True)
+        else:
+            print(f"applyCollModifier：对象 {obj.name} 不在当前视图，无法执行操作")
     bpy.ops.object.convert(target='MESH')
     return
 

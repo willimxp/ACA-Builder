@@ -648,14 +648,6 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
         mData['fang_net'] = ''
     # 建筑更新，采用上檐被动的缩减1廊间
     else:
-        # # 将用户通过UI修改的主建筑地盘，同步到combo下所有对象
-        # # 主建筑数据下发到各个子建筑
-        # utils.outputMsg("更新重檐，主建筑数据下发到各个子建筑...")
-        # for child in comboObj.children:
-        #     __downloadData(toBuilding=child,
-        #                    skipKeys=['piller_net',])
-        #     # 为了避免上檐柱网丢失，导致穿插枋计算失败，跳过柱网同步
-
         # 主建筑在面阔、进深缩减一廊间
         bData['x_rooms'] = mData['x_rooms'] - 2
         bData['y_rooms'] = mData['y_rooms'] - 2
@@ -788,8 +780,11 @@ def __getDoubleEaveLift(buildingObj:bpy.types.Object):
     hallway = netY[1] - netY[0]
     from . import buildBeam
     lift_radio = buildBeam.getLiftRatio(mainBuildingObj)
-    # （廊间+出跳）加斜
-    pillerLift += (hallway + mData.dg_extend) * lift_radio[0]
+    # 廊间宽度加斜
+    pillerLift += hallway * lift_radio[0]
+    if mData.use_dg:
+        # 斗栱出跳加斜
+        pillerLift += mData.dg_extend * lift_radio[0]
 
     # 屋瓦层抬升
     pillerLift += (con.YUANCHUAN_D*dk   # 椽架

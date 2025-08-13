@@ -86,7 +86,7 @@ def buildCombo(
             templateName = child['templateName'],
             comboObj = comboObj
         )
-    return
+    return {'FINISHED'}
 
 # 刷新组合建筑
 def updateCombo(buildingObj:bpy.types.Object,
@@ -173,7 +173,7 @@ def updateCombo(buildingObj:bpy.types.Object,
                     comboObj=comboObj)
 
 # 组合建筑降级为单一建筑
-def delCombo(comboObj:bpy.types.Object):
+def __delComboLevel(comboObj:bpy.types.Object):
     # 输入验证
     comboObj = utils.getComboRoot(comboObj)
     if comboObj is None:
@@ -282,7 +282,7 @@ def addTerrace(buildingObj:bpy.types.Object):
     # 验证是否为主体建筑
     if buildingObj.ACA_data.combo_type != con.COMBO_MAIN:
         utils.popMessageBox("不能添加月台，只有主体建筑可以添加月台")
-        return
+        return {'CANCELLED'}
     
     # 1、构造组合层次结构 ------------------------
     # 添加combo根节点
@@ -296,7 +296,7 @@ def addTerrace(buildingObj:bpy.types.Object):
         buildingObj,con.COMBO_TERRACE)
     if terraceRoot is not None:
         utils.popMessageBox("已经有一个月台，不能再生成新的月台")
-        return
+        return {'CANCELLED'}
 
     # 构建月台子节点
     terraceRoot = buildFloor.__addBuildingRoot(
@@ -335,7 +335,7 @@ def addTerrace(buildingObj:bpy.types.Object):
     if terraceObj is not None:
         utils.focusObj(terraceObj)
 
-    return
+    return {'FINISHED'}
 
 # 删除月台
 def delTerrace(terraceObj:bpy.types.Object):
@@ -361,7 +361,7 @@ def delTerrace(terraceObj:bpy.types.Object):
 
     # 是否需要组合降级
     from . import build
-    delCombo(comboObj)
+    __delComboLevel(comboObj)
 
     # 更新主建筑台基
     buildPlatform.buildPlatform(mainBuilding)
@@ -372,7 +372,7 @@ def delTerrace(terraceObj:bpy.types.Object):
     if mainPlatform is not None:
         utils.focusObj(mainPlatform)
 
-    return
+    return {'FINISHED'}
 
 # 设置月台数据
 def __setTerraceData(terraceObj:bpy.types.Object,
@@ -473,9 +473,16 @@ def __setTerraceData(terraceObj:bpy.types.Object,
 def addDoubleEave(buildingObj:bpy.types.Object):
     # 0、合法性验证 -----------------------
     # 验证是否为主体建筑
+    if buildingObj.ACA_data.roof_style in (
+                                con.ROOF_YINGSHAN,
+                                con.ROOF_YINGSHAN_JUANPENG,):
+        utils.popMessageBox("硬山屋顶不能添加重檐，请使用庑殿、歇山、悬山等屋顶样式")
+        return {'CANCELLED'}
+    
+    # 验证是否为主体建筑
     if buildingObj.ACA_data.combo_type != con.COMBO_MAIN:
         utils.popMessageBox("请先选择主体建筑，只有主体建筑可以添加重檐")
-        return
+        return {'CANCELLED'}
     
     # 1、构造组合层次结构 ------------------------
     # 添加combo根节点
@@ -489,7 +496,7 @@ def addDoubleEave(buildingObj:bpy.types.Object):
         buildingObj,con.COMBO_DOUBLE_EAVE)
     if doubleEaveRoot is not None:
         utils.popMessageBox("已经有一个重檐，不能再生成新的重檐")
-        return
+        return {'CANCELLED'}
 
     # 构建重檐子节点
     doubleEaveName = buildingObj.ACA_data.template_name + '.重檐'
@@ -546,7 +553,7 @@ def addDoubleEave(buildingObj:bpy.types.Object):
     build.__excludeOther(isExclude=False,
                          keepObj=buildingObj)
 
-    return
+    return {'FINISHED'}
 
 # 取消重檐
 def delDoubleEave(buildingObj:bpy.types.Object):
@@ -604,12 +611,12 @@ def delDoubleEave(buildingObj:bpy.types.Object):
     
     # 是否需要组合降级
     from . import build
-    delCombo(mainBuilding)
+    __delComboLevel(mainBuilding)
 
     # 聚焦主建筑
     utils.focusObj(mainBuilding)
 
-    return
+    return {'FINISHED'}
 
 # 设置重檐数据
 # 先分别设置上下檐数据，然后汇总到comboRoot中

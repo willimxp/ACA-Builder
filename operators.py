@@ -1327,10 +1327,11 @@ class ACA_OT_TERRACE_DEL(bpy.types.Operator):
         )
         result = utils.fastRun(funproxy)
 
-        timeEnd = time.time()
-        self.report(
-            {'INFO'},"月台删除(%.1f秒)" 
-            % (timeEnd-timeStart))
+        if 'FINISHED' in result:
+            timeEnd = time.time()
+            self.report(
+                {'INFO'},"月台删除(%.1f秒)" 
+                % (timeEnd-timeStart))
         
         return {'FINISHED'}
     
@@ -1353,10 +1354,11 @@ class ACA_OT_TERRACE_ADD(bpy.types.Operator):
         )
         result = utils.fastRun(funproxy)
 
-        timeEnd = time.time()
-        self.report(
-            {'INFO'},"月台添加(%.1f秒)" 
-            % (timeEnd-timeStart))
+        if 'FINISHED' in result:
+            timeEnd = time.time()
+            self.report(
+                {'INFO'},"月台添加(%.1f秒)" 
+                % (timeEnd-timeStart))
         
         return {'FINISHED'}
     
@@ -1379,10 +1381,11 @@ class ACA_OT_DOUBLE_EAVE_ADD(bpy.types.Operator):
         )
         result = utils.fastRun(funproxy)
 
-        runTime = time.time() - timeStart
-        msg = '添加重檐完成 | 运行时间【%.1f秒】' % runTime
-        self.report({'INFO'},msg)
-        utils.popMessageBox(msg)
+        if 'FINISHED' in result:
+            runTime = time.time() - timeStart
+            msg = '添加重檐完成 | 运行时间【%.1f秒】' % runTime
+            self.report({'INFO'},msg)
+            utils.popMessageBox(msg)
         
         return {'FINISHED'}
     
@@ -1405,9 +1408,10 @@ class ACA_OT_DOUBLE_EAVE_DEL(bpy.types.Operator):
         )
         result = utils.fastRun(funproxy)
 
-        runTime = time.time() - timeStart
-        msg = '取消重檐完成 | 运行时间【%.1f秒】' % runTime
-        self.report({'INFO'},msg)
-        utils.popMessageBox(msg)
+        if 'FINISHED' in result:
+            runTime = time.time() - timeStart
+            msg = '取消重檐完成 | 运行时间【%.1f秒】' % runTime
+            self.report({'INFO'},msg)
+            utils.popMessageBox(msg)
         
         return {'FINISHED'}

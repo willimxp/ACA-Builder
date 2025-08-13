@@ -558,7 +558,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 # 柱头斗栱始终为绿，补间斗拱的颜色穿插反色，如，绿|蓝|绿|蓝|绿
                 dgFillSource = None
                 if (aData.dg_fillgap_alt_source != None
-                            and m%2 == 0):
+                            and m%2 == 1):
                         dgFillSource = aData.dg_fillgap_alt_source
                 else:
                     dgFillSource = aData.dg_fillgap_source
@@ -566,7 +566,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 # 如，绿|蓝|绿|【蓝|蓝】|绿|蓝|绿
                 if dougong_count%2 !=0 and m>= dougong_count/2:
                     if (aData.dg_fillgap_alt_source != None
-                                and m%2 == 0):
+                                and m%2 == 1):
                             dgFillSource = aData.dg_fillgap_source
                     else:
                         dgFillSource = aData.dg_fillgap_alt_source
@@ -611,10 +611,18 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                     # 补间斗栱异色判断
                     dgFillSource = None
                     if (aData.dg_fillgap_alt_source != None
-                                and m%2 == 0):
+                                and m%2 == 1):
                             dgFillSource = aData.dg_fillgap_alt_source
                     else:
                         dgFillSource = aData.dg_fillgap_source
+                    # 但如果补间攒当数为奇数(补间斗栱为偶数)，则中间两攒同色
+                    # 如，绿|蓝|绿|【蓝|蓝】|绿|蓝|绿
+                    if dougong_count%2 !=0 and m>= dougong_count/2:
+                        if (aData.dg_fillgap_alt_source != None
+                                    and m%2 == 1):
+                                dgFillSource = aData.dg_fillgap_source
+                        else:
+                            dgFillSource = aData.dg_fillgap_alt_source
 
                     dgFillCopy:bpy.types.Object = utils.copySimplyObject(
                         sourceObj = dgFillSource,

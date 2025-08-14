@@ -925,7 +925,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0.5,max=2.0,
             precision=2,
             description="放大或缩小瓦作的比例，默认1.0",
-            update = update_roof,
+            update = update_building,
         )# type: ignore
     tile_color : bpy.props.EnumProperty(
             name = "瓦面颜色",

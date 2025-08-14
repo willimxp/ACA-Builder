@@ -632,6 +632,8 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     # comboRoot根节点
     comboObj = utils.getComboRoot(doubleEaveObj)
     cData:acaData = comboObj.ACA_data
+    dk = bData.DK
+    pd = con.PILLER_D_EAVE * dk
 
     # 0、基本属性标注 ------------------------
     bData['use_double_eave'] = True
@@ -701,8 +703,13 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
     bData['piller_height'] = (mData.piller_height 
                               + doubleEaveLift)
     
-    # 2.3、装修层设置跑马板
-    bData['wall_span'] = doubleEaveLift
+    # 2.3、自动设置装修层
+    # 跑马板高度
+    # 从金柱额枋下皮(下檐围脊上皮)，做到下檐承椽枋下皮
+    bData['wall_span'] = __getWallSpan(doubleEaveObj)
+    # 横披窗高度
+    # 从承椽枋下皮，做到外檐檐柱柱头高度
+    bData['topwin_height'] = __getTopwinLift(doubleEaveObj)
     
     # 2.4、主建筑改用盝顶
     mData['roof_style'] = int(con.ROOF_LUDING)
@@ -730,9 +737,9 @@ def __undoDoubleEaveData(buildingObj:bpy.types.Object):
     mainBuildingObj = utils.getComboChild(
         buildingObj,con.COMBO_MAIN
     )
-    # 数据传递，保持柱高，保持跑马板高度
+    # 数据传递，还原外檐装修，包括主建筑的柱高、横披窗、跑马板高度
     utils.outputMsg("重檐移除，上檐数据传给下檐...")
-    skipKeys = ['piller_height','wall_span',]
+    skipKeys = ['piller_height','wall_span','topwin_height']
     __syncData(fromBuilding=doubleEaveObj,
                toBuilding=mainBuildingObj,
                skipKeys=skipKeys)
@@ -819,6 +826,97 @@ def __getDoubleEaveLift(buildingObj:bpy.types.Object):
         pillerLift += con.EFANG_SMALL_H*dk
     
     return pillerLift
+
+# 计算跑马板高度
+# 从金柱额枋下皮(下檐围脊上皮)，做到下檐承椽枋下皮
+def __getWallSpan(buildingObj:bpy.types.Object):
+    # 主建筑数据（下檐）
+    mainBuildingObj = utils.getComboChild(
+        buildingObj,con.COMBO_MAIN
+    )
+    mData:acaData = mainBuildingObj.ACA_data
+    dk = mData.DK
+    wallspan = 0.0
+
+    # 屋瓦层抬升
+    wallspan += (con.YUANCHUAN_D*dk   # 椽架
+                   + con.WANGBAN_H*dk   # 望板
+                   + con.ROOFMUD_H*dk   # 灰泥
+                   )
+    
+    # 盝顶围脊高度
+    aData = bpy.context.scene.ACA_temp
+    ridgeObj:bpy.types.Object = aData.ridgeBack_source
+    ridgeH = ridgeObj.dimensions.z
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = mData.DK / con.DEFAULT_DK  * mData.tile_scale
+    ridgeH = ridgeH * tileScale
+    wallspan += ridgeH
+    wallspan -= con.RIDGE_SURR_OFFSET*dk   # 围脊调整
+
+    # 承椽枋高度
+    wallspan += con.HENG_COMMON_D*dk
+    
+    return wallspan
+
+# 计算內檐横披窗高度
+# 从承椽枋下皮，做到外檐檐柱柱头高度
+def __getTopwinLift(buildingObj:bpy.types.Object):
+    # 主建筑数据（下檐）
+    mainBuildingObj = utils.getComboChild(
+        buildingObj,con.COMBO_MAIN
+    )
+    mData:acaData = mainBuildingObj.ACA_data
+    topwinLift = 0.0
+    dk = mData.DK
+    pd = con.PILLER_D_EAVE * dk
+
+    # # 额枋高度
+    # # 大额枋
+    # topwinLift += con.EFANG_LARGE_H*dk
+    # if mData.use_smallfang:
+    #     # 由额垫板
+    #     topwinLift += con.BOARD_YOUE_H*dk
+    #     # 小额枋
+    #     topwinLift += con.EFANG_SMALL_H*dk
+
+    # 斗栱抬升
+    if mData.use_dg:
+        # 平板枋
+        if mData.use_pingbanfang:
+            topwinLift += con.PINGBANFANG_H*dk
+        # 斗栱高度(dg_height已经按dg_Scale放大了)
+        # 更新斗栱数据，以免修改DK，斗栱类型等操作时未及时更新
+        # reloadAssets=False，以免重复载入重复的斗栱资产
+        from . import template
+        template.updateDougongData(mainBuildingObj,
+                                   reloadAssets=False)
+        topwinLift += mData.dg_height
+    else:
+        # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
+        topwinLift += con.BOARD_YANHENG_H*dk
+
+    # 挑檐桁(斗栱高度到挑檐桁下皮)
+    topwinLift += con.HENG_COMMON_D*dk
+
+    # 檐椽架加斜
+    netX,netY = buildFloor.getFloorDate(mainBuildingObj)
+    hallway = netY[1] - netY[0]
+    from . import buildBeam
+    lift_radio = buildBeam.getLiftRatio(mainBuildingObj)
+    # 廊间宽度加斜
+    topwinLift += hallway * lift_radio[0]
+    if mData.use_dg:
+        # 斗栱出跳加斜
+        topwinLift += mData.dg_extend * lift_radio[0]
+
+    # 扣除承椽枋高度
+    topwinLift -= con.HENG_COMMON_D*dk
+    # 扣除上槛、中槛高度
+    topwinLift -= con.KAN_UP_HEIGHT*pd
+    topwinLift -= con.KAN_MID_HEIGHT*pd
+    
+    return topwinLift
 
 # 将建筑数据上传至comboRoot根节点
 # 调用方：

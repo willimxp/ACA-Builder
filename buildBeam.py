@@ -586,6 +586,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             # 歇山仅做正心桁、下金桁
             rafterRange = range(2)
         if roofStyle == con.ROOF_LUDING:
+            # 盝顶做所有的桁檩
             rafterRange = range(len(purlin_pos))
         for n in rafterRange :
             pCross = purlin_pos[n]
@@ -634,32 +635,26 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             # 判断垫板、枋的逻辑
             use_dianban = True
             use_fang = True
-            # 歇山的踩步金下不做
-            if roofStyle in (con.ROOF_XIESHAN,
-                             con.ROOF_XIESHAN_JUANPENG) :
-                if n==1:
-                    use_fang = False
-                    use_dianban = False
             # 正心桁下不做枋
-            # 有斗栱时，正心桁下不做垫板
-            if roofStyle in (
-                    con.ROOF_WUDIAN,
-                    con.ROOF_XIESHAN,
-                    con.ROOF_XIESHAN_JUANPENG,
-                    ) and n==0:
+            if n==0:
                 use_fang = False
+                # 有斗栱时，正心桁下不做垫板
                 if bData.use_dg:
                     use_dianban = False
-            # 盝顶不做垫板和枋
-            if roofStyle == con.ROOF_LUDING and n>0:
-                use_fang = False
-                use_dianban = False
-            # 4坡顶，金桁下不做枋（排除盝顶）
-            if roofStyle in (
-                    con.ROOF_WUDIAN,
-                    con.ROOF_XIESHAN,
-                    con.ROOF_XIESHAN_JUANPENG,) and n==1:
-                 use_fang = False
+            # 金桁下的枋与屋顶类型相关
+            if n==1: 
+                # 庑殿，只做垫板，不做枋
+                if roofStyle == con.ROOF_WUDIAN:
+                    use_fang = False
+                # 歇山：山面金桁与踩步金重叠，不做垫板和枋
+                if roofStyle in (con.ROOF_XIESHAN,
+                                con.ROOF_XIESHAN_JUANPENG) :
+                    use_fang = False
+                    use_dianban = False
+                # 盝顶承椽枋，不做垫板和枋
+                if roofStyle == con.ROOF_LUDING:
+                    use_fang = False
+                    use_dianban = False
             # 250225 区分檐桁、金桁的不同垫板高度
             if n == 0 :
                 board_h = con.BOARD_YANHENG_H

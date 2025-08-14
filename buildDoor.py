@@ -604,13 +604,23 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         # 此时不做余塞板，门板直接做到抱框
         doorWidth = doorWMax
     
+    # 250814 门口高度以外檐柱高做为限制，不再与frame_height关联
+    # 以便在“九檩歇山前后廊”这样需要在廊间做装修时，获得一致的高度
+    # 同时內檐装修也会自动按金柱的抬升用横披窗填充
+    frameMax = bData.piller_height - con.EFANG_LARGE_H*dk
+    if bData.use_smallfang:
+        frameMax -= (con.EFANG_SMALL_H*dk
+                       +con.BOARD_YOUE_H*dk)
     # 门高从额枋之下，减去上槛、下槛
-    doorHeight = (frame_height 
+    doorHeight = (frameMax 
                 - con.KAN_DOWN_HEIGHT*pd
                 - con.KAN_UP_HEIGHT*pd)
     # 是否使用横披窗
     topWinH = bData.topwin_height
     bUseTopwin = False
+    if frame_height - frameMax > 0.00001:
+        # 內檐装修，自动开启横披窗，并自动计算高度
+        bUseTopwin = True
     if topWinH > 0:
         bUseTopwin = True
         # 减去中槛和横披窗高度

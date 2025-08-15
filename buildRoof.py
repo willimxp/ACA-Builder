@@ -3863,7 +3863,7 @@ def __buildShanWall(
         wallrootObj = buildWall.__addWallrootNode(buildingObj)
     shanwallJoin.location = (
         wallrootObj.matrix_local.inverted() 
-        @ shanwallJoin.parent.matrix_world 
+        @ shanwallJoin.parent.matrix_local
         @ shanWallObj.location)
     shanwallJoin.parent = wallrootObj
     # 移动到望板collection

@@ -341,6 +341,13 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     # 桁直径（正心桁、金桁、脊桁）
     purlin_r = con.HENG_COMMON_D / 2 * dk
 
+    if bData.roof_style == con.ROOF_LUDING:
+        # 盝顶承椽枋尺寸同额枋
+        hengHeight = con.EFANG_LARGE_H*dk
+    else:
+        # 一般的桁檩
+        hengHeight = con.HENG_COMMON_D*dk
+
     # 二、布置前后檐桁,根据上述计算的purlin_pos数据，批量放置桁对象
     for n in range(len(purlin_pos)) :
         # 1、桁交点
@@ -380,8 +387,6 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                             purlin_name='正心桁')
             purlinFrameList.append(zhengxinhengObj)
         else:
-            
-
             # 3、创建桁对象
             loc = (0,pCross.y,pCross.z)
             # 盝顶做承椽枋
@@ -391,8 +396,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     name = '承椽枋-前后',
                     location= loc,
                     dimension= (purlin_length_x,
-                                con.EFANG_SMALL_H*dk,
-                                con.HENG_COMMON_D*dk),
+                                con.EFANG_LARGE_Y*dk,
+                                con.EFANG_LARGE_H*dk),
                     parent=beamRootObj
                 )
             # 其他一般情况下的槫子
@@ -455,13 +460,10 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
         if bData.use_dg and n == 0:
             # 有斗拱时，正心桁下不做垫板
             use_dianban = False
-        if bData.roof_style == con.ROOF_LUDING and n>0:
-            # 盝顶的金桁下不做垫板
-            use_dianban = False
         if use_dianban:
             # 定位
             loc = (0,pCross.y,
-                (pCross.z - con.HENG_COMMON_D*dk/2
+                (pCross.z - hengHeight/2
                     - board_h*dk/2))
             # 桁垫板长度
             dianbanL = purlin_length_x
@@ -502,14 +504,12 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             utils.applyTransform(dianbanObj,use_scale=True)
             utils.addModifierBevel(dianbanObj,con.BEVEL_EXLOW)
         
-        # 桁枋 =======================================================
-        useHengFang = True
+        # 桁枋 =======================================================            
         # 正心桁下不做枋
         if n == 0: 
             useHengFang = False
-        # 盝顶不做枋
-        if bData.roof_style == con.ROOF_LUDING:
-            useHengFang = False
+        else:
+            useHengFang = True
         # 250213 下面这个逻辑没有看懂，暂时屏蔽，待观察
         # # 做廊步架时，金桁下不做枋
         # if bData.use_hallway and n == 1:
@@ -518,9 +518,9 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
         if useHengFang: 
             # 5、桁枋
             loc = (0,pCross.y,
-                (pCross.z - con.HENG_COMMON_D*dk/2
-                    - board_h*dk
-                    - con.HENGFANG_H*dk/2))
+            (pCross.z - hengHeight/2
+                - board_h*dk
+                - con.HENGFANG_H*dk/2))
             # 桁枋长度
             hengfangL = purlin_length_x
             dim = (hengfangL,
@@ -566,9 +566,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
         # 金桁如果做承椽枋、垫板、枋，则刷漆
         if n==1 and bData.roof_style == con.ROOF_LUDING:
             mat.paint(hengFB,con.M_BEAM_PAINT)
-            # 盝顶不做垫板/桁枋
-            # mat.paint(dianbanObj,con.M_BEAM_PAINT)
-            # mat.paint(hengfangObj,con.M_BEAM_PAINT)
+            mat.paint(dianbanObj,con.M_BEAM_PAINT)
+            mat.paint(hengfangObj,con.M_BEAM_PAINT)
 
     # 三、布置山面桁檩
     # 仅庑殿、歇山做山面桁檩，硬山、悬山不做山面桁檩
@@ -608,9 +607,9 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     hengLR = utils.addCube(
                         name = '承椽枋-两山',
                         location= (pCross.x,0,pCross.z),
-                        dimension= (con.EFANG_SMALL_H*dk,
+                        dimension= (con.EFANG_LARGE_Y*dk,
                                     purlin_length_y,
-                                    con.HENG_COMMON_D*dk),
+                                    con.EFANG_LARGE_H*dk),
                         parent=beamRootObj
                     )
                 # 其他一般情况下的槫子
@@ -651,10 +650,6 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                                 con.ROOF_XIESHAN_JUANPENG) :
                     use_fang = False
                     use_dianban = False
-                # 盝顶承椽枋，不做垫板和枋
-                if roofStyle == con.ROOF_LUDING:
-                    use_fang = False
-                    use_dianban = False
             # 250225 区分檐桁、金桁的不同垫板高度
             if n == 0 :
                 board_h = con.BOARD_YANHENG_H
@@ -663,7 +658,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             # 桁垫板
             if use_dianban:
                 loc = (pCross.x,0,
-                    (pCross.z - con.HENG_COMMON_D*dk/2
+                    (pCross.z - hengHeight/2
                         - board_h*dk/2))
                 # 桁垫板长度
                 dianbanL = purlin_length_y
@@ -694,7 +689,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             # 桁枋
             if use_fang:
                 loc = (pCross.x,0,
-                    (pCross.z - con.HENG_COMMON_D*dk/2
+                    (pCross.z - hengHeight/2
                         - board_h*dk
                         - con.HENGFANG_H*dk/2))
                 # 桁枋长度
@@ -722,9 +717,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             # 金桁如果做承椽枋、垫板、枋，则刷漆
             if n==1 and bData.roof_style == con.ROOF_LUDING:
                 mat.paint(hengLR,con.M_BEAM_PAINT)
-                # 盝顶不做垫板和枋
-                # mat.paint(dianbanObj,con.M_BEAM_PAINT)
-                # mat.paint(hengfangObj,con.M_BEAM_PAINT)
+                mat.paint(dianbanObj,con.M_BEAM_PAINT)
+                mat.paint(hengfangObj,con.M_BEAM_PAINT)
 
     # 设置材质
     for obj in purlinFrameList:

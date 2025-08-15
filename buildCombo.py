@@ -838,12 +838,6 @@ def __getWallSpan(buildingObj:bpy.types.Object):
     dk = mData.DK
     wallspan = 0.0
 
-    # 屋瓦层抬升
-    wallspan += (con.YUANCHUAN_D*dk   # 椽架
-                   + con.WANGBAN_H*dk   # 望板
-                   + con.ROOFMUD_H*dk   # 灰泥
-                   )
-    
     # 盝顶围脊高度
     aData = bpy.context.scene.ACA_temp
     ridgeObj:bpy.types.Object = aData.ridgeBack_source
@@ -854,8 +848,21 @@ def __getWallSpan(buildingObj:bpy.types.Object):
     wallspan += ridgeH
     wallspan -= con.RIDGE_SURR_OFFSET*dk   # 围脊调整
 
+    # 屋瓦层抬升
+    wallspan += (con.YUANCHUAN_D*dk   # 椽架
+                   + con.WANGBAN_H*dk   # 望板
+                   + con.ROOFMUD_H*dk   # 灰泥
+                   )
+    
     # 承椽枋高度
-    wallspan += con.HENG_COMMON_D*dk
+    wallspan += con.EFANG_LARGE_H*dk
+    wallspan += con.BOARD_JINHENG_H*dk
+    wallspan += con.HENGFANG_H*dk
+    # 承椽枋偏离purlin_pos的量
+    # 因为椽架层高度是按照HENG_COMMON_D计算定位的
+    # 承椽枋加大以后，承椽枋挤占了屋顶层的抬升
+    fangAdj = (con.EFANG_LARGE_Y-con.HENG_COMMON_D)*dk
+    wallspan -= fangAdj
     
     return wallspan
 
@@ -871,15 +878,20 @@ def __getTopwinLift(buildingObj:bpy.types.Object):
     dk = mData.DK
     pd = con.PILLER_D_EAVE * dk
 
-    # # 额枋高度
-    # # 大额枋
-    # topwinLift += con.EFANG_LARGE_H*dk
-    # if mData.use_smallfang:
-    #     # 由额垫板
-    #     topwinLift += con.BOARD_YOUE_H*dk
-    #     # 小额枋
-    #     topwinLift += con.EFANG_SMALL_H*dk
+    # 檐椽架加斜
+    netX,netY = buildFloor.getFloorDate(mainBuildingObj)
+    hallway = netY[1] - netY[0]
+    from . import buildBeam
+    lift_radio = buildBeam.getLiftRatio(mainBuildingObj)
+    # 廊间宽度加斜
+    topwinLift += hallway * lift_radio[0]
+    if mData.use_dg:
+        # 斗栱出跳加斜
+        topwinLift += mData.dg_extend * lift_radio[0]
 
+    # 挑檐桁(斗栱高度到挑檐桁下皮)
+    topwinLift += con.HENG_COMMON_D*dk
+    
     # 斗栱抬升
     if mData.use_dg:
         # 平板枋
@@ -896,26 +908,22 @@ def __getTopwinLift(buildingObj:bpy.types.Object):
         # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
         topwinLift += con.BOARD_YANHENG_H*dk
 
-    # 挑檐桁(斗栱高度到挑檐桁下皮)
-    topwinLift += con.HENG_COMMON_D*dk
-
-    # 檐椽架加斜
-    netX,netY = buildFloor.getFloorDate(mainBuildingObj)
-    hallway = netY[1] - netY[0]
-    from . import buildBeam
-    lift_radio = buildBeam.getLiftRatio(mainBuildingObj)
-    # 廊间宽度加斜
-    topwinLift += hallway * lift_radio[0]
-    if mData.use_dg:
-        # 斗栱出跳加斜
-        topwinLift += mData.dg_extend * lift_radio[0]
-
     # 扣除承椽枋高度
-    topwinLift -= con.HENG_COMMON_D*dk
+    topwinLift -= con.EFANG_LARGE_H*dk
+    topwinLift -= con.BOARD_JINHENG_H*dk
+    topwinLift -= con.HENGFANG_H*dk
+    fangAdj = (con.EFANG_LARGE_Y-con.HENG_COMMON_D)*dk
+    topwinLift += fangAdj
+
     # 扣除上槛、中槛高度
     topwinLift -= con.KAN_UP_HEIGHT*pd
     topwinLift -= con.KAN_MID_HEIGHT*pd
-    
+
+    # 下檐大额枋
+    topwinLift += con.EFANG_LARGE_H*dk
+    # 中槛
+    topwinLift += con.KAN_MID_HEIGHT*pd/2
+
     return topwinLift
 
 # 将建筑数据上传至comboRoot根节点

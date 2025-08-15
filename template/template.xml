@@ -280,7 +280,7 @@
 		<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 		<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
 	</template>
-    <template>
+	<template>
 		<aca_type type="StringProperty">combo</aca_type>
 		<combo_type type="StringProperty">combo_root</combo_type>
 		<template_name type="StringProperty">重檐大殿(上下檐组合)</template_name>
@@ -309,9 +309,9 @@
 		<y_1 type="FloatProperty">3.52</y_1>
 		<y_2 type="FloatProperty">3.52</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
-		<piller_net type="StringProperty" />
+		<piller_net type="StringProperty">0/0,0/1,0/2,0/3,0/4,0/5,1/0,1/5,2/0,2/5,3/0,3/5,4/0,4/5,5/0,5/5,6/0,6/5,7/0,7/1,7/2,7/3,7/4,7/5,</piller_net>
 		<wall_net type="StringProperty" />
-		<fang_net type="StringProperty" />
+		<fang_net type="StringProperty">0/0#1/0,0/0#0/1,0/1#0/2,0/2#0/3,0/3#0/4,0/4#0/5,0/5#1/5,1/0#2/0,1/5#2/5,2/0#3/0,2/5#3/5,3/0#4/0,3/5#4/5,4/0#5/0,4/5#5/5,5/0#6/0,5/5#6/5,6/0#7/0,6/5#7/5,7/0#7/1,7/1#7/2,7/2#7/3,7/3#7/4,7/4#7/5,</fang_net>
 		<piller_height type="FloatProperty">4.29</piller_height>
 		<piller_diameter type="FloatProperty">0.45</piller_diameter>
 		<use_smallfang type="BoolProperty">True</use_smallfang>
@@ -398,15 +398,15 @@
 			<piller_diameter type="FloatProperty">0.45</piller_diameter>
 			<use_smallfang type="BoolProperty">True</use_smallfang>
 			<wall_depth type="FloatProperty">0.5</wall_depth>
-			<wall_span type="FloatProperty">1.519</wall_span>
+			<wall_span type="FloatProperty">2.223</wall_span>
 			<doorFrame_width_per type="FloatProperty">1.0</doorFrame_width_per>
-			<doorFrame_height type="FloatProperty">3.906</doorFrame_height>
+			<doorFrame_height type="FloatProperty">3.306</doorFrame_height>
 			<door_num type="IntProperty">4</door_num>
 			<gap_num type="IntProperty">6</gap_num>
 			<use_topwin type="BoolProperty">True</use_topwin>
 			<door_height type="FloatProperty">8.585</door_height>
 			<door_ding_num type="IntProperty">5</door_ding_num>
-			<topwin_height type="FloatProperty">1.816</topwin_height>
+			<topwin_height type="FloatProperty">1.712</topwin_height>
 			<use_KanWall type="BoolProperty">True</use_KanWall>
 			<paint_style type="EnumProperty">0</paint_style>
 			<use_dg type="BoolProperty">True</use_dg>
@@ -429,7 +429,7 @@
 			<liangtou type="FloatProperty">0.4</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">0.1</shoushan>
-			<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
+			<luding_rafterspan type="FloatProperty">1.76</luding_rafterspan>
 			<juzhe type="EnumProperty">0</juzhe>
 			<roof_height type="FloatProperty">3.0</roof_height>
 			<tile_scale type="FloatProperty">1.0</tile_scale>

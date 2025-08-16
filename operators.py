@@ -94,8 +94,13 @@ class ACA_OT_update_building(bpy.types.Operator):
         # 优先处理外部传入的对象，对在data中传入的id_data
         buildingObj = bpy.data.objects.get(self.buildingName)
         if buildingObj == None: 
-            # 如果没有传入对象，则使用上下文对象
+            # 如果没有传入对象，是用户直接点击"更新建筑"按钮，此时使用上下文对象
             buildingObj,bData,objData = utils.getRoot(context.object)
+            # 强制重新载入素材库
+            reloadAssets = True
+        else:
+            # 有传入的对象，是用户修改属性触发的更新，此时不需要重新载入素材库
+            reloadAssets = False
         # 判断是否是ACA对象
         if buildingObj == None:
             utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
@@ -105,7 +110,7 @@ class ACA_OT_update_building(bpy.types.Operator):
         timeStart = time.time()
         funproxy = partial(build.updateBuilding,
                     buildingObj=buildingObj,
-                    reloadAssets=True)
+                    reloadAssets=reloadAssets)
         result = utils.fastRun(funproxy)
 
         # 结果提示

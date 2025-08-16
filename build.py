@@ -177,6 +177,12 @@ def updateBuilding(buildingObj:bpy.types.Object,
                         reloadAssets=reloadAssets)
         else:
             utils.popMessageBox(f"无法创建该类型的建筑,{bData.aca_type}")
+        
+        # 聚焦台基
+        focusObj = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_PLATFORM)
+        if focusObj is not None:
+            utils.focusObj(focusObj)
 
     # 关闭进度条
     isFinished = True

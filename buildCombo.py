@@ -95,6 +95,7 @@ def updateCombo(buildingObj:bpy.types.Object,
                 resetRoof=False,):
     comboObj = utils.getComboRoot(buildingObj)
     bData:acaData = buildingObj.ACA_data
+    mainBuilding = utils.getMainBuilding(buildingObj)
     doubleEaveType = (con.COMBO_MAIN,
                       con.COMBO_DOUBLE_EAVE,)
     # 更新的对象范围
@@ -123,34 +124,40 @@ def updateCombo(buildingObj:bpy.types.Object,
     # 主建筑数据同步，先上传到comboRoot，再下发到重檐对象
     # 主建筑数据是通过panel暴露在mainBuilding层次的属性
     utils.outputMsg("更新组合建筑：MainBuilding【通用数据】上传...")
-    __syncMainData(toBuilding=comboObj)
+    __syncMainData(toBuilding=comboObj,
+                    resetFloor=resetFloor)
 
     # 重檐数据更新
     doubleEaveObj = utils.getComboChild(
         buildingObj,con.COMBO_DOUBLE_EAVE)
     if doubleEaveObj is not None:
-        utils.outputMsg("更新组合建筑：MainBuilding【通用数据】下发...")
-        __syncMainData(toBuilding=doubleEaveObj)
+        utils.outputMsg("重檐数据更新：MainBuilding【通用数据】下发...")
+        __syncMainData(toBuilding=doubleEaveObj,
+                       resetFloor=resetFloor)
         __setDoubleEaveData(doubleEaveObj)
 
     # 月台数据更新
     terraceObj = utils.getComboChild(
         buildingObj,con.COMBO_TERRACE)
+    # 主数据下发，以便同步地盘开间
     # 主动更新(buildingObj是月台)不做主数据下发
     # 被动更新(buildingObj不是月台)，需要做一次主数据下发
+    # 此时会强制月台开间与主建筑同步
     if (terraceObj is not None 
             and buildingObj != terraceObj):
-        utils.outputMsg("更新组合建筑：MainBuilding【通用数据】下发...")
-        __syncMainData(toBuilding=terraceObj)
-
-        # 是否跟随重檐变化
-        if bData.combo_type in doubleEaveType:
-            initTerrace = True
-        else:
-            initTerrace = False
-        __setTerraceData(terraceObj,
-                        isInit=initTerrace
-                        )         
+        utils.outputMsg("月台数据更新：MainBuilding【通用数据】下发...")
+        __syncMainData(toBuilding=terraceObj,
+                       resetFloor=resetFloor)
+    # 是否跟随重檐变化
+    if (bData.use_double_eave and 
+            bData.combo_type in doubleEaveType):
+        initTerrace = True
+    else:
+        initTerrace = False
+    # 初始化月台，并重新定位月台位置
+    __setTerraceData(terraceObj,
+                    isInit=initTerrace
+                    )         
 
     # 立即刷新界面
     for childBuilding in updateBuildingList:
@@ -176,8 +183,21 @@ def updateCombo(buildingObj:bpy.types.Object,
                     reloadAssets=reloadAssets,
                     comboObj=comboObj)
             
-    # 聚焦修改对象
-    utils.focusObj(buildingObj)
+    # 聚焦对象
+    focusObj = None
+    # 主建筑台基
+    if buildingObj in (comboObj,
+                       mainBuilding,
+                       doubleEaveObj):
+        focusObj = utils.getAcaChild(
+            mainBuilding,con.ACA_TYPE_PLATFORM)
+    # 月台聚焦月台台基
+    elif buildingObj == terraceObj:
+        focusObj = utils.getAcaChild(
+            terraceObj,con.ACA_TYPE_PLATFORM
+        )
+    if focusObj is not None:
+        utils.focusObj(focusObj)
     
     return {'FINISHED'}
 
@@ -393,9 +413,6 @@ def __setTerraceData(terraceObj:bpy.types.Object,
     # 主建筑数据集
     mainBuildingObj = utils.getMainBuilding(terraceObj)
     mData:acaData = mainBuildingObj.ACA_data
-    # comboRoot数据集
-    comboObj = utils.getComboRoot(terraceObj)
-    cData:acaData = comboObj.ACA_data
     
     # 1、分层显示控制 --------------------------
     # 分层显示控制
@@ -406,56 +423,8 @@ def __setTerraceData(terraceObj:bpy.types.Object,
     bData['is_showBeam'] = False
     bData['is_showRafter'] = False
     bData['is_showTiles'] = False
-    
-    # 2、月台开间与主建筑联动 -------------
-    # 月台进深，五间以上减2间
-    yRooms = cData.y_rooms
-    if cData.use_double_eave:
-        # 重檐不考虑廊间
-        yRooms -= 2
-    if yRooms > 2:
-        bData['y_rooms'] = yRooms - 2
-    else:
-        bData['y_rooms'] = yRooms
 
-    # 月台面阔，五间以上做“凸”形月台，减2间
-    xRooms = cData.x_rooms
-    if cData.use_double_eave:
-        # 重檐不考虑廊间
-        xRooms -= 2
-    if xRooms > 5:
-        bData['x_rooms'] = xRooms - 2
-    else:
-        bData['x_rooms'] = xRooms
-
-    # 矫正梢间，不使用主建筑的廊间数据
-    if cData.use_double_eave:
-        if bData.x_rooms >= 7:
-            bData['x_4'] = cData.x_3
-            bData['x_3'] = cData.x_2
-    
-    # 月台高度，比主体低1踏步
-    bData['platform_height'] = (
-        cData.platform_height - con.STEP_HEIGHT)
-    # 月台下出，比主体窄2踏步（未见规则）
-    bData['platform_extend'] = (
-        cData.platform_extend 
-        - con.STEP_HEIGHT*2
-        )
-    
-    # 3、月台定位 ------------------------
-    # 更新地盘数据，计算当前的y_total
-    buildFloor.getFloorDate(mainBuildingObj)
-    buildFloor.getFloorDate(terraceObj)
-    offsetY = (cData.y_total/2 
-               + cData.platform_extend
-               + bData.y_total/2 
-               + bData.platform_extend
-               )
-    terraceLoc = Vector((0,-offsetY,0))
-    bData['root_location'] = terraceLoc
-
-    # 4、仅在新建时的初始化处理，更新时跳过 -------------
+    # 2、仅在新建时的初始化处理，更新时跳过 -------------
     if isInit:
         # 基本属性标注
         bData['use_terrace'] = True
@@ -475,6 +444,54 @@ def __setTerraceData(terraceObj:bpy.types.Object,
         # # 数据上报到combo ------------------------
         # utils.outputMsg("月台数据修改上报...")
         # __uploadData(fromBuilding=mainBuildingObj)
+
+        # 2、月台开间与主建筑联动 -------------
+        # 月台进深，五间以上减2间
+        yRooms = mData.y_rooms
+        if mData.use_double_eave:
+            # 重檐不考虑廊间
+            yRooms -= 2
+        if yRooms > 2:
+            bData['y_rooms'] = yRooms - 2
+        else:
+            bData['y_rooms'] = yRooms
+
+        # 月台面阔，五间以上做“凸”形月台，减2间
+        xRooms = mData.x_rooms
+        if mData.use_double_eave:
+            # 重檐不考虑廊间
+            xRooms -= 2
+        if xRooms > 5:
+            bData['x_rooms'] = xRooms - 2
+        else:
+            bData['x_rooms'] = xRooms
+
+        # 矫正梢间，不使用主建筑的廊间数据
+        if mData.use_double_eave:
+            if bData.x_rooms >= 7:
+                bData['x_4'] = mData.x_3
+                bData['x_3'] = mData.x_2
+        
+        # 月台高度，比主体低1踏步
+        bData['platform_height'] = (
+            mData.platform_height - con.STEP_HEIGHT)
+        # 月台下出，比主体窄2踏步（未见规则）
+        bData['platform_extend'] = (
+            mData.platform_extend 
+            - con.STEP_HEIGHT*2
+            )
+        
+    # 月台定位 ------------------------
+    # 更新地盘数据，计算当前的y_total
+    buildFloor.getFloorDate(mainBuildingObj)
+    buildFloor.getFloorDate(terraceObj)
+    offsetY = (mData.y_total/2 
+               + mData.platform_extend
+               + bData.y_total/2 
+               + bData.platform_extend
+               )
+    terraceLoc = Vector((0,-offsetY,0))
+    bData['root_location'] = terraceLoc
 
     return terraceObj
 
@@ -1065,21 +1082,22 @@ def __downloadCommonData(toBuilding:bpy.types.Object):
 # 但是不包括个性化数据，如，wall_span，door_num等
 # 调用方：
 # updateCombo
-def __syncMainData(toBuilding:bpy.types.Object,):
-    syncKeys = [
-                'x_rooms',
-                'x_1',
+def __syncMainData(toBuilding:bpy.types.Object,
+                   resetFloor = False):
+    syncKeys = ['x_1',
                 'x_2',
                 'x_3',
                 'x_4',
-                'y_rooms',
                 'y_1',
                 'y_2',
                 'y_3',
                 'piller_height',
                 'piller_diameter',
-                'use_smallfang',
-            ]
+                'use_smallfang',]
+    
+    # 仅在重置柱网时，同步面阔/进深间数
+    if resetFloor:
+        syncKeys += ['x_rooms','y_rooms',]
     
     utils.outputMsg(f"-- Download main data to [{toBuilding.name}]...")
     mainBuildingObj = utils.getMainBuilding(toBuilding)

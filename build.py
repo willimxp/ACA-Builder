@@ -239,7 +239,7 @@ def resetFloor(buildingObj:bpy.types.Object):
     # 根据模板类型调用不同的入口
     # 组合建筑
     if comboObj is not None:
-        buildCombo.updateCombo(comboObj,reset=True)
+        buildCombo.updateCombo(buildingObj,resetFloor=True)
     else:
         # 载入数据
         bData:acaData = buildingObj.ACA_data

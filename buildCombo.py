@@ -136,17 +136,21 @@ def updateCombo(buildingObj:bpy.types.Object,
     # 月台数据更新
     terraceObj = utils.getComboChild(
         buildingObj,con.COMBO_TERRACE)
-    # 跟随重檐变化
-    if bData.combo_type in doubleEaveType:
-        initTerrace = True
-    else:
-        initTerrace = False
-    if terraceObj is not None:
+    # 主动更新(buildingObj是月台)不做主数据下发
+    # 被动更新(buildingObj不是月台)，需要做一次主数据下发
+    if (terraceObj is not None 
+            and buildingObj != terraceObj):
         utils.outputMsg("更新组合建筑：MainBuilding【通用数据】下发...")
         __syncMainData(toBuilding=terraceObj)
+
+        # 是否跟随重檐变化
+        if bData.combo_type in doubleEaveType:
+            initTerrace = True
+        else:
+            initTerrace = False
         __setTerraceData(terraceObj,
-                         isInit=initTerrace
-                         )         
+                        isInit=initTerrace
+                        )         
 
     # 立即刷新界面
     for childBuilding in updateBuildingList:
@@ -164,13 +168,18 @@ def updateCombo(buildingObj:bpy.types.Object,
             buildFloor.resetFloor(childBuilding,
                 comboObj=comboObj)
         # 重做屋顶
-        if resetRoof:
+        elif resetRoof:
             buildRoof.buildRoof(childBuilding)
         # 全部重做
         else:
             buildFloor.buildFloor(childBuilding,
                     reloadAssets=reloadAssets,
                     comboObj=comboObj)
+            
+    # 聚焦修改对象
+    utils.focusObj(buildingObj)
+    
+    return {'FINISHED'}
 
 # 组合建筑降级为单一建筑
 def __delComboLevel(comboObj:bpy.types.Object):

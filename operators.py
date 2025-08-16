@@ -84,17 +84,22 @@ class ACA_OT_update_building(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = '根据参数的修改，重新生成建筑'
 
-    def execute(self, context):  
-        buildingObj,bData,objData = utils.getRoot(context.object)
+    # 外部传入的对象
+    buildingName: bpy.props.StringProperty(
+        name="建筑名称",
+        default=''
+    ) # type: ignore
+
+    def execute(self, context): 
+        # 优先处理外部传入的对象，对在data中传入的id_data
+        buildingObj = bpy.data.objects.get(self.buildingName)
+        if buildingObj == None: 
+            # 如果没有传入对象，则使用上下文对象
+            buildingObj,bData,objData = utils.getRoot(context.object)
+        # 判断是否是ACA对象
         if buildingObj == None:
             utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
             return {'FINISHED'}
-        
-        # 如果是组合建筑，直接传入comboRoot
-        comboObj = utils.getComboRoot(buildingObj)
-        # 组合建筑
-        if comboObj is not None:
-            buildingObj = comboObj
 
         # 更新新建筑
         timeStart = time.time()
@@ -104,14 +109,12 @@ class ACA_OT_update_building(bpy.types.Operator):
         result = utils.fastRun(funproxy)
 
         # 结果提示
-        type = {'INFO'}
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
             msg = "更新建筑完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
                         % (buildingObj.name,runTime)
-            utils.popMessageBox(msg)
-            self.report(type,msg)
-
+            utils.outputMsg(msg)
+            self.report({'INFO'},msg)
         return {'FINISHED'}
     
 # 删除建筑
@@ -142,13 +145,26 @@ class ACA_OT_reset_floor(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = '重新生成被减柱的柱子，但也会丢失所有的额枋、隔扇、槛墙等'
 
+    # 外部传入的对象
+    buildingName: bpy.props.StringProperty(
+        name="建筑名称",
+        default=''
+    ) # type: ignore
+
     def execute(self, context):  
-        buildingObj,bData,objData = utils.getRoot(context.object)
+        # 优先处理外部传入的对象，对在data中传入的id_data
+        buildingObj = bpy.data.objects.get(self.buildingName)
+        if buildingObj == None: 
+            # 如果没有传入对象，则使用上下文对象
+            buildingObj,bData,objData = utils.getRoot(context.object)
+
         funproxy = partial(build.resetFloor,
                     buildingObj=buildingObj)
         result = utils.fastRun(funproxy)
+
         if 'FINISHED' in result:
             self.report({'INFO'},"已重新营造柱网！")
+
         return {'FINISHED'}
     
     def invoke(self, context, event):

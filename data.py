@@ -64,23 +64,10 @@ def update_building(self, context:bpy.types.Context):
     # 在panel中指定bData时，指向context.object,
     # 在panel中指定为mData时，指向主建筑
     buildingObj = self.id_data
-
     if buildingObj != None:
-        timeStart = time.time()
-
-        from . import build
-        funproxy = partial(
-                build.updateBuilding,
-                buildingObj=buildingObj,
-                reloadAssets=False) # 250812 修改参数时，不重新载入素材库
-        utils.fastRun(funproxy)
-
-        runTime = time.time() - timeStart
-        msg = '更新建筑完成 | 运行时间【%.1f秒】' % runTime
-        utils.popMessageBox(msg)
-
+        bpy.ops.aca.update_building(buildingName=buildingObj.name)
     else:
-        utils.outputMsg("updated building failed, context.object should be buildingObj")
+        utils.popMessageBox("更新建筑失败")
     return
     
 # 更新建筑，但不重设柱网
@@ -91,9 +78,18 @@ def reset_building(self, context:bpy.types.Context):
     # if not isRebuild:
     #     return
 
-    # 直接调用operator，并且调用invoke，弹出确认提示
-    # https://docs.blender.org/api/current/bpy.types.Operator.html#invoke-function
-    bpy.ops.aca.reset_floor('INVOKE_DEFAULT')
+    # 根据数据集合，找到对应的建筑
+    # 在panel中指定bData时，指向context.object,
+    # 在panel中指定为mData时，指向主建筑
+    buildingObj = self.id_data
+
+    if buildingObj != None:
+        # 直接调用operator，并且调用invoke，弹出确认提示
+        # https://docs.blender.org/api/current/bpy.types.Operator.html#invoke-function
+        bpy.ops.aca.reset_floor('INVOKE_DEFAULT',
+            buildingName = buildingObj.name)
+    else:
+        utils.popMessageBox("重设柱网失败")
 
 # 更新院墙
 def update_yardwall(self, context:bpy.types.Context):

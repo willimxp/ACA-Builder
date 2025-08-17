@@ -208,7 +208,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     bottomObj = utils.drawHexagon(
         name='下碱',
         dimensions=Vector((wallLength,
-               wallDeepth,
+               wallDeepth+bodyShrink*2,
                height)),
         location=Vector((0,0,height/2-heightOffset)),
         parent=wallProxy,
@@ -224,7 +224,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     bodyObj = utils.drawHexagon(
         name='墙体',
         dimensions=Vector((wallLength-bodyShrink*2,
-               wallDeepth-bodyShrink*2,
+               wallDeepth,
                wallHeight-extrudeHeight)),
         location=Vector((0,0,wallHeight/2-extrudeHeight/2)),
         parent=wallProxy,

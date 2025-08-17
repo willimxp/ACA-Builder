@@ -1189,25 +1189,27 @@ def buildPillers(buildingObj:bpy.types.Object):
                         override=True)
             pillerList.append(pillerObj)
 
-            # 复制柱础
-            pillerbase_basemesh:bpy.types.Object = utils.copySimplyObject(
-                sourceObj=aData.pillerbase_source,
-                location=(0,0,0),
-                parentObj=pillerObj
-            )
-            pillerbase_basemesh.scale = (
-                        pd/piller_source.dimensions.x,
-                        pd/piller_source.dimensions.y,
-                        pd/piller_source.dimensions.x,
-                    )
-            # 柱础材质：石头
-            mat.paint(pillerbase_basemesh,con.M_PILLER_BASE)
-            
-            # 复制柱顶石
-            pillerBottomObj = utils.copySimplyObject(
-                sourceObj=pillerBottom_basemesh,
-                parentObj=pillerObj
-            )
+            # 250817 不做台基时，也不做柱础和柱顶石
+            if bData.is_showPlatform:
+                # 复制柱础
+                pillerbase_basemesh:bpy.types.Object = utils.copySimplyObject(
+                    sourceObj=aData.pillerbase_source,
+                    location=(0,0,0),
+                    parentObj=pillerObj
+                )
+                pillerbase_basemesh.scale = (
+                            pd/piller_source.dimensions.x,
+                            pd/piller_source.dimensions.y,
+                            pd/piller_source.dimensions.x,
+                        )
+                # 柱础材质：石头
+                mat.paint(pillerbase_basemesh,con.M_PILLER_BASE)
+                
+                # 复制柱顶石
+                pillerBottomObj = utils.copySimplyObject(
+                    sourceObj=pillerBottom_basemesh,
+                    parentObj=pillerObj
+                )
 
     # 移除柱子和柱顶石模板    
     utils.delObject(pillerBottom_basemesh)

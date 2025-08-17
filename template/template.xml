@@ -712,7 +712,7 @@
 		<use_hallway type="BoolProperty">False</use_hallway>
 		<rafter_count type="IntProperty">6</rafter_count>
 		<use_flyrafter type="BoolProperty">True</use_flyrafter>
-		<use_wangban type="BoolProperty">False</use_wangban>
+		<use_wangban type="BoolProperty">True</use_wangban>
 		<qiqiao type="FloatProperty">4.0</qiqiao>
 		<chong type="FloatProperty">3.0</chong>
 		<shengqi type="IntProperty">1</shengqi>

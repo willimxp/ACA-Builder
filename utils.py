@@ -2649,6 +2649,9 @@ def getComboRoot(obj:bpy.types.Object):
     
     # 先找到建筑根节点
     buildingObj,bData,objData = getRoot(obj)
+    if buildingObj is None:
+        return None
+    
     # 查找建筑是否有上层combo
     if buildingObj.parent is not None:
         parent = buildingObj.parent

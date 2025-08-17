@@ -145,6 +145,11 @@ def build():
 
 def updateBuilding(buildingObj:bpy.types.Object,
                    reloadAssets = False):
+    validate =  __validate(buildingObj)
+    if validate is not None:
+        utils.popMessageBox(validate)
+        return {'CANCELLED'}
+    
     # 250311 发现在中文版中UV贴图异常
     # 最终发现是该选项会导致生成的'UVMap'变成'UV贴图'
     # 禁用语言-翻译-新建数据
@@ -264,7 +269,12 @@ def resetFloor(buildingObj:bpy.types.Object):
     return  {'FINISHED'}
 
 # 重新生成屋顶
-def resetRoof(buildingObj:bpy.types.Object):    
+def resetRoof(buildingObj:bpy.types.Object):  
+    validate =  __validate(buildingObj)
+    if validate is not None:
+        utils.popMessageBox(validate)
+        return {'CANCELLED'}
+    
     # 调用进度条
     global isFinished,progress
     isFinished = False
@@ -817,3 +827,18 @@ def __undoJoin(buildingObj:bpy.types.Object):
     bpy.context.view_layer.objects.active = oldbuildingObj
 
     return oldbuildingObj
+
+# 参数合法性验证
+def __validate(buildingObj:bpy.types.Object):
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    
+    # 盝顶验证
+    if (bData.roof_style == con.ROOF_LUDING):
+        ludingExtend = bData.luding_rafterspan
+        if bData.use_dg:
+            ludingExtend += bData.dg_extend
+        if ludingExtend < 3*dk:
+            return "盝顶设置异常，斗栱出跳或盝顶檐步架宽太小。请使用有出跳的斗栱，或增加盝顶檐步架宽。"
+    
+    return

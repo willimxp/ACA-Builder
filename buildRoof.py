@@ -1295,6 +1295,25 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     
+    # 250817 老角梁采用2点定位：
+    # 1、如果有斗栱且有出跳，则以挑檐桁到下金桁进行计算
+    # 2、如果没有斗栱，则以正心桁到下金桁进行计算
+    # 3、验证老角梁两个定位点宽度，至少需要9dk，否则不要扣金
+    # 获取原始的桁檩定位点
+    purlin_pos = buildBeam.getPurlinPos(buildingObj)
+    # 有斗栱且有出跳，丢弃正心桁的点，老角梁从挑檐桁到下金桁
+    if bData.use_dg and bData.dg_extend>0:
+        del purlin_pos[1]
+    # 验证老角梁两个定位点宽度，至少需要9dk，否则不要扣金
+    yanSpan = round(purlin_pos[0].y - purlin_pos[1].y,3)
+    # 老角梁扣金系数
+    if yanSpan > 14*dk:
+        cbKoujin = con.JIAOLIANG_H*dk*con.JIAOLIANG_WEI_KOUJIN
+    elif yanSpan < 3*dk:
+        raise Exception(f"构造老角梁失败，檐步架只有{yanSpan}")
+    else:
+        cbKoujin = 0
+    
     # 计算角梁数据，忽略第一个挑檐桁交点，直接从正心桁到脊桁分段生成
     cb_collection = []
     # 根据桁数组循环计算各层椽架
@@ -1302,8 +1321,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
         if n == 0:  #翼角角梁
             if bData.use_flyrafter:
                 # 老角梁用压金做法，压在槫子之下，以便与子角梁相扣
-                pEnd = Vector(purlin_pos[n+1]) \
-                    - Vector((0,0,con.JIAOLIANG_H*dk*con.JIAOLIANG_WEI_KOUJIN))
+                pEnd = Vector(purlin_pos[n+1]) - Vector((0,0,cbKoujin))
                 # 计算老角梁头先放在正心桁交点上，后续根据檐出、冲出延长
                 # pStart = Vector(purlin_pos[n]) \
                 #     + Vector((0,0,con.JIAOLIANG_H*dk*con.JIAOLIANG_HEAD_YAJIN))
@@ -1352,9 +1370,10 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             # 延长老角梁
             # 上檐平出
             ex_length = con.YANCHUAN_EX*dk
-            # 斗栱平出
-            if bData.use_dg:
-                ex_length += bData.dg_extend
+            # 250817 修改老角梁定位，已从挑檐桁计算，不需要额外延长了
+            # # 斗栱平出
+            # if bData.use_dg:
+            #     ex_length += bData.dg_extend
             # 冲出
             if bData.use_flyrafter:
                 # 有飞椽时，翘飞椽冲一份，其他在檐椽冲出

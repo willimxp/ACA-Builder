@@ -106,7 +106,8 @@ def updateCombo(buildingObj:bpy.types.Object,
     if bData.aca_type == con.ACA_TYPE_COMBO:
         updateBuildingList = comboObj.children
     # 如果基于重檐的上檐或下檐
-    elif bData.combo_type in doubleEaveType:
+    elif (bData.use_double_eave and 
+            bData.combo_type in doubleEaveType):
         # 全部更新，重檐柱网变化应该传递到月台
         updateBuildingList = comboObj.children
     # 其他子建筑，如，月台，独立更新

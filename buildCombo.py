@@ -1055,7 +1055,7 @@ def __downloadCommonData(toBuilding:bpy.types.Object):
                 'liangtou',
                 'tuishan',
                 'shoushan',
-                'luding_rafterspan',
+                # 'luding_rafterspan', #250816 这个由建筑自行管理，不做同步
                 'juzhe',
                 'roof_height',
                 'tile_scale',

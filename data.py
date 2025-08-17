@@ -345,7 +345,7 @@ def update_rooftile(self, context:bpy.types.Context):
         utils.fastRun(funproxy)
     else:
         utils.outputMsg(
-            "updated platform failed, context.object should be buildingObj")
+            "updated rooftile failed, context.object should be buildingObj")
     return
 
 # 显示/隐藏台基层

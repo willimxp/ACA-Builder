@@ -1234,7 +1234,7 @@ class ACA_PT_tiles(bpy.types.Panel):
             row = box.row()
             row.prop(cData, "tile_scale") # 瓦作缩放
             row = box.row()
-            row.prop(cData, "paoshou_count") # 跑兽数量
+            row.prop(bData, "paoshou_count") # 跑兽数量
             row = box.row()
             row.prop(cData, "tile_color") # 瓦面颜色
             row = box.row()

@@ -138,12 +138,14 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     isLangjian = False
     # 横向廊间，如，0/1#1/1
     if bData.y_rooms>3:
-        if (pFrom_y == pTo_y 
+        if (pFrom_y == pTo_y
+            and pFrom_y in (1,bData.y_rooms-1)
             and pFrom_x+pTo_x in (1,bData.x_rooms*2-1)):
             isLangjian = True
     # 纵向廊间
     if bData.x_rooms >3:
         if (pFrom_x == pTo_x 
+            and pFrom_x in (1,bData.x_rooms-1)
             and pFrom_y+pTo_y in (1,bData.y_rooms*2-1)):
             isLangjian = True
     if isLangjian:

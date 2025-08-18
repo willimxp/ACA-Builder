@@ -73,6 +73,8 @@ def __buildShanxin(
     # 转为mesh
     bpy.ops.object.convert(target='MESH')
     zibianObj = bpy.context.object
+    # 导角
+    utils.addModifierBevel(zibianObj,con.BEVEL_LOW)
     # 仔边刷漆
     mat.paint(zibianObj,con.M_WINDOW)
     linxingList.append(bpy.context.object)
@@ -110,20 +112,6 @@ def __buildShanxin(
 
     # 添加简化版的棂心（平面贴图方式）
     # 250717 为了实现水密，做成cube
-    # bpy.ops.mesh.primitive_plane_add(location=location,size=1)
-    # linxinObj = bpy.context.object
-    # linxinObj.name = '棂心'
-    # linxinObj.data.name = '棂心'
-    # linxinObj.parent = parent
-    # linxinObj.scale = (scale.x- borderWidth*2,
-    #                    scale.z- borderWidth*2,
-    #                    1)
-    # linxinObj.rotation_euler.x = math.radians(90)
-    # # apply
-    # utils.applyTransform(linxinObj,
-    #                      use_location=True,
-    #                      use_scale=True,
-    #                      use_rotation=True)
     linxinDim = (scale.x- borderWidth*2,
                 0.005,  # 5毫米厚度
                 scale.z- borderWidth*2,)
@@ -378,6 +366,8 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         if part['name'] in ('裙板','绦环'):
             part['size'] += Vector((
                 geshan_bevel*2,0,geshan_bevel*2))
+        
+        # 循环生成隔扇构件
         if part['name'] in ('抹头','绦环','裙板','边梃'):
             # 简单的构造立方体
             partObj = utils.addCube(
@@ -386,14 +376,15 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
                     dimension=part['size'],
                     parent=geshan_root,
                 )
-        if part['name'] == '扇心':
+            utils.addModifierBevel(partObj,geshan_bevel,clamp=True)
+        elif part['name'] == '扇心':
             # 构造扇心
             __buildShanxin(
                 parent=geshan_root,
                 scale=part['size'],
                 location=part['loc'],
             )
-        if part['name'] == '门轴':
+        elif part['name'] == '门轴':
             # 构造门轴
             menzhouObj = utils.addCylinder(
                 radius = part['size'].x,
@@ -402,6 +393,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
                 name=part['name'],
                 root_obj=geshan_root,  # 挂接在柱网节点下
             )
+            utils.addModifierBevel(menzhouObj,geshan_bevel)
             mat.paint(menzhouObj,con.M_WINDOW)
 
         # 设置材质
@@ -429,9 +421,6 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
 
     # 锁定旋转，仅允许Z轴开窗、开门
     geshanObj.lock_rotation = (True,True,False)
-
-    # 倒角
-    utils.addModifierBevel(geshanObj,geshan_bevel)
 
     return geshanObj,windowsillZ
     
@@ -1006,8 +995,6 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
                     # 隔扇门/隔扇窗/支摘窗填充棂心
                     linxinObj = __buildShanxin(
                         wallproxy,WindowTopScale,WindowTopLoc)
-                    # 倒角
-                    utils.addModifierBevel(linxinObj,con.BEVEL_LOW)
                 else:
                     # 直棂窗只用余塞板，不用棂条
                     yusaiScale = WindowTopScale + Vector((

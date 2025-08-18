@@ -1395,10 +1395,6 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             ex_length = ex_length / math.cos(CornerBeamObj.rotation_euler.y)
             CornerBeamObj.dimensions.x += ex_length
             utils.applyTransform(CornerBeamObj,use_scale=True)
-            utils.addModifierBevel(
-                object=CornerBeamObj,
-                width=con.BEVEL_LOW
-            )
             # 替换老角梁造型
             if aData.cornerbeam_source != None:
                 cbNewObj = utils.copyObject(

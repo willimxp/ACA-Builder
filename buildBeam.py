@@ -880,10 +880,6 @@ def __drawGabelBeam(name='趴梁',
     bm.free() 
     bpy.ops.object.mode_set( mode = 'OBJECT' )
 
-    # 倒角
-    utils.addModifierBevel(gabelBeam,con.BEVEL_HIGH,
-                           type='WIDTH')
-
     return gabelBeam
 
 # 添加庑殿顶山面的顺趴梁
@@ -998,9 +994,6 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
                 parent=beamRootObj,
             )
             gabelBeamList.append(tuodunObj)
-            # 倒角
-            utils.addModifierBevel(tuodunObj,con.BEVEL_HIGH,
-                                   type='WIDTH')
             utils.addModifierMirror(
                 object=tuodunObj,
                 mirrorObj=beamRootObj,

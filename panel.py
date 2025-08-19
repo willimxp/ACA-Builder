@@ -210,20 +210,6 @@ class ACA_PT_basic(bpy.types.Panel):
                         depress=(currentPlan=='X+'),
                         text='侧视图',)
             op1.sectionPlan = 'X+'
-            # # X-
-            # col = toolBar.column(align=True)
-            # op = col.operator(
-            #     "aca.section",
-            #     depress=(currentPlan=='X-'),
-            #     text='X-')
-            # op.sectionPlan = 'X-'  
-            # # Y+
-            # col = toolBar.column(align=True)
-            # op = col.operator(
-            #     "aca.section",
-            #     depress=(currentPlan=='Y+'),
-            #     text='Y+')
-            # op.sectionPlan = 'Y+'
             # Y-
             col = toolBar.column(align=True)
             op = col.operator(
@@ -254,6 +240,21 @@ class ACA_PT_basic(bpy.types.Panel):
                 depress=(currentPlan=='C'),
                 text='透视C')
             op.sectionPlan = 'C' 
+
+        ###################################################
+        # 第三工具箱
+        box = layout.box()
+
+        # 合并/导出 ------------------------------
+        toolBox = box.column(align=True)
+        # 第一行 ------------------------------
+        toolBar = toolBox.grid_flow(columns=2, align=True)
+        # 添加重楼
+        btnMultiFloor = toolBar.column(align=True)
+        op = btnMultiFloor.operator(
+                        "aca.multi_floor_add",
+                        icon='PACKAGE',
+                        text="添加重楼")
 
         # 性能分析按钮
         # row = layout.row()
@@ -789,7 +790,7 @@ class ACA_PT_roof_props(bpy.types.Panel):
                 # 屋顶样式
                 droplistRoofstyle = toolBar.column(align=True)
                 droplistRoofstyle.prop(
-                    cData, "roof_style",text='') 
+                    bData, "roof_style",text='') 
                 
                 toolBar = toolBox.grid_flow(columns=2, align=True)
 
@@ -981,28 +982,28 @@ class ACA_PT_beam(bpy.types.Panel):
             # 举折系数
             droplistJuzhe = toolBar.column(align=True)
             droplistJuzhe.prop(
-                cData, "juzhe",text='',)
-            if cData.juzhe == '3':
+                bData, "juzhe",text='',)
+            if bData.juzhe == '3':
                 # 屋架高度
                 inputRoofHeight = toolBar.column(align=True)
                 inputRoofHeight.prop(
-                    cData,"roof_height"
+                    bData,"roof_height"
                 )
             # 步架数量          
             inputRaftercount = toolBar.column(align=True)
             inputRaftercount.prop(
-                cData, "rafter_count",
+                bData, "rafter_count",
                 text='步架数量')
             # 做廊步架
             inputJujia= toolBar.column(align=True)
-            if cData.y_rooms >= 3:
-                if cData.use_hallway:
+            if bData.y_rooms >= 3:
+                if bData.use_hallway:
                     checkbox_icon = 'CHECKBOX_HLT'
                 else:
                     checkbox_icon = 'CHECKBOX_DEHLT'
                 #checkUseHallway = box.column(align=True)
                 inputJujia.prop(
-                    cData, "use_hallway",
+                    bData, "use_hallway",
                     text='廊间举架做法',
                     toggle=True,
                     icon=checkbox_icon) 
@@ -1013,11 +1014,11 @@ class ACA_PT_beam(bpy.types.Panel):
             # 推山
             inputTuishan = toolBar.column(align=True)
             inputTuishan.prop(
-                cData, "tuishan",text='庑殿推山系数',slider=True)
+                bData, "tuishan",text='庑殿推山系数',slider=True)
             # 收山
             inputShoushan = toolBar.column(align=True)
             inputShoushan.prop(
-                cData, "shoushan",text='歇山收山尺寸')
+                bData, "shoushan",text='歇山收山尺寸')
             
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)
@@ -1112,30 +1113,30 @@ class ACA_PT_rafter(bpy.types.Panel):
             # 出冲
             inputChong = toolBar.column(align=True)
             inputChong.prop(
-                cData, "chong",text='出冲(椽径)') 
+                bData, "chong",text='出冲(椽径)') 
             # 起翘
             inputQiao = toolBar.column(align=True)
             inputQiao.prop(
-                cData, "qiqiao",text='起翘(椽径)')
+                bData, "qiqiao",text='起翘(椽径)')
             # 梁头系数
             inputLiangtou = toolBar.column(align=True)
             inputLiangtou.prop(
-                cData, "liangtou",text='梁头系数')
+                bData, "liangtou",text='梁头系数')
 
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)
             # 是否使用飞椽
-            if cData.use_flyrafter:
+            if bData.use_flyrafter:
                 checkbox_icon = 'CHECKBOX_HLT'
             else:
                 checkbox_icon = 'CHECKBOX_DEHLT'
             checkboxUseflyrafter = toolBar.column(align=True)
             checkboxUseflyrafter.prop(
-                cData, "use_flyrafter",
+                bData, "use_flyrafter",
                 text='使用飞椽',toggle=True,
                 icon=checkbox_icon) 
             # 庑殿、歇山不可以不做飞椽
-            if cData.roof_style in (
+            if bData.roof_style in (
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
@@ -1155,7 +1156,7 @@ class ACA_PT_rafter(bpy.types.Panel):
             #     icon=checkbox_icon) 
             
             # 只有庑殿、歇山，可以设置冲、翘
-            if cData.roof_style not in (
+            if bData.roof_style not in (
                     con.ROOF_WUDIAN,
                     con.ROOF_XIESHAN,
                     con.ROOF_XIESHAN_JUANPENG,
@@ -1165,13 +1166,13 @@ class ACA_PT_rafter(bpy.types.Panel):
                 inputQiao.enabled = False
 
             # 瞥向处理
-            if cData.use_pie:
+            if bData.use_pie:
                 checkbox_icon = 'CHECKBOX_HLT'
             else:
                 checkbox_icon = 'CHECKBOX_DEHLT'
             checkboxUsePie = toolBar.column(align=True)
             checkboxUsePie.prop(
-                cData, "use_pie",
+                bData, "use_pie",
                 text='撇向处理',toggle=True,
                 icon=checkbox_icon) 
 
@@ -1232,13 +1233,13 @@ class ACA_PT_tiles(bpy.types.Panel):
             # row = box.row()
             # row.prop(bData, "tile_width_real") # 瓦垄宽度
             row = box.row()
-            row.prop(cData, "tile_scale") # 瓦作缩放
+            row.prop(bData, "tile_scale") # 瓦作缩放
             row = box.row()
             row.prop(bData, "paoshou_count") # 跑兽数量
             row = box.row()
-            row.prop(cData, "tile_color") # 瓦面颜色
+            row.prop(bData, "tile_color") # 瓦面颜色
             row = box.row()
-            row.prop(cData, "tile_alt_color") # 瓦面剪边颜色
+            row.prop(bData, "tile_alt_color") # 瓦面剪边颜色
 
 # “院墙参数”面板
 class ACA_PT_yardwall_props(bpy.types.Panel):

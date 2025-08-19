@@ -1436,3 +1436,30 @@ class ACA_OT_DOUBLE_EAVE_DEL(bpy.types.Operator):
             utils.popMessageBox(msg)
         
         return {'FINISHED'}
+    
+# 添加重楼
+class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
+    bl_idname="aca.multi_floor_add"
+    bl_label = "添加重楼"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '添加重楼'
+
+    def execute(self, context): 
+        timeStart = time.time()
+
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        
+        from . import buildCombo
+        funproxy = partial(
+            buildCombo.addMultiFloor,
+            buildingObj=buildingObj,
+        )
+        result = utils.fastRun(funproxy)
+
+        if 'FINISHED' in result:
+            runTime = time.time() - timeStart
+            msg = '添加重楼完成 | 运行时间【%.1f秒】' % runTime
+            self.report({'INFO'},msg)
+            utils.popMessageBox(msg)
+        
+        return {'FINISHED'}

@@ -437,9 +437,18 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         ) #type: ignore
     root_location : bpy.props.FloatVectorProperty(
             name = '根节点位移',
+            default=(0.0, 0.0, 0.0),
         ) # type: ignore
     root_rotation : bpy.props.FloatVectorProperty(
             name = '根节点旋转',
+            default=(0.0, 0.0, 0.0),
+        ) # type: ignore
+    multi_floor_height : bpy.props.FloatProperty(
+            name = "重楼高度",
+            min = 0.00,
+            default= 0.00 ,
+            precision=3,
+            description="累计重楼的root高度",
         ) # type: ignore
     DK: bpy.props.FloatProperty(
             name = "斗口",

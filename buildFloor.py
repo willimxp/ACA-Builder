@@ -1361,8 +1361,6 @@ def buildFloor(buildingObj:bpy.types.Object,
                reloadAssets = False,
                comboObj:bpy.types.Object = None,
                ):
-    
-
     # 定位到collection，如果没有则新建
     utils.setCollection(
         name = con.COLL_NAME_ROOT,
@@ -1387,13 +1385,6 @@ def buildFloor(buildingObj:bpy.types.Object,
             )
         # 在buldingObj上绑定模板bData和资产库aData
         template.loadTemplate(buildingObj)
-
-        # 载入数据
-        bData:acaData = buildingObj.ACA_data
-        # 组合建筑根据模板位移和旋转
-        if comboObj != None:
-            buildingObj.location = bData.root_location
-            buildingObj.rotation_euler = bData.root_rotation
     else:
         # 聚焦对象集合
         # 避免因为手工排除该集合导致后续构建掉落在集合外
@@ -1405,8 +1396,16 @@ def buildFloor(buildingObj:bpy.types.Object,
         if reloadAssets:
             # 刷新buildingObj中绑定的资产库aData
             template.loadAssetByBuilding(buildingObj)  
-        # 载入数据
-        bData:acaData = buildingObj.ACA_data
+
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    # 组合建筑根据模板位移和旋转
+    if comboObj != None:
+        if tuple(bData.root_location) != (0.0,0.0,0.0):
+            buildingObj.location = bData.root_location
+
+        if tuple(bData.root_rotation) != (0.0,0.0,0.0):
+            buildingObj.rotation_euler = bData.root_rotation
 
     # 生成柱网
     if bData.is_showPillers:

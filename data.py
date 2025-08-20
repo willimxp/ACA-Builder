@@ -799,6 +799,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("6","悬山卷棚顶",""),
                 ('7',"硬山卷棚顶",""),
                 ('8','歇山卷棚顶',""),
+                ('9','平坐',""),
             ],
             #update = update_roof,
             update = update_roofstyle,
@@ -1196,6 +1197,10 @@ class ACA_data_template(bpy.types.PropertyGroup):
         )# type: ignore 
     dg_corner_source:bpy.props.PointerProperty(
             name = "转角斗栱",
+            type = bpy.types.Object,
+        )# type: ignore 
+    dg_pingzuo_piller_source:bpy.props.PointerProperty(
+            name = "平坐斗栱",
             type = bpy.types.Object,
         )# type: ignore 
     

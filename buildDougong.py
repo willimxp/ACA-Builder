@@ -190,7 +190,8 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
             con.ROOF_XIESHAN_JUANPENG,
-            con.ROOF_LUDING)):
+            con.ROOF_LUDING,
+            con.ROOF_PINGZUO)):
         # 配合斗栱，做出跳
         extendLength += abs(yLoc)*2
         # 配合挑檐桁做出梢
@@ -233,7 +234,8 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
             con.ROOF_XIESHAN_JUANPENG,
-            con.ROOF_LUDING):
+            con.ROOF_LUDING,
+            con.ROOF_PINGZUO,):
         loc = (net_x[-1]- yLoc,0,zLoc)
         fangCopy = utils.copyObject(
             sourceObj = fangSourceObj,
@@ -304,7 +306,8 @@ def __buildDGFangbyRoom(
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
             con.ROOF_XIESHAN_JUANPENG,
-            con.ROOF_LUDING):
+            con.ROOF_LUDING,
+            con.ROOF_PINGZUO,):
         for n in range(len(net_y)-1):
             length = net_y[n+1] - net_y[n]
             loc = Vector((
@@ -368,10 +371,18 @@ def __buildPillerDG(name = '柱头斗栱',
                     ):
     # 数据准备
     aData:tmpData = bpy.context.scene.ACA_temp
+
+    # 判断是否做平坐斗栱
+    dgSource = aData.dg_piller_source
+    if parent != None:
+        buildingObj,bData,oData = utils.getRoot(parent)
+        if buildingObj is not None:
+            if bData.roof_style == con.ROOF_PINGZUO:
+                dgSource = aData.dg_pingzuo_piller_source
     
     # 复制对象
     dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
-        sourceObj = aData.dg_piller_source,
+        sourceObj = dgSource,
         name = name,
         location=location,
         scale= scale,
@@ -422,12 +433,13 @@ def __buildDougong(dgrootObj:bpy.types.Object):
     if bData.use_pingbanfang:
         dgZ = con.PINGBANFANG_H * dk
 
-    # 转角斗栱，仅用于庑殿/歇山
+    # 转角斗栱，仅用于庑殿/歇山/平坐
     if (bData.roof_style in (
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
-                con.ROOF_LUDING,)
+                con.ROOF_LUDING,
+                con.ROOF_PINGZUO,)
             and aData.dg_corner_source != None):
         # 四个角柱坐标
         dgCornerArray = (
@@ -456,7 +468,8 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
-                con.ROOF_LUDING,):
+                con.ROOF_LUDING,
+                con.ROOF_PINGZUO):
             # 庑殿/歇山有转角斗栱，所以四角柱头不做斗栱
             dgRange = range(1,len(net_x)-1) 
         else:
@@ -512,12 +525,13 @@ def __buildDougong(dgrootObj:bpy.types.Object):
             #             clear_inner = clear_inner,
             #         )
         
-        # 两山的柱头斗栱，仅庑殿/歇山做两山的斗栱
+        # 两山的柱头斗栱，仅庑殿/歇山/平坐做两山的斗栱
         if bData.roof_style in (
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
-                con.ROOF_LUDING,):
+                con.ROOF_LUDING,
+                con.ROOF_PINGZUO,):
             for n in range(len(net_y)-2) : 
                 # 廊间进深-1/4柱径（搭接了1/4更好看）
                 taojianLength = (abs(net_x[1]-net_x[0]) 
@@ -594,7 +608,8 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
-                con.ROOF_LUDING,):
+                con.ROOF_LUDING,
+                con.ROOF_PINGZUO,):
             for n in range(len(net_y)-1) : 
                 # 求平身科攒数
                 pStart = net_y[n]
@@ -668,8 +683,13 @@ def buildDougong(buildingObj:bpy.types.Object):
     __buildDougong(dgrootObj)
 
     # 3、排布斗栱间的枋子
+    # 判断是否做平坐斗栱
+    dgSource = aData.dg_piller_source
+    if bData.roof_style == con.ROOF_PINGZUO:
+        dgSource = aData.dg_pingzuo_piller_source
+
     # 循环处理各个连接件
-    for fangObj in aData.dg_piller_source.children:
+    for fangObj in dgSource.children:
         if '栱垫板' in fangObj.name:
             __buildDGFangbyRoom(dgrootObj,fangObj)
         else:

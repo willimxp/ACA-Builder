@@ -840,5 +840,10 @@ def __validate(buildingObj:bpy.types.Object):
             ludingExtend += bData.dg_extend
         if ludingExtend < 3*dk:
             return "盝顶设置异常，斗栱出跳或盝顶檐步架宽太小。请使用有出跳的斗栱，或增加盝顶檐步架宽。"
-    
+        
+    # 平坐验证
+    if (bData.roof_style == con.ROOF_BALCONY):
+        if not bData.use_dg:
+            if bData.dg_extend < 0.001:
+                return "无法生成平坐，请启用斗栱，且斗栱应该有足够的出跳。"
     return

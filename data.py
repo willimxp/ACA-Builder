@@ -399,6 +399,13 @@ def hide_tiles(self, context:bpy.types.Context):
     utils.hideLayer(
         buildingObj,con.COLL_NAME_BOARD,
         self.is_showTiles)
+    
+# 显示/隐藏平坐层
+def hide_balcony(self, context:bpy.types.Context):
+    buildingObj = self.id_data
+    utils.hideLayer(
+        buildingObj,con.COLL_NAME_BALCONY,
+        self.is_showBalcony)
 
 # 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据
 # https://docs.blender.org/api/current/bpy.props.html
@@ -494,6 +501,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default = True,
             name = "是否显示瓦作",
             update=hide_tiles
+        ) # type: ignore
+    is_showBalcony: bpy.props.BoolProperty(
+            default = True,
+            name = "是否显示平坐",
+            update=hide_balcony
         ) # type: ignore
     
     # 台基对象属性
@@ -1199,7 +1211,7 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "转角斗栱",
             type = bpy.types.Object,
         )# type: ignore 
-    dg_pingzuo_piller_source:bpy.props.PointerProperty(
+    dg_balcony_piller_source:bpy.props.PointerProperty(
             name = "平坐斗栱",
             type = bpy.types.Object,
         )# type: ignore 

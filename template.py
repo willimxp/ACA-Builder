@@ -139,13 +139,13 @@ def updateDougongData(buildingObj:bpy.types.Object,
             buildingObj,'dg_corner_source',
             parent=dgrootObj)
         __updateAssetStyle(
-            buildingObj,'dg_pingzuo_piller_source',
+            buildingObj,'dg_balcony_piller_source',
             parent=dgrootObj)
     if (aData.dg_piller_source == None
             or aData.dg_fillgap_source == None
             or aData.dg_fillgap_alt_source == None
             or aData.dg_corner_source == None
-            or aData.dg_pingzuo_piller_source == None
+            or aData.dg_balcony_piller_source == None
             ):
         utils.outputMsg("斗栱配置不完整，请检查")
         return

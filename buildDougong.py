@@ -191,7 +191,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
             con.ROOF_XIESHAN,
             con.ROOF_XIESHAN_JUANPENG,
             con.ROOF_LUDING,
-            con.ROOF_PINGZUO)):
+            con.ROOF_BALCONY)):
         # 配合斗栱，做出跳
         extendLength += abs(yLoc)*2
         # 配合挑檐桁做出梢
@@ -235,7 +235,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
             con.ROOF_XIESHAN,
             con.ROOF_XIESHAN_JUANPENG,
             con.ROOF_LUDING,
-            con.ROOF_PINGZUO,):
+            con.ROOF_BALCONY,):
         loc = (net_x[-1]- yLoc,0,zLoc)
         fangCopy = utils.copyObject(
             sourceObj = fangSourceObj,
@@ -307,7 +307,7 @@ def __buildDGFangbyRoom(
             con.ROOF_XIESHAN,
             con.ROOF_XIESHAN_JUANPENG,
             con.ROOF_LUDING,
-            con.ROOF_PINGZUO,):
+            con.ROOF_BALCONY,):
         for n in range(len(net_y)-1):
             length = net_y[n+1] - net_y[n]
             loc = Vector((
@@ -377,8 +377,8 @@ def __buildPillerDG(name = '柱头斗栱',
     if parent != None:
         buildingObj,bData,oData = utils.getRoot(parent)
         if buildingObj is not None:
-            if bData.roof_style == con.ROOF_PINGZUO:
-                dgSource = aData.dg_pingzuo_piller_source
+            if bData.roof_style == con.ROOF_BALCONY:
+                dgSource = aData.dg_balcony_piller_source
     
     # 复制对象
     dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
@@ -439,7 +439,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING,
-                con.ROOF_PINGZUO,)
+                con.ROOF_BALCONY,)
             and aData.dg_corner_source != None):
         # 四个角柱坐标
         dgCornerArray = (
@@ -469,7 +469,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING,
-                con.ROOF_PINGZUO):
+                con.ROOF_BALCONY):
             # 庑殿/歇山有转角斗栱，所以四角柱头不做斗栱
             dgRange = range(1,len(net_x)-1) 
         else:
@@ -531,7 +531,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING,
-                con.ROOF_PINGZUO,):
+                con.ROOF_BALCONY,):
             for n in range(len(net_y)-2) : 
                 # 廊间进深-1/4柱径（搭接了1/4更好看）
                 taojianLength = (abs(net_x[1]-net_x[0]) 
@@ -609,7 +609,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING,
-                con.ROOF_PINGZUO,):
+                con.ROOF_BALCONY,):
             for n in range(len(net_y)-1) : 
                 # 求平身科攒数
                 pStart = net_y[n]
@@ -685,8 +685,8 @@ def buildDougong(buildingObj:bpy.types.Object):
     # 3、排布斗栱间的枋子
     # 判断是否做平坐斗栱
     dgSource = aData.dg_piller_source
-    if bData.roof_style == con.ROOF_PINGZUO:
-        dgSource = aData.dg_pingzuo_piller_source
+    if bData.roof_style == con.ROOF_BALCONY:
+        dgSource = aData.dg_balcony_piller_source
 
     # 循环处理各个连接件
     for fangObj in dgSource.children:

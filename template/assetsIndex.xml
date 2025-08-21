@@ -41,14 +41,14 @@
         <item type='Object' style='单翘重昂'>单翘重昂.柱头科</item>
         <item type='Object' style='宋-四铺作'>四铺作插昂柱头.join</item>
     </dg_piller_source>
-    <dg_pingzuo_piller_source type="List" key='dg_style'>
+    <dg_balcony_piller_source type="List" key='dg_style'>
         <item type='Object' style='一斗三升'>一斗三升.柱头科</item>
         <item type='Object' style='斗口单昂'>斗口单昂.平坐</item>
         <item type='Object' style='单翘单昂'>单翘单昂.柱头科</item>
         <item type='Object' style='斗口重昂'>斗口重昂.柱头科</item>
         <item type='Object' style='单翘重昂'>单翘重昂.柱头科</item>
         <item type='Object' style='宋-四铺作'>四铺作插昂柱头.join</item>
-    </dg_pingzuo_piller_source>
+    </dg_balcony_piller_source>
     <dg_fillgap_source type="List" key='dg_style'>
         <item type='Object' style='一斗三升'>一斗三升.平身科</item>
         <item type='Object' style='斗口单昂'>斗口单昂.平身科</item>

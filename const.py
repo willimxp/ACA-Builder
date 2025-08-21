@@ -18,6 +18,7 @@ class ACA_Consts(object):
     COLL_NAME_RAFTER = '6-椽架层'
     COLL_NAME_BOARD = '7-山花/望板'
     COLL_NAME_TILE = '8-瓦作层'
+    COLL_NAME_BALCONY = '5-平坐层'
     
     # 系统参数
     PLATFORM_NAME = '台基'                                           # 台基名称
@@ -38,6 +39,7 @@ class ACA_Consts(object):
     ACA_TYPE_BEAM_ROOT = 'beam_root'                                # ACA类型：梁架根节点
     ACA_TYPE_RAFTER_ROOT = 'rafter_root'                            # ACA类型：椽架根节点
     ACA_TYPE_BOARD_ROOT = 'board_root'                              # ACA类型：望板根节点
+    ACA_TYPE_BALCONY_ROOT = 'balcony_root'                          # ACA类型：平坐根节点
     ACA_TYPE_RAFTER_FB = 'rafter_fb'                                # ACA类型：前后檐椽
     ACA_TYPE_RAFTER_LR = 'rafter_lr'                                # ACA类型：两山檐椽
     ACA_TYPE_FLYRAFTER_FB = 'flyrafter_fb'                          # 前后檐飞椽
@@ -78,7 +80,7 @@ class ACA_Consts(object):
     ROOF_XUANSHAN_JUANPENG = '6'
     ROOF_YINGSHAN_JUANPENG = '7'
     ROOF_XIESHAN_JUANPENG = '8'
-    ROOF_PINGZUO = '9'
+    ROOF_BALCONY = '9'
 
     # 台基
     PLATFORM_HEIGHT = 2         # 台基默认高度(PD)
@@ -218,8 +220,30 @@ class ACA_Consts(object):
     JIAOLIANG_H = 4.5                       # 角梁高(DK)，老角梁和子角梁
     JIAOLIANG_Y = 3                         # 角梁厚(DK)，老角梁和子角梁
     JIAOLIANG_WEI_KOUJIN = 0.2              # 角梁尾的扣金系数，则例没有明说，这个值越小，约陡峭
-    JIAOLIANG_HEAD_YAJIN = 0.2 # 0.5              # 角梁头的压金系数，则例没有明说，这个值越小，约陡峭
+    JIAOLIANG_HEAD_YAJIN = 0.2 # 0.5        # 角梁头的压金系数，则例没有明说，这个值越小，约陡峭
     YOUQIANG_YAJIN = 1-JIAOLIANG_WEI_KOUJIN #由戗压金系数
+
+    # 平坐
+    BALCONY_FLOOR_H = 2                 # 楼板厚度(DK)
+    BALCONY_EXTENT = 5.2                # 平坐扩展(DK)，与HENG_EXTEND相同
+    BALCONY_EAVE_H = 5                  # 挂檐板高度(DK)
+    BALCONY_EAVE_Y = 0.5                # 挂檐板厚度(DK)
+    RAILING_DEEPTH = 6                  # 栏杆深度(DK)
+    RAILING_PILLER_H = 1.3              # 望柱高(m)
+    RAILING_PILLER_D = 1.8              # 望柱径(DK)
+    RAILING_DIFU_Y = 2.5                # 地栿宽(DK)
+    RAILING_DIFU_H = 1                  # 地栿高(DK)
+    RAILING_FANG_Y = 1.1                # 中/下枋宽(DK)
+    RAILING_FANG_H = 0.9                # 中/下枋高(DK)
+    RAILING_YAZI_Y = 0.25               # 牙子板厚(DK)
+    RAILING_YAZI_H = 1.8                # 牙子板高(DK)
+    RAILING_TAOHUAN_Y = 0.25            # 绦环板厚(DK)
+    RAILING_TAOHUAN_H = 2.7             # 绦环板高(DK)
+    HANDRAIL_Z = 1                      # 桪杖扶手高(m)
+    HANDRAIL_Y = 1.1                    # 桪杖宽(DK)
+    HANDRAIL_H = 0.9                    # 桪杖高(DK)
+    RAILING_ZZ_Y = 0.9                  # 折柱深(DK)
+    RAILING_ZZ_W = 1.1                  # 折柱宽(DK)
 
     # 其他
     OFFSET_ORIENTATION = 'GLOBAL'       # 'GLOBAL'  'LOCAL' #上下层叠构件的错开方式，一般绘图是垂直位移，但其实相对方向的位移更好看

@@ -16,6 +16,7 @@ from . import buildWall
 from . import buildDougong
 from . import buildBeam
 from . import buildRooftile
+from . import buildBalcony
 from . import texture as mat
 
 # 设置“椽架”根节点
@@ -3952,6 +3953,12 @@ def __clearRoof(buildingObj:bpy.types.Object):
     if dgrootObj != None: 
         utils.deleteHierarchy(dgrootObj)
     
+    # 平座层
+    balconyRoot = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_BALCONY_ROOT)
+    if balconyRoot != None:
+        utils.deleteHierarchy(balconyRoot)
+    
     # 梁架层
     beamRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_BEAM_ROOT)
@@ -4022,25 +4029,32 @@ def buildRoof(buildingObj:bpy.types.Object):
         utils.outputMsg("Building Dougong...")
         buildDougong.buildDougong(buildingObj)
 
-    # 生成梁架
-    if bData.is_showBeam:
-        utils.outputMsg("Building Beams...")
-        buildBeam.buildBeamFrame(buildingObj)
-    
-    # 生成椽望
-    if bData.is_showRafter:
-        utils.outputMsg("Building Rafters...")
-        __buildRafterFrame(buildingObj)
+    # 是否为平坐
+    if bData.roof_style==con.ROOF_BALCONY:
+        # 生成平座层
+        if bData.is_showBalcony:
+            utils.outputMsg("Building Balcony...")
+            buildBalcony.buildBalcony(buildingObj)
+    else:
+        # 生成梁架
+        if bData.is_showBeam:
+            utils.outputMsg("Building Beams...")
+            buildBeam.buildBeamFrame(buildingObj)
+        
+        # 生成椽望
+        if bData.is_showRafter:
+            utils.outputMsg("Building Rafters...")
+            __buildRafterFrame(buildingObj)
 
-    # 生成瓦作层
-    if bData.is_showTiles:
-        utils.outputMsg("Building Tiles...")
-        buildRooftile.buildTile(buildingObj)
+        # 生成瓦作层
+        if bData.is_showTiles:
+            utils.outputMsg("Building Tiles...")
+            buildRooftile.buildTile(buildingObj)
 
-    # 望板层联动瓦作层
-    utils.hideLayer(
-        buildingObj,con.COLL_NAME_BOARD,
-        bData.is_showTiles)
+        # 望板层联动瓦作层
+        utils.hideLayer(
+            buildingObj,con.COLL_NAME_BOARD,
+            bData.is_showTiles)
     
     utils.focusObj(buildingObj)
     return {'FINISHED'}

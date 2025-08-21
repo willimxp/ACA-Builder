@@ -366,6 +366,7 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
             con.M_BAWANGQUAN,       # 霸王拳
             con.M_CORNERBEAM,       # 老角梁
             con.M_MENZAN,           # 门簪
+            con.M_RAILING,          # 栏杆(望柱、净瓶)
         ):
             # 直接使用原始贴图，不做改变
             pass
@@ -402,6 +403,7 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
             con.M_SHANHUA,          # 山花板
             con.M_ZHILINGCHUANG,    # 直棂窗
             con.M_MENZAN,           # 门簪
+            con.M_RAILING,          # 栏杆(望柱、净瓶)
         ):
             mat = aData.mat_oilpaint
             slot = 1

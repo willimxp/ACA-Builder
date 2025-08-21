@@ -1359,6 +1359,14 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "门簪",
             type = bpy.types.Object,
         )# type: ignore 
+    railing_piller:bpy.props.PointerProperty(
+            name = "栏杆望柱",
+            type = bpy.types.Object,
+        )# type: ignore 
+    railing_vase:bpy.props.PointerProperty(
+            name = "栏杆净瓶",
+            type = bpy.types.Object,
+        )# type: ignore 
     
 # template下拉框已经废弃，本方法也随之废弃
 # # 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据

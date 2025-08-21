@@ -232,16 +232,21 @@ class ACA_Consts(object):
     RAILING_PILLER_H = 1.3              # 望柱高(m)
     RAILING_PILLER_D = 1.8              # 望柱径(DK)
     RAILING_DIFU_Y = 2.5                # 地栿宽(DK)
-    RAILING_DIFU_H = 1                  # 地栿高(DK)
+    # RAILING_DIFU_H = 1                  # 地栿高(DK)
+    RAILING_DIFU_H = 0.08               # 地栿高(m)
     RAILING_FANG_Y = 1.1                # 中/下枋宽(DK)
-    RAILING_FANG_H = 0.9                # 中/下枋高(DK)
+    # RAILING_FANG_H = 0.9                # 中/下枋高(DK)
+    RAILING_FANG_H = 0.08               # 中/下枋高(m)
     RAILING_YAZI_Y = 0.25               # 牙子板厚(DK)
-    RAILING_YAZI_H = 1.8                # 牙子板高(DK)
+    # RAILING_YAZI_H = 1.8                # 牙子板高(DK)
+    RAILING_YAZI_H = 0.14               # 牙子板高(m)
     RAILING_TAOHUAN_Y = 0.25            # 绦环板厚(DK)
-    RAILING_TAOHUAN_H = 2.7             # 绦环板高(DK)
+    # RAILING_TAOHUAN_H = 2.7             # 绦环板高(DK)
+    RAILING_TAOHUAN_H = 0.21            # 绦环板高(m)
     HANDRAIL_Z = 1                      # 桪杖扶手高(m)
     HANDRAIL_Y = 1.1                    # 桪杖宽(DK)
-    HANDRAIL_H = 0.9                    # 桪杖高(DK)
+    # HANDRAIL_H = 0.9                    # 桪杖高(DK)
+    HANDRAIL_H = 0.08                    # 桪杖高(m)
     RAILING_ZZ_Y = 0.9                  # 折柱深(DK)
     RAILING_ZZ_W = 1.1                  # 折柱宽(DK)
 
@@ -326,6 +331,7 @@ class ACA_Consts(object):
     M_ZHILINGCHUANG = '直棂窗'
     M_MENZAN = '门簪'
     M_LINXIN_WAN = '万字锦'
+    M_RAILING = '栏杆'
 
     # 组合类型
     COMBO_ROOT = 'combo_root'

@@ -131,7 +131,7 @@ def __buildFloor(balconyRoot:bpy.types.Object):
             )
     
     difuDeepth = con.RAILING_DIFU_Y*dk
-    difuHeight = con.RAILING_DIFU_H*dk
+    difuHeight = con.RAILING_DIFU_H
 
     # 前后檐
     # 地栿长度
@@ -153,6 +153,9 @@ def __buildFloor(balconyRoot:bpy.types.Object):
         mirrorObj=balconyRoot,
         use_axis=(False,True,False)
     )
+    # 导角
+    utils.addModifierBevel(
+        object=difuObjFB,width=con.BEVEL_LOW)
     mat.paint(difuObjFB,con.M_PAINT)
 
     # 两山
@@ -226,6 +229,8 @@ def __buildProxy(balconyRoot:bpy.types.Object):
             length = net_x[x+1] - net_x[x]
             # 与邻间共用望柱
             length += con.RAILING_PILLER_D*dk
+            # 防止z-fight
+            length -= 0.001
 
             # 尽间：根据平坐出跳进行延长
             if x in (0,bData.x_rooms-1):
@@ -254,10 +259,16 @@ def __buildProxy(balconyRoot:bpy.types.Object):
                 locX = net_x[x] - extend
                 rotZ = math.radians(-90)
 
-            # 定位
+            # 明间等直接适配开间宽度
+            # 开间中心
             locY = (net_y[y] + net_y[y+1])/2
-            # 定长
+            # 开间长度
             length = net_y[y+1] - net_y[y]
+            # 与邻间共用望柱
+            length += con.RAILING_PILLER_D*dk
+            # 防止z-fight
+            length -= 0.001
+
             # 尽间Y坐标考虑延长的偏移
             if y in (0,bData.y_rooms-1):
                 length += extend
@@ -279,11 +290,11 @@ def __buildRailing(balconyRoot:bpy.types.Object,
                    connect=False):
     buildingObj,bData,oData = utils.getRoot(balconyRoot)
     dk = bData.DK
+    aData:tmpData = bpy.context.scene.ACA_temp
     railingParts= []
-    railingNoBevel = []
     proxyW = proxy['length']
     # 分栏：分栏数量没有明确规定，我按照望柱高再四舍五入
-    sectionTotal = proxyW - con.RAILING_PILLER_D*dk # 扣减两侧各半根望柱
+    sectionTotal = proxyW - con.RAILING_PILLER_D*dk*2 # 扣减两侧各1根望柱
     sectionCount = round(sectionTotal/con.RAILING_PILLER_H)
     sectionWidth = sectionTotal/sectionCount
 
@@ -315,14 +326,17 @@ def __buildRailing(balconyRoot:bpy.types.Object,
                  pillerD,
                  pillerH)
     pillerLoc = (-proxyW/2 + pillerD/2,
-                 0,
-                 pillerH/2)
-    pillerObj = utils.addCube(
+                 0,0)
+    pillerObj = utils.copyObject(
+        sourceObj=aData.railing_piller,
         name=f"望柱.{proxy['id']}",
-        dimension=pillerDim,
+        dimensions=pillerDim,
         location=pillerLoc,
-        parent=railingRoot
+        parentObj=railingRoot,
+        singleUser=True,
     )
+    # 着色
+    mat.paint(pillerObj,con.M_RAILING,override=True)
     # 如果栏杆不连续，就左右都做望柱
     if not connect:
         utils.addModifierMirror(pillerObj,
@@ -331,9 +345,9 @@ def __buildRailing(balconyRoot:bpy.types.Object,
     railingParts.append(pillerObj)
 
     # 桪杖扶手，固定高度
-    handrailWidth = proxyW
+    handrailWidth = proxyW - con.RAILING_PILLER_D*dk
     handrailDeepth = con.HANDRAIL_Y*dk
-    handrailHeight = con.HANDRAIL_H*dk
+    handrailHeight = con.HANDRAIL_H
     handrailDim = (handrailWidth,handrailDeepth,handrailHeight)
     handrailLoc = (0,0,con.HANDRAIL_Z)
     handrailObj = utils.addCube(
@@ -342,6 +356,9 @@ def __buildRailing(balconyRoot:bpy.types.Object,
         location=handrailLoc,
         parent=railingRoot
     )
+    # 导角
+    utils.addModifierBevel(
+        object=handrailObj,width=con.BEVEL_LOW)
     railingParts.append(handrailObj)
 
     # 折柱
@@ -352,7 +369,7 @@ def __buildRailing(balconyRoot:bpy.types.Object,
         zzHeight = con.HANDRAIL_Z
         zzDim = (zzWidth,zzDeepth,zzHeight)
         zzX = (-proxyW/2 # 左侧边框
-               + con.RAILING_PILLER_D*dk/2 # 半根望柱
+               + con.RAILING_PILLER_D*dk # 整根望柱
                # + con.RAILING_ZZ_W*dk/2  # 半根折柱
                + n*sectionWidth)
         zzLoc = (zzX,    # 依次排列
@@ -363,13 +380,59 @@ def __buildRailing(balconyRoot:bpy.types.Object,
             location=zzLoc,
             parent=railingRoot
         )
+        # 导角
+        utils.addModifierBevel(
+            object=zzObj,width=con.BEVEL_LOW)
         railingParts.append(zzObj)
+
+        # 净瓶
+        vaseZ = (con.RAILING_DIFU_H # 地栿
+                 + con.RAILING_YAZI_H # 牙子板
+                 + con.RAILING_FANG_H # 下枋
+                 + con.RAILING_TAOHUAN_H # 绦环板
+                 + con.RAILING_FANG_H # 中枋
+                 )
+        vaseLoc = (zzX,0,vaseZ)
+        vaseObj = utils.copyObject(
+                sourceObj=aData.railing_vase,
+                name=f"净瓶.{proxy['id']}",
+                location=vaseLoc,
+                parentObj=railingRoot,
+                singleUser=True,
+            )
+        # 拉伸净瓶高度
+        vaseH = (con.HANDRAIL_Z # 桪杖扶手高度
+                 - con.HANDRAIL_H/2 # 桪杖扶手厚度
+                 - vaseZ)   # 下部所有构件
+        vaseObj.dimensions.z = vaseH
+        # 着色
+        mat.paint(vaseObj,con.M_RAILING,override=True)
+        # 裁剪
+        if n in (0,sectionCount):
+            if n == 0:
+                clear_inner=False
+                clear_outer=True
+            else:
+                clear_inner=True
+                clear_outer=False
+
+            utils.addBisect(
+                object=vaseObj,
+                pStart=railingRoot.matrix_world @ Vector((0,0,0)),
+                pEnd=railingRoot.matrix_world @ Vector((0,1,0)),
+                pCut=railingRoot.matrix_world @ Vector(vaseLoc),
+                clear_inner=clear_inner,
+                clear_outer=clear_outer,
+            )
+            utils.shaderSmooth(vaseObj)
+        railingParts.append(vaseObj)
+        
 
     # 从下到上，累计高度
     sumZ = 0
 
     # 连续栏杆在楼板中做地栿
-    difuHeight = con.RAILING_DIFU_H*dk
+    difuHeight = con.RAILING_DIFU_H
     if not connect:
         # 地栿
         difuWidth = proxyW
@@ -382,21 +445,24 @@ def __buildRailing(balconyRoot:bpy.types.Object,
             location=difuLoc,
             parent=railingRoot
         )
+        # 导角
+        utils.addModifierBevel(
+            object=difuObj,width=con.BEVEL_LOW)
         railingParts.append(difuObj)
     sumZ += difuHeight
 
     # 牙子板
+    # 尺寸
+    yaziWidth = (sectionWidth # 分栏宽度
+                    -con.RAILING_ZZ_W*dk)  # 扣除两侧各半根折柱
+    yaziDeepth = con.RAILING_YAZI_Y*dk
+    yaziHeight = con.RAILING_YAZI_H
+    yaziDim = (yaziWidth,yaziDeepth,yaziHeight)
     for n in range(sectionCount):
-        # 尺寸
-        yaziWidth = (sectionWidth # 分栏宽度
-                     -con.RAILING_ZZ_W*dk)  # 扣除两侧各半根折柱
-        yaziDeepth = con.RAILING_YAZI_Y*dk
-        yaziHeight = con.RAILING_YAZI_H*dk
-        yaziDim = (yaziWidth,yaziDeepth,yaziHeight)
         # 定位
         yaziX = (-proxyW/2 # 左侧边线
-                 + con.RAILING_PILLER_D*dk/2 # 半根望柱
-                 + (n+0.5)*con.RAILING_ZZ_W*dk # 半根折柱
+                 + con.RAILING_PILLER_D*dk # 整根望柱
+                 + (n+0.5)*con.RAILING_ZZ_W*dk # 折柱
                  + (n+0.5)*yaziWidth)
         yaziLoc = (yaziX,
                    0,
@@ -408,13 +474,13 @@ def __buildRailing(balconyRoot:bpy.types.Object,
             parent=railingRoot
         )
         # mat.paint(yaziObj,con.M_LINXIN_WAN)
-        railingNoBevel.append(yaziObj)
+        railingParts.append(yaziObj)
     sumZ += yaziHeight
 
     # 下枋
-    downFangWidth = proxyW
+    downFangWidth = proxyW - con.RAILING_PILLER_D*dk
     downFangDeepth = con.RAILING_FANG_Y*dk
-    downFangHeight = con.RAILING_FANG_H*dk
+    downFangHeight = con.RAILING_FANG_H
     downFangDim = (downFangWidth,downFangDeepth,downFangHeight)
     downFangLoc = (0,0,sumZ + downFangHeight/2)
     downFangObj = utils.addCube(
@@ -423,6 +489,9 @@ def __buildRailing(balconyRoot:bpy.types.Object,
         location=downFangLoc,
         parent=railingRoot
     )
+    # 导角
+    utils.addModifierBevel(
+        object=downFangObj,width=con.BEVEL_LOW)
     sumZ += downFangHeight
     railingParts.append(downFangObj)    
 
@@ -432,11 +501,11 @@ def __buildRailing(balconyRoot:bpy.types.Object,
         taohuanWidth = (sectionWidth # 分栏宽度
                      -con.RAILING_ZZ_W*dk)  # 扣除两侧各半根折柱
         taohuanDeepth = con.RAILING_TAOHUAN_Y*dk
-        taohuanHeight = con.RAILING_TAOHUAN_H*dk
+        taohuanHeight = con.RAILING_TAOHUAN_H
         taohuanDim = (taohuanWidth,taohuanDeepth,taohuanHeight)
         # 定位
         taohuanX = (-proxyW/2 # 左侧边线
-                 + con.RAILING_PILLER_D*dk/2 # 半根望柱
+                 + con.RAILING_PILLER_D*dk # 整根望柱
                  + (n+0.5)*con.RAILING_ZZ_W*dk # 半根折柱
                  + (n+0.5)*taohuanWidth)
         taohuanLoc = (taohuanX,
@@ -448,14 +517,14 @@ def __buildRailing(balconyRoot:bpy.types.Object,
             location=taohuanLoc,
             parent=railingRoot
         )
-        # mat.paint(taohuanObj,con.M_LINXIN_WAN)
-        railingNoBevel.append(taohuanObj)
+        # mat.paint(taohuanObj,con.M_DOOR_RING)
+        railingParts.append(taohuanObj)
     sumZ += taohuanHeight
     
     # 中枋
-    midFangWidth = proxyW
+    midFangWidth = proxyW - con.RAILING_PILLER_D*dk
     midFangDeepth = con.RAILING_FANG_Y*dk
-    midFangHeight = con.RAILING_FANG_H*dk
+    midFangHeight = con.RAILING_FANG_H
     midFangDim = (midFangWidth,midFangDeepth,midFangHeight)
     midFangLoc = (0,0,sumZ + midFangHeight/2)
     midFangObj = utils.addCube(
@@ -464,25 +533,21 @@ def __buildRailing(balconyRoot:bpy.types.Object,
         location=midFangLoc,
         parent=railingRoot
     )
+    # 导角
+    utils.addModifierBevel(
+        object=midFangObj,width=con.BEVEL_LOW)
     sumZ += downFangHeight
     railingParts.append(midFangObj)
 
-    # 合并对象
-    railingBevelObj = utils.joinObjects(
-        objList=railingParts,newName='栏杆')
-    # 导角
-    utils.addModifierBevel(
-        object=railingBevelObj,width=con.BEVEL_LOW)
     # 着色
-    mat.paint(paintObj=railingBevelObj,
-              paintMat=con.M_PAINT)
+    for part in railingParts:
+        mat.paint(paintObj=part,
+                    paintMat=con.M_PAINT)
     
-    # 与无需导角的合并
-    railingNoBevel.append(railingBevelObj)
+    # 合并对象
     railingObj = utils.joinObjects(
-        objList=railingNoBevel,newName='栏杆')
-    mat.paint(paintObj=railingObj,
-              paintMat=con.M_PAINT)
+        objList=railingParts,newName='栏杆')
+    
 
     return railingObj
 

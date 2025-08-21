@@ -105,4 +105,6 @@
     <door_pushou type="Object">铺首</door_pushou>
     <door_ding type="Object">门钉</door_ding>
     <door_zan type="Object">门簪</door_zan>
+    <railing_piller type="Object">栏杆望柱</railing_piller>
+    <railing_vase type="Object">栏杆净瓶</railing_vase>
 </assets>

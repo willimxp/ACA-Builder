@@ -260,6 +260,8 @@ class ACA_Consts(object):
     SANSHUI_WIDTH = 20                  # 散水宽度(DK)
     SANSHUI_HEIGHT = 0.02               # 散水高度(m)
     TILE_CORNER_SPLIT = 1               # 硬山/悬山四角滴水间距(DK)
+    PILLER_HEAD_DEFAULT = 1             # 柱头贴图默认高度(素材库，贴图使用)
+    PILLER_HEIGHT_DEFAULT = 5           # 柱默认高度(素材库，贴图使用)
 
     # 瓦作类
     # 屋瓦灰背层高度，用于计算铺瓦的高度

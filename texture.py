@@ -957,6 +957,10 @@ def __setPillerHead2(pillerObj:bpy.types.Object,
     if bData.use_smallfang:
         fangHeight += (con.BOARD_YOUE_H*dk
             + con.EFANG_SMALL_H*dk)
+    # 250822 为了让酱油色的柱头导角不会破碎，给柱素材添加了一个默认高度
+    # 这里计算的时候，扣除该默认高度
+    pillerScale = pillerObj.dimensions.z / con.PILLER_HEIGHT_DEFAULT
+    headHeight = fangHeight - con.PILLER_HEAD_DEFAULT* pillerScale
 
     # 2、选择中段
     utils.focusObj(pillerObj)
@@ -970,7 +974,7 @@ def __setPillerHead2(pillerObj:bpy.types.Object,
 
     # 3、拉伸柱头贴图区
     bpy.ops.transform.translate(
-            value=(0,0,-fangHeight))
+            value=(0,0,-headHeight))
     
     # 4、退出编辑状态，以便后续获取uvmap
     bpy.ops.object.mode_set(mode='OBJECT')

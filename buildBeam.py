@@ -947,6 +947,19 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
             ))
         # 2、趴梁定尺寸
         length = abs(purlin_pos[n].x)-beamX
+        # 250822 趴梁做通长，可能出现在以下场景：
+        # 1、亭子等只有面阔1间的庑殿
+        # 2、面阔尽间太小，导致山面桁架已经退到了梁架内侧，
+        if length < 0.01:
+            length = purlin_pos[n].x
+            loc = Vector((purlin_pos[n].x/2,
+                # 取上一层桁檩的Y坐标
+                purlin_pos[n+1].y,
+                # 梁下皮与本层桁檩中线平
+                (purlin_pos[n].z 
+                    + con.GABELBEAM_HEIGHT*dk/2)
+            ))
+
         # 趴梁高6.5dk，厚5.2dk
         dim = Vector((
             length,

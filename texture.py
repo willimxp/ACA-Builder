@@ -1446,6 +1446,7 @@ def setGlazeStyle(paintObj:bpy.types.Object,
         aData.paoshou_8_source,     # 跑兽
         aData.paoshou_9_source,     # 跑兽
         aData.paoshou_10_source,    # 跑兽
+        aData.baoding_source,       # 宝顶
     ] 
     for obj in glazeList1:
         if obj.data.name in paintName:

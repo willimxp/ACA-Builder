@@ -1199,6 +1199,8 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
             )
         # 根据斗口调整尺度
         utils.resizeObj(baodingObj,tileScale)
+        # 设置材质
+        mat.setGlazeStyle(baodingObj,resetUV=False)
         # 退出，不再做后续的正脊和螭吻
         return
     

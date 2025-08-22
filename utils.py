@@ -2592,6 +2592,9 @@ def applyCollModifier(buildingObj):
             obj.select_set(True)
         else:
             print(f"applyCollModifier：对象 {obj.name} 不在当前视图，无法执行操作")
+    # Blender 4.3中提示convert poll失败，经查设置active object才行
+    # Blender 4.4，4.5中不存在此问题
+    bpy.context.view_layer.objects.active = obj
     bpy.ops.object.convert(target='MESH')
     return
 

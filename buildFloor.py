@@ -246,7 +246,13 @@ def __getWallRange(wallSetting):
     wallStr = ''
     for wallID in wallList:
         if wallID == '': continue
+
         setting = wallID.split('#')
+        # 判断是否是栏杆，可以与雀替并存
+        if setting[0] == con.ACA_WALLTYPE_RAILILNG:
+            # 不写入wallStr，跳过
+            continue
+
         # 以柱编号定位
         # 起始柱子
         pFrom = setting[1].split('/')
@@ -329,6 +335,7 @@ def __buildQueti(fangObj):
     # 解析模板输入的墙体设置，格式如下
     # "wall#3/0#3/3,wall#0/0#3/0,wall#0/3#3/3,window#0/0#0/1,window#0/2#0/3,door#0/1#0/2,"
     wallSetting = bData.wall_net
+    # 提取有装修的柱间列表（其中排除了栏杆）
     wallStr = __getWallRange(wallSetting)
     fangID_alt = setting[1] + '#' + setting[0]
     if fangID in wallStr:

@@ -243,6 +243,7 @@ def update_wall(self, context:bpy.types.Context):
                 con.ACA_WALLTYPE_BARWINDOW,     # 直棂窗
                 con.ACA_WALLTYPE_MAINDOOR,      # 板门
                 con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
+                con.ACA_WALLTYPE_RAILILNG,      # 栏杆
             ):
         funproxy = partial(buildWall.updateWall,
                                 wallObj=refObj)

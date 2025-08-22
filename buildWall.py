@@ -413,7 +413,7 @@ def addWall(buildingObj:bpy.types.Object,
                          + '#' + pFrom.ACA_data['pillerID'] 
                     # 验证墙体在布局中是否已经存在
                     if wallID in wall_net or wallID_alt in wall_net:
-                        print(wallID + " is in wall_net:" + wall_net)
+                        utils.outputMsg(wallID + " 该位置已经存在装修:" + wall_net)
                         continue
                     wallID = wallType+'#'+wallID
                     
@@ -456,6 +456,7 @@ def delWall(buildingObj:bpy.types.Object,
                 con.ACA_WALLTYPE_BARWINDOW,     # 直棂窗
                 con.ACA_WALLTYPE_MAINDOOR,      # 板门
                 con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
+                con.ACA_WALLTYPE_RAILILNG,      # 栏杆
             ):
                 utils.deleteHierarchy(wall,del_parent=True)
 

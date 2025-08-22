@@ -596,36 +596,54 @@ class ACA_PT_wall(bpy.types.Panel):
 
             # 工具栏：加枋、加墙、加门、加窗、删除
             toolBox = box.column(align=True)
+            
+            
+
+            # 第1行 ------------------------------
             toolBar = toolBox.grid_flow(columns=2, align=True)
-            # # 按钮：加枋
-            # buttonFang = toolBar.column(align=True)
-            # buttonFang.operator(
-            #     "aca.add_fang",icon='LINKED',text='额枋')
             # 按钮：加板门
             buttonMaindoor = toolBar.column(align=True)
             buttonMaindoor.operator(
-                "aca.add_maindoor",icon='SPLIT_VERTICAL',text='板门')
-            # 按钮：加门
-            buttonDoor = toolBar.column(align=True)
-            buttonDoor.operator(
-                "aca.add_door",icon='MOD_TRIANGULATE',text='隔扇门')
-            # 按钮：加墙
-            buttonWall = toolBar.column(align=True)
-            buttonWall.operator(
-                "aca.add_wall",icon='MOD_BUILD',text='墙体')
+                "aca.add_maindoor",icon='SPLIT_VERTICAL',text='板  门')
             # 按钮：加直棂窗
             buttonBarwindow = toolBar.column(align=True)
             buttonBarwindow.operator(
                 "aca.add_barwindow",icon='FILE_VOLUME',text='直棂窗')
+            
+            # 第2行 ------------------------------
+            toolBar = toolBox.grid_flow(columns=2, align=True)
+            # 按钮：加门
+            buttonDoor = toolBar.column(align=True)
+            buttonDoor.operator(
+                "aca.add_door",icon='MOD_TRIANGULATE',text='隔扇门')
             # 按钮：加槛窗
             buttonWin = toolBar.column(align=True)
             buttonWin.operator(
                 "aca.add_window",icon='MOD_LATTICE',text='隔扇窗')
+
+            # 第3行 ------------------------------
+            toolBar = toolBox.grid_flow(columns=2, align=True)
+            # 按钮：加墙
+            buttonWall = toolBar.column(align=True)
+            buttonWall.operator(
+                "aca.add_wall",icon='MOD_BUILD',text='墙  体')
             # 按钮：加支摘窗
             buttonFlipWin = toolBar.column(align=True)
             buttonFlipWin.operator(
                 "aca.add_flipwindow",icon='LIGHT_AREA',text='支摘窗')
             
+            # 第4行 ------------------------------
+            toolBar = toolBox.grid_flow(columns=2, align=True)
+            # 按钮：加栏杆
+            buttonRailing = toolBar.column(align=True)
+            buttonRailing.operator(
+                "aca.add_railing",icon='COLLAPSEMENU',text='栏  杆')
+            # # 按钮：加枋
+            # buttonFang = toolBar.column(align=True)
+            # buttonFang.operator(
+            #     "aca.add_fang",icon='LINKED',text='额枋')
+            
+            # 第5行 ------------------------------
             # 通栏宽度按钮
             toolBar = toolBox.grid_flow(columns=1, align=True)
             # 按钮：删除
@@ -644,6 +662,7 @@ class ACA_PT_wall(bpy.types.Panel):
                     buttonMaindoor.enabled=False
                     buttonBarwindow.enabled=False
                     buttonFlipWin.enabled=False
+                    buttonRailing.enabled=False
             # 删除按钮，是否选中个隔断对象
             if objData.aca_type not in (
                 con.ACA_TYPE_FANG,          # 枋对象

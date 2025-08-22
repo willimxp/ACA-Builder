@@ -566,6 +566,29 @@ class ACA_OT_add_flipwindow(bpy.types.Operator):
                 self.report({'INFO'},"已添加支摘窗")
 
         return {'FINISHED'}
+    
+# 单独生成一副栏杆
+class ACA_OT_add_railing(bpy.types.Operator):
+    bl_idname="aca.add_railing"
+    bl_label = "栏杆"
+    bl_description = "在柱间加栏杆（先选择2根以上的柱子）"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        piller = context.object
+        pillers = context.selected_objects
+        buildingObj = utils.getAcaParent(
+            piller,con.ACA_TYPE_BUILDING) 
+        funproxy = partial(
+                buildWall.addWall,
+                buildingObj=buildingObj,
+                pillers=pillers,
+                wallType=con.ACA_WALLTYPE_RAILILNG)
+        result = utils.fastRun(funproxy)
+        if 'FINISHED' in result:
+                self.report({'INFO'},"已添加栏杆")
+
+        return {'FINISHED'}
 
 
 # 生成斗栱

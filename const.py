@@ -65,6 +65,7 @@ class ACA_Consts(object):
     ACA_WALLTYPE_BARWINDOW = 'barwindow'                            # 隔断属性-直棂窗
     ACA_WALLTYPE_MAINDOOR = 'maindoor'                              # 隔断属性-板门
     ACA_WALLTYPE_FLIPWINDOW = 'flipwindow'                          # 隔断属性-支摘窗
+    ACA_WALLTYPE_RAILILNG = 'railing'                               # 隔断属性-栏杆
     ACA_TYPE_COMBO = 'combo'                                        # 组合样式
     ACA_PILLER_HIDE = 'piller_hide'                                 # 隐藏柱网
 

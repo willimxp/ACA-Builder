@@ -6,6 +6,7 @@ import bpy
 import bmesh
 import math
 from mathutils import Vector
+from typing import List
 
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
@@ -285,17 +286,17 @@ def __buildProxy(balconyRoot:bpy.types.Object):
     return proxyList
 
 # 构造栏杆
-def __buildRailing(balconyRoot:bpy.types.Object,
+def __buildRailing(parentObj:bpy.types.Object,
                    proxy,
                    connect=False):
-    buildingObj,bData,oData = utils.getRoot(balconyRoot)
+    buildingObj,bData,oData = utils.getRoot(parentObj)
     dk = bData.DK
     aData:tmpData = bpy.context.scene.ACA_temp
     railingParts= []
     proxyW = proxy['length']
     # 分栏：分栏数量没有明确规定，我按照望柱高再四舍五入
     sectionTotal = proxyW - con.RAILING_PILLER_D*dk*2 # 扣减两侧各1根望柱
-    sectionCount = round(sectionTotal/con.RAILING_PILLER_H)
+    sectionCount = math.ceil(sectionTotal/con.RAILING_PILLER_H)
     sectionWidth = sectionTotal/sectionCount
 
     # 各开间根节点
@@ -303,7 +304,7 @@ def __buildRailing(balconyRoot:bpy.types.Object,
         name=f"栏杆.{proxy['id']}",
         location=proxy['location'],
         rotation=proxy['rotation'],
-        parent=balconyRoot,
+        parent=parentObj,
     )
     # utils.hideObj(railingRoot)
 
@@ -427,7 +428,6 @@ def __buildRailing(balconyRoot:bpy.types.Object,
             utils.shaderSmooth(vaseObj)
         railingParts.append(vaseObj)
         
-
     # 从下到上，累计高度
     sumZ = 0
 
@@ -548,6 +548,12 @@ def __buildRailing(balconyRoot:bpy.types.Object,
     railingObj = utils.joinObjects(
         objList=railingParts,newName='栏杆')
     
+    if not connect:
+        # 独立栏杆挂在wallproxy下
+        railingObj.parent = parentObj
+        # 独立栏杆不需要父节点
+        utils.delObject(railingRoot)
+        utils.delObject(proxyObj)
 
     return railingObj
 
@@ -570,9 +576,38 @@ def buildBalcony(buildingObj:bpy.types.Object):
     # 构造栏杆
     for proxy in proxyList:
         railingObj = __buildRailing(
-            balconyRoot=balconyRoot,
+            parentObj=balconyRoot,
             proxy=proxy,
             connect=True,
             )
     
     return
+
+# 手工添加栏杆
+# 营造板门
+def addRailing(wallProxy:bpy.types.Object):       
+    # 载入设计数据
+    buildingObj,bData,wData = utils.getRoot(wallProxy)
+    if buildingObj == None:
+        utils.popMessageBox(
+            "未找到建筑根节点或设计数据")
+        return
+
+    # 清理之前的子对象
+    utils.deleteHierarchy(wallProxy)
+
+    # 创建proxyData
+    proxy = {}
+    proxy['id'] = wallProxy.ACA_data['wallID']
+    # 柱间距，扣除柱径
+    proxy['length'] = wallProxy.dimensions.x - bData.piller_diameter
+    proxy['location'] = (0,0,0)
+    proxy['rotation'] = (0,0,0)
+
+    # 创建栏杆
+    railingObj = __buildRailing(
+        parentObj=wallProxy,
+        proxy=proxy
+    )
+
+    return railingObj

@@ -97,6 +97,8 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
         wallName = '板门'
     elif wallType == con.ACA_WALLTYPE_FLIPWINDOW:
         wallName = '支摘窗'
+    elif wallType == con.ACA_WALLTYPE_RAILILNG:
+        wallName = '栏杆'
     else:
         utils.outputMsg(f"无法生成wallproxy，walltype：{wallType}")
         return
@@ -343,6 +345,10 @@ def __buildWall(buildingObj:bpy.types.Object,
                       con.ACA_WALLTYPE_BARWINDOW,
                       con.ACA_WALLTYPE_FLIPWINDOW,):
         wallObj = buildDoor.buildDoor(wallproxy)
+    # 营造栏杆
+    elif wallType in (con.ACA_WALLTYPE_RAILILNG):
+        from . import buildBalcony
+        wallObj = buildBalcony.addRailing(wallproxy)
     else:
         utils.outputMsg(f"无法生成墙体类型:{wallType}")
         return

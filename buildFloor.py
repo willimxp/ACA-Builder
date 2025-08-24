@@ -1345,7 +1345,7 @@ def resetFloor(buildingObj:bpy.types.Object,
     bData.wall_net = ''
     
     # 250109 踏跺数据未重置，导致开间变化后，错误的踏跺无法生成而崩溃
-    bData.stepList.clear()
+    bData.step_list.clear()
 
     # 250306 重新考虑后，觉得似乎不必禁止
     # # 250215 重设地盘后，默认不做屋顶

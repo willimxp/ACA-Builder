@@ -431,7 +431,7 @@ def __setTerraceData(terraceObj:bpy.types.Object,
         mData['use_terrace'] = True
         
         # 不做踏跺
-        bData.stepList.clear()
+        bData.step_list.clear()
         # 柱网仅显示定位点
         bData['piller_net'] = con.ACA_PILLER_HIDE
         # 不做额枋
@@ -678,7 +678,7 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
         mData['y_rooms'] = bData['y_rooms'] + 2
         # 地盘变化后，柱网、踏跺、墙体、额枋都需要重置
         mData['piller_net'] = ''
-        mData.stepList.clear()
+        mData.step_list.clear()
         mData['wall_net'] = ''
         mData['fang_net'] = ''
     # 建筑更新，采用上檐被动的缩减1廊间

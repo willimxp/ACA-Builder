@@ -262,9 +262,9 @@ def __buildSteps(baseRootObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     stepObjList = []
 
-    # 250823 采用stepList
-    stepList = bData.stepList
-    for step in stepList:
+    # 250823 采用step_list
+    step_list = bData.step_list
+    for step in step_list:
         stepID = step.id
 
         if stepID == '': continue
@@ -295,7 +295,7 @@ def __buildSteps(baseRootObj:bpy.types.Object):
     return stepObjList
 
 # 241115 判断踏跺是否有相邻需要绘制
-# StepList的样式如"3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
+# step_list的样式如"3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
 def __checkNextStep(baseRootObj:bpy.types.Object,
                     stepID):
     buildingObj = utils.getAcaParent(
@@ -351,7 +351,7 @@ def __checkNextStep(baseRootObj:bpy.types.Object,
     LastStepID = f"{last_x1}/{last_y1}#{last_x2}/{last_y2}"
     
     hasNextStep = hasLastStep = ''
-    for step in bData.stepList:
+    for step in bData.step_list:
         if step.id == NextStepID:
             hasNextStep = NextStepID
         if step.id == LastStepID:
@@ -688,7 +688,7 @@ def __drawStep(
 # 添加散水，根据台基proxy、踏跺proxy进行生成，并合并
 def __addPlatformExpand(
         taimingObj:bpy.types.Object,
-        stepList,
+        step_list,
         type):
     # 载入数据
     buildingObj = utils.getAcaParent(
@@ -743,8 +743,8 @@ def __addPlatformExpand(
     # 3、踏跺拓展
     stepExpandList = []
     # 依据台基proxy、踏跺proxy生成新的散水对象
-    for n in range(len(stepList)):
-        stepObj:bpy.types.Object = stepList[n]
+    for n in range(len(step_list)):
+        stepObj:bpy.types.Object = step_list[n]
         # 削减0.1mm，改善后续boolean的毛刺
         import random
         offset = random.random()/1000
@@ -840,14 +840,14 @@ def addStep(buildingObj:bpy.types.Object,
         # 验证踏跺是否已经存在
         stepID = pFrom + '#' + pTo
         stepID_alt = pTo + '#' + pFrom
-        for step in bData.stepList:
+        for step in bData.step_list:
             if stepID == step.id or stepID_alt==step.id:
                 utils.outputMsg(stepID + "已经存在")
                 continue
         
         # 添加踏跺数据
         utils.outputMsg("添加踏跺：" + stepID)
-        step = bData.stepList.add()
+        step = bData.step_list.add()
         # step.id = f"{pFrom}#{pTo}"
         step.id = f"{pFrom}#{pTo}"
 
@@ -872,9 +872,9 @@ def delStep(buildingObj:bpy.types.Object,
 
         # 删除数据
         stepID = step.ACA_data['stepID']
-        for i,item in enumerate(bData.stepList):
+        for i,item in enumerate(bData.step_list):
             if item.id == stepID:
-                bData.stepList.remove(i)
+                bData.step_list.remove(i)
 
         # 删除实体
         utils.deleteHierarchy(step,del_parent=True)
@@ -922,13 +922,13 @@ def buildPlatform(buildingObj:bpy.types.Object):
     taimingObj = __buildTaiming(baseRootObj)
     basePartList.append(taimingObj)
     # 2.2、营造踏跺
-    stepList = __buildSteps(baseRootObj)
+    step_list = __buildSteps(baseRootObj)
     # 2.3、生成土衬
-    tuchenObj = __addPlatformExpand(taimingObj,stepList,
+    tuchenObj = __addPlatformExpand(taimingObj,step_list,
                              type='tuchen')
     basePartList.append(tuchenObj)
     # 2.4、生成散水
-    # sanshuiObj = __addPlatformExpand(taimingObj,stepList,
+    # sanshuiObj = __addPlatformExpand(taimingObj,step_list,
     #                           type='sanshui')
     # basePartList.append(sanshuiObj)
     # 3、合并构件

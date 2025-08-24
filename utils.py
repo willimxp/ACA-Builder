@@ -2694,7 +2694,7 @@ def getStepData(Obj:bpy.types.Object,stepID):
 
     stepData = None
     # 匹配stepData
-    for step in bData.stepList:
+    for step in bData.step_list:
         if step.id == stepID:
             stepData = step
             break

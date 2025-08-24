@@ -111,7 +111,7 @@ def update_step(self, context:bpy.types.Context):
         return
     
     # 获取当前踏跺数据
-    for step in bData.stepList:
+    for step in bData.step_list:
         if step.id == oData['stepID'] :
             currentStepData = step
     
@@ -129,7 +129,7 @@ def update_step(self, context:bpy.types.Context):
             continue
 
         # 全部修改为当前值
-        for stepData in bData.stepList:
+        for stepData in bData.step_list:
             if stepData.id == stepSelected.ACA_data['stepID']:
                 stepData['width'] = currentStepData.width
 
@@ -589,7 +589,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default = False,
             name = "是否有月台",
         ) # type: ignore
-    stepList: bpy.props.CollectionProperty(
+    step_list: bpy.props.CollectionProperty(
         type=ACA_data_taduo, name="踏跺列表"
     ) # type: ignore
     

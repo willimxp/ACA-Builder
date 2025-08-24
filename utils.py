@@ -936,8 +936,9 @@ def outputMsg(msg:str):
         redrawViewport()
         return 
     except Exception as e:
-        print(e)
-        logError(e)
+        # print(e)
+        # logError(e)
+        print("ACA：outputMsg时界面未能刷新")
         return
 
 # 隐藏对象，包括viewport和render渲染
@@ -2524,6 +2525,9 @@ def copyAcaData(fromObj,toObj,
             if keyType == 'EnumProperty':
                 value = int(value)
 
+            if keyType == 'CollectionProperty':
+                continue
+
             # 这样不会触发update，但需要单独处理enum
             target_props[prop_name] = value
         else:
@@ -2663,3 +2667,19 @@ def getComboRoot(obj:bpy.types.Object):
             comboRoot = parent        
 
     return comboRoot
+
+# 判断两个柱子是否相邻
+def validPillerNext(pillerID_1,pillerID_2):
+    # 起始柱子
+    pFrom_s = pillerID_1.split('/')
+    pFrom_x = int(pFrom_s[0])
+    pFrom_y = int(pFrom_s[1])
+    # 结束柱子
+    pTo_s = pillerID_2.split('/')
+    pTo_x = int(pTo_s[0])
+    pTo_y = int(pTo_s[1])
+    pValid = (pFrom_x-pTo_x) + (pFrom_y-pTo_y)
+    if abs(pValid) > 1:
+        return False
+    else:
+        return True

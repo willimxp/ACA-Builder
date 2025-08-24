@@ -377,7 +377,7 @@ class ACA_PT_platform(bpy.types.Panel):
             group.prop(mData, "platform_height")
             group.prop(mData, "platform_extend")
             
-            # 2、按钮工具箱 -----------------
+            # 2、踏跺工具箱 -----------------
             toolbox = box.column(align=True)
 
             # 添加踏跺、删除踏跺            
@@ -390,6 +390,17 @@ class ACA_PT_platform(bpy.types.Panel):
             btnDelTaduo.operator(operator='aca.del_step',
                          text='删除踏跺',
                          icon='TRASH')
+            # 踏跺参数
+            contextObj = context.object
+            if contextObj.ACA_data.aca_type == con.ACA_TYPE_STEP:
+                stepID = contextObj.ACA_data['stepID']
+                for step in bData.stepList:
+                    if step.name == stepID:
+                        stepData = step
+                group = toolbox.grid_flow(columns=1, align=True)
+                group.prop(stepData, "width",text="踏跺宽度")
+            
+
             # 添加踏跺，至少应选择两根柱子
             if objData.aca_type != con.ACA_TYPE_PILLER \
                 or len(context.selected_objects)<2:
@@ -398,6 +409,8 @@ class ACA_PT_platform(bpy.types.Panel):
             if objData.aca_type != con.ACA_TYPE_STEP:
                 btnDelTaduo.enabled = False
             
+            # 3、月台工具箱 -----------------
+            toolbox = box.column(align=True)
             # 添加月台、删除月台
             group = toolbox.grid_flow(columns=2, align=True)
             if not bData.use_terrace:

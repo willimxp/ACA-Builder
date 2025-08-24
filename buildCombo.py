@@ -255,7 +255,6 @@ def __syncData(fromBuilding:bpy.types.Object,
                 # 250812 重檐上檐需要同步pillernet，
                 # 所以默认的数据上传需要上传这些字段
                 # 月台不需要pillernet，不要用这个skip
-                # 'step_net',
                 # 'piller_net',
                 # 'wall_net',
                 # 'fang_net',
@@ -432,7 +431,7 @@ def __setTerraceData(terraceObj:bpy.types.Object,
         mData['use_terrace'] = True
         
         # 不做踏跺
-        bData['step_net'] = ''
+        bData.stepList.clear()
         # 柱网仅显示定位点
         bData['piller_net'] = con.ACA_PILLER_HIDE
         # 不做额枋
@@ -679,7 +678,7 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
         mData['y_rooms'] = bData['y_rooms'] + 2
         # 地盘变化后，柱网、踏跺、墙体、额枋都需要重置
         mData['piller_net'] = ''
-        mData['step_net'] = ''
+        mData.stepList.clear()
         mData['wall_net'] = ''
         mData['fang_net'] = ''
     # 建筑更新，采用上檐被动的缩减1廊间
@@ -974,7 +973,6 @@ def __uploadData(fromBuilding:bpy.types.Object):
                 # 子建筑可以自行决定是否要继承该柱网，
                 # 如，月台初始化时继承，修改更新时不继承，
                 # 如，重檐上檐始终继承
-                # 'step_net',
                 # 'piller_net',
                 # 'wall_net',
                 # 'fang_net',
@@ -1013,7 +1011,6 @@ def __downloadData(toBuilding:bpy.types.Object,
                 # 子建筑可以自行决定是否要继承该柱网，
                 # 如，月台初始化时继承，修改更新时不继承，
                 # 如，重檐上檐始终继承
-                # 'step_net',
                 # 'piller_net',
                 # 'wall_net',
                 # 'fang_net',

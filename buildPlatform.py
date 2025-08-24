@@ -12,6 +12,7 @@ from . import buildFloor
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
+from .data import ACA_data_taduo as stepData
 from . import texture as mat
 
 # 营造台基的各个结构
@@ -261,11 +262,11 @@ def __buildSteps(baseRootObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     stepObjList = []
 
-    # 解析模板输入的踏跺设置，格式如下
-    # "3/0#4/0,4/0#5/0,2/0#3/0,3/0#5/0,"
-    stepStr = bData.step_net
-    stepList = stepStr.split(',')
-    for stepID in stepList:
+    # 250823 采用stepList
+    stepList = bData.stepList
+    for step in stepList:
+        stepID = step.name
+
         if stepID == '': continue
 
         # 如果有月台，不做前出踏跺
@@ -288,7 +289,7 @@ def __buildSteps(baseRootObj:bpy.types.Object):
                 continue
 
         # 生成踏跺对象
-        stepObj = __drawStep(baseRootObj,stepID)
+        stepObj = __drawStep(baseRootObj,step)
         stepObjList.append(stepObj)
 
     return stepObjList
@@ -301,8 +302,6 @@ def __checkNextStep(baseRootObj:bpy.types.Object,
         baseRootObj,con.ACA_TYPE_BUILDING
     )
     bData:acaData = buildingObj.ACA_data
-    stepStr = bData.step_net
-    stepList = stepStr.split(',')
     hasNextStep= False
 
     # 解析踏跺配置参数
@@ -319,29 +318,50 @@ def __checkNextStep(baseRootObj:bpy.types.Object,
     # 区分方向
     if pFrom_y == pTo_y and pFrom_y == 0 and pTo_y == 0:
         # 南向，stepID向右查看
-        pFrom_x += 1
-        pTo_x += 1
+        next_x1 = pFrom_x + 1
+        next_x2 = pTo_x + 1
+        last_x1 = pFrom_x - 1
+        last_x2 = pTo_x - 1 
+        next_y1 = last_y1 = pFrom_y
+        next_y2 = last_y2 = pTo_y
     if pFrom_y == pTo_y and pFrom_y != 0 and pTo_y != 0:
         # 北向，stepID向左查看
-        pFrom_x -= 1
-        pTo_x -= 1
+        next_x1 = pFrom_x - 1
+        next_x2 = pTo_x -1
+        last_x1 = pFrom_x + 1
+        last_x2 = pTo_x + 1 
+        next_y1 = last_y1 = pFrom_y
+        next_y2 = last_y2 = pTo_y
     if pFrom_x == pTo_x and pFrom_x == 0 and pTo_x == 0:
         # 西向，stepID向下查看
-        pFrom_y -= 1
-        pTo_y -= 1
+        next_x1 = last_x1 = pFrom_x
+        next_x2 = last_x2 = pTo_x
+        next_y1 = pFrom_y - 1
+        next_y2 = pTo_y - 1
+        last_y1 = pFrom_y + 1
+        last_y2 = pTo_y + 1 
     if pFrom_x == pTo_x and pFrom_x != 0 and pTo_x != 0:
         # 东向，stepID向上查看
-        pFrom_y += 1
-        pTo_y += 1
-    NextStepID = str(pFrom_x) + '/' + str(pFrom_y) \
-            + '#' + str(pTo_x) + '/' + str(pTo_y)
-    if NextStepID in stepList:
-        hasNextStep = True
-    return hasNextStep
+        next_x1 = last_x1 = pFrom_x
+        next_x2 = last_x2 = pTo_x
+        next_y1 = pFrom_y + 1
+        next_y2 = pTo_y + 1
+        last_y1 = pFrom_y - 1
+        last_y2 = pTo_y - 1 
+    NextStepID = f"{next_x1}/{next_y1}#{next_x2}/{next_y2}"
+    LastStepID = f"{last_x1}/{last_y1}#{last_x2}/{last_y2}"
+    
+    for step in bData.stepList:
+        if step.name in (NextStepID,):
+            # # 250823 如果相邻踏跺有缩放，双边处理
+            # if step.width == 1.0:
+            hasNextStep = True
+    
+    return hasNextStep,NextStepID,LastStepID
 
 # 根据踏跺配置参数stepID，生成踏跺proxy
 def __addStepProxy(baseRootObj:bpy.types.Object,
-                   stepID:str):
+                   stepData:stepData):
     # 载入数据
     buildingObj = utils.getAcaParent(
         baseRootObj,con.ACA_TYPE_BUILDING
@@ -349,6 +369,8 @@ def __addStepProxy(baseRootObj:bpy.types.Object,
     bData:acaData = buildingObj.ACA_data
     # 计算柱网数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
+    stepID = stepData.name
+    stepWidth = stepData.width
 
     # 解析踏跺配置参数
     setting = stepID.split('#')
@@ -416,6 +438,7 @@ def __addStepProxy(baseRootObj:bpy.types.Object,
             rot = (0,0,math.radians(90))
         # 纵坐标对齐两柱连线的中间点
         y = (net_y[pTo_y] + net_y[pFrom_y])/2
+
     stepProxy = utils.addCube(
         name='踏跺proxy',
         location=(x,y,stepHeight/2),
@@ -433,36 +456,56 @@ def __addStepProxy(baseRootObj:bpy.types.Object,
 # 绘制踏跺对象
 def __drawStep(
         baseRootObj:bpy.types.Object,
-        stepID):
-    # 0、载入数据
+        stepData:stepData):
+    # 查找建筑根节点
     buildingObj = utils.getAcaParent(
         baseRootObj,con.ACA_TYPE_BUILDING
     )
-    bData:acaData = buildingObj.ACA_data
-    aData:tmpData = bpy.context.scene.ACA_temp
+
     # 固定在台基目录中
     buildingColl = buildingObj.users_collection[0]
     utils.setCollection(
         con.COLL_NAME_BASE,
         parentColl=buildingColl)
-
+    
+    # 0、载入数据
+    bData:acaData = buildingObj.ACA_data
+    stepID = stepData.name
     bevel = con.BEVEL_HIGH
-    # 根据stepID生成踏跺（如，’3/0#4/0‘）
-    stepProxy = __addStepProxy(
-        baseRootObj,stepID)
-    (pWidth,pDeepth,pHeight) = stepProxy.dimensions
-    # 判断相邻踏跺，只做单边
-    isOnlyLeft = __checkNextStep(
-        baseRootObj,stepID)
     # 阶条石宽度，取下出-半个柱顶石（柱顶石为2pd，这里直接减1pd）
     stoneWidth = bData.platform_extend \
                     -bData.piller_diameter
+    
+    # 根据stepID生成踏跺空间范围，宽度统一取开间宽度
+    stepProxy = __addStepProxy(
+        baseRootObj,stepData)
+    (pWidth,pDeepth,pHeight) = stepProxy.dimensions
+    
+    # 判断相邻踏跺，只做单边
+    isOnlyLeft,nextStepID,lastStepID = __checkNextStep(
+        baseRootObj,stepID)
+    
+    # 250823 新增踏跺宽度调整
+    # 当前踏跺有缩放，或者相邻踏跺有缩放
+    isInsidePiller = False
+    for step in bData.stepList:
+        # if step.name in (stepID,nextStepID,lastStepID):
+        if step.width < 1.0:
+            isInsidePiller = True
+    if isInsidePiller:
+        # 先减去一个阶条石宽度
+        pWidth -= stoneWidth
+        # 再乘以缩放系数
+        pWidth = pWidth*stepData.width
+        # 标识为两侧垂带
+        isOnlyLeft = False
+    
     # 垂带/象眼石的位置
     # 中间踏跺做左侧，向右镜像
     # 左右两侧踏跺不做镜像，仅做左侧或右侧
     # 241115 垂带与柱对齐
+    # 250823 对齐到缩放后的边缘
     chuidaiX = -pWidth/2
-    
 
     # 营造踏跺结构=======================
     # 收集待合并对象
@@ -749,48 +792,45 @@ def addStep(buildingObj:bpy.types.Object,
     # 构造枋网设置
     pFrom = None
     pTo= None
-    stepStr = bData.step_net
     for piller in pillers:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
-        if 'aca_type' in piller.ACA_data:   # 可能选择了没有属性的对象
-            if piller.ACA_data['aca_type'] \
-                == con.ACA_TYPE_PILLER:
-                if pFrom == None: 
-                    pFrom = piller
-                    continue #暂存起点
-                else:
-                    pTo = piller
+        if 'aca_type' not in piller.ACA_data:
+            continue
+        # 校验是否为柱子实体
+        if piller.ACA_data['aca_type'] \
+            != con.ACA_TYPE_PILLER:
+            continue
 
-                    # 校验柱子是否相邻
-                    # 起始柱子
-                    pFromID = pFrom.ACA_data['pillerID']
-                    pFrom_s = pFromID.split('/')
-                    pFrom_x = int(pFrom_s[0])
-                    pFrom_y = int(pFrom_s[1])
-                    # 结束柱子
-                    pToID = pTo.ACA_data['pillerID']
-                    pTo_s = pToID.split('/')
-                    pTo_x = int(pTo_s[0])
-                    pTo_y = int(pTo_s[1])
-                    pValid = (pFrom_x-pTo_x) + (pFrom_y-pTo_y)
-                    if abs(pValid) > 1:
-                        utils.outputMsg(
-                            f"无法生成踏跺，{pFromID}，{pToID}不是相邻的柱子")
-                        continue
+        # 获取开间的左右两根柱子
+        if pFrom == None: 
+            # 找到起点柱子
+            pFrom = piller.ACA_data['pillerID']
+            continue 
+        else:
+            # 找到终点柱子
+            pTo = piller.ACA_data['pillerID']
+        # 校验柱子是否相邻
+        valid = utils.validPillerNext(pFrom,pTo)
+        if not valid:
+            utils.outputMsg(
+                f"无法生成踏跺，{pFrom}，{pTo}不是相邻的柱子")
+            continue
 
-                    stepID = pFromID + '#' + pToID 
-                    stepID_alt = pToID + '#' + pFromID
-                    # 验证踏跺是否已经存在
-                    if stepID in stepStr or stepID_alt in stepStr:
-                        print(stepID + " is in stepstr:" + stepStr)
-                        continue
-                                
-                    # 将踏跺加入整体布局中
-                    bData.step_net += stepID + ','
-                    utils.outputMsg("添加踏跺：" + stepID)
+        # 验证踏跺是否已经存在
+        stepID = pFrom + '#' + pTo
+        stepID_alt = pTo + '#' + pFrom
+        for step in bData.stepList:
+            if stepID == step.name or stepID_alt==step.name:
+                utils.outputMsg(stepID + "已经存在")
+                continue
+        
+        # 添加踏跺数据
+        utils.outputMsg("添加踏跺：" + stepID)
+        step = bData.stepList.add()
+        step.name = f"{pFrom}#{pTo}"
 
-                    # 交换柱子，为下一次循环做准备
-                    pFrom = piller
+        # 交换柱子，为下一次循环做准备
+        pFrom = piller.ACA_data['pillerID']
     
     # 241115 重新生成台基，以便刷新合并后的散水
     buildPlatform(buildingObj)
@@ -802,25 +842,20 @@ def delStep(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
 
-    # 删除踏跺对象
+    # 250823 删除step数据
     for step in steps:
-        # 校验用户选择的对象，可能误选了其他东西，直接忽略
-        # 如果用户选择的是step子对象，则强制转换到父对象
-        if 'aca_type' in step.ACA_data:
-            if step.ACA_data['aca_type'] \
-                    == con.ACA_TYPE_STEP:
-                utils.deleteHierarchy(step,del_parent=True)
+        if step.ACA_data['aca_type'] != con.ACA_TYPE_STEP:
+            print(f"删除踏跺已跳过{step.name}，aca_type错误:{step.ACA_data['aca_type']}")
+            continue
 
-    # 重新生成柱网配置
-    baseRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_BASE_ROOT)
-    pfChildren:List[bpy.types.Object] = baseRootObj.children
-    bData.step_net = ''
-    for step in pfChildren:
-        if 'aca_type' in step.ACA_data:
-            if step.ACA_data['aca_type']==con.ACA_TYPE_STEP:
-                stepID = step.ACA_data['stepID']
-                bData.step_net += stepID + ','
+        # 删除数据
+        stepName = step.ACA_data['stepID']
+        for i,item in enumerate(bData.stepList):
+            if item.name == stepName:
+                bData.stepList.remove(i)
+
+        # 删除实体
+        utils.deleteHierarchy(step,del_parent=True)
     
     # 241115 重新生成台基，以便刷新合并后的散水
     buildPlatform(buildingObj)

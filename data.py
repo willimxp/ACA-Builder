@@ -101,6 +101,51 @@ def update_yardwall(self, context:bpy.types.Context):
     bpy.ops.aca.build_yardwall()
     return
 
+# 更新踏跺
+def update_step(self, context:bpy.types.Context):
+    # 建筑根节点数据
+    buildingObj,bData,oData = utils.getRoot(context.object)
+    # 确认选中了踏跺
+    if oData.aca_type != con.ACA_TYPE_STEP:
+        utils.popMessageBox("当前活动对象不是踏跺")
+        return
+    
+    # 获取当前踏跺数据
+    for step in bData.stepList:
+        if step.name == oData['stepID'] :
+            currentStepData = step
+    
+    # 所有选中的对象
+    selected_steps = context.selected_objects
+    # 暂存选中的对象
+    selected_names = []
+    for stepSelected in selected_steps:
+        selected_names.append(stepSelected.name)
+    
+    # 批量设置所有选中的对象
+    for stepSelected in selected_steps:
+        # 确认是踏跺
+        if stepSelected.ACA_data.aca_type != con.ACA_TYPE_STEP:
+            continue
+
+        # 全部修改为当前值
+        for stepData in bData.stepList:
+            if stepData.name == stepSelected.ACA_data['stepID']:
+                stepData['width'] = currentStepData.width
+
+    # 更新整个台基
+    update_platform(self,context)
+
+    # 恢复踏跺选择
+    # 先取消所有选中（因为可能再update_platform中focus了root）
+    bpy.ops.object.select_all(action='DESELECT')
+    for objName in selected_names:
+        stepObj = bpy.data.objects[objName]
+        stepObj.select_set(True)
+        bpy.context.view_layer.objects.active = stepObj
+
+    return
+
 def update_platform(self, context:bpy.types.Context):
     # 判断自动重建开关
     isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
@@ -422,6 +467,18 @@ def getDougongList(self, context):
     dougongList = template.getDougongList()
     return dougongList
 
+# 踏跺属性
+class ACA_data_taduo(bpy.types.PropertyGroup):
+    width : bpy.props.FloatProperty(
+        name='踏跺宽度',
+        default=1.0,
+        max=1.0,
+        min=0.3,
+        step=10,    # 这里是[n/100],10代表0.1
+        update=update_step,
+        precision=3,
+    ) # type: ignore
+
 # 对象范围的数据
 # 可绑定面板参数属性
 # 属性声明的格式在vscode有告警，但blender表示为了保持兼容性，无需更改
@@ -524,13 +581,13 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_platform,    # 绑定回调
             description="檐柱的2.4倍，或上出檐的3/4~4/5",
         ) # type: ignore
-    step_net : bpy.props.StringProperty(
-            name = "保存的踏跺列表"
-        )# type: ignore
     use_terrace: bpy.props.BoolProperty(
             default = False,
             name = "是否有月台",
         ) # type: ignore
+    stepList: bpy.props.CollectionProperty(
+        type=ACA_data_taduo, name="踏跺列表"
+    ) # type: ignore
     
     # 柱网对象属性
     x_total : bpy.props.FloatProperty(

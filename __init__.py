@@ -6,6 +6,7 @@ import bpy
 from . import panel
 from . import operators
 from . import data
+from . import utils
 import logging
 import pathlib
 
@@ -28,7 +29,8 @@ classes = (
     # 全局数据类
     data.TemplateListItem,
     data.TemplateThumbItem,
-    data.ACA_data_scene,    
+    data.ACA_data_scene,
+    data.ACA_data_taduo,
     data.ACA_data_obj,
     data.ACA_data_template,
     
@@ -178,7 +180,7 @@ def initLogger():
             bl_info['version'][0],
             bl_info['version'][1],
             bl_info['version'][2])
-    logger.info('ACA筑韵古建%s——日志记录开始' % ver)
+    utils.outputMsg('ACA筑韵古建%s——日志记录开始' % ver)
 
     return
 

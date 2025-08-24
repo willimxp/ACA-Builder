@@ -112,7 +112,7 @@ def update_step(self, context:bpy.types.Context):
     
     # 获取当前踏跺数据
     for step in bData.stepList:
-        if step.name == oData['stepID'] :
+        if step.id == oData['stepID'] :
             currentStepData = step
     
     # 所有选中的对象
@@ -130,7 +130,7 @@ def update_step(self, context:bpy.types.Context):
 
         # 全部修改为当前值
         for stepData in bData.stepList:
-            if stepData.name == stepSelected.ACA_data['stepID']:
+            if stepData.id == stepSelected.ACA_data['stepID']:
                 stepData['width'] = currentStepData.width
 
     # 更新整个台基
@@ -469,8 +469,12 @@ def getDougongList(self, context):
 
 # 踏跺属性
 class ACA_data_taduo(bpy.types.PropertyGroup):
+    id: bpy.props.StringProperty(
+            name = 'id',
+        ) # type: ignore
     width : bpy.props.FloatProperty(
         name='踏跺宽度',
+        description='踏跺在开间内的比例，最大为1，最小为0.3',
         default=1.0,
         max=1.0,
         min=0.3,

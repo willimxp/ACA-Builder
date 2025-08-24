@@ -395,7 +395,7 @@ class ACA_PT_platform(bpy.types.Panel):
             if contextObj.ACA_data.aca_type == con.ACA_TYPE_STEP:
                 stepID = contextObj.ACA_data['stepID']
                 for step in bData.stepList:
-                    if step.name == stepID:
+                    if step.id == stepID:
                         stepData = step
                 group = toolbox.grid_flow(columns=1, align=True)
                 group.prop(stepData, "width",text="踏跺宽度")

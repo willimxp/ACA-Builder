@@ -938,7 +938,7 @@ def outputMsg(msg:str):
     except Exception as e:
         # print(e)
         # logError(e)
-        print("ACA：outputMsg时界面未能刷新")
+        # print("ACA：outputMsg时界面未能刷新")
         return
 
 # 隐藏对象，包括viewport和render渲染
@@ -2695,7 +2695,7 @@ def getStepData(Obj:bpy.types.Object,stepID):
     stepData = None
     # 匹配stepData
     for step in bData.stepList:
-        if step.name == stepID:
+        if step.id == stepID:
             stepData = step
             break
 

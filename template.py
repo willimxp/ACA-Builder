@@ -405,51 +405,22 @@ def __loadTemplateSingle(
         # 针对combo模板，跳过子模板解析
         if node.tag == 'template':
             continue
-
+        
         tag = node.tag
         type = node.attrib['type']
         value = node.text
-        # 类型转换
-        # 20250209 老版本的模板通过数据类型进行判断
-        if type == 'str':
-            # 特殊处理下拉框
-            if tag in ('roof_style',
-                        'juzhe',
-                        'dg_style'):
-                bData[tag] = int(value)
-            else:
-                bData[tag] = value
-        elif type == 'float':
-            bData[tag] = round(float(value),3)
-        elif type == 'int':
-            bData[tag] = int(value)
-        elif type == 'bool':
-            # 注意这里的True/False是str，用bool()强制转换时都为True，
-            # 所以以下手工进行了判断
-            if value == 'True':
-                bData[tag] = True
-            if value == 'False':
-                bData[tag] = False
-        # 20250209 新版本的模板通过bdata数据属性进行判断
-        elif type =='StringProperty':
-            bData[tag] = value
-        elif type == 'IntProperty':
-            bData[tag] = int(value)
-        elif type == 'FloatProperty':
-            bData[tag] = round(float(value),3)
-        elif type == 'BoolProperty':
-            if value == 'True':
-                bData[tag] = True
-            if value == 'False':
-                bData[tag] = False
-        elif type == 'EnumProperty':
-            bData[tag] = int(value)
-        elif type == 'FloatVectorProperty':
-            # 将字符串'0,0,0'转换为元组(0,0,0)
-            bData[tag] = tuple(float(coord) for coord in value.split(','))
+        # 读取集合配置
+        if type == 'CollectionProperty':
+            for subnode in node:
+                # 在bDate.xxxList下新建子节点
+                subitem = getattr(bData,tag).add()
+                # 循环载入该子节点的配置项
+                for subsubNode in subnode:
+                    subtag,subvalue = __readNode(subsubNode)
+                    subitem[subtag] = subvalue
         else:
-            print("can't convert:",node.tag, 
-                    node.attrib['type'],node.text)
+            tag,value = __readNode(node)
+            bData[tag] = value
 
     # 填充建筑使用的资产对象，根据其中的dg_style等不同，载入不同的资产样式
     loadAssetByBuilding(buildingObj)
@@ -637,19 +608,14 @@ def __saveTemplate(buildingObj:bpy.types.Object):
             value = templateName
         # 浮点数取3位精度
         if keyType == 'FloatProperty':
-            # 简单的浮点数
-            if isinstance(value, float):
-                value = round(value,3)
-            # 浮点数组，对应于FloatVectorProperty
-            if type(value).__name__ == 'bpy_prop_array':
-                keyType = 'FloatVectorProperty'
-                value = ",".join(str(num) for num in value)
+            value,keyType = __float2xml(value,keyType)
+        # 对象引用类型，保存对象名称
         if keyType == 'PointerProperty':
             # value目前未bpy.data.object对象
             object = getattr(bData, key)
             value = object.name  # 对象名称
             # path = object.data.library_weak_reference.filepath
-
+        
         # 数据保存
         # 查找节点
         keyNode = templateNode.find(key)
@@ -659,6 +625,30 @@ def __saveTemplate(buildingObj:bpy.types.Object):
         # 写入节点
         keyNode.text = str(value)
         keyNode.attrib['type'] = keyType
+
+        # 集合类型，保存子对象
+        if keyType == 'CollectionProperty':
+            # 集合类型，文本为空
+            keyNode.text = ''
+            for idx, item in enumerate(value):
+                # 添加子对象，根据index判断是否存在
+                # 避免多次保存时，产生了重复数据
+                itemNode = keyNode.find(f'item_{idx}')
+                if itemNode is None:
+                    itemNode = ET.SubElement(keyNode, f'item_{idx}')
+
+                # 递归遍历 item 的属性
+                for subkey in item.__annotations__.keys():
+                    subkeyType = item.bl_rna.properties[subkey].rna_type.identifier
+                    subvalue = getattr(item, subkey)
+                    # 浮点数取3位精度
+                    if subkeyType == 'FloatProperty':
+                        subvalue,subkeyType =  __float2xml(subvalue,subkeyType)                    
+                    subkeyNode = itemNode.find(subkey)
+                    if subkeyNode is None:
+                        subkeyNode = ET.SubElement(itemNode, subkey)
+                    subkeyNode.text = str(subvalue)
+                    subkeyNode.attrib['type'] = subkeyType
 
     # 缩进美化
     # https://stackoverflow.com/questions/28813876/how-do-i-get-pythons-elementtree-to-pretty-print-to-an-xml-file
@@ -823,3 +813,60 @@ def releasePreview():
     for pcoll in preview_collections.values():
         bpy.utils.previews.remove(pcoll)
     preview_collections.clear()
+
+# 将XML中的节点按类型转换
+def __readNode(node):
+    tag = node.tag
+    type = node.attrib['type']
+    value = node.text
+    # 类型转换
+    # 20250209 老版本的模板通过数据类型进行判断
+    if type == 'str':
+        # 特殊处理下拉框
+        if tag in ('roof_style',
+                    'juzhe',
+                    'dg_style'):
+            value = int(value)
+        else:
+            value = value
+    elif type == 'float':
+        value = round(float(value),3)
+    elif type == 'int':
+        value = int(value)
+    elif type == 'bool':
+        # 注意这里的True/False是str，用bool()强制转换时都为True，
+        # 所以以下手工进行了判断
+        if value == 'True':
+            value = True
+        if value == 'False':
+            value = False
+    # 20250209 新版本的模板通过bdata数据属性进行判断
+    if type =='StringProperty':
+        value = value
+    elif type == 'IntProperty':
+        value = int(value)
+    elif type == 'FloatProperty':
+        value = round(float(value),3)
+    elif type == 'BoolProperty':
+        if value == 'True':
+            value = True
+        if value == 'False':
+            value = False
+    elif type == 'EnumProperty':
+        value = int(value)
+    elif type == 'FloatVectorProperty':
+        # 将字符串'0,0,0'转换为元组(0,0,0)
+        value = tuple(float(coord) for coord in value.split(','))
+
+    return tag, value
+
+# 将XML中的节点按类型转换
+def __float2xml(value,keytype):
+    # 简单的浮点数
+    if isinstance(value, float):
+        value = round(value,3)
+    # 浮点数组，对应于FloatVectorProperty
+    if type(value).__name__ == 'bpy_prop_array':
+        keytype = 'FloatVectorProperty'
+        value = ",".join(str(num) for num in value)
+    return value,keytype

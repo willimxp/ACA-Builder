@@ -265,7 +265,7 @@ def __buildSteps(baseRootObj:bpy.types.Object):
     # 250823 采用stepList
     stepList = bData.stepList
     for step in stepList:
-        stepID = step.name
+        stepID = step.id
 
         if stepID == '': continue
 
@@ -352,9 +352,9 @@ def __checkNextStep(baseRootObj:bpy.types.Object,
     
     hasNextStep = hasLastStep = ''
     for step in bData.stepList:
-        if step.name == NextStepID:
+        if step.id == NextStepID:
             hasNextStep = NextStepID
-        if step.name == LastStepID:
+        if step.id == LastStepID:
             hasLastStep = LastStepID
     
     return hasNextStep,hasLastStep
@@ -369,7 +369,7 @@ def __addStepProxy(baseRootObj:bpy.types.Object,
     bData:acaData = buildingObj.ACA_data
     # 计算柱网数据
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
-    stepID = stepData.name
+    stepID = stepData.id
     stepWidth = stepData.width
 
     # 解析踏跺配置参数
@@ -470,7 +470,7 @@ def __drawStep(
     
     # 0、载入数据
     bData:acaData = buildingObj.ACA_data
-    stepID = stepData.name
+    stepID = stepData.id
     bevel = con.BEVEL_HIGH
     # 阶条石宽度，取下出-半个柱顶石（柱顶石为2pd，这里直接减1pd）
     stoneWidth = bData.platform_extend \
@@ -841,14 +841,15 @@ def addStep(buildingObj:bpy.types.Object,
         stepID = pFrom + '#' + pTo
         stepID_alt = pTo + '#' + pFrom
         for step in bData.stepList:
-            if stepID == step.name or stepID_alt==step.name:
+            if stepID == step.id or stepID_alt==step.id:
                 utils.outputMsg(stepID + "已经存在")
                 continue
         
         # 添加踏跺数据
         utils.outputMsg("添加踏跺：" + stepID)
         step = bData.stepList.add()
-        step.name = f"{pFrom}#{pTo}"
+        # step.id = f"{pFrom}#{pTo}"
+        step.id = f"{pFrom}#{pTo}"
 
         # 交换柱子，为下一次循环做准备
         pFrom = piller.ACA_data['pillerID']
@@ -866,13 +867,13 @@ def delStep(buildingObj:bpy.types.Object,
     # 250823 删除step数据
     for step in steps:
         if step.ACA_data['aca_type'] != con.ACA_TYPE_STEP:
-            print(f"删除踏跺已跳过{step.name}，aca_type错误:{step.ACA_data['aca_type']}")
+            print(f"删除踏跺已跳过{step.id}，aca_type错误:{step.ACA_data['aca_type']}")
             continue
 
         # 删除数据
-        stepName = step.ACA_data['stepID']
+        stepID = step.ACA_data['stepID']
         for i,item in enumerate(bData.stepList):
-            if item.name == stepName:
+            if item.id == stepID:
                 bData.stepList.remove(i)
 
         # 删除实体

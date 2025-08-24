@@ -302,7 +302,6 @@ def __checkNextStep(baseRootObj:bpy.types.Object,
         baseRootObj,con.ACA_TYPE_BUILDING
     )
     bData:acaData = buildingObj.ACA_data
-    hasNextStep= False
 
     # 解析踏跺配置参数
     setting = stepID.split('#')
@@ -351,13 +350,14 @@ def __checkNextStep(baseRootObj:bpy.types.Object,
     NextStepID = f"{next_x1}/{next_y1}#{next_x2}/{next_y2}"
     LastStepID = f"{last_x1}/{last_y1}#{last_x2}/{last_y2}"
     
+    hasNextStep = hasLastStep = ''
     for step in bData.stepList:
-        if step.name in (NextStepID,):
-            # # 250823 如果相邻踏跺有缩放，双边处理
-            # if step.width == 1.0:
-            hasNextStep = True
+        if step.name == NextStepID:
+            hasNextStep = NextStepID
+        if step.name == LastStepID:
+            hasLastStep = LastStepID
     
-    return hasNextStep,NextStepID,LastStepID
+    return hasNextStep,hasLastStep
 
 # 根据踏跺配置参数stepID，生成踏跺proxy
 def __addStepProxy(baseRootObj:bpy.types.Object,
@@ -481,24 +481,45 @@ def __drawStep(
         baseRootObj,stepData)
     (pWidth,pDeepth,pHeight) = stepProxy.dimensions
     
-    # 判断相邻踏跺，只做单边
-    isOnlyLeft,nextStepID,lastStepID = __checkNextStep(
-        baseRootObj,stepID)
+    # 判断是否与前后踏跺“连做”，如，三连踏跺
+    # 连做时，垂带对齐柱中线，不连做时，垂带在柱边线内侧，且可以设置缩放比例
+    isConnected = True
+    # 1、当前踏跺如果有缩放，则不要连做
+    if stepData.width < 1.0:
+        isConnected = False
+    # 2、是否存在前后的踏跺
+    hasNextStep,hasLastStep = __checkNextStep(
+        baseRootObj,stepID)    
+    # 3、判断前后踏跺是否设置了缩放
+    while hasNextStep:
+        nextStep = utils.getStepData(
+                        buildingObj,hasNextStep)
+        if nextStep.width < 1.0:
+            # 不能连做
+            isConnected = False
+            break
+        hasNextStep,hasLastStep = __checkNextStep(baseRootObj,hasNextStep)
+    while hasLastStep:
+        lastStep = utils.getStepData(
+                        buildingObj,hasLastStep)
+        if lastStep.width < 1.0:
+            # 不能连做
+            isConnected = False
+            break
+        hasNextStep,hasLastStep = __checkNextStep(baseRootObj,hasLastStep)
     
-    # 250823 新增踏跺宽度调整
-    # 当前踏跺有缩放，或者相邻踏跺有缩放
-    isInsidePiller = False
-    for step in bData.stepList:
-        # if step.name in (stepID,nextStepID,lastStepID):
-        if step.width < 1.0:
-            isInsidePiller = True
-    if isInsidePiller:
+    # 如果不连做，将踏跺做在柱边线内侧，并应用缩放
+    if not isConnected:
         # 先减去一个阶条石宽度
         pWidth -= stoneWidth
         # 再乘以缩放系数
         pWidth = pWidth*stepData.width
-        # 标识为两侧垂带
-        isOnlyLeft = False
+
+    # 最后一个始终不连做，但不改变前面的缩放控制
+    hasNextStep,hasLastStep = __checkNextStep(
+        baseRootObj,stepID)  
+    if not hasNextStep:
+        isConnected = False
     
     # 垂带/象眼石的位置
     # 中间踏跺做左侧，向右镜像
@@ -530,7 +551,7 @@ def __drawStep(
     # 删除一条边，变成三角形，index=11
     utils.dissolveEdge(brickObj,[11])
     # 镜像
-    if not isOnlyLeft:
+    if not isConnected:
         utils.addModifierMirror(
             object=brickObj,
             mirrorObj=stepProxy,
@@ -594,7 +615,7 @@ def __drawStep(
         clear_inner=clear_inner
     )
     # 镜像（三连踏跺中，仅中间踏跺做镜像）
-    if not isOnlyLeft:
+    if not isConnected:
         utils.addModifierMirror(
             object=brickObj,
             mirrorObj=stepProxy,
@@ -651,7 +672,7 @@ def __drawStep(
     utils.applyTransform(stepJoined,use_location=True)
     # 对于单边垂带的对象（防止与相邻踏跺垂带交叠），将origin偏移半垂带
     # 这样可以在生成土衬时，自动对齐到单边垂带的边缘
-    if isOnlyLeft:
+    if isConnected:
         utils.setOrigin(stepJoined,
             Vector((-stoneWidth/2,0,0)))
 

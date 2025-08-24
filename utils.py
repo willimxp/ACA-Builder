@@ -2683,3 +2683,20 @@ def validPillerNext(pillerID_1,pillerID_2):
         return False
     else:
         return True
+    
+# 获取踏跺设置属性
+def getStepData(Obj:bpy.types.Object,stepID):
+    # 查找建筑根节点
+    buildingObj,bData,oData = getRoot(Obj)
+    # 验证建筑根节点
+    if buildingObj is None:
+        return None
+
+    stepData = None
+    # 匹配stepData
+    for step in bData.stepList:
+        if step.name == stepID:
+            stepData = step
+            break
+
+    return stepData

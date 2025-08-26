@@ -391,15 +391,11 @@ class ACA_PT_platform(bpy.types.Panel):
                          text='删除踏跺',
                          icon='TRASH')
             # 踏跺参数
-            contextObj = context.object
-            if contextObj.ACA_data.aca_type == con.ACA_TYPE_STEP:
-                stepID = contextObj.ACA_data['stepID']
-                for step in bData.step_list:
-                    if step.id == stepID:
-                        stepData = step
+            stepData = getContextData(context,
+                            con.ACA_TYPE_STEP)
+            if stepData is not None:
                 group = toolbox.grid_flow(columns=1, align=True)
                 group.prop(stepData, "width",text="踏跺宽度")
-            
 
             # 添加踏跺，至少应选择两根柱子
             if objData.aca_type != con.ACA_TYPE_PILLER \
@@ -525,6 +521,18 @@ class ACA_PT_pillers(bpy.types.Panel):
             col.operator(
                 "aca.reset_floor",icon='FILE_REFRESH',
                 depress=True,text='重设') 
+            
+            toolBar = box.column(align=True)
+            # 复选框：是否使用小额枋（不区分）
+            checkboxFang = toolBar.column(align=True)
+            if bData.use_smallfang:
+                checkbox_icon = 'CHECKBOX_HLT'
+            else:
+                checkbox_icon = 'CHECKBOX_DEHLT'
+            checkboxFang.prop(
+                bData, "use_smallfang",
+                toggle=1,text="使用小额枋",
+                icon=checkbox_icon) 
                 
 # “装修属性”子面板
 class ACA_PT_wall(bpy.types.Panel):
@@ -737,31 +745,21 @@ class ACA_PT_wall(bpy.types.Panel):
             inputTopHeight = toolBar.column(align=True)
             inputTopHeight.prop(
                 bData, "wall_span")
-            # 复选框：是否使用小额枋（不区分）
-            checkboxFang = toolBar.column(align=True)
-            if dataSource.use_smallfang:
-                checkbox_icon = 'CHECKBOX_HLT'
-            else:
-                checkbox_icon = 'CHECKBOX_DEHLT'
-            checkboxFang.prop(
-                bData, "use_smallfang",
-                toggle=1,text="双重额枋",
-                icon=checkbox_icon) 
             
             # 个性参数
             toolBox = box.column(align=True)
             toolBar = toolBox.grid_flow(align=True,columns=1)
 
-            # 显示全区还是个体
-            selectRange = toolBar.column(align=True)
-            if isSetall: 
-                selectRange.label(
-                    text='[全局]',
-                    icon='KEYTYPE_KEYFRAME_VEC')
-            else:
-                selectRange.label(
-                    text='['+context.object.name+']',
-                    icon='KEYTYPE_JITTER_VEC')
+            # # 显示全区还是个体
+            # selectRange = toolBar.column(align=True)
+            # if isSetall: 
+            #     selectRange.label(
+            #         text='[全局]',
+            #         icon='KEYTYPE_KEYFRAME_VEC')
+            # else:
+            #     selectRange.label(
+            #         text='['+context.object.name+']',
+            #         icon='KEYTYPE_JITTER_VEC')
                 
             # 门钉数量
             inputDingNum = toolBar.column(align=True)
@@ -775,7 +773,17 @@ class ACA_PT_wall(bpy.types.Panel):
             # 抹头数量（区分了全局和个体）
             inputGapNum = toolBar.column(align=True)
             inputGapNum.prop(
-                dataSource, "gap_num",text='抹头数量')            
+                dataSource, "gap_num",text='抹头数量')   
+
+            # 栏杆属性 ----------------------------            
+            railingData = getContextData(context,
+                            con.ACA_WALLTYPE_RAILILNG)
+            if railingData is not None:
+                # 显示对应输入框
+                toolBox = box.column(align=True)
+                group = toolBox.grid_flow(columns=1, align=True)
+                group.prop(railingData, "gap",text="栏杆开口")
+
         
         return
 
@@ -1386,3 +1394,43 @@ def genericPoll(self,context:bpy.types.Context):
         return False
 
     return True
+
+# 获取选中对象的子数据，如，step_list, railing_list等
+def getContextData(context:bpy.types.Context,objType):
+    # 验证有选中的对象
+    if context.selected_objects == []:
+        return
+    
+    # 验证是否是ACA对象
+    contextObj = context.active_object
+    if not hasattr(contextObj,'ACA_data'):
+        return
+    oData:acaData = contextObj.ACA_data
+    
+    # 验证对象类型
+    if oData.aca_type != objType:
+        return
+
+    # 根据对象类型，判断数据参数
+    if objType == con.ACA_WALLTYPE_RAILILNG:
+        idType = 'wallID'
+        dataType = 'railing_list'
+    elif objType == con.ACA_TYPE_STEP:
+        idType = 'stepID'
+        dataType = 'step_list'
+    else:
+        return
+    # 获取对象ID
+    # 这里不要用hasattr，问了copilot：
+    # 通过 oData['wallID'] 访问的是自定义属性字典（RNA properties），
+    # 而 hasattr(oData, 'wallID') 检查的是 Python 对象的直接属性。
+    if idType in oData:
+        contextID = oData[idType]
+    else:
+        return
+    
+    # 获取对象数据
+    contextData = utils.getDataChild(
+        contextObj,dataType,contextID)
+    
+    return contextData

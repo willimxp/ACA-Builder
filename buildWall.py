@@ -294,10 +294,14 @@ def updateWall(wallObj:bpy.types.Object):
         wallObj,con.ACA_TYPE_BUILDING)
     wallID = wallObj.ACA_data['wallID']
     # 生成新隔断，额外传入wallObj，带入原始设置
-    __buildWall(buildingObj,wallID,wallObj)
+    newWallObj = __buildWall(buildingObj,wallID,wallObj)
 
     # 删除老隔断
+    wallName = wallObj.name
     utils.deleteHierarchy(wallObj,del_parent=True)
+
+    # 集成老的wall名称(避免.001后缀)
+    newWallObj.name = wallName
     return
 
 # 根据传入的wallID，生成对应的墙、板门、隔扇、槛窗等
@@ -399,34 +403,44 @@ def addWall(buildingObj:bpy.types.Object,
     # 如果用户选择了2根以上的柱子，将依次生成多个墙体
     for piller in pillers:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
-        if 'aca_type' in piller.ACA_data:   # 可能选择了没有属性的对象
-            if piller.ACA_data['aca_type'] \
-                == con.ACA_TYPE_PILLER:
-                if pFrom == None: 
-                    pFrom = piller
-                    continue #暂存起点
-                else:
-                    pTo = piller
-                    wallID = pFrom.ACA_data['pillerID'] \
-                        + '#' + pTo.ACA_data['pillerID'] 
-                    wallID_alt = pTo.ACA_data['pillerID'] \
-                         + '#' + pFrom.ACA_data['pillerID'] 
-                    # 验证墙体在布局中是否已经存在
-                    if wallID in wall_net or wallID_alt in wall_net:
-                        utils.outputMsg(wallID + " 该位置已经存在装修:" + wall_net)
-                        continue
-                    wallID = wallType+'#'+wallID
-                    
-                    # 生成墙体
-                    wallObj = __buildWall(buildingObj,wallID)
+        if 'aca_type' not in piller.ACA_data:   # 可能选择了没有属性的对象
+            continue
+        if piller.ACA_data['aca_type'] \
+            != con.ACA_TYPE_PILLER:
+            continue
+        
+        # 判断起点柱和终点柱
+        if pFrom == None: 
+            #暂存起点
+            pFrom = piller
+            continue 
+        else:
+            # 暂存终点
+            pTo = piller
 
-                    # 将墙体加入整体布局中
-                    bData.wall_net += wallID + ','            
+            # 验证墙体在布局中是否已经存在
+            wallID = pFrom.ACA_data['pillerID'] \
+                + '#' + pTo.ACA_data['pillerID'] 
+            wallID_alt = pTo.ACA_data['pillerID'] \
+                    + '#' + pFrom.ACA_data['pillerID'] 
+            if wallID in wall_net or wallID_alt in wall_net:
+                utils.outputMsg(wallID + " 该位置已经存在装修:" + wall_net)
+                continue
 
-                    # 将柱子交换，为下一次循环做准备
-                    pFrom = piller
+            # 构造ID
+            wallID = wallType+'#'+wallID
+            # 将墙体加入整体布局中
+            if wallType == con.ACA_WALLTYPE_RAILILNG:
+                railing = bData.railing_list.add()
+                railing.id = wallID
+            else:
+                bData.wall_net += wallID + ',' 
+            
+            # 生成墙体
+            wallObj = __buildWall(buildingObj,wallID)
 
-    
+            # 将柱子交换，为下一次循环做准备
+            pFrom = piller
 
     # 聚焦在创建的门上
     if wallObj != None:
@@ -447,18 +461,30 @@ def delWall(buildingObj:bpy.types.Object,
     # 删除装修对象
     for wall in walls:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
-        if 'aca_type' in wall.ACA_data:
-            # 删除wall
-            if wall.ACA_data['aca_type'] in (
-                con.ACA_TYPE_WALL,              # 槛墙
-                con.ACA_WALLTYPE_WINDOW,        # 槛窗
-                con.ACA_WALLTYPE_GESHAN,        # 隔扇
-                con.ACA_WALLTYPE_BARWINDOW,     # 直棂窗
-                con.ACA_WALLTYPE_MAINDOOR,      # 板门
-                con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
-                con.ACA_WALLTYPE_RAILILNG,      # 栏杆
-            ):
-                utils.deleteHierarchy(wall,del_parent=True)
+        if 'aca_type' not in wall.ACA_data:
+            continue
+            
+        # 删除wall数据
+        if wall.ACA_data['aca_type'] == con.ACA_WALLTYPE_RAILILNG:
+            railingID = wall.ACA_data['wallID']
+            for i,item in enumerate(bData.railing_list):
+                if item.id == railingID:
+                    bData.railing_list.remove(i)
+
+        if wall.ACA_data['aca_type'] in (
+            con.ACA_TYPE_WALL,              # 槛墙
+            con.ACA_WALLTYPE_WINDOW,        # 槛窗
+            con.ACA_WALLTYPE_GESHAN,        # 隔扇
+            con.ACA_WALLTYPE_BARWINDOW,     # 直棂窗
+            con.ACA_WALLTYPE_MAINDOOR,      # 板门
+            con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
+            con.ACA_WALLTYPE_RAILILNG,      # 栏杆
+        ):
+            # wall_net的修改基于时候重新生成
+            pass
+            
+        # 删除wall实体    
+        utils.deleteHierarchy(wall,del_parent=True)
 
     # 重新生成wall_net
     wallRootObj = utils.getAcaChild(
@@ -511,6 +537,10 @@ def buildWallLayout(buildingObj:bpy.types.Object):
     for wallID in wallList:
         if wallID == '': continue
         __buildWall(buildingObj,wallID)
+
+    # 栏杆
+    for railing in bData.railing_list:
+        __buildWall(buildingObj,railing.id)
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

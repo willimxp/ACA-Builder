@@ -336,8 +336,14 @@ def update_wall(self, context:bpy.types.Context):
     # https://blender.stackexchange.com/questions/145245/how-to-access-object-instance-from-property-instance-in-update-callback
     refObj = self.id_data
     contextObj = context.active_object
-    oData = contextObj.ACA_data
-    selectObjName = contextObj.name
+    buildingObj,bData,oData = utils.getRoot(contextObj)
+
+    # 所有选中的对象
+    selected_walls = context.selected_objects
+    # 暂存选中的对象
+    selected_names = []
+    for wallSelected in selected_walls:
+        selected_names.append(wallSelected.name)
 
     from . import buildWall
     # 全局属性，更新所有墙体
@@ -345,8 +351,13 @@ def update_wall(self, context:bpy.types.Context):
         if self.aca_type == con.ACA_TYPE_BUILDING:
             funproxy = partial(buildWall.buildWallLayout,
                             buildingObj=refObj)
+            utils.fastRun(funproxy)
     # 更新个体的墙体
-    elif oData.aca_type in (
+    else:
+        # 批量设置所有选中的对象
+        for wallSelected in selected_walls:
+            # 确认是踏跺
+            if wallSelected.ACA_data.aca_type in (
                 con.ACA_TYPE_WALL,              # 槛墙
                 con.ACA_WALLTYPE_WINDOW,        # 槛窗
                 con.ACA_WALLTYPE_GESHAN,        # 隔扇
@@ -355,14 +366,30 @@ def update_wall(self, context:bpy.types.Context):
                 con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
                 con.ACA_WALLTYPE_RAILILNG,      # 栏杆
             ):
-        funproxy = partial(buildWall.updateWall,
-                                wallObj=contextObj)
-    
-    # 执行，更新全部，或更新个体
-    utils.fastRun(funproxy)
+                # 获取对应的data
+                walldata = utils.getDataChild(
+                    contextObj=buildingObj,
+                    obj_type=wallSelected.ACA_data.aca_type,
+                    obj_id=wallSelected.ACA_data['wallID'])
+                # 全部修改为当前值
+                for key in self.__annotations__.keys():
+                    value = getattr(self,key)
+                    # id不要覆盖哦！
+                    if key != 'id':
+                        walldata[key] = value
+                
+                # 执行更新
+                funproxy = partial(buildWall.updateWall,
+                                        wallObj=wallSelected)
+                utils.fastRun(funproxy)
 
-    # 恢复聚焦
-    utils.focusObj(bpy.data.objects[selectObjName])
+    # 恢复墙体选择
+    # 先取消所有选中
+    bpy.ops.object.select_all(action='DESELECT')
+    for objName in selected_names:
+        wallObj = bpy.data.objects[objName]
+        wallObj.select_set(True)
+        bpy.context.view_layer.objects.active = wallObj
     return
 
 # 刷新斗栱布局

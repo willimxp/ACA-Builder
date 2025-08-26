@@ -2700,3 +2700,29 @@ def getStepData(Obj:bpy.types.Object,stepID):
             break
 
     return stepData
+
+# 获取踏跺设置属性
+def getDataChild(obj:bpy.types.Object,
+                     list_name,
+                     child_id):
+    # 查找建筑根节点
+    buildingObj,bData,oData = getRoot(obj)
+    # 验证建筑根节点
+    if buildingObj is None:
+        return None
+
+    # 载入子列表
+    childList = getattr(bData,list_name)
+    if childList is None:
+        raise Exception("无法获取{list_name}列表")
+    
+    # 查找子对象
+    dataChild = None
+    for child in childList:
+        if child.id == child_id:
+            dataChild = child
+            break
+    if dataChild is None:
+        raise Exception("无法获取{list_name}中的{child_id}")
+
+    return dataChild

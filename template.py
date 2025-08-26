@@ -625,17 +625,22 @@ def __saveTemplate(buildingObj:bpy.types.Object):
         # 写入节点
         keyNode.text = str(value)
         keyNode.attrib['type'] = keyType
+        print(f"key={key} keyType={keyType}")
 
         # 集合类型，保存子对象
         if keyType == 'CollectionProperty':
-            # 集合类型，文本为空
-            keyNode.text = ''
+            # 清空旧的子节点
+            keyNode.clear()
+            keyNode.attrib['type'] = keyType
+
+            # 重建子节点
             for idx, item in enumerate(value):
                 # 添加子对象，根据index判断是否存在
                 # 避免多次保存时，产生了重复数据
                 itemNode = keyNode.find(f'item_{idx}')
                 if itemNode is None:
                     itemNode = ET.SubElement(keyNode, f'item_{idx}')
+                    itemNode.attrib['type'] = 'item'
 
                 # 递归遍历 item 的属性
                 for subkey in item.__annotations__.keys():

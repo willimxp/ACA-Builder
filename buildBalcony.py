@@ -298,14 +298,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     # 所以以下将dk做了人为的固定
     dk = 0.08
 
-    railingParts= []
-    proxyW = proxy['length']
-    # 分栏：分栏数量没有明确规定，我按照望柱高再四舍五入
-    sectionTotal = proxyW - con.RAILING_PILLER_D*dk*2 # 扣减两侧各1根望柱
-    sectionCount = math.ceil(sectionTotal/(con.RAILING_PILLER_H*dk))
-    sectionWidth = sectionTotal/sectionCount
-
-    # 各开间根节点
+    # 各开间根节点，在两根柱子之间居中
     railingRoot = utils.addEmpty(
         name=f"栏杆.{proxy['id']}",
         location=proxy['location'],
@@ -314,17 +307,46 @@ def __buildRailing(parentObj:bpy.types.Object,
     )
     # utils.hideObj(railingRoot)
 
-    # proxy
+    # 栏杆默认做满开间
+    proxyW = proxy['length']
+
+    # 判断是否做开口
+    useGap = False
+    if 'gap' in proxy:  # 自动生成的平坐没有gap属性
+        print(f"gap={proxy['gap']}")
+        # 处理开口栏杆
+        railingGap=proxy['gap']
+        if railingGap > 0.0001:
+            # 栏杆只做开口后的左半幅
+            proxyW = proxy['length']*(1-railingGap)/2
+            if proxyW < con.RAILING_PILLER_D*dk*2 + 0.1:
+                raise Exception("栏杆开口过大，请调小参数")
+            useGap = True
+
+    # proxy，体现栏杆的实际体积
     proxyH = con.RAILING_PILLER_H*dk
     proxyD = con.RAILING_DEEPTH*dk
     proxyDim = (proxyW,proxyD,proxyH)
+    # 考虑了开口和不开口的proxy定位
+    if useGap:
+        proxyX = - proxy['length']/2 + proxyW/2
+    else:
+        proxyX = 0
     proxyObj = utils.addCube(
         name=f"proxy.{proxy['id']}",
         dimension=proxyDim,
-        location=(0,0,proxyH/2),
+        location=(proxyX,0,proxyH/2),
         parent=railingRoot
     )
     utils.hideObjFace(proxyObj)
+
+    # 分栏：分栏数量没有明确规定，我按照望柱高再四舍五入
+    sectionTotal = proxyW - con.RAILING_PILLER_D*dk*2 # 扣减两侧各1根望柱
+    sectionCount = math.ceil(sectionTotal/(con.RAILING_PILLER_H*dk))
+    sectionWidth = sectionTotal/sectionCount
+
+    # 收集栏杆构件
+    railingParts= []
 
     # 望柱
     pillerH = con.RAILING_PILLER_H*dk
@@ -332,7 +354,8 @@ def __buildRailing(parentObj:bpy.types.Object,
     pillerDim = (pillerD,
                  pillerD,
                  pillerH)
-    pillerLoc = (-proxyW/2 + pillerD/2,
+    # 无论是否开口，仅靠左侧柱
+    pillerLoc = (-proxy['length']/2 + pillerD/2,
                  0,0)
     pillerObj = utils.copyObject(
         sourceObj=aData.railing_piller,
@@ -344,11 +367,18 @@ def __buildRailing(parentObj:bpy.types.Object,
     )
     # 着色
     mat.paint(pillerObj,con.M_RAILING,override=True)
-    # 如果栏杆不连续，就左右都做望柱
-    if not connect:
+    # 开口栏杆基于proxy对称
+    if useGap:
         utils.addModifierMirror(pillerObj,
-                                mirrorObj=railingRoot,
+                                mirrorObj=proxyObj,
                                 use_axis=(True,False,False))
+    else:
+        # 如果栏杆不连续，就左右都做望柱
+        if not connect:
+            utils.addModifierMirror(pillerObj,
+                                    mirrorObj=railingRoot,
+                                    use_axis=(True,False,False))
+    
     railingParts.append(pillerObj)
 
     # 桪杖扶手，固定高度
@@ -356,7 +386,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     handrailDeepth = con.HANDRAIL_Y*dk
     handrailHeight = con.HANDRAIL_H*dk
     handrailDim = (handrailWidth,handrailDeepth,handrailHeight)
-    handrailLoc = (0,0,con.HANDRAIL_Z)
+    handrailLoc = (proxyX,0,con.HANDRAIL_Z)
     handrailObj = utils.addCube(
         name=f"桪杖扶手.{proxy['id']}",
         dimension=handrailDim,
@@ -375,7 +405,7 @@ def __buildRailing(parentObj:bpy.types.Object,
         zzDeepth = con.RAILING_ZZ_Y*dk
         zzHeight = con.HANDRAIL_Z
         zzDim = (zzWidth,zzDeepth,zzHeight)
-        zzX = (-proxyW/2 # 左侧边框
+        zzX = (-proxy['length']/2 # 左侧边框
                + con.RAILING_PILLER_D*dk # 整根望柱
                # + con.RAILING_ZZ_W*dk/2  # 半根折柱
                + n*sectionWidth)
@@ -444,7 +474,7 @@ def __buildRailing(parentObj:bpy.types.Object,
         difuWidth = proxyW
         difuDeepth = con.RAILING_DIFU_Y*dk
         difuDim = (difuWidth,difuDeepth,difuHeight)
-        difuLoc = (0,0,difuHeight/2)
+        difuLoc = (proxyX,0,difuHeight/2)
         difuObj = utils.addCube(
             name=f"地栿.{proxy['id']}",
             dimension=difuDim,
@@ -466,7 +496,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     yaziDim = (yaziWidth,yaziDeepth,yaziHeight)
     for n in range(sectionCount):
         # 定位
-        yaziX = (-proxyW/2 # 左侧边线
+        yaziX = (-proxy['length']/2 # 左侧边线
                  + con.RAILING_PILLER_D*dk # 整根望柱
                  + (n+0.5)*con.RAILING_ZZ_W*dk # 折柱
                  + (n+0.5)*yaziWidth)
@@ -488,7 +518,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     downFangDeepth = con.RAILING_FANG_Y*dk
     downFangHeight = con.RAILING_FANG_H*dk
     downFangDim = (downFangWidth,downFangDeepth,downFangHeight)
-    downFangLoc = (0,0,sumZ + downFangHeight/2)
+    downFangLoc = (proxyX,0,sumZ + downFangHeight/2)
     downFangObj = utils.addCube(
         name=f"下枋.{proxy['id']}",
         dimension=downFangDim,
@@ -510,7 +540,7 @@ def __buildRailing(parentObj:bpy.types.Object,
         taohuanHeight = con.RAILING_TAOHUAN_H*dk
         taohuanDim = (taohuanWidth,taohuanDeepth,taohuanHeight)
         # 定位
-        taohuanX = (-proxyW/2 # 左侧边线
+        taohuanX = (-proxy['length']/2 # 左侧边线
                  + con.RAILING_PILLER_D*dk # 整根望柱
                  + (n+0.5)*con.RAILING_ZZ_W*dk # 半根折柱
                  + (n+0.5)*taohuanWidth)
@@ -532,7 +562,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     midFangDeepth = con.RAILING_FANG_Y*dk
     midFangHeight = con.RAILING_FANG_H*dk
     midFangDim = (midFangWidth,midFangDeepth,midFangHeight)
-    midFangLoc = (0,0,sumZ + midFangHeight/2)
+    midFangLoc = (proxyX,0,sumZ + midFangHeight/2)
     midFangObj = utils.addCube(
         name=f"中枋.{proxy['id']}",
         dimension=midFangDim,
@@ -553,6 +583,15 @@ def __buildRailing(parentObj:bpy.types.Object,
     # 合并对象
     railingObj = utils.joinObjects(
         objList=railingParts,newName='栏杆')
+    
+    # 开口栏杆左右镜像
+    if useGap:
+        utils.addModifierMirror(
+            object=railingObj,
+            mirrorObj=railingRoot,
+            use_axis=(True,False,False)
+        )
+    utils.applyAllModifer(railingObj)
     
     if not connect:
         # 独立栏杆挂在wallproxy下
@@ -602,13 +641,22 @@ def addRailing(wallProxy:bpy.types.Object):
     # 清理之前的子对象
     utils.deleteHierarchy(wallProxy)
 
+    # 提取railingData
+    railingID = wallProxy.ACA_data['wallID']
+    for railing in bData.railing_list:
+        if railing.id == railingID:
+            railingData = railing
+    if railingData is None:
+        raise Exception(f"无法找到railingData:{railingID}")
+
     # 创建proxyData
     proxy = {}
-    proxy['id'] = wallProxy.ACA_data['wallID']
+    proxy['id'] = railingID
     # 柱间距，扣除柱径
     proxy['length'] = wallProxy.dimensions.x - bData.piller_diameter
     proxy['location'] = (0,0,0)
     proxy['rotation'] = (0,0,0)
+    proxy['gap'] = railingData.gap
 
     # 创建栏杆
     railingObj = __buildRailing(

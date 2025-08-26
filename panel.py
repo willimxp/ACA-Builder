@@ -775,7 +775,24 @@ class ACA_PT_wall(bpy.types.Panel):
             # 抹头数量（区分了全局和个体）
             inputGapNum = toolBar.column(align=True)
             inputGapNum.prop(
-                dataSource, "gap_num",text='抹头数量')            
+                dataSource, "gap_num",text='抹头数量')   
+
+            # 栏杆属性 ----------------------------
+            if context.selected_objects != []:
+                contextObj = context.active_object
+                # 查找上下文对应的栏杆数据
+                railingData = None
+                if contextObj.ACA_data.aca_type == con.ACA_WALLTYPE_RAILILNG:
+                    railingID = contextObj.ACA_data['wallID']
+                    for railing in bData.railing_list:
+                        if railing.id == railingID:
+                            railingData = railing
+                            break
+                # 显示对应输入框
+                if railingData is not None:
+                    toolBox = box.column(align=True)
+                    group = toolBox.grid_flow(columns=1, align=True)
+                    group.prop(railingData, "gap",text="栏杆开口")
         
         return
 

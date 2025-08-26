@@ -146,6 +146,67 @@ def update_step(self, context:bpy.types.Context):
 
     return
 
+# 更新栏杆，设置开口参数
+def update_railing(self, context:bpy.types.Context):
+    # 建筑根节点数据
+    buildingObj,bData,oData = utils.getRoot(context.object)
+    railingID = oData['wallID']
+    # 确认选中了栏杆
+    if oData.aca_type != con.ACA_WALLTYPE_RAILILNG:
+        utils.popMessageBox("当前活动对象不是栏杆")
+        return
+    
+    # 所有选中的对象
+    selected_objs = context.selected_objects
+    # 暂存选中的对象
+    selected_names = []
+    for objSelected in selected_objs:
+        selected_names.append(objSelected.name)
+
+    # 获取当前栏杆数据    
+    currentRailingData = utils.getDataChild(
+        obj = buildingObj,
+        list_name='railing_list',
+        child_id=railingID,
+    )
+    if currentRailingData is None:
+        raise Exception("无法获取railing_list中的{railingID}数据集")
+    
+    # 批量设置所有选中的对象
+    for railingSelect in selected_objs:
+        # 确认是踏跺
+        if railingSelect.ACA_data.aca_type != con.ACA_WALLTYPE_RAILILNG:
+            continue
+
+        # 获取其他被选中的栏杆数据    
+        selectedID = railingSelect.ACA_data['wallID']
+        selectedRailingData = utils.getDataChild(
+            obj = buildingObj,
+            list_name='railing_list',
+            child_id=selectedID,
+        )
+        if selectedRailingData is None:
+            raise Exception("无法获取railing_list中的{railingID}数据集")
+        
+        # 设置数据
+        selectedRailingData['gap'] = currentRailingData.gap
+
+        # 更新实体
+        from . import buildWall
+        funproxy = partial(buildWall.updateWall,
+                        wallObj=railingSelect)
+        utils.fastRun(funproxy)
+
+    # 恢复踏跺选择
+    # 先取消所有选中（因为可能再update_platform中focus了root）
+    bpy.ops.object.select_all(action='DESELECT')
+    for objName in selected_names:
+        stepObj = bpy.data.objects[objName]
+        stepObj.select_set(True)
+        bpy.context.view_layer.objects.active = stepObj
+
+    return
+
 def update_platform(self, context:bpy.types.Context):
     # 判断自动重建开关
     isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
@@ -483,6 +544,22 @@ class ACA_data_taduo(bpy.types.PropertyGroup):
         precision=3,
     ) # type: ignore
 
+# 栏杆属性
+class ACA_data_railing(bpy.types.PropertyGroup):
+    id: bpy.props.StringProperty(
+            name = 'id',
+        ) # type: ignore
+    gap : bpy.props.FloatProperty(
+        name='栏杆开口宽度',
+        description='栏杆在开间内开口的比例，设置为0时不做开口，最大为0.9',
+        default=0.0,
+        max=0.9,
+        min=0.0,
+        step=10,    # 这里是[n/100],10代表0.1
+        precision=3,
+        update=update_railing,
+    ) # type: ignore
+
 # 对象范围的数据
 # 可绑定面板参数属性
 # 属性声明的格式在vscode有告警，但blender表示为了保持兼容性，无需更改
@@ -591,6 +668,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         ) # type: ignore
     step_list: bpy.props.CollectionProperty(
         type=ACA_data_taduo, name="踏跺列表"
+    ) # type: ignore
+    railing_list: bpy.props.CollectionProperty(
+        type=ACA_data_railing, name="栏杆列表"
     ) # type: ignore
     
     # 柱网对象属性

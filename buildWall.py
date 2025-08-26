@@ -397,8 +397,13 @@ def addWall(buildingObj:bpy.types.Object,
     # 构造wallID
     pFrom = None
     pTo= None
-    wall_net = bData.wall_net
+    all_wall_net = bData.wall_net
     wallObj = None
+
+    # 250826 将list中的id，全部填充到wall_net中
+    for railing in bData.railing_list:
+        all_wall_net += railing.id + ','
+
     # 逐一生成墙体
     # 如果用户选择了2根以上的柱子，将依次生成多个墙体
     for piller in pillers:
@@ -423,8 +428,8 @@ def addWall(buildingObj:bpy.types.Object,
                 + '#' + pTo.ACA_data['pillerID'] 
             wallID_alt = pTo.ACA_data['pillerID'] \
                     + '#' + pFrom.ACA_data['pillerID'] 
-            if wallID in wall_net or wallID_alt in wall_net:
-                utils.outputMsg(wallID + " 该位置已经存在装修:" + wall_net)
+            if wallID in all_wall_net or wallID_alt in all_wall_net:
+                utils.popMessageBox(f"无法添加{wallID}，该位置已经存在装修，wall_net：{all_wall_net}")
                 continue
 
             # 构造ID
@@ -433,6 +438,9 @@ def addWall(buildingObj:bpy.types.Object,
             if wallType == con.ACA_WALLTYPE_RAILILNG:
                 railing = bData.railing_list.add()
                 railing.id = wallID
+            elif wallType == con.ACA_WALLTYPE_MAINDOOR:
+                maindoor = bData.maindoor_list.add()
+                maindoor.id = wallID
             else:
                 bData.wall_net += wallID + ',' 
             
@@ -464,21 +472,23 @@ def delWall(buildingObj:bpy.types.Object,
         if 'aca_type' not in wall.ACA_data:
             continue
             
-        # 删除wall数据
-        if wall.ACA_data['aca_type'] == con.ACA_WALLTYPE_RAILILNG:
-            railingID = wall.ACA_data['wallID']
-            for i,item in enumerate(bData.railing_list):
-                if item.id == railingID:
-                    bData.railing_list.remove(i)
+        # 删除列表数据
+        if wall.ACA_data['aca_type'] in (
+                con.ACA_WALLTYPE_RAILILNG,  # 栏杆
+                con.ACA_WALLTYPE_MAINDOOR,  # 板门
+                ):
+            utils.delDataChild(
+                contextObj=buildingObj,
+                obj_type=wall.ACA_data['aca_type'],
+                obj_id=wall.ACA_data['wallID'],
+            )
 
         if wall.ACA_data['aca_type'] in (
             con.ACA_TYPE_WALL,              # 槛墙
             con.ACA_WALLTYPE_WINDOW,        # 槛窗
             con.ACA_WALLTYPE_GESHAN,        # 隔扇
             con.ACA_WALLTYPE_BARWINDOW,     # 直棂窗
-            con.ACA_WALLTYPE_MAINDOOR,      # 板门
             con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
-            con.ACA_WALLTYPE_RAILILNG,      # 栏杆
         ):
             # wall_net的修改基于时候重新生成
             pass

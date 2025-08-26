@@ -2701,28 +2701,105 @@ def getStepData(Obj:bpy.types.Object,stepID):
 
     return stepData
 
-# 获取踏跺设置属性
-def getDataChild(obj:bpy.types.Object,
-                     list_name,
-                     child_id):
+# 通过对象类型，找到数据类型
+def getDataList(contextObj:bpy.types.Object,
+                obj_type):
     # 查找建筑根节点
-    buildingObj,bData,oData = getRoot(obj)
+    buildingObj,bData,oData = getRoot(contextObj)
     # 验证建筑根节点
     if buildingObj is None:
+        return None
+    
+    # 根据对象类型，判断数据参数
+    if obj_type == con.ACA_TYPE_STEP:
+        list_name = 'step_list' # 踏跺
+    elif obj_type == con.ACA_WALLTYPE_RAILILNG:
+        list_name = 'railing_list' # 栏杆
+    elif obj_type == con.ACA_WALLTYPE_MAINDOOR:
+        list_name = 'maindoor_list' # 板门
+    else:
+        return None
+
+    # 验证子列表
+    if not hasattr(bData,list_name):
         return None
 
     # 载入子列表
     childList = getattr(bData,list_name)
-    if childList is None:
-        raise Exception("无法获取{list_name}列表")
+    
+    return childList
+
+# 获取列表
+def getDataChild(contextObj:bpy.types.Object,
+                 obj_type,
+                 obj_id):    
+    # 载入数据列表
+    datalist = getDataList(contextObj,obj_type)
+    if datalist is None:
+        raise Exception(f"无法获取{obj_type}列表")
     
     # 查找子对象
     dataChild = None
-    for child in childList:
-        if child.id == child_id:
+    for child in datalist:
+        if child.id == obj_id:
             dataChild = child
             break
     if dataChild is None:
-        raise Exception("无法获取{list_name}中的{child_id}")
+        raise Exception(f"无法获取{obj_id}")
 
     return dataChild
+
+# 删除列表子对象
+def delDataChild(contextObj:bpy.types.Object,
+                 obj_type,
+                 obj_id):
+    # 载入数据列表
+    datalist = getDataList(contextObj,obj_type)
+    if datalist is None:
+        raise Exception(f"无法获取{obj_type}列表")
+    
+    # 查找子对象
+    for i,child in enumerate(datalist):
+        if child.id == obj_id:
+            datalist.remove(i)
+            break
+    return
+
+# 获取选中对象的子数据，如，step_list, railing_list等
+def getContextData():
+    # 验证有选中的对象
+    if bpy.context.selected_objects == []:
+        return
+    
+    # 验证是否是ACA对象
+    contextObj = bpy.context.active_object
+    if not hasattr(contextObj,'ACA_data'):
+        return
+    oData = contextObj.ACA_data
+    objType = oData.aca_type
+
+    # 根据对象类型，判断数据参数
+    if objType == con.ACA_WALLTYPE_RAILILNG:
+        idType = 'wallID'
+    elif objType == con.ACA_TYPE_STEP:
+        idType = 'stepID'
+    else:
+        return
+    
+    # 获取对象ID
+    # 这里不要用hasattr，问了copilot：
+    # 通过 oData['wallID'] 访问的是自定义属性字典（RNA properties），
+    # 而 hasattr(oData, 'wallID') 检查的是 Python 对象的直接属性。
+    if idType in oData:
+        contextID = oData[idType]
+    else:
+        return
+    
+    # 获取对象数据
+    contextData = getDataChild(
+        contextObj = contextObj,
+        obj_type = objType,
+        obj_id = contextID)
+    
+    return contextData
+

@@ -391,8 +391,7 @@ class ACA_PT_platform(bpy.types.Panel):
                          text='删除踏跺',
                          icon='TRASH')
             # 踏跺参数
-            stepData = getContextData(context,
-                            con.ACA_TYPE_STEP)
+            stepData = utils.getContextData()
             if stepData is not None:
                 group = toolbox.grid_flow(columns=1, align=True)
                 group.prop(stepData, "width",text="踏跺宽度")
@@ -776,8 +775,7 @@ class ACA_PT_wall(bpy.types.Panel):
                 dataSource, "gap_num",text='抹头数量')   
 
             # 栏杆属性 ----------------------------            
-            railingData = getContextData(context,
-                            con.ACA_WALLTYPE_RAILILNG)
+            railingData = utils.getContextData()
             if railingData is not None:
                 # 显示对应输入框
                 toolBox = box.column(align=True)
@@ -1394,43 +1392,3 @@ def genericPoll(self,context:bpy.types.Context):
         return False
 
     return True
-
-# 获取选中对象的子数据，如，step_list, railing_list等
-def getContextData(context:bpy.types.Context,objType):
-    # 验证有选中的对象
-    if context.selected_objects == []:
-        return
-    
-    # 验证是否是ACA对象
-    contextObj = context.active_object
-    if not hasattr(contextObj,'ACA_data'):
-        return
-    oData:acaData = contextObj.ACA_data
-    
-    # 验证对象类型
-    if oData.aca_type != objType:
-        return
-
-    # 根据对象类型，判断数据参数
-    if objType == con.ACA_WALLTYPE_RAILILNG:
-        idType = 'wallID'
-        dataType = 'railing_list'
-    elif objType == con.ACA_TYPE_STEP:
-        idType = 'stepID'
-        dataType = 'step_list'
-    else:
-        return
-    # 获取对象ID
-    # 这里不要用hasattr，问了copilot：
-    # 通过 oData['wallID'] 访问的是自定义属性字典（RNA properties），
-    # 而 hasattr(oData, 'wallID') 检查的是 Python 对象的直接属性。
-    if idType in oData:
-        contextID = oData[idType]
-    else:
-        return
-    
-    # 获取对象数据
-    contextData = utils.getDataChild(
-        contextObj,dataType,contextID)
-    
-    return contextData

@@ -165,9 +165,9 @@ def update_railing(self, context:bpy.types.Context):
 
     # 获取当前栏杆数据    
     currentRailingData = utils.getDataChild(
-        obj = buildingObj,
-        list_name='railing_list',
-        child_id=railingID,
+        contextObj = buildingObj,
+        obj_type = con.ACA_WALLTYPE_RAILILNG,
+        obj_id = railingID,
     )
     if currentRailingData is None:
         raise Exception("无法获取railing_list中的{railingID}数据集")
@@ -181,9 +181,9 @@ def update_railing(self, context:bpy.types.Context):
         # 获取其他被选中的栏杆数据    
         selectedID = railingSelect.ACA_data['wallID']
         selectedRailingData = utils.getDataChild(
-            obj = buildingObj,
-            list_name='railing_list',
-            child_id=selectedID,
+            contextObj = buildingObj,
+            obj_type=con.ACA_WALLTYPE_RAILILNG,
+            obj_id=selectedID,
         )
         if selectedRailingData is None:
             raise Exception("无法获取railing_list中的{railingID}数据集")
@@ -560,6 +560,19 @@ class ACA_data_railing(bpy.types.PropertyGroup):
         update=update_railing,
     ) # type: ignore
 
+# 板门属性
+class ACA_data_maindoor(bpy.types.PropertyGroup):
+    id: bpy.props.StringProperty(
+            name = 'id',
+        ) # type: ignore
+    door_ding_num : bpy.props.IntProperty(
+            name="门钉数量",
+            default=5,
+            min=0,max=9,
+            update = update_wall,
+            description="门钉的路数，最大9路，取0时不做门钉",
+        )# type: ignore 
+
 # 对象范围的数据
 # 可绑定面板参数属性
 # 属性声明的格式在vscode有告警，但blender表示为了保持兼容性，无需更改
@@ -668,9 +681,6 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         ) # type: ignore
     step_list: bpy.props.CollectionProperty(
         type=ACA_data_taduo, name="踏跺列表"
-    ) # type: ignore
-    railing_list: bpy.props.CollectionProperty(
-        type=ACA_data_railing, name="栏杆列表"
     ) # type: ignore
     
     # 柱网对象属性
@@ -783,6 +793,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     
     
     # 墙体属性
+    railing_list: bpy.props.CollectionProperty(
+        type=ACA_data_railing, name="栏杆列表"
+    ) # type: ignore
+    maindoor_list: bpy.props.CollectionProperty(
+        type=ACA_data_railing, name="板门列表"
+    ) # type: ignore
     wall_layout : bpy.props.EnumProperty(
             name = "装修布局",
             description = "装修布局",

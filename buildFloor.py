@@ -239,8 +239,9 @@ def __drawBWQ(fangObj:bpy.types.Object,
     return
 
 # 获取开间是否有装修
-# 涉及到wall_net参数中槛墙跨越多个开间，拆分到每个开间的数据
-def __getWallRange(wallSetting):
+def __getWallRange(contextObj:bpy.types.Object):
+    # 拼接所有的wallsetting
+    wallSetting = utils.getWallSetting(contextObj)
     # 解析wallID，例如”wall#3/0#3/3“，或”window#0/0#0/1“，或”door#0/1#0/2“
     wallList = wallSetting.split(',')
     wallStr = ''
@@ -332,11 +333,7 @@ def __buildQueti(fangObj):
         else:
             isQueti = True
     # 是否有装修（槛墙、隔扇、槛窗等）
-    # 解析模板输入的墙体设置，格式如下
-    # "wall#3/0#3/3,wall#0/0#3/0,wall#0/3#3/3,window#0/0#0/1,window#0/2#0/3,door#0/1#0/2,"
-    wallSetting = bData.wall_net
-    # 提取有装修的柱间列表（其中排除了栏杆）
-    wallStr = __getWallRange(wallSetting)
+    wallStr = __getWallRange(buildingObj)
     fangID_alt = setting[1] + '#' + setting[0]
     if fangID in wallStr:
         isQueti = False
@@ -1342,7 +1339,11 @@ def resetFloor(buildingObj:bpy.types.Object,
     if bData.piller_net != con.ACA_PILLER_HIDE:
         bData.piller_net = ''
     bData.fang_net = ''
-    bData.wall_net = ''
+    bData.wall_list.clear()
+    bData.geshan_list.clear()
+    bData.window_list.clear()
+    bData.railing_list.clear()
+    bData.maindoor_list.clear()
     
     # 250109 踏跺数据未重置，导致开间变化后，错误的踏跺无法生成而崩溃
     bData.step_list.clear()

@@ -791,11 +791,24 @@ class ACA_PT_wall(bpy.types.Panel):
                 con.ACA_WALLTYPE_MAINDOOR)
             if maindoorData is not None:
                 # 显示对应输入框
-                toolBox = box.column(align=True)
-                inputDingNum = toolBox.grid_flow(
+                toolBar = box.column(align=True)
+                # 门钉数量
+                inputDingNum = toolBar.grid_flow(
                     columns=1, align=True)
                 inputDingNum.prop(
                     maindoorData, "door_ding_num")
+                # 门口宽度比例
+                inputDoorWidth = toolBar.column(align=True)
+                inputDoorWidth.prop(
+                    maindoorData, "doorFrame_width_per")
+                # 横披窗高度
+                inputTopwinHeight = toolBar.column(align=True)
+                inputTopwinHeight.prop(
+                    maindoorData,'topwin_height')
+                # 走马板高度（不区分）
+                inputTopHeight = toolBar.column(align=True)
+                inputTopHeight.prop(
+                    maindoorData, "wall_span")
 
         
         return

@@ -357,7 +357,7 @@ def update_wall(self, context:bpy.types.Context):
         # 批量设置所有选中的对象
         for wallSelected in selected_walls:
             # 确认是踏跺
-            if wallSelected.ACA_data.aca_type in (
+            if wallSelected.ACA_data.aca_type not in (
                 con.ACA_TYPE_WALL,              # 槛墙
                 con.ACA_WALLTYPE_WINDOW,        # 槛窗
                 con.ACA_WALLTYPE_GESHAN,        # 隔扇
@@ -366,22 +366,28 @@ def update_wall(self, context:bpy.types.Context):
                 con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
                 con.ACA_WALLTYPE_RAILILNG,      # 栏杆
             ):
+                continue
+
+            if wallSelected != contextObj:
                 # 获取对应的data
                 walldata = utils.getDataChild(
                     contextObj=buildingObj,
                     obj_type=wallSelected.ACA_data.aca_type,
                     obj_id=wallSelected.ACA_data['wallID'])
                 # 全部修改为当前值
-                for key in self.__annotations__.keys():
-                    value = getattr(self,key)
-                    # id不要覆盖哦！
-                    if key != 'id':
-                        walldata[key] = value
+                # for key in self.__annotations__.keys():
+                for prop in self.bl_rna.properties:
+                    if prop.is_runtime:
+                        key = prop.identifier
+                        value = getattr(self,key)
+                        # id不要覆盖哦！
+                        if key != 'id':
+                            walldata[key] = value
                 
-                # 执行更新
-                funproxy = partial(buildWall.updateWall,
-                                        wallObj=wallSelected)
-                utils.fastRun(funproxy)
+            # 执行更新
+            funproxy = partial(buildWall.updateWall,
+                                    wallObj=wallSelected)
+            utils.fastRun(funproxy)
 
     # 恢复墙体选择
     # 先取消所有选中
@@ -595,17 +601,74 @@ class ACA_data_railing(bpy.types.PropertyGroup):
         update=update_railing,
     ) # type: ignore
 
-# 板门属性
-class ACA_data_maindoor(bpy.types.PropertyGroup):
+# 墙体共用属性
+class ACA_data_wall_common(bpy.types.PropertyGroup):
     id: bpy.props.StringProperty(
             name = 'id',
         ) # type: ignore
+    wall_span : bpy.props.FloatProperty(
+            name="走马板高度",
+            default=0,
+            min=0,
+            precision=3,
+            description='重檐时，装修不做到柱头，用走马板填充，输入0则不做走马板',
+            update = update_wall,
+        )# type: ignore 
+
+# 门窗共用属性
+class ACA_data_door_common(ACA_data_wall_common):
+    doorFrame_width_per : bpy.props.FloatProperty(
+            name="门口宽比",
+            default=1,
+            max=1,
+            min=0.1,
+            precision=3,
+            description='开间中的门口/窗口宽度比例，小于1则开间的部分做余塞板，不可大于1',
+            update = update_wall,
+        )# type: ignore 
+    doorFrame_height : bpy.props.FloatProperty(
+            name="门口高度",
+            default=3,
+            min=0.1,
+            precision=3,
+            description='开间中的门口高度，小于柱高的空间将自动布置横披窗/迎风板',
+            update = update_wall,
+        )# type: ignore 
+    topwin_height : bpy.props.FloatProperty(
+            name="横披窗高度",
+            default=0,
+            precision=3,
+            update = update_wall,
+            description="横披窗（棂心）的高度，输入0则不做横披窗",
+        )# type: ignore 
+    
+# 板门属性
+class ACA_data_maindoor(ACA_data_door_common):
     door_ding_num : bpy.props.IntProperty(
             name="门钉数量",
             default=5,
             min=0,max=9,
             update = update_wall,
             description="门钉的路数，最大9路，取0时不做门钉",
+        )# type: ignore 
+    
+# 隔扇属性
+class ACA_data_geshan(ACA_data_door_common):
+    door_num : bpy.props.IntProperty(
+            name="隔扇数量",
+            default=4, max=6,step=2,min=2,
+            update = update_wall,
+            description="一般做4扇隔扇",
+        )# type: ignore 
+    gap_num : bpy.props.IntProperty(
+            name="抹头数量",
+            default=5,min=2,max=6,
+            update = update_wall,
+            description="2~6抹头都可以，根据需要自由设置",
+        )# type: ignore 
+    use_KanWall: bpy.props.BoolProperty(
+            default=False,
+            name="添加槛墙"
         )# type: ignore 
 
 # 对象范围的数据
@@ -794,9 +857,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     piller_net : bpy.props.StringProperty(
             name = "保存的柱网列表"
         )# type: ignore
-    wall_net : bpy.props.StringProperty(
-            name = "保存的墙体列表"
-        )# type: ignore
+    # wall_net : bpy.props.StringProperty(
+    #         name = "保存的墙体列表"
+    #     )# type: ignore
     fang_net : bpy.props.StringProperty(
             name = "保存的枋列表"
         )# type: ignore
@@ -833,6 +896,15 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     ) # type: ignore
     maindoor_list: bpy.props.CollectionProperty(
         type=ACA_data_maindoor, name="板门列表"
+    ) # type: ignore
+    wall_list: bpy.props.CollectionProperty(
+        type=ACA_data_wall_common, name="墙体列表"
+    ) # type: ignore
+    window_list: bpy.props.CollectionProperty(
+        type=ACA_data_door_common, name="窗户列表"
+    ) # type: ignore
+    geshan_list: bpy.props.CollectionProperty(
+        type=ACA_data_geshan, name="隔扇列表"
     ) # type: ignore
     wall_layout : bpy.props.EnumProperty(
             name = "装修布局",

@@ -340,7 +340,16 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         use_kanwall = True
     else:
         raise Exception("构建隔扇时无法判断是否使用槛墙")
-        return
+    
+    # 提取geshanData
+    geshanID = wallproxy.ACA_data['wallID']    
+    geshanData = utils.getDataChild(
+        contextObj=wallproxy,
+        obj_type=con.ACA_WALLTYPE_GESHAN,
+        obj_id=geshanID
+    )
+    if geshanData is None:
+        raise Exception(f"无法找到geshanData:{geshanID}")
 
     # 1、隔扇根对象
     geshan_root = utils.addEmpty(
@@ -355,7 +364,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     geshanData,windowsillZ = __getGeshanData(
         wallproxy=wallproxy,
         scale=scale,
-        gapNum=wData.gap_num,
+        gapNum=geshanData.gap_num,
         useKanwall=use_kanwall,
         dir=dir
     )
@@ -575,11 +584,20 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     # 分解槛框的长、宽、高
     frame_width,frame_depth,frame_height = wallproxy.dimensions
     KankuangObjs = []
+
+    # 提取childData    
+    childData = utils.getDataChild(
+        contextObj=wallproxy,
+        obj_type=wData.aca_type,
+        obj_id=wData['wallID']
+    )
+    if childData is None:
+        raise Exception(f"无法找到childData:{wData.wallID}")
     
     doorWidth = ((frame_width
                   - pillerD
                   - con.BAOKUANG_WIDTH*pd*2)
-                 *bData.doorFrame_width_per)   # 门口宽度
+                 *childData.doorFrame_width_per)   # 门口宽度
     # 解析wallProxy
     wallID = wallproxy.ACA_data['wallID']
     wallType = wallID.split('#')[0]
@@ -605,7 +623,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
                 - con.KAN_DOWN_HEIGHT*pd
                 - con.KAN_UP_HEIGHT*pd)
     # 是否使用横披窗
-    topWinH = bData.topwin_height
+    topWinH = childData.topwin_height
     bUseTopwin = False
     if frame_height - frameMax > 0.00001:
         # 內檐装修，自动开启横披窗，并自动计算高度
@@ -616,14 +634,14 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         doorHeight -= (topWinH
                        + con.KAN_MID_HEIGHT*pd)
     # 是否使用走马板
-    topBoardHeight = bData.wall_span 
+    topBoardHeight = childData.wall_span 
     bUseTopBoard = False
     if topBoardHeight > 0:
         bUseTopBoard = True
         # 走马板
         doorHeight -= topBoardHeight
     # 自动更新门口高度
-    bData['doorFrame_height'] = doorHeight
+    childData['doorFrame_height'] = doorHeight
 
     # 0、槛墙 ------------------------
     # 放在最前面做，影响到后续的下槛、下抱框等
@@ -758,7 +776,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     KankuangObjs.append(KuangDoorObj)
     
     # 5、下抱框 ---------------------
-    if bData.doorFrame_width_per == 1:
+    if childData.doorFrame_width_per == 1:
         # 门口满铺时，以门框与下抱框
         pass
     else:
@@ -1228,13 +1246,6 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     pillerD = bData.piller_diameter
-    # 分解槛框的长、宽、高
-    frame_width,frame_depth,frame_height = kankuangObj.dimensions
-    holeHeight = bData.doorFrame_height  # 门口高度
-    holeWidth = ((frame_width
-                  - pillerD
-                  - con.BAOKUANG_WIDTH*pd*2)
-                 *bData.doorFrame_width_per)   # 门口宽度
     
     # 提取maindoorData
     maindoorID = kankuangObj.ACA_data['wallID']    
@@ -1245,6 +1256,14 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
     )
     if maindoorData is None:
         raise Exception(f"无法找到maindoorData:{maindoorID}")
+    
+    # 分解槛框的长、宽、高
+    frame_width,frame_depth,frame_height = kankuangObj.dimensions
+    holeHeight = maindoorData.doorFrame_height  # 门口高度
+    holeWidth = ((frame_width
+                  - pillerD
+                  - con.BAOKUANG_WIDTH*pd*2)
+                 *maindoorData.doorFrame_width_per)   # 门口宽度
 
     doorParts = []
     
@@ -1456,19 +1475,30 @@ def __addGeshan(kankuangObj:bpy.types.Object):
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     pillerD = bData.piller_diameter
+
+    # 提取geshanData
+    geshanID = kankuangObj.ACA_data['wallID']    
+    geshanData = utils.getDataChild(
+        contextObj=kankuangObj,
+        obj_type=con.ACA_WALLTYPE_GESHAN,
+        obj_id=geshanID
+    )
+    if geshanData is None:
+        raise Exception(f"无法找到geshanData:{geshanID}")
+    
     # 分解槛框的长、宽、高
     frame_width,frame_depth,frame_height = kankuangObj.dimensions
-    holeHeight = bData.doorFrame_height  # 门口高度
+    holeHeight = geshanData.doorFrame_height  # 门口高度
     holeWidth = ((frame_width
                   - pillerD
                   - con.BAOKUANG_WIDTH*pd*2)
-                 *bData.doorFrame_width_per)   # 门口宽度
+                 *geshanData.doorFrame_width_per)   # 门口宽度
     geshanParts = []
 
     # 1、构建槛框内的每一扇隔扇
     # 注意：先做隔扇是因为考虑到槛窗模式下，窗台高度依赖于隔扇抹头的计算结果
     # 隔扇数量
-    geshan_num = wData.door_num
+    geshan_num = geshanData.door_num
     # 隔扇宽度
     geshan_width = holeWidth/geshan_num
     # 隔扇高度
@@ -1511,20 +1541,32 @@ def __addBarwindow(kankuangObj:bpy.types.Object):
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     pillerD = bData.piller_diameter
+
+    # 提取geshanData
+    windowID = kankuangObj.ACA_data['wallID']    
+    windowData = utils.getDataChild(
+        contextObj=kankuangObj,
+        obj_type=con.ACA_WALLTYPE_BARWINDOW,
+        obj_id=windowID
+    )
+    if windowData is None:
+        raise Exception(f"无法找到geshanData:{windowID}")
+    
     # 分解槛框的长、宽、高
     frame_width,frame_depth,frame_height = kankuangObj.dimensions
-    holeHeight = bData.doorFrame_height  # 门口高度
+    holeHeight = windowData.doorFrame_height  # 门口高度
     holeWidth = ((frame_width
                   - pillerD
                   - con.BAOKUANG_WIDTH*pd*2)
-                 *bData.doorFrame_width_per)   # 门口宽度
+                 *windowData.doorFrame_width_per)   # 门口宽度
     
     # 计算窗台高度
     frameDim = Vector((holeWidth,0,holeHeight))
+    gapNum = 6 # 不涉及抹头，直接固定
     geshanData,windowsillZ = __getGeshanData(
         wallproxy=kankuangObj,
         scale=frameDim,
-        gapNum=wData.gap_num,
+        gapNum=gapNum,
         useKanwall=True,
         dir=dir
     )
@@ -1628,20 +1670,32 @@ def __addFlipwindow(kankuangObj:bpy.types.Object):
     dk = bData.DK
     pd = con.PILLER_D_EAVE * dk
     pillerD = bData.piller_diameter
+
+    # 提取geshanData
+    windowID = kankuangObj.ACA_data['wallID']    
+    windowData = utils.getDataChild(
+        contextObj=kankuangObj,
+        obj_type=con.ACA_WALLTYPE_FLIPWINDOW,
+        obj_id=windowID
+    )
+    if windowData is None:
+        raise Exception(f"无法找到geshanData:{windowID}")
+    
     # 分解槛框的长、宽、高
     frame_width,frame_depth,frame_height = kankuangObj.dimensions
-    holeHeight = bData.doorFrame_height  # 门口高度
+    holeHeight = windowData.doorFrame_height  # 门口高度
     holeWidth = ((frame_width
                   - pillerD
                   - con.BAOKUANG_WIDTH*pd*2)
-                 *bData.doorFrame_width_per)   # 门口宽度
+                 *windowData.doorFrame_width_per)   # 门口宽度
     
     # 计算窗台高度
     frameDim = Vector((holeWidth,0,holeHeight))
+    gapNum = 6 # 不涉及抹头，直接固定
     geshanData,windowsillZ = __getGeshanData(
         wallproxy=kankuangObj,
         scale=frameDim,
-        gapNum=wData.gap_num,
+        gapNum=gapNum,
         useKanwall=True,
         dir=dir
     )

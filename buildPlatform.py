@@ -253,7 +253,6 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
     return taimingJoined
 
 # 营造踏跺
-# 根据step_net定义，可以构造多个台明
 def __buildSteps(baseRootObj:bpy.types.Object):
     # 载入数据
     buildingObj = utils.getAcaParent(

@@ -592,13 +592,13 @@ def __saveTemplate(buildingObj:bpy.types.Object):
 
     # 遍历bData，保存所有的键值
     # https://blender.stackexchange.com/questions/72402/how-to-iterate-through-a-propertygroup
-    for key in bData.__annotations__.keys():
-        # 提取键值，并保存
-        value = getattr(bData, key)
-        # 20250209 数据类型改为从data定义中获取，可以明确区分enum类型
-        # 从而更好的处理下拉列表
-        # keyType = type(value).__name__
-        keyType = bData.bl_rna.properties[key].rna_type.identifier
+    # for key in bData.__annotations__.keys():
+    # 250826 为了能够获取继承的属性，改为使用bl_rna
+    for prop in bData.bl_rna.properties:
+        if not prop.is_runtime: continue
+        key = prop.identifier
+        keyType = prop.rna_type.identifier
+        value = getattr(bData, key)        
 
         # 数据验证和预处理
         # 忽略无需保存的键值
@@ -625,7 +625,7 @@ def __saveTemplate(buildingObj:bpy.types.Object):
         # 写入节点
         keyNode.text = str(value)
         keyNode.attrib['type'] = keyType
-        print(f"key={key} keyType={keyType}")
+        # print(f"key={key} keyType={keyType}")
 
         # 集合类型，保存子对象
         if keyType == 'CollectionProperty':
@@ -643,8 +643,10 @@ def __saveTemplate(buildingObj:bpy.types.Object):
                     itemNode.attrib['type'] = 'item'
 
                 # 递归遍历 item 的属性
-                for subkey in item.__annotations__.keys():
-                    subkeyType = item.bl_rna.properties[subkey].rna_type.identifier
+                for subprop in item.bl_rna.properties:
+                    if not subprop.is_runtime: continue
+                    subkey = subprop.identifier
+                    subkeyType = subprop.rna_type.identifier
                     subvalue = getattr(item, subkey)
                     # 浮点数取3位精度
                     if subkeyType == 'FloatProperty':

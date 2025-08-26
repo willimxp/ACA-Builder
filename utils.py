@@ -2710,13 +2710,23 @@ def getDataList(contextObj:bpy.types.Object,
     if buildingObj is None:
         return None
     
-    # 根据对象类型，映射数据名称    
+    # 根据对象类型，映射数据名称
+    # 踏跺  
     if obj_type == con.ACA_TYPE_STEP:
-        list_name = 'step_list' # 踏跺
+        list_name = 'step_list'
+    # 栏杆
     elif obj_type == con.ACA_WALLTYPE_RAILILNG:
-        list_name = 'railing_list' # 栏杆
+        list_name = 'railing_list'
+    # 板门
     elif obj_type == con.ACA_WALLTYPE_MAINDOOR:
-        list_name = 'maindoor_list' # 板门
+        list_name = 'maindoor_list'
+    # 直棂窗、支摘窗
+    elif obj_type in (con.ACA_WALLTYPE_BARWINDOW,
+                      con.ACA_WALLTYPE_FLIPWINDOW):
+        list_name = 'window_list'
+    elif obj_type in (con.ACA_WALLTYPE_GESHAN,
+                      con.ACA_WALLTYPE_WINDOW):
+        list_name = 'geshan_list'
     else:
         return None
 
@@ -2815,3 +2825,19 @@ def getContextData(obj_type):
     
     return contextData
 
+# 获取wall_net
+def getWallSetting(contextObj:bpy.types.Object):
+    buildingObj,bData,oData = getRoot(contextObj)
+    wallSetting = ''
+    for maindoor in bData.maindoor_list:
+        wallSetting += maindoor.id + ','
+    for wall in bData.wall_list:
+        wallSetting += wall.id + ','
+    for window in bData.window_list:
+        wallSetting += window.id + ','
+    for geshan in bData.geshan_list:
+        wallSetting += geshan.id + ','
+    for railing in bData.railing_list:
+        wallSetting += railing.id + ','
+        
+    return wallSetting

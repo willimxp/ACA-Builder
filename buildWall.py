@@ -397,12 +397,8 @@ def addWall(buildingObj:bpy.types.Object,
     # 构造wallID
     pFrom = None
     pTo= None
-    all_wall_net = bData.wall_net
     wallObj = None
-
-    # 250826 将list中的id，全部填充到wall_net中
-    for railing in bData.railing_list:
-        all_wall_net += railing.id + ','
+    wallSetting = utils.getWallSetting(buildingObj)
 
     # 逐一生成墙体
     # 如果用户选择了2根以上的柱子，将依次生成多个墙体
@@ -428,21 +424,35 @@ def addWall(buildingObj:bpy.types.Object,
                 + '#' + pTo.ACA_data['pillerID'] 
             wallID_alt = pTo.ACA_data['pillerID'] \
                     + '#' + pFrom.ACA_data['pillerID'] 
-            if wallID in all_wall_net or wallID_alt in all_wall_net:
-                utils.popMessageBox(f"无法添加{wallID}，该位置已经存在装修，wall_net：{all_wall_net}")
+            if wallID in wallSetting or wallID_alt in wallSetting:
+                utils.popMessageBox(f"无法添加{wallID}，该位置已经存在装修，wallSetting：{wallSetting}")
                 continue
 
             # 构造ID
             wallID = wallType+'#'+wallID
             # 将墙体加入整体布局中
+            # 栏杆
             if wallType == con.ACA_WALLTYPE_RAILILNG:
                 railing = bData.railing_list.add()
                 railing.id = wallID
+            # 板门
             elif wallType == con.ACA_WALLTYPE_MAINDOOR:
                 maindoor = bData.maindoor_list.add()
                 maindoor.id = wallID
-            else:
-                bData.wall_net += wallID + ',' 
+            # 直棂窗、支摘窗
+            elif wallType in (con.ACA_WALLTYPE_BARWINDOW,
+                              con.ACA_WALLTYPE_FLIPWINDOW):
+                window = bData.window_list.add()
+                window.id = wallID
+            # 隔扇窗、隔扇门
+            elif wallType in (con.ACA_WALLTYPE_GESHAN,
+                              con.ACA_WALLTYPE_WINDOW,):
+                geshan = bData.geshan_list.add()
+                geshan.id = wallID
+            # 墙实体
+            elif wallType == con.ACA_WALLTYPE_WALL:
+                wall = bData.wall_list.add()
+                wall.id = wallID
             
             # 生成墙体
             wallObj = __buildWall(buildingObj,wallID)
@@ -473,37 +483,14 @@ def delWall(buildingObj:bpy.types.Object,
             continue
             
         # 删除列表数据
-        if wall.ACA_data['aca_type'] in (
-                con.ACA_WALLTYPE_RAILILNG,  # 栏杆
-                con.ACA_WALLTYPE_MAINDOOR,  # 板门
-                ):
-            utils.delDataChild(
-                contextObj=buildingObj,
-                obj_type=wall.ACA_data['aca_type'],
-                obj_id=wall.ACA_data['wallID'],
-            )
-
-        if wall.ACA_data['aca_type'] in (
-            con.ACA_TYPE_WALL,              # 槛墙
-            con.ACA_WALLTYPE_WINDOW,        # 槛窗
-            con.ACA_WALLTYPE_GESHAN,        # 隔扇
-            con.ACA_WALLTYPE_BARWINDOW,     # 直棂窗
-            con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
-        ):
-            # wall_net的修改基于时候重新生成
-            pass
+        utils.delDataChild(
+            contextObj=buildingObj,
+            obj_type=wall.ACA_data['aca_type'],
+            obj_id=wall.ACA_data['wallID'],
+        )
             
         # 删除wall实体    
         utils.deleteHierarchy(wall,del_parent=True)
-
-    # 重新生成wall_net
-    wallRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_WALL_ROOT)
-    bData.wall_net = ''
-    for wall in wallRootObj.children:
-        if 'wallID' in wall.ACA_data:
-            wallStr = wall.ACA_data['wallID']
-            bData.wall_net += wallStr + ','
 
     # 250702 添加隔断后，刷新额枋，重建雀替
     buildFloor.__buildFang(buildingObj)
@@ -538,22 +525,20 @@ def buildWallLayout(buildingObj:bpy.types.Object):
         utils.deleteHierarchy(wallrootObj)
 
     # 一、批量生成wallproxy
-    # 计算布局数据
-    net_x,net_y = buildFloor.getFloorDate(buildingObj)
-    # 解析模板输入的墙体设置，格式如下
-    # "wall#3/0#3/3,wall#0/0#3/0,wall#0/3#3/3,window#0/0#0/1,window#0/2#0/3,door#0/1#0/2,"
-    wallSetting = bData.wall_net
-    wallList = wallSetting.split(',')
-    for wallID in wallList:
-        if wallID == '': continue
-        __buildWall(buildingObj,wallID)
-
+    for wall in bData.wall_list:
+        __buildWall(buildingObj,wall.id)
     # 栏杆
     for railing in bData.railing_list:
         __buildWall(buildingObj,railing.id)
     # 板门
     for maindoor in bData.maindoor_list:
         __buildWall(buildingObj,maindoor.id)
+    # 直棂窗、支摘窗
+    for window in bData.window_list:
+        __buildWall(buildingObj,window.id)
+    # 隔扇门、隔扇窗
+    for geshan in bData.geshan_list:
+        __buildWall(buildingObj,geshan.id)
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

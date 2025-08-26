@@ -30,9 +30,12 @@ classes = (
     data.TemplateListItem,
     data.TemplateThumbItem,
     data.ACA_data_scene,
+    data.ACA_data_wall_common,
+    data.ACA_data_door_common,
     data.ACA_data_taduo,
     data.ACA_data_railing,
     data.ACA_data_maindoor,
+    data.ACA_data_geshan,
     data.ACA_data_obj,
     data.ACA_data_template,
     

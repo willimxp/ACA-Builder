@@ -1067,8 +1067,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         yinY = con.KAN_DOWN_DEPTH*pd/2
         yinZ = (doorHeight 
                 + con.KAN_DOWN_HEIGHT*pd
-                + con.KAN_MID_HEIGHT*pd
-                - con.MENYIN_HEIGHT*pd/2)
+                + con.KAN_MID_HEIGHT*pd/2)
         yinLoc = Vector((0,yinY,yinZ))
         # 尺寸
         yinDim = Vector((frame_width,
@@ -1155,8 +1154,9 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
             location=zanLoc,
             singleUser=True
         )
-        # 尺寸与门楹匹配
-        zanObj.dimensions.z = con.MENYIN_HEIGHT*pd
+        # 尺寸与中槛匹配
+        zanObj.dimensions.z = (con.KAN_MID_HEIGHT*pd
+                                -con.BEVEL_HIGH*2)
         utils.updateScene()
         zanObj.scale.y = zanObj.scale.z
         zanObj.scale.x = zanObj.scale.z

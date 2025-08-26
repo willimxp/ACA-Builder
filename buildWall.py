@@ -551,6 +551,9 @@ def buildWallLayout(buildingObj:bpy.types.Object):
     # 栏杆
     for railing in bData.railing_list:
         __buildWall(buildingObj,railing.id)
+    # 板门
+    for maindoor in bData.maindoor_list:
+        __buildWall(buildingObj,maindoor.id)
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

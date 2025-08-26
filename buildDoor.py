@@ -1235,6 +1235,17 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
                   - pillerD
                   - con.BAOKUANG_WIDTH*pd*2)
                  *bData.doorFrame_width_per)   # 门口宽度
+    
+    # 提取maindoorData
+    maindoorID = kankuangObj.ACA_data['wallID']    
+    maindoorData = utils.getDataChild(
+        contextObj=kankuangObj,
+        obj_type=con.ACA_WALLTYPE_MAINDOOR,
+        obj_id=maindoorID
+    )
+    if maindoorData is None:
+        raise Exception(f"无法找到maindoorData:{maindoorID}")
+
     doorParts = []
     
     # 1、门板 --------
@@ -1326,7 +1337,7 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
     doorParts.append(bianObj)
 
     # 4、门钉 ---------------------------
-    dingNum = bData.door_ding_num   # 实际的排布行数和列数 
+    dingNum = maindoorData.door_ding_num   # 实际的排布行数和列数 
     if dingNum > 0:
         # 导入门钉
         dingObj = utils.copyObject(

@@ -391,7 +391,8 @@ class ACA_PT_platform(bpy.types.Panel):
                          text='删除踏跺',
                          icon='TRASH')
             # 踏跺参数
-            stepData = utils.getContextData()
+            stepData = utils.getContextData(
+                con.ACA_TYPE_STEP)
             if stepData is not None:
                 group = toolbox.grid_flow(columns=1, align=True)
                 group.prop(stepData, "width",text="踏跺宽度")
@@ -760,10 +761,10 @@ class ACA_PT_wall(bpy.types.Panel):
             #         text='['+context.object.name+']',
             #         icon='KEYTYPE_JITTER_VEC')
                 
-            # 门钉数量
-            inputDingNum = toolBar.column(align=True)
-            inputDingNum.prop(
-                bData, "door_ding_num")
+            # # 门钉数量
+            # inputDingNum = toolBar.column(align=True)
+            # inputDingNum.prop(
+            #     bData, "door_ding_num")
             
             # 隔扇数量（区分了全局和个体）
             inputDoorNum = toolBar.column(align=True)
@@ -775,12 +776,26 @@ class ACA_PT_wall(bpy.types.Panel):
                 dataSource, "gap_num",text='抹头数量')   
 
             # 栏杆属性 ----------------------------            
-            railingData = utils.getContextData()
+            railingData = utils.getContextData(
+                con.ACA_WALLTYPE_RAILILNG)
             if railingData is not None:
                 # 显示对应输入框
                 toolBox = box.column(align=True)
-                group = toolBox.grid_flow(columns=1, align=True)
-                group.prop(railingData, "gap",text="栏杆开口")
+                inputRailingGap = toolBox.grid_flow(
+                    columns=1, align=True)
+                inputRailingGap.prop(
+                    railingData, "gap",text="栏杆开口")
+
+            # 板门属性 ----------------------------            
+            maindoorData = utils.getContextData(
+                con.ACA_WALLTYPE_MAINDOOR)
+            if maindoorData is not None:
+                # 显示对应输入框
+                toolBox = box.column(align=True)
+                inputDingNum = toolBox.grid_flow(
+                    columns=1, align=True)
+                inputDingNum.prop(
+                    maindoorData, "door_ding_num")
 
         
         return

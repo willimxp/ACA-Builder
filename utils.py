@@ -2710,7 +2710,7 @@ def getDataList(contextObj:bpy.types.Object,
     if buildingObj is None:
         return None
     
-    # 根据对象类型，判断数据参数
+    # 根据对象类型，映射数据名称    
     if obj_type == con.ACA_TYPE_STEP:
         list_name = 'step_list' # 踏跺
     elif obj_type == con.ACA_WALLTYPE_RAILILNG:
@@ -2766,7 +2766,7 @@ def delDataChild(contextObj:bpy.types.Object,
     return
 
 # 获取选中对象的子数据，如，step_list, railing_list等
-def getContextData():
+def getContextData(obj_type):
     # 验证有选中的对象
     if bpy.context.selected_objects == []:
         return
@@ -2778,14 +2778,26 @@ def getContextData():
     oData = contextObj.ACA_data
     objType = oData.aca_type
 
-    # 根据对象类型，判断数据参数
-    if objType == con.ACA_WALLTYPE_RAILILNG:
-        idType = 'wallID'
-    elif objType == con.ACA_TYPE_STEP:
-        idType = 'stepID'
-    else:
+    # 验证是否为预期类型
+    if obj_type != objType:
         return
     
+    # 根据对象类型，判断数据参数
+    if objType == con.ACA_TYPE_STEP:
+        idType = 'stepID'
+    elif objType in (
+            con.ACA_WALLTYPE_RAILILNG, # 栏杆
+            con.ACA_WALLTYPE_MAINDOOR,  # 板门
+            con.ACA_TYPE_WALL, # 槛墙
+            con.ACA_WALLTYPE_WINDOW, # 槛窗
+            con.ACA_WALLTYPE_GESHAN, # 隔扇
+            con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
+            con.ACA_WALLTYPE_FLIPWINDOW, # 支摘窗
+        ):
+        idType = 'wallID'
+    else:
+        return
+
     # 获取对象ID
     # 这里不要用hasattr，问了copilot：
     # 通过 oData['wallID'] 访问的是自定义属性字典（RNA properties），

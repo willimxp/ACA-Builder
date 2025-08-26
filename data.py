@@ -335,14 +335,18 @@ def update_wall(self, context:bpy.types.Context):
     # 从self属性找到对应的Object，用self.id_data
     # https://blender.stackexchange.com/questions/145245/how-to-access-object-instance-from-property-instance-in-update-callback
     refObj = self.id_data
+    contextObj = context.active_object
+    oData = contextObj.ACA_data
+    selectObjName = contextObj.name
 
     from . import buildWall
-    # 更新全局的墙体
-    if self.aca_type == con.ACA_TYPE_BUILDING:
-        funproxy = partial(buildWall.buildWallLayout,
-                         buildingObj=refObj)
+    # 全局属性，更新所有墙体
+    if 'aca_type' in self:
+        if self.aca_type == con.ACA_TYPE_BUILDING:
+            funproxy = partial(buildWall.buildWallLayout,
+                            buildingObj=refObj)
     # 更新个体的墙体
-    elif self.aca_type in (
+    elif oData.aca_type in (
                 con.ACA_TYPE_WALL,              # 槛墙
                 con.ACA_WALLTYPE_WINDOW,        # 槛窗
                 con.ACA_WALLTYPE_GESHAN,        # 隔扇
@@ -352,9 +356,13 @@ def update_wall(self, context:bpy.types.Context):
                 con.ACA_WALLTYPE_RAILILNG,      # 栏杆
             ):
         funproxy = partial(buildWall.updateWall,
-                                wallObj=refObj)
+                                wallObj=contextObj)
+    
+    # 执行，更新全部，或更新个体
     utils.fastRun(funproxy)
 
+    # 恢复聚焦
+    utils.focusObj(bpy.data.objects[selectObjName])
     return
 
 # 刷新斗栱布局
@@ -797,7 +805,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         type=ACA_data_railing, name="栏杆列表"
     ) # type: ignore
     maindoor_list: bpy.props.CollectionProperty(
-        type=ACA_data_railing, name="板门列表"
+        type=ACA_data_maindoor, name="板门列表"
     ) # type: ignore
     wall_layout : bpy.props.EnumProperty(
             name = "装修布局",

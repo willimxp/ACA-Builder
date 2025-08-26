@@ -642,10 +642,12 @@ def addRailing(wallProxy:bpy.types.Object):
     utils.deleteHierarchy(wallProxy)
 
     # 提取railingData
-    railingID = wallProxy.ACA_data['wallID']
-    for railing in bData.railing_list:
-        if railing.id == railingID:
-            railingData = railing
+    railingID = wallProxy.ACA_data['wallID']    
+    railingData = utils.getDataChild(
+        contextObj=wallProxy,
+        obj_type=con.ACA_WALLTYPE_RAILILNG,
+        obj_id=railingID
+    )
     if railingData is None:
         raise Exception(f"无法找到railingData:{railingID}")
 

@@ -313,7 +313,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     # 判断是否做开口
     useGap = False
     if 'gap' in proxy:  # 自动生成的平坐没有gap属性
-        print(f"gap={proxy['gap']}")
+        # print(f"gap={proxy['gap']}")
         # 处理开口栏杆
         railingGap=proxy['gap']
         if railingGap > 0.0001:

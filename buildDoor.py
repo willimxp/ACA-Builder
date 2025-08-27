@@ -343,12 +343,12 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     
     # 提取geshanData
     geshanID = wallproxy.ACA_data['wallID']    
-    geshanData = utils.getDataChild(
+    geshanSetting = utils.getDataChild(
         contextObj=wallproxy,
         obj_type=con.ACA_WALLTYPE_GESHAN,
         obj_id=geshanID
     )
-    if geshanData is None:
+    if geshanSetting is None:
         raise Exception(f"无法找到geshanData:{geshanID}")
 
     # 1、隔扇根对象
@@ -364,7 +364,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     geshanData,windowsillZ = __getGeshanData(
         wallproxy=wallproxy,
         scale=scale,
-        gapNum=geshanData.gap_num,
+        gapNum=geshanSetting.gap_num,
         useKanwall=use_kanwall,
         dir=dir
     )
@@ -652,10 +652,17 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
                     con.ACA_WALLTYPE_FLIPWINDOW,):
         # 计算窗台高度
         frameDim = Vector((doorWidth,0,doorHeight))
+        # 抹头数量
+        if wallType == con.ACA_WALLTYPE_WINDOW:
+            # 只有隔扇窗可以根据抹头计算不同的高度
+            gapNum = childData.gap_num
+        else:
+            # 直棂窗和支摘窗没有抹头数，按照3抹计算窗台高度
+            gapNum = 3
         geshanData,windowsillZ = __getGeshanData(
             wallproxy=wallproxy,
             scale=frameDim,
-            gapNum=wData.gap_num,
+            gapNum=gapNum,
             useKanwall=True,
             dir=dir
         )
@@ -970,7 +977,9 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
                     con.ACA_WALLTYPE_GESHAN,
                 ):
                 # 隔扇门/隔扇窗的横披窗数量比隔扇少一扇
-                window_top_num = wData.door_num - 1
+                window_top_num = childData.door_num - 1
+                if window_top_num < 3:
+                    window_top_num = 3
             else:
                 # 直棂窗/支摘窗，始终做3面
                 window_top_num = 3
@@ -1104,7 +1113,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     # 隔扇门/隔扇窗做连二楹
     elif wallType in (con.ACA_WALLTYPE_GESHAN,
                       con.ACA_WALLTYPE_WINDOW,):
-        geshan_num = wData.door_num
+        geshan_num = childData.door_num
         dim = Vector((con.MENYIN_WIDTH*pd,
                     con.MENYIN_DEPTH*pd,
                     con.MENYIN_HEIGHT*pd))

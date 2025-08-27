@@ -332,72 +332,97 @@ def update_wall(self, context:bpy.types.Context):
     if not isRebuild:
         return
     
-    # 从self属性找到对应的Object，用self.id_data
-    # https://blender.stackexchange.com/questions/145245/how-to-access-object-instance-from-property-instance-in-update-callback
-    refObj = self.id_data
     contextObj = context.active_object
+    # 暂存，以便批量更新后的恢复选择
+    activeObjName = contextObj.name
     buildingObj,bData,oData = utils.getRoot(contextObj)
 
+    # 1、预处理，校验所有选中的对象---------------------------
     # 所有选中的对象
     selected_walls = context.selected_objects
     # 暂存选中的对象
     selected_names = []
+    # 经过确认需要更新的墙体对象，如，将隔扇子对象，替换成槛框父对象
+    update_walls = []
     for wallSelected in selected_walls:
-        selected_names.append(wallSelected.name)
+        # 验证是否跨建筑
+        wallbuilding,wbData,woData = utils.getRoot(wallSelected)
+        if wallbuilding != buildingObj:
+            # 丢弃跨建筑的对象
+            continue
 
+        # 验证为待更新的装修对象
+        if wallSelected.ACA_data.aca_type in (
+            con.ACA_TYPE_WALL,              # 槛墙
+            con.ACA_WALLTYPE_WINDOW,        # 槛窗
+            con.ACA_WALLTYPE_GESHAN,        # 隔扇
+            con.ACA_WALLTYPE_BARWINDOW,     # 直棂窗
+            con.ACA_WALLTYPE_MAINDOOR,      # 板门
+            con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
+            con.ACA_WALLTYPE_RAILILNG,      # 栏杆
+        ):
+            # 存入选择列表
+            if not wallSelected.name in selected_names:
+                selected_names.append(wallSelected.name)
+            # 存入待更新列表
+            if not wallSelected in update_walls:
+                update_walls.append(wallSelected)
+        # 如果是门窗子对象，自动选择槛框
+        elif wallSelected.ACA_data.aca_type == con.ACA_TYPE_WALL_CHILD:
+            kankuangObj = wallSelected.parent
+            # 自动选择槛框父对象
+            kankuangObj.select_set(True)
+            # 如果门窗子对象是活动对象
+            if context.active_object == wallSelected:
+                # 设置槛框父对象为活动对象
+                bpy.context.view_layer.objects.active = kankuangObj
+            # 存入选择列表
+            if not kankuangObj.name in selected_names:
+                selected_names.append(kankuangObj.name)
+            # 存入待更新列表
+            if not kankuangObj in update_walls:
+                update_walls.append(kankuangObj)
+        # 其他不符合的构件，不做处理
+        else:
+            continue
+
+    # 2、开始批量处理--------------------------------------
     from . import buildWall
-    # 全局属性，更新所有墙体
-    if 'aca_type' in self:
-        if self.aca_type == con.ACA_TYPE_BUILDING:
-            funproxy = partial(buildWall.buildWallLayout,
-                            buildingObj=refObj)
-            utils.fastRun(funproxy)
-    # 更新个体的墙体
-    else:
-        # 批量设置所有选中的对象
-        for wallSelected in selected_walls:
-            # 确认是踏跺
-            if wallSelected.ACA_data.aca_type not in (
-                con.ACA_TYPE_WALL,              # 槛墙
-                con.ACA_WALLTYPE_WINDOW,        # 槛窗
-                con.ACA_WALLTYPE_GESHAN,        # 隔扇
-                con.ACA_WALLTYPE_BARWINDOW,     # 直棂窗
-                con.ACA_WALLTYPE_MAINDOOR,      # 板门
-                con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
-                con.ACA_WALLTYPE_RAILILNG,      # 栏杆
-            ):
-                continue
+    # 活动对象，批量设置时，以此对象的设置为准
+    contextObj = context.active_object
+    buildingObj,bData,oData = utils.getRoot(contextObj)
+    # 批量设置所有选中的对象
+    for wallUpdate in update_walls:
+        # 多选时，数据传递
+        if wallUpdate != contextObj:
+            # 获取对应的data
+            walldata = utils.getDataChild(
+                contextObj=buildingObj,
+                obj_type=wallUpdate.ACA_data.aca_type,
+                obj_id=wallUpdate.ACA_data['wallID'])
+            # 全部修改为当前值
+            for prop in self.bl_rna.properties:
+                if prop.is_runtime:
+                    key = prop.identifier
+                    value = getattr(self,key)
+                    # id不要覆盖哦！
+                    if key == 'id' : continue
 
-            if wallSelected != contextObj:
-                # 获取对应的data
-                walldata = utils.getDataChild(
-                    contextObj=buildingObj,
-                    obj_type=wallSelected.ACA_data.aca_type,
-                    obj_id=wallSelected.ACA_data['wallID'])
-                # 全部修改为当前值
-                for prop in self.bl_rna.properties:
-                    if prop.is_runtime:
-                        key = prop.identifier
-                        value = getattr(self,key)
-                        # id不要覆盖哦！
-                        if key == 'id' : continue
-
-                        # 只传递有的字段，没有的字段就抛弃
-                        if hasattr(walldata,key):
-                            walldata[key] = value
-                
-            # 执行更新
-            funproxy = partial(buildWall.updateWall,
-                                    wallObj=wallSelected)
-            utils.fastRun(funproxy)
+                    # 只传递有的字段，没有的字段就抛弃
+                    if hasattr(walldata,key):
+                        walldata[key] = value
+        # 执行更新
+        funproxy = partial(buildWall.updateWall,
+                                wallObj=wallUpdate)
+        utils.fastRun(funproxy)
 
     # 恢复墙体选择
-    # 先取消所有选中
     bpy.ops.object.select_all(action='DESELECT')
     for objName in selected_names:
         wallObj = bpy.data.objects[objName]
         wallObj.select_set(True)
-        bpy.context.view_layer.objects.active = wallObj
+    activeObj = bpy.data.objects[activeObjName]
+    bpy.context.view_layer.objects.active = activeObj
     return
 
 # 刷新斗栱布局

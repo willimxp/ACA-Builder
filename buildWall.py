@@ -292,8 +292,11 @@ def __drawWall(wallProxy:bpy.types.Object):
             )
         mat.paint(wallHeadBoard,con.M_BOARD_WALLHEAD)
 
-    # 合并
-    wallObj = utils.joinObjects([bodyObj,wallHeadBoard],'墙体')
+        # 合并
+        wallObj = utils.joinObjects([bodyObj,wallHeadBoard],'墙体')
+    # 没有走马板时，直接返回布尔合并后的墙体
+    else:
+        wallObj = bodyObj
 
     return wallObj
 

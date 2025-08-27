@@ -2727,6 +2727,8 @@ def getDataList(contextObj:bpy.types.Object,
     elif obj_type in (con.ACA_WALLTYPE_GESHAN,
                       con.ACA_WALLTYPE_WINDOW):
         list_name = 'geshan_list'
+    elif obj_type == con.ACA_WALLTYPE_WALL:
+        list_name = 'wall_list'
     else:
         return None
 

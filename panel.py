@@ -563,33 +563,12 @@ class ACA_PT_wall(bpy.types.Panel):
                                       con.ACA_TYPE_COMBO,):
             layout.enabled = False
 
-    # def draw_header_preset(self,context):
-    #     layout = self.layout
-    #     row = layout.row()
-    #     buildingObj,bData,objData = utils.getRoot(context.object)
-    #     if buildingObj == None: return
-    #     if bData.aca_type != con.ACA_TYPE_BUILDING:
-    #         layout.enabled = False
-    #     # 显示为局部设置
-    #     if objData.aca_type in (
-    #             con.ACA_TYPE_WALL,          # 槛墙
-    #             con.ACA_WALLTYPE_WINDOW,    # 槛窗
-    #             con.ACA_WALLTYPE_GESHAN,    # 隔扇
-    #             con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
-    #     ):
-    #         col = row.column()
-    #         col.label(text='['+context.object.name+']',icon='KEYTYPE_JITTER_VEC')
-    #     # 显示为全局设置
-    #     else:
-    #         col = row.column()
-    #         col.label(text='[全局]',icon='KEYTYPE_KEYFRAME_VEC')
-
     def draw(self, context):
         # 从当前场景中载入数据集
         if context.object != None:
             layout = self.layout
             # 追溯全局属性
-            buildingObj,bData,objData = utils.getRoot(context.object)
+            buildingObj,bData,oData = utils.getRoot(context.object)
             if buildingObj == None: return
             
             # 彩画类型统一在comboRoot中管理
@@ -617,8 +596,6 @@ class ACA_PT_wall(bpy.types.Panel):
 
             # 工具栏：加枋、加墙、加门、加窗、删除
             toolBox = box.column(align=True)
-            
-            
 
             # 第1行 ------------------------------
             toolBar = toolBox.grid_flow(columns=2, align=True)
@@ -659,10 +636,6 @@ class ACA_PT_wall(bpy.types.Panel):
             buttonRailing = toolBar.column(align=True)
             buttonRailing.operator(
                 "aca.add_railing",icon='COLLAPSEMENU',text='栏  杆')
-            # # 按钮：加枋
-            # buttonFang = toolBar.column(align=True)
-            # buttonFang.operator(
-            #     "aca.add_fang",icon='LINKED',text='额枋')
             
             # 第5行 ------------------------------
             # 通栏宽度按钮
@@ -674,9 +647,8 @@ class ACA_PT_wall(bpy.types.Panel):
             
             # 工具可用性判断
             # 至少应选择两根柱子
-            if objData.aca_type != con.ACA_TYPE_PILLER \
+            if oData.aca_type != con.ACA_TYPE_PILLER \
                 or len(context.selected_objects)<2:
-                    # buttonFang.enabled=False
                     buttonDoor.enabled=False
                     buttonWall.enabled=False
                     buttonWin.enabled=False
@@ -684,9 +656,9 @@ class ACA_PT_wall(bpy.types.Panel):
                     buttonBarwindow.enabled=False
                     buttonFlipWin.enabled=False
                     buttonRailing.enabled=False
+
             # 删除按钮，是否选中个隔断对象
-            if objData.aca_type not in (
-                con.ACA_TYPE_FANG,          # 枋对象
+            if oData.aca_type not in (
                 con.ACA_TYPE_WALL,          # 槛墙
                 con.ACA_WALLTYPE_WINDOW,    # 槛窗
                 con.ACA_WALLTYPE_GESHAN,    # 隔扇
@@ -697,119 +669,107 @@ class ACA_PT_wall(bpy.types.Panel):
                 ):
                 buttonDel.enabled = False
 
-            # 区分全局还是个体
-            isSetall = False
-            if objData.aca_type in (
-                con.ACA_TYPE_WALL,          # 槛墙
+            # 个体属性 ---------
+            # 验证有选中的对象
+            if context.selected_objects == []:
+                return
+            
+            # 如果选择门窗子构件，自动寻找父级数据
+            if oData.aca_type == con.ACA_TYPE_WALL_CHILD:
+                oData = context.object.parent.ACA_data
+                contextName = context.object.parent.name
+                contextData = utils.getDataChild(
+                    context.object.parent,
+                    context.object.parent.ACA_data.aca_type,
+                    context.object.parent.ACA_data['wallID'])
+            else:
+                # 获取上下文数据
+                contextData = utils.getContextData(oData.aca_type)
+                contextName = context.object.name
+
+            # 1、基本内容：构件名称
+            if oData.aca_type in (
                 con.ACA_WALLTYPE_WINDOW,    # 槛窗
                 con.ACA_WALLTYPE_GESHAN,    # 隔扇
                 con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
                 con.ACA_WALLTYPE_MAINDOOR,  # 板门
                 con.ACA_WALLTYPE_FLIPWINDOW,# 支摘窗
-            ):     
-                # 如果用户选中了wallProxy
-                # 仅设置个体参数，取objData
-                dataSource = objData
-            elif objData.aca_type == con.ACA_TYPE_WALL_CHILD:
-                dataSource = context.object.parent.ACA_data
-            else:
-                dataSource = bData  
-                isSetall = True
-            
-            # 全局参数框
-            toolBox = box.column(align=True)
-            toolBar = toolBox.grid_flow(align=True,columns=1)
-            
-            # # 复选框：是否使用横披窗（区分了全局和个体）
-            # checkboxTopwin = toolBar.column(align=True)
-            # if dataSource.use_topwin:
-            #     checkbox_icon = 'CHECKBOX_HLT'
-            # else:
-            #     checkbox_icon = 'CHECKBOX_DEHLT'
-            # checkboxTopwin.prop(
-            #     bData, "use_topwin",
-            #     toggle=1,text='横披窗',
-            #     icon=checkbox_icon)
-            # 门口宽度比例
-            inputDoorWidth = toolBar.column(align=True)
-            inputDoorWidth.prop(
-                bData, "doorFrame_width_per")
-            # # 门口高度
-            # inputDoorHeight = toolBar.column(align=True)
-            # inputDoorHeight.prop(
-            #     bData, "doorFrame_height")
-            # 横披窗高度
-            inputTopwinHeight = toolBar.column(align=True)
-            inputTopwinHeight.prop(bData,'topwin_height')
-            # 走马板高度（不区分）
-            inputTopHeight = toolBar.column(align=True)
-            inputTopHeight.prop(
-                bData, "wall_span")
-            
-            # 个性参数
-            toolBox = box.column(align=True)
-            toolBar = toolBox.grid_flow(align=True,columns=1)
-
-            # # 显示全区还是个体
-            # selectRange = toolBar.column(align=True)
-            # if isSetall: 
-            #     selectRange.label(
-            #         text='[全局]',
-            #         icon='KEYTYPE_KEYFRAME_VEC')
-            # else:
-            #     selectRange.label(
-            #         text='['+context.object.name+']',
-            #         icon='KEYTYPE_JITTER_VEC')
-                
-            # # 门钉数量
-            # inputDingNum = toolBar.column(align=True)
-            # inputDingNum.prop(
-            #     bData, "door_ding_num")
-            
-            # 隔扇数量（区分了全局和个体）
-            inputDoorNum = toolBar.column(align=True)
-            inputDoorNum.prop(
-                dataSource, "door_num",text='隔扇数量')
-            # 抹头数量（区分了全局和个体）
-            inputGapNum = toolBar.column(align=True)
-            inputGapNum.prop(
-                dataSource, "gap_num",text='抹头数量')   
-
-            # 栏杆属性 ----------------------------            
-            railingData = utils.getContextData(
-                con.ACA_WALLTYPE_RAILILNG)
-            if railingData is not None:
-                # 显示对应输入框
+                con.ACA_WALLTYPE_WALL,# 墙体
+                con.ACA_WALLTYPE_RAILILNG,# 栏杆
+            ):
+                # 属性框
                 toolBox = box.column(align=True)
-                inputRailingGap = toolBox.grid_flow(
-                    columns=1, align=True)
-                inputRailingGap.prop(
-                    railingData, "gap",text="栏杆开口")
-
-            # 板门属性 ----------------------------            
-            maindoorData = utils.getContextData(
-                con.ACA_WALLTYPE_MAINDOOR)
-            if maindoorData is not None:
-                # 显示对应输入框
-                toolBar = box.column(align=True)
-                # 门钉数量
-                inputDingNum = toolBar.grid_flow(
-                    columns=1, align=True)
-                inputDingNum.prop(
-                    maindoorData, "door_ding_num")
-                # 门口宽度比例
-                inputDoorWidth = toolBar.column(align=True)
-                inputDoorWidth.prop(
-                    maindoorData, "doorFrame_width_per")
+                toolBar = toolBox.grid_flow(align=True,columns=1)
+                # 对象名称
+                inputContextName = toolBar.column(align=True)
+                inputContextName.label(
+                    text=contextName,
+                    icon='KEYTYPE_MOVING_HOLD_VEC')
+            
+            # 2、通用属性：走马板
+            if oData.aca_type in (
+                con.ACA_WALLTYPE_WINDOW,    # 槛窗
+                con.ACA_WALLTYPE_GESHAN,    # 隔扇
+                con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
+                con.ACA_WALLTYPE_MAINDOOR,  # 板门
+                con.ACA_WALLTYPE_FLIPWINDOW,# 支摘窗
+                con.ACA_WALLTYPE_WALL,# 墙体
+            ):
+                # 走马板高度
+                inputTopHeight = toolBar.column(align=True)
+                inputTopHeight.prop(
+                    contextData, "wall_span")
+                
+            # 3、一般属性：横披窗高度、门口宽度 
+            if oData.aca_type in (
+                con.ACA_WALLTYPE_WINDOW,    # 槛窗
+                con.ACA_WALLTYPE_GESHAN,    # 隔扇
+                con.ACA_WALLTYPE_BARWINDOW, # 直棂窗
+                con.ACA_WALLTYPE_MAINDOOR,  # 板门
+                con.ACA_WALLTYPE_FLIPWINDOW,# 支摘窗
+            ):
                 # 横披窗高度
                 inputTopwinHeight = toolBar.column(align=True)
                 inputTopwinHeight.prop(
-                    maindoorData,'topwin_height')
-                # 走马板高度（不区分）
-                inputTopHeight = toolBar.column(align=True)
-                inputTopHeight.prop(
-                    maindoorData, "wall_span")
+                    contextData,'topwin_height')
+                # 门口宽度比例
+                inputDoorWidth = toolBar.column(align=True)
+                inputDoorWidth.prop(
+                    contextData, "doorFrame_width_per")
+            
+            # 4、隔扇属性 
+            if oData.aca_type in (
+                con.ACA_WALLTYPE_WINDOW,    # 槛窗
+                con.ACA_WALLTYPE_GESHAN,    # 隔扇
+            ):
+                # 属性框
+                toolBox = box.column(align=True)
+                toolBar = toolBox.grid_flow(align=True,columns=1)
+                # 隔扇数量
+                inputDoorNum = toolBar.column(align=True)
+                inputDoorNum.prop(
+                    contextData, "door_num",text='隔扇数量')
+                # 抹头数量
+                inputGapNum = toolBar.column(align=True)
+                inputGapNum.prop(
+                    contextData, "gap_num",text='抹头数量')   
+                
+            # 5、板门属性         
+            if oData.aca_type == con.ACA_WALLTYPE_MAINDOOR:
+                # 属性框
+                toolBox = box.column(align=True)
+                toolBar = toolBox.grid_flow(align=True,columns=1)
+                # 门钉数量
+                inputDingNum = toolBar.column(align=True)
+                inputDingNum.prop(
+                    contextData, "door_ding_num")
 
+            # 6、栏杆属性         
+            if oData.aca_type == con.ACA_WALLTYPE_RAILILNG:
+                # 栏杆开口
+                inputRailingGap = toolBar.column(align=True)
+                inputRailingGap.prop(
+                    contextData, "gap",text="栏杆开口")
         
         return
 

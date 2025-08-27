@@ -375,13 +375,15 @@ def update_wall(self, context:bpy.types.Context):
                     obj_type=wallSelected.ACA_data.aca_type,
                     obj_id=wallSelected.ACA_data['wallID'])
                 # 全部修改为当前值
-                # for key in self.__annotations__.keys():
                 for prop in self.bl_rna.properties:
                     if prop.is_runtime:
                         key = prop.identifier
                         value = getattr(self,key)
                         # id不要覆盖哦！
-                        if key != 'id':
+                        if key == 'id' : continue
+
+                        # 只传递有的字段，没有的字段就抛弃
+                        if hasattr(walldata,key):
                             walldata[key] = value
                 
             # 执行更新

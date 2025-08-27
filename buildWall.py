@@ -189,16 +189,26 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 载入数据
     buildingObj = utils.getAcaParent(wallProxy,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
-    aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
     (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
     # 覆盖墙体厚度
     wallDeepth = con.WALL_DEPTH * bData.piller_diameter
     # 退花碱厚度
     bodyShrink = con.WALL_SHRINK
+
+    # 提取geshanData
+    wallID = wallProxy.ACA_data['wallID']    
+    wallData = utils.getDataChild(
+        contextObj=wallProxy,
+        obj_type=wallProxy.ACA_data.aca_type,
+        obj_id=wallID
+    )
+    if wallData is None:
+        raise Exception(f"无法找到geshanData:{wallID}")
+    
     # 预留走马板高度
-    if bData.wall_span > 0:
-        wallHeight -= bData.wall_span
+    if wallData.wall_span > 0:
+        wallHeight -= wallData.wall_span
 
     wallParts = []
 
@@ -221,7 +231,6 @@ def __drawWall(wallProxy:bpy.types.Object):
     utils.addModifierBevel(bottomObj, width=con.BEVEL_HIGH)
     # 赋材质
     mat.paint(bottomObj,con.M_WALL_BOTTOM)
-    wallParts.append(bottomObj)
 
     # 2、创建上身对象
     extrudeHeight = wallHeight/10
@@ -256,10 +265,8 @@ def __drawWall(wallProxy:bpy.types.Object):
     mat.paint(bodyObj,con.M_WALL)
     # 导角
     utils.addModifierBevel(bodyObj, width=con.BEVEL_HIGH)
-    wallParts.append(bodyObj)
     
-    # 合并
-    # wallObj = utils.joinObjects(wallParts,'墙体')
+    # 布尔合并上身和下碱
     utils.addModifierBoolean(
         object=bodyObj,
         boolObj=bottomObj,
@@ -270,23 +277,25 @@ def __drawWall(wallProxy:bpy.types.Object):
     utils.delObject(bottomObj)
 
     # 针对重檐，装修不一定做到柱头，用走马板填充
-    if bData.wall_span != 0 :
+    if wallData.wall_span != 0 :
         wallHeadBoard = utils.addCube(
                 name = "走马板",
                 location=(0,0,
                     (wallHeight/2 
                      + extrudeHeight/2
-                     +bData.wall_span/2)
+                     +wallData.wall_span/2)
                 ),
                 dimension=(wallLength,
                            con.BOARD_YOUE_Y*dk,
-                           bData.wall_span),
+                           wallData.wall_span),
                 parent=bodyObj,
             )
         mat.paint(wallHeadBoard,con.M_BOARD_WALLHEAD)
-        wallParts.append(wallHeadBoard)
 
-    return bodyObj
+    # 合并
+    wallObj = utils.joinObjects([bodyObj,wallHeadBoard],'墙体')
+
+    return wallObj
 
 # 更新隔断
 def updateWall(wallObj:bpy.types.Object):

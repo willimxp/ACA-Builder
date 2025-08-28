@@ -68,8 +68,6 @@ classes = (
     operators.ACA_OT_add_step,
     operators.ACA_OT_del_step,
     operators.ACA_OT_del_piller,
-    operators.ACA_OT_add_fang,
-    operators.ACA_OT_del_fang,
     operators.ACA_OT_add_wall,
     operators.ACA_OT_del_wall,
     operators.ACA_OT_add_window,

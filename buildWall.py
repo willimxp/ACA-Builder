@@ -29,39 +29,6 @@ def __addWallrootNode(buildingObj:bpy.types.Object):
     wallrootObj.ACA_data['aca_type'] = con.ACA_TYPE_WALL_ROOT
     return wallrootObj
 
-# 计算墙体数据
-# 用于根据有廊、无廊、前廊、后廊、斗底槽等自动布局
-# 已暂时停用
-def __getWallData(buildingObj:bpy.types.Object,net_x,net_y):
-    # 根据装修布局类型（无廊、周围廊、前廊等），分别处理
-    bData = buildingObj.ACA_data
-    wallLayout = int(bData.wall_layout)
-    row=[]
-    col=[]
-    rowRange=()
-    colRange=()
-    if wallLayout == 1: # 默认无廊
-        row = [0,len(net_y)-1]   # 左右两列
-        rowRange = range(0,len(net_y)-1)
-        col = [0,len(net_x)-1]   # 前后两排
-        colRange = range(0,len(net_x)-1)
-    if wallLayout == 2: # 周围廊
-        row = [1,len(net_y)-2]   # 左右两列
-        rowRange = range(1,len(net_y)-2)
-        col = [1,len(net_x)-2]   # 前后两排
-        colRange = range(1,len(net_x)-2)
-    if wallLayout == 3: # 前廊
-        row = [1,len(net_y)-1]   # 左右两列
-        rowRange = range(1,len(net_y)-1)
-        col = [0,len(net_x)-1]   # 前后两排
-        colRange = range(0,len(net_x)-1)
-    if wallLayout == 4: # 斗底槽
-        row = [0,1,len(net_y)-2,len(net_y)-1]   # 左右两列
-        rowRange = range(0,len(net_y)-1)
-        col = [0,1,len(net_x)-2,len(net_x)-1]   # 前后两排
-        colRange = range(0,len(net_x)-1)
-    return row,col,rowRange,colRange
-
 # 构造wallproxy
 # 根据wallID，实现wallproxy的大小、位置、属性的构造
 def __tempWallproxy(buildingObj:bpy.types.Object,

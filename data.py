@@ -269,63 +269,6 @@ def update_piller(self, context:bpy.types.Context):
         utils.outputMsg("updated piller failed, context should be pillerObj")
     return
 
-def update_topwin(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
-    # 联动计算door_height
-    dk = self.DK
-    # pd = con.PILLER_D_EAVE*dk
-
-    # # use_topwin与topwin_height联动
-    # # 最初设计让用户勾选use_topwin
-    # # 后来设计用户直接输入topwin_height，如果输入0就自动不使用横披窗
-    # if self.topwin_height < 0.0001:
-    #     self.use_topwin = False
-    # else:
-    #     self.use_topwin = True
-
-    # # 从柱高开始倒推
-    # doorHeight = self.piller_height
-    # # 大额枋
-    # doorHeight -= con.EFANG_LARGE_H*dk
-    # # 小额枋和由额垫板
-    # if self.use_smallfang:
-    #     doorHeight -= (con.EFANG_SMALL_H*dk
-    #                    + con.BOARD_YOUE_H*dk)
-    # # 下槛和上槛
-    # doorHeight -= (con.KAN_DOWN_HEIGHT*pd  # 下槛
-    #                + con.KAN_UP_HEIGHT*pd   # 中槛
-    #               )
-    # # 中槛和横披窗
-    # if self.use_topwin:
-    #     doorHeight -= (con.KAN_MID_HEIGHT*pd
-    #                    + self.topwin_height)
-    # # 走马板
-    # if self.wall_span > 0.00001:
-    #     doorHeight -= self.wall_span
-    
-    # # 计算中槛中心Z高度
-    # midkan_z = (con.KAN_DOWN_HEIGHT*pd
-    #             + doorHeight
-    #             + con.KAN_MID_HEIGHT*pd/2)
-    # # 存入door_height
-    # self['door_height'] = midkan_z
-
-    # 250225 因为需要同时考虑外檐装修和內檐装修
-    # 所以以上通过檐柱高倒推无法满足內檐装修的计算
-    # 所以，固定为与穿插枋下皮对齐
-    # (简化处理，上槛中线对齐大额枋底皮)
-    # 上槛和穿插枋高度可能不同，存在误差
-    self['door_height'] = (self.piller_height
-                -con.EFANG_LARGE_H*dk)
-
-    # 继续调用墙体更新
-    update_wall(self, context)
-    return
-
 def update_wall(self, context:bpy.types.Context):
     # 判断自动重建开关
     isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
@@ -693,10 +636,6 @@ class ACA_data_geshan(ACA_data_door_common):
             update = update_wall,
             description="2~6抹头都可以，根据需要自由设置",
         )# type: ignore 
-    use_KanWall: bpy.props.BoolProperty(
-            default=False,
-            name="添加槛墙"
-        )# type: ignore 
 
 # 对象范围的数据
 # 可绑定面板参数属性
@@ -881,17 +820,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_building,
             description="需综合考虑步架进行设计",
         )# type: ignore
+    
+    # 柱子属性
     piller_net : bpy.props.StringProperty(
             name = "保存的柱网列表"
         )# type: ignore
-    # wall_net : bpy.props.StringProperty(
-    #         name = "保存的墙体列表"
-    #     )# type: ignore
-    fang_net : bpy.props.StringProperty(
-            name = "保存的枋列表"
-        )# type: ignore
-    
-    # 柱子属性
     piller_height : bpy.props.FloatProperty(
             name = "檐柱高",
             default = 0.0,
@@ -932,96 +865,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     ) # type: ignore
     geshan_list: bpy.props.CollectionProperty(
         type=ACA_data_geshan, name="隔扇列表"
-    ) # type: ignore
-    wall_layout : bpy.props.EnumProperty(
-            name = "装修布局",
-            description = "装修布局",
-            items = [
-                ("0","-无墙体-",""),
-                ("1","默认(无廊)",""),
-                ("2","周围廊",""),
-                ("3","前廊",""),
-                ("4","斗底槽",""),
-            ],
-            update = update_wall,
-            options = {"ANIMATABLE"}
-        ) # type: ignore
-    wall_depth : bpy.props.FloatProperty(
-            name="墙厚度",
-            default=1.0,
-            precision=3,
-            min=0.1,
-            max=2,
-            update = update_wall
-        )# type: ignore
-    wall_span : bpy.props.FloatProperty(
-            name="走马板高度",
-            default=0,
-            min=0,
-            precision=3,
-            description='重檐时，装修不做到柱头，用走马板填充，输入0则不做走马板',
-            update = update_wall,
-        )# type: ignore 
-    doorFrame_width_per : bpy.props.FloatProperty(
-            name="门口宽比",
-            default=1,
-            max=1,
-            min=0.1,
-            precision=3,
-            description='开间中的门口/窗口宽度比例，小于1则开间的部分做余塞板，不可大于1',
-            update = update_wall,
-        )# type: ignore 
-    doorFrame_height : bpy.props.FloatProperty(
-            name="门口高度",
-            default=3,
-            min=0.1,
-            precision=3,
-            description='开间中的门口高度，小于柱高的空间将自动布置横披窗/迎风板',
-            update = update_wall,
-        )# type: ignore 
-    # 隔扇属性
-    door_num : bpy.props.IntProperty(
-            name="隔扇数量",
-            default=4, max=6,step=2,min=2,
-            update = update_wall,
-            description="一般做4扇隔扇",
-        )# type: ignore 
-    gap_num : bpy.props.IntProperty(
-            name="抹头数量",
-            default=5,min=2,max=6,
-            update = update_wall,
-            description="2~6抹头都可以，根据需要自由设置",
-        )# type: ignore 
-    use_topwin: bpy.props.BoolProperty(
-            default=True,
-            name="添加横披窗",
-            description="在隔扇上方的固定窗户,仅在金柱加高的內檐装修中有效",
-            update = update_topwin,
-        )# type: ignore 
-    door_height : bpy.props.FloatProperty(
-            name="中槛高度",
-            precision=3,
-            update = update_wall,
-            description="中槛中线到台面上皮的高度",
-        )# type: ignore 
-    door_ding_num : bpy.props.IntProperty(
-            name="门钉数量",
-            default=5,
-            min=0,max=9,
-            update = update_wall,
-            description="门钉的路数，最大9路，取0时不做门钉",
-        )# type: ignore 
-    topwin_height : bpy.props.FloatProperty(
-            name="横披窗高度",
-            default=0,
-            precision=3,
-            update = update_topwin,
-            description="横披窗（棂心）的高度，输入0则不做横披窗",
-        )# type: ignore 
-    use_KanWall: bpy.props.BoolProperty(
-            default=False,
-            name="添加槛墙"
-        )# type: ignore 
+    ) # type: ignore 
     paint_style : bpy.props.EnumProperty(
             name = "彩画样式",
             description = "可以切换清和玺等彩画样式",

@@ -256,7 +256,6 @@ def __syncData(fromBuilding:bpy.types.Object,
                 # 所以默认的数据上传需要上传这些字段
                 # 月台不需要pillernet，不要用这个skip
                 # 'piller_net',
-                # 'fang_net',
             ]
     defaultSyncKeys = [
                 'DK',
@@ -433,8 +432,6 @@ def __setTerraceData(terraceObj:bpy.types.Object,
         bData.step_list.clear()
         # 柱网仅显示定位点
         bData['piller_net'] = con.ACA_PILLER_HIDE
-        # 不做额枋
-        bData['fang_net'] = ''
         # 不做墙体
         mData.wall_list.clear()
         mData.geshan_list.clear()
@@ -687,7 +684,6 @@ def __setDoubleEaveData(doubleEaveObj:bpy.types.Object,
         mData.window_list.clear()
         mData.railing_list.clear()
         mData.maindoor_list.clear()
-        mData['fang_net'] = ''
     # 建筑更新，采用上檐被动的缩减1廊间
     else:
         # 主建筑在面阔、进深缩减一廊间
@@ -981,7 +977,6 @@ def __uploadData(fromBuilding:bpy.types.Object):
                 # 如，月台初始化时继承，修改更新时不继承，
                 # 如，重檐上檐始终继承
                 # 'piller_net',
-                # 'fang_net',
                 # 250819 roof_style不能跳过，否则默认值为'0'
                 #'roof_style',   # 250819 不上传屋顶类型，将始终保留继承的主建筑屋顶类型
             ]
@@ -1018,7 +1013,6 @@ def __downloadData(toBuilding:bpy.types.Object,
                 # 如，月台初始化时继承，修改更新时不继承，
                 # 如，重檐上檐始终继承
                 # 'piller_net',
-                # 'fang_net',
             ]
     
     if skipKeys is None:

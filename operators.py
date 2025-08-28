@@ -318,42 +318,6 @@ class ACA_OT_del_step(bpy.types.Operator):
         
         return {'FINISHED'}
 
-# 连接柱-柱，添加枋
-class ACA_OT_add_fang(bpy.types.Operator):
-    bl_idname="aca.add_fang"
-    bl_label = "添加额枋"
-    bl_description = "在柱间添加枋（先选择2根以上的柱子）"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):  
-        piller = context.object
-        pillers = context.selected_objects
-        buildingObj = utils.getAcaParent(piller,con.ACA_TYPE_BUILDING)
-        funproxy = partial(
-                buildFloor.addFang,
-                buildingObj=buildingObj,pillers=pillers)
-        result = utils.fastRun(funproxy)
-        if 'FINISHED' in result:
-                self.report({'INFO'},"已添加枋")
-        
-        return {'FINISHED'}
-    
-# 断开柱-柱，删除枋
-class ACA_OT_del_fang(bpy.types.Operator):
-    bl_idname="aca.del_fang"
-    bl_label = "删除"
-    bl_description = "在柱间删除枋（先选择1根以上的枋）"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):  
-        fang = context.object
-        fangs = context.selected_objects
-        buildingObj = utils.getAcaParent(
-            fang,con.ACA_TYPE_BUILDING)
-        buildFloor.delFang(buildingObj,fangs) 
-        self.report({'INFO'},"已删除枋")
-        return {'FINISHED'}
-
 # 批量重新生成装修布局，及所有墙体
 # 绑定在建筑面板的“墙体营造按钮上”
 class ACA_OT_reset_wall_layout(bpy.types.Operator):

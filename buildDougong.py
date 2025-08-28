@@ -270,7 +270,6 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
 
 # 生成连接枋
 # 为了便于根据每间面阔，精确的匹配攒当宽度的贴图，枋子在每间都生成
-# 为了每间逐一生成，采用了额枋数据fang_net来处理
 # 为了保持柱网层与斗栱层的独立，并没有把这段处理放在buildFloor的代码中
 def __buildDGFangbyRoom(
         dgrootObj:bpy.types.Object,

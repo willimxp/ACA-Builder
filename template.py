@@ -312,9 +312,6 @@ def __loadDefaultData(buildingObj:bpy.types.Object):
     bData['y_2'] = con.ROOM_Y2*DK  
     # 梢间进深           
     bData['y_3'] = con.ROOM_Y3*DK    
-    # 隔扇中槛高度         
-    bData['door_height'] = (bData.piller_height
-                -con.EFANG_LARGE_H*DK)
     return bData
 
 # 填充资产对象的引用aData

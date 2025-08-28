@@ -648,15 +648,9 @@ def __buildFang(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    aData:tmpData = bpy.context.scene.ACA_temp
-
-    # 根据fang_net判断是否需要自动生成
-    # '0/0#1/0,1/0#2/0,2/0#3/0,3/0#3/1,3/1#3/2,3/2#3/3,3/3#2/3,2/3#1/3,1/3#0/3,0/3#0/2,0/2#0/1,0/1#0/0,'
-    # fangNet = bData.fang_net
-    # 250802 不再保留以前用户手工创建的额枋，而完全按照柱网自动判断
-    fangNet = ''
 
     # 自动生成fangstr
+    fangNet = ''
     # 提取柱网列表
     pillerList = bData.piller_net.rstrip(',').split(',')
     for pillerID in pillerList:
@@ -715,8 +709,6 @@ def __buildFang(buildingObj:bpy.types.Object):
                 if (sfang not in fangNet 
                     and sfang_alt not in fangNet):
                     fangNet += sfang
-    # 将fangstr存入bdata
-    bData['fang_net'] = fangNet
 
     # 柱网根节点
     floorRootObj = utils.getAcaChild(
@@ -877,86 +869,6 @@ def __buildFang(buildingObj:bpy.types.Object):
     # # 聚焦到最后添加的大额枋，便于用户可以直接删除
     # utils.focusObj(bigFangObj)
     return {'FINISHED'}
-
-# 在选中的柱子间，添加枋
-def addFang(buildingObj:bpy.types.Object,
-              pillers:List[bpy.types.Object]):
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
-
-    # 校验用户至少选择2根柱子
-    pillerNum = 0
-    for piller in pillers:
-        if 'aca_type' in piller.ACA_data:   # 可能选择了没有属性的对象
-            if piller.ACA_data['aca_type'] \
-                == con.ACA_TYPE_PILLER:
-                pillerNum += 1
-    if pillerNum < 2:
-        utils.popMessageBox("请至少选择2根柱子")
-        return
-
-    # 构造枋网设置
-    pFrom = None
-    pTo= None
-    fangStr = bData.fang_net
-    for piller in pillers:
-        # 校验用户选择的对象，可能误选了其他东西，直接忽略
-        if 'aca_type' in piller.ACA_data:   # 可能选择了没有属性的对象
-            if piller.ACA_data['aca_type'] \
-                == con.ACA_TYPE_PILLER:
-                if pFrom == None: 
-                    pFrom = piller
-                    continue #暂存起点
-                else:
-                    pTo = piller
-                    fangID = pFrom.ACA_data['pillerID'] \
-                        + '#' + pTo.ACA_data['pillerID'] 
-                    fangID_alt = pTo.ACA_data['pillerID'] \
-                         + '#' + pFrom.ACA_data['pillerID'] 
-                    # 验证枋子是否已经存在
-                    if fangID in fangStr or fangID_alt in fangStr:
-                        print(fangID + " is in fangstr:" + fangStr)
-                        continue
-                    fangStr += fangID + ','
-                    pFrom = piller
-
-    # 根据fang_net字串，重新生成所有枋子
-    bData.fang_net = fangStr
-    result = __buildFang(buildingObj)
-    
-    return result
-
-# 减枋
-def delFang(buildingObj:bpy.types.Object,
-              fangs:List[bpy.types.Object]):
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
-
-    # 删除额枋对象
-    for fang in fangs:
-        # 校验用户选择的对象，可能误选了其他东西，直接忽略
-        if 'aca_type' in fang.ACA_data:
-            if fang.ACA_data['aca_type'] \
-                == con.ACA_TYPE_FANG:
-                utils.deleteHierarchy(fang,del_parent=True)
-
-    # 重新生成柱网配置
-    # 遍历父节点，查找所有的枋对象，重新组合fangstr
-    floorRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_FLOOR_ROOT
-    )    
-    floorChildren:List[bpy.types.Object] = floorRootObj.children
-    bData.fang_net = ''
-    for fang in floorChildren:
-        if 'aca_type' in fang.ACA_data:
-            if fang.ACA_data['aca_type']==con.ACA_TYPE_FANG:
-                fangID = fang.ACA_data['fangID']
-                bData.fang_net += fangID + ','
-    
-    # 重新聚焦根节点
-    utils.focusObj(buildingObj)
-
-    return
 
 # 计算檐柱、金柱高度
 # 檐柱直接返回用户输入的柱高
@@ -1338,7 +1250,6 @@ def resetFloor(buildingObj:bpy.types.Object,
     bData:acaData = buildingObj.ACA_data
     if bData.piller_net != con.ACA_PILLER_HIDE:
         bData.piller_net = ''
-    bData.fang_net = ''
     bData.wall_list.clear()
     bData.geshan_list.clear()
     bData.window_list.clear()

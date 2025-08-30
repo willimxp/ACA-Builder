@@ -508,6 +508,17 @@ def buildWallLayout(buildingObj:bpy.types.Object):
         __buildWall(buildingObj,wall.id)
     # 栏杆
     for railing in bData.railing_list:
+        # 栏杆与踏跺互斥
+        stepid = railing.id.split('#',1)[1]
+        stepData = utils.getDataChild(
+            contextObj=buildingObj,
+            obj_type=con.ACA_TYPE_STEP,
+            obj_id=stepid
+        )
+        if stepData is not None:
+            print(f"{railing.id}栏杆添加跳过，该位置已经有踏跺")
+            continue
+
         __buildWall(buildingObj,railing.id)
     # 板门
     for maindoor in bData.maindoor_list:

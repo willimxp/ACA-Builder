@@ -341,9 +341,11 @@ def addTerrace(buildingObj:bpy.types.Object):
     # 2、构造月台数据集 --------------------------
     # 从Combo根节点继承数据
     utils.outputMsg("添加月台子建筑...")
-    __downloadData(toBuilding=terraceRoot)
+    # __downloadData(toBuilding=terraceRoot)
     # 设置月台逻辑数据
-    __setTerraceData(terraceRoot,isInit=True)
+    __setTerraceData(parentObj=buildingObj,
+                     terraceObj=terraceRoot,
+                     isInit=True)
     
     # 3、开始营造 ------------------------------
     # 刷新主建筑月台（隐藏前出踏跺）
@@ -407,15 +409,19 @@ def delTerrace(terraceObj:bpy.types.Object):
     return {'FINISHED'}
 
 # 设置月台数据
-def __setTerraceData(terraceObj:bpy.types.Object,
+def __setTerraceData(parentObj:bpy.types.Object,
+                     terraceObj:bpy.types.Object,
                      isInit = False, # 初始化标识，区分是新建还是更新
                      ):
+    # 主建筑数据集
+    mainBuildingObj = parentObj
+    mData:acaData = mainBuildingObj.ACA_data
+    
     # 初始化数据集
     # 月台数据集
     bData:acaData = terraceObj.ACA_data
-    # 主建筑数据集
-    mainBuildingObj = utils.getMainBuilding(terraceObj)
-    mData:acaData = mainBuildingObj.ACA_data
+    __syncData(fromBuilding=parentObj,
+               toBuilding=terraceObj)
     
     # 1、分层显示控制 --------------------------
     # 分层显示控制

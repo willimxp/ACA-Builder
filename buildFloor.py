@@ -1393,3 +1393,184 @@ def __getComboPillerNet(buildingObj:bpy.types.Object):
     pillerNet += innerPillerOffset
 
     return pillerNet
+
+# 添加回廊
+def addLoggia(buildingObj:bpy.types.Object,
+              width=2,
+              side='0',
+              use_railing=True,):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+
+    # 重新生成柱网
+    bData.piller_net = ''
+
+    # 周围廊
+    if side == '0':
+        # 添加左右廊间
+        bData['x_rooms'] += 2
+        __setLoggiaWidth(buildingObj,width,'X')
+
+        # 添加前后廊间
+        bData['y_rooms'] += 2
+        __setLoggiaWidth(buildingObj,width,'Y')
+
+        # 处理装修
+        __childOffset(buildingObj,
+                      offset_x=1,
+                      offset_y=1)
+        
+        # 添加回廊栏杆
+        if use_railing:
+            __addLoggiaRailing(buildingObj,side)
+        
+    # 前后廊
+    elif side == '1':
+        # 添加前后廊间
+        bData['y_rooms'] += 2
+        __setLoggiaWidth(buildingObj,width,'Y')
+
+        # 处理装修
+        __childOffset(buildingObj,
+                      offset_x=0,
+                      offset_y=1)
+        
+        # 添加回廊栏杆
+        if use_railing:
+            __addLoggiaRailing(buildingObj,side)
+        
+    # 执行营造
+    buildFloor(buildingObj)
+
+    return {'FINISHED'}
+
+# 设置廊间宽度
+def __setLoggiaWidth(buildingObj:bpy.types.Object,
+              width,side='X'):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+    
+    if side == 'X':
+        xRooms = bData.x_rooms
+        if xRooms == 3:
+            bData['x_2'] = width
+        elif xRooms == 5:
+            bData['x_3'] = width
+        elif xRooms >= 7:
+            bData['x_4'] = width
+
+    if side == 'Y':
+        yRooms = bData.y_rooms
+        if yRooms in (3,4):
+            bData['y_2'] = width
+        elif yRooms >= 5:
+            bData['y_3'] = width
+    
+    return
+
+# 位移装修子构件
+def __childOffset(buildingObj:bpy.types.Object,
+                  offset_x,offset_y):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+
+    childList = [
+        'step_list',
+        'railing_list',
+        'maindoor_list',
+        'wall_list',
+        'window_list',
+        'geshan_list',
+    ]
+
+    for listName in childList:
+        list = getattr(bData,listName)
+        for item in list:
+            # 提取p1，p2两根柱子
+            key = item.id.split('#')
+
+            # 踏跺偏移，沿着外檐直线平移
+            if listName =='step_list':
+                p1 = key[0]
+                p2 = key[1]
+                # 只做X或Y向位移
+                [p1x,p1y] = p1.split('/')
+                [p2x,p2y] = p2.split('/')
+                step_x = offset_x
+                step_y = offset_y
+                if p1y == p2y:
+                    # 南踏跺
+                    if p1y=='0':
+                        step_y = 0
+                    # 北踏跺
+                    else:
+                        step_y *= 2
+                if p1x == p2x:
+                    # 西踏跺
+                    if p1x=='0':
+                        step_x = 0
+                    # 东踏跺
+                    else:
+                        step_x *= 2
+                p1 = f"{int(p1x)+step_x}/{int(p1y)+step_y}"
+                p2 = f"{int(p2x)+step_x}/{int(p2y)+step_y}"
+                newid = f"{p1}#{p2}"
+
+            # 门窗偏移，在柱网内斜线移动
+            else:
+                p1 = key[1]
+                p2 = key[2]
+                # 柱子位移
+                [p1x,p1y] = p1.split('/')
+                p1 = f"{int(p1x)+offset_x}/{int(p1y)+offset_y}"
+                [p2x,p2y] = p2.split('/')
+                p2 = f"{int(p2x)+offset_x}/{int(p2y)+offset_y}"
+                newid = f"{key[0]}#{p1}#{p2}"
+                
+            item['id'] = newid
+    return
+
+# 添加回廊栏杆
+def __addLoggiaRailing(buildingObj:bpy.types.Object,
+                       side):
+    # 载入数据
+    bData:acaData = buildingObj.ACA_data
+
+    railingItems = []
+
+    # 前后檐
+    if side in ('0','1'):
+        for y in (0,bData.y_rooms):
+            for x in range(bData.x_rooms):
+                p1 = f"{x}/{y}"
+                p2 = f"{x+1}/{y}"
+                railingID = f"{con.ACA_WALLTYPE_RAILILNG}#{p1}#{p2}"
+                railingItems.append(railingID)
+    
+    #两山
+    if side == '0':
+        for x in (0,bData.x_rooms):
+            for y in range(bData.y_rooms):
+                p1 = f"{x}/{y}"
+                p2 = f"{x}/{y+1}"
+                railingID = f"{con.ACA_WALLTYPE_RAILILNG}#{p1}#{p2}"
+                railingItems.append(railingID)
+    
+    # 批量加入datalist
+    for itemName in railingItems:
+        # 仍然生成数据，仅在buildWallLayout中判断互斥
+        # # 踏跺互斥验证
+        # stepid = itemName.split('#',1)[1]
+        # stepData = utils.getDataChild(
+        #     contextObj=buildingObj,
+        #     obj_type=con.ACA_TYPE_STEP,
+        #     obj_id=stepid
+        # )
+        # if stepData is not None:
+        #     print(f"{itemName}栏杆添加跳过，该位置已经有踏跺")
+        #     continue
+
+        railing = bData.railing_list.add()
+        railing.id = itemName
+
+    return

@@ -2769,7 +2769,8 @@ def getDataChild(contextObj:bpy.types.Object,
             dataChild = child
             break
     if dataChild is None:
-        raise Exception(f"无法获取{obj_id}")
+        # raise Exception(f"无法获取{obj_id}")
+        return None
 
     return dataChild
 

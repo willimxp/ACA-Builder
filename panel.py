@@ -278,6 +278,20 @@ class ACA_PT_basic(bpy.types.Panel):
                         text="添加重檐平坐")
         op.floorPlan = 'chongyanpingzuo'
 
+        ###################################################
+        # 第四工具箱
+        box = layout.box()
+        toolBox = box.column(align=True)
+        # 第一行 ------------------------------
+        toolBar = toolBox.grid_flow(columns=1, align=True)
+
+        # 添加回廊
+        btnAddLoggia = toolBar.column(align=True)
+        op = btnAddLoggia.operator(
+                        "aca.add_loggia",
+                        icon='PACKAGE',
+                        text="添加回廊")
+
         # 性能分析按钮
         # row = layout.row()
         # row.operator("aca.profile",icon='HOME')

@@ -1458,3 +1458,83 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
             utils.popMessageBox(msg)
         
         return {'FINISHED'}
+    
+# 添加回廊
+class ACA_OT_ADD_LOGGIA(bpy.types.Operator):
+    bl_idname="aca.add_loggia"
+    bl_label = "添加周围廊"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '添加周围廊'
+
+    # 参数
+    width: bpy.props.FloatProperty(
+        name="回廊宽度",
+        default=1.0
+    ) # type: ignore
+    side:bpy.props.EnumProperty(
+            name = "回廊类型",
+            items = [
+                ("0","周围廊",""),
+                ("1","前后廊",""),
+            ],
+        ) # type: ignore
+    use_railing:bpy.props.BoolProperty(
+            name = "添加栏杆",
+            default=True,
+        ) # type: ignore
+
+    # 弹出参数输入框
+    def invoke(self, context, event):
+        self.orig_x = event.mouse_x
+        self.orig_y = event.mouse_y
+
+        windowWidth = context.window.width
+        windowHeight = context.window.height
+        # 判断macOs，使用Retina高分辨屏幕时，分辨率x2
+        import sys
+        platform = sys.platform
+        if platform.startswith('darwin'):
+            windowWidth = windowWidth*2
+            windowHeight = windowHeight*2
+        
+        w = int(windowWidth/2)
+        h = int(windowHeight/2)
+        context.window.cursor_warp(w, h)
+
+        # 廊间宽度默认22dk
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        dk = bData.DK
+        self.width = 22 * dk
+
+        return context.window_manager.invoke_props_dialog(self,width=300)
+    
+    # 绘制参数输入框
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        box.prop(self, "side",text='')
+        box.prop(self, "width")
+        box.prop(self,'use_railing')
+
+    def execute(self, context): 
+        timeStart = time.time()
+
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        
+        from . import buildCombo
+        funproxy = partial(
+            buildFloor.addLoggia,
+            buildingObj=buildingObj,
+            width=self.width,
+            side=self.side,
+            use_railing=self.use_railing
+        )
+        result = utils.fastRun(funproxy)
+
+        if 'FINISHED' in result:
+            runTime = time.time() - timeStart
+            msg = '添加回廊完成 | 运行时间【%.1f秒】' % runTime
+            self.report({'INFO'},msg)
+            utils.popMessageBox(msg)
+        
+        return {'FINISHED'}

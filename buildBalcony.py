@@ -323,8 +323,6 @@ def __buildRailing(parentObj:bpy.types.Object,
         if railingGap > 0.0001:
             # 栏杆只做开口后的左半幅
             proxyW = proxy['length']*(1-railingGap)/2
-            if proxyW < con.RAILING_PILLER_D*dk*2 + 0.1:
-                raise Exception("栏杆开口过大，请调小参数")
             useGap = True
 
     # proxy，体现栏杆的实际体积
@@ -639,14 +637,12 @@ def buildBalcony(buildingObj:bpy.types.Object):
 def addRailing(wallProxy:bpy.types.Object):       
     # 载入设计数据
     buildingObj,bData,wData = utils.getRoot(wallProxy)
+    dk = bData.DK
     if buildingObj == None:
         utils.popMessageBox(
             "未找到建筑根节点或设计数据")
         return
-
-    # 清理之前的子对象
-    utils.deleteHierarchy(wallProxy)
-
+    
     # 提取railingData
     railingID = wallProxy.ACA_data['wallID']    
     railingData = utils.getDataChild(
@@ -656,15 +652,30 @@ def addRailing(wallProxy:bpy.types.Object):
     )
     if railingData is None:
         raise Exception(f"无法找到railingData:{railingID}")
-
+    
+    # 最大值控制
+    railingLen = wallProxy.dimensions.x - bData.piller_diameter
+    # 栏杆最小值，单侧
+    railingMin = con.RAILING_PILLER_D*dk*4
+    # 开口最大值
+    gapMax = railingLen - railingMin*2
+    # 开口最大比例
+    gapMax_rate =  gapMax/railingLen
+    if railingData.gap > gapMax_rate:
+        railingData['gap'] = gapMax_rate
+        print("栏杆开口过大，已自动设置到最大值")
+    
     # 创建proxyData
     proxy = {}
     proxy['id'] = railingID
     # 柱间距，扣除柱径
-    proxy['length'] = wallProxy.dimensions.x - bData.piller_diameter
+    proxy['length'] = railingLen
     proxy['location'] = (0,0,0)
     proxy['rotation'] = (0,0,0)
     proxy['gap'] = railingData.gap
+
+    # 清理之前的子对象
+    utils.deleteHierarchy(wallProxy)
 
     # 创建栏杆
     railingObj = __buildRailing(

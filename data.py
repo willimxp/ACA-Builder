@@ -644,6 +644,9 @@ class ACA_data_geshan(ACA_data_door_common):
 # https://blender.stackexchange.com/questions/311578/how-do-you-correctly-add-ui-elements-to-adhere-to-the-typing-spec
 class ACA_data_obj(bpy.types.PropertyGroup):
     # 通用对象属性
+    aca_id : bpy.props.StringProperty(
+            name = 'ID',
+        ) # type: ignore
     aca_obj : bpy.props.BoolProperty(
             name = '是ACA对象',
             default = False
@@ -654,6 +657,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     combo_type : bpy.props.StringProperty(
             name = '组合类型',
             default = 'combo_main',
+        ) # type: ignore
+    combo_link:bpy.props.StringProperty(
+            name = '组合关联对象',
         ) # type: ignore
     template_name : bpy.props.StringProperty(
             name = '模板名称'
@@ -877,6 +883,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_building,
             options = {"ANIMATABLE"}
         ) # type: ignore
+    use_balcony_railing :  bpy.props.BoolProperty(
+            default=False,
+            name="使用平坐栏杆",
+            update=update_dougong,
+            description="自动添加围绕平坐的连续栏杆",
+        )# type: ignore 
     
     # 斗栱属性
     use_dg :  bpy.props.BoolProperty(

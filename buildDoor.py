@@ -854,7 +854,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         KankuangObjs.append(KuangUpObj)
 
     # 7、余塞板 ---------------------
-    if doorWidth > (frame_width 
+    if doorWidth >= (frame_width 
                     - con.BAOKUANG_WIDTH*pd*4
                     - pillerD
                     ):
@@ -893,7 +893,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         KankuangObjs.append(boardYusaiObj)
     
     # 8、腰枋 ----------------------
-    if doorWidth > (frame_width 
+    if doorWidth >= (frame_width 
                     - con.BAOKUANG_WIDTH*pd*4
                     - pillerD
                     ):

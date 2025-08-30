@@ -248,13 +248,35 @@ class ACA_PT_basic(bpy.types.Panel):
         # 合并/导出 ------------------------------
         toolBox = box.column(align=True)
         # 第一行 ------------------------------
-        toolBar = toolBox.grid_flow(columns=2, align=True)
-        # 添加重楼
-        btnMultiFloor = toolBar.column(align=True)
-        op = btnMultiFloor.operator(
+        toolBar = toolBox.grid_flow(columns=1, align=True)
+        # 添加简单平坐
+        btnMultiFloor1 = toolBar.column(align=True)
+        op = btnMultiFloor1.operator(
                         "aca.multi_floor_add",
                         icon='PACKAGE',
-                        text="添加重楼")
+                        text="添加楼层")
+        op.floorPlan = 'floor'
+        # 添加简单平坐
+        btnMultiFloor1 = toolBar.column(align=True)
+        op = btnMultiFloor1.operator(
+                        "aca.multi_floor_add",
+                        icon='PACKAGE',
+                        text="添加落地平坐")
+        op.floorPlan = 'pingzuo'
+        # 添加重檐
+        btnMultiFloor2 = toolBar.column(align=True)
+        op = btnMultiFloor2.operator(
+                        "aca.multi_floor_add",
+                        icon='PACKAGE',
+                        text="添加重檐")
+        op.floorPlan = 'chongyan'
+        # 添加重檐平坐
+        btnMultiFloor3 = toolBar.column(align=True)
+        op = btnMultiFloor3.operator(
+                        "aca.multi_floor_add",
+                        icon='PACKAGE',
+                        text="添加重檐平坐")
+        op.floorPlan = 'chongyanpingzuo'
 
         # 性能分析按钮
         # row = layout.row()
@@ -415,8 +437,10 @@ class ACA_PT_platform(bpy.types.Panel):
                             text='添加月台',
                             icon='ALIGN_BOTTOM')
                 # 添加月台，必须选中主体建筑的台基
-                if (bData.combo_type != con.COMBO_MAIN
-                    or objData.aca_type != con.ACA_TYPE_PLATFORM):
+                # if (bData.combo_type != con.COMBO_MAIN
+                #     or objData.aca_type != con.ACA_TYPE_PLATFORM):
+                # 250828 只要是台基，就可以添加月台
+                if objData.aca_type != con.ACA_TYPE_PLATFORM:
                     btnAddTerrace.enabled = False
             else:
                 btnDelTerrace = group.column(align=True)

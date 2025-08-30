@@ -889,9 +889,6 @@ def buildPlatform(buildingObj:bpy.types.Object):
     # 0、准备
     # 载入数据
     bData : acaData = buildingObj.ACA_data
-    # 预校验
-    # 台基可以跳过不做
-    if bData.platform_height <= 0.01: return 
     # 固定在台基目录中
     buildingColl = buildingObj.users_collection[0]
     utils.setCollection(
@@ -913,6 +910,10 @@ def buildPlatform(buildingObj:bpy.types.Object):
     else:
         # 清空台基下属的台明、踏跺
         utils.deleteHierarchy(baseRootObj)
+
+    # 预校验
+    # 台基可以跳过不做
+    if bData.platform_height <= 0.01: return 
     
     # 2、开始构建台基
     # 收集待合并的部件
@@ -961,9 +962,17 @@ def resizePlatform(buildingObj:bpy.types.Object):
             doubleEave = utils.getComboChild(buildingObj,con.COMBO_DOUBLE_EAVE)
             updateBuilding.append(mainBuilding)
             updateBuilding.append(doubleEave)
+        # 重楼
+        if bData.combo_type in (
+            con.COMBO_MULTI_FLOOR,con.COMBO_MULTI_TOP):
+            for child in comboObj.children:
+                if child.ACA_data.combo_type in (
+                    con.COMBO_MULTI_FLOOR,
+                    con.COMBO_MULTI_TOP,
+                    con.COMBO_MAIN):
+                    updateBuilding.append(child)
         # 月台
-        elif (bData.use_terrace and
-            bData.combo_type == con.COMBO_TERRACE):
+        else:
             updateBuilding.append(buildingObj)
     # 单体建筑处理
     else:
@@ -1017,6 +1026,11 @@ def resizePlatform(buildingObj:bpy.types.Object):
             childBuilding,con.ACA_TYPE_TILE_ROOT)
         if tileRootObj != None: 
             tileRootObj.location.z = roofBaseZ
+        # 平坐层
+        balconyRootObj = utils.getAcaChild(
+            childBuilding,con.ACA_TYPE_BALCONY_ROOT)
+        if balconyRootObj != None:
+            balconyRootObj.location.z = roofBaseZ
 
     # 实时更新月台
     terraceObj = utils.getComboChild(

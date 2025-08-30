@@ -25,6 +25,8 @@ def __addComboRoot(templateName):
     )
     cData:acaData = comboObj.ACA_data
     cData['template_name'] = templateName
+    cData['aca_obj'] = True
+    cData['aca_id'] = utils.generateID()
     cData['aca_type'] = con.ACA_TYPE_COMBO
     cData['combo_type'] = con.COMBO_ROOT
 
@@ -245,13 +247,13 @@ def __syncData(fromBuilding:bpy.types.Object,
     defaultSkipKeys = [
                 'aca_type',
                 'combo_type',
-                'is_showPlatform',
-                'is_showPillers',
-                'is_showWalls',
-                'is_showDougong',
-                'is_showBeam',
-                'is_showRafter',
-                'is_showTiles',
+                # 'is_showPlatform',
+                # 'is_showPillers',
+                # 'is_showWalls',
+                # 'is_showDougong',
+                # 'is_showBeam',
+                # 'is_showRafter',
+                # 'is_showTiles',
                 # 250812 重檐上檐需要同步pillernet，
                 # 所以默认的数据上传需要上传这些字段
                 # 月台不需要pillernet，不要用这个skip
@@ -306,10 +308,11 @@ def __syncData(fromBuilding:bpy.types.Object,
 # 传入主建筑，在主建筑上添加月台
 def addTerrace(buildingObj:bpy.types.Object):
     # 0、合法性验证 -----------------------
-    # 验证是否为主体建筑
-    if buildingObj.ACA_data.combo_type != con.COMBO_MAIN:
-        utils.popMessageBox("不能添加月台，只有主体建筑可以添加月台")
-        return {'CANCELLED'}
+    # # 验证是否为主体建筑
+    # if buildingObj.ACA_data.combo_type != con.COMBO_MAIN:
+    #     utils.popMessageBox("不能添加月台，只有主体建筑可以添加月台")
+    #     return {'CANCELLED'}
+    # 250828 只要是台基，就允许添加月台
     
     # 1、构造组合层次结构 ------------------------
     # 添加combo根节点
@@ -332,6 +335,8 @@ def addTerrace(buildingObj:bpy.types.Object):
     ) 
     # 务必及时标注combo_type,后续的数据同步和数据设置时都要判断主建筑
     terraceRoot.ACA_data['combo_type'] = con.COMBO_TERRACE
+    link_id = buildingObj.ACA_data.aca_id
+    terraceRoot.ACA_data['combo_link'] = link_id
     
     # 2、构造月台数据集 --------------------------
     # 从Combo根节点继承数据
@@ -790,7 +795,7 @@ def __undoDoubleEaveData(buildingObj:bpy.types.Object):
     
     return
 
-# 计算重檐抬升高度
+# 计算重檐抬升高度(从柱头到围脊上皮)
 def __getDoubleEaveLift(buildingObj:bpy.types.Object):
     # 主建筑数据（下檐）
     mainBuildingObj = utils.getComboChild(
@@ -963,8 +968,10 @@ def __getTopwinLift(buildingObj:bpy.types.Object):
 def __uploadData(fromBuilding:bpy.types.Object):
     # 跳过的字段
     skipKeys = [
+                'aca_id',
                 'aca_type',
                 'combo_type',
+                'combo_link',
                 'is_showPlatform',
                 'is_showPillers',
                 'is_showWalls',
@@ -999,15 +1006,17 @@ def __downloadData(toBuilding:bpy.types.Object,
                    skipKeys = None):
     # 跳过的字段
     defaultSkipKeys = [
+                'aca_id',
                 'aca_type',
                 'combo_type',
-                'is_showPlatform',
-                'is_showPillers',
-                'is_showWalls',
-                'is_showDougong',
-                'is_showBeam',
-                'is_showRafter',
-                'is_showTiles',
+                'combo_link',
+                # 'is_showPlatform',
+                # 'is_showPillers',
+                # 'is_showWalls',
+                # 'is_showDougong',
+                # 'is_showBeam',
+                # 'is_showRafter',
+                # 'is_showTiles',
                 # 250812 comboRoot中需要与主建筑同步pillernet
                 # 子建筑可以自行决定是否要继承该柱网，
                 # 如，月台初始化时继承，修改更新时不继承，
@@ -1109,7 +1118,8 @@ def __syncMainData(toBuilding:bpy.types.Object,
     return
 
 # 添加重楼
-def addMultiFloor(buildingObj:bpy.types.Object):
+def addMultiFloor(buildingObj:bpy.types.Object,
+                  floorPlan):
     # 0、合法性验证 -----------------------
     # 验证屋顶样式
     if buildingObj.ACA_data.roof_style not in (
@@ -1127,25 +1137,149 @@ def addMultiFloor(buildingObj:bpy.types.Object):
     if comboObj is None:
         comboObj = __addComboLevel(buildingObj)
 
-    # 添加重楼子节点
-    multiFloorName = buildingObj.ACA_data.template_name + '.重楼'
-    multiFloorRoot = buildFloor.__addBuildingRoot(
-        templateName = multiFloorName,
+    # 根据按钮传参，执行预设的重楼方案
+    if floorPlan =='floor':
+        # 一个普通楼层，使用老屋顶层高，不做平坐栏杆，保持原有的台基
+        __addPingzuo(buildingObj,
+                     use_piller_height = True,
+                     use_railing=False,
+                     use_platform=True)
+    elif floorPlan == 'pingzuo':
+        # 架空层，重檐抬升的层高，做栏杆，不做台基
+        __addPingzuo(buildingObj,
+                     use_piller_height = False,
+                     use_railing=True,
+                     use_platform=False)
+    elif floorPlan =='chongyan':
+        __addPingzuo(buildingObj)
+    elif floorPlan == 'chongyanpingzuo':
+        __addPingzuoAndEave(buildingObj)
+
+    return {'FINISHED'}
+
+# 添加单一的平坐
+# 如果是首层，直接用平座层替换台基
+# 如果不是首层，做一个楼层高度
+def __addPingzuo(buildingObj:bpy.types.Object,
+                 use_railing=False,
+                 use_platform=True,
+                 use_piller_height=True):
+    # 1、显示进度条 ------------------------
+    from . import build
+    build.isFinished = False
+    build.progress = 0
+    utils.outputMsg("添加重楼子建筑...")
+    # 暂时排除目录下的其他建筑，以加快执行速度
+    build.__excludeOther(keepObj=buildingObj)
+
+    # 2、添加平坐子节点 ----------------------------
+    comboObj = utils.getComboRoot(buildingObj)
+    pingzuoName = buildingObj.ACA_data.template_name + '.平坐'
+    pingzuo = buildFloor.__addBuildingRoot(
+        templateName = pingzuoName,
         comboObj = comboObj
     )
     # 务必及时标注combo_type,后续的数据同步和数据设置时都要判断主建筑
-    multiFloorRoot.ACA_data['combo_type'] = con.COMBO_MULTI_FLOOR
+    pingzuo.ACA_data['combo_type'] = con.COMBO_MULTI_FLOOR
+
+    # 3、构造平坐数据  ------------------------------
+    # 3.1、查找老屋顶，可能是单层时的combo_main，也可能是多层的combo_multi_top
+    oldtop = utils.getComboChild(
+        pingzuo,con.COMBO_MULTI_TOP)
+    if oldtop is None:
+        oldtop = utils.getComboChild(
+            pingzuo,con.COMBO_MAIN)
+    if oldtop is None:
+        raise Exception("添加重楼时，找不到原有的顶层")
+    
+    # 3.2、平坐数据初始化
+    # 从老屋顶同步：柱网、装修等信息
+    __syncData(fromBuilding=oldtop,
+               toBuilding=pingzuo)
+
+    # 3.3、设置平坐数据
+    pData:acaData = pingzuo.ACA_data
+    # 屋顶类型：平坐
+    pData['roof_style'] = int(con.ROOF_BALCONY)
+    # 梁架强制不做廊间举架
+    pData['use_hallway'] = False
+    # 层高：默认取老屋顶层高，做装修
+    # 如果不做装修，则酌减
+    if not use_piller_height:
+        pingzuoHeight = __getPingzuoHeight(oldtop)
+        # 默认柱高：从挑檐桁下皮，到围脊向上额枋高度
+        pData['piller_height'] = pingzuoHeight
+    # 是否做台基？
+    if not use_platform:
+        pData['is_showPlatform'] = False
+        pData['platform_height'] = 0
+    # 是否做栏杆？
+    pData['use_balcony_railing'] = use_railing
+
+    # 3.4、设置老屋顶数据
+    topData:acaData = oldtop.ACA_data
+    # 老屋顶抬升：平坐层台基下皮到挑檐桁下皮
+    multiFloorLift = __getPingzuoLift(pingzuo)
+    # 通过comboRoot根节点累计高度
+    comboObj = utils.getComboRoot(pingzuo)
+    cData:acaData = comboObj.ACA_data
+    multiFloorZ = cData.multi_floor_height + multiFloorLift
+    # 分别存入comboRoot和老屋顶
+    cData['multi_floor_height'] = multiFloorZ
+    topData['root_location'] = Vector((0,0,multiFloorZ))
+
+    # 4、执行营造 -----------------------------
+    # 4.1、老屋顶营造
+    # 整体抬高
+    oldtop.location = topData.root_location
+    # 刷新台基的取消
+    if topData.combo_type == con.COMBO_MAIN:
+        # 如果为底层，关闭台基
+        topData.is_showPlatform = False
+        topData.platform_height = 0
+    # 删除柱础
+    utils.deleteByName(oldtop,name='柱顶石')
+    utils.deleteByName(oldtop,name='素平柱础')
+
+    # 4.2、生成平坐
+    buildFloor.buildFloor(pingzuo,comboObj=comboObj)
+
+    # 5、关闭进度条 ---------------------------
+    build.isFinished = True
+    # 取消排除目录下的其他建筑
+    build.__excludeOther(isExclude=False,
+                         keepObj=buildingObj)
+    
+    return
+
+# 添加重檐平坐
+def __addPingzuoAndEave(buildingObj:bpy.types.Object,):
+    comboObj = utils.getComboRoot(buildingObj)
+    # 添加平坐子节点
+    pingzuoName = buildingObj.ACA_data.template_name + '.平坐'
+    pingzuo = buildFloor.__addBuildingRoot(
+        templateName = pingzuoName,
+        comboObj = comboObj
+    )
+    # 务必及时标注combo_type,后续的数据同步和数据设置时都要判断主建筑
+    pingzuo.ACA_data['combo_type'] = con.COMBO_MULTI_FLOOR
+    
+    # 添加重楼子节点
+    newtopName = buildingObj.ACA_data.template_name + '.重楼'
+    newtop = buildFloor.__addBuildingRoot(
+        templateName = newtopName,
+        comboObj = comboObj
+    )
+    # 务必及时标注combo_type,后续的数据同步和数据设置时都要判断主建筑
+    newtop.ACA_data['combo_type'] = con.COMBO_MULTI_FLOOR
 
     # 2、构造重檐数据集 ----------------------
     # 初始化重楼数据，继承ComboRoot数据
     # 包括主建筑的原始地盘/装修/屋顶等设定
     utils.outputMsg("添加重楼子建筑...")
-    __downloadData(toBuilding=multiFloorRoot)
     # 设置重楼逻辑数据
     # 包括重楼自动抬升，主建筑切换为盝顶
-    __setMultiFloorData(multiFloorRoot,
-                      isInit=True, # 标识初始化
-                      )
+    __setMultiFloorData(pingzuo,newtop)
 
     # 3、开始营造 ------------------------------
     from . import build
@@ -1153,109 +1287,185 @@ def addMultiFloor(buildingObj:bpy.types.Object):
     build.progress = 0
     # 暂时排除目录下的其他建筑，以加快执行速度
     build.__excludeOther(keepObj=buildingObj)
-    
-    # 重新生成
-    # for child in comboObj.children:
-    #     if child == multiFloorRoot:
-    #         # 重新生成屋顶
-    #         buildFloor.buildFloor(child,
-    #                             comboObj=comboObj)
-            
-    #     elif hasattr(child,'ACA_data'):
-    #         childData:acaData = child.ACA_data
-    #         # 查找是否不是盝顶
-    #         # if childData.roof_style != con.ROOF_LUDING:
-    #         buildRoof.buildRoof(child)
 
     # 重新生成腰檐
-    mainBuildingObj = utils.getMainBuilding(multiFloorRoot)
-    buildRoof.buildRoof(mainBuildingObj)
+    oldtop = utils.getComboChild(
+        newtop,con.COMBO_MULTI_TOP)
+    if oldtop is None:
+        oldtop = utils.getComboChild(
+            newtop,con.COMBO_MAIN)
+    if oldtop is None:
+        raise Exception("添加重楼时，找不到原有的顶层")
+    buildRoof.buildRoof(oldtop)
     
     # 重新生成屋顶
-    buildFloor.buildFloor(multiFloorRoot,comboObj=comboObj)
-    
-    # 切换主建筑标识
-    mainBuildingObj.ACA_data['combo_type'] = con.COMBO_MULTI_FLOOR
-    multiFloorRoot.ACA_data['combo_type'] = con.COMBO_MAIN
+    buildFloor.buildFloor(pingzuo,comboObj=comboObj)
+    # 重新生成屋顶
+    buildFloor.buildFloor(newtop,comboObj=comboObj)
+
+    # 重新标识层次结构
+    newtop.ACA_data.combo_type = con.COMBO_MULTI_TOP
+    if oldtop.ACA_data.combo_type == con.COMBO_MULTI_TOP:
+        oldtop.ACA_data.combo_type = con.COMBO_MULTI_FLOOR
 
     # 关闭进度条
     build.isFinished = True
     # 取消排除目录下的其他建筑
     build.__excludeOther(isExclude=False,
                          keepObj=buildingObj)
-
-    return {'FINISHED'}
+    
+    return
 
 # 设置重楼数据
-def __setMultiFloorData(multiFloorRoot:bpy.types.Object,
-                      isInit=False, # 标识初始化
-                      ):
+def __setMultiFloorData(pingzuo:bpy.types.Object,
+                        newtop:bpy.types.Object,
+                        ):
+    # 查找老屋顶，可能是单层时的combo_main，也可能是多层的combo_multi_top
+    oldtop = utils.getComboChild(
+        newtop,con.COMBO_MULTI_TOP)
+    if oldtop is None:
+        oldtop = utils.getComboChild(
+            newtop,con.COMBO_MAIN)
+    if oldtop is None:
+        raise Exception("添加重楼时，找不到原有的顶层")
+    
+    __syncData(fromBuilding=oldtop,
+               toBuilding=newtop)
+    __syncData(fromBuilding=oldtop,
+               toBuilding=pingzuo)
+    
+    # 更改原来的屋顶为盝顶
+    mData:acaData = oldtop.ACA_data
+    mData['roof_style'] = int(con.ROOF_LUDING)
+    mData['luding_rafterspan'] = 0.01
+    
     # 初始化数据集
     # 重楼数据（顶层）
-    bData:acaData = multiFloorRoot.ACA_data
+    bData:acaData = newtop.ACA_data
+    pData:acaData = pingzuo.ACA_data
     # comboRoot根节点
-    comboObj = utils.getComboRoot(multiFloorRoot)
+    comboObj = utils.getComboRoot(newtop)
     cData:acaData = comboObj.ACA_data
 
     # 重楼不做台基
     bData['is_showPlatform'] = False  
+    pData['is_showPlatform'] = False  
 
-    # 抬升楼层，并累计到comboRoot
-    multiFloorLift = __getMultiFloorLift(multiFloorRoot)
+    # 计算平坐柱高
+    # 从挑檐桁下皮，到围脊向上额枋高度
+    pingzuoHeight = __getPingzuoHeight(oldtop)
+    pData['piller_height'] = pingzuoHeight
+    # 抬升平坐，并累计到comboRoot
+    multiFloorLift = __getMultiFloorLift(oldtop)
+    multiFloorZ = cData.multi_floor_height + multiFloorLift
+    cData['multi_floor_height'] = multiFloorZ
+    pData['root_location'] = Vector((0,0,multiFloorZ))
+    pData['roof_style'] = int(con.ROOF_BALCONY)
+
+    # 抬升屋顶，并累计到comboRoot
+    multiFloorLift = __getMultiFloorLift(pingzuo)
     multiFloorZ = cData.multi_floor_height + multiFloorLift
     cData['multi_floor_height'] = multiFloorZ
     bData['root_location'] = Vector((0,0,multiFloorZ))
 
-    # 更改原来的屋顶为盝顶
-    mainBuildingObj = utils.getMainBuilding(multiFloorRoot)
-    mData:acaData = mainBuildingObj.ACA_data
-    mData['roof_style'] = int(con.ROOF_LUDING)
-    mData['luding_rafterspan'] = 0.01
-    
-    # # 切换其他所有建筑的屋檐
-    # for child in comboObj.children:
-    #     # 跳过当前楼层
-    #     if child == multiFloorRoot:
-    #         continue
-
-    #     if hasattr(child,'ACA_data'):
-    #         childData:acaData = child.ACA_data
-    #         if childData.combo_type in (
-    #                 con.COMBO_MULTI_FLOOR,
-    #                 con.COMBO_MAIN):
-    #             childData['roof_style'] = int(con.ROOF_LUDING)
-    #             childData['luding_rafterspan'] = 0.01
-
-    # # 3、数据汇总到combo ------------------------
-    # # 绝大部分数据从下檐采集
-    # utils.outputMsg("重檐数据修改上报...")
-    # __uploadData(fromBuilding=mainBuildingObj)
     return
 
-# 计算重楼抬升高度
+# 计算重楼抬升高度(从柱根到挑檐桁下皮)
 def __getMultiFloorLift(buildingObj:bpy.types.Object):
-    # 主建筑数据（下檐）
-    mainBuildingObj = utils.getComboChild(
-        buildingObj,con.COMBO_MAIN
-    )
-    mData:acaData = mainBuildingObj.ACA_data
-    dk = mData.DK
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
 
     # 抬升到柱头
-    floorLift = mData.piller_height
+    floorLift = bData.piller_height
 
     # 抬升到斗栱高度
-    if mData.use_dg:
+    if bData.use_dg:
         # 平板枋
-        if mData.use_pingbanfang:
+        if bData.use_pingbanfang:
             floorLift += con.PINGBANFANG_H*dk
         # 斗栱高度(dg_height已经按dg_Scale放大了)
         # 更新斗栱数据，以免修改DK，斗栱类型等操作时未及时更新
         # reloadAssets=False，以免重复载入重复的斗栱资产
         from . import template
-        template.updateDougongData(mainBuildingObj,
+        template.updateDougongData(buildingObj,
                                    reloadAssets=False)
-        floorLift += mData.dg_height
+        floorLift += bData.dg_height
+    else:
+        # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
+        floorLift += con.BOARD_YANHENG_H*dk
+    
+    return floorLift
+
+# 计算平坐的高度(挑檐桁下皮到围脊上皮)
+def __getPingzuoHeight(buildingObj:bpy.types.Object):
+    bData:acaData = buildingObj.ACA_data
+    pillerLift = 0.0
+    dk = bData.DK
+
+    # 挑檐桁(斗栱高度到挑檐桁下皮)
+    pillerLift += con.HENG_COMMON_D*dk
+
+    # 檐椽架加斜
+    from . import buildBeam
+    lift_radio = buildBeam.getLiftRatio(buildingObj)
+    # 盝顶步架加斜
+    pillerLift += bData.luding_rafterspan * lift_radio[0]
+    if bData.use_dg:
+        # 斗栱出跳加斜
+        pillerLift += bData.dg_extend * lift_radio[0]
+
+    # 屋瓦层抬升
+    pillerLift += (con.YUANCHUAN_D*dk   # 椽架
+                   + con.WANGBAN_H*dk   # 望板
+                   + con.ROOFMUD_H*dk   # 灰泥
+                   )
+    
+    # 盝顶围脊高度
+    aData = bpy.context.scene.ACA_temp
+    ridgeObj:bpy.types.Object = aData.ridgeBack_source
+    ridgeH = ridgeObj.dimensions.z
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
+    ridgeH = ridgeH * tileScale
+    pillerLift += ridgeH
+    pillerLift -= con.RIDGE_SURR_OFFSET*dk   # 围脊调整
+
+    # 额枋高度
+    # 大额枋
+    pillerLift += con.EFANG_LARGE_H*dk
+    if bData.use_smallfang:
+        # 由额垫板
+        pillerLift += con.BOARD_YOUE_H*dk
+        # 小额枋
+        pillerLift += con.EFANG_SMALL_H*dk
+
+    return pillerLift
+
+
+# 计算平坐抬升高度(从台基下皮到挑檐桁下皮)
+def __getPingzuoLift(buildingObj:bpy.types.Object):
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    floorLift = 0
+
+    # 抬升到台基
+    floorLift += bData.platform_height
+
+    # 抬升到柱头
+    floorLift += bData.piller_height
+
+    # 抬升到斗栱高度
+    if bData.use_dg:
+        # 平板枋
+        if bData.use_pingbanfang:
+            floorLift += con.PINGBANFANG_H*dk
+        # 斗栱高度(dg_height已经按dg_Scale放大了)
+        # 更新斗栱数据，以免修改DK，斗栱类型等操作时未及时更新
+        # reloadAssets=False，以免重复载入重复的斗栱资产
+        from . import template
+        template.updateDougongData(buildingObj,
+                                   reloadAssets=False)
+        floorLift += bData.dg_height
     else:
         # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
         floorLift += con.BOARD_YANHENG_H*dk

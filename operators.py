@@ -1432,6 +1432,12 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = '添加重楼'
 
+    # 参数：剖视方案
+    floorPlan: bpy.props.StringProperty(
+        name="重楼方案",
+        default=""
+    ) # type: ignore
+
     def execute(self, context): 
         timeStart = time.time()
 
@@ -1441,6 +1447,7 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         funproxy = partial(
             buildCombo.addMultiFloor,
             buildingObj=buildingObj,
+            floorPlan=self.floorPlan,
         )
         result = utils.fastRun(funproxy)
 

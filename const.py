@@ -252,9 +252,6 @@ class ACA_Consts(object):
     RAILING_ZZ_Y = 0.9                  # 折柱深(DK)
     RAILING_ZZ_W = 1.1                  # 折柱宽(DK)
 
-    
-    
-
     # 其他
     OFFSET_ORIENTATION = 'GLOBAL'       # 'GLOBAL'  'LOCAL' #上下层叠构件的错开方式，一般绘图是垂直位移，但其实相对方向的位移更好看
     YIJIAOCHUAN_OFFSET = JIAOLIANG_Y/4  # 为了防止翼角椽与角梁打架，而做了一定的让渡
@@ -346,6 +343,7 @@ class ACA_Consts(object):
     COMBO_TERRACE = 'combo_terrace'
     COMBO_DOUBLE_EAVE = 'combo_double_eave'
     COMBO_MULTI_FLOOR = 'combo_multi_floor'
+    COMBO_MULTI_TOP = 'combo_multi_top'
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

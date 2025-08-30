@@ -1313,7 +1313,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
     elif yanSpan < 3*dk:
         raise Exception(f"构造老角梁失败，檐步架只有{yanSpan}")
     else:
-        cbKoujin = 0
+        cbKoujin = - con.JIAOLIANG_H*dk*con.JIAOLIANG_WEI_KOUJIN
     
     # 计算角梁数据，忽略第一个挑檐桁交点，直接从正心桁到脊桁分段生成
     cb_collection = []

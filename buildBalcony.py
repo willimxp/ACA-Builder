@@ -85,12 +85,12 @@ def __buildFloor(balconyRoot:bpy.types.Object):
     eaveH = con.BALCONY_EAVE_H*dk
     eaveY = con.BALCONY_EAVE_Y*dk
     # 前后檐
-    eaveDim = (floorX + eaveY*2, # 延长以便转角于两山相交
+    eaveDim = (floorX - eaveY*2, # 延长以便转角于两山相交
                  eaveY,
                  eaveH)
     eaveLoc = (0,
-                 floorY/2+eaveY/2,
-                 floorZ - eaveH/2)
+                 floorY/2-eaveY*1.5,
+                 - eaveH/2)
     eaveObjFB = utils.addCube(
         name=f"挂檐板.前后檐",
         dimension=eaveDim,
@@ -106,11 +106,11 @@ def __buildFloor(balconyRoot:bpy.types.Object):
 
     # 两山
     eaveDim = (eaveY,
-                 floorY,
+                 floorY- eaveY*4,
                  eaveH)
-    eaveLoc = (floorX/2+eaveY/2,
+    eaveLoc = (floorX/2-eaveY*1.5,
                  0,
-                 floorZ - eaveH/2)
+                 - eaveH/2)
     eaveObjLR = utils.addCube(
         name=f"挂檐板.两山",
         dimension=eaveDim,
@@ -125,61 +125,65 @@ def __buildFloor(balconyRoot:bpy.types.Object):
     mat.paint(eaveObjLR,con.M_PAINT)
 
     # 3、构造地栿 --------------------------------
-    # 平坐出跳
-    extend = (bData.dg_extend   # 斗栱出跳
-              + con.BALCONY_EXTENT*dk # 平坐出跳，对齐桁出梢
-              - con.RAILING_DEEPTH*dk/2 # 栏杆保留深度
-            )
-    
-    difuDeepth = con.RAILING_DIFU_Y*dk
-    difuHeight = con.RAILING_DIFU_H*dk
+    if bData.use_balcony_railing:
+        # 平坐出跳
+        extend = (bData.dg_extend   # 斗栱出跳
+                + con.BALCONY_EXTENT*dk # 平坐出跳，对齐桁出梢
+                - con.RAILING_DEEPTH*dk/2 # 栏杆保留深度
+                )
+        
+        difuDeepth = con.RAILING_DIFU_Y*dk
+        difuHeight = con.RAILING_DIFU_H*dk
 
-    # 前后檐
-    # 地栿长度
-    difuLength = (floorX # 楼板总宽
-                 - con.RAILING_DEEPTH*dk # 收一个栏杆的保留宽度
-                 + difuDeepth) # 出头一个边框
-    difuDim = (difuLength,difuDeepth,difuHeight)
-    difuY = floorY/2 - con.RAILING_DEEPTH*dk/2
-    difuZ = floorZ + difuHeight/2
-    difuLoc = (0,difuY,difuZ)
-    difuObjFB = utils.addCube(
-        name=f"地栿.前后檐",
-        dimension=difuDim,
-        location=difuLoc,
-        parent=balconyRoot
-    )
-    utils.addModifierMirror(
-        object=difuObjFB,
-        mirrorObj=balconyRoot,
-        use_axis=(False,True,False)
-    )
-    # 导角
-    utils.addModifierBevel(
-        object=difuObjFB,width=con.BEVEL_LOW)
-    mat.paint(difuObjFB,con.M_PAINT)
+        # 前后檐
+        # 地栿长度
+        difuLength = (floorX # 楼板总宽
+                    - con.RAILING_DEEPTH*dk # 收一个栏杆的保留宽度
+                    + difuDeepth) # 出头一个边框
+        difuDim = (difuLength,difuDeepth,difuHeight)
+        difuY = floorY/2 - con.RAILING_DEEPTH*dk/2
+        difuZ = floorZ + difuHeight/2
+        difuLoc = (0,difuY,difuZ)
+        difuObjFB = utils.addCube(
+            name=f"地栿.前后檐",
+            dimension=difuDim,
+            location=difuLoc,
+            parent=balconyRoot
+        )
+        utils.addModifierMirror(
+            object=difuObjFB,
+            mirrorObj=balconyRoot,
+            use_axis=(False,True,False)
+        )
+        # 导角
+        utils.addModifierBevel(
+            object=difuObjFB,width=con.BEVEL_LOW)
+        mat.paint(difuObjFB,con.M_PAINT)
 
-    # 两山
-    # 地栿长度
-    difuLength = (floorY # 楼板总宽
-                 - con.RAILING_DEEPTH*dk # 收一个栏杆的保留宽度
-                 - difuDeepth) # 出头一个边框
-    difuDim = (difuDeepth,difuLength,difuHeight)
-    difuX = floorX/2 - con.RAILING_DEEPTH*dk/2
-    difuZ = floorZ + difuHeight/2
-    difuLoc = (difuX,0,difuZ)
-    difuObjLR = utils.addCube(
-        name=f"地栿.两山",
-        dimension=difuDim,
-        location=difuLoc,
-        parent=balconyRoot
-    )
-    utils.addModifierMirror(
-        object=difuObjLR,
-        mirrorObj=balconyRoot,
-        use_axis=(True,False,False)
-    )
-    mat.paint(difuObjLR,con.M_PAINT)
+        # 两山
+        # 地栿长度
+        difuLength = (floorY # 楼板总宽
+                    - con.RAILING_DEEPTH*dk # 收一个栏杆的保留宽度
+                    - difuDeepth) # 出头一个边框
+        difuDim = (difuDeepth,difuLength,difuHeight)
+        difuX = floorX/2 - con.RAILING_DEEPTH*dk/2
+        difuZ = floorZ + difuHeight/2
+        difuLoc = (difuX,0,difuZ)
+        difuObjLR = utils.addCube(
+            name=f"地栿.两山",
+            dimension=difuDim,
+            location=difuLoc,
+            parent=balconyRoot
+        )
+        utils.addModifierMirror(
+            object=difuObjLR,
+            mirrorObj=balconyRoot,
+            use_axis=(True,False,False)
+        )
+        # 导角
+        utils.addModifierBevel(
+            object=difuObjLR,width=con.BEVEL_LOW)
+        mat.paint(difuObjLR,con.M_PAINT)
 
     # 合并
     floorJoined = utils.joinObjects(
@@ -305,7 +309,7 @@ def __buildRailing(parentObj:bpy.types.Object,
         rotation=proxy['rotation'],
         parent=parentObj,
     )
-    # utils.hideObj(railingRoot)
+    utils.hideObj(railingRoot)
 
     # 栏杆默认做满开间
     proxyW = proxy['length']
@@ -338,7 +342,8 @@ def __buildRailing(parentObj:bpy.types.Object,
         location=(proxyX,0,proxyH/2),
         parent=railingRoot
     )
-    utils.hideObjFace(proxyObj)
+    # utils.hideObjFace(proxyObj)
+    utils.hideObj(proxyObj)
 
     # 分栏：分栏数量没有明确规定，我按照望柱高再四舍五入
     sectionTotal = proxyW - con.RAILING_PILLER_D*dk*2 # 扣减两侧各1根望柱
@@ -615,16 +620,17 @@ def buildBalcony(buildingObj:bpy.types.Object):
     # 构造楼板
     floorObj = __buildFloor(balconyRoot)
 
-    # 构造proxy
-    proxyList = __buildProxy(balconyRoot)
+    if bData.use_balcony_railing:
+        # 构造proxy
+        proxyList = __buildProxy(balconyRoot)
 
-    # 构造栏杆
-    for proxy in proxyList:
-        railingObj = __buildRailing(
-            parentObj=balconyRoot,
-            proxy=proxy,
-            connect=True,
-            )
+        # 构造栏杆
+        for proxy in proxyList:
+            railingObj = __buildRailing(
+                parentObj=balconyRoot,
+                proxy=proxy,
+                connect=True,
+                )
     
     return
 

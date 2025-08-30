@@ -2499,7 +2499,13 @@ def copyAcaData(fromObj,toObj,
     target_props = toObj.ACA_data
     
     # 获取属性组中的所有属性
-    for prop_name in source_props.__annotations__:
+    # for prop_name in source_props.__annotations__:
+    for prop in source_props.bl_rna.properties:
+        if not prop.is_runtime: continue
+        prop_name = prop.identifier
+        prop_type = prop.rna_type.identifier
+        prop_value = getattr(source_props, prop_name)
+
         # 判断是否限制了键值范围
         if keys is not None:
             if prop_name not in keys:
@@ -2511,25 +2517,31 @@ def copyAcaData(fromObj,toObj,
                 continue
             
         if hasattr(target_props, prop_name):
-            # 获取源属性值
-            value = getattr(source_props, prop_name)
-            
-            # 设置目标属性值
-            # 不能用setattr或target_props.attr，都会触发update
-            # setattr(target_props, prop_name, value)
-            
-            # 获取属性类型，如，FloatProperty，EnumProperty
-            bnaPropertys = source_props.bl_rna.properties
-            keyType = bnaPropertys[prop_name].rna_type.identifier
-            # 枚举属性需要通过int值传递
-            if keyType == 'EnumProperty':
-                value = int(value)
-
-            if keyType == 'CollectionProperty':
-                continue
-
-            # 这样不会触发update，但需要单独处理enum
-            target_props[prop_name] = value
+            # 1、传递一般属性 -----------------------
+            if prop_type != 'CollectionProperty':
+                # 枚举属性需要通过int值传递
+                if prop_type == 'EnumProperty':
+                    prop_value = int(prop_value)
+                # 不能用setattr或target_props.attr，都会触发update
+                # setattr(target_props, prop_name, value)
+                target_props[prop_name] = prop_value
+            # 2、传递集合属性 -----------------------
+            else:
+                # 处理源列表
+                source_list = prop_value
+                # 清空重建
+                target_list = getattr(target_props,prop_name)
+                target_list.clear()                
+                # 遍历源对象列表的每个子对象
+                for source_subitem in source_list:
+                    target_subitem = target_list.add()
+                    # 遍历子对象的每个属性
+                    for subprop in source_subitem.bl_rna.properties:
+                        if not subprop.is_runtime: continue
+                        subprop_name = subprop.identifier
+                        subprop_type = subprop.rna_type.identifier
+                        subprop_value = getattr(source_subitem, subprop_name)
+                        target_subitem[subprop_name] = subprop_value
         else:
             print(f"警告: copyAcaData,目标对象没有属性 '{prop_name}'")
     
@@ -2843,3 +2855,9 @@ def getWallSetting(contextObj:bpy.types.Object):
         wallSetting += railing.id + ','
         
     return wallSetting
+
+# 生成一个ID
+def generateID():
+    import uuid
+    id = str(uuid.uuid1())
+    return id

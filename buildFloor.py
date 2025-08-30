@@ -46,8 +46,11 @@ def __addBuildingRoot(templateName,
         location=bpy.context.scene.cursor.location
     )
     bData:acaData = buildingObj.ACA_data
+    bData['aca_obj'] = True
+    bData['aca_id'] = utils.generateID()
     bData['aca_type'] = con.ACA_TYPE_BUILDING
     bData['template_name'] = templateName
+    
 
     if comboObj is not None:
         # 绑定Combo对象父子关系
@@ -989,8 +992,7 @@ def buildPillers(buildingObj:bpy.types.Object):
     # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
     if bData.x_rooms % 2 == 0:
         # 不处理偶数面阔间数
-        utils.popMessageBox("面阔间数不能为偶数")
-        return
+        raise Exception("面阔间数不能为偶数")
     
     # 1、查找或新建地盘根节点
     floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)

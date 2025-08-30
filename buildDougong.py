@@ -475,16 +475,18 @@ def __buildDougong(dgrootObj:bpy.types.Object):
             # 硬山/悬山做到最后一个柱头
             dgRange = range(len(net_x)) 
         for n in dgRange : 
-            # 如果为廊间举架或盝顶，做抱头桃尖梁
-            # 桃尖梁做廊间进深-1/4柱径（搭接了1/4更好看）
-            if (bData.use_hallway or 
-                bData.roof_style==con.ROOF_LUDING):
-                # 廊间进深-1/4柱径（搭接了1/4更好看）
-                taojianLength = (abs(net_y[1]-net_y[0]) 
-                                 - bData.piller_diameter/4)
-            # 否则桃尖梁做前后通檐
-            else:
-                taojianLength = bData.y_total / 2
+            # # 如果为廊间举架或盝顶，做抱头桃尖梁
+            # # 桃尖梁做廊间进深-1/4柱径（搭接了1/4更好看）
+            # if (bData.use_hallway or 
+            #     bData.roof_style==con.ROOF_LUDING):
+            #     # 廊间进深-1/4柱径（搭接了1/4更好看）
+            #     taojianLength = (abs(net_y[1]-net_y[0]) 
+            #                      - bData.piller_diameter/4)
+            # # 否则桃尖梁做前后通檐
+            # else:
+            #     taojianLength = bData.y_total / 2
+            # 250829 考虑楼阁盝顶，不做抱头桃尖梁
+            taojianLength = bData.y_total / 2
             
             dgPillerCopy = __buildPillerDG(
                 location=(net_x[n],net_y[0],dgZ),

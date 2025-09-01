@@ -141,14 +141,14 @@ def updateDougongData(buildingObj:bpy.types.Object,
         __updateAssetStyle(
             buildingObj,'dg_balcony_piller_source',
             parent=dgrootObj)
-    if (aData.dg_piller_source == None
-            or aData.dg_fillgap_source == None
-            or aData.dg_fillgap_alt_source == None
-            or aData.dg_corner_source == None
-            or aData.dg_balcony_piller_source == None
-            ):
-        utils.outputMsg("斗栱配置不完整，请检查")
-        return
+        if (aData.dg_piller_source == None
+                or aData.dg_fillgap_source == None
+                or aData.dg_fillgap_alt_source == None
+                or aData.dg_corner_source == None
+                # or aData.dg_balcony_piller_source == None
+                ):
+            utils.outputMsg("斗栱配置不完整，请检查")
+            return
     
     # 2、更新bData中的斗栱配置参数
     # 包括dg_height,dg_extend,dgScale
@@ -173,6 +173,19 @@ def updateDougongData(buildingObj:bpy.types.Object,
         bData['dg_extend'] = dgObj['dgExtend']*dgScale
     else:
         utils.outputMsg("斗栱未定义默认出跳")
+    # 250831 新增斗栱是否与大梁连做
+    if 'dgWithBeam' in dgObj:
+        bData['dg_withbeam'] = dgObj['dgWithBeam']
+    else:
+        utils.outputMsg("斗栱未定义默认出跳")
+
+    # 250901 如果有平坐斗栱，覆盖dgHeight
+    if aData.dg_balcony_piller_source != None:
+        dgObj = aData.dg_balcony_piller_source
+        if 'dgHeight' in dgObj:
+            bData['dg_height'] = dgObj['dgHeight']*dgScale
+
+    print(f"斗栱数据已更新：dgHeight={bData.dg_height}")
 
     return
 

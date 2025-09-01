@@ -385,17 +385,15 @@ def update_dougong(self, context:bpy.types.Context):
         # 3、同时，在buildDougong.__buildDougong中已经调用了updateDougongData，
         # 所以，这里直接禁用掉，目前看起来没有问题
         # 以观后效
+        # 250831 重新调用此斗栱数据更新，否则在单体建筑切换斗栱时，柱高未及时更新
+        # 重檐的问题，晚些再说
         # -------------
-        # # 初始化斗栱数据，避免跨建筑时公用的aData干扰
-        # from . import template
-        # template.updateDougongData(buildingObj)
+        # 初始化斗栱数据，避免跨建筑时公用的aData干扰
+        from . import template
+        template.updateDougongData(buildingObj)
         
         # 241125 修改斗栱时，涉及到柱高的变化，最好是全屋更新
-        from . import build
-        funproxy = partial(
-                build.updateBuilding,
-                buildingObj=buildingObj)
-        utils.fastRun(funproxy)
+        update_building(self,context)
     else:
         utils.outputMsg("updated dougong failed, context.object should be buildingObj")
     return
@@ -412,21 +410,10 @@ def update_roof(self, context:bpy.types.Context):
     if not isRebuild:
         return
     
-    # 手动将操作添加到撤销栈
-    bpy.ops.ed.undo_push(message="Float Property Update")
-    
     # 确认选中为building节点
     buildingObj,bData,oData = utils.getRoot(context.object)
     if buildingObj != None:
-        from . import build
-        # 重新生成屋顶
-        funproxy = partial(
-            build.resetRoof,
-            buildingObj=buildingObj)
-        utils.fastRun(funproxy)
-    else:
-        utils.outputMsg("updated platform failed, context.object should be buildingObj")
-    return
+        bpy.ops.aca.build_roof()
 
 # 用户修改屋顶类型时的回调
 def update_roofstyle(self, context:bpy.types.Context):
@@ -933,7 +920,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             description = "为了模仿唐宋建筑风格，可以放大斗栱",
             default=1,
             precision=3,
-            min=1,
+            min=0.5,
             max=2.5,
             update=update_dougong,
         )# type: ignore 
@@ -944,6 +931,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             precision=3,
             min=0.1,
             update=update_dougong,
+        )# type: ignore 
+    dg_withbeam:bpy.props.BoolProperty(
+            name="斗栱与大梁连做",    # 斗栱间距
+            description = "斗栱中已经包含大梁，则不再生成大梁",
+            default=True,
         )# type: ignore 
     
     # 屋顶属性

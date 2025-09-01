@@ -885,6 +885,9 @@ def getPillerHeight(buildingObj,pillerID):
     pillerIndex = pillerID.split('/')
     x = int(pillerIndex[0])
     y = int(pillerIndex[1])
+    # 举折系数
+    from . import buildBeam
+    lift_ratio = buildBeam.getLiftRatio(buildingObj)
 
     # 默认为用户输入的檐柱高
     pillerHeight = bData.piller_height
@@ -918,8 +921,18 @@ def getPillerHeight(buildingObj,pillerID):
         # 是否使用平板枋
         if bData.use_pingbanfang:
             pillerHeight += con.PINGBANFANG_H*dk
-        # 向下扣除金桁垫板，即到了梁底高度
-        pillerHeight -= con.BOARD_JINHENG_H*dk
+        # 斗栱与大梁的计算
+        if bData.dg_withbeam:
+            # 斗栱资产自带大梁
+            # 梁底统一做在挑檐桁下两根拽枋高度(4DK)
+            # 这里取了金桁垫板高度替代
+            pillerHeight -= con.BOARD_JINHENG_H*dk
+        else:
+            # 斗栱资产不带大梁
+            # 从挑檐桁下皮，找到正心桁下皮
+            pillerHeight += bData.dg_extend*lift_ratio[0]
+            # 向下一个金桁垫板，即为梁底
+            pillerHeight -= con.BOARD_JINHENG_H*dk
 
 
     # 2、判断是否需要做廊步举架
@@ -959,8 +972,6 @@ def getPillerHeight(buildingObj,pillerID):
         if bData.use_dg:
             rafterSpan += bData.dg_extend
         # 乘以举折系数
-        from . import buildBeam
-        lift_ratio = buildBeam.getLiftRatio(buildingObj)
         pillerHeight += rafterSpan*lift_ratio[0]  
 
         # 250225 补偿檐桁垫板与金桁垫板的高度差

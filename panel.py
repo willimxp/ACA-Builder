@@ -979,6 +979,8 @@ class ACA_PT_dougong(bpy.types.Panel):
                 text='斗栱间距') 
             
             if not bData.use_dg:
+                inputDgStyle.enabled = False
+                inputDkScale.enabled = False
                 checkboxUsePbf.enabled =False
                 inputDgextend.enabled =False
                 #inputDgheight.enabled =False

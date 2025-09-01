@@ -581,7 +581,7 @@ class ACA_OT_build_dougong(bpy.types.Operator):
 # 生成屋顶，包括梁架、椽架、望板、角梁、屋瓦、屋脊等
 class ACA_OT_build_roof(bpy.types.Operator):
     bl_idname="aca.build_roof"
-    bl_label = "屋顶营造"
+    bl_label = "生成屋顶"
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = "重新生成屋顶的梁架、椽架、瓦作"
 

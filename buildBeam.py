@@ -1167,6 +1167,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     # 在梁架的计算中不考虑挑檐桁
     if (bData.use_dg                # 不使用斗栱的不用挑檐桁
         and bData.dg_extend > 0     # 一斗三升这种无出跳的，不用挑檐桁
+        and bData.dg_withbeam       # 资产声明已经与大梁连做
         ):
         del purlin_pos[0]
 

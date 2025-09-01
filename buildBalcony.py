@@ -41,9 +41,6 @@ def __addBalconyRoot(buildingObj:bpy.types.Object):
             # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
             zLoc += con.BOARD_YANHENG_H*dk
 
-        # 平坐斗栱的枋子在素材库中统一加高了一斗口
-        zLoc += dk
-
         # 创建根对象（empty）
         balconyRootObj = utils.addEmpty(
             name=con.COLL_NAME_BALCONY,

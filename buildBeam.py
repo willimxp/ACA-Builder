@@ -1167,7 +1167,6 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     # 在梁架的计算中不考虑挑檐桁
     if (bData.use_dg                # 不使用斗栱的不用挑檐桁
         and bData.dg_extend > 0     # 一斗三升这种无出跳的，不用挑檐桁
-        and bData.dg_withbeam       # 资产声明已经与大梁连做
         ):
         del purlin_pos[0]
 
@@ -1202,7 +1201,10 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
             use_beam = True
             
             # 有斗拱时，不做底层大梁（一般从桃尖梁后尾连做）
-            if (n==0 and bData.use_dg):
+            # 250901 资产声明已经与大梁连做时，不做底层大梁
+            if (n==0 and bData.use_dg
+                and bData.dg_withbeam       # 资产声明已经与大梁连做
+                ):
                 use_beam = False
             
             # 廊间举架，且有斗拱时，不做底层横梁（斗栱自带桃尖梁）

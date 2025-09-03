@@ -923,16 +923,20 @@ def getPillerHeight(buildingObj,pillerID):
             pillerHeight += con.PINGBANFANG_H*dk
         # 斗栱与大梁的计算
         if bData.dg_withbeam:
-            # 斗栱资产自带大梁
-            # 梁底统一做在挑檐桁下两根拽枋高度(4DK)
-            # 这里取了金桁垫板高度替代
-            pillerHeight -= con.BOARD_JINHENG_H*dk
+            # 斗栱资产自带大梁，与资产库中的资产设计相匹配
+            if bData.roof_style == con.ROOF_BALCONY:
+                # 平坐斗栱的大梁默认为5DK，
+                pillerHeight -= con.BALCONY_FANG_H*dk
+            else:
+                # 梁底统一做在挑檐桁下两根拽枋高度(4DK)
+                # 这里取了金桁垫板高度替代
+                pillerHeight -= con.BOARD_JINHENG_H*dk
         else:
             # 斗栱资产不带大梁
             # 从挑檐桁下皮，找到正心桁下皮
             pillerHeight += bData.dg_extend*lift_ratio[0]
-            # 向下一个金桁垫板，即为梁底
-            pillerHeight -= con.BOARD_JINHENG_H*dk
+            # 向下一个檐桁垫板，即为梁底
+            pillerHeight -= con.BOARD_YANHENG_H*dk
 
 
     # 2、判断是否需要做廊步举架

@@ -141,14 +141,22 @@ def updateDougongData(buildingObj:bpy.types.Object,
         __updateAssetStyle(
             buildingObj,'dg_balcony_piller_source',
             parent=dgrootObj)
+        __updateAssetStyle(
+            buildingObj,'dg_balcony_corner_source',
+            parent=dgrootObj)
+        __updateAssetStyle(
+            buildingObj,'dg_balcony_fillgap_source',
+            parent=dgrootObj)
+        __updateAssetStyle(
+            buildingObj,'dg_balcony_fillgap_alt_source',
+            parent=dgrootObj)
         if (aData.dg_piller_source == None
                 or aData.dg_fillgap_source == None
                 or aData.dg_fillgap_alt_source == None
                 or aData.dg_corner_source == None
                 # or aData.dg_balcony_piller_source == None
                 ):
-            utils.outputMsg("斗栱配置不完整，请检查")
-            return
+            raise Exception("斗栱配置不完整，请检查")
     
     # 2、更新bData中的斗栱配置参数
     # 包括dg_height,dg_extend,dgScale
@@ -179,13 +187,14 @@ def updateDougongData(buildingObj:bpy.types.Object,
     else:
         utils.outputMsg("斗栱未定义默认出跳")
 
-    # 250901 如果有平坐斗栱，覆盖dgHeight
-    if aData.dg_balcony_piller_source != None:
+    # 250902 如果屋顶为平坐，且有平坐斗栱，覆盖dgHeight
+    if (bData.roof_style == con.ROOF_BALCONY and 
+        aData.dg_balcony_piller_source != None):
         dgObj = aData.dg_balcony_piller_source
         if 'dgHeight' in dgObj:
             bData['dg_height'] = dgObj['dgHeight']*dgScale
 
-    print(f"斗栱数据已更新：dgHeight={bData.dg_height}")
+    # utils.outputMsg(f"斗栱数据已更新：dgHeight={bData.dg_height},dgExtend={bData.dg_extend}")
 
     return
 
@@ -360,10 +369,12 @@ def loadAssetByBuilding(buildingObj:bpy.types.Object):
                 del aData[tag]  
             aData[tag] = loadAssets(value)
 
-    # # 3、其他个性化处理
-    # # 提取斗栱自定义属性，填充入bData
-    # # 如，bData.dg_height，bData.dg_extend，bData.dg_scale
-    # updateDougongData(buildingObj)
+    # 3、其他个性化处理
+    # 提取斗栱自定义属性，填充入bData
+    # 如，bData.dg_height，bData.dg_extend，bData.dg_scale
+    # 250902 在“更新建筑”时，及时更新一次斗栱数据
+    # 以便反应平坐斗栱的挑高与柱头斗栱挑高的变化
+    updateDougongData(buildingObj)
     
     return
 

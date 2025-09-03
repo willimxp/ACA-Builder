@@ -229,6 +229,7 @@ class ACA_Consts(object):
     BALCONY_EXTENT = 5.2                # 平坐扩展(DK)，与HENG_EXTEND相同
     BALCONY_EAVE_H = 5                  # 挂檐板高度(DK)
     BALCONY_EAVE_Y = 0.5                # 挂檐板厚度(DK)
+    BALCONY_FANG_H = 5                  # 平坐枋的高度(DK)，资产中要保持一致
     RAILING_DEEPTH = 6                  # 栏杆深度(DK)
     RAILING_PILLER_H = 16              # 望柱高(DK)
     # RAILING_PILLER_H = 1.3              # 望柱高(m)

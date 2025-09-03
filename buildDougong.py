@@ -196,7 +196,13 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         extendLength += abs(yLoc)*2
         # 配合挑檐桁做出梢
         if (yLoc + bData.dg_extend)<0.001:
-            extendLength += con.HENG_EXTEND*dk
+            # 250902 平坐转角出梢
+            if bData.roof_style == con.ROOF_BALCONY:
+                # 做到挂檐板内侧
+                extendLength += (con.BALCONY_EXTENT*dk*2
+                                 -con.BALCONY_EAVE_Y*dk*4)
+            else:
+                extendLength += con.HENG_EXTEND*dk
         
     # 做前后檐连接件
     loc = (0, net_y[0] + yLoc, zLoc)
@@ -447,9 +453,15 @@ def __buildDougong(dgrootObj:bpy.types.Object):
             (net_x[0], net_y[-1],dgZ),
             (net_x[0], net_y[0],dgZ)
         )
+
+        # 判断是否做平坐斗栱
+        dgSource = aData.dg_corner_source
+        if bData.roof_style == con.ROOF_BALCONY:
+            dgSource = aData.dg_balcony_corner_source
+
         for n in range(len(dgCornerArray)) :
             dgCornerCopy:bpy.types.Object = utils.copyObject(
-                sourceObj = aData.dg_corner_source,
+                sourceObj = dgSource,
                 name = "转角斗栱",
                 location = dgCornerArray[n],
                 parentObj = dgrootObj,
@@ -555,6 +567,15 @@ def __buildDougong(dgrootObj:bpy.types.Object):
         # 强制斗栱间距最小为11斗口
         if bData.dg_gap < dk*11:
             bData['dg_gap'] = dk*11
+
+        # 判断是否做平坐斗栱
+        dgGapSource = aData.dg_fillgap_source
+        dgGapAltSource = aData.dg_fillgap_alt_source
+        if bData.roof_style == con.ROOF_BALCONY:
+            dgGapSource = aData.dg_balcony_fillgap_source
+            dgGapAltSource = aData.dg_balcony_fillgap_alt_source
+
+
         # 前后坡的补间斗拱
         for n in range(len(net_x)-1) : 
             # 计算补间斗栱攒数
@@ -573,19 +594,19 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 # 补间斗栱异色判断
                 # 柱头斗栱始终为绿，补间斗拱的颜色穿插反色，如，绿|蓝|绿|蓝|绿
                 dgFillSource = None
-                if (aData.dg_fillgap_alt_source != None
+                if (dgGapAltSource != None
                             and m%2 == 1):
-                        dgFillSource = aData.dg_fillgap_alt_source
+                        dgFillSource = dgGapAltSource
                 else:
-                    dgFillSource = aData.dg_fillgap_source
+                    dgFillSource = dgGapSource
                 # 但如果补间攒当数为奇数(补间斗栱为偶数)，则中间两攒同色
                 # 如，绿|蓝|绿|【蓝|蓝】|绿|蓝|绿
                 if dougong_count%2 !=0 and m>= dougong_count/2:
-                    if (aData.dg_fillgap_alt_source != None
+                    if (dgGapSource != None
                                 and m%2 == 1):
-                            dgFillSource = aData.dg_fillgap_source
+                            dgFillSource = dgGapSource
                     else:
-                        dgFillSource = aData.dg_fillgap_alt_source
+                        dgFillSource = dgGapAltSource
                 # 摆放斗栱
                 dgFillCopy:bpy.types.Object = utils.copySimplyObject(
                     sourceObj = dgFillSource,
@@ -627,19 +648,19 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 for m in range(1,dougong_count):
                     # 补间斗栱异色判断
                     dgFillSource = None
-                    if (aData.dg_fillgap_alt_source != None
+                    if (dgGapAltSource != None
                                 and m%2 == 1):
-                            dgFillSource = aData.dg_fillgap_alt_source
+                            dgFillSource = dgGapAltSource
                     else:
-                        dgFillSource = aData.dg_fillgap_source
+                        dgFillSource = dgGapSource
                     # 但如果补间攒当数为奇数(补间斗栱为偶数)，则中间两攒同色
                     # 如，绿|蓝|绿|【蓝|蓝】|绿|蓝|绿
                     if dougong_count%2 !=0 and m>= dougong_count/2:
-                        if (aData.dg_fillgap_alt_source != None
+                        if (dgGapSource != None
                                     and m%2 == 1):
-                                dgFillSource = aData.dg_fillgap_source
+                                dgFillSource = dgGapSource
                         else:
-                            dgFillSource = aData.dg_fillgap_alt_source
+                            dgFillSource = dgGapAltSource
 
                     dgFillCopy:bpy.types.Object = utils.copySimplyObject(
                         sourceObj = dgFillSource,

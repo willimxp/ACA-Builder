@@ -1352,7 +1352,19 @@ class ACA_data_template(bpy.types.PropertyGroup):
             type = bpy.types.Object,
         )# type: ignore 
     dg_balcony_piller_source:bpy.props.PointerProperty(
-            name = "平坐斗栱",
+            name = "平坐柱头斗栱",
+            type = bpy.types.Object,
+        )# type: ignore 
+    dg_balcony_corner_source:bpy.props.PointerProperty(
+            name = "平坐转角斗栱",
+            type = bpy.types.Object,
+        )# type: ignore 
+    dg_balcony_fillgap_source:bpy.props.PointerProperty(
+            name = "平坐补间斗栱",
+            type = bpy.types.Object,
+        )# type: ignore 
+    dg_balcony_fillgap_alt_source:bpy.props.PointerProperty(
+            name = "平坐补间斗栱-异色",
             type = bpy.types.Object,
         )# type: ignore 
     

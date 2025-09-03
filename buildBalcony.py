@@ -62,6 +62,10 @@ def __buildFloor(balconyRoot:bpy.types.Object):
     dk = bData.DK
     
     # 1、构造楼板 --------------------------------
+    # 使用斗栱数据前，都要先刷新一下
+    from . import template
+    template.updateDougongData(buildingObj)
+
     floorX = (bData.x_total 
               + bData.dg_extend*2 
               + con.BALCONY_EXTENT*dk*2)

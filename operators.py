@@ -1208,7 +1208,8 @@ class ACA_UL_Template_Items(bpy.types.UIList):
 # 选择生成模板
 class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
     bl_idname = "aca.select_template_dialog"
-    bl_label = "请选择一个古建筑模板样式："
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_label = "根据模板营造新建筑"
  
     from bpy.props import StringProperty, BoolProperty
     message: StringProperty()               # type: ignore 

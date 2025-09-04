@@ -2862,3 +2862,28 @@ def generateID():
     import uuid
     id = str(uuid.uuid1())
     return id
+
+# 删除柱网的墙体、踏跺、栏杆等
+def clearChildData(bData):
+    bData.step_list.clear()
+    bData.wall_list.clear()
+    bData.geshan_list.clear()
+    bData.window_list.clear()
+    bData.railing_list.clear()
+    bData.maindoor_list.clear()
+    return bData
+
+# 根据id获取对象
+def getObjByID(aca_id):
+    obj = None
+    for obj in bpy.data.objects:
+        if not hasattr(obj,'ACA_data'):
+            continue
+
+        if obj.ACA_data.aca_type != con.ACA_TYPE_BUILDING:
+            continue
+        
+        if obj.ACA_data.aca_id == aca_id:
+            break
+    
+    return obj

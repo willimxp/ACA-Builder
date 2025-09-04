@@ -242,43 +242,6 @@ class ACA_PT_basic(bpy.types.Panel):
             op.sectionPlan = 'C' 
 
         ###################################################
-        # 第三工具箱
-        box = layout.box()
-
-        # 合并/导出 ------------------------------
-        toolBox = box.column(align=True)
-        # 第一行 ------------------------------
-        toolBar = toolBox.grid_flow(columns=1, align=True)
-        # 添加简单平坐
-        btnMultiFloor1 = toolBar.column(align=True)
-        op = btnMultiFloor1.operator(
-                        "aca.multi_floor_add",
-                        icon='PACKAGE',
-                        text="添加楼层")
-        op.floorPlan = 'floor'
-        # 添加简单平坐
-        btnMultiFloor1 = toolBar.column(align=True)
-        op = btnMultiFloor1.operator(
-                        "aca.multi_floor_add",
-                        icon='PACKAGE',
-                        text="添加落地平坐")
-        op.floorPlan = 'pingzuo'
-        # 添加重檐
-        btnMultiFloor2 = toolBar.column(align=True)
-        op = btnMultiFloor2.operator(
-                        "aca.multi_floor_add",
-                        icon='PACKAGE',
-                        text="添加重檐")
-        op.floorPlan = 'chongyan'
-        # 添加重檐平坐
-        btnMultiFloor3 = toolBar.column(align=True)
-        op = btnMultiFloor3.operator(
-                        "aca.multi_floor_add",
-                        icon='PACKAGE',
-                        text="添加重檐平坐")
-        op.floorPlan = 'chongyanpingzuo'
-
-        ###################################################
         # 第四工具箱
         box = layout.box()
         toolBox = box.column(align=True)
@@ -291,6 +254,45 @@ class ACA_PT_basic(bpy.types.Panel):
                         "aca.add_loggia",
                         icon='PACKAGE',
                         text="添加回廊")
+        
+        ###################################################
+        # 第三工具箱
+        box = layout.box()
+
+        # 合并/导出 ------------------------------
+        toolBox = box.column(align=True)
+        # 第一行 ------------------------------
+        toolBar = toolBox.grid_flow(columns=1, align=True)
+        # 重楼方案
+        btnMultiFloor1 = toolBar.column(align=True)
+        op = btnMultiFloor1.operator(
+                        "aca.multi_floor_add",
+                        icon='PACKAGE',
+                        text="下出重楼")
+        op.floorPlan = 'floor'
+        # 重楼方案
+        btnMultiFloor2 = toolBar.column(align=True)
+        op = btnMultiFloor2.operator(
+                        "aca.multi_floor_add",
+                        icon='PACKAGE',
+                        text="下出平坐(架空层)")
+        op.floorPlan = 'pingzuo'
+        # # 重楼方案
+        # btnMultiFloor3 = toolBar.column(align=True)
+        # op = btnMultiFloor3.operator(
+        #                 "aca.multi_floor_add",
+        #                 icon='PACKAGE',
+        #                 text="添加平坐和腰檐")
+        # op.floorPlan = 'pingzuoandeave'
+        # 重楼方案
+        btnMultiFloor3 = toolBar.column(align=True)
+        op = btnMultiFloor3.operator(
+                        "aca.multi_floor_add",
+                        icon='PACKAGE',
+                        text="添加重檐/腰檐")
+        op.floorPlan = 'mideave'
+
+        
 
         # 性能分析按钮
         # row = layout.row()

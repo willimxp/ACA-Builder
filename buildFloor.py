@@ -1339,11 +1339,11 @@ def buildFloor(buildingObj:bpy.types.Object,
     bData:acaData = buildingObj.ACA_data
     # 组合建筑根据模板位移和旋转
     if comboObj != None:
-        if tuple(bData.root_location) != (0.0,0.0,0.0):
-            buildingObj.location = bData.root_location
+        if tuple(bData.combo_location) != (0.0,0.0,0.0):
+            buildingObj.location = bData.combo_location
 
-        if tuple(bData.root_rotation) != (0.0,0.0,0.0):
-            buildingObj.rotation_euler = bData.root_rotation
+        if tuple(bData.combo_rotation) != (0.0,0.0,0.0):
+            buildingObj.rotation_euler = bData.combo_rotation
 
     # 生成柱网
     if bData.is_showPillers:

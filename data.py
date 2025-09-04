@@ -641,25 +641,25 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     aca_type : bpy.props.StringProperty(
             name = '对象类型',
         ) # type: ignore
+    template_name : bpy.props.StringProperty(
+            name = '模板名称'
+        ) #type: ignore
     combo_type : bpy.props.StringProperty(
             name = '组合类型',
             default = 'combo_main',
         ) # type: ignore
-    combo_link:bpy.props.StringProperty(
+    combo_parent:bpy.props.StringProperty(
             name = '组合关联对象',
         ) # type: ignore
-    template_name : bpy.props.StringProperty(
-            name = '模板名称'
-        ) #type: ignore
-    root_location : bpy.props.FloatVectorProperty(
+    combo_location : bpy.props.FloatVectorProperty(
             name = '根节点位移',
             default=(0.0, 0.0, 0.0),
         ) # type: ignore
-    root_rotation : bpy.props.FloatVectorProperty(
+    combo_rotation : bpy.props.FloatVectorProperty(
             name = '根节点旋转',
             default=(0.0, 0.0, 0.0),
         ) # type: ignore
-    multi_floor_height : bpy.props.FloatProperty(
+    combo_floor_height : bpy.props.FloatProperty(
             name = "重楼高度",
             min = 0.00,
             default= 0.00 ,

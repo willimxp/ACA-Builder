@@ -115,11 +115,11 @@ class ACA_PT_basic(bpy.types.Panel):
             ):
             col.enabled = False
 
-        # 调试信息 -------------------- 
-        col = box.row() 
-        col.prop(bData,"aca_id",text="id")
-        col = box.row() 
-        col.prop(bData,"combo_parent",text="parent")
+        # # 调试信息 -------------------- 
+        # col = box.row() 
+        # col.prop(bData,"aca_id",text="id")
+        # col = box.row() 
+        # col.prop(bData,"combo_parent",text="parent")
         
         #----------------------------
         toolBox = box.row(align=True) 
@@ -268,27 +268,24 @@ class ACA_PT_basic(bpy.types.Panel):
         toolBox = box.column(align=True)
         # 第一行 ------------------------------
         toolBar = toolBox.grid_flow(columns=1, align=True)
-        # 重楼方案
+        # 添加重檐
+        btnMultiFloor3 = toolBar.column(align=True)
+        op = btnMultiFloor3.operator(
+                        "aca.double_eave_add",
+                        icon='PACKAGE',
+                        text="添加重檐")
+        # 上出重楼
         btnMultiFloor1 = toolBar.column(align=True)
         op = btnMultiFloor1.operator(
                         "aca.multi_floor_add",
                         icon='PACKAGE',
                         text="上出重楼")
-        op.floorPlan = 'floor'
-        # 重楼方案
-        btnMultiFloor3 = toolBar.column(align=True)
-        op = btnMultiFloor3.operator(
-                        "aca.multi_floor_add",
-                        icon='PACKAGE',
-                        text="添加重檐/腰檐")
-        op.floorPlan = 'mideave'
-        # 重楼方案
+        # 下出平坐
         btnMultiFloor2 = toolBar.column(align=True)
         op = btnMultiFloor2.operator(
                         "aca.multi_floor_add",
                         icon='PACKAGE',
-                        text="下出平坐")
-        op.floorPlan = 'pingzuo'        
+                        text="下出平坐")       
 
         # 性能分析按钮
         # row = layout.row()

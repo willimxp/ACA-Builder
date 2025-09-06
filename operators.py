@@ -1379,6 +1379,39 @@ class ACA_OT_DOUBLE_EAVE_ADD(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = '添加重檐'
 
+    # 收分
+    taper: bpy.props.FloatProperty(
+        name="重楼收分",
+        default=0.0
+    ) # type: ignore
+
+    # 弹出参数输入框
+    def invoke(self, context, event):
+        self.orig_x = event.mouse_x
+        self.orig_y = event.mouse_y
+
+        windowWidth = context.window.width
+        windowHeight = context.window.height
+        # 判断macOs，使用Retina高分辨屏幕时，分辨率x2
+        import sys
+        platform = sys.platform
+        if platform.startswith('darwin'):
+            windowWidth = windowWidth*2
+            windowHeight = windowHeight*2
+        
+        w = int(windowWidth/2)
+        h = int(windowHeight/2)
+        context.window.cursor_warp(w, h)
+
+        return context.window_manager.invoke_props_dialog(self,width=300)
+    
+    # 绘制参数输入框
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        # 收分
+        box.prop(self, "taper")
+
     def execute(self, context): 
         timeStart = time.time()
 
@@ -1386,8 +1419,9 @@ class ACA_OT_DOUBLE_EAVE_ADD(bpy.types.Operator):
         
         from . import buildCombo
         funproxy = partial(
-            buildCombo.addDoubleEave,
-            buildingObj=buildingObj,
+            buildCombo.addDoubleEave2,
+            contextObj=buildingObj,
+            taper=self.taper,
         )
         result = utils.fastRun(funproxy)
 
@@ -1433,12 +1467,65 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = '添加重楼'
 
-    # 参数：剖视方案
-    floorPlan: bpy.props.StringProperty(
-        name="重楼方案",
-        default=""
+    # # 参数：剖视方案
+    # floorPlan: bpy.props.StringProperty(
+    #     name="重楼方案",
+    #     default=""
+    # ) # type: ignore
+    # 收分
+    taper: bpy.props.FloatProperty(
+        name="重楼收分",
+        default=0.0
     ) # type: ignore
+    # 添加栏杆
+    use_railing:bpy.props.BoolProperty(
+            name = "添加栏杆",
+            default=True,
+        ) # type: ignore
+    # 添加腰檐
+    use_mideave:bpy.props.BoolProperty(
+            name = "添加腰檐",
+            default=True,
+        ) # type: ignore
+    # 添加回廊
+    use_loggia:bpy.props.BoolProperty(
+            name = "添加回廊",
+            default=True,
+        ) # type: ignore
+    
+    # 弹出参数输入框
+    def invoke(self, context, event):
+        self.orig_x = event.mouse_x
+        self.orig_y = event.mouse_y
 
+        windowWidth = context.window.width
+        windowHeight = context.window.height
+        # 判断macOs，使用Retina高分辨屏幕时，分辨率x2
+        import sys
+        platform = sys.platform
+        if platform.startswith('darwin'):
+            windowWidth = windowWidth*2
+            windowHeight = windowHeight*2
+        
+        w = int(windowWidth/2)
+        h = int(windowHeight/2)
+        context.window.cursor_warp(w, h)
+
+        return context.window_manager.invoke_props_dialog(self,width=300)
+
+    # 绘制参数输入框
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        # 收分
+        box.prop(self, "taper")
+        # 是否使用腰檐
+        box.prop(self, "use_mideave")
+        # 是否使用平坐栏杆
+        box.prop(self,'use_railing')
+        # 是否使用回廊
+        box.prop(self,'use_loggia')
+    
     def execute(self, context): 
         timeStart = time.time()
 
@@ -1447,8 +1534,12 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         from . import buildCombo
         funproxy = partial(
             buildCombo.addMultiFloor,
-            buildingObj=buildingObj,
-            floorPlan=self.floorPlan,
+            baseFloor=buildingObj,
+            # floorPlan=self.floorPlan,
+            taper=self.taper,
+            use_railing=self.use_railing,
+            use_mideave=self.use_mideave,
+            use_loggia=self.use_loggia,
         )
         result = utils.fastRun(funproxy)
 

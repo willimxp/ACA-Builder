@@ -66,12 +66,15 @@ def __buildFloor(balconyRoot:bpy.types.Object):
     from . import template
     template.updateDougongData(buildingObj)
 
+    # 平坐出挑，基于桁出梢
+    floorExtend = con.BALCONY_EXTENT*dk*2*bData.dk_scale
+
     floorX = (bData.x_total 
               + bData.dg_extend*2 
-              + con.BALCONY_EXTENT*dk*2)
+              + floorExtend)
     floorY = (bData.y_total 
               + bData.dg_extend*2 
-              + con.BALCONY_EXTENT*dk*2)
+              + floorExtend)
     floorZ = con.BALCONY_FLOOR_H*dk
     floorDim = Vector((floorX,floorY,floorZ))
     floorLoc = Vector((0,0,floorZ/2))
@@ -133,8 +136,9 @@ def __buildFloor(balconyRoot:bpy.types.Object):
                 - con.RAILING_DEEPTH*dk/2 # 栏杆保留深度
                 )
         
-        difuDeepth = con.RAILING_DIFU_Y*dk
-        difuHeight = con.RAILING_DIFU_H*dk
+        # 因为栏杆按照0.08的斗口固定大小，所以这次的地栿也固定使用0.08斗口
+        difuDeepth = con.RAILING_DIFU_Y*con.DEFAULT_DK
+        difuHeight = con.RAILING_DIFU_H*con.DEFAULT_DK
 
         # 前后檐
         # 地栿长度
@@ -208,7 +212,7 @@ def __buildProxy(balconyRoot:bpy.types.Object):
 
     # 平坐出跳
     extend = (bData.dg_extend   # 斗栱出跳
-              + con.BALCONY_EXTENT*dk # 平坐出跳，对齐桁出梢
+              + con.BALCONY_EXTENT*dk*bData.dk_scale # 平坐出跳，对齐桁出梢
               - con.RAILING_DEEPTH*dk/2 # 栏杆保留深度
             ) 
     # 楼板高度
@@ -301,7 +305,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     dk = bData.DK
     # 因为考虑栏杆应该始终适应人的身高，而不要随着dk而变化
     # 所以以下将dk做了人为的固定
-    dk = 0.08
+    dk = con.DEFAULT_DK
 
     # 各开间根节点，在两根柱子之间居中
     railingRoot = utils.addEmpty(
@@ -475,7 +479,8 @@ def __buildRailing(parentObj:bpy.types.Object,
     difuHeight = con.RAILING_DIFU_H*dk
     if not connect:
         # 地栿
-        difuWidth = proxyW
+        # 地栿长度略出头，两侧各1/4望柱
+        difuWidth = proxyW + con.RAILING_PILLER_D*dk/2
         difuDeepth = con.RAILING_DIFU_Y*dk
         difuDim = (difuWidth,difuDeepth,difuHeight)
         difuLoc = (proxyX,0,difuHeight/2)

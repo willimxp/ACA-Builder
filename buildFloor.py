@@ -1417,6 +1417,21 @@ def addLoggia(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
 
+    setLoggiaData(bData,
+              width=width,
+              side=side,
+              use_railing=use_railing,)
+        
+    # 执行营造
+    buildFloor(buildingObj)
+
+    return {'FINISHED'}
+
+# 设置回廊数据
+def setLoggiaData(bData:acaData,
+              width=2,
+              side='0',
+              use_railing=True,):
     # 重新生成柱网
     bData.piller_net = ''
 
@@ -1424,47 +1439,40 @@ def addLoggia(buildingObj:bpy.types.Object,
     if side == '0':
         # 添加左右廊间
         bData['x_rooms'] += 2
-        __setLoggiaWidth(buildingObj,width,'X')
+        __setLoggiaWidth(bData,width,'X')
 
         # 添加前后廊间
         bData['y_rooms'] += 2
-        __setLoggiaWidth(buildingObj,width,'Y')
+        __setLoggiaWidth(bData,width,'Y')
 
         # 处理装修
-        __childOffset(buildingObj,
+        __childOffset(bData,
                       offset_x=1,
                       offset_y=1)
         
         # 添加回廊栏杆
         if use_railing:
-            __addLoggiaRailing(buildingObj,side)
+            __addLoggiaRailing(bData,side)
         
     # 前后廊
     elif side == '1':
         # 添加前后廊间
         bData['y_rooms'] += 2
-        __setLoggiaWidth(buildingObj,width,'Y')
+        __setLoggiaWidth(bData,width,'Y')
 
         # 处理装修
-        __childOffset(buildingObj,
+        __childOffset(bData,
                       offset_x=0,
                       offset_y=1)
         
         # 添加回廊栏杆
         if use_railing:
-            __addLoggiaRailing(buildingObj,side)
-        
-    # 执行营造
-    buildFloor(buildingObj)
-
-    return {'FINISHED'}
+            __addLoggiaRailing(bData,side)
+    return
 
 # 设置廊间宽度
-def __setLoggiaWidth(buildingObj:bpy.types.Object,
-              width,side='X'):
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
-    
+def __setLoggiaWidth(bData:acaData,
+              width,side='X'):    
     if side == 'X':
         xRooms = bData.x_rooms
         if xRooms == 3:
@@ -1484,11 +1492,8 @@ def __setLoggiaWidth(buildingObj:bpy.types.Object,
     return
 
 # 位移装修子构件
-def __childOffset(buildingObj:bpy.types.Object,
+def __childOffset(bData:acaData,
                   offset_x,offset_y):
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
-
     childList = [
         'step_list',
         'railing_list',
@@ -1546,11 +1551,8 @@ def __childOffset(buildingObj:bpy.types.Object,
     return
 
 # 添加回廊栏杆
-def __addLoggiaRailing(buildingObj:bpy.types.Object,
+def __addLoggiaRailing(bData:acaData,
                        side):
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
-
     railingItems = []
 
     # 前后檐

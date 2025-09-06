@@ -226,30 +226,24 @@ class ACA_Consts(object):
 
     # 平坐
     BALCONY_FLOOR_H = 2                 # 楼板厚度(DK)
-    BALCONY_EXTENT = 5.2                # 平坐扩展(DK)，与HENG_EXTEND相同
+    BALCONY_EXTENT = 7                  # 平坐扩展(DK)，与HENG_EXTEND相同
     BALCONY_EAVE_H = 5                  # 挂檐板高度(DK)
     BALCONY_EAVE_Y = 0.5                # 挂檐板厚度(DK)
     BALCONY_FANG_H = 5                  # 平坐枋的高度(DK)，资产中要保持一致
-    RAILING_DEEPTH = 6                  # 栏杆深度(DK)
-    RAILING_PILLER_H = 16              # 望柱高(DK)
-    # RAILING_PILLER_H = 1.3              # 望柱高(m)
+    RAILING_DEEPTH = 4                  # 栏杆深度(DK)
+    RAILING_PILLER_H = 16               # 望柱高(DK)
     RAILING_PILLER_D = 1.8              # 望柱径(DK)
     RAILING_DIFU_Y = 2.5                # 地栿宽(DK)
     RAILING_DIFU_H = 1                  # 地栿高(DK)
-    # RAILING_DIFU_H = 0.08               # 地栿高(m)
     RAILING_FANG_Y = 1.1                # 中/下枋宽(DK)
     RAILING_FANG_H = 0.9                # 中/下枋高(DK)
-    # RAILING_FANG_H = 0.08               # 中/下枋高(m)
     RAILING_YAZI_Y = 0.25               # 牙子板厚(DK)
     RAILING_YAZI_H = 1.8                # 牙子板高(DK)
-    # RAILING_YAZI_H = 0.14               # 牙子板高(m)
     RAILING_TAOHUAN_Y = 0.25            # 绦环板厚(DK)
     RAILING_TAOHUAN_H = 2.7             # 绦环板高(DK)
-    # RAILING_TAOHUAN_H = 0.21            # 绦环板高(m)
     HANDRAIL_Z = 1                      # 桪杖扶手高(m)
     HANDRAIL_Y = 1.1                    # 桪杖宽(DK)
     HANDRAIL_H = 0.9                    # 桪杖高(DK)
-    # HANDRAIL_H = 0.08                    # 桪杖高(m)
     RAILING_ZZ_Y = 0.9                  # 折柱深(DK)
     RAILING_ZZ_W = 1.1                  # 折柱宽(DK)
 
@@ -345,6 +339,7 @@ class ACA_Consts(object):
     COMBO_DOUBLE_EAVE = 'combo_double_eave'
     COMBO_MULTI_FLOOR = 'combo_multi_floor'
     COMBO_MULTI_TOP = 'combo_multi_top'
+    COMBO_PINGZUO = 'combo_pingzuo'
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

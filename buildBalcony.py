@@ -62,10 +62,6 @@ def __buildFloor(balconyRoot:bpy.types.Object):
     dk = bData.DK
     
     # 1、构造楼板 --------------------------------
-    # 使用斗栱数据前，都要先刷新一下
-    from . import template
-    template.updateDougongData(buildingObj)
-
     # 平坐出挑，基于桁出梢
     floorExtend = con.BALCONY_EXTENT*dk*2*bData.dk_scale
 
@@ -643,11 +639,11 @@ def buildBalcony(buildingObj:bpy.types.Object):
 def addRailing(wallProxy:bpy.types.Object):       
     # 载入设计数据
     buildingObj,bData,wData = utils.getRoot(wallProxy)
-    dk = bData.DK
     if buildingObj == None:
-        utils.popMessageBox(
+        raise Exception(
             "未找到建筑根节点或设计数据")
         return
+    dk = bData.DK
     
     # 提取railingData
     railingID = wallProxy.ACA_data['wallID']    

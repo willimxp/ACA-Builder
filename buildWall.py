@@ -66,9 +66,10 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
         wallName = '支摘窗'
     elif wallType == con.ACA_WALLTYPE_RAILILNG:
         wallName = '栏杆'
+    elif wallType == con.ACA_WALLTYPE_QUETI:
+        wallName = '雀替'
     else:
-        utils.outputMsg(f"无法生成wallproxy，walltype：{wallType}")
-        return
+        raise Exception(f"无法生成wallproxy，walltype：{wallType}")
     wallName = "%s.%s#%s" % (wallName,setting[1],setting[2])
 
     # 获取实际柱高   
@@ -332,9 +333,12 @@ def __buildWall(buildingObj:bpy.types.Object,
     elif wallType in (con.ACA_WALLTYPE_RAILILNG):
         from . import buildBalcony
         wallObj = buildBalcony.addRailing(wallproxy)
+    # 营造雀替
+    elif wallType == con.ACA_WALLTYPE_QUETI:
+        from . import buildBalcony
+        wallObj = buildFloor.addQueti(wallproxy)
     else:
-        utils.outputMsg(f"无法生成墙体类型:{wallType}")
-        return
+        raise Exception(f"无法生成墙体类型:{wallType}")
     # 个性化设置参数的传递
     utils.copyAcaData(wallproxy,wallObj)
     # wallID不在propertyGroup中，需要单独传递
@@ -351,7 +355,15 @@ def __buildWall(buildingObj:bpy.types.Object,
     # 删除wallproxy
     utils.delObject(wallproxy)
     wallObj.name = wallname
-    utils.outputMsg("Building " + wallObj.name)
+
+    # 复杂装修很慢，给出提示
+    if wallType in (con.ACA_WALLTYPE_MAINDOOR,
+                      con.ACA_WALLTYPE_GESHAN,
+                      con.ACA_WALLTYPE_WINDOW,
+                      con.ACA_WALLTYPE_BARWINDOW,
+                      con.ACA_WALLTYPE_FLIPWINDOW,):
+        utils.outputMsg("Built " + wallObj.name)
+        
     utils.focusObj(wallObj)
     return wallObj
 
@@ -441,8 +453,11 @@ def addWall(buildingObj:bpy.types.Object,
 
     # 聚焦在创建的门上
     if wallObj != None:
-        # 250702 添加隔断后，刷新额枋，隐藏雀替
-        buildFloor.__buildFang(buildingObj)
+        # 除了添加栏杆，其他装修与雀替互斥，直接删除
+        if wallType != con.ACA_WALLTYPE_RAILILNG:
+            # 删除雀替
+            __delQuetiFromAdd(wallObj)
+
         utils.focusObj(wallObj)
     else:
         utils.outputMsg(f"无墙体需要生成")
@@ -455,11 +470,31 @@ def delWall(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
 
-    # 删除装修对象
+    # 预处理，排除多选的子对象或其他对象
+    # 避免出现父门框已删除，还要删除子隔扇的异常
+    delete_walls = []
     for wall in walls:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
-        if 'aca_type' not in wall.ACA_data:
+        if not hasattr(wall,"ACA_data"):
             continue
+
+        if wall.ACA_data.aca_type not in (
+            con.ACA_TYPE_WALL,              # 槛墙
+            con.ACA_WALLTYPE_WINDOW,        # 槛窗
+            con.ACA_WALLTYPE_GESHAN,        # 隔扇
+            con.ACA_WALLTYPE_BARWINDOW,     # 直棂窗
+            con.ACA_WALLTYPE_MAINDOOR,      # 板门
+            con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
+            con.ACA_WALLTYPE_RAILILNG,      # 栏杆
+        ):
+            continue
+        
+        delete_walls.append(wall)
+    
+    # 删除墙体
+    for wall in delete_walls:
+        # 添加雀替
+        __addQuetiFromDel(wall)
             
         # 删除列表数据
         utils.delDataChild(
@@ -467,14 +502,129 @@ def delWall(buildingObj:bpy.types.Object,
             obj_type=wall.ACA_data['aca_type'],
             obj_id=wall.ACA_data['wallID'],
         )
-            
         # 删除wall实体    
         utils.deleteHierarchy(wall,del_parent=True)
 
-    # 250702 添加隔断后，刷新额枋，重建雀替
-    buildFloor.__buildFang(buildingObj)
+    # # 250702 添加隔断后，刷新额枋，重建雀替
+    # buildFloor.__buildFang(buildingObj)
 
     utils.focusObj(buildingObj)
+
+    return
+
+# 根据删除的对象添加雀替
+# 特别是处理跨多间的墙体时，完成每个开间的雀替添加
+def __addQuetiFromDel(walldel:bpy.types.Object):
+    # 载入数据
+    buildingObj,bData,oData = utils.getRoot(walldel)
+
+    queti = []
+
+    # 解析被删对象，是否跨越多间
+    wallID = walldel.ACA_data['wallID']
+    setting = wallID.split('#')
+    # 以柱编号定位
+    # 起始柱子
+    pFrom = setting[1].split('/')
+    pFrom_x = int(pFrom[0])
+    pFrom_y = int(pFrom[1])
+    # 结束柱子
+    pTo = setting[2].split('/')
+    pTo_x = int(pTo[0])
+    pTo_y = int(pTo[1])
+    # 前后檐跨多间
+    if abs(pFrom_x - pTo_x) > 1:
+        if pFrom_x < pTo_x:
+            pRange = range(pFrom_x,pTo_x)
+        else:
+            pRange = range(pTo_x,pFrom_x)
+        
+        # 插入前后檐每一间的雀替
+        for n in pRange:
+            queti.append(f"{con.ACA_WALLTYPE_QUETI}#{n}/{pFrom_y}#{n+1}/{pTo_y}")
+    # 两山跨多间    
+    elif abs(pFrom_y - pTo_y) > 1:
+        if pFrom_y < pTo_y:
+            pRange = range(pFrom_y,pTo_y)
+        else:
+            pRange = range(pTo_y,pFrom_y)
+
+        # 插入两山每一间的雀替
+        for n in pRange:
+            queti.append(f"{con.ACA_WALLTYPE_QUETI}#{pFrom_x}/{n}#{pTo_x}/{n+1}")
+    else:
+        # 只有一间，直接插入
+        queti.append(f"{con.ACA_WALLTYPE_QUETI}#{pFrom_x}/{pFrom_y}#{pTo_x}/{pTo_y}")
+
+    for quetiID in queti:
+        # 存入数据集
+        wall_ids = []
+        for wall in bData.wall_list:
+            wall_ids.append(wall.id)
+        if not quetiID in wall_ids:
+            queti_item = bData.wall_list.add()
+            queti_item.id =quetiID
+        
+        # 添加实体
+        __buildWall(buildingObj,wallID=quetiID)
+
+    return
+
+# 根据删除的对象添加雀替
+# 特别是处理跨多间的墙体时，完成每个开间的雀替添加
+def __delQuetiFromAdd(wallAdd:bpy.types.Object):
+    # 载入数据
+    buildingObj,bData,oData = utils.getRoot(wallAdd)
+
+    queti = []
+
+    # 解析被删对象，是否跨越多间
+    wallID = wallAdd.ACA_data['wallID']
+    setting = wallID.split('#')
+    # 以柱编号定位
+    # 起始柱子
+    pFrom = setting[1].split('/')
+    pFrom_x = int(pFrom[0])
+    pFrom_y = int(pFrom[1])
+    # 结束柱子
+    pTo = setting[2].split('/')
+    pTo_x = int(pTo[0])
+    pTo_y = int(pTo[1])
+    # 前后檐跨多间
+    if abs(pFrom_x - pTo_x) > 1:
+        if pFrom_x < pTo_x:
+            pRange = range(pFrom_x,pTo_x)
+        else:
+            pRange = range(pTo_x,pFrom_x)
+        
+        # 插入前后檐每一间的雀替
+        for n in pRange:
+            queti.append(f"{con.ACA_WALLTYPE_QUETI}#{n}/{pFrom_y}#{n+1}/{pTo_y}")
+    # 两山跨多间    
+    elif abs(pFrom_y - pTo_y) > 1:
+        if pFrom_y < pTo_y:
+            pRange = range(pFrom_y,pTo_y)
+        else:
+            pRange = range(pTo_y,pFrom_y)
+
+        # 插入两山每一间的雀替
+        for n in pRange:
+            queti.append(f"{con.ACA_WALLTYPE_QUETI}#{pFrom_x}/{n}#{pTo_x}/{n+1}")
+    else:
+        # 只有一间，直接插入
+        queti.append(f"{con.ACA_WALLTYPE_QUETI}#{pFrom_x}/{pFrom_y}#{pTo_x}/{pTo_y}")
+
+    for quetiID in queti:
+        # 清理数据集
+        for i,wall in enumerate(bData.wall_list):
+            if wall.id == quetiID:
+                bData.wall_list.remove(i)
+        
+        # 删除实体
+        quetiName = f"雀替.{quetiID.split('#',1)[1]}"
+        utils.deleteByName(parent_obj=buildingObj,
+                           del_parent=False,
+                           name=quetiName)
 
     return
 

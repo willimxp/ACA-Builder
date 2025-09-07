@@ -2847,6 +2847,9 @@ def getWallSetting(contextObj:bpy.types.Object):
     for maindoor in bData.maindoor_list:
         wallSetting += maindoor.id + ','
     for wall in bData.wall_list:
+        # 跳过雀替
+        if con.ACA_WALLTYPE_QUETI in wall.id:
+            continue
         wallSetting += wall.id + ','
     for window in bData.window_list:
         wallSetting += window.id + ','

@@ -298,7 +298,6 @@ def __getWallRange(contextObj:bpy.types.Object):
 # 根据开间大小，自动切换了长款、中款、短款
 def __buildQueti(fangObj):
     # 基础数据
-    aData:tmpData = bpy.context.scene.ACA_temp
     buildingObj = utils.getAcaParent(fangObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -344,23 +343,44 @@ def __buildQueti(fangObj):
         isQueti = False
     if not isQueti: return
 
+    # 250907 仅初始化雀替数据，等到buildWall中进行处理
+    queti = bData.wall_list.add()
+    queti.id = f"{con.ACA_WALLTYPE_QUETI}#{fangID}"
+
+    return
+
+def addQueti(wallproxy:bpy.types.Object):
+    # 载入设计数据
+    aData:tmpData = bpy.context.scene.ACA_temp
+    buildingObj,bData,wData = utils.getRoot(wallproxy)
+    if buildingObj == None:
+        raise Exception(
+            "未找到建筑根节点或设计数据")
+        return
+    dk = bData.DK
+
+    # 清理之前的子对象
+    utils.deleteHierarchy(wallproxy)
+
+    (wallLength,wallDeepth,wallHeight) = wallproxy.dimensions
+
     # 雀替的尺度参考马炳坚P183，长度为净面宽的1/4，高同大额枋或小额枋，厚为檐柱的3/10
     # 栱长1/2瓜子栱，高2斗口，厚同雀替
-    # 雀替Z坐标从大额枋中心下移半大额枋+由额垫板+小额枋
-    zoffset = con.EFANG_LARGE_H*dk/2
+    # 雀替Z坐标从柱头向下额枋+由额垫板+小额枋
+    zoffset = bData.piller_height - con.EFANG_LARGE_H*dk
     if bData.use_smallfang:
-        zoffset += (con.BOARD_YOUE_H*dk
-                +con.EFANG_SMALL_H*dk)
+        zoffset -= (con.BOARD_YOUE_H*dk
+                    +con.EFANG_SMALL_H*dk)
     # 雀替对象在blender中用Geometry Nodes预先进行了自动拼装
     quetiObj = utils.copyObject(
         sourceObj=aData.queti_source,
         name='雀替',
-        parentObj=fangObj,
-        location=(0,0,-zoffset),
+        parentObj=wallproxy,
+        location=(0,0,zoffset),
         singleUser=True
     )
     # 宽度适配到开间的净面宽
-    quetiObj.dimensions.x = fang_length-bData.piller_diameter
+    quetiObj.dimensions.x = wallLength-bData.piller_diameter
     # 250613 根据斗口的缩放，调整雀替的尺度
     quetiObj.scale.y = dk / con.DEFAULT_DK
     quetiObj.scale.z = dk / con.DEFAULT_DK

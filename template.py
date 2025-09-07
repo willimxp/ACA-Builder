@@ -110,6 +110,7 @@ def getDougongList():
 # 在建筑新建、重新生成屋顶、单独生成斗栱层时，都应该使用此方法
 def updateDougongData(buildingObj:bpy.types.Object,
                       reloadAssets = True):
+    buildingObj,bData,oData = utils.getRoot(buildingObj)
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
@@ -118,6 +119,27 @@ def updateDougongData(buildingObj:bpy.types.Object,
         return
     dgrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_DG_ROOT)
+    if dgrootObj == None:       
+        # 设置目录
+        buildingColl = buildingObj.users_collection[0]
+        utils.setCollection(
+            con.COLL_NAME_DOUGONG,
+            parentColl=buildingColl) 
+
+        # 计算位置
+        bData : acaData = buildingObj.ACA_data
+        zLoc = bData.platform_height + bData.piller_height 
+        # 创建根对象（empty）
+        dgrootObj = utils.addEmpty(
+            name=con.COLL_NAME_DOUGONG,
+            parent=buildingObj,
+            location=(0,0,zLoc),)
+        dgrootObj.ACA_data['aca_obj'] = True
+        dgrootObj.ACA_data['aca_type'] = con.ACA_TYPE_DG_ROOT
+    
+    # 临时切换到斗栱目录
+    preColl = bpy.context.view_layer.active_layer_collection.name
+    utils.focusCollByObj(dgrootObj)
     
     # 1、根据斗栱样式，更新对应斗栱资产模板
     # 1.1、验证斗栱样式非空，否则默认取第一个
@@ -194,7 +216,10 @@ def updateDougongData(buildingObj:bpy.types.Object,
         if 'dgHeight' in dgObj:
             bData['dg_height'] = dgObj['dgHeight']*dgScale
 
-    # utils.outputMsg(f"斗栱数据已更新：dgHeight={bData.dg_height},dgExtend={bData.dg_extend}")
+    utils.outputMsg(f"斗栱数据已更新：dgHeight={bData.dg_height},dgExtend={bData.dg_extend}")
+
+    # 恢复原有目录
+    utils.focusCollection(preColl)
 
     return
 
@@ -232,7 +257,10 @@ def __updateAssetStyle(buildingObj:bpy.types.Object,
                         # https://developer.blender.org/docs/release_notes/4.2/python_api/#statically-typed-idproperties
                         # TypeError: Cannot assign a 'Object' value to the existing 'dg_piller_source' Group IDProperty
                         if assetName in aData:  
-                            del aData[assetName]
+                            # 250907 删除老资产对象
+                            utils.deleteHierarchy(aData[assetName],del_parent=True)
+                            # del aData[assetName]
+                            
                         # 个性化样式资产，不采用link方式，而是复制到各个建筑内
                         aData[assetName] = loadAssets(
                             item.text,link=False,parent=parent)

@@ -819,11 +819,6 @@ def __getDoubleEaveLift(buildingObj:bpy.types.Object):
         if mData.use_pingbanfang:
             pillerLift += con.PINGBANFANG_H*dk
         # 斗栱高度(dg_height已经按dg_Scale放大了)
-        # 更新斗栱数据，以免修改DK，斗栱类型等操作时未及时更新
-        # reloadAssets=False，以免重复载入重复的斗栱资产
-        from . import template
-        template.updateDougongData(mainBuildingObj,
-                                   reloadAssets=False)
         pillerLift += mData.dg_height
     else:
         # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
@@ -941,11 +936,6 @@ def __getTopwinLift(buildingObj:bpy.types.Object):
         if mData.use_pingbanfang:
             topwinLift += con.PINGBANFANG_H*dk
         # 斗栱高度(dg_height已经按dg_Scale放大了)
-        # 更新斗栱数据，以免修改DK，斗栱类型等操作时未及时更新
-        # reloadAssets=False，以免重复载入重复的斗栱资产
-        from . import template
-        template.updateDougongData(mainBuildingObj,
-                                   reloadAssets=False)
         topwinLift += mData.dg_height
     else:
         # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
@@ -1500,8 +1490,6 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
             if preData.use_dg:
                 if preData.use_pingbanfang:
                     floorHeight += con.PINGBANFANG_H* preData.DK
-                from . import template
-                template.updateDougongData(contextObj)
                 floorHeight += preData.dg_height
             # 250905 叠加楼板高度
             floorHeight += con.BALCONY_FLOOR_H*preData.DK
@@ -1738,11 +1726,6 @@ def __getMultiFloorLift(buildingObj:bpy.types.Object):
         if bData.use_pingbanfang:
             floorLift += con.PINGBANFANG_H*dk
         # 斗栱高度(dg_height已经按dg_Scale放大了)
-        # 更新斗栱数据，以免修改DK，斗栱类型等操作时未及时更新
-        # reloadAssets=False，以免重复载入重复的斗栱资产
-        from . import template
-        template.updateDougongData(buildingObj,
-                                   reloadAssets=False)
         floorLift += bData.dg_height
     else:
         # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置
@@ -1817,11 +1800,6 @@ def __getPingzuoLift(buildingObj:bpy.types.Object):
         if bData.use_pingbanfang:
             floorLift += con.PINGBANFANG_H*dk
         # 斗栱高度(dg_height已经按dg_Scale放大了)
-        # 更新斗栱数据，以免修改DK，斗栱类型等操作时未及时更新
-        # reloadAssets=False，以免重复载入重复的斗栱资产
-        from . import template
-        template.updateDougongData(buildingObj,
-                                   reloadAssets=False)
         floorLift += bData.dg_height
     else:
         # 以大梁抬升檐桁垫板高度，即为挑檐桁下皮位置

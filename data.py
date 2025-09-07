@@ -53,6 +53,21 @@ def delprop():
 #     # 仅返回Assets collection中的对象
 #     return object.users_collection[0].name == 'Assets'
 
+# 刷新斗口
+def update_dk(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
+    # 确认选中为building节点
+    buildingObj,bData,odata = utils.getRoot(context.object)
+    if buildingObj != None:
+        from . import template
+        template.updateDougongData(buildingObj)
+        update_building(self,context)
+    return
+
 # 更新建筑，但不重设柱网
 def update_building(self, context:bpy.types.Context):
     # 判断自动重建开关
@@ -431,6 +446,11 @@ def update_roofstyle(self, context:bpy.types.Context):
         con.ROOF_LUDING,
     ):
         bData['use_flyrafter'] = True
+
+    # 250907 切换平坐屋顶时，需要更新平坐斗栱
+    from . import template
+    template.updateDougongData(buildingObj)
+
     return
 
 def update_rooftile(self, context:bpy.types.Context):
@@ -674,7 +694,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             step=0.01,
             precision=3,
             description="比例模数(m)，清官式常用0.08(二寸半)、0.096(三寸)等",
-            update = update_building
+            update = update_dk
         ) # type: ignore
     is_showPlatform: bpy.props.BoolProperty(
             default = True,

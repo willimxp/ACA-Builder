@@ -67,6 +67,14 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
     mat.paint(earthObj,con.M_ROCK)
     taimingList.append(earthObj)
 
+    # 2.1、阶条石宽度
+    # 阶条石宽度，从台基边缘做到柱顶石边缘
+    stoneWidth = bData.platform_extend-bData.piller_diameter
+    # 250907 限制阶条石上限，为2.4柱径，14.4dk
+    stoneWidth_max = con.PLATFORM_EXTEND*con.PILLER_D_EAVE*dk
+    if stoneWidth > stoneWidth_max:
+        stoneWidth = stoneWidth_max
+
     # 2.1、方砖缦地
     floorInsideObj = utils.addCube(
         name='方砖缦地',
@@ -75,8 +83,8 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
             pHeight-con.STEP_HEIGHT/2
         ),
         dimension=(
-            bData.x_total+bData.piller_diameter*2,
-            bData.y_total+bData.piller_diameter*2,
+            pWidth - stoneWidth*2,
+            pDeepth - stoneWidth*2,
             con.STEP_HEIGHT
         ),
         parent=baseRootObj
@@ -86,8 +94,6 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
     taimingList.append(floorInsideObj)
 
     # 2.2、阶条石
-    # 阶条石宽度，从台基边缘做到柱顶石边缘
-    stoneWidth = bData.platform_extend-bData.piller_diameter
     # 2.2.1、前后檐面阶条石，两头置好头石，尽间为去除好头石长度，明间(次间)对齐
     # 插入第一点，到台明两山尽头（从角柱延伸台基下出长度）
     firstRoomWidth = net_x[1]-net_x[0]    # 尽间宽度
@@ -126,8 +132,8 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
 
     # 2.2.2、两山阶条石
     # 延长尽间阶条石，与好头石相接
-    net_y[0] -= bData.piller_diameter
-    net_y[-1] += bData.piller_diameter
+    net_y[0] = -pDeepth/2 + stoneWidth
+    net_y[-1] = pDeepth/2 - stoneWidth
     # 依次做出前后檐阶条石
     for n in range((len(net_y)-1)):
         sidebrickObj = utils.addCube(
@@ -469,11 +475,16 @@ def __drawStep(
     
     # 0、载入数据
     bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
     stepID = stepData.id
     bevel = con.BEVEL_HIGH
     # 阶条石宽度，取下出-半个柱顶石（柱顶石为2pd，这里直接减1pd）
     stoneWidth = bData.platform_extend \
                     -bData.piller_diameter
+    # 250907 限制阶条石上限，为2.4柱径，14.4dk
+    stoneWidth_max = con.PLATFORM_EXTEND*con.PILLER_D_EAVE*dk
+    if stoneWidth > stoneWidth_max:
+        stoneWidth = stoneWidth_max
     
     # 根据stepID生成踏跺空间范围，宽度统一取开间宽度
     stepProxy = __addStepProxy(

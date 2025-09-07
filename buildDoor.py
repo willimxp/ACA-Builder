@@ -1418,7 +1418,7 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
     mat.paint(pushouObj,con.M_GOLD,True)
     # 尺寸
     # 无门钉时，取腰枋高度
-    pushouH = con.KAN_MID_HEIGHT*pd
+    pushouH = pushouObj.dimensions.z
     if dingNum > 0:
         # 有门钉时，不超过门钉间距
         span = holeHeight/dingNum - dingWidth
@@ -1459,14 +1459,14 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
         newName='板门门扇',
         baseObj=zhouObj,
         )
-    # 添加mirror
-    utils.addModifierMirror(
-        doorJoin, 
-        kankuangObj, 
-        use_axis=(True,False,False)
-    )
     # 限制旋转轴，仅允许Z轴开窗、开门
     doorJoin.lock_rotation = (True,True,False)
+
+    # 镜像板门
+    doorJoin2 = utils.copySimplyObject(doorJoin)
+    doorJoin2.location.x = - doorJoin2.location.x
+    doorJoin2.scale.x = -1
+    utils.applyTransform2(doorJoin2)
 
     return doorJoin
 

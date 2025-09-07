@@ -115,8 +115,12 @@ def updateDougongData(buildingObj:bpy.types.Object,
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     if bData.aca_type != con.ACA_TYPE_BUILDING:
-        utils.popMessageBox("输入的不是建筑根节点")
-        return
+        if bData.combo_type == con.COMBO_ROOT:
+            # comboRoot节点无需更新斗栱数据
+            utils.outputMsg("组合建筑根节点无需更新斗栱数据")
+            return
+        else:
+            raise Exception("更新斗栱数据异常，输入的不是建筑根节点")
     dgrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_DG_ROOT)
     if dgrootObj == None:       

@@ -688,7 +688,7 @@ def buildDougong(buildingObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     if bData.aca_type != con.ACA_TYPE_BUILDING:
-        utils.popMessageBox("输入的不是建筑根节点")
+        raise Exception("排布斗栱异常，输入的不是建筑根节点")
         return
 
     # 如果不使用斗栱，以下直接跳过

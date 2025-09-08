@@ -657,17 +657,23 @@ def addRailing(wallProxy:bpy.types.Object):
     if railingData is None:
         raise Exception(f"无法找到railingData:{railingID}")
     
-    # 最大值控制
+    # 栏杆长度，只能做在两个柱间
     railingLen = wallProxy.dimensions.x - bData.piller_diameter
-    # 栏杆最小值，单侧
-    railingMin = con.RAILING_PILLER_D*dk*4
-    # 开口最大值
-    gapMax = railingLen - railingMin*2
-    # 开口最大比例
-    gapMax_rate =  gapMax/railingLen
-    if railingData.gap > gapMax_rate:
-        railingData['gap'] = gapMax_rate
-        print("栏杆开口过大，已自动设置到最大值")
+    if railingLen <= 0:
+        utils.outputMsg(f"此位置无法做栏杆，已跳过{wallProxy.name}")
+        return
+    
+    # 开口的最大值控制
+    if railingData.gap > 0:
+        # 栏杆最小值，单侧
+        railingMin = con.RAILING_PILLER_D*dk*4
+        # 开口最大值
+        gapMax = railingLen - railingMin*2
+        # 开口最大比例
+        gapMax_rate =  gapMax/railingLen
+        if railingData.gap > gapMax_rate:
+            railingData['gap'] = gapMax_rate
+            print("栏杆开口过大，已自动设置到最大值")
     
     # 创建proxyData
     proxy = {}

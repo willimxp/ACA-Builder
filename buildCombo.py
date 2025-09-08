@@ -1437,11 +1437,22 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
               - con.PILLER_D_EAVE*bData.DK/2 # 柱的保留深度
               - bData.DK # 保留1斗口边线
             ) 
+        # 回廊装修的参考数据，直接用comboRoot初始化时继承的装修数据
+        refObj = None
+        if bData.combo_type == con.COMBO_PINGZUO:
+            refObj = utils.getObjByID(bData.combo_parent)
+        else:
+            refObj = lowerFloor
+        if refObj != None:
+            refData = refObj.ACA_data
+        else:
+            raise Exception("重楼回廊计算失败，无法找到下层参考地盘")
         buildFloor.setLoggiaData(
             mData,
             width=loggia_width,
             side='0',
-            use_railing=use_railing)
+            use_railing=use_railing,
+            refData=refData)
 
     return upperfloor
 
@@ -1838,7 +1849,7 @@ def __setTaperData(mData,taper):
             mData['y_2'] -= yTaper
         else:
             mData['y_rooms'] -= 2
-            yTaper -= mData.x_2
+            yTaper -= mData.y_2
     if mData.y_rooms == 2:
         if mData['y_1'] > yTaper:
             mData['y_1'] -= yTaper

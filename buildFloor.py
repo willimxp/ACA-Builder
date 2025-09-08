@@ -1449,12 +1449,34 @@ def addLoggia(buildingObj:bpy.types.Object,
 
 # 设置回廊数据
 def setLoggiaData(bData:acaData,
-              width=2,
-              side='0',
-              use_railing=True,):
+                  refData:acaData=None,
+                  width=2,
+                  side='0',
+                  use_railing=True,
+              ):
     # 重新生成柱网
     bData.piller_net = ''
 
+    # 1、处理装修 ---------------
+    # 优先做这个处理，否则添加回廊后地盘已经变化
+    # 地盘一致时，可以传递装修
+    if (refData.x_rooms == bData.x_rooms 
+        and refData.y_rooms == bData.y_rooms):
+        if side == '0':
+            # 处理装修
+            __childOffset(bData,
+                        offset_x=1,
+                        offset_y=1)
+        elif side == '1':
+            # 处理装修
+            __childOffset(bData,
+                        offset_x=0,
+                        offset_y=1)
+    # 地盘不一致时，清除装修
+    else:
+        utils.clearChildData(bData)
+
+    # 2、添加回廊，设置宽度 ----------------------
     # 周围廊
     if side == '0':
         # 添加左右廊间
@@ -1464,30 +1486,17 @@ def setLoggiaData(bData:acaData,
         # 添加前后廊间
         bData['y_rooms'] += 2
         __setLoggiaWidth(bData,width,'Y')
-
-        # 处理装修
-        __childOffset(bData,
-                      offset_x=1,
-                      offset_y=1)
-        
-        # 添加回廊栏杆
-        if use_railing:
-            __addLoggiaRailing(bData,side)
-        
     # 前后廊
     elif side == '1':
         # 添加前后廊间
         bData['y_rooms'] += 2
         __setLoggiaWidth(bData,width,'Y')
 
-        # 处理装修
-        __childOffset(bData,
-                      offset_x=0,
-                      offset_y=1)
-        
-        # 添加回廊栏杆
-        if use_railing:
-            __addLoggiaRailing(bData,side)
+    
+
+    # 3、添加回廊栏杆 -------------------
+    if use_railing:
+        __addLoggiaRailing(bData,side)
     return
 
 # 设置廊间宽度

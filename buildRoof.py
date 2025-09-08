@@ -329,6 +329,8 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                 con.ROOF_XUANSHAN_JUANPENG):
             rafter_tile_x = (purlin_pos[n+1].x 
                              -con.YUANCHUAN_D*dk/2)
+        else:
+            raise Exception(f"檐椽营造失败，屋顶类型无法识别bData.roof_style={bData.roof_style}")
         # 5.2 计算椽子间距
         # 硬山做到山墙，悬山做到博缝板，依此距离计算
         if bData.roof_style in (

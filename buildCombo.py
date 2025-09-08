@@ -1239,11 +1239,16 @@ def addMultiFloor(baseFloor:bpy.types.Object,
                   use_railing=False, # 做平坐栏杆
                   use_mideave=False, # 做重檐
                   use_loggia=False, # 做回廊
-                  ):
+                  ):   
     # 载入数据
     bData:acaData = baseFloor.ACA_data
     
     # 0、合法性验证 -----------------------
+    # 如果是月台，自动找到父建筑
+    if bData.combo_type == con.COMBO_TERRACE:
+        utils.popMessageBox("月台不可上出重楼，请选择一个正确的楼层")
+        return {'CANCELLED'}
+
     # 验证屋顶样式
     if bData.combo_type not in (con.COMBO_MULTI_FLOOR,
                                 con.COMBO_MAIN):
@@ -1361,15 +1366,8 @@ def __addPingzuo(baseFloor:bpy.types.Object,
     mData:acaData = pingzuo.ACA_data
     mData['combo_type'] = con.COMBO_PINGZUO
     # 平坐父子关系
-    mData['combo_parent'] = bData.aca_id
-    # 解决冲突的父子关系
-    for child in comboObj.children:
-        if child == pingzuo: continue
-        cData:acaData = child.ACA_data
-        if cData.combo_parent == bData.aca_id:
-            # 原来的子楼层，挂接在新增的平坐上
-            cData.combo_parent = mData.aca_id
-            break
+    __updateMultiFloorParent(parentObj=baseFloor,
+                             childObj=pingzuo)
 
     # 屋顶设为平坐
     mData['roof_style'] = int(con.ROOF_BALCONY)
@@ -1424,15 +1422,8 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
     # 3、上层数据的其他设置
     mData['combo_type'] = con.COMBO_MULTI_FLOOR
     # 上层父子关系
-    mData['combo_parent'] = bData.aca_id
-    # 解决冲突的父子关系
-    for child in comboRootObj.children:
-        if child == upperfloor: continue
-        cData:acaData = child.ACA_data
-        if cData.combo_parent == bData.aca_id:
-            # 原来的子楼层，挂接在新增的平坐上
-            cData.combo_parent = mData.aca_id
-            break
+    __updateMultiFloorParent(parentObj=lowerFloor,
+                             childObj=upperfloor)
     
     # 根据收分，更新地盘数据
     __setTaperData(mData,taper)
@@ -1858,3 +1849,32 @@ def __setTaperData(mData,taper):
             mData['y_1'] -= yTaper*2
         else:
             raise Exception("收分过大，无法处理")
+
+# 解决重楼的父子冲突
+def __updateMultiFloorParent(parentObj:bpy.types.Object,
+                             childObj:bpy.types.Object):
+    bData:acaData = parentObj.ACA_data
+    mData:acaData = childObj.ACA_data
+    # 当前对象绑定到父对象
+    mData['combo_parent'] = bData.aca_id
+
+    # 查找comboRoot
+    comboObj = utils.getComboRoot(parentObj)
+    
+    # 解决冲突的父子关系
+    for child in comboObj.children:
+        # 当前对象不做改变
+        if child == childObj: continue
+        cData:acaData = child.ACA_data
+
+        # 非重楼对象(月台等)，不做处理
+        if cData.combo_type not in (
+            con.COMBO_MAIN,con.COMBO_MULTI_FLOOR):
+            continue
+        
+        # 把冲突对象的父id，绑定到当前对象上
+        if cData.combo_parent == bData.aca_id:
+            # 原来的子楼层，挂接在新增的平坐上
+            cData['combo_parent'] = mData.aca_id
+            break
+    return

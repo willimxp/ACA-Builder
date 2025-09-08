@@ -347,6 +347,8 @@ def __buildRailing(parentObj:bpy.types.Object,
     # 分栏：分栏数量没有明确规定，我按照望柱高再四舍五入
     sectionTotal = proxyW - con.RAILING_PILLER_D*dk*2 # 扣减两侧各1根望柱
     sectionCount = math.ceil(sectionTotal/(con.RAILING_PILLER_H*dk))
+    # 安全保护，避免除数为0
+    if sectionCount <= 0: sectionCount = 1
     sectionWidth = sectionTotal/sectionCount
 
     # 收集栏杆构件

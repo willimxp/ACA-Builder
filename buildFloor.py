@@ -1436,32 +1436,71 @@ def addLoggia(buildingObj:bpy.types.Object,
               use_railing=True,):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
-
-    setLoggiaData(bData,
-              width=width,
-              side=side,
-              use_railing=use_railing,)
+    
+    # 初始化回廊数据
+    try:
+        setLoggiaData(bData,
+                width=width,
+                side=side,
+                use_railing=use_railing,)
+    except Exception as e:
+        utils.popMessageBox(str(e))
+        return {'CANCELLED'}
+    
+    # 1、显示进度条 ------------------------
+    from . import build
+    build.isFinished = False
+    build.progress = 0
+    utils.outputMsg("添加重楼子建筑...")
+    # 暂时排除目录下的其他建筑，以加快执行速度
+    build.__excludeOther(keepObj=buildingObj)
         
     # 执行营造
     buildFloor(buildingObj)
+
+    # 3、关闭进度条 ---------------------------
+    build.isFinished = True
+    # 取消排除目录下的其他建筑
+    build.__excludeOther(isExclude=False,
+                         keepObj=buildingObj)
 
     return {'FINISHED'}
 
 # 设置回廊数据
 def setLoggiaData(bData:acaData,
-                  refData:acaData=None,
                   width=2,
                   side='0',
                   use_railing=True,
               ):
     # 重新生成柱网
     bData.piller_net = ''
+    preRooms_x = bData.x_rooms
+    preRooms_y = bData.y_rooms
 
-    # 1、处理装修 ---------------
-    # 优先做这个处理，否则添加回廊后地盘已经变化
-    # 地盘一致时，可以传递装修
-    if (refData.x_rooms == bData.x_rooms 
-        and refData.y_rooms == bData.y_rooms):
+    # 1、添加回廊，设置宽度 ----------------------
+    # 周围廊
+    if side == '0':
+        # 添加东西廊间
+        __setLoggiaWidth(bData,width,'X')
+        # 添加南北廊间
+        __setLoggiaWidth(bData,width,'Y')
+    # 前后廊
+    elif side == '1':
+        # 添加南北廊间
+        __setLoggiaWidth(bData,width,'Y')
+
+    # 2、处理装修 ---------------
+    # 清除雀替
+    # list删除时不断变化，所以需要从后向前删
+    queti_indices = [i for i, item in enumerate(bData.wall_list) 
+                     if "queti" in item.id]
+    for i in reversed(queti_indices):
+        bData.wall_list.remove(i)
+    utils.deleteByName(bData.id_data,name='雀替')
+
+    # 地盘相较扩展了x2间y2间，可以传递装修
+    if (bData.x_rooms == preRooms_x + 2 
+        and bData.y_rooms == preRooms_y + 2):
         if side == '0':
             # 处理装修
             __childOffset(bData,
@@ -1476,24 +1515,6 @@ def setLoggiaData(bData:acaData,
     else:
         utils.clearChildData(bData)
 
-    # 2、添加回廊，设置宽度 ----------------------
-    # 周围廊
-    if side == '0':
-        # 添加左右廊间
-        bData['x_rooms'] += 2
-        __setLoggiaWidth(bData,width,'X')
-
-        # 添加前后廊间
-        bData['y_rooms'] += 2
-        __setLoggiaWidth(bData,width,'Y')
-    # 前后廊
-    elif side == '1':
-        # 添加前后廊间
-        bData['y_rooms'] += 2
-        __setLoggiaWidth(bData,width,'Y')
-
-    
-
     # 3、添加回廊栏杆 -------------------
     if use_railing:
         __addLoggiaRailing(bData,side)
@@ -1501,23 +1522,78 @@ def setLoggiaData(bData:acaData,
 
 # 设置廊间宽度
 def __setLoggiaWidth(bData:acaData,
-              width,side='X'):    
-    if side == 'X':
-        xRooms = bData.x_rooms
-        if xRooms == 3:
-            bData['x_2'] = width
-        elif xRooms == 5:
-            bData['x_3'] = width
-        elif xRooms >= 7:
-            bData['x_4'] = width
-
-    if side == 'Y':
-        yRooms = bData.y_rooms
-        if yRooms in (3,4):
-            bData['y_2'] = width
-        elif yRooms >= 5:
-            bData['y_3'] = width
+              width,side='X'): 
+    if abs(width) < bData.piller_diameter:
+        raise Exception(f"回廊宽度太小，建议在[{round(bData.DK*12,2)}]~[{round(bData.DK*22,2)}]左右")
     
+    xRooms = bData.x_rooms
+    yRooms = bData.y_rooms
+    
+    # 验证宽度
+    if width<0:
+        if xRooms == 3:
+            if bData.x_1<width+bData.piller_diameter:
+                raise Exception("面阔明间宽度不足以做内收廊间")
+        elif xRooms == 5:
+            if bData.x_2<width+bData.piller_diameter:
+                raise Exception("面阔次间宽度不足以做内收廊间")
+        elif xRooms >= 7:
+            if bData.x_3<width+bData.piller_diameter:
+                raise Exception("面阔梢间宽度不足以做内收廊间")
+        if yRooms in (3,4):
+            if bData.y_2>width+bData.piller_diameter:
+                raise Exception("进深次间宽度不足以做内收廊间")
+        elif yRooms >= 5:
+            if bData.y_3>width+bData.piller_diameter:
+                raise Exception("进深梢间宽度不足以做内收廊间")
+            
+    # 东西廊间
+    if side == 'X':
+        # 添加2间
+        bData['x_rooms'] += 2
+        # 外扩式廊间
+        if width>0:
+            if xRooms == 3:
+                bData['x_2'] = width
+            elif xRooms == 5:
+                bData['x_3'] = width
+            elif xRooms >= 7:
+                bData['x_4'] = width
+        # 内收式廊间
+        else:
+            # 转为正数
+            width = 0-width
+            if xRooms == 3:
+                bData['x_1'] -= width
+                bData['x_2'] = width
+            elif xRooms == 5:
+                bData['x_2'] -= width
+                bData['x_3'] = width
+            elif xRooms >= 7:
+                bData['x_3'] -= width
+                bData['x_4'] = width
+
+    # 南北廊间
+    if side == 'Y':
+        # 添加2间
+        bData['y_rooms'] += 2
+        # 外扩式廊间
+        if width>0:
+            if yRooms in (3,4):
+                bData['y_2'] = width
+            elif yRooms >= 5:
+                bData['y_3'] = width
+        # 内收式廊间
+        else:
+            # 转为正数
+            width = 0-width
+            if yRooms in (3,4):
+                bData['y_2'] -= width
+                bData['y_3'] = width
+            elif yRooms >= 5:
+                bData['y_2'] -= width
+                bData['y_3'] = width
+
     return
 
 # 位移装修子构件

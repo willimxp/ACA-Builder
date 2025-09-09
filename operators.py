@@ -1492,6 +1492,11 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
             name = "添加回廊",
             default=True,
         ) # type: ignore
+    # 添加平坐
+    use_pingzuo:bpy.props.BoolProperty(
+            name = "添加平坐",
+            default=True,
+        ) # type: ignore
     
     # 弹出参数输入框
     def invoke(self, context, event):
@@ -1521,6 +1526,8 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         box.prop(self, "taper")
         # 是否使用腰檐
         box.prop(self, "use_mideave")
+        # 是否使用平坐
+        box.prop(self,'use_pingzuo')
         # 是否使用平坐栏杆
         box.prop(self,'use_railing')
         # 是否使用回廊
@@ -1540,6 +1547,7 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
             use_railing=self.use_railing,
             use_mideave=self.use_mideave,
             use_loggia=self.use_loggia,
+            use_pingzuo=self.use_pingzuo,
         )
         result = utils.fastRun(funproxy)
 
@@ -1572,7 +1580,7 @@ class ACA_OT_ADD_LOGGIA(bpy.types.Operator):
         ) # type: ignore
     use_railing:bpy.props.BoolProperty(
             name = "添加栏杆",
-            default=True,
+            default=False,
         ) # type: ignore
 
     # 弹出参数输入框

@@ -1239,6 +1239,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
                   use_railing=False, # 做平坐栏杆
                   use_mideave=False, # 做重檐
                   use_loggia=False, # 做回廊
+                  use_pingzuo=False, # 做平坐
                   ):   
     # 载入数据
     bData:acaData = baseFloor.ACA_data
@@ -1279,36 +1280,32 @@ def addMultiFloor(baseFloor:bpy.types.Object,
         comboObj = __addComboLevel(baseFloor)
     
     # 3、下层的处理 ------------------------
-    # 根据是否做腰檐，决定基于下层，还是新增的平坐层
-    # 如果不做腰檐，下层改为平坐即可
-    # 不涉及收分、栏杆
-    if not use_mideave:
+    # 如果要做腰檐，屋顶改做盝顶
+    if use_mideave:
+        # 下层屋顶：改为盝顶
+        bData['roof_style'] = int(con.ROOF_LUDING)
+        bData['luding_rafterspan'] = taper
+    # 如果不做腰檐，屋顶改作平坐
+    else:
         # 下层屋顶：改为平坐
         bData['roof_style'] = int(con.ROOF_BALCONY)
         # 做平坐的朝天栏杆
         bData['use_balcony_railing'] = use_railing
+        # 不涉及收分、栏杆
+    # 刷新老屋顶
+    buildRoof.buildRoof(baseFloor)
+    # 设置上层基座为下层（盝顶或平坐）
+    lowerFloor = baseFloor
 
-        # 刷新老屋顶
-        buildRoof.buildRoof(baseFloor)
-
-        # 设置重楼基座为改为平坐的下层
-        lowerFloor = baseFloor
-    
-    # 如果要做腰檐，下层改为盝顶，添加平坐
-    else:
-        # 下层屋顶：改为盝顶
-        bData['roof_style'] = int(con.ROOF_LUDING)
-        bData['luding_rafterspan'] = taper
-        # 刷新老屋顶
-        buildRoof.buildRoof(baseFloor)
-
+    # 4、添加平坐 ---------------
+    if use_pingzuo:
         # 添加平坐，做收分，栏杆
         if use_loggia:
             # 上层做回廊时，不做平坐栏杆
             use_railing_pingzuo = False
         else:
             use_railing_pingzuo = use_railing
-        pingzuo = __addPingzuo(baseFloor,
+        pingzuo = __addPingzuo(lowerFloor,
                                taper,
                                use_railing=use_railing_pingzuo,
                                )
@@ -1316,17 +1313,21 @@ def addMultiFloor(baseFloor:bpy.types.Object,
         __updateFloorLoc(baseFloor)
         # 生成平坐
         buildFloor.buildFloor(pingzuo,comboObj=comboObj)
-
-        # 设置重楼基座为新生成的平坐
+        # 设置上层基座为新生成的平坐
         lowerFloor = pingzuo
 
-    # 4、添加上层重楼
-    # 可能基于不做腰檐的下层，也可能基于做了腰檐的平坐
+    # 5、添加上层重楼 -----------------
+    # 可能基于做了腰檐的下层盝顶
+    # 可能基于不做腰檐的下层平坐
+    # 可能基于做了腰檐的下层平坐
     upperFloor = __addUpperFloor(
         lowerFloor,
         taper=taper,
         use_railing=use_railing,
-        use_loggia=use_loggia, # 做回廊
+        # 做回廊
+        use_loggia=use_loggia, 
+        # 回廊是否外扩,如果不做平坐，按内收做法
+        loggia_expand=use_pingzuo,
     )
     # 刷新各层的抬升
     __updateFloorLoc(baseFloor)
@@ -1342,15 +1343,15 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     return {'FINISHED'}
 
 # 添加平坐层
-def __addPingzuo(baseFloor:bpy.types.Object,
+def __addPingzuo(lowerFloor:bpy.types.Object,
                  taper, # 收分
                  use_railing=False, # 做平坐栏杆
                  ):
     # 载入数据
-    bData:acaData = baseFloor.ACA_data
+    bData:acaData = lowerFloor.ACA_data
 
     # 1、添加平坐子节点
-    comboObj = utils.getComboRoot(baseFloor)
+    comboObj = utils.getComboRoot(lowerFloor)
     pingzuoName = bData.template_name + '.平坐'
     pingzuo = buildFloor.__addBuildingRoot(
         templateName = pingzuoName,
@@ -1359,14 +1360,14 @@ def __addPingzuo(baseFloor:bpy.types.Object,
 
     # 2、平坐数据初始化
     # 从下同步：柱网等信息
-    __syncData(fromBuilding=baseFloor,
+    __syncData(fromBuilding=lowerFloor,
                toBuilding=pingzuo)
     
     # 3、平坐数据的其他设置
     mData:acaData = pingzuo.ACA_data
-    mData['combo_type'] = con.COMBO_PINGZUO
+    mData['combo_type'] = con.COMBO_MULTI_FLOOR
     # 平坐父子关系
-    __updateMultiFloorParent(parentObj=baseFloor,
+    __updateMultiFloorParent(parentObj=lowerFloor,
                              childObj=pingzuo)
 
     # 屋顶设为平坐
@@ -1378,7 +1379,7 @@ def __addPingzuo(baseFloor:bpy.types.Object,
     mData['platform_height'] = 0
     # 设置柱高:叉柱到斗栱上
     # 从斗栱顶(挑檐桁下皮)，到围脊向上额枋高度
-    mideaveHeight = __getPingzuoHeight(baseFloor)
+    mideaveHeight = __getPingzuoHeight(lowerFloor)
     mData['piller_height'] = mideaveHeight
     # 不做装修
     utils.clearChildData(mData)
@@ -1393,6 +1394,7 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
                     taper=0.01, # 收分
                     use_railing=False, # 做栏杆
                     use_loggia=False, # 做回廊
+                    loggia_expand=True,# 回廊是否外扩
                     ):
     # 载入数据
     bData:acaData = lowerFloor.ACA_data
@@ -1430,29 +1432,23 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
 
     # 栏杆与回廊
     if use_loggia:
-        # 做回廊
         # 回廊宽度，与平坐做法一致，参考buildBalcony.__buildFloor()
         loggia_width = (bData.dg_extend   # 斗栱出跳
               + con.BALCONY_EXTENT*bData.DK*bData.dk_scale # 平坐出跳，对齐桁出梢
               - con.PILLER_D_EAVE*bData.DK/2 # 柱的保留深度
               - bData.DK # 保留1斗口边线
             ) 
-        # 回廊装修的参考数据，直接用comboRoot初始化时继承的装修数据
-        refObj = None
-        if bData.combo_type == con.COMBO_PINGZUO:
-            refObj = utils.getObjByID(bData.combo_parent)
-        else:
-            refObj = lowerFloor
-        if refObj != None:
-            refData = refObj.ACA_data
-        else:
-            raise Exception("重楼回廊计算失败，无法找到下层参考地盘")
+        # 如果回廊采用内收做法，宽度取负数
+        if not loggia_expand:
+            loggia_width *= -1
+        
+        # 调用buildFloor中的添加回廊方法
         buildFloor.setLoggiaData(
             mData,
             width=loggia_width,
             side='0',
             use_railing=use_railing,
-            refData=refData)
+            )
 
     return upperfloor
 
@@ -1477,12 +1473,21 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
         # 查找下一层(上层)
         nextFloor = None
         for comboChild in comboRoot.children:
+            # 跳过月台等子对象
+            if comboChild.ACA_data.combo_type not in (
+                con.COMBO_MAIN,con.COMBO_MULTI_FLOOR):
+                continue
+
+            # 确实是否为父对象
             parentID = comboChild.ACA_data.combo_parent
             if parentID == preData.aca_id:
                 nextFloor = comboChild
                 break
 
         if nextFloor is not None:
+            nextData:acaData = nextFloor.ACA_data
+            dk = nextData.DK
+
             # 计算新位置，上层是落地？插在斗栱上？
             # 1、按照站在斗栱上计算
             floorHeight = 0
@@ -1491,12 +1496,42 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
             floorHeight += preData.piller_height
             if preData.use_dg:
                 if preData.use_pingbanfang:
-                    floorHeight += con.PINGBANFANG_H* preData.DK
+                    floorHeight += con.PINGBANFANG_H*dk
                 floorHeight += preData.dg_height
             # 250905 叠加楼板高度
-            floorHeight += con.BALCONY_FLOOR_H*preData.DK
+            floorHeight += con.BALCONY_FLOOR_H*dk
+
+            # 类似边靖楼二层，柱脚一直做到围脊上皮
+            if (preData.roof_style == con.ROOF_LUDING
+                    and nextData.roof_style != con.ROOF_BALCONY):
+                # 不计楼板高度
+                floorHeight -= con.BALCONY_FLOOR_H*dk
+                # 挑檐桁(斗栱高度到挑檐桁下皮)
+                floorHeight += con.HENG_COMMON_D*dk
+                # 檐椽架加斜
+                from . import buildBeam
+                lift_radio = buildBeam.getLiftRatio(preFloor)
+                # 盝顶步架加斜
+                floorHeight += preData.luding_rafterspan * lift_radio[0]
+                if preData.use_dg:
+                    # 斗栱出跳加斜
+                    floorHeight += preData.dg_extend * lift_radio[0]
+                # 屋瓦层抬升
+                floorHeight += (con.YUANCHUAN_D*dk   # 椽架
+                            + con.WANGBAN_H*dk   # 望板
+                            + con.ROOFMUD_H*dk   # 灰泥
+                            )
+                # 盝顶围脊高度
+                aData = bpy.context.scene.ACA_temp
+                ridgeObj:bpy.types.Object = aData.ridgeBack_source
+                ridgeH = ridgeObj.dimensions.z
+                # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+                tileScale = dk / con.DEFAULT_DK  * preData.tile_scale
+                ridgeH = ridgeH * tileScale
+                floorHeight += ridgeH
+                floorHeight -= con.RIDGE_SURR_OFFSET*dk   # 围脊调整
+
             # 填充入下一层的数据
-            nextData:acaData = nextFloor.ACA_data
             nextData['combo_location'] = (preFloor.location
                         + Vector((0,0,floorHeight)))
             # 更新高度

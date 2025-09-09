@@ -680,6 +680,8 @@ def joinBuilding(buildingObj:bpy.types.Object,
         isCombo = True
 
     # 2.1、复制建筑的整个集合，在复制集合上进行合并
+    # 250909 确保目录与对象名称一致，以免后续取消组合时找不到原目录
+    buildingObj.users_collection[0].name = buildingObj.name
     # 这样不会影响原有的生成模型
     collName = buildingObj.users_collection[0].name
     collCopy = utils.copyCollection(collName,collName + collcopySuffix)

@@ -1523,34 +1523,36 @@ def setLoggiaData(bData:acaData,
 # 设置廊间宽度
 def __setLoggiaWidth(bData:acaData,
               width,side='X'): 
+    # 验证回廊最小宽度
     if abs(width) < bData.piller_diameter:
-        raise Exception(f"回廊宽度太小，建议在[{round(bData.DK*12,2)}]~[{round(bData.DK*22,2)}]左右")
+        raise Exception(f"回廊宽度太小，建议在[{round(bData.DK*12,2)}]~[{round(bData.DK*22,2)}]左右")   
     
+    # 验证回廊内收宽度
     xRooms = bData.x_rooms
     yRooms = bData.y_rooms
-    
-    # 验证宽度
-    if width<0:
+    if width < 0:
+        width_min = width+bData.piller_diameter
         if xRooms == 3:
-            if bData.x_1<width+bData.piller_diameter:
+            if bData.x_1 < width_min:
                 raise Exception("面阔明间宽度不足以做内收廊间")
         elif xRooms == 5:
-            if bData.x_2<width+bData.piller_diameter:
+            if bData.x_2 < width_min:
                 raise Exception("面阔次间宽度不足以做内收廊间")
         elif xRooms >= 7:
-            if bData.x_3<width+bData.piller_diameter:
+            if bData.x_3 < width_min:
                 raise Exception("面阔梢间宽度不足以做内收廊间")
         if yRooms in (3,4):
-            if bData.y_2>width+bData.piller_diameter:
+            if bData.y_2 < width_min:
                 raise Exception("进深次间宽度不足以做内收廊间")
         elif yRooms >= 5:
-            if bData.y_3>width+bData.piller_diameter:
+            if bData.y_3 < width_min:
                 raise Exception("进深梢间宽度不足以做内收廊间")
             
     # 东西廊间
     if side == 'X':
         # 添加2间
         bData['x_rooms'] += 2
+        xRooms = bData.x_rooms
         # 外扩式廊间
         if width>0:
             if xRooms == 3:
@@ -1577,6 +1579,7 @@ def __setLoggiaWidth(bData:acaData,
     if side == 'Y':
         # 添加2间
         bData['y_rooms'] += 2
+        yRooms = bData.y_rooms
         # 外扩式廊间
         if width>0:
             if yRooms in (3,4):
@@ -1588,8 +1591,8 @@ def __setLoggiaWidth(bData:acaData,
             # 转为正数
             width = 0-width
             if yRooms in (3,4):
-                bData['y_2'] -= width
-                bData['y_3'] = width
+                bData['y_1'] -= width
+                bData['y_2'] = width
             elif yRooms >= 5:
                 bData['y_2'] -= width
                 bData['y_3'] = width

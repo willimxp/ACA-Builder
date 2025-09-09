@@ -974,12 +974,10 @@ def resizePlatform(buildingObj:bpy.types.Object):
             updateBuilding.append(mainBuilding)
             updateBuilding.append(doubleEave)
         # 重楼
-        if bData.combo_type in (
-            con.COMBO_MULTI_FLOOR,con.COMBO_MULTI_TOP):
+        if bData.combo_type == con.COMBO_MULTI_FLOOR:
             for child in comboObj.children:
                 if child.ACA_data.combo_type in (
                     con.COMBO_MULTI_FLOOR,
-                    con.COMBO_MULTI_TOP,
                     con.COMBO_MAIN):
                     updateBuilding.append(child)
         # 月台

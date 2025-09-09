@@ -228,6 +228,15 @@ def update_platform(self, context:bpy.types.Context):
     if not isRebuild:
         return
     
+    # 台基最小值控制
+    buildingObj,bData,oData = utils.getRoot(context.object)
+    # 下出不小于柱径
+    if bData.platform_extend<bData.piller_diameter:
+        bData['platform_extend'] = bData.piller_diameter
+    # 高度不小于方砖曼地
+    if bData.platform_height<con.STEP_HEIGHT:
+        bData['platform_height'] = con.STEP_HEIGHT
+    
     # 从self属性找到对应的Object，用self.id_data
     # https://blender.stackexchange.com/questions/145245/how-to-access-object-instance-from-property-instance-in-update-callback
     refObj = self.id_data

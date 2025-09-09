@@ -40,32 +40,33 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
 
     # 2.0、夯土，填充在台基内部，以免剖视图中空心很奇怪
     stoneWidth = (bData.platform_extend
-                  - bData.piller_diameter)
+                - bData.piller_diameter)
     width = (bData.x_total 
-         + bData.piller_diameter*2
-         + stoneWidth*2
-         - con.STEP_HEIGHT*2
-         - 0.02)
+        + bData.piller_diameter*2
+        + stoneWidth*2
+        - con.STEP_HEIGHT*2
+        - 0.02)
     deepth = (bData.y_total 
-         + bData.piller_diameter*2
-         + stoneWidth*2
-         - con.STEP_HEIGHT*2
-         - 0.02)
+        + bData.piller_diameter*2
+        + stoneWidth*2
+        - con.STEP_HEIGHT*2
+        - 0.02)
     height = (pHeight 
-         - con.STEP_HEIGHT 
-         - con.GROUND_BORDER
-         - 0.02)
+        - con.STEP_HEIGHT 
+        - con.GROUND_BORDER
+        - 0.02)
     z = (con.GROUND_BORDER 
-         + height/2
-         + 0.01 )
-    earthObj = utils.addCube(
-        name = '夯土',
-        location=(0,0,z),
-        dimension=(width,deepth,height),
-        parent=baseRootObj
-    )
-    mat.paint(earthObj,con.M_ROCK)
-    taimingList.append(earthObj)
+        + height/2
+        + 0.01 )
+    if height > 0 : 
+        earthObj = utils.addCube(
+            name = '夯土',
+            location=(0,0,z),
+            dimension=(width,deepth,height),
+            parent=baseRootObj
+        )
+        mat.paint(earthObj,con.M_ROCK)
+        taimingList.append(earthObj)
 
     # 2.1、阶条石宽度
     # 阶条石宽度，从台基边缘做到柱顶石边缘
@@ -93,154 +94,165 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
     mat.paint(floorInsideObj,con.M_PLATFORM_FLOOR)
     taimingList.append(floorInsideObj)
 
-    # 2.2、阶条石
-    # 2.2.1、前后檐面阶条石，两头置好头石，尽间为去除好头石长度，明间(次间)对齐
-    # 插入第一点，到台明两山尽头（从角柱延伸台基下出长度）
-    firstRoomWidth = net_x[1]-net_x[0]    # 尽间宽度
-    net_x.insert(0,net_x[0]-bData.platform_extend)
-    net_x.append(net_x[-1]+bData.platform_extend)
-    # 调整第二点，即好头石长度
-    net_x[1] = net_x[0] + ((firstRoomWidth 
-                + bData.platform_extend)
-                * con.FIRST_LENGTH)
-    net_x[-2] = net_x[-1] - ((firstRoomWidth 
-                + bData.platform_extend)
-                * con.FIRST_LENGTH)
-    # 依次做出前后檐阶条石
-    for n in range((len(net_x)-1)):
-        sidebrickObj = utils.addCube(
-            name='阶条石',
+    # 如果台基下出过小，不做阶条石
+    if stoneWidth > 0:
+        # 2.2、阶条石
+        # 2.2.1、前后檐面阶条石，两头置好头石，尽间为去除好头石长度，明间(次间)对齐
+        # 插入第一点，到台明两山尽头（从角柱延伸台基下出长度）
+        firstRoomWidth = net_x[1]-net_x[0]    # 尽间宽度
+        net_x.insert(0,net_x[0]-bData.platform_extend)
+        net_x.append(net_x[-1]+bData.platform_extend)
+        # 调整第二点，即好头石长度
+        net_x[1] = net_x[0] + ((firstRoomWidth 
+                    + bData.platform_extend)
+                    * con.FIRST_LENGTH)
+        net_x[-2] = net_x[-1] - ((firstRoomWidth 
+                    + bData.platform_extend)
+                    * con.FIRST_LENGTH)
+        # 依次做出前后檐阶条石
+        for n in range((len(net_x)-1)):
+            sidebrickObj = utils.addCube(
+                name='阶条石',
+                location=(
+                    (net_x[n+1]+net_x[n])/2,
+                    pDeepth/2-stoneWidth/2,
+                    pHeight-con.STEP_HEIGHT/2
+                ),
+                dimension=(
+                    net_x[n+1]-net_x[n],
+                    stoneWidth,
+                    con.STEP_HEIGHT
+                ),
+                parent=baseRootObj
+            )
+            # 上下镜像
+            utils.addModifierMirror(
+                object=sidebrickObj,
+                mirrorObj=baseRootObj,
+                use_axis=(False,True,False)
+            )
+            taimingList.append(sidebrickObj)
+
+        # 2.2.2、两山阶条石
+        # 延长尽间阶条石，与好头石相接
+        net_y[0] = -pDeepth/2 + stoneWidth
+        net_y[-1] = pDeepth/2 - stoneWidth
+        # 依次做出前后檐阶条石
+        for n in range((len(net_y)-1)):
+            sidebrickObj = utils.addCube(
+                name='阶条石',
+                location=(
+                    pWidth/2-stoneWidth/2,
+                    (net_y[n+1]+net_y[n])/2,
+                    pHeight-con.STEP_HEIGHT/2
+                ),
+                dimension=(
+                    stoneWidth,
+                    net_y[n+1]-net_y[n],
+                    con.STEP_HEIGHT
+                ),
+                parent=baseRootObj
+            )
+            # 上下镜像
+            utils.addModifierMirror(
+                object=sidebrickObj,
+                mirrorObj=baseRootObj,
+                use_axis=(True,False,False)
+            )
+            taimingList.append(sidebrickObj)
+
+        # 2.3、埋头角柱
+        # 角柱高度：台基总高度 - 阶条石 - 土衬
+        cornerPillerH = (pHeight 
+                - con.STEP_HEIGHT 
+                - con.GROUND_BORDER) 
+        conrnerPillerObj = utils.addCube(
+            name='埋头角柱',
             location=(
-                (net_x[n+1]+net_x[n])/2,
+                pWidth/2-stoneWidth/2,
                 pDeepth/2-stoneWidth/2,
-                pHeight-con.STEP_HEIGHT/2
+                (pHeight
+                -con.STEP_HEIGHT
+                -cornerPillerH/2)
             ),
             dimension=(
-                net_x[n+1]-net_x[n],
-                stoneWidth,
-                con.STEP_HEIGHT
+                stoneWidth,             # 与阶条石同宽
+                stoneWidth,             # 与阶条石同宽
+                cornerPillerH
             ),
             parent=baseRootObj
         )
-        # 上下镜像
+        # 四面镜像
         utils.addModifierMirror(
-            object=sidebrickObj,
+            object=conrnerPillerObj,
+            mirrorObj=baseRootObj,
+            use_axis=(True,True,False)
+        )
+        taimingList.append(conrnerPillerObj)
+
+    # 陡板高度
+    h = pHeight - con.STEP_HEIGHT - con.GROUND_BORDER
+    if h > 0:
+        # 2.4、陡板
+        h = pHeight - con.STEP_HEIGHT - con.GROUND_BORDER
+        aroundbrickObj = utils.addCube(
+            name='陡板-前后檐',
+            location=(
+                0,pDeepth/2- con.STEP_HEIGHT/2,
+                (pHeight - con.STEP_HEIGHT - h/2)
+            ),
+            dimension=(
+                pWidth - stoneWidth*2,    # 台基宽度 - 两头的角柱（与阶条石同宽）
+                con.STEP_HEIGHT,             # 与阶条石同宽
+                h
+            ),
+            parent=baseRootObj
+        )
+        # 条砖横铺
+        mat.paint(aroundbrickObj,con.M_PLATFORM_WALL)
+        utils.addModifierMirror(
+            object=aroundbrickObj,
             mirrorObj=baseRootObj,
             use_axis=(False,True,False)
         )
-        taimingList.append(sidebrickObj)
-
-    # 2.2.2、两山阶条石
-    # 延长尽间阶条石，与好头石相接
-    net_y[0] = -pDeepth/2 + stoneWidth
-    net_y[-1] = pDeepth/2 - stoneWidth
-    # 依次做出前后檐阶条石
-    for n in range((len(net_y)-1)):
-        sidebrickObj = utils.addCube(
-            name='阶条石',
+        taimingList.append(aroundbrickObj)
+        
+        # 2.4.2、陡板两山
+        # 台基宽度 - 两头的角柱（与阶条石同宽）
+        brickLength = pDeepth - stoneWidth*2
+        # 050909 如果台基很小没有角柱时，退让前后山陡板
+        if stoneWidth == 0.0:
+            brickLength -= con.STEP_HEIGHT*2
+        aroundbrickObj = utils.addCube(
+            name='陡板-两山',
             location=(
-                pWidth/2-stoneWidth/2,
-                (net_y[n+1]+net_y[n])/2,
-                pHeight-con.STEP_HEIGHT/2
+                pWidth/2- con.STEP_HEIGHT/2,
+                0,
+                (pHeight - con.STEP_HEIGHT - h/2)
             ),
             dimension=(
-                stoneWidth,
-                net_y[n+1]-net_y[n],
-                con.STEP_HEIGHT
+                con.STEP_HEIGHT,             # 与阶条石同宽
+                brickLength,    
+                h
             ),
             parent=baseRootObj
         )
-        # 上下镜像
+        # 条砖横铺
+        mat.paint(aroundbrickObj,con.M_PLATFORM_WALL)
         utils.addModifierMirror(
-            object=sidebrickObj,
+            object=aroundbrickObj,
             mirrorObj=baseRootObj,
             use_axis=(True,False,False)
         )
-        taimingList.append(sidebrickObj)
-
-    # 2.3、埋头角柱
-    # 角柱高度：台基总高度 - 阶条石 - 土衬
-    cornerPillerH = (pHeight 
-            - con.STEP_HEIGHT 
-             - con.GROUND_BORDER) 
-    conrnerPillerObj = utils.addCube(
-        name='埋头角柱',
-        location=(
-            pWidth/2-stoneWidth/2,
-            pDeepth/2-stoneWidth/2,
-            (pHeight
-             -con.STEP_HEIGHT
-             -cornerPillerH/2)
-        ),
-        dimension=(
-            stoneWidth,             # 与阶条石同宽
-            stoneWidth,             # 与阶条石同宽
-            cornerPillerH
-        ),
-        parent=baseRootObj
-    )
-    # 四面镜像
-    utils.addModifierMirror(
-        object=conrnerPillerObj,
-        mirrorObj=baseRootObj,
-        use_axis=(True,True,False)
-    )
-    taimingList.append(conrnerPillerObj)
-
-    # 2.4、陡板
-    h = pHeight - con.STEP_HEIGHT - con.GROUND_BORDER
-    aroundbrickObj = utils.addCube(
-        name='陡板-前后檐',
-        location=(
-            0,pDeepth/2- con.STEP_HEIGHT/2,
-            (pHeight - con.STEP_HEIGHT - h/2)
-        ),
-        dimension=(
-            pWidth - stoneWidth*2,    # 台基宽度 - 两头的角柱（与阶条石同宽）
-            con.STEP_HEIGHT,             # 与阶条石同宽
-            h
-        ),
-        parent=baseRootObj
-    )
-    # 条砖横铺
-    mat.paint(aroundbrickObj,con.M_PLATFORM_WALL)
-    utils.addModifierMirror(
-        object=aroundbrickObj,
-        mirrorObj=baseRootObj,
-        use_axis=(False,True,False)
-    )
-    taimingList.append(aroundbrickObj)
-    
-    # 2.4.2、陡板两山
-    aroundbrickObj = utils.addCube(
-        name='陡板-两山',
-        location=(
-            pWidth/2- con.STEP_HEIGHT/2,
-            0,
-            (pHeight - con.STEP_HEIGHT - h/2)
-        ),
-        dimension=(
-            con.STEP_HEIGHT,             # 与阶条石同宽
-            pDeepth - stoneWidth*2,    # 台基宽度 - 两头的角柱（与阶条石同宽）
-            h
-        ),
-        parent=baseRootObj
-    )
-    # 条砖横铺
-    mat.paint(aroundbrickObj,con.M_PLATFORM_WALL)
-    utils.addModifierMirror(
-        object=aroundbrickObj,
-        mirrorObj=baseRootObj,
-        use_axis=(True,False,False)
-    )
-    taimingList.append(aroundbrickObj)
+        taimingList.append(aroundbrickObj)
 
     # 统一设置
     for obj in taimingList:
         # 添加bevel
         utils.addModifierBevel(
             object=obj,
-            width=con.BEVEL_EXHIGH
+            width=con.BEVEL_EXHIGH,
+            clamp=True,
         )
         # 设置石材
         mat.paint(obj,con.M_PLATFORM_ROCK)
@@ -935,9 +947,10 @@ def buildPlatform(buildingObj:bpy.types.Object):
     # 2.2、营造踏跺
     step_list = __buildSteps(baseRootObj)
     # 2.3、生成土衬
-    tuchenObj = __addPlatformExpand(taimingObj,step_list,
-                             type='tuchen')
-    basePartList.append(tuchenObj)
+    if bData.platform_height > con.STEP_HEIGHT:
+        tuchenObj = __addPlatformExpand(taimingObj,step_list,
+                                type='tuchen')
+        basePartList.append(tuchenObj)
     # 2.4、生成散水
     # sanshuiObj = __addPlatformExpand(taimingObj,step_list,
     #                           type='sanshui')

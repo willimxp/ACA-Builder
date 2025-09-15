@@ -232,7 +232,7 @@ def update_platform(self, context:bpy.types.Context):
     buildingObj,bData,oData = utils.getRoot(context.object)
     # 下出不小于柱径
     if bData.platform_extend<bData.piller_diameter:
-        bData['platform_extend'] = bData.piller_diameter
+        bData['platform_extend'] = bData.piller_diameter/2
     # 高度不小于方砖曼地
     if bData.platform_height<con.STEP_HEIGHT:
         bData['platform_height'] = con.STEP_HEIGHT
@@ -870,6 +870,13 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_building,
             description="同时使用大额枋、由额垫板、小额枋的三件套连接两根柱",
         )# type: ignore 
+    piller_insert: bpy.props.FloatProperty(
+            name = "插柱深度",
+            default = 0.0,
+            min = 0.01, 
+            precision=3,
+            description="楼阁上层柱体插入下层的深度",
+        )# type: ignore
     
     
     # 墙体属性

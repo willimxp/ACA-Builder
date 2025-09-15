@@ -71,6 +71,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
     # 2.1、阶条石宽度
     # 阶条石宽度，从台基边缘做到柱顶石边缘
     stoneWidth = bData.platform_extend-bData.piller_diameter
+    if stoneWidth < 0: stoneWidth=0
     # 250907 限制阶条石上限，为2.4柱径，14.4dk
     stoneWidth_max = con.PLATFORM_EXTEND*con.PILLER_D_EAVE*dk
     if stoneWidth > stoneWidth_max:

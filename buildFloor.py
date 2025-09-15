@@ -1144,8 +1144,9 @@ def buildPillers(buildingObj:bpy.types.Object):
                         override=True)
             pillerList.append(pillerObj)
 
-            # 250817 不做台基时，也不做柱础和柱顶石
-            if bData.is_showPlatform:
+            # 250909 不做台基或楼阁时，不做柱础和柱顶石
+            if (bData.is_showPlatform and
+                bData.combo_type!=con.COMBO_MULTI_FLOOR):
                 # 复制柱础
                 pillerbase_basemesh:bpy.types.Object = utils.copySimplyObject(
                     sourceObj=aData.pillerbase_source,

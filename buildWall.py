@@ -186,7 +186,9 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 但最高不超过1.5m
     if height > con.WALL_BOTTOM_LIMIT:
         height = con.WALL_BOTTOM_LIMIT
-    heightOffset = 0.02
+    # 250915 不做这个位移，以免侧视图不好看
+    #heightOffset = 0.02
+    heightOffset = 0
     bottomObj = utils.drawHexagon(
         name='下碱',
         dimensions=Vector((wallLength,

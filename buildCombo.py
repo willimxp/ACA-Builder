@@ -1285,8 +1285,10 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     # 设置上层基座为下层（盝顶或平坐）
     lowerFloor = baseFloor
 
-    # 1.2、添加平坐
-    if use_pingzuo:
+    # 1.2、添加平坐，且要做腰檐
+    # 没有腰檐的，直接下层已经改为平坐了，不额外添加
+    pingzuo = None
+    if use_pingzuo and use_mideave:
         # 添加平坐，做收分，栏杆
         if use_loggia:
             # 上层做回廊时，不做平坐栏杆
@@ -1317,7 +1319,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
             # 做回廊
             use_loggia=use_loggia, 
             # 回廊是否外扩,如果不做平坐，按内收做法
-            loggia_expand=use_pingzuo,
+            is_on_pingzuo=use_pingzuo,
         )
     except Exception as e:
         utils.popMessageBox(str(e))
@@ -1344,7 +1346,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     # 刷新老屋顶
     buildRoof.buildRoof(baseFloor)
     # 生成平坐
-    if use_pingzuo:
+    if pingzuo != None:
         buildFloor.buildFloor(pingzuo,comboObj=comboObj)
     # 生成重楼
     buildFloor.buildFloor(upperFloor,comboObj=comboObj)
@@ -1409,7 +1411,7 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
                     taper=0.01, # 收分
                     use_railing=False, # 做栏杆
                     use_loggia=False, # 做回廊
-                    loggia_expand=True,# 回廊是否外扩
+                    is_on_pingzuo=True,# 回廊是否外扩
                     ):
     # 载入数据
     bData:acaData = lowerFloor.ACA_data
@@ -1436,9 +1438,22 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
     # 屋顶类型从comboRoot同步
     mData['roof_style'] = int(comboRootObj.ACA_data.roof_style)
 
-    # 关闭上层台基
-    mData['is_showPlatform'] = False
-    mData['platform_height'] = 0
+    # 如果建于平坐之上，关闭上层台基
+    if bData.roof_style == con.ROOF_BALCONY:
+        mData['is_showPlatform'] = False
+        mData['platform_height'] = 0
+    # 如果没有平坐，如边靖楼模式，做楼板(台基)
+    else:
+        # 做楼板
+        mData['is_showPlatform'] = True
+        mData['platform_height'] = con.BALCONY_FLOOR_H*mData.DK
+        mData['platform_extend'] = mData.piller_diameter/2
+    
+    # 边靖楼模式，柱子下插
+    # # 柱子下插，从下层梁上皮到围脊上皮
+    # # 楼板
+    # insert_height += con.BALCONY_FLOOR_H*mData.DK
+    # mData['piller_insert'] = insert_height
     
     # 清除踏步
     mData.step_list.clear()
@@ -1454,8 +1469,8 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
               - con.PILLER_D_EAVE*bData.DK/2 # 柱的保留深度
               - bData.DK # 保留1斗口边线
             ) 
-        # 如果回廊采用内收做法，宽度取负数
-        if not loggia_expand:
+        # 如果不在平坐上，回廊采用内收做法，宽度取负数
+        if not is_on_pingzuo:
             loggia_width *= -1
         
         # 调用buildFloor中的添加回廊方法
@@ -1514,8 +1529,8 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
             nextData:acaData = nextFloor.ACA_data
             dk = nextData.DK
 
-            # 计算新位置，上层是落地？插在斗栱上？
-            # 1、按照站在斗栱上计算
+            # 计算新位置
+            # 1、先计算到斗栱挑高(挑檐桁下皮)
             floorHeight = 0
             if preData.is_showPlatform:
                 floorHeight += preData.platform_height
@@ -1523,11 +1538,28 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
             if preData.use_dg:
                 if preData.use_pingbanfang:
                     floorHeight += con.PINGBANFANG_H*dk
+                # 更新斗栱数据
+                from . import template
+                template.updateDougongData(preFloor)
                 floorHeight += preData.dg_height
-            # 250905 叠加楼板高度
-            floorHeight += con.BALCONY_FLOOR_H*dk
 
-            # 类似边靖楼二层，柱脚一直做到围脊上皮
+            # 2、平坐之上，叠加楼板高度
+            if preData.roof_style == con.ROOF_BALCONY:
+                # 250905 叠加楼板高度
+                floorHeight += con.BALCONY_FLOOR_H*dk
+            
+            # 3、披檐之上，到大梁上皮，即正心桁中心
+            if (preData.roof_style == con.ROOF_LUDING
+              and nextData.roof_style == con.ROOF_BALCONY):
+                # 挑檐桁中心
+                floorHeight += con.HENG_COMMON_D*dk/2
+                # 斗栱出跳加斜
+                if preData.use_dg:
+                    from . import buildBeam
+                    lift_radio = buildBeam.getLiftRatio(preFloor)
+                    floorHeight += preData.dg_extend * lift_radio[0]
+
+            # 4、类似边靖楼二层，柱脚一直做到围脊上皮
             if (preData.roof_style == con.ROOF_LUDING
                     and nextData.roof_style != con.ROOF_BALCONY):
                 # 不计楼板高度
@@ -1556,6 +1588,8 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
                 ridgeH = ridgeH * tileScale
                 floorHeight += ridgeH
                 floorHeight -= con.RIDGE_SURR_OFFSET*dk   # 围脊调整
+                # 扣除楼板高度
+                floorHeight -= con.BALCONY_FLOOR_H*dk
 
             # 填充入下一层的数据
             nextData['combo_location'] = (preFloor.location

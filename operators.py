@@ -1477,25 +1477,25 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         name="重楼收分",
         default=0.0
     ) # type: ignore
-    # 添加栏杆
-    use_railing:bpy.props.BoolProperty(
-            name = "添加栏杆",
+    # 添加平坐
+    use_pingzuo:bpy.props.BoolProperty(
+            name = "添加平坐",
             default=True,
         ) # type: ignore
     # 添加腰檐
     use_mideave:bpy.props.BoolProperty(
             name = "添加腰檐",
-            default=True,
+            default=False,
+        ) # type: ignore
+    # 添加栏杆
+    use_railing:bpy.props.BoolProperty(
+            name = "添加栏杆",
+            default=False,
         ) # type: ignore
     # 添加回廊
     use_loggia:bpy.props.BoolProperty(
             name = "添加回廊",
-            default=True,
-        ) # type: ignore
-    # 添加平坐
-    use_pingzuo:bpy.props.BoolProperty(
-            name = "添加平坐",
-            default=True,
+            default=False,
         ) # type: ignore
     
     # 弹出参数输入框
@@ -1524,11 +1524,11 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         box = layout.box()
         # 收分
         box.prop(self, "taper")
-        # 是否使用腰檐
-        box.prop(self, "use_mideave")
         # 是否使用平坐
         box.prop(self,'use_pingzuo')
-        # 是否使用平坐栏杆
+        # 是否使用腰檐
+        box.prop(self, "use_mideave")
+        # 是否使用栏杆
         box.prop(self,'use_railing')
         # 是否使用回廊
         box.prop(self,'use_loggia')

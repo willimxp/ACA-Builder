@@ -341,6 +341,12 @@ def __buildWall(buildingObj:bpy.types.Object,
         wallObj = buildFloor.addQueti(wallproxy)
     else:
         raise Exception(f"无法生成墙体类型:{wallType}")
+    
+    # 250916 可能因为开间太小等原因，没有成功创建装修，则跳过继续
+    if wallObj == None:
+        utils.delObject(wallproxy)
+        return wallObj
+    
     # 个性化设置参数的传递
     utils.copyAcaData(wallproxy,wallObj)
     # wallID不在propertyGroup中，需要单独传递
@@ -639,6 +645,12 @@ def buildWallLayout(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
+
+    # 250916 楼阁平坐层的构造中，跳过所有的墙体装修的营造
+    if bData.combo_type in (con.COMBO_PINGZUO,
+                            con.COMBO_DOUBLE_EAVE):
+        print("ACA：平坐层和重檐层不做装修，已跳过！")
+        return {'CANCELLED'}
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]

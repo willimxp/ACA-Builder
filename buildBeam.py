@@ -400,6 +400,11 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                                 con.EFANG_LARGE_H*dk),
                     parent=beamRootObj
                 )
+                # 250916 添加盖板，遮盖暴露的椽架和围脊
+                board = __addLudingBorad(parent=beamRootObj,
+                                 pCross=pCross,
+                                 dir='X')
+                purlinFrameList.append(board)
             # 其他一般情况下的槫子
             else:
                 hengFB = utils.addCylinderHorizontal(
@@ -612,6 +617,11 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                                     con.EFANG_LARGE_H*dk),
                         parent=beamRootObj
                     )
+                    # 250916 添加盖板，遮盖暴露的椽架和围脊
+                    board = __addLudingBorad(parent=beamRootObj,
+                                    pCross=pCross,
+                                    dir='Y')
+                    purlinFrameList.append(board)
                 # 其他一般情况下的槫子
                 else:
                     hengLR = utils.addCylinderHorizontal(
@@ -1647,3 +1657,65 @@ def __drawJiaobei(shuzhuObj:bpy.types.Object):
         to_obj=jiaobeiObj)
     
     return jiaobeiObj
+
+# 添加盝顶的盖板，遮盖暴露的椽架和围脊
+def __addLudingBorad(parent:bpy.types.Object,
+                     pCross,
+                     dir,):
+    # 载入数据
+    buildingObj,bData,oData = utils.getRoot(parent)
+    dk = bData.DK
+
+    # 计算盖板高度
+    boardHeight = 0
+    # 屋瓦层抬升
+    boardHeight += (
+                #con.YUANCHUAN_D*dk   # 椽架
+                #+ con.WANGBAN_H*dk   # 望板
+                + con.ROOFMUD_H*dk   # 灰泥
+                )
+    # 盝顶围脊高度
+    aData = bpy.context.scene.ACA_temp
+    ridgeObj:bpy.types.Object = aData.ridgeBack_source
+    ridgeH = ridgeObj.dimensions.z
+    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    tileScale = dk / con.DEFAULT_DK  * bData.tile_scale
+    ridgeH = ridgeH * tileScale
+    boardHeight += ridgeH
+    boardHeight -= con.RIDGE_SURR_OFFSET*dk   # 围脊调整
+
+    # 盖板长度
+    if dir == 'X':
+        boardLen = pCross.x * 2
+        x = 0
+        y = pCross.y
+        rot = 0
+        mirror = (False,True,False)
+    else:
+        boardLen = pCross.y * 2
+        x = pCross.x
+        y = 0
+        rot = math.radians(90)
+        mirror = (True,False,False)
+    
+    # 大小
+    dim= (boardLen,con.BOARD_HENG_Y*dk,boardHeight)
+    # 位置
+    z = pCross.z+con.EFANG_LARGE_H*dk/2+ boardHeight/2
+    # 生成实体
+    board = utils.addCube(
+        name = '盖板',
+        location= (x,y,z),
+        dimension= dim,
+        rotation=(0,0,rot),
+        parent=parent,
+    )
+    # 着色
+    mat.paint(board,con.M_PAINT)
+    # 镜像
+    utils.addModifierMirror(
+        object=board,
+        mirrorObj=parent,
+        use_axis=mirror,
+    )
+    return board

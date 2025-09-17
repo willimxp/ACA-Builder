@@ -1121,11 +1121,13 @@ def buildPillers(buildingObj:bpy.types.Object):
                 continue    # 结束本次循环
 
             # 3、非减柱的，显示正常柱体 ----------------
+            # 250916 添加楼阁柱子下插的处理
+            pillerZ = bData.piller_insert
             # 复制柱子，仅instance，包含modifier
             pillerObj = utils.copySimplyObject(
                 sourceObj = piller_source,
                 name = '柱子.'+pillerID,
-                location=(net_x[x],net_y[y],0),
+                location=(net_x[x],net_y[y],pillerZ),
                 parentObj = floorRootObj,
                 singleUser=True # 内外柱不等高，为避免打架，全部
             )
@@ -1135,6 +1137,8 @@ def buildPillers(buildingObj:bpy.types.Object):
             # 250212 金柱的升高处理（包含廊间举架）
             pillerHeight = getPillerHeight(
                     buildingObj,pillerID)
+            # 250916 添加楼阁插柱处理
+            pillerHeight -= pillerZ
             pillerObj.dimensions = (
                 pd,pd,pillerHeight
             )

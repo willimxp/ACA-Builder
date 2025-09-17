@@ -1459,7 +1459,46 @@ class ACA_OT_DOUBLE_EAVE_DEL(bpy.types.Operator):
             utils.popMessageBox(msg)
         
         return {'FINISHED'}
-    
+
+def update_multi_floor_setting(self, context:bpy.types.Context):
+    print("重楼设置更新")
+
+    # 重檐
+    if self.floor_plan == '0':
+        self.use_floor = False
+        self.use_mideave = True
+        self.use_pingzuo = False
+        self.use_railing = False
+        self.use_loggia = False
+    # 简单重楼(涵月楼)
+    if self.floor_plan == '1':
+        self.use_floor = True
+        self.use_mideave = False
+        self.use_pingzuo = False
+        self.use_railing = False
+        self.use_loggia = False
+    # 重楼+披檐(边靖楼)
+    if self.floor_plan == '2':
+        self.use_floor = True
+        self.use_mideave = True
+        self.use_pingzuo = False
+        self.use_railing = False
+        self.use_loggia = False
+    # 重楼+披檐+平坐栏杆(观音阁)
+    if self.floor_plan == '3':
+        self.use_floor = True
+        self.use_mideave = True
+        self.use_pingzuo = True
+        self.use_railing = True
+        self.use_loggia = False
+    # 重楼+披檐+回廊栏杆(插花楼)
+    if self.floor_plan == '4':
+        self.use_floor = True
+        self.use_mideave = True
+        self.use_pingzuo = True
+        self.use_railing = True
+        self.use_loggia = True
+
 # 添加重楼
 class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     bl_idname="aca.multi_floor_add"
@@ -1467,11 +1506,19 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = '添加重楼'
 
-    # # 参数：剖视方案
-    # floorPlan: bpy.props.StringProperty(
-    #     name="重楼方案",
-    #     default=""
-    # ) # type: ignore
+    # 参数：重楼类型
+    floor_plan: bpy.props.EnumProperty(
+        name="重楼类型",
+        items = [
+                ("","",""),
+                ("0","重檐",""),
+                ("1","简单重楼(涵月楼)",""),
+                ("2","重楼+披檐(边靖楼)",""),
+                ("3","重楼+披檐+平坐栏杆(观音阁)",""),
+                ("4","重楼+披檐+回廊栏杆(插花楼)",""),
+            ],
+        update=update_multi_floor_setting
+    ) # type: ignore
     # 收分
     taper: bpy.props.FloatProperty(
         name="重楼收分",
@@ -1480,7 +1527,7 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     # 添加平坐
     use_pingzuo:bpy.props.BoolProperty(
             name = "添加平坐",
-            default=True,
+            default=False,
         ) # type: ignore
     # 添加腰檐
     use_mideave:bpy.props.BoolProperty(
@@ -1495,6 +1542,11 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     # 添加回廊
     use_loggia:bpy.props.BoolProperty(
             name = "添加回廊",
+            default=False,
+        ) # type: ignore
+    # 添加重屋
+    use_floor:bpy.props.BoolProperty(
+            name = "添加重屋",
             default=False,
         ) # type: ignore
     
@@ -1524,14 +1576,30 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         box = layout.box()
         # 收分
         box.prop(self, "taper")
-        # 是否使用平坐
-        box.prop(self,'use_pingzuo')
-        # 是否使用腰檐
-        box.prop(self, "use_mideave")
-        # 是否使用栏杆
-        box.prop(self,'use_railing')
-        # 是否使用回廊
-        box.prop(self,'use_loggia')
+        # 重楼类型
+        box.prop(self, "floor_plan")
+
+        # 是否添加重屋
+        inputFloor = box.row()
+        inputFloor.prop(self,'use_floor')
+        # 是否添加腰檐
+        inputEave = box.row()
+        inputEave.prop(self, "use_mideave")
+        # 是否添加平坐
+        inputPingzuo = box.row()
+        inputPingzuo.prop(self,'use_pingzuo')
+        # 是否添加栏杆
+        inputRailing = box.row()
+        inputRailing.prop(self,'use_railing')
+        # 是否添加回廊
+        inputLoggia = box.row()
+        inputLoggia.prop(self,'use_loggia')
+        
+        inputEave.enabled = False
+        inputFloor.enabled = False
+        inputPingzuo.enabled = False
+        inputRailing.enabled = False
+        inputLoggia.enabled = False
     
     def execute(self, context): 
         timeStart = time.time()
@@ -1548,6 +1616,7 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
             use_mideave=self.use_mideave,
             use_loggia=self.use_loggia,
             use_pingzuo=self.use_pingzuo,
+            use_floor=self.use_floor,
         )
         result = utils.fastRun(funproxy)
 

@@ -1235,12 +1235,14 @@ def addDoubleEave2(contextObj:bpy.types.Object,
 
 # 添加重楼
 def addMultiFloor(baseFloor:bpy.types.Object,
-                  taper, # 收分
-                  use_railing=False, # 做平坐栏杆
-                  use_mideave=False, # 做腰檐
-                  use_loggia=False, # 做回廊
-                  use_pingzuo=False, # 做平坐
+                  taper=0.0, # 收分
                   use_floor=True,# 做重屋
+                  use_mideave=False, # 做腰檐
+                  use_pingzuo=False, # 做平坐
+                  pingzuo_taper=0.0, # 平坐收分
+                  use_railing=False, # 做平坐栏杆
+                  use_loggia=False, # 做回廊
+                  loggia_width=0.0,# 回廊宽度
                   ):   
     # 载入数据
     bData:acaData = baseFloor.ACA_data
@@ -1286,8 +1288,9 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     # 设置上层基座为下层（盝顶或平坐）
     lowerFloor = baseFloor
 
-    # 1.2、添加平坐，且要做腰檐
-    # 没有腰檐的，直接下层已经改为平坐了，不额外添加
+    # 1.2、添加独立平坐层
+    # 同时要求做平坐和腰檐时，做一个独立的平座层
+    # 不做腰檐的，直接下层已经改为平坐了，不额外添加
     pingzuo = None
     if use_pingzuo and use_mideave:
         # 添加平坐，做收分，栏杆
@@ -1307,21 +1310,32 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     # 可能基于做了腰檐的下层盝顶
     # 可能基于不做腰檐的下层平坐
     # 可能基于做了腰檐的下层平坐
-    if use_pingzuo:
-        # 如果下层为平坐，则上层按平坐柱网，不再需要收分
+
+    # 如果下层为独立平坐层，
+    if use_pingzuo and use_mideave:
+        # 默认上层不做收分
         upperTaper = 0
+        # 如果回廊较大，则需要在平坐收分的基础上，做二次收分
+        if use_loggia and loggia_width > taper:
+            upperTaper = loggia_width-taper
+        # 如果需要平坐收分
+        if pingzuo_taper > 0.0:
+            upperTaper += pingzuo_taper
+    # 下层没有独立平座层，如简单重楼模式，直接应用收分
     else:
         upperTaper = taper
+
     try:
         upperFloor = __addUpperFloor(
             lowerFloor,
             taper=upperTaper,
+            use_floor=use_floor,
             use_railing=use_railing,
-            # 做回廊
-            use_loggia=use_loggia, 
             # 回廊是否外扩,如果不做平坐，按内收做法
             is_on_pingzuo=use_pingzuo,
-            use_floor=use_floor,
+            # 做回廊
+            use_loggia=use_loggia, 
+            loggia_width=loggia_width
         )
     except Exception as e:
         utils.popMessageBox(str(e))
@@ -1415,8 +1429,9 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
                     taper=0.01, # 收分
                     use_floor=True, # 做重屋
                     use_railing=False, # 做栏杆
+                    is_on_pingzuo=True, # 回廊是否外扩
                     use_loggia=False, # 做回廊
-                    is_on_pingzuo=True,# 回廊是否外扩
+                    loggia_width=0.0, # 回廊宽度
                     ):
     # 载入数据
     bData:acaData = lowerFloor.ACA_data
@@ -1506,7 +1521,7 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
     # 4、设置栏杆与回廊 -----------------------------
     if use_loggia:
         # 回廊宽度，与平坐做法一致，参考buildBalcony.__buildFloor()
-        loggia_width = (bData.dg_extend   # 斗栱出跳
+        pingzuo_extend = (bData.dg_extend   # 斗栱出跳
               + con.BALCONY_EXTENT*bData.DK*bData.dk_scale # 平坐出跳，对齐桁出梢
               - con.PILLER_D_EAVE*bData.DK/2 # 柱的保留深度
               - bData.DK # 保留1斗口边线

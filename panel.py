@@ -249,10 +249,27 @@ class ACA_PT_basic(bpy.types.Panel):
         ###################################################
         # 第四工具箱
         box = layout.box()
-        toolBox = box.column(align=True)
-        # 第一行 ------------------------------
-        toolBar = toolBox.grid_flow(columns=1, align=True)
 
+        # 第一行 ------------------------------
+        toolBox = box.column(align=True)
+        toolBar = toolBox.grid_flow(columns=1, align=True)
+        # # 添加重檐
+        # btnMultiFloor3 = toolBar.column(align=True)
+        # op = btnMultiFloor3.operator(
+        #                 "aca.double_eave_add",
+        #                 icon='PACKAGE',
+        #                 text="添加重檐")
+        # 上出重楼
+        btnMultiFloor1 = toolBar.column(align=True)
+        op = btnMultiFloor1.operator(
+                        "aca.multi_floor_add",
+                        icon='PACKAGE',
+                        text="上出重楼")
+
+        
+        # 第二行 ------------------------------
+        toolBox = box.column(align=True)
+        toolBar = toolBox.grid_flow(columns=1, align=True)
         # 添加回廊
         btnAddLoggia = toolBar.column(align=True)
         op = btnAddLoggia.operator(
@@ -260,26 +277,9 @@ class ACA_PT_basic(bpy.types.Panel):
                         icon='PACKAGE',
                         text="添加回廊")
         
-        ###################################################
-        # 第三工具箱
-        # box = layout.box()
-
-        # 合并/导出 ------------------------------
+        # 第三行 ------------------------------
         toolBox = box.column(align=True)
-        # 第一行 ------------------------------
         toolBar = toolBox.grid_flow(columns=1, align=True)
-        # 添加重檐
-        btnMultiFloor3 = toolBar.column(align=True)
-        op = btnMultiFloor3.operator(
-                        "aca.double_eave_add",
-                        icon='PACKAGE',
-                        text="添加重檐")
-        # 上出重楼
-        btnMultiFloor1 = toolBar.column(align=True)
-        op = btnMultiFloor1.operator(
-                        "aca.multi_floor_add",
-                        icon='PACKAGE',
-                        text="上出重楼")
         # 下出平坐
         btnMultiFloor2 = toolBar.column(align=True)
         op = btnMultiFloor2.operator(

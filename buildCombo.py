@@ -205,6 +205,123 @@ def updateCombo(buildingObj:bpy.types.Object,
     
     return {'FINISHED'}
 
+# 刷新组合建筑
+def updateCombo2(buildingObj:bpy.types.Object,
+                reloadAssets=False,
+                resetFloor=False,
+                resetRoof=False,):
+    comboObj = utils.getComboRoot(buildingObj)
+    bData:acaData = buildingObj.ACA_data
+    mainBuilding = utils.getMainBuilding(buildingObj)
+    doubleEaveType = (con.COMBO_MAIN,
+                      con.COMBO_DOUBLE_EAVE,)
+    # 更新的对象范围
+    updateBuildingList = []
+
+    # 如果基于combo根节点，全部更新
+    # 用户点击“更新建筑”时会传入根节点，或激活再根节点上的修改
+    if bData.aca_type == con.ACA_TYPE_COMBO:
+        updateBuildingList = comboObj.children
+    # # 如果基于重檐的上檐或下檐
+    # elif (bData.use_double_eave and 
+    #         bData.combo_type in doubleEaveType):
+    #     # 全部更新，重檐柱网变化应该传递到月台
+    #     updateBuildingList = comboObj.children
+    # 其他子建筑，如，月台，独立更新
+    else:
+        updateBuildingList.append(buildingObj)
+
+    # # ComboRoot通用数据下发
+    # # 通用数据是通过panel暴露在combo层次的属性
+    # # 包括DK，roof_style，paint_style，梁架/椽架/瓦作层数据
+    # # 不包括地盘、台基、装修、斗栱的数据
+    # utils.outputMsg("更新组合建筑：ComboRoot【通用数据】下发...")
+    # for child in comboObj.children:
+    #     __downloadCommonData(toBuilding=child)
+
+    # # 主建筑数据同步，先上传到comboRoot，再下发到重檐对象
+    # # 主建筑数据是通过panel暴露在mainBuilding层次的属性
+    # utils.outputMsg("更新组合建筑：MainBuilding【通用数据】上传...")
+    # __syncMainData(toBuilding=comboObj,
+    #                 resetFloor=resetFloor)
+
+    # # 重檐数据更新
+    doubleEaveObj = utils.getComboChild(
+        buildingObj,con.COMBO_DOUBLE_EAVE)
+    # if doubleEaveObj is not None:
+    #     utils.outputMsg("重檐数据更新：MainBuilding【通用数据】下发...")
+    #     __syncMainData(toBuilding=doubleEaveObj,
+    #                    resetFloor=resetFloor)
+    #     __setDoubleEaveData(doubleEaveObj)
+
+    # 月台数据更新
+    terraceObj = utils.getComboChild(
+        buildingObj,con.COMBO_TERRACE)
+    # 主数据下发，以便同步地盘开间
+    # 主动更新(buildingObj是月台)不做主数据下发
+    # 被动更新(buildingObj不是月台)，需要做一次主数据下发
+    # 此时会强制月台开间与主建筑同步
+    if terraceObj is not None:
+        if buildingObj != terraceObj:
+            utils.outputMsg("月台数据更新：MainBuilding【通用数据】下发...")
+            __syncMainData(toBuilding=terraceObj,
+                        resetFloor=resetFloor)
+        # # 是否跟随重檐变化
+        # if (bData.use_double_eave and 
+        #         bData.combo_type in doubleEaveType):
+        #     initTerrace = True
+        # else:
+        #     initTerrace = False
+        # 初始化月台，并重新定位月台位置
+        __setTerraceData(parentObj=mainBuilding,
+                         terraceObj=terraceObj,
+                        # isInit=initTerrace
+                        isInit=False
+                        )         
+
+    # 立即刷新界面
+    for childBuilding in updateBuildingList:
+        # 重建屋顶时，仅清除屋顶
+        if resetRoof:
+            buildRoof.__clearRoof(childBuilding)
+        # 否则全部清除
+        else:
+            utils.deleteHierarchy(childBuilding)   
+        
+    # 循环生成各个单体
+    for childBuilding in updateBuildingList:
+        # 重做地盘
+        if resetFloor:
+            buildFloor.resetFloor(childBuilding,
+                comboObj=comboObj)
+        # 重做屋顶
+        elif resetRoof:
+            buildRoof.buildRoof(childBuilding)
+        # 全部重做
+        else:
+            buildFloor.buildFloor(childBuilding,
+                    reloadAssets=reloadAssets,
+                    comboObj=comboObj)
+            
+    # 聚焦对象
+    focusObj = None
+    # 主建筑台基
+    if buildingObj in (comboObj,
+                       mainBuilding,
+                       doubleEaveObj):
+        # focusObj = utils.getAcaChild(
+        #     mainBuilding,con.ACA_TYPE_PLATFORM)
+        focusObj = buildingObj
+    # 月台聚焦月台台基
+    elif buildingObj == terraceObj:
+        focusObj = utils.getAcaChild(
+            terraceObj,con.ACA_TYPE_PLATFORM
+        )
+    if focusObj is not None:
+        utils.focusObj(focusObj)
+    
+    return {'FINISHED'}
+
 # 组合建筑降级为单一建筑
 def __delComboLevel(comboObj:bpy.types.Object):
     # 输入验证

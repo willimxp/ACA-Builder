@@ -1670,8 +1670,8 @@ def __addLudingBorad(parent:bpy.types.Object,
     boardHeight = 0
     # 屋瓦层抬升
     boardHeight += (
-                #con.YUANCHUAN_D*dk   # 椽架
-                #+ con.WANGBAN_H*dk   # 望板
+                con.YUANCHUAN_D*dk   # 椽架
+                + con.WANGBAN_H*dk   # 望板
                 + con.ROOFMUD_H*dk   # 灰泥
                 )
     # 盝顶围脊高度
@@ -1683,6 +1683,8 @@ def __addLudingBorad(parent:bpy.types.Object,
     ridgeH = ridgeH * tileScale
     boardHeight += ridgeH
     boardHeight -= con.RIDGE_SURR_OFFSET*dk   # 围脊调整
+    # 补偿承椽枋与桁的高度差
+    boardHeight -= (con.EFANG_LARGE_H - con.HENG_COMMON_D)*dk/2
 
     # 盖板长度
     if dir == 'X':

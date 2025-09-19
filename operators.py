@@ -1460,64 +1460,6 @@ class ACA_OT_DOUBLE_EAVE_DEL(bpy.types.Operator):
         
         return {'FINISHED'}
 
-def update_multi_floor_setting(self, context:bpy.types.Context):
-    buildingObj,bData,oData = utils.getRoot(context.object)
-    dk = bData.DK
-
-    scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
-    pavilionIndex = scnData.pavilionIndex
-
-    # 0.重檐
-    if pavilionIndex == 0:
-        self.use_floor = False
-        self.use_mideave = True
-        self.use_pingzuo = False
-        self.use_railing = False
-        self.use_loggia = False
-        self.taper = 11*dk  # 默认收分一攒
-    # 1.简单重楼(涵月楼)
-    if pavilionIndex == 1:
-        self.use_floor = True
-        self.use_mideave = False
-        self.use_pingzuo = True
-        self.use_railing = False
-        self.use_loggia = False
-        self.taper = 0  # 默认不做收分
-    # 2.重楼+平坐栏杆
-    if pavilionIndex == 2:
-        self.use_floor = True
-        self.use_mideave = False
-        self.use_pingzuo = True
-        self.use_railing = True
-        self.use_loggia = False
-        self.taper = 3*dk  # 默认收分1拽架
-    # 3.重楼+披檐(无平坐，如，边靖楼)
-    if pavilionIndex == 3:
-        self.use_floor = True
-        self.use_mideave = True
-        self.use_pingzuo = False
-        self.use_railing = False
-        self.use_loggia = False
-        self.taper = 3*dk  # 默认收分1拽架
-    # 4.重楼+披檐+平坐栏杆(观音阁)
-    if pavilionIndex == 4:
-        self.use_floor = True
-        self.use_mideave = True
-        self.use_pingzuo = True
-        self.use_railing = True
-        self.use_loggia = False
-        self.taper = 3*dk  # 默认收分1拽架
-        self.pingzuo_taper = 3*dk # 默认平坐再收分1拽架
-    # 5.重楼+披檐+回廊栏杆(插花楼)
-    if pavilionIndex == 5:
-        self.use_floor = True
-        self.use_mideave = True
-        self.use_pingzuo = True
-        self.use_railing = True
-        self.use_loggia = True
-        self.taper = 11*dk  # 默认收分1攒
-        self.loggia_width = 22*dk # 回廊默认2攒
-
 # 添加重楼
 class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     bl_idname="aca.multi_floor_add"
@@ -1525,60 +1467,46 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = '添加重楼'
 
-    # # 参数：重楼类型
-    # floor_plan: bpy.props.EnumProperty(
-    #     name="重楼类型",
-    #     items = [
-    #             ("","",""),
-    #             ("0","0.重檐",""),
-    #             ("1","1.简单重楼",""),
-    #             ("2","2.重楼+平坐",""),
-    #             ("3","3.重楼+披檐",""),
-    #             ("4","4.重楼+平坐+披檐",""),
-    #             ("5","5.重楼+回廊+披檐",""),
-    #         ],
-    #     update=update_multi_floor_setting
+    # # 收分
+    # taper: bpy.props.FloatProperty(
+    #     name="重楼收分",
+    #     default=0.0
     # ) # type: ignore
-    # 收分
-    taper: bpy.props.FloatProperty(
-        name="重楼收分",
-        default=0.0
-    ) # type: ignore
-    # 添加重屋
-    use_floor:bpy.props.BoolProperty(
-            name = "添加重屋",
-            default=False,
-        ) # type: ignore
-    # 添加平坐
-    use_pingzuo:bpy.props.BoolProperty(
-            name = "添加平坐",
-            default=False,
-        ) # type: ignore
-    # 回廊宽度
-    pingzuo_taper: bpy.props.FloatProperty(
-        name="平坐收分",
-        default=0.0
-    ) # type: ignore
-    # 添加腰檐
-    use_mideave:bpy.props.BoolProperty(
-            name = "添加腰檐",
-            default=False,
-        ) # type: ignore
-    # 添加栏杆
-    use_railing:bpy.props.BoolProperty(
-            name = "添加栏杆",
-            default=False,
-        ) # type: ignore
-    # 添加回廊
-    use_loggia:bpy.props.BoolProperty(
-            name = "添加回廊",
-            default=False,
-        ) # type: ignore
-    # 回廊宽度
-    loggia_width: bpy.props.FloatProperty(
-        name="回廊宽度",
-        default=0.0
-    ) # type: ignore
+    # # 添加重屋
+    # use_floor:bpy.props.BoolProperty(
+    #         name = "添加重屋",
+    #         default=False,
+    #     ) # type: ignore
+    # # 添加平坐
+    # use_pingzuo:bpy.props.BoolProperty(
+    #         name = "添加平坐",
+    #         default=False,
+    #     ) # type: ignore
+    # # 回廊宽度
+    # pingzuo_taper: bpy.props.FloatProperty(
+    #     name="平坐收分",
+    #     default=0.0
+    # ) # type: ignore
+    # # 添加腰檐
+    # use_mideave:bpy.props.BoolProperty(
+    #         name = "添加腰檐",
+    #         default=False,
+    #     ) # type: ignore
+    # # 添加栏杆
+    # use_railing:bpy.props.BoolProperty(
+    #         name = "添加栏杆",
+    #         default=False,
+    #     ) # type: ignore
+    # # 添加回廊
+    # use_loggia:bpy.props.BoolProperty(
+    #         name = "添加回廊",
+    #         default=False,
+    #     ) # type: ignore
+    # # 回廊宽度
+    # loggia_width: bpy.props.FloatProperty(
+    #     name="回廊宽度",
+    #     default=0.0
+    # ) # type: ignore
     
     # 弹出参数输入框
     def invoke(self, context, event):
@@ -1622,9 +1550,7 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self,width=450)
 
     # 绘制参数输入框
-    def draw(self, context):
-        update_multi_floor_setting(self, context)
-        
+    def draw(self, context):       
         layout = self.layout
 
         # 楼阁样式选择 --------------------------
@@ -1643,13 +1569,13 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
             active_propname="pavilionIndex", 
             rows=7)
         # 收分
-        col_left.prop(self, "taper")
+        col_left.prop(scnData.pavilionSetting, "taper")
         if pavilionIndex == 4:
             # 平坐收分
-            col_left.prop(self, "pingzuo_taper")
+            col_left.prop(scnData.pavilionSetting, "pingzuo_taper")
         if pavilionIndex == 5:
             # 回廊宽度
-            col_left.prop(self, "loggia_width")
+            col_left.prop(scnData.pavilionSetting, "loggia_width")
         
         # 右侧边栏
         col_right = row.column(align=True)
@@ -1695,19 +1621,21 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     def execute(self, context): 
         timeStart = time.time()
         buildingObj,bData,objData = utils.getRoot(context.object)
+        scnData = bpy.context.scene.ACA_data
+        setting = scnData.pavilionSetting
         
         from . import buildCombo
         funproxy = partial(
             buildCombo.addMultiFloor,
             baseFloor=buildingObj,
-            taper=self.taper,
-            use_floor=self.use_floor,
-            use_mideave=self.use_mideave,
-            use_pingzuo=self.use_pingzuo,
-            pingzuo_taper=self.pingzuo_taper,
-            use_railing=self.use_railing,
-            use_loggia=self.use_loggia,
-            loggia_width=self.loggia_width,
+            taper=setting.taper,
+            use_floor=setting.use_floor,
+            use_mideave=setting.use_mideave,
+            use_pingzuo=setting.use_pingzuo,
+            pingzuo_taper=setting.pingzuo_taper,
+            use_railing=setting.use_railing,
+            use_loggia=setting.use_loggia,
+            loggia_width=setting.loggia_width,
         )
         result = utils.fastRun(funproxy)
 

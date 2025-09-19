@@ -263,8 +263,9 @@ class ACA_PT_basic(bpy.types.Panel):
         btnMultiFloor1 = toolBar.column(align=True)
         op = btnMultiFloor1.operator(
                         "aca.multi_floor_add",
-                        icon='PACKAGE',
-                        text="上出重楼")
+                        icon='KEY_CONTROL',
+                        text="上出重楼",
+                        depress=True)
 
         
         # 第二行 ------------------------------

@@ -1233,122 +1233,122 @@ def __syncMainData(toBuilding:bpy.types.Object,
 
     return
 
-# 找到屋顶对象
-def __getTopFloor(contextObj):
-    topFloor = None
+# # 找到屋顶对象
+# def __getTopFloor(contextObj):
+#     topFloor = None
 
-    # 查找comboRoot
-    comboRoot = utils.getComboRoot(contextObj)
+#     # 查找comboRoot
+#     comboRoot = utils.getComboRoot(contextObj)
 
-    # 提取所有父节点
-    parentList = []
-    for child in comboRoot.children:
-        parentList.append(child.ACA_data.combo_parent)
+#     # 提取所有父节点
+#     parentList = []
+#     for child in comboRoot.children:
+#         parentList.append(child.ACA_data.combo_parent)
 
-    # 依次对比节点
-    for child in comboRoot.children:
-        cData:acaData = child.ACA_data
-        # 如果是月台等其他对象，则跳过
-        if cData.combo_type not in (con.COMBO_MAIN,
-                                    con.COMBO_MULTI_FLOOR):
-            continue
+#     # 依次对比节点
+#     for child in comboRoot.children:
+#         cData:acaData = child.ACA_data
+#         # 如果是月台等其他对象，则跳过
+#         if cData.combo_type not in (con.COMBO_MAIN,
+#                                     con.COMBO_MULTI_FLOOR):
+#             continue
         
-        # 如果对象不在父节点列表中，即为顶层
-        if cData.aca_id not in parentList:
-            topFloor = child
-            break
+#         # 如果对象不在父节点列表中，即为顶层
+#         if cData.aca_id not in parentList:
+#             topFloor = child
+#             break
 
-    return topFloor
+#     return topFloor
 
-# 重构添加重檐
-def addDoubleEave2(contextObj:bpy.types.Object,
-                  taper, # 收分
-                  ):
-    buildingObj,bData,oData = utils.getRoot(contextObj)
-    # 0、合法性验证 -----------------------
-    # 验证屋顶样式
-    if bData.combo_type not in (con.COMBO_MULTI_FLOOR,
-                                con.COMBO_MAIN):
-        if bData.roof_style not in (
-                    con.ROOF_LUDING,
-                    con.ROOF_WUDIAN,
-                    con.ROOF_XIESHAN,
-                    con.ROOF_XIESHAN_JUANPENG,
-                    con.ROOF_XUANSHAN,
-                    con.ROOF_XUANSHAN_JUANPENG):
-            utils.popMessageBox("暂时只用庑殿、歇山、悬山屋顶样式支持添加重檐")
-            return {'CANCELLED'}
-    # 保护避免0的异常
-    if taper == 0:taper = 0.01
+# # 重构添加重檐
+# def addDoubleEave2(contextObj:bpy.types.Object,
+#                   taper, # 收分
+#                   ):
+#     buildingObj,bData,oData = utils.getRoot(contextObj)
+#     # 0、合法性验证 -----------------------
+#     # 验证屋顶样式
+#     if bData.combo_type not in (con.COMBO_MULTI_FLOOR,
+#                                 con.COMBO_MAIN):
+#         if bData.roof_style not in (
+#                     con.ROOF_LUDING,
+#                     con.ROOF_WUDIAN,
+#                     con.ROOF_XIESHAN,
+#                     con.ROOF_XIESHAN_JUANPENG,
+#                     con.ROOF_XUANSHAN,
+#                     con.ROOF_XUANSHAN_JUANPENG):
+#             utils.popMessageBox("暂时只用庑殿、歇山、悬山屋顶样式支持添加重檐")
+#             return {'CANCELLED'}
+#     # 保护避免0的异常
+#     if taper == 0:taper = 0.01
 
-    # 1、显示进度条 ------------------------
-    from . import build
-    build.isFinished = False
-    build.progress = 0
-    utils.outputMsg("添加重檐...")
-    # 暂时排除目录下的其他建筑，以加快执行速度
-    build.__excludeOther(keepObj=contextObj)
+#     # 1、显示进度条 ------------------------
+#     from . import build
+#     build.isFinished = False
+#     build.progress = 0
+#     utils.outputMsg("添加重檐...")
+#     # 暂时排除目录下的其他建筑，以加快执行速度
+#     build.__excludeOther(keepObj=contextObj)
     
-    # 2、combo组织结构 ---------------
-    comboObj = utils.getComboRoot(contextObj)
-    # 如果不存在combo则新建
-    if comboObj is None:
-        comboObj = __addComboLevel(contextObj)
+#     # 2、combo组织结构 ---------------
+#     comboObj = utils.getComboRoot(contextObj)
+#     # 如果不存在combo则新建
+#     if comboObj is None:
+#         comboObj = __addComboLevel(contextObj)
 
-    # 查找顶层
-    topFloor = __getTopFloor(contextObj)
+#     # 查找顶层
+#     topFloor = __getTopFloor(contextObj)
 
-    # 添加重檐子节点
-    doubleEaveName = topFloor.ACA_data.template_name + '.重檐'
-    doubleEave = buildFloor.__addBuildingRoot(
-        templateName = doubleEaveName,
-        comboObj = comboObj
-    )
+#     # 添加重檐子节点
+#     doubleEaveName = topFloor.ACA_data.template_name + '.重檐'
+#     doubleEave = buildFloor.__addBuildingRoot(
+#         templateName = doubleEaveName,
+#         comboObj = comboObj
+#     )
 
-    # 继承屋顶数据
-    __syncData(fromBuilding=topFloor,
-               toBuilding=doubleEave)
+#     # 继承屋顶数据
+#     __syncData(fromBuilding=topFloor,
+#                toBuilding=doubleEave)
     
-    # 3、重檐数据的其他设置
-    bData:acaData = topFloor.ACA_data
-    # 原改用盝顶
-    bData['roof_style'] = int(con.ROOF_LUDING)
-    bData['luding_rafterspan'] = taper
+#     # 3、重檐数据的其他设置
+#     bData:acaData = topFloor.ACA_data
+#     # 原改用盝顶
+#     bData['roof_style'] = int(con.ROOF_LUDING)
+#     bData['luding_rafterspan'] = taper
 
-    mData:acaData = doubleEave.ACA_data
-    mData['combo_type'] = con.COMBO_MULTI_FLOOR
-    # 重檐父子关系
-    mData['combo_parent'] = bData.aca_id
-    # 清除装修
-    mData.step_list.clear()
-    mData.wall_list.clear()
-    mData.geshan_list.clear()
-    mData.window_list.clear()
-    mData.railing_list.clear()
-    mData.maindoor_list.clear()
-    # 关闭重檐台基
-    mData['is_showPlatform'] = False
-    mData['platform_height'] = 0
-    # 重檐柱高
-    mData['piller_height'] = __getPingzuoHeight(topFloor)
-    # 根据收分，更新地盘数据
-    __setTaperData(mData,taper)
+#     mData:acaData = doubleEave.ACA_data
+#     mData['combo_type'] = con.COMBO_MULTI_FLOOR
+#     # 重檐父子关系
+#     mData['combo_parent'] = bData.aca_id
+#     # 清除装修
+#     mData.step_list.clear()
+#     mData.wall_list.clear()
+#     mData.geshan_list.clear()
+#     mData.window_list.clear()
+#     mData.railing_list.clear()
+#     mData.maindoor_list.clear()
+#     # 关闭重檐台基
+#     mData['is_showPlatform'] = False
+#     mData['platform_height'] = 0
+#     # 重檐柱高
+#     mData['piller_height'] = __getPingzuoHeight(topFloor)
+#     # 根据收分，更新地盘数据
+#     __setTaperData(mData,taper)
 
-    # 4、执行营造
-    # 刷新各层的抬升
-    __updateFloorLoc(topFloor)
-    # 更新原屋顶为盝顶
-    buildRoof.buildRoof(topFloor)
-    # 生成重檐
-    buildFloor.buildFloor(doubleEave)
+#     # 4、执行营造
+#     # 刷新各层的抬升
+#     __updateFloorLoc(topFloor)
+#     # 更新原屋顶为盝顶
+#     buildRoof.buildRoof(topFloor)
+#     # 生成重檐
+#     buildFloor.buildFloor(doubleEave)
 
-    # 5、关闭进度条 ---------------------------
-    build.isFinished = True
-    # 取消排除目录下的其他建筑
-    build.__excludeOther(isExclude=False,
-                         keepObj=contextObj)
+#     # 5、关闭进度条 ---------------------------
+#     build.isFinished = True
+#     # 取消排除目录下的其他建筑
+#     build.__excludeOther(isExclude=False,
+#                          keepObj=contextObj)
 
-    return {'FINISHED'}
+#     return {'FINISHED'}
 
 # 添加重楼
 def addMultiFloor(baseFloor:bpy.types.Object,
@@ -1366,7 +1366,9 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     
     # 0、合法性验证 -----------------------
     if bData.combo_type not in (con.COMBO_MULTI_FLOOR,
-                                con.COMBO_MAIN):
+                                con.COMBO_MAIN,
+                                con.COMBO_DOUBLE_EAVE,
+                                con.COMBO_PINGZUO):
         # 如果是comboRoot或月台，尝试替换为main建筑
         baseFloor = utils.getMainBuilding(baseFloor)
         if baseFloor is not None:
@@ -1384,6 +1386,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
             utils.popMessageBox("暂时只用庑殿、歇山屋顶样式支持添加重楼")
             return {'CANCELLED'}
     tileRoot = utils.getAcaChild(baseFloor,con.ACA_TYPE_TILE_ROOT)
+    # 避免类似直接从空柱网模板开始做阁楼的异常做法
     if tileRoot==None:
         utils.popMessageBox("当前建筑尚未生成屋顶，请先设置完成屋顶参数")
         return {'CANCELLED'}
@@ -1559,9 +1562,12 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
 
     # 1、添加重楼子节点
     comboRootObj = utils.getComboRoot(lowerFloor)
-    upperfloorName = bData.template_name + '.重楼'
+    if use_floor:
+        upperfloorName = '.重楼'
+    else:
+        upperfloorName = '.重檐'
     upperfloor = buildFloor.__addBuildingRoot(
-        templateName = upperfloorName,
+        templateName = bData.template_name + upperfloorName,
         comboObj = comboRootObj
     )
     
@@ -1581,12 +1587,23 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
     __syncData(fromBuilding=lowerFloor,
                toBuilding=upperfloor)
     dk = mData.DK
-    # 屋顶类型从comboRoot同步
-    mData['roof_style'] = int(comboRootObj.ACA_data.roof_style)
     # 清除踏步
     mData.step_list.clear()
     # 根据收分，更新地盘数据
     __setTaperData(mData,taper)
+
+    # 1.1 设置屋顶
+    # 是否为顶层？
+    isTop = True
+    for child in comboRootObj.children:
+        if child.ACA_data.combo_parent == mData.aca_id:
+            isTop = False
+            break
+    if isTop:
+        # 屋顶类型从comboRoot同步
+        mData['roof_style'] = int(comboRootObj.ACA_data.roof_style)
+    else:
+        mData['roof_style'] = int(con.ROOF_LUDING)
 
     # 2、设置楼板 ----------------------
     # 如果建于平坐之上，或不做重屋，关闭上层台基
@@ -1670,6 +1687,67 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
             raise Exception(str(e))
 
     return upperfloor
+
+# 根据楼阁方案，设置楼阁默认参数
+def update_multi_floor_setting(self, context:bpy.types.Context):
+    print("resetting pavilion var")
+    buildingObj,bData,oData = utils.getRoot(context.object)
+    dk = bData.DK
+
+    scnData = bpy.context.scene.ACA_data
+    pavilionIndex = scnData.pavilionIndex
+    setting = scnData.pavilionSetting
+
+    # 0.重檐
+    if pavilionIndex == 0:
+        setting.use_floor = False
+        setting.use_mideave = True
+        setting.use_pingzuo = False
+        setting.use_railing = False
+        setting.use_loggia = False
+        setting.taper = 11*dk  # 默认收分一攒
+    # 1.简单重楼(涵月楼)
+    if pavilionIndex == 1:
+        setting.use_floor = True
+        setting.use_mideave = False
+        setting.use_pingzuo = True
+        setting.use_railing = False
+        setting.use_loggia = False
+        setting.taper = 0  # 默认不做收分
+    # 2.重楼+平坐栏杆
+    if pavilionIndex == 2:
+        setting.use_floor = True
+        setting.use_mideave = False
+        setting.use_pingzuo = True
+        setting.use_railing = True
+        setting.use_loggia = False
+        setting.taper = 3*dk  # 默认收分1拽架
+    # 3.重楼+披檐(无平坐，如，边靖楼)
+    if pavilionIndex == 3:
+        setting.use_floor = True
+        setting.use_mideave = True
+        setting.use_pingzuo = False
+        setting.use_railing = False
+        setting.use_loggia = False
+        setting.taper = 3*dk  # 默认收分1拽架
+    # 4.重楼+披檐+平坐栏杆(观音阁)
+    if pavilionIndex == 4:
+        setting.use_floor = True
+        setting.use_mideave = True
+        setting.use_pingzuo = True
+        setting.use_railing = True
+        setting.use_loggia = False
+        setting.taper = 3*dk  # 默认收分1拽架
+        setting.pingzuo_taper = 3*dk # 默认平坐再收分1拽架
+    # 5.重楼+披檐+回廊栏杆(插花楼)
+    if pavilionIndex == 5:
+        setting.use_floor = True
+        setting.use_mideave = True
+        setting.use_pingzuo = True
+        setting.use_railing = True
+        setting.use_loggia = True
+        setting.taper = 11*dk  # 默认收分1攒
+        setting.loggia_width = 22*dk # 回廊默认2攒
 
 # 更新combo中的所有建筑高度
 def __updateFloorLoc(contextObj:bpy.types.Object):
@@ -2166,7 +2244,10 @@ def __updateMultiFloorParent(parentObj:bpy.types.Object,
 
         # 非重楼对象(月台等)，不做处理
         if cData.combo_type not in (
-            con.COMBO_MAIN,con.COMBO_MULTI_FLOOR):
+            con.COMBO_MAIN,
+            con.COMBO_MULTI_FLOOR,
+            con.COMBO_PINGZUO,
+            con.COMBO_DOUBLE_EAVE,):
             continue
         
         # 把冲突对象的父id，绑定到当前对象上

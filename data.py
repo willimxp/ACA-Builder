@@ -1622,6 +1622,10 @@ def updateSelectedPavilionThumb(self,context):
         scene.pavilion_browser_enum = tName
     except Exception as e:
         utils.outputMsg(f"无法显示缩略图 {tName}") 
+    
+    # 更新默认参数
+    from . import buildCombo
+    buildCombo.update_multi_floor_setting(self,context)
     return
 
 def updateSelectedPavilion(self, context:bpy.types.Context):
@@ -1632,6 +1636,49 @@ def updateSelectedPavilion(self, context:bpy.types.Context):
         if item.name == selectedThumb:
             scnData['pavilionIndex'] = index
     return
+
+# 楼阁设置属性集
+class ACA_data_pavilion(bpy.types.PropertyGroup):
+    # 收分
+    taper: bpy.props.FloatProperty(
+        name="重楼收分",
+        default=0.0
+    ) # type: ignore
+    # 添加重屋
+    use_floor:bpy.props.BoolProperty(
+            name = "添加重屋",
+            default=False,
+        ) # type: ignore
+    # 添加平坐
+    use_pingzuo:bpy.props.BoolProperty(
+            name = "添加平坐",
+            default=False,
+        ) # type: ignore
+    # 回廊宽度
+    pingzuo_taper: bpy.props.FloatProperty(
+        name="平坐收分",
+        default=0.0
+    ) # type: ignore
+    # 添加腰檐
+    use_mideave:bpy.props.BoolProperty(
+            name = "添加腰檐",
+            default=False,
+        ) # type: ignore
+    # 添加栏杆
+    use_railing:bpy.props.BoolProperty(
+            name = "添加栏杆",
+            default=False,
+        ) # type: ignore
+    # 添加回廊
+    use_loggia:bpy.props.BoolProperty(
+            name = "添加回廊",
+            default=False,
+        ) # type: ignore
+    # 回廊宽度
+    loggia_width: bpy.props.FloatProperty(
+        name="回廊宽度",
+        default=0.0
+    ) # type: ignore
 
 # 场景范围的数据
 # 可绑定面板参数属性
@@ -1677,3 +1724,7 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             default=0, 
             update=updateSelectedPavilionThumb,
         )# type: ignore 
+    pavilionSetting: bpy.props.PointerProperty(
+        type=ACA_data_pavilion,
+        name="楼阁设置"
+    )# type: ignore

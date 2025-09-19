@@ -29,6 +29,7 @@ classes = (
     # 全局数据类
     data.TemplateListItem,
     data.TemplateThumbItem,
+    data.ACA_data_pavilion,
     data.ACA_data_scene,
     data.ACA_data_wall_common,
     data.ACA_data_door_common,

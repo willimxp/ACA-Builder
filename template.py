@@ -798,6 +798,41 @@ def loadThumb():
                 utils.outputMsg(f"Failed to generate preview for {item.name}: {str(e)}")    
     return
 
+# 载入缩略图，必须结合静态的集合操作
+def loadPavilionThumb():
+    # 定义缩略图目录
+    addonName = "ACA Builder"
+    thumbFolder = 'pavilion'
+    USER = pathlib.Path(
+        bpy.utils.resource_path('USER'))
+    thumb_directory = USER / "scripts/addons" / addonName / thumbFolder
+
+    # 载入缩略图到场景参数集合
+    scene = bpy.context.scene
+    scene.pavilion_browser_items.clear()
+    image_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.gif', '.svg')
+    for file in os.listdir(thumb_directory):
+        if file.lower().endswith(image_extensions):
+            item = scene.pavilion_browser_items.add()
+            item.name = file
+            item.path = os.path.join(thumb_directory, file)
+
+    # 生成Blender内置的缩略图
+    global preview_collections
+    # 载入blender preview模块
+    if "pavilion" not in preview_collections:
+        preview_collections["pavilion"] = bpy.utils.previews.new()
+    pcoll = preview_collections["pavilion"]
+
+    for item in scene.pavilion_browser_items:
+        if os.path.exists(item.path):
+            try:
+                if not pcoll.get(item.name):
+                    pcoll.load(item.name, item.path, 'IMAGE')
+            except Exception as e:
+                utils.outputMsg(f"Failed to generate preview for {item.name}: {str(e)}")    
+    return
+
 # 构造缩略图列表的enum属性
 # 因为使用了Blender的template_view_icon控件，需要构造这个结构
 # 为了解决Label显示的乱码问题，引入了一个_make_item()方法
@@ -866,6 +901,64 @@ def getThumbEnum(self, context):
     # print(repr(items))
     return items
 
+def getPavilionEnum(self, context):
+    # 引入了_make_item()方法后，不再需要全局声明items
+    items = []
+    # 不能直接clear，否则会产生乱码
+    # https://github.com/bonjorno7/3dn-bip/issues/51
+    #items.clear()
+
+    # 载入预览集合
+    global preview_collections
+    pcoll = preview_collections.get("pavilion", None)
+    if not pcoll:
+        return items
+    
+    # 确认缩略图已载入
+    scene = context.scene
+    if not hasattr(scene, "pavilion_browser_items"):
+        return items
+
+    # 基于模板列表，逐一匹配缩略图，使之顺序一致
+    scnData = context.scene.ACA_data
+    pavilionItems = scnData.pavilionItem
+    thumbIndex = 0
+    # 获取模板列表
+    for pavilion in pavilionItems:
+        # 模板名称
+        pavilionName = pavilion.name
+        isFindThumb = False
+        for image in scene.pavilion_browser_items:
+            # 图标ID
+            thumb = pcoll.get(image.name)
+            iconId = thumb.icon_id if thumb else 0
+
+            # 缩略图名称：图片文件去掉后缀
+            thumbName = image.name
+            thumbName = thumbName[:thumbName.rfind(".")]
+
+            # 如果找到则添加到Enum列表
+            if thumbName == pavilionName:
+                items.append(_make_item(
+                    thumbName, thumbName, thumbName, 
+                    iconId, thumbIndex))
+                isFindThumb = True
+                thumbIndex += 1
+                break
+        
+        # 如果没有找到缩略图，则添加一个nopreview.png
+        if not isFindThumb:
+            thumb = pcoll.get('nopreview.png')
+            iconId = thumb.icon_id if thumb else 0
+
+            items.append(_make_item(
+                pavilionName, pavilionName, pavilionName, 
+                iconId, thumbIndex))
+            thumbIndex += 1
+            
+    # print(repr(items))
+    return items
+
 # 删除预览集合
 # 在__init__.py中的ungregister()中调用
 def releasePreview():
@@ -873,6 +966,11 @@ def releasePreview():
     for pcoll in preview_collections.values():
         bpy.utils.previews.remove(pcoll)
     preview_collections.clear()
+
+    # global preview_collections
+    # for pcoll in preview_collections.values():
+    #     bpy.utils.previews.remove(pcoll)
+    # preview_collections.clear()
 
 # 将XML中的节点按类型转换
 def __readNode(node):

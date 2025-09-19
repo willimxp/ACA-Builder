@@ -37,6 +37,15 @@ def initprop():
         items=template.getThumbEnum,
         update=updateSelectedTemplate,
     )
+
+    # 用于楼阁缩略图控件的载入
+    bpy.types.Scene.pavilion_browser_items = bpy.props.CollectionProperty(
+        type=TemplateThumbItem)
+    bpy.types.Scene.pavilion_browser_enum = bpy.props.EnumProperty(
+        name="pavilion",
+        items=template.getPavilionEnum,
+        update=updateSelectedPavilion,
+    )
     return
 
 # 销毁自定义属性
@@ -47,6 +56,8 @@ def delprop():
     # 用于模板缩略图控件的载入
     del bpy.types.Scene.image_browser_items
     del bpy.types.Scene.image_browser_enum
+    del bpy.types.Scene.pavilion_browser_items
+    del bpy.types.Scene.pavilion_browser_enum
 
 # # 筛选资产目录
 # def p_filter(self, object:bpy.types.Object):
@@ -1602,6 +1613,26 @@ def updateSelectedTemplate(self, context:bpy.types.Context):
             scnData['templateIndex'] = index
     return
 
+# 模板列表更新时，联动右侧缩略图
+def updateSelectedPavilionThumb(self,context):    
+    scene = bpy.context.scene
+    tIndex = self.pavilionIndex
+    tName = self.pavilionItem[tIndex].name
+    try:
+        scene.pavilion_browser_enum = tName
+    except Exception as e:
+        utils.outputMsg(f"无法显示缩略图 {tName}") 
+    return
+
+def updateSelectedPavilion(self, context:bpy.types.Context):
+    selectedThumb = self.pavilion_browser_enum
+    scnData = context.scene.ACA_data
+    pavilionItems = scnData.pavilionItem
+    for index,item in enumerate(pavilionItems):
+        if item.name == selectedThumb:
+            scnData['pavilionIndex'] = index
+    return
+
 # 场景范围的数据
 # 可绑定面板参数属性
 # 也可做为全局变量访问
@@ -1637,4 +1668,11 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             name="Active List Index",
             default=0, 
             update=updateSelectedThumb,
+        )# type: ignore 
+    pavilionItem : bpy.props.CollectionProperty(
+        type=TemplateListItem)# type: ignore
+    pavilionIndex: bpy.props.IntProperty(
+            name="Active pavilion Index",
+            default=0, 
+            update=updateSelectedPavilionThumb,
         )# type: ignore 

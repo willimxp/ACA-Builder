@@ -1383,11 +1383,30 @@ def addMultiFloor(baseFloor:bpy.types.Object,
                     con.ROOF_XIESHAN_JUANPENG,):
             utils.popMessageBox("暂时只用庑殿、歇山屋顶样式支持添加重楼")
             return {'CANCELLED'}
+    tileRoot = utils.getAcaChild(baseFloor,con.ACA_TYPE_TILE_ROOT)
+    if tileRoot==None:
+        utils.popMessageBox("当前建筑尚未生成屋顶，请先设置完成屋顶参数")
+        return {'CANCELLED'}
     # 保护避免0的异常
     if taper == 0:taper = 0.01
 
-    # 1、重楼数据初始化，包括下层、披檐、平坐、重楼等
-    # 1.1、下层的处理
+    # 1、数据准备 --------------------
+    # 1.1、显示进度条 
+    from . import build
+    build.isFinished = False
+    build.progress = 0
+    utils.outputMsg("添加重楼子建筑...")
+    # 暂时排除目录下的其他建筑，以加快执行速度
+    build.__excludeOther(keepObj=baseFloor)
+    
+    # 1.2、添加combo根节点
+    comboObj = utils.getComboRoot(baseFloor)
+    # 如果不存在combo则新建
+    if comboObj is None:
+        comboObj = __addComboLevel(baseFloor)
+
+    # 2、重楼数据初始化，包括下层、披檐、平坐、重楼等
+    # 2.1、下层的处理
     # 梁架强制不做廊间举架
     bData['use_hallway'] = False
     # 如果要做腰檐，屋顶改做盝顶
@@ -1405,7 +1424,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     # 设置上层基座为下层（盝顶或平坐）
     lowerFloor = baseFloor
 
-    # 1.2、添加独立平坐层
+    # 2.2、添加独立平坐层
     # 同时要求做平坐和腰檐时，做一个独立的平座层
     # 不做腰檐的，直接下层已经改为平坐了，不额外添加
     pingzuo = None
@@ -1423,7 +1442,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
         # 设置上层基座为新生成的平坐
         lowerFloor = pingzuo
 
-    # 1.3、添加上层重楼
+    # 2.3、添加上层重楼
     # 可能基于做了腰檐的下层盝顶
     # 可能基于不做腰檐的下层平坐
     # 可能基于做了腰檐的下层平坐
@@ -1458,23 +1477,8 @@ def addMultiFloor(baseFloor:bpy.types.Object,
         utils.popMessageBox(str(e))
         return {'CANCELLED'}
 
-    # 2、执行 --------------------
-    # 2.1、显示进度条 
-    from . import build
-    build.isFinished = False
-    build.progress = 0
-    utils.outputMsg("添加重楼子建筑...")
-    # 暂时排除目录下的其他建筑，以加快执行速度
-    build.__excludeOther(keepObj=baseFloor)
-    
-    # 2.2、添加combo根节点
-    comboObj = utils.getComboRoot(baseFloor)
-    # 如果不存在combo则新建
-    if comboObj is None:
-        comboObj = __addComboLevel(baseFloor)
-
-    # 2.3、执行营造
-    # 刷新各层的抬升
+    # 3、执行营造 -------------------------------------
+    # 3.1、刷新各层的抬升
     __updateFloorLoc(comboObj)
     # 刷新老屋顶
     buildRoof.buildRoof(baseFloor)
@@ -1484,7 +1488,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     # 生成重楼
     buildFloor.buildFloor(upperFloor,comboObj=comboObj)
 
-    # 2.4、关闭进度条
+    # 3.2、关闭进度条
     build.isFinished = True
     # 取消排除目录下的其他建筑
     build.__excludeOther(isExclude=False,

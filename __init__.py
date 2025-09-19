@@ -42,7 +42,6 @@ classes = (
     
     # 基本面板类
     panel.ACA_PT_basic,
-    #panel.ACA_PT_extra,
     panel.ACA_PT_props, 
     panel.ACA_PT_roof_props,
     panel.ACA_PT_pillers,
@@ -92,8 +91,6 @@ classes = (
     operators.ACA_OT_SECTION,
     operators.ACA_OT_TERRACE_DEL,
     operators.ACA_OT_TERRACE_ADD,
-    operators.ACA_OT_DOUBLE_EAVE_ADD,
-    operators.ACA_OT_DOUBLE_EAVE_DEL,
     operators.ACA_OT_MULTI_FLOOR_ADD,
     operators.ACA_OT_ADD_LOGGIA,
 )

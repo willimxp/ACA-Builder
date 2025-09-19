@@ -253,12 +253,6 @@ class ACA_PT_basic(bpy.types.Panel):
         # 第一行 ------------------------------
         toolBox = box.column(align=True)
         toolBar = toolBox.grid_flow(columns=1, align=True)
-        # # 添加重檐
-        # btnMultiFloor3 = toolBar.column(align=True)
-        # op = btnMultiFloor3.operator(
-        #                 "aca.double_eave_add",
-        #                 icon='PACKAGE',
-        #                 text="添加重檐")
         # 上出重楼
         btnMultiFloor1 = toolBar.column(align=True)
         op = btnMultiFloor1.operator(
@@ -318,11 +312,6 @@ class ACA_PT_props(bpy.types.Panel):
             layout = self.layout
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
-            comboObj = utils.getComboRoot(buildingObj)
-            if comboObj is not None:
-                cData:acaData = comboObj.ACA_data
-            else:
-                cData = bData
 
             if buildingObj == None: 
                 # 如果不属于建筑构件，提示，并隐藏所有子面板
@@ -336,7 +325,7 @@ class ACA_PT_props(bpy.types.Panel):
                 box = layout.box()
                 row = box.row(align=True)
                 col = row.column(align=True)
-                col.prop(cData,'DK')
+                col.prop(bData,'DK')
                 # 计算默认斗口值
                 col = row.column(align=True)
                 col.operator("aca.default_dk",icon='SHADERFX',text='')
@@ -829,13 +818,6 @@ class ACA_PT_roof_props(bpy.types.Panel):
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
 
-            # 屋顶数据统一在comboRoot中管理
-            comboObj = utils.getComboRoot(buildingObj)
-            if comboObj is not None:
-                cData:acaData = comboObj.ACA_data
-            else:
-                cData = bData
-
             if buildingObj == None: 
                 # 如果不属于建筑构件，提示，并隐藏所有子面板
                 row = layout.row()
@@ -852,28 +834,6 @@ class ACA_PT_roof_props(bpy.types.Panel):
                 droplistRoofstyle = toolBar.column(align=True)
                 droplistRoofstyle.prop(
                     bData, "roof_style",text='') 
-                
-                toolBar = toolBox.grid_flow(columns=2, align=True)
-
-                # 添加/取消重檐
-                btnDoubleEave = toolBar.column(align=True)
-                if not bData.use_double_eave:
-                    btnDoubleEave.operator(
-                        "aca.double_eave_add",
-                        icon='TRIA_UP_BAR',
-                        text='添加重檐')
-                else:
-                    btnDoubleEave.operator(
-                        "aca.double_eave_del",
-                        icon='TRIA_UP_BAR',
-                        depress=True,
-                        text='移除重檐')
-                    
-                # 必须聚焦在主建筑或重檐上，才可以添加/删除重檐
-                if bData.combo_type not in (
-                    con.COMBO_MAIN,con.COMBO_DOUBLE_EAVE
-                ):
-                    btnDoubleEave.enabled = False
 
                 # 屋顶营造按钮
                 buttonBuildroof = toolBar.column(align=True)
@@ -1017,20 +977,6 @@ class ACA_PT_beam(bpy.types.Panel):
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
 
-            # # 统一重檐上下檐设置
-            # if bData.combo_type == con.COMBO_DOUBLE_EAVE:
-            #     mainBuilding = utils.getMainBuilding(buildingObj)
-            #     # 用主建筑(下檐)的地盘统一设定
-            #     mData:acaData = mainBuilding.ACA_data
-            # else:
-            #     mData = bData
-            # 梁架属性统一在ComboRoot中管理
-            comboObj = utils.getComboRoot(buildingObj)
-            if comboObj is not None:
-                cData:acaData = comboObj.ACA_data
-            else:
-                cData = bData
-
             layout = self.layout
             if bData.aca_type not in (con.ACA_TYPE_BUILDING,
                                       con.ACA_TYPE_COMBO,):
@@ -1145,22 +1091,6 @@ class ACA_PT_rafter(bpy.types.Panel):
             # 追溯全局属性
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
-
-            # # 统一重檐上下檐设置
-            # if bData.combo_type == con.COMBO_DOUBLE_EAVE:
-            #     mainBuilding = utils.getMainBuilding(buildingObj)
-            #     # 用主建筑(下檐)的地盘统一设定
-            #     mData:acaData = mainBuilding.ACA_data
-            # else:
-            #     mData = bData
-
-            # 椽架统一在ComboRoot中管理
-            comboObj = utils.getComboRoot(buildingObj)
-            if comboObj is not None:
-                cData:acaData = comboObj.ACA_data
-            else:
-                cData = bData
-
 
             layout = self.layout
             if bData.aca_type not in (con.ACA_TYPE_BUILDING,
@@ -1279,13 +1209,6 @@ class ACA_PT_tiles(bpy.types.Panel):
                 layout.enabled = False
             if not bData.is_showTiles:
                 layout.enabled = False
-
-            # 瓦作属性统一在comboRoot中管理
-            comboObj = utils.getComboRoot(buildingObj)
-            if comboObj is not None:
-                cData:acaData = comboObj.ACA_data
-            else:
-                cData = bData
             
             # 瓦作属性
             box = layout.box()

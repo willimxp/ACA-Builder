@@ -79,6 +79,23 @@ def update_dk(self, context:bpy.types.Context):
         update_building(self,context)
     return
 
+# 更新柱高
+def update_pillerHeight(self, context:bpy.types.Context):
+    # 如果有楼阁，更新楼阁层高
+    comboRoot = utils.getComboRoot(context.object)
+    if comboRoot is not None:
+        # 显示进度条 
+        from . import build
+        build.isFinished = False
+        build.progress = 0
+
+        from . import buildCombo
+        buildCombo.__updateFloorLoc(comboRoot)
+    
+    # 重建当前建筑
+    update_building(self,context)
+    
+
 # 更新建筑，但不重设柱网
 def update_building(self, context:bpy.types.Context):
     # 判断自动重建开关
@@ -863,7 +880,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default = 0.0,
             min = 0.01, 
             precision=3,
-            update = update_building,
+            update = update_pillerHeight,
             description="有斗拱的取57-60斗口，无斗拱的取面阔的8/10",
         )# type: ignore
     piller_diameter : bpy.props.FloatProperty(

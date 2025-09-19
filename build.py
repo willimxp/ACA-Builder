@@ -286,7 +286,7 @@ def resetRoof(buildingObj:bpy.types.Object):
     comboObj = utils.getComboRoot(buildingObj)
     # 组合建筑
     if comboObj is not None:
-        buildCombo.updateCombo2(buildingObj,
+        buildCombo.updateCombo(buildingObj,
                                resetRoof=True)
     # 单体建筑
     else:

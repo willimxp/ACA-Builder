@@ -1672,7 +1672,8 @@ class ACA_data_scene(bpy.types.PropertyGroup):
     pavilionItem : bpy.props.CollectionProperty(
         type=TemplateListItem)# type: ignore
     pavilionIndex: bpy.props.IntProperty(
-            name="Active pavilion Index",
+            name="请选择上出楼阁的做法",
+            description="请选择上出阁楼的做法",
             default=0, 
             update=updateSelectedPavilionThumb,
         )# type: ignore 

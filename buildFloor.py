@@ -749,9 +749,16 @@ def __buildFang(buildingObj:bpy.types.Object):
             if obj.ACA_data['aca_type'] == con.ACA_TYPE_FANG:
                 # 连带小额枋、垫板子对象
                 utils.deleteHierarchy(obj,del_parent=True)
+    # 重新计算雀替，将雀替从wall_list中删除
+    queti_indices = [i for i, item in enumerate(bData.wall_list) 
+                     if "queti" in item.id]
+    for i in reversed(queti_indices):
+        bData.wall_list.remove(i)
+    utils.deleteByName(buildingObj,name='雀替')
     
     # 根据建筑模板的参数设置分布
     fangID_List = fangNet.split(',')
+    
     for fangID in fangID_List:
         if fangID == '': continue
 
@@ -1503,20 +1510,21 @@ def setLoggiaData(bData:acaData,
         bData.wall_list.remove(i)
     utils.deleteByName(bData.id_data,name='雀替')
 
-    # 地盘相较扩展了x2间y2间，可以传递装修
+    # 处理周围廊装修
     if (bData.x_rooms == preRooms_x + 2 
         and bData.y_rooms == preRooms_y + 2):
-        if side == '0':
-            # 处理装修
-            __childOffset(bData,
-                        offset_x=1,
-                        offset_y=1)
-        elif side == '1':
-            # 处理装修
-            __childOffset(bData,
-                        offset_x=0,
-                        offset_y=1)
-    # 地盘不一致时，清除装修
+        # 迁移装修
+        __childOffset(bData,
+                    offset_x=1,
+                    offset_y=1)
+    # 处理前后廊装修
+    elif (bData.x_rooms == preRooms_x
+          and bData.y_rooms == preRooms_y +2):
+        # 迁移装修
+        __childOffset(bData,
+                    offset_x=0,
+                    offset_y=1)
+    # 其他不可预期的情况，清除装修
     else:
         utils.clearChildData(bData)
 

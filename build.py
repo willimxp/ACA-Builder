@@ -591,6 +591,15 @@ def __getSectionPlan(boolObj:bpy.types.Object,
                 0,
             ))
             boolPlan['mat'] = con.M_STONE
+        # 9-平座层，裁剪1/4
+        elif con.COLL_NAME_BALCONY in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.5 - origin_loc.x,
+                -boolObj.dimensions.y*0.5,
+                0,
+            ))
+            boolPlan['mat'] = con.M_STONE
     elif sectionType == 'C':
         # 1-台基层，不裁剪
         if con.COLL_NAME_BASE in layerName:
@@ -665,6 +674,15 @@ def __getSectionPlan(boolObj:bpy.types.Object,
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
                 boolObj.dimensions.x*0.35 - origin_loc.x,
+                0,
+                0,
+            ))
+            boolPlan['mat'] = con.M_STONE
+        # 9-平座层，裁剪一半
+        elif con.COLL_NAME_BALCONY in layerName:
+            boolPlan['bool'] = True
+            boolPlan['offset'] = Vector((
+                boolObj.dimensions.x*0.5 - origin_loc.x,
                 0,
                 0,
             ))

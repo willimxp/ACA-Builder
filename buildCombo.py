@@ -690,15 +690,15 @@ def addMultiFloor(baseFloor:bpy.types.Object,
             utils.popMessageBox("请选中主体建筑")
             return {'CANCELLED'}
 
-        # 验证屋顶样式
-        if bData.roof_style not in (
-                    con.ROOF_LUDING,
-                    con.ROOF_WUDIAN,
-                    con.ROOF_XIESHAN,
-                    con.ROOF_XIESHAN_JUANPENG,):
-            utils.popMessageBox("暂时只用庑殿、歇山屋顶样式支持添加重楼")
-            return {'CANCELLED'}
-        
+    # 验证屋顶样式
+    if bData.roof_style not in (
+                con.ROOF_LUDING,
+                con.ROOF_WUDIAN,
+                con.ROOF_XIESHAN,
+                con.ROOF_XIESHAN_JUANPENG,):
+        utils.popMessageBox("暂时只用庑殿、歇山屋顶样式支持添加重楼")
+        return {'CANCELLED'}
+
     # 避免类似直接从空柱网模板开始做阁楼的异常做法
     if bData.combo_type != con.COMBO_PINGZUO:
         tileRoot = utils.getAcaChild(baseFloor,con.ACA_TYPE_TILE_ROOT)

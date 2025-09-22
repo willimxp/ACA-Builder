@@ -492,27 +492,13 @@ def __setTerraceData(parentObj:bpy.types.Object,
     # 初始化数据集
     # 月台数据集
     bData:acaData = terraceObj.ACA_data
-    __syncData(fromBuilding=parentObj,
-               toBuilding=terraceObj)
-    
-    # 1、分层显示控制 --------------------------
-    # 分层显示控制
-    bData['is_showPlatform'] = True
-    bData['is_showPillers'] = True
-    bData['is_showWalls'] = False
-    bData['is_showDougong'] = False
-    bData['is_showBeam'] = False
-    bData['is_showRafter'] = False
-    bData['is_showTiles'] = False
 
-    # 基本属性标注
-    bData['use_terrace'] = True
-    mData['use_terrace'] = True
-    # 柱网仅显示定位点
-    bData['piller_net'] = con.ACA_PILLER_HIDE
-
-    # 2、仅在新建时的初始化处理，更新时跳过 -------------
+    # 1、新建时的初始化处理，更新时跳过 -------------
     if isInit:
+        # 同步基本建筑的柱网等数据
+        __syncData(fromBuilding=parentObj,
+               toBuilding=terraceObj)
+        
         # 不做踏跺
         bData.step_list.clear()
         # 不做墙体
@@ -563,6 +549,23 @@ def __setTerraceData(parentObj:bpy.types.Object,
             mData.platform_extend 
             - con.STEP_HEIGHT*2
             )
+    
+    # 2、其他数据的设置 --------------------------
+    # 分层显示控制
+    bData['is_showPlatform'] = True
+    bData['is_showPillers'] = True
+    bData['is_showWalls'] = False
+    bData['is_showDougong'] = False
+    bData['is_showBeam'] = False
+    bData['is_showRafter'] = False
+    bData['is_showTiles'] = False
+    bData['is_showBalcony'] = False
+
+    # 基本属性标注
+    bData['use_terrace'] = True
+    mData['use_terrace'] = True
+    # 柱网仅显示定位点
+    bData['piller_net'] = con.ACA_PILLER_HIDE
         
     # 月台定位 ------------------------
     # 更新地盘数据，计算当前的y_total

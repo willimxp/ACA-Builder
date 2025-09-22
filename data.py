@@ -1380,6 +1380,10 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "斗栱",
             type = bpy.types.Object,
         )# type: ignore  
+    mat_guayanban : bpy.props.PointerProperty(
+            name = "挂檐板",
+            type = bpy.types.Object,
+        )# type: ignore 
     
     # 柱对象
     piller_source : bpy.props.PointerProperty(
@@ -1642,7 +1646,7 @@ def updateSelectedPavilionThumb(self,context):
     
     # 更新默认参数
     from . import buildCombo
-    buildCombo.update_multi_floor_setting(self,context)
+    buildCombo.set_multiFloor_plan(self,context)
     return
 
 def updateSelectedPavilion(self, context:bpy.types.Context):
@@ -1652,6 +1656,10 @@ def updateSelectedPavilion(self, context:bpy.types.Context):
     for index,item in enumerate(pavilionItems):
         if item.name == selectedThumb:
             scnData['pavilionIndex'] = index
+
+    # 更新默认参数
+    from . import buildCombo
+    buildCombo.set_multiFloor_plan(self,context)
     return
 
 # 楼阁设置属性集
@@ -1664,7 +1672,7 @@ class ACA_data_pavilion(bpy.types.PropertyGroup):
     # 添加重屋
     use_floor:bpy.props.BoolProperty(
             name = "添加重屋",
-            default=False,
+            default=True,
         ) # type: ignore
     # 添加平坐
     use_pingzuo:bpy.props.BoolProperty(
@@ -1679,7 +1687,7 @@ class ACA_data_pavilion(bpy.types.PropertyGroup):
     # 添加腰檐
     use_mideave:bpy.props.BoolProperty(
             name = "添加腰檐",
-            default=False,
+            default=True,
         ) # type: ignore
     # 添加栏杆
     use_railing:bpy.props.BoolProperty(
@@ -1695,6 +1703,11 @@ class ACA_data_pavilion(bpy.types.PropertyGroup):
     loggia_width: bpy.props.FloatProperty(
         name="回廊宽度",
         default=0.0
+    ) # type: ignore
+    # 下出平坐
+    use_lower_pingzuo:bpy.props.BoolProperty(
+        name = "下出平坐",
+        default=False,
     ) # type: ignore
 
 # 场景范围的数据

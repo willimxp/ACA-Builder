@@ -579,8 +579,7 @@ def __setTerraceData(parentObj:bpy.types.Object,
     return terraceObj
 
 # 根据楼阁方案，设置楼阁默认参数
-def update_multi_floor_setting(self, context:bpy.types.Context):
-    print("resetting pavilion var")
+def set_multiFloor_plan(self, context:bpy.types.Context):
     buildingObj,bData,oData = utils.getRoot(context.object)
     dk = bData.DK
 
@@ -595,6 +594,7 @@ def update_multi_floor_setting(self, context:bpy.types.Context):
         setting.use_pingzuo = False
         setting.use_railing = False
         setting.use_loggia = False
+        setting.use_lower_pingzuo = False
         setting.taper = 11*dk  # 默认收分一攒
     # 1.简单重楼(涵月楼)
     if pavilionIndex == 1:
@@ -603,6 +603,7 @@ def update_multi_floor_setting(self, context:bpy.types.Context):
         setting.use_pingzuo = True
         setting.use_railing = False
         setting.use_loggia = False
+        setting.use_lower_pingzuo = False
         setting.taper = 0  # 默认不做收分
     # 2.重楼+平坐栏杆
     if pavilionIndex == 2:
@@ -611,6 +612,7 @@ def update_multi_floor_setting(self, context:bpy.types.Context):
         setting.use_pingzuo = True
         setting.use_railing = True
         setting.use_loggia = False
+        setting.use_lower_pingzuo = False
         setting.taper = 3*dk  # 默认收分1拽架
     # 3.重楼+披檐(无平坐，如，边靖楼)
     if pavilionIndex == 3:
@@ -619,6 +621,7 @@ def update_multi_floor_setting(self, context:bpy.types.Context):
         setting.use_pingzuo = False
         setting.use_railing = False
         setting.use_loggia = False
+        setting.use_lower_pingzuo = False
         setting.taper = 3*dk  # 默认收分1拽架
     # 4.重楼+披檐+平坐栏杆(观音阁)
     if pavilionIndex == 4:
@@ -627,6 +630,7 @@ def update_multi_floor_setting(self, context:bpy.types.Context):
         setting.use_pingzuo = True
         setting.use_railing = True
         setting.use_loggia = False
+        setting.use_lower_pingzuo = False
         setting.taper = 3*dk  # 默认收分1拽架
         setting.pingzuo_taper = 3*dk # 默认平坐再收分1拽架
     # 5.重楼+披檐+回廊栏杆(插花楼)
@@ -636,22 +640,42 @@ def update_multi_floor_setting(self, context:bpy.types.Context):
         setting.use_pingzuo = True
         setting.use_railing = True
         setting.use_loggia = True
+        setting.use_lower_pingzuo = False
         setting.taper = 11*dk  # 默认收分1攒
         setting.loggia_width = 22*dk # 回廊默认2攒
+    # 6.下出平坐
+    if pavilionIndex == 6:
+        setting.use_floor = False
+        setting.use_mideave = False
+        setting.use_pingzuo = False
+        setting.use_railing = True
+        setting.use_loggia = False
+        setting.use_lower_pingzuo = True
+        setting.taper = 0  # 默认不做收分
 
 # 添加重楼
 def addMultiFloor(baseFloor:bpy.types.Object,
-                  taper=0.0, # 收分
-                  use_floor=True,# 做重屋
-                  use_mideave=False, # 做腰檐
-                  use_pingzuo=False, # 做平坐
-                  pingzuo_taper=0.0, # 平坐收分
-                  use_railing=False, # 做平坐栏杆
-                  use_loggia=False, # 做回廊
-                  loggia_width=0.0,# 回廊宽度
+                  setting,# 重楼设置
+                #   taper=0.0, # 收分
+                #   use_floor=True,# 做重屋
+                #   use_mideave=False, # 做腰檐
+                #   use_pingzuo=False, # 做平坐
+                #   pingzuo_taper=0.0, # 平坐收分
+                #   use_railing=False, # 做平坐栏杆
+                #   use_loggia=False, # 做回廊
+                #   loggia_width=0.0,# 回廊宽度
                   ):   
     # 载入数据
     bData:acaData = baseFloor.ACA_data
+    taper=setting.taper # 收分
+    use_floor=setting.use_floor # 做重屋
+    use_mideave=setting.use_mideave # 做腰檐
+    use_pingzuo=setting.use_pingzuo # 做平坐
+    pingzuo_taper=setting.pingzuo_taper # 平坐收分
+    use_railing=setting.use_railing # 做平坐栏杆
+    use_loggia=setting.use_loggia # 做回廊
+    loggia_width=setting.loggia_width # 回廊宽度
+    use_lower_pingzuo=setting.use_lower_pingzuo # 下出平坐
     
     # 0、合法性验证 -----------------------
     if bData.combo_type not in (con.COMBO_MULTI_FLOOR,
@@ -674,11 +698,19 @@ def addMultiFloor(baseFloor:bpy.types.Object,
                     con.ROOF_XIESHAN_JUANPENG,):
             utils.popMessageBox("暂时只用庑殿、歇山屋顶样式支持添加重楼")
             return {'CANCELLED'}
-    tileRoot = utils.getAcaChild(baseFloor,con.ACA_TYPE_TILE_ROOT)
+        
     # 避免类似直接从空柱网模板开始做阁楼的异常做法
-    if tileRoot==None:
-        utils.popMessageBox("当前建筑尚未生成屋顶，请先设置完成屋顶参数")
+    if bData.combo_type != con.COMBO_PINGZUO:
+        tileRoot = utils.getAcaChild(baseFloor,con.ACA_TYPE_TILE_ROOT)
+        if tileRoot==None:
+            utils.popMessageBox("当前建筑尚未生成屋顶，请先设置完成屋顶参数")
+            return {'CANCELLED'}
+    
+    # 避免直接在平坐上做重檐
+    if bData.combo_type == con.COMBO_PINGZUO and use_mideave:
+        utils.popMessageBox("无法在平座层上做重檐或披檐，请选择其他楼层")
         return {'CANCELLED'}
+        
     # 保护避免0的异常
     if taper == 0:taper = 0.01
 
@@ -699,86 +731,104 @@ def addMultiFloor(baseFloor:bpy.types.Object,
 
     # 2、重楼数据初始化，包括下层、披檐、平坐、重楼等
     # 2.1、下层的处理
-    # 梁架强制不做廊间举架
-    bData['use_hallway'] = False
-    # 如果要做腰檐，屋顶改做盝顶
-    if use_mideave:
-        # 下层屋顶：改为盝顶
-        bData['roof_style'] = int(con.ROOF_LUDING)
-        bData['luding_rafterspan'] = taper
-    # 如果不做腰檐，屋顶改作平坐
+    # 下出平坐，下层关闭台基
+    if use_lower_pingzuo:
+        # 关闭平坐台基
+        bData['is_showPlatform'] = False
+        bData['platform_height'] = 0
+    # 上出平坐或重楼，重设屋顶样式
     else:
-        # 下层屋顶：改为平坐
-        bData['roof_style'] = int(con.ROOF_BALCONY)
-        # 做平坐的朝天栏杆
-        bData['use_balcony_railing'] = use_railing
-        # 不涉及收分、栏杆
-    # 设置上层基座为下层（盝顶或平坐）
-    lowerFloor = baseFloor
+        # 梁架强制不做廊间举架
+        bData['use_hallway'] = False
+        # 如果要做腰檐，屋顶改做盝顶
+        if use_mideave:
+            # 下层屋顶：改为盝顶
+            bData['roof_style'] = int(con.ROOF_LUDING)
+            bData['luding_rafterspan'] = taper
+        # 如果不做腰檐，屋顶改作平坐
+        else:
+            # 下层屋顶：改为平坐
+            bData['roof_style'] = int(con.ROOF_BALCONY)
+            # 做平坐的朝天栏杆
+            bData['use_balcony_railing'] = use_railing
+            # 不涉及收分、栏杆
+        # 设置上层基座为下层（盝顶或平坐）
+        lowerFloor = baseFloor
 
     # 2.2、添加独立平坐层
     # 同时要求做平坐和腰檐时，做一个独立的平座层
     # 不做腰檐的，直接下层已经改为平坐了，不额外添加
     pingzuo = None
-    if use_pingzuo and use_mideave:
+    if (use_pingzuo and use_mideave) or use_lower_pingzuo:
         # 添加平坐，做收分，栏杆
         if use_loggia:
             # 上层做回廊时，不做平坐栏杆
             use_railing_pingzuo = False
         else:
             use_railing_pingzuo = use_railing
-        pingzuo = __addPingzuo(lowerFloor,
+        pingzuo = __addPingzuo(baseFloor,
                                taper,
+                               use_lower_pingzuo, # 是否为下出平坐
                                use_railing=use_railing_pingzuo,
                                )        
         # 设置上层基座为新生成的平坐
         lowerFloor = pingzuo
 
     # 2.3、添加上层重楼
-    # 可能基于做了腰檐的下层盝顶
-    # 可能基于不做腰檐的下层平坐
-    # 可能基于做了腰檐的下层平坐
+    upperFloor = None
+    # use_floor做重楼，或use_mideave做重檐/腰檐
+    # 如果是下出平坐，则无需做上层重楼
+    if use_floor or use_mideave:
+        # 可能基于做了腰檐的下层盝顶
+        # 可能基于不做腰檐的下层平坐
+        # 可能基于做了腰檐的下层平坐
 
-    # 如果下层为独立平坐层，
-    if use_pingzuo and use_mideave:
-        # 默认上层不做收分
-        upperTaper = 0
-        # 如果回廊较大，则需要在平坐收分的基础上，做二次收分
-        if use_loggia and loggia_width > taper:
-            upperTaper = loggia_width-taper
-        # 如果需要平坐收分
-        if pingzuo_taper > 0.0:
-            upperTaper += pingzuo_taper
-    # 下层没有独立平座层，如简单重楼模式，直接应用收分
-    else:
-        upperTaper = taper
-
-    try:
-        upperFloor = __addUpperFloor(
-            lowerFloor,
-            taper=upperTaper,
-            use_floor=use_floor,
-            use_railing=use_railing,
-            # 回廊是否外扩,如果不做平坐，按内收做法
-            is_on_pingzuo=use_pingzuo,
-            # 做回廊
-            use_loggia=use_loggia, 
-            loggia_width=loggia_width
-        )
-    except Exception as e:
-        utils.popMessageBox(str(e))
-        return {'CANCELLED'}
+        # 如果下层为独立平坐层，
+        if use_pingzuo and use_mideave:
+            # 默认上层不做收分
+            upperTaper = 0
+            # 如果回廊较大，则需要在平坐收分的基础上，做二次收分
+            if use_loggia and loggia_width > taper:
+                upperTaper = loggia_width-taper
+            # 如果需要平坐收分
+            if pingzuo_taper > 0.0:
+                upperTaper += pingzuo_taper
+        # 下层没有独立平座层，如简单重楼模式，直接应用收分
+        else:
+            upperTaper = taper
+            
+        try:
+            upperFloor = __addUpperFloor(
+                lowerFloor,
+                taper=upperTaper,
+                use_floor=use_floor,
+                use_railing=use_railing,
+                # 回廊是否外扩,如果不做平坐，按内收做法
+                is_on_pingzuo=use_pingzuo,
+                # 做回廊
+                use_loggia=use_loggia, 
+                loggia_width=loggia_width
+            )
+        except Exception as e:
+            utils.popMessageBox(str(e))
+            return {'CANCELLED'}
 
     # 3、执行营造 -------------------------------------
     # 3.1、刷新各层的抬升
     __updateFloorLoc(comboObj)
-    # 刷新老屋顶
-    buildRoof.buildRoof(baseFloor)
+    # 下层处理
+    if use_lower_pingzuo:
+        # 下出平坐，关闭下层台基
+        buildPlatform.resizePlatform(baseFloor)
+    else:
+        # 刷新老屋顶
+        buildRoof.buildRoof(baseFloor)
     # 生成平坐
-    if pingzuo != None:
+    if pingzuo is not None:
         buildFloor.buildFloor(pingzuo,comboObj=comboObj)
     # 生成重楼
-    buildFloor.buildFloor(upperFloor,comboObj=comboObj)
+    if upperFloor is not None:
+        buildFloor.buildFloor(upperFloor,comboObj=comboObj)
 
     # 3.2、关闭进度条
     build.isFinished = True
@@ -789,15 +839,16 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     return {'FINISHED'}
 
 # 添加平坐层
-def __addPingzuo(lowerFloor:bpy.types.Object,
+def __addPingzuo(baseFloor:bpy.types.Object,
                  taper, # 收分
+                 use_lower_pingzuo=False,
                  use_railing=False, # 做平坐栏杆
                  ):
     # 载入数据
-    bData:acaData = lowerFloor.ACA_data
+    bData:acaData = baseFloor.ACA_data
 
     # 1、添加平坐子节点
-    comboObj = utils.getComboRoot(lowerFloor)
+    comboObj = utils.getComboRoot(baseFloor)
     pingzuoName = bData.template_name + '.平坐'
     pingzuo = buildFloor.__addBuildingRoot(
         templateName = pingzuoName,
@@ -806,15 +857,19 @@ def __addPingzuo(lowerFloor:bpy.types.Object,
 
     # 2、平坐数据初始化
     # 从下同步：柱网等信息
-    __syncData(fromBuilding=lowerFloor,
+    __syncData(fromBuilding=baseFloor,
                toBuilding=pingzuo)
     
     # 3、平坐数据的其他设置
     mData:acaData = pingzuo.ACA_data
     mData['combo_type'] = con.COMBO_PINGZUO
     # 平坐父子关系
-    __updateMultiFloorParent(parentObj=lowerFloor,
-                             childObj=pingzuo)
+    if use_lower_pingzuo:
+        __updateMultiFloorParent(parentObj=pingzuo,
+                                childObj=baseFloor)
+    else:
+        __updateMultiFloorParent(parentObj=baseFloor,
+                                childObj=pingzuo)
 
     # 屋顶设为平坐
     mData['roof_style'] = int(con.ROOF_BALCONY)
@@ -825,7 +880,7 @@ def __addPingzuo(lowerFloor:bpy.types.Object,
     mData['platform_height'] = 0
     # 设置柱高:叉柱到斗栱上
     # 从斗栱顶(挑檐桁下皮)，到围脊向上额枋高度
-    mideaveHeight = __getPingzuoHeight(lowerFloor)
+    mideaveHeight = __getPingzuoHeight(baseFloor)
     mData['piller_height'] = mideaveHeight
     # 250916 新的逻辑中，建筑数据层层向上传递（不再使用comboRoot数据）
     # 所以这里不要清除，延迟到buildWall函数中判断

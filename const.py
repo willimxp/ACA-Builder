@@ -332,6 +332,7 @@ class ACA_Consts(object):
     M_MENZAN = '门簪'
     M_LINXIN_WAN = '万字锦'
     M_RAILING = '栏杆'
+    M_GUAYANBAN = '挂檐板'
 
     # 组合类型
     COMBO_ROOT = 'combo_root'

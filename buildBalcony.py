@@ -102,7 +102,9 @@ def __buildFloor(balconyRoot:bpy.types.Object):
         mirrorObj=balconyRoot,
         use_axis=(False,True,False)
     )
-    mat.paint(eaveObjFB,con.M_PAINT)
+    utils.updateScene()
+    utils.applyTransform(eaveObjFB,use_scale=True)
+    mat.paint(eaveObjFB,con.M_GUAYANBAN)
 
     # 两山
     eaveDim = (eaveY,
@@ -122,7 +124,9 @@ def __buildFloor(balconyRoot:bpy.types.Object):
         mirrorObj=balconyRoot,
         use_axis=(True,False,False)
     )
-    mat.paint(eaveObjLR,con.M_PAINT)
+    utils.updateScene()
+    utils.applyTransform(eaveObjLR,use_scale=True)
+    mat.paint(eaveObjLR,con.M_GUAYANBAN)
 
     # 3、构造地栿 --------------------------------
     if bData.use_balcony_railing:

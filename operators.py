@@ -1378,47 +1378,6 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     bl_label = "添加重楼"
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = '添加重楼'
-
-    # # 收分
-    # taper: bpy.props.FloatProperty(
-    #     name="重楼收分",
-    #     default=0.0
-    # ) # type: ignore
-    # # 添加重屋
-    # use_floor:bpy.props.BoolProperty(
-    #         name = "添加重屋",
-    #         default=False,
-    #     ) # type: ignore
-    # # 添加平坐
-    # use_pingzuo:bpy.props.BoolProperty(
-    #         name = "添加平坐",
-    #         default=False,
-    #     ) # type: ignore
-    # # 回廊宽度
-    # pingzuo_taper: bpy.props.FloatProperty(
-    #     name="平坐收分",
-    #     default=0.0
-    # ) # type: ignore
-    # # 添加腰檐
-    # use_mideave:bpy.props.BoolProperty(
-    #         name = "添加腰檐",
-    #         default=False,
-    #     ) # type: ignore
-    # # 添加栏杆
-    # use_railing:bpy.props.BoolProperty(
-    #         name = "添加栏杆",
-    #         default=False,
-    #     ) # type: ignore
-    # # 添加回廊
-    # use_loggia:bpy.props.BoolProperty(
-    #         name = "添加回廊",
-    #         default=False,
-    #     ) # type: ignore
-    # # 回廊宽度
-    # loggia_width: bpy.props.FloatProperty(
-    #     name="回廊宽度",
-    #     default=0.0
-    # ) # type: ignore
     
     # 弹出参数输入框
     def invoke(self, context, event):
@@ -1455,6 +1414,9 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         item.name = '4-重楼+平坐+披檐'
         item = scnData.pavilionItem.add()
         item.name = '5-重楼+回廊+披檐'
+        item = scnData.pavilionItem.add()
+        item.name = '6-下出平坐'
+        # scnData.pavilionIndex = 0
         # 填充缩略图
         from . import template
         template.loadPavilionThumb()
@@ -1479,7 +1441,7 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
             propname="pavilionItem", 
             active_dataptr=scnData, 
             active_propname="pavilionIndex", 
-            rows=7)
+            rows=8)
         # 收分
         col_left.prop(scnData.pavilionSetting, "taper")
         if pavilionIndex == 4:
@@ -1503,32 +1465,33 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         # # 重楼类型
         # layout.prop(self, "floor_plan")
 
-        # box = layout.box()
-        # row = box.row()
-        # col = row.column()
-        # # 是否添加重屋
-        # inputFloor = col.row()
-        # inputFloor.prop(self,'use_floor')
-        # # 是否添加腰檐
-        # inputEave = col.row()
-        # inputEave.prop(self, "use_mideave")
-        # # 是否添加平坐
-        # inputPingzuo = col.row()
-        # inputPingzuo.prop(self,'use_pingzuo')
+        setting = scnData.pavilionSetting
 
-        # col = row.column()
-        # # 是否添加栏杆
-        # inputRailing = col.row()
-        # inputRailing.prop(self,'use_railing')
-        # # 是否添加回廊
-        # inputLoggia = col.row()
-        # inputLoggia.prop(self,'use_loggia')
+        box = layout.box()
+        row = box.row()
+        col = row.column()
+        # 是否添加重屋
+        inputFloor = col.row()
+        inputFloor.prop(setting,'use_floor')
+        # 是否添加腰檐
+        inputEave = col.row()
+        inputEave.prop(setting, "use_mideave")
+        # 是否添加平坐
+        inputPingzuo = col.row()
+        inputPingzuo.prop(setting,'use_pingzuo')
+
+        col = row.column()
+        # 是否添加栏杆
+        inputRailing = col.row()
+        inputRailing.prop(setting,'use_railing')
+        # 是否添加回廊
+        inputLoggia = col.row()
+        inputLoggia.prop(setting,'use_loggia')
+        # 是否下出平坐
+        inputLowerPingzuo = col.row()
+        inputLowerPingzuo.prop(setting,'use_lower_pingzuo')
         
-        # inputEave.enabled = False
-        # inputFloor.enabled = False
-        # inputPingzuo.enabled = False
-        # inputRailing.enabled = False
-        # inputLoggia.enabled = False
+        box.enabled = False
     
     def execute(self, context): 
         timeStart = time.time()
@@ -1540,14 +1503,15 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         funproxy = partial(
             buildCombo.addMultiFloor,
             baseFloor=buildingObj,
-            taper=setting.taper,
-            use_floor=setting.use_floor,
-            use_mideave=setting.use_mideave,
-            use_pingzuo=setting.use_pingzuo,
-            pingzuo_taper=setting.pingzuo_taper,
-            use_railing=setting.use_railing,
-            use_loggia=setting.use_loggia,
-            loggia_width=setting.loggia_width,
+            setting=setting,
+            # taper=setting.taper,
+            # use_floor=setting.use_floor,
+            # use_mideave=setting.use_mideave,
+            # use_pingzuo=setting.use_pingzuo,
+            # pingzuo_taper=setting.pingzuo_taper,
+            # use_railing=setting.use_railing,
+            # use_loggia=setting.use_loggia,
+            # loggia_width=setting.loggia_width,
         )
         result = utils.fastRun(funproxy)
 

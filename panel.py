@@ -270,17 +270,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnAddLoggia.operator(
                         "aca.add_loggia",
                         icon='PACKAGE',
-                        text="添加回廊")
-        
-        # 第三行 ------------------------------
-        toolBox = box.column(align=True)
-        toolBar = toolBox.grid_flow(columns=1, align=True)
-        # 下出平坐
-        btnMultiFloor2 = toolBar.column(align=True)
-        op = btnMultiFloor2.operator(
-                        "aca.multi_floor_add",
-                        icon='PACKAGE',
-                        text="下出平坐")       
+                        text="添加回廊")     
 
         # 性能分析按钮
         # row = layout.row()

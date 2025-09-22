@@ -1416,7 +1416,9 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         item.name = '5-重楼+回廊+披檐'
         item = scnData.pavilionItem.add()
         item.name = '6-下出平坐'
-        # scnData.pavilionIndex = 0
+        # 初始化设置参数
+        from . import buildCombo
+        buildCombo.set_multiFloor_plan(self,context)
         # 填充缩略图
         from . import template
         template.loadPavilionThumb()

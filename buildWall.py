@@ -680,8 +680,11 @@ def buildWallLayout(buildingObj:bpy.types.Object):
             obj_id=stepid
         )
         if stepData is not None:
-            print(f"{railing.id}栏杆添加跳过，该位置已经有踏跺")
-            continue
+            # 如果栏杆不开口，则不做这个栏杆
+            # 开口栏杆不受影响，继续做
+            if railing.gap == 0:
+                print(f"{railing.id}栏杆添加跳过，该位置已经有踏跺")
+                continue
 
         __buildWall(buildingObj,railing.id)
     # 板门

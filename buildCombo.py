@@ -731,11 +731,14 @@ def addMultiFloor(baseFloor:bpy.types.Object,
 
     # 2、重楼数据初始化，包括下层、披檐、平坐、重楼等
     # 2.1、下层的处理
-    # 下出平坐，下层关闭台基
+    # 下出平坐，下层关闭台基，删除柱础
     if use_lower_pingzuo:
         # 关闭平坐台基
         bData['is_showPlatform'] = False
         bData['platform_height'] = 0
+        # 删除柱础
+        utils.deleteByName(baseFloor,name='素平柱础')
+        utils.deleteByName(baseFloor,name='柱顶石')
     # 上出平坐或重楼，重设屋顶样式
     else:
         # 梁架强制不做廊间举架

@@ -563,155 +563,6 @@ def __paintMat(object:bpy.types.Object,
 
     return object
 
-# # 设置材质，并进行相应几何处理
-# def setMat(object:bpy.types.Object,
-#               mat:bpy.types.Object,
-#               override=False,
-#               single=False):
-#     # 非mesh对象直接跳过
-#     if object == None: return
-#     if object.type not in ('MESH','CURVE'):
-#         return
-    
-#     # 如果已经有材质，且未声明override，则不做材质
-#     if object.active_material != None \
-#         and not override:
-#         # 不做任何改变
-#         return
-    
-#     aData:tmpData = bpy.context.scene.ACA_temp
-
-#     # 彩画样式控制
-#     buildingObj = utils.getAcaParent(
-#         object,con.ACA_TYPE_BUILDING)
-#     bData:acaData = buildingObj.ACA_data
-#     if bData.paint_style == '1':
-#         # 素体，无彩画
-#         if mat in (
-#             aData.mat_paint_walkdragon,     # 平板枋走龙
-#             aData.mat_paint_beam_big,       # 梁枋
-#             aData.mat_paint_beam_small,     # 梁枋
-#             aData.mat_paint_doorring,       # 隔扇绦环
-#             aData.mat_paint_door,           # 隔扇壶门
-#             aData.mat_paint_grasscouple,    # 由额垫板公母草
-#             aData.mat_paint_pillerhead,     # 柱头贴图
-#             aData.mat_paint_ccb,            # 子角梁，龙肚子
-#             aData.mat_paint_rafter,         # 檐椽
-#             aData.mat_paint_flyrafter,      # 飞椽
-#             aData.mat_ccfang,               # 穿插枋
-#             aData.mat_cornerbeam,           # 老角梁
-#             aData.mat_queti,                # 雀替
-#             aData.mat_guayanban,            # 挂檐板
-#         ):
-#             mat = aData.mat_oilpaint
-
-#         if mat in (
-#             aData.mat_dougong,              # 斗栱
-#             aData.mat_paint_cloud,          # 挑檐枋
-#         ):
-#             mat = aData.mat_wood
-
-#     # 简单平铺的材质
-#     if mat in (
-#         aData.mat_oilpaint,     # 漆.通用
-#         aData.mat_wood,         # 木材材质
-#         aData.mat_rock,         # 石材材质
-#         aData.mat_stone,        # 石头材质
-#         aData.mat_brick_1,      # 方砖缦地
-#         aData.mat_brick_2,      # 条砖竖铺
-#         aData.mat_brick_3,      # 条砖横铺
-#         aData.mat_dust_wall,    # 墙体抹灰
-#         aData.mat_gold,         # 漆.金
-#     ):
-#         __setTileMat(object,
-#                      mat,
-#                      uvType=uvType.CUBE,
-#                      cubesize=2)
-    
-#     # 三交六椀隔心
-#     if mat == aData.mat_geshanxin:
-#         __setTileMat(object,
-#                      mat,
-#                      uvType=uvType.CUBE,
-#                      cubesize=0.1)
-        
-#     # 切换酱油色
-#     if bData.paint_style == '0':
-#         if mat in (aData.mat_oilpaint,        # 漆.通用
-#                 aData.mat_dust_wall,      # 墙色抹灰
-#                 aData.mat_geshanxin,     # 三交六椀隔心
-#                 ):
-#             # 酱油色
-#             __replaceSlot(object,toSlot=1)    
-
-#     # 挑檐枋工王云，仅在前后两面做彩画
-#     if mat in (
-#         aData.mat_paint_cloud,
-#     ):
-#         object = __paintFrontBack(object,mat)
-
-#     # 平板枋走龙，在前后左右四面做彩画
-#     if mat in (
-#         aData.mat_paint_walkdragon,
-#         aData.mat_guayanban, 
-#     ):
-#         object = __paintAround(object,mat)
-    
-#     # 拉伸填充的材质
-#     if mat in (
-#         aData.mat_paint_doorring,   # 隔扇绦环
-#         aData.mat_paint_door,       # 隔扇壶门
-#     ):
-#         __setTileMat(object,
-#                      mat,
-#                      uvType=uvType.CUBE,
-#                      scaleToBounds=True)
-    
-#     # 梁枋彩画
-#     if mat in (
-#         aData.mat_paint_beam_big,
-#         aData.mat_paint_beam_small,
-#     ):
-#         __setFangMat(object,mat)
-
-#     # 由额垫板，公母草贴图
-#     if mat == aData.mat_paint_grasscouple:
-#         object = __setYOUE(object,mat)
-
-#     # 柱头贴图
-#     if mat == aData.mat_paint_pillerhead:
-#         object = __setPillerHead2(object,mat)
-
-#     # 栱垫板(小号和普通版)
-#     if mat in (aData.mat_paint_dgfillboard,
-#                aData.mat_paint_dgfillboard_s):
-#         if bData.paint_style != '0':
-#             object = __setDgBoard(object,mat)
-
-#     # 檐椽
-#     if mat == aData.mat_paint_rafter:
-#         object = __setRafterMat(object,mat)
-    
-#     # 飞椽
-#     if mat == aData.mat_paint_flyrafter:
-#         object = __setFlyrafterMat(object,mat)
-    
-#     # 望板
-#     if mat == aData.mat_paint_wangban:
-#         if bData.paint_style != '0':
-#             __setWangban(object,mat)
-
-#     # 子角梁，龙肚子
-#     if mat == aData.mat_paint_ccb:
-#         __setCCB(object,mat)
-
-#     # 山花板
-#     if mat == aData.mat_paint_shanhua:
-#         __setShanhua(object,mat)
-#         pass
-
-#     return object
-
 # 拷贝目标对象的材质
 # 复制所有材质
 def __copyMaterial(fromObj:bpy.types.Object,
@@ -724,18 +575,6 @@ def __copyMaterial(fromObj:bpy.types.Object,
                 mat = mat.copy()
             toObj.data.materials.append(mat)
 
-    return
-
-# 设置材质的输入参数
-# https://blender.stackexchange.com/questions/191183/changing-a-value-node-in-many-materials-with-a-python-script
-def __setMatValue(mat:bpy.types.Material,
-                inputName:str,
-                value):
-    if mat is not None and mat.use_nodes and mat.node_tree is not None:
-        for node in mat.node_tree.nodes:
-            for input in node.inputs:
-                if input.name == inputName and input.type == 'VALUE':
-                    input.default_value = value 
     return
 
 # 设置对象使用的材质编号
@@ -988,22 +827,6 @@ def __setPillerHead2(pillerObj:bpy.types.Object,
     bpy.ops.object.mode_set(mode='OBJECT')
     
     return pillerObj
-
-# 已废弃，栱垫板改为PBR模式，改用__setDgBoard方法
-# # 设置垫拱板的重复次数，根据斗栱攒数计算
-# def __setDgCount(object:bpy.types.Object):
-#     # 载入数据
-#     buildingObj = utils.getAcaParent(
-#         object,con.ACA_TYPE_BUILDING)
-#     bData:acaData = buildingObj.ACA_data
-
-#     # 设置材质中的斗栱攒数
-#     fang_length = object.dimensions.x
-#     count = round(fang_length / bData.dg_gap)
-#     __setMatValue(
-#         mat=object.active_material,
-#         inputName='count',
-#         value=count)
     
 # 判断枋子使用的AB配色
 def __setFangMat(fangObj:bpy.types.Object,

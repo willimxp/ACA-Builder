@@ -417,6 +417,14 @@ def addSection(buildingObj:bpy.types.Object,
 # 剖面图方案
 def __getSectionPlan(boolObj:bpy.types.Object,
                      sectionType='X+',):
+    # 载入数据
+    buildingObj,bData,oData = utils.getRoot(boolObj)
+    # 区分是否为楼阁等组合对象
+    if bData.combo_type in (con.COMBO_MAIN,):
+        isComboNext = False
+    else:
+        isComboNext = True
+    
     Y_reserve = -0.35
     offset = Vector((0,0,0))
     origin_loc = boolObj.location.copy()
@@ -511,21 +519,31 @@ def __getSectionPlan(boolObj:bpy.types.Object,
             pass
         # 2-柱网层
         elif con.COLL_NAME_PILLER in layerName:
+            # 判断combo对象
+            if isComboNext:
+                boolZ = 0
+            else:
+                boolZ = boolObj.dimensions.z*0.3
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
                 boolObj.dimensions.x*0.5 - origin_loc.x,
                 -boolObj.dimensions.y*0.5 + Y_reserve,
-                boolObj.dimensions.z*0.3
+                boolZ
             ))
             boolPlan['mat'] = con.M_WOOD
         # 3-装修层
         # 因为装修没有做到柱头（额枋），所以实际比柱网层裁剪更低
         elif con.COLL_NAME_WALL in layerName:
+            # 判断combo对象
+            if isComboNext:
+                boolZ = 0
+            else:
+                boolZ = boolObj.dimensions.z*0.2
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
                 boolObj.dimensions.x*0.5 - origin_loc.x,
                 -boolObj.dimensions.y*0.5 + Y_reserve,
-                boolObj.dimensions.z*0.2,
+                boolZ,
             ))
             boolPlan['mat'] = con.M_STONE
         # 4-斗栱层
@@ -579,21 +597,31 @@ def __getSectionPlan(boolObj:bpy.types.Object,
             pass
         # 2-柱网层
         elif con.COLL_NAME_PILLER in layerName:
+            # 判断combo对象
+            if isComboNext:
+                boolZ = 0
+            else:
+                boolZ = boolObj.dimensions.z*0.3
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
                 boolObj.dimensions.x*0.5 - origin_loc.x,
                 0,
-                boolObj.dimensions.z*0.3
+                boolZ
             ))
             boolPlan['mat'] = con.M_WOOD
         # 3-装修层
         # 因为装修没有做到柱头（额枋），所以实际比柱网层裁剪更低
         elif con.COLL_NAME_WALL in layerName:
+            # 判断combo对象
+            if isComboNext:
+                boolZ = 0
+            else:
+                boolZ = boolObj.dimensions.z*0.2
             boolPlan['bool'] = True
             boolPlan['offset'] = Vector((
                 boolObj.dimensions.x*0.5 - origin_loc.x,
                 0, 
-                boolObj.dimensions.z*0.2,
+                boolZ,
             ))
             boolPlan['mat'] = con.M_STONE
         # 4-斗栱层

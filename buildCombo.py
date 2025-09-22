@@ -732,6 +732,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     # 2、重楼数据初始化，包括下层、披檐、平坐、重楼等
     # 2.1、下层的处理
     # 下出平坐，下层关闭台基，删除柱础
+    needUpdateBaseFloor = False
     if use_lower_pingzuo:
         # 关闭平坐台基
         bData['is_showPlatform'] = False
@@ -742,7 +743,9 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     # 上出平坐或重楼，重设屋顶样式
     else:
         # 梁架强制不做廊间举架
-        bData['use_hallway'] = False
+        if bData.use_hallway:
+            bData['use_hallway'] = False
+            needUpdateBaseFloor = True
         # 如果要做腰檐，屋顶改做盝顶
         if use_mideave:
             # 下层屋顶：改为盝顶
@@ -824,8 +827,12 @@ def addMultiFloor(baseFloor:bpy.types.Object,
         # 下出平坐，关闭下层台基
         buildPlatform.resizePlatform(baseFloor)
     else:
-        # 刷新老屋顶
-        buildRoof.buildRoof(baseFloor)
+        # 刷新下层，上面如果修改了廊间举架，需要刷新全屋
+        if needUpdateBaseFloor:
+           buildFloor.buildFloor(baseFloor,comboObj=comboObj)
+        # 否则仅需刷新屋顶
+        else:
+            buildRoof.buildRoof(baseFloor)
     # 生成平坐
     if pingzuo is not None:
         buildFloor.buildFloor(pingzuo,comboObj=comboObj)

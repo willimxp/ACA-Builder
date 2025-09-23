@@ -443,6 +443,17 @@ def update_dougong(self, context:bpy.types.Context):
         # 初始化斗栱数据，避免跨建筑时公用的aData干扰
         from . import template
         template.updateDougongData(buildingObj)
+
+        # 如果有楼阁，更新楼阁层高
+        comboRoot = utils.getComboRoot(context.object)
+        if comboRoot is not None:
+            # 显示进度条 
+            from . import build
+            build.isFinished = False
+            build.progress = 0
+
+            from . import buildCombo
+            buildCombo.__updateFloorLoc(comboRoot)
         
         # 241125 修改斗栱时，涉及到柱高的变化，最好是全屋更新
         update_building(self,context)

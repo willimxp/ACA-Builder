@@ -115,11 +115,11 @@ class ACA_PT_basic(bpy.types.Panel):
             ):
             col.enabled = False
 
-        # # 调试信息 -------------------- 
-        # col = box.row() 
-        # col.prop(bData,"aca_id",text="id")
-        # col = box.row() 
-        # col.prop(bData,"combo_parent",text="parent")
+        # 调试信息 -------------------- 
+        col = box.row() 
+        col.prop(bData,"aca_id",text="id")
+        col = box.row() 
+        col.prop(bData,"combo_parent",text="parent")
         
         #----------------------------
         toolBox = box.row(align=True) 
@@ -258,7 +258,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnMultiFloor1.operator(
                         "aca.multi_floor_add",
                         icon='KEY_CONTROL',
-                        text="上出重楼",
+                        text="添加楼阁",
                         depress=True)
 
         

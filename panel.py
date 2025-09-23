@@ -480,13 +480,13 @@ class ACA_PT_pillers(bpy.types.Panel):
             buildingObj,bData,objData = utils.getRoot(context.object)
             if buildingObj == None: return
 
-            # 统一重檐上下檐设置
-            if bData.combo_type == con.COMBO_DOUBLE_EAVE:
-                mainBuilding = utils.getMainBuilding(buildingObj)
-                # 用主建筑(下檐)的地盘统一设定
-                mData:acaData = mainBuilding.ACA_data
-            else:
-                mData = bData
+            # # 统一重檐上下檐设置
+            # if bData.combo_type == con.COMBO_DOUBLE_EAVE:
+            #     mainBuilding = utils.getMainBuilding(buildingObj)
+            #     # 用主建筑(下檐)的地盘统一设定
+            #     mData:acaData = mainBuilding.ACA_data
+            # else:
+            #     mData = bData
 
             # 全局属性
             #if objData.aca_type == con.ACA_TYPE_BUILDING:
@@ -497,30 +497,30 @@ class ACA_PT_pillers(bpy.types.Panel):
                     box.enabled = False
 
             row = box.column(align=True)
-            row.prop(mData, "x_rooms")      # 面阔间数
-            row.prop(mData, "x_1")          # 明间宽度
-            if mData.x_rooms >= 3:
-                row.prop(mData, "x_2")      # 次间宽度
-            if mData.x_rooms >= 5:
-                row.prop(mData, "x_3")      # 梢间宽度
-            if mData.x_rooms >= 7:
-                row.prop(mData, "x_4")      # 尽间宽度
+            row.prop(bData, "x_rooms")      # 面阔间数
+            row.prop(bData, "x_1")          # 明间宽度
+            if bData.x_rooms >= 3:
+                row.prop(bData, "x_2")      # 次间宽度
+            if bData.x_rooms >= 5:
+                row.prop(bData, "x_3")      # 梢间宽度
+            if bData.x_rooms >= 7:
+                row.prop(bData, "x_4")      # 尽间宽度
                 
             col = box.column(align=True)
-            col.prop(mData, "y_rooms")      # 进深间数
-            col.prop(mData, "y_1")          # 明间深度
-            if mData.y_rooms >= 3:
-                col.prop(mData, "y_2")      # 次间深度
-            if mData.y_rooms >= 5:
-                col.prop(mData, "y_3")      # 梢间深度
+            col.prop(bData, "y_rooms")      # 进深间数
+            col.prop(bData, "y_1")          # 明间深度
+            if bData.y_rooms >= 3:
+                col.prop(bData, "y_2")      # 次间深度
+            if bData.y_rooms >= 5:
+                col.prop(bData, "y_3")      # 梢间深度
 
             # 柱子属性
             col = box.column(align=True)
             grid = col.grid_flow(columns=1, align=True)
             # 柱高
-            grid.prop(mData, "piller_height") 
+            grid.prop(bData, "piller_height") 
             # 柱径   
-            grid.prop(mData, "piller_diameter")  
+            grid.prop(bData, "piller_diameter")  
             grid = col.grid_flow(columns=2, align=True)
             # 按钮:减柱
             col = grid.column(align=True)

@@ -589,42 +589,36 @@ def set_multiFloor_plan(self, context:bpy.types.Context):
     scnData = bpy.context.scene.ACA_data
     pavilionIndex = scnData.pavilionIndex
     setting = scnData.pavilionSetting
+    # 数据初始化
+    setting.use_floor = False
+    setting.use_mideave = False
+    setting.use_pingzuo = False
+    setting.use_railing = False
+    setting.use_loggia = False
+    setting.use_lower_pingzuo = False
+    setting.taper = 0
+    setting.loggia_width = 0
+    setting.pingzuo_taper = 0
 
     # 0.重檐
     if pavilionIndex == 0:
-        setting.use_floor = False
         setting.use_mideave = True
-        setting.use_pingzuo = False
-        setting.use_railing = False
-        setting.use_loggia = False
-        setting.use_lower_pingzuo = False
         setting.taper = 11*dk  # 默认收分一攒
     # 1.简单重楼(涵月楼)
     if pavilionIndex == 1:
         setting.use_floor = True
-        setting.use_mideave = False
         setting.use_pingzuo = True
-        setting.use_railing = False
-        setting.use_loggia = False
-        setting.use_lower_pingzuo = False
         setting.taper = 0  # 默认不做收分
     # 2.重楼+平坐栏杆
     if pavilionIndex == 2:
         setting.use_floor = True
-        setting.use_mideave = False
         setting.use_pingzuo = True
         setting.use_railing = True
-        setting.use_loggia = False
-        setting.use_lower_pingzuo = False
         setting.taper = 3*dk  # 默认收分1拽架
     # 3.重楼+披檐(无平坐，如，边靖楼)
     if pavilionIndex == 3:
         setting.use_floor = True
         setting.use_mideave = True
-        setting.use_pingzuo = False
-        setting.use_railing = False
-        setting.use_loggia = False
-        setting.use_lower_pingzuo = False
         setting.taper = 3*dk  # 默认收分1拽架
     # 4.重楼+披檐+平坐栏杆(观音阁)
     if pavilionIndex == 4:
@@ -632,8 +626,6 @@ def set_multiFloor_plan(self, context:bpy.types.Context):
         setting.use_mideave = True
         setting.use_pingzuo = True
         setting.use_railing = True
-        setting.use_loggia = False
-        setting.use_lower_pingzuo = False
         setting.taper = 3*dk  # 默认收分1拽架
         setting.pingzuo_taper = 3*dk # 默认平坐再收分1拽架
     # 5.重楼+披檐+回廊栏杆(插花楼)
@@ -643,16 +635,11 @@ def set_multiFloor_plan(self, context:bpy.types.Context):
         setting.use_pingzuo = True
         setting.use_railing = True
         setting.use_loggia = True
-        setting.use_lower_pingzuo = False
         setting.taper = 11*dk  # 默认收分1攒
         setting.loggia_width = 22*dk # 回廊默认2攒
     # 6.下出平坐
     if pavilionIndex == 6:
-        setting.use_floor = False
-        setting.use_mideave = False
-        setting.use_pingzuo = False
         setting.use_railing = True
-        setting.use_loggia = False
         setting.use_lower_pingzuo = True
         setting.taper = 9*dk  # 默认收分3拽架
 
@@ -711,6 +698,17 @@ def addMultiFloor(baseFloor:bpy.types.Object,
         
     # 保护避免0的异常
     if taper == 0:taper = 0.01
+
+    # 验证重檐最小收分
+    if use_mideave:
+        eave_ex = taper
+        # 如果斗栱出跳大于3DK，重檐收分可为0
+        if bData.use_dg:
+            eave_ex += bData.dg_extend
+        
+        if eave_ex < 3* bData.DK:
+            utils.popMessageBox("收分验证失败：斗栱出跳与重檐收分合计至少应3斗口，请更换斗栱，或增加收分")
+            return {'CANCELLED'}
 
     # 验证回廊做法的开间尺寸，避免楼阁5出现异常
     if use_floor and use_mideave and use_pingzuo and use_loggia:
@@ -803,13 +801,12 @@ def addMultiFloor(baseFloor:bpy.types.Object,
         # 收分处理
         if use_lower_pingzuo:
             # 下出平坐，外扩
-            pingzuo_taper = - taper
+            p_taper = - taper
         else:
             # 上出平坐，内收
-            pingzuo_taper = taper
-
+            p_taper = taper
         pingzuo = __addPingzuo(baseFloor,
-                               pingzuo_taper,
+                               p_taper,
                                use_lower_pingzuo, # 是否为下出平坐
                                use_railing=use_railing_pingzuo,
                                )        

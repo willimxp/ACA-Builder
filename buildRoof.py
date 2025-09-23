@@ -1312,7 +1312,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
     # 老角梁扣金系数
     if yanSpan > 14*dk:
         cbKoujin = con.JIAOLIANG_H*dk*con.JIAOLIANG_WEI_KOUJIN
-    elif yanSpan < 3*dk:
+    elif yanSpan < round(3*dk,3):
         raise Exception(f"构造老角梁失败，檐步架只有{yanSpan}")
     else:
         cbKoujin = - con.JIAOLIANG_H*dk*con.JIAOLIANG_WEI_KOUJIN

@@ -1409,11 +1409,11 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         item = scnData.pavilionItem.add()
         item.name = '2-重楼+平坐'
         item = scnData.pavilionItem.add()
-        item.name = '3-重楼+披檐'
+        item.name = '3-重楼+腰檐'
         item = scnData.pavilionItem.add()
-        item.name = '4-重楼+平坐+披檐'
+        item.name = '4-重楼+平坐+腰檐'
         item = scnData.pavilionItem.add()
-        item.name = '5-重楼+回廊+披檐'
+        item.name = '5-重楼+回廊+腰檐'
         item = scnData.pavilionItem.add()
         item.name = '6-下出平坐'
         # 初始化设置参数

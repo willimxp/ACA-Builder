@@ -115,11 +115,11 @@ class ACA_PT_basic(bpy.types.Panel):
             ):
             col.enabled = False
 
-        # 调试信息 -------------------- 
-        col = box.row() 
-        col.prop(bData,"aca_id",text="id")
-        col = box.row() 
-        col.prop(bData,"combo_parent",text="parent")
+        # # 调试信息 -------------------- 
+        # col = box.row() 
+        # col.prop(bData,"aca_id",text="id")
+        # col = box.row() 
+        # col.prop(bData,"combo_parent",text="parent")
         
         #----------------------------
         toolBox = box.row(align=True) 
@@ -171,7 +171,7 @@ class ACA_PT_basic(bpy.types.Panel):
         # 合并/导出 ------------------------------
         toolBox = box.column(align=True)
         # 第一行 ------------------------------
-        toolBar = toolBox.grid_flow(columns=2, align=True)
+        toolBar = toolBox.grid_flow(columns=3, align=True)
         # 合并整体
         btnJoin = toolBar.column(align=True)
         isJoined = (bData.aca_type == \
@@ -191,13 +191,13 @@ class ACA_PT_basic(bpy.types.Panel):
         # op.useLayer = True
         
         # 第二行 ------------------------------
-        toolBar = toolBox.grid_flow(columns=2, align=True)
+        # toolBar = toolBox.grid_flow(columns=2, align=True)
         # 导出FBX
         col = toolBar.column(align=True)
-        col.operator("aca.export_fbx",icon='EXPORT')
+        col.operator("aca.export_fbx",icon='EXPORT',text='FBX')
         # 导出GLB
         col = toolBar.column(align=True)
-        col.operator("aca.export_glb",icon='EXPORT')   
+        col.operator("aca.export_glb",icon='EXPORT',text='GLTF')   
 
         # 剖视图 ------------------------------            
         if bpy.app.version >= (4,5,0):
@@ -208,22 +208,22 @@ class ACA_PT_basic(bpy.types.Panel):
             if 'sectionPlan' in bData:     
                 currentPlan = bData['sectionPlan']
             # 第一行 ------------------------------
-            toolBar = toolBox.grid_flow(columns=4, align=True)
+            toolBar = toolBox.grid_flow(columns=5, align=True)
             # X+
             buttonX_p = toolBar.column(align=True)
             op1 = buttonX_p.operator("aca.section",
                         depress=(currentPlan=='X+'),
-                        text='侧视图',)
+                        text='侧视',)
             op1.sectionPlan = 'X+'
             # Y-
             col = toolBar.column(align=True)
             op = col.operator(
                 "aca.section",
                 depress=(currentPlan=='Y-'),
-                text='正视图')
+                text='正视')
             op.sectionPlan = 'Y-'  
-            # 第二行 ------------------------------
-            toolBar = toolBox.grid_flow(columns=4, align=True)
+            # # 第二行 ------------------------------
+            # toolBar = toolBox.grid_flow(columns=4, align=True)
             # 透视A
             btnSectionA = toolBar.column(align=True)
             op = btnSectionA.operator(
@@ -252,24 +252,19 @@ class ACA_PT_basic(bpy.types.Panel):
 
         # 第一行 ------------------------------
         toolBox = box.column(align=True)
-        toolBar = toolBox.grid_flow(columns=1, align=True)
-        # 上出重楼
+        toolBar = toolBox.grid_flow(columns=2, align=True)
+        # 添加楼阁
         btnMultiFloor1 = toolBar.column(align=True)
         op = btnMultiFloor1.operator(
                         "aca.multi_floor_add",
                         icon='KEY_CONTROL',
                         text="添加楼阁",
                         depress=True)
-
-        
-        # 第二行 ------------------------------
-        toolBox = box.column(align=True)
-        toolBar = toolBox.grid_flow(columns=1, align=True)
         # 添加回廊
         btnAddLoggia = toolBar.column(align=True)
         op = btnAddLoggia.operator(
                         "aca.add_loggia",
-                        icon='PACKAGE',
+                        icon='OBJECT_HIDDEN',
                         text="添加回廊")     
 
         # 性能分析按钮

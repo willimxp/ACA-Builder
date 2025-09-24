@@ -770,7 +770,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
             msg = f'进深明间当前[{round(bData.y_1,3)}],应大于[{room_min*2}]'
         
         if msg != '':
-            utils.popMessageBox(f"收分验证失败：{msg}")
+            utils.popMessageBox(f"收分验证失败：{msg}（注意：如果下层已经有回廊，建议不要使用方案“6-重楼+腰檐+回廊”，可以尝试使用方案“4-重楼+腰檐+平坐(无栏杆)”）")
             return {'CANCELLED'}
 
     # 1、数据准备 --------------------

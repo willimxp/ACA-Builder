@@ -127,6 +127,7 @@ def updateCombo(buildingObj:bpy.types.Object,
                 reloadAssets=False,
                 resetFloor=False,
                 resetRoof=False,):
+    utils.outputMsg("开始更新......")
     comboObj = utils.getComboRoot(buildingObj)
     bData:acaData = buildingObj.ACA_data
     mainBuilding = utils.getMainBuilding(buildingObj)
@@ -585,8 +586,29 @@ def __setTerraceData(parentObj:bpy.types.Object,
 def set_multiFloor_plan(self, context:bpy.types.Context):
     buildingObj,bData,oData = utils.getRoot(context.object)
     dk = bData.DK
-
     scnData = bpy.context.scene.ACA_data
+
+    # 初始化列表
+    # 清空
+    scnData.pavilionItem.clear()
+    # 添加列表
+    item = scnData.pavilionItem.add()
+    item.name = '0-重檐'
+    item = scnData.pavilionItem.add()
+    item.name = '1-简单重楼'
+    item = scnData.pavilionItem.add()
+    item.name = '2-重楼+平坐'
+    item = scnData.pavilionItem.add()
+    item.name = '3-重楼+腰檐'
+    item = scnData.pavilionItem.add()
+    item.name = '4-重楼+腰檐+平坐(无栏杆)'
+    item = scnData.pavilionItem.add()
+    item.name = '5-重楼+腰檐+平坐(有栏杆)'
+    item = scnData.pavilionItem.add()
+    item.name = '6-重楼+腰檐+回廊'
+    item = scnData.pavilionItem.add()
+    item.name = '7-下出平坐'
+    
     pavilionIndex = scnData.pavilionIndex
     setting = scnData.pavilionSetting
     # 数据初始化
@@ -620,16 +642,28 @@ def set_multiFloor_plan(self, context:bpy.types.Context):
         setting.use_floor = True
         setting.use_mideave = True
         setting.taper = 3*dk  # 默认收分1拽架
-    # 4.重楼+披檐+平坐栏杆(观音阁)
+    # 4-重楼+腰檐+平坐(无栏杆)
     if pavilionIndex == 4:
+        setting.use_floor = True
+        setting.use_mideave = True
+        setting.use_pingzuo = True
+        setting.taper = 3*dk  # 默认收分1拽架
+        pingzuo_extend = (bData.dg_extend   # 斗栱出跳
+              + con.BALCONY_EXTENT*bData.DK*bData.dk_scale # 平坐出跳，对齐桁出梢
+              - con.PILLER_D_EAVE*bData.DK/2 # 柱的保留深度
+              - bData.DK # 保留1斗口边线
+            ) 
+        setting.pingzuo_taper = -pingzuo_extend
+    # 5-重楼+腰檐+平坐(有栏杆)
+    if pavilionIndex == 5:
         setting.use_floor = True
         setting.use_mideave = True
         setting.use_pingzuo = True
         setting.use_railing = True
         setting.taper = 3*dk  # 默认收分1拽架
         setting.pingzuo_taper = 3*dk # 默认平坐再收分1拽架
-    # 5.重楼+披檐+回廊栏杆(插花楼)
-    if pavilionIndex == 5:
+    # 6-重楼+腰檐+回廊
+    if pavilionIndex == 6:
         setting.use_floor = True
         setting.use_mideave = True
         setting.use_pingzuo = True
@@ -637,8 +671,8 @@ def set_multiFloor_plan(self, context:bpy.types.Context):
         setting.use_loggia = True
         setting.taper = 11*dk  # 默认收分1攒
         setting.loggia_width = 22*dk # 回廊默认2攒
-    # 6.下出平坐
-    if pavilionIndex == 6:
+    # 7-下出平坐
+    if pavilionIndex == 7:
         setting.use_railing = True
         setting.use_lower_pingzuo = True
         setting.taper = 9*dk  # 默认收分3拽架
@@ -829,9 +863,8 @@ def addMultiFloor(baseFloor:bpy.types.Object,
             # 如果回廊较大，则需要在平坐收分的基础上，做二次收分
             if use_loggia and loggia_width > taper:
                 upperTaper = loggia_width-taper
-            # 如果需要平坐收分
-            if pingzuo_taper > 0.0:
-                upperTaper += pingzuo_taper
+            # 叠加平坐收分
+            upperTaper += pingzuo_taper
         # 下层没有独立平座层，如简单重楼模式，直接应用收分
         else:
             upperTaper = taper

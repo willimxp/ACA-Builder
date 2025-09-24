@@ -249,6 +249,10 @@ def __buildProxy(balconyRoot:bpy.types.Object):
                     locX += extend/2
                 else:
                     locX -= extend/2
+                # 250924 如果只有一间，则再累计右侧延长
+                if bData.x_rooms == 1:
+                    length += extend
+                    locX = 0 # 回到居中位置
 
             proxy['location'] = (locX,locY,floorTop)
             proxy['length'] = length
@@ -286,6 +290,10 @@ def __buildProxy(balconyRoot:bpy.types.Object):
                     locY += extend/2
                 else:
                     locY -= extend/2
+                # 250924 如果只有一间，则再累计右侧延长
+                if bData.y_rooms == 1:
+                    length += extend
+                    locY = 0 # 回到居中位置
 
             proxy['location'] = (locX,locY,floorTop)
             proxy['length'] = length

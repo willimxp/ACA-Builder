@@ -1396,29 +1396,11 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         w = int(windowWidth/2)
         h = int(windowHeight*0.6)
         context.window.cursor_warp(w, h)
-
-        # 楼阁列表初始化
-        scnData : data.ACA_data_scene = context.scene.ACA_data
-        # 清空
-        scnData.pavilionItem.clear()
-        # 添加列表
-        item = scnData.pavilionItem.add()
-        item.name = '0-重檐'
-        item = scnData.pavilionItem.add()
-        item.name = '1-简单重楼'
-        item = scnData.pavilionItem.add()
-        item.name = '2-重楼+平坐'
-        item = scnData.pavilionItem.add()
-        item.name = '3-重楼+腰檐'
-        item = scnData.pavilionItem.add()
-        item.name = '4-重楼+平坐+腰檐'
-        item = scnData.pavilionItem.add()
-        item.name = '5-重楼+回廊+腰檐'
-        item = scnData.pavilionItem.add()
-        item.name = '6-下出平坐'
-        # 初始化设置参数
+        
+        # 初始化设置列表
         from . import buildCombo
         buildCombo.set_multiFloor_plan(self,context)
+
         # 填充缩略图
         from . import template
         template.loadPavilionThumb()
@@ -1426,14 +1408,19 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self,width=450)
 
     # 绘制参数输入框
-    def draw(self, context):       
+    def draw(self, context): 
+        # 载入数据
+        scnData : data.ACA_data_scene = context.scene.ACA_data
+        setting = scnData.pavilionSetting
+        pavilionIndex = scnData.pavilionIndex
+
+        # 绘制界面
         layout = self.layout
 
-        # 楼阁样式选择 --------------------------
-        scnData : data.ACA_data_scene = context.scene.ACA_data
-        pavilionIndex = scnData.pavilionIndex
-        # 模板列表    
+        # 第一行：列表和缩略图 -------------------------
         row = layout.row()
+
+        # 左侧：模板列表    
         col_left = row.column(align=True)
         col_left.scale_x = 0.5
         col_left.template_list(
@@ -1443,17 +1430,9 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
             propname="pavilionItem", 
             active_dataptr=scnData, 
             active_propname="pavilionIndex", 
-            rows=8)
-        # 收分
-        col_left.prop(scnData.pavilionSetting, "taper")
-        if pavilionIndex == 4:
-            # 平坐收分
-            col_left.prop(scnData.pavilionSetting, "pingzuo_taper")
-        if pavilionIndex == 5:
-            # 回廊宽度
-            col_left.prop(scnData.pavilionSetting, "loggia_width")
+            rows=9)
         
-        # 右侧边栏
+        # 右侧：缩略图
         col_right = row.column(align=True)
         col_right.scale_x = 0.5
         # 缩略图展示，使用了blender内置的template_icon_view控件
@@ -1462,38 +1441,44 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
                                "pavilion_browser_enum",
                                show_labels=True,
                                scale=10)
-
-        # 楼阁参数 -------------------------------
-        # # 重楼类型
-        # layout.prop(self, "floor_plan")
-
-        setting = scnData.pavilionSetting
-
-        box = layout.box()
-        row = box.row()
-        col = row.column()
-        # 是否添加重屋
-        inputFloor = col.row()
-        inputFloor.prop(setting,'use_floor')
-        # 是否添加腰檐
-        inputEave = col.row()
-        inputEave.prop(setting, "use_mideave")
-        # 是否添加平坐
-        inputPingzuo = col.row()
-        inputPingzuo.prop(setting,'use_pingzuo')
-
-        col = row.column()
-        # 是否添加栏杆
-        inputRailing = col.row()
-        inputRailing.prop(setting,'use_railing')
-        # 是否添加回廊
-        inputLoggia = col.row()
-        inputLoggia.prop(setting,'use_loggia')
-        # 是否下出平坐
-        inputLowerPingzuo = col.row()
-        inputLowerPingzuo.prop(setting,'use_lower_pingzuo')
         
+        # 第二行：数值型参数 -----------------
+        row = layout.row()
+        toolBar = row.grid_flow(columns=3, align=True)
+        # 收分
+        inputTaper = toolBar.column(align=True)
+        inputTaper.prop(
+            scnData.pavilionSetting, "taper")
+        # 平坐收分
+        inputPingzuoTaper = toolBar.column(align=True)
+        inputPingzuoTaper.prop(
+            scnData.pavilionSetting, "pingzuo_taper")
+        if pavilionIndex not in (4,5):
+            inputPingzuoTaper.enabled = False
+        # 回廊宽度
+        inputLoggiaWidth = toolBar.column(align=True)
+        inputLoggiaWidth.prop(
+            scnData.pavilionSetting, "loggia_width")
+        if pavilionIndex not in (6,):
+            inputLoggiaWidth.enabled = False
+
+        # 第三行：勾选框参数 -------------------------
+        box = layout.box()
         box.enabled = False
+        row = box.row()
+        toolBar = row.grid_flow(columns=3, align=True)
+        # 是否添加重屋
+        toolBar.prop(setting,'use_floor')
+        # 是否添加腰檐
+        toolBar.prop(setting, "use_mideave")
+        # 是否添加平坐
+        toolBar.prop(setting,'use_pingzuo')
+        # 是否添加栏杆
+        toolBar.prop(setting,'use_railing')
+        # 是否添加回廊
+        toolBar.prop(setting,'use_loggia')
+        # 是否下出平坐
+        toolBar.prop(setting,'use_lower_pingzuo')
     
     def execute(self, context): 
         timeStart = time.time()

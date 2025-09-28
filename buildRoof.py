@@ -1963,7 +1963,7 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
     polyline.use_smooth = False
 
     # 延长终点相交
-    utils.extend_bezier_curve_endpoint(flyrafterEaveObj,10*dk)
+    utils.extend_bezier_curve_endpoint(flyrafterEaveObj,100*dk)
     pCut = flyrafterEaveObj.matrix_world @ bData.roof_qiao_point
     # 沿子角梁头裁剪
     utils.addBisect(

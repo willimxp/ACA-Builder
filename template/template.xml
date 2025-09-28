@@ -5217,7 +5217,7 @@
 			<tile_alt_color type="EnumProperty">0</tile_alt_color>
 			<tile_width type="FloatProperty">0.387</tile_width>
 			<tile_length type="FloatProperty">0.5</tile_length>
-			<paoshou_count type="IntProperty">5</paoshou_count>
+			<paoshou_count type="IntProperty">4</paoshou_count>
 			<is_4_sides type="BoolProperty">True</is_4_sides>
 			<yard_width type="FloatProperty">10.0</yard_width>
 			<yard_depth type="FloatProperty">10.0</yard_depth>
@@ -5468,7 +5468,7 @@
 			<tile_alt_color type="EnumProperty">0</tile_alt_color>
 			<tile_width type="FloatProperty">0.387</tile_width>
 			<tile_length type="FloatProperty">0.5</tile_length>
-			<paoshou_count type="IntProperty">5</paoshou_count>
+			<paoshou_count type="IntProperty">4</paoshou_count>
 			<is_4_sides type="BoolProperty">True</is_4_sides>
 			<yard_width type="FloatProperty">10.0</yard_width>
 			<yard_depth type="FloatProperty">10.0</yard_depth>
@@ -5591,7 +5591,7 @@
 			<tile_alt_color type="EnumProperty">0</tile_alt_color>
 			<tile_width type="FloatProperty">0.387</tile_width>
 			<tile_length type="FloatProperty">0.5</tile_length>
-			<paoshou_count type="IntProperty">5</paoshou_count>
+			<paoshou_count type="IntProperty">4</paoshou_count>
 			<is_4_sides type="BoolProperty">True</is_4_sides>
 			<yard_width type="FloatProperty">10.0</yard_width>
 			<yard_depth type="FloatProperty">10.0</yard_depth>

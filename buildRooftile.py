@@ -1371,12 +1371,11 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     )
     diagnalObj.rotation_euler.z = math.radians(45)   
     utils.hideObj(diagnalObj)
-    hejiaoLoc = Vector(ridgeCross) + Vector((0,0,0.5))
     # 合角吻对象
     hejiaowenObj = utils.copyObject(
         sourceObj=aData.hejiaowen_source,
         name='合角吻',
-        location=hejiaoLoc,
+        location=ridgeCross,
         rotation=(0,0,math.radians(180)),
         parentObj=tileRootObj,
         singleUser=True)

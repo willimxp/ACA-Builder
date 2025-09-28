@@ -1270,6 +1270,7 @@ def setGlazeStyle(paintObj:bpy.types.Object,
         aData.ridgeFront_source,    # 垂脊兽前
         aData.chiwen_source,        # 螭吻
         aData.taoshou_source,       # 套兽
+        aData.hejiaowen_source,     # 合角吻
         aData.paoshou_0_source,     # 跑兽
         aData.paoshou_1_source,     # 跑兽
         aData.paoshou_2_source,     # 跑兽

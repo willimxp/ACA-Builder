@@ -1362,7 +1362,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     mat.setGlazeStyle(roofRidgeObj)
 
     #------------------------
-    # 3、摆放螭吻
+    # 3、摆放合角吻
     # 45度镜像
     diagnalObj = utils.addEmpty(
         name = '45度镜像',
@@ -1371,19 +1371,20 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     )
     diagnalObj.rotation_euler.z = math.radians(45)   
     utils.hideObj(diagnalObj)
-    # 螭吻对象
-    chiwenObj = utils.copyObject(
-        sourceObj=aData.chiwen_source,
+    hejiaoLoc = Vector(ridgeCross) + Vector((0,0,0.5))
+    # 合角吻对象
+    hejiaowenObj = utils.copyObject(
+        sourceObj=aData.hejiaowen_source,
         name='合角吻',
-        location=ridgeCross,
+        location=hejiaoLoc,
         rotation=(0,0,math.radians(180)),
         parentObj=tileRootObj,
         singleUser=True)
     # 根据斗口调整尺度
-    utils.resizeObj(chiwenObj,tileScale *0.75)
+    utils.resizeObj(hejiaowenObj,tileScale)
     # 镜像
     utils.addModifierMirror(
-        object=chiwenObj,
+        object=hejiaowenObj,
         mirrorObj=diagnalObj,
         use_axis=(False,True,False),
         use_bisect=(False,True,False),
@@ -1391,12 +1392,12 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     )
     # 镜像
     utils.addModifierMirror(
-        object=chiwenObj,
+        object=hejiaowenObj,
         mirrorObj=tileRootObj,
         use_axis=(True,True,False)
     )
     # 设置材质
-    mat.setGlazeStyle(chiwenObj,resetUV=False)
+    mat.setGlazeStyle(hejiaowenObj,resetUV=False)
 
     return
 

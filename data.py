@@ -1516,6 +1516,10 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "螭吻",
             type = bpy.types.Object,
         )# type: ignore 
+    hejiaowen_source:bpy.props.PointerProperty(
+            name = "合角吻",
+            type = bpy.types.Object,
+        )# type: ignore 
     baoding_source:bpy.props.PointerProperty(
             name = "宝顶",
             type = bpy.types.Object,

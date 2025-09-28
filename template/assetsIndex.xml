@@ -112,6 +112,7 @@
     <ridgeFront_source type="Object">垂脊兽前</ridgeFront_source>
     <ridgeEnd_source type="Object">端头组合</ridgeEnd_source>
     <chiwen_source type="Object">螭吻</chiwen_source>
+    <hejiaowen_source type="Object">合角吻</hejiaowen_source>
     <baoding_source type="Object">宝顶</baoding_source>
     <chuishou_source type="Object">垂兽</chuishou_source>
     <taoshou_source type="Object">套兽</taoshou_source>

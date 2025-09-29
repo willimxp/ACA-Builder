@@ -40,17 +40,21 @@ def __addBuildingRoot(templateName,
     utils.focusCollection(buildingColl.name)
     
     # 创建buildObj根节点
-    # 原点摆放在3D Cursor位置
+    # 250929 comboroot已经落在了cursor，此时buldingObj只需要在原点即可
+    if comboObj == None:
+        buildingLoc = bpy.context.scene.cursor.location
+    else:
+        buildingLoc = (0,0,0)
+    # 创建buildingRoot
     buildingObj = utils.addEmpty(
         name=templateName,
-        location=bpy.context.scene.cursor.location
+        location=buildingLoc
     )
     bData:acaData = buildingObj.ACA_data
     bData['aca_obj'] = True
     bData['aca_id'] = utils.generateID()
     bData['aca_type'] = con.ACA_TYPE_BUILDING
     bData['template_name'] = templateName
-    
 
     if comboObj is not None:
         # 绑定Combo对象父子关系

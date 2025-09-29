@@ -418,9 +418,10 @@ def addSection(buildingObj:bpy.types.Object,
 def __getSectionPlan(boolObj:bpy.types.Object,
                      sectionType='X+',):
     # 载入数据
-    buildingObj,bData,oData = utils.getRoot(boolObj)
+    # boolObj是切割体，parent是层合并对象，该对象在合并时继承了建筑的combo_type
+    bData = boolObj.parent.ACA_data
     # 区分是否为楼阁等组合对象
-    if bData.combo_type in (con.COMBO_MAIN,):
+    if bData.combo_type in (con.COMBO_MAIN,con.COMBO_TERRACE):
         isComboNext = False
     else:
         isComboNext = True
@@ -516,7 +517,18 @@ def __getSectionPlan(boolObj:bpy.types.Object,
     elif sectionType == 'B':
         # 1-台基层，不裁剪
         if con.COLL_NAME_BASE in layerName:
-            pass
+            if not isComboNext:
+                # 底层，不裁剪
+                pass
+            else:
+                # 上层楼板裁剪1/4
+                boolPlan['bool'] = True
+                boolPlan['offset'] = Vector((
+                    boolObj.dimensions.x*0.5 - origin_loc.x,
+                    -boolObj.dimensions.y*0.5 + Y_reserve,
+                    0
+                ))
+                boolPlan['mat'] = con.M_STONE
         # 2-柱网层
         elif con.COLL_NAME_PILLER in layerName:
             # 判断combo对象
@@ -601,9 +613,20 @@ def __getSectionPlan(boolObj:bpy.types.Object,
             ))
             boolPlan['mat'] = con.M_STONE
     elif sectionType == 'C':
-        # 1-台基层，不裁剪
+        # 1-台基层
         if con.COLL_NAME_BASE in layerName:
-            pass
+            if not isComboNext:
+                # 底层，不裁剪
+                pass
+            else:
+                # 上层楼板裁剪一半
+                boolPlan['bool'] = True
+                boolPlan['offset'] = Vector((
+                    boolObj.dimensions.x*0.5 - origin_loc.x,
+                    0,
+                    0
+                ))
+                boolPlan['mat'] = con.M_STONE
         # 2-柱网层
         elif con.COLL_NAME_PILLER in layerName:
             # 判断combo对象
@@ -809,10 +832,19 @@ def joinBuilding(buildingObj:bpy.types.Object,
             # 一般可能是台基层，或柱网层根节点
             baseMatrix = partObjList[0].parent.matrix_local.copy()
 
+        # 250929 提取combo对象的属性
+        if isCombo:
+            comboType = partObjList[0].parent.parent.ACA_data.combo_type
+        
         # 合并对象
         joinedModel = utils.joinObjects(
             objList=partObjList,
             newName=joinedName,)
+        
+        # 250929 继承父建筑的combo_type，以便剖视图区分是否为底层建筑还是楼阁
+        if isCombo:
+            joinedModel.ACA_data['combo_type'] = comboType
+            # print(joinedName + " joinedComboType=" + comboType)
         
         # 区分是否分层的坐标映射
         if useLayer:

@@ -2205,6 +2205,20 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
     p0 -= offset
     ridgeCurveVerts.append(p0)
 
+    # 250929 尝试添加老角梁头参考点
+    cornerBeamObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_CORNER_BEAM)
+    cornerBeam_head_co = utils.getObjectHeadPoint(
+                            cornerBeamObj,
+                            is_symmetry=(True,True,False)
+                        )
+    # 向上位移半角梁高度，达到老角梁上皮
+    offset:Vector = Vector((0,0,con.JIAOLIANG_H*dk*1))
+    offset.rotate(cornerBeamObj.rotation_euler)
+    cornerBeam_head_co += offset
+    ridgeCurveVerts.append(cornerBeam_head_co)
+
+
     # 庑殿垂脊做到顶部的正脊
     if bData.roof_style in (
             con.ROOF_WUDIAN,
@@ -2239,12 +2253,14 @@ def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
         # 向上位移:半桁径+椽径+望板高+灰泥层高
         offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
                     + con.WANGBAN_H + con.ROOFMUD_H)*dk + tileHeight
+        # 250929 为了让戗脊更加贴合瓦面，特别是盝顶很小的时候，做了手工调整
+        offset -= 1.5*dk
         point:Vector = purlin_pos[n]+Vector((0,0,offset))
         # 曲线矫正，随着起翘幅度的增大，下金桁位置的垂脊有与瓦面分离的风险
         # 所以在第一点上随着起翘，反向进行了压制
         # 没有明确的算法，我人为估计的一个值，不够准确，先凑合着用
-        if n==0:
-            point -= Vector((0,0,bData.qiqiao*con.YUANCHUAN_D*dk/3))
+        # if n==0:
+        #     point -= Vector((0,0,bData.qiqiao*con.YUANCHUAN_D*dk/3))
         ridgeCurveVerts.append(point)
     
     # 创建瓦垄曲线

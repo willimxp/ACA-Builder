@@ -5206,7 +5206,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.2</liangtou>
+			<liangtou type="FloatProperty">0.3</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.321</shoushan>
 			<luding_rafterspan type="FloatProperty">0.24</luding_rafterspan>
@@ -5457,7 +5457,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.2</liangtou>
+			<liangtou type="FloatProperty">0.3</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.161</shoushan>
 			<luding_rafterspan type="FloatProperty">0.24</luding_rafterspan>

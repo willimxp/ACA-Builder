@@ -213,14 +213,14 @@ class ACA_PT_basic(bpy.types.Panel):
             buttonX_p = toolBar.column(align=True)
             op1 = buttonX_p.operator("aca.section",
                         depress=(currentPlan=='X+'),
-                        text='侧视',)
+                        text='侧剖',)
             op1.sectionPlan = 'X+'
             # Y-
             col = toolBar.column(align=True)
             op = col.operator(
                 "aca.section",
                 depress=(currentPlan=='Y-'),
-                text='正视')
+                text='正剖')
             op.sectionPlan = 'Y-'  
             # # 第二行 ------------------------------
             # toolBar = toolBox.grid_flow(columns=4, align=True)

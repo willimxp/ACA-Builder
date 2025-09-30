@@ -5190,9 +5190,9 @@
 			<use_balcony_railing type="BoolProperty">False</use_balcony_railing>
 			<use_dg type="BoolProperty">True</use_dg>
 			<use_pingbanfang type="BoolProperty">False</use_pingbanfang>
-			<dg_style type="EnumProperty">0</dg_style>
-			<dg_extend type="FloatProperty">0.0</dg_extend>
-			<dg_height type="FloatProperty">0.416</dg_height>
+			<dg_style type="EnumProperty">2</dg_style>
+			<dg_extend type="FloatProperty">0.48</dg_extend>
+			<dg_height type="FloatProperty">0.736</dg_height>
 			<dk_scale type="FloatProperty">1.0</dk_scale>
 			<dg_gap type="FloatProperty">0.88</dg_gap>
 			<dg_withbeam type="BoolProperty">True</dg_withbeam>
@@ -5206,7 +5206,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.3</liangtou>
+			<liangtou type="FloatProperty">0.4</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.321</shoushan>
 			<luding_rafterspan type="FloatProperty">0.24</luding_rafterspan>
@@ -5231,7 +5231,7 @@
 			<template_name type="StringProperty">楼阁示例B.平坐</template_name>
 			<combo_type type="StringProperty">combo_pingzuo</combo_type>
 			<combo_parent type="StringProperty">01b77fe3-9776-11f0-8248-a841f4d3e2cf</combo_parent>
-			<combo_location type="FloatVectorProperty">0.0,0.0,6.50600004196167</combo_location>
+			<combo_location type="FloatVectorProperty">0.0,0.0,7.065999984741211</combo_location>
 			<combo_rotation type="FloatVectorProperty">0.0,0.0,0.0</combo_rotation>
 			<combo_floor_height type="FloatProperty">0.0</combo_floor_height>
 			<DK type="FloatProperty">0.08</DK>
@@ -5318,9 +5318,9 @@
 			<use_balcony_railing type="BoolProperty">True</use_balcony_railing>
 			<use_dg type="BoolProperty">True</use_dg>
 			<use_pingbanfang type="BoolProperty">False</use_pingbanfang>
-			<dg_style type="EnumProperty">0</dg_style>
-			<dg_extend type="FloatProperty">0.0</dg_extend>
-			<dg_height type="FloatProperty">0.496</dg_height>
+			<dg_style type="EnumProperty">2</dg_style>
+			<dg_extend type="FloatProperty">0.48</dg_extend>
+			<dg_height type="FloatProperty">0.816</dg_height>
 			<dk_scale type="FloatProperty">1.0</dk_scale>
 			<dg_gap type="FloatProperty">0.88</dg_gap>
 			<dg_withbeam type="BoolProperty">True</dg_withbeam>
@@ -5359,7 +5359,7 @@
 			<template_name type="StringProperty">楼阁示例B.重楼</template_name>
 			<combo_type type="StringProperty">combo_multi_floor</combo_type>
 			<combo_parent type="StringProperty">056c1996-9777-11f0-84f8-a841f4d3e2cf</combo_parent>
-			<combo_location type="FloatVectorProperty">0.0,0.0,9.600998878479004</combo_location>
+			<combo_location type="FloatVectorProperty">0.0,0.0,10.480999946594238</combo_location>
 			<combo_rotation type="FloatVectorProperty">0.0,0.0,0.0</combo_rotation>
 			<combo_floor_height type="FloatProperty">0.0</combo_floor_height>
 			<DK type="FloatProperty">0.08</DK>
@@ -5441,9 +5441,9 @@
 			<use_balcony_railing type="BoolProperty">True</use_balcony_railing>
 			<use_dg type="BoolProperty">True</use_dg>
 			<use_pingbanfang type="BoolProperty">False</use_pingbanfang>
-			<dg_style type="EnumProperty">0</dg_style>
-			<dg_extend type="FloatProperty">0.0</dg_extend>
-			<dg_height type="FloatProperty">0.416</dg_height>
+			<dg_style type="EnumProperty">2</dg_style>
+			<dg_extend type="FloatProperty">0.48</dg_extend>
+			<dg_height type="FloatProperty">0.736</dg_height>
 			<dk_scale type="FloatProperty">1.0</dk_scale>
 			<dg_gap type="FloatProperty">0.88</dg_gap>
 			<dg_withbeam type="BoolProperty">True</dg_withbeam>
@@ -5457,7 +5457,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.3</liangtou>
+			<liangtou type="FloatProperty">0.4</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.161</shoushan>
 			<luding_rafterspan type="FloatProperty">0.24</luding_rafterspan>
@@ -5482,7 +5482,7 @@
 			<template_name type="StringProperty">楼阁示例B.重檐</template_name>
 			<combo_type type="StringProperty">combo_double_eave</combo_type>
 			<combo_parent type="StringProperty">056c8ce8-9777-11f0-855d-a841f4d3e2cf</combo_parent>
-			<combo_location type="FloatVectorProperty">0.0,0.0,14.57699966430664</combo_location>
+			<combo_location type="FloatVectorProperty">0.0,0.0,16.017000198364258</combo_location>
 			<combo_rotation type="FloatVectorProperty">0.0,0.0,0.0</combo_rotation>
 			<combo_floor_height type="FloatProperty">0.0</combo_floor_height>
 			<DK type="FloatProperty">0.08</DK>
@@ -5564,9 +5564,9 @@
 			<use_balcony_railing type="BoolProperty">True</use_balcony_railing>
 			<use_dg type="BoolProperty">True</use_dg>
 			<use_pingbanfang type="BoolProperty">False</use_pingbanfang>
-			<dg_style type="EnumProperty">0</dg_style>
-			<dg_extend type="FloatProperty">0.0</dg_extend>
-			<dg_height type="FloatProperty">0.416</dg_height>
+			<dg_style type="EnumProperty">2</dg_style>
+			<dg_extend type="FloatProperty">0.48</dg_extend>
+			<dg_height type="FloatProperty">0.736</dg_height>
 			<dk_scale type="FloatProperty">1.0</dk_scale>
 			<dg_gap type="FloatProperty">0.88</dg_gap>
 			<dg_withbeam type="BoolProperty">True</dg_withbeam>

@@ -301,8 +301,7 @@ def loadAssets(assetName : str,
         raise Exception('无法打开资产库，请确认acaAssets.blend文件已经放入插件目录')
     # 验证找到的资产是否唯一
     if len(data_to.objects) == 0:
-        utils.outputMsg("未找到指定载入的资产:" + assetName)
-        return
+        raise Exception(f"资产[{assetName}]载入失败，请检查是否关联最新版本的acaAssets.blend资产库。")
     if len(data_to.objects) > 1:
         utils.outputMsg("无法定位唯一的资产:" + assetName)
         return 

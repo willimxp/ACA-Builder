@@ -217,7 +217,7 @@ class ACA_OT_del_piller(bpy.types.Operator):
     def execute(self, context):  
         piller = context.object
         pillers = context.selected_objects
-        buildingObj = utils.getAcaParent(piller,con.ACA_TYPE_BUILDING)
+        buildingObj,bData,oData = utils.getRoot(context.object)
 
         funproxy = partial(buildFloor.delPiller,
                     buildingObj=buildingObj,
@@ -271,7 +271,7 @@ class ACA_OT_add_step(bpy.types.Operator):
             utils.popMessageBox("请至少选择2根柱子")
             return {'CANCELLED'}
         
-        buildingObj = utils.getAcaParent(piller,con.ACA_TYPE_BUILDING)
+        buildingObj,bData,oData = utils.getRoot(context.object)
         from . import buildPlatform
         funproxy = partial(
                 buildPlatform.addStep,
@@ -306,8 +306,7 @@ class ACA_OT_del_step(bpy.types.Operator):
             utils.popMessageBox("请选择需要删除的踏跺")
             return {'CANCELLED'}
                 
-        buildingObj = utils.getAcaParent(
-            step,con.ACA_TYPE_BUILDING)
+        buildingObj,bData,oData = utils.getRoot(context.object)
         from . import buildPlatform
         funproxy = partial(
                 buildPlatform.delStep,
@@ -351,8 +350,7 @@ class ACA_OT_add_wall(bpy.types.Operator):
     def execute(self, context):  
         piller = context.object
         pillers = context.selected_objects
-        buildingObj = utils.getAcaParent(
-            piller,con.ACA_TYPE_BUILDING)
+        buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
@@ -374,8 +372,7 @@ class ACA_OT_add_door(bpy.types.Operator):
     def execute(self, context):  
         piller = context.object
         pillers = context.selected_objects
-        buildingObj = utils.getAcaParent(
-            piller,con.ACA_TYPE_BUILDING) 
+        buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
@@ -397,8 +394,7 @@ class ACA_OT_add_window(bpy.types.Operator):
     def execute(self, context):  
         piller = context.object
         pillers = context.selected_objects
-        buildingObj = utils.getAcaParent(
-            piller,con.ACA_TYPE_BUILDING)
+        buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
@@ -473,8 +469,7 @@ class ACA_OT_add_maindoor(bpy.types.Operator):
     def execute(self, context):  
         piller = context.object
         pillers = context.selected_objects
-        buildingObj = utils.getAcaParent(
-            piller,con.ACA_TYPE_BUILDING) 
+        buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
@@ -496,8 +491,7 @@ class ACA_OT_add_barwindow(bpy.types.Operator):
     def execute(self, context):  
         piller = context.object
         pillers = context.selected_objects
-        buildingObj = utils.getAcaParent(
-            piller,con.ACA_TYPE_BUILDING) 
+        buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
@@ -519,8 +513,7 @@ class ACA_OT_add_flipwindow(bpy.types.Operator):
     def execute(self, context):  
         piller = context.object
         pillers = context.selected_objects
-        buildingObj = utils.getAcaParent(
-            piller,con.ACA_TYPE_BUILDING) 
+        buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
@@ -542,8 +535,7 @@ class ACA_OT_add_railing(bpy.types.Operator):
     def execute(self, context):  
         piller = context.object
         pillers = context.selected_objects
-        buildingObj = utils.getAcaParent(
-            piller,con.ACA_TYPE_BUILDING) 
+        buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,

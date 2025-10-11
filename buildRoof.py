@@ -3513,10 +3513,12 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     ):
         # 硬山、悬山做宽一些，更加美观
         bofengHeight += con.BOFENG_OFFSET_YS*dk
+    # 251011 博缝板在不同斗口下保持不变形
+    bofengScale = bofengHeight / bofengObj.dimensions.z
     bofengObj.dimensions = (
-        bofengObj.dimensions.x,
+        bofengObj.dimensions.x * bofengScale,
         con.BOFENG_WIDTH*dk,
-        bofengHeight)
+        bofengObj.dimensions.z * bofengScale)
     # 添加curve变形
     modCurve : bpy.types.CurveModifier = \
         bofengObj.modifiers.new('曲线拟合','CURVE')

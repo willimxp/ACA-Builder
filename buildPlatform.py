@@ -308,6 +308,8 @@ def __buildSteps(baseRootObj:bpy.types.Object):
 
         # 生成踏跺对象
         stepObj = __drawStep(baseRootObj,step)
+        # 251011 踏跺生成失败时跳过
+        if stepObj == None: break
         stepObjList.append(stepObj)
 
     return stepObjList
@@ -502,6 +504,8 @@ def __drawStep(
     # 根据stepID生成踏跺空间范围，宽度统一取开间宽度
     stepProxy = __addStepProxy(
         baseRootObj,stepData)
+    # 251011 踏跺生成失败时退出
+    if stepProxy == None: return
     (pWidth,pDeepth,pHeight) = stepProxy.dimensions
     
     # 判断是否与前后踏跺“连做”，如，三连踏跺
@@ -856,7 +860,7 @@ def addStep(buildingObj:bpy.types.Object,
         # 校验柱子是否相邻
         valid = utils.validPillerNext(pFrom,pTo)
         if not valid:
-            utils.outputMsg(
+            utils.popMessageBox(
                 f"无法生成踏跺，{pFrom}，{pTo}不是相邻的柱子")
             continue
 
@@ -865,8 +869,38 @@ def addStep(buildingObj:bpy.types.Object,
         stepID_alt = pTo + '#' + pFrom
         for step in bData.step_list:
             if stepID == step.id or stepID_alt==step.id:
-                utils.outputMsg(stepID + "已经存在")
-                continue
+                utils.popMessageBox(f"该位置已经存在踏跺：{stepID}")
+                return {'CANCELLED'}
+
+        # 251011 验证踏跺合法性
+        # 计算柱网数据
+        net_x,net_y = buildFloor.getFloorDate(buildingObj)
+        # 判断台阶朝向
+        step_dir = None   
+        roomEndX = len(net_x)-1
+        roomEndY = len(net_y)-1
+        pFromP = pFrom.split('/')
+        pFrom_x = int(pFromP[0])
+        pFrom_y = int(pFromP[1])
+        pToP = pTo.split('/')
+        pTo_x = int(pToP[0])
+        pTo_y = int(pToP[1])
+        # 西门
+        if pFrom_x == 0 and pTo_x == 0:
+            step_dir = 'W'
+        # 东门
+        if pFrom_x == roomEndX and pTo_x == roomEndX:
+            step_dir = 'E'
+        # 南门
+        if pFrom_y == 0 and pTo_y == 0:
+            step_dir = 'S'
+        # 北门
+        if pFrom_y == roomEndY and pTo_y == roomEndY:
+            step_dir = 'N'
+        if step_dir == None:
+            utils.popMessageBox('踏跺位置不合理，id='+stepID)
+            # 退出
+            return {'CANCELLED'}
         
         # 添加踏跺数据
         utils.outputMsg("添加踏跺：" + stepID)

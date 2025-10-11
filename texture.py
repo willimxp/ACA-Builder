@@ -867,13 +867,15 @@ def __setFangMat(fangObj:bpy.types.Object,
 
     # 判断额枋长度
     fangLength = fangObj.dimensions.x
-    if fangLength < 1.8:
+    # 251011 追加斗口缩放的影响
+    dkScale = bData.DK / con.DEFAULT_DK
+    if fangLength < 1.8*dkScale:
         # 超短款
         matID += 3
-    elif fangLength < 2.8:
+    elif fangLength < 2.8*dkScale:
         # 短款
         matID += 2
-    elif fangLength < 5:
+    elif fangLength < 5*dkScale:
         # 中款
         matID += 1
 

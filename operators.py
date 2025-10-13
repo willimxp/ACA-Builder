@@ -423,6 +423,7 @@ class ACA_OT_del_wall(bpy.types.Operator):
                 con.ACA_WALLTYPE_MAINDOOR,      # 板门
                 con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
                 con.ACA_WALLTYPE_RAILILNG,      # 栏杆
+                con.ACA_WALLTYPE_BENCH,         # 坐凳
                 ):
             funproxy = partial(
                 buildWall.delWall,
@@ -544,6 +545,28 @@ class ACA_OT_add_railing(bpy.types.Operator):
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
                 self.report({'INFO'},"已添加栏杆")
+
+        return {'FINISHED'}
+    
+# 单独生成一副坐凳
+class ACA_OT_add_bench(bpy.types.Operator):
+    bl_idname="aca.add_bench"
+    bl_label = "坐凳"
+    bl_description = "在柱间加坐凳（先选择2根以上的柱子）"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        piller = context.object
+        pillers = context.selected_objects
+        buildingObj,bData,oData = utils.getRoot(context.object)
+        funproxy = partial(
+                buildWall.addWall,
+                buildingObj=buildingObj,
+                pillers=pillers,
+                wallType=con.ACA_WALLTYPE_BENCH)
+        result = utils.fastRun(funproxy)
+        if 'FINISHED' in result:
+                self.report({'INFO'},"已添加坐凳")
 
         return {'FINISHED'}
 

@@ -66,6 +66,8 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
         wallName = '支摘窗'
     elif wallType == con.ACA_WALLTYPE_RAILILNG:
         wallName = '栏杆'
+    elif wallType == con.ACA_WALLTYPE_BENCH:
+        wallName = '坐凳'
     elif wallType == con.ACA_WALLTYPE_QUETI:
         wallName = '雀替'
     else:
@@ -331,13 +333,13 @@ def __buildWall(buildingObj:bpy.types.Object,
                       con.ACA_WALLTYPE_BARWINDOW,
                       con.ACA_WALLTYPE_FLIPWINDOW,):
         wallObj = buildDoor.buildDoor(wallproxy)
-    # 营造栏杆
-    elif wallType in (con.ACA_WALLTYPE_RAILILNG):
+    # 营造栏杆、坐凳
+    elif wallType in (con.ACA_WALLTYPE_RAILILNG,
+                      con.ACA_WALLTYPE_BENCH):
         from . import buildBalcony
         wallObj = buildBalcony.addRailing(wallproxy)
     # 营造雀替
     elif wallType == con.ACA_WALLTYPE_QUETI:
-        from . import buildBalcony
         wallObj = buildFloor.addQueti(wallproxy)
     else:
         raise Exception(f"无法生成墙体类型:{wallType}")
@@ -430,8 +432,9 @@ def addWall(buildingObj:bpy.types.Object,
             # 构造ID
             wallID = wallType+'#'+wallID
             # 将墙体加入整体布局中
-            # 栏杆
-            if wallType == con.ACA_WALLTYPE_RAILILNG:
+            # 栏杆、坐凳
+            if wallType in (con.ACA_WALLTYPE_RAILILNG,
+                            con.ACA_WALLTYPE_BENCH):
                 railing = bData.railing_list.add()
                 railing.id = wallID
             # 板门
@@ -461,8 +464,9 @@ def addWall(buildingObj:bpy.types.Object,
 
     # 聚焦在创建的门上
     if wallObj != None:
-        # 除了添加栏杆，其他装修与雀替互斥，直接删除
-        if wallType != con.ACA_WALLTYPE_RAILILNG:
+        # 除了添加栏杆/坐凳，其他装修与雀替互斥，直接删除
+        if wallType not in (con.ACA_WALLTYPE_RAILILNG,
+                            con.ACA_WALLTYPE_BENCH):
             # 删除雀替
             __delQuetiFromAdd(wallObj)
 
@@ -494,6 +498,7 @@ def delWall(buildingObj:bpy.types.Object,
             con.ACA_WALLTYPE_MAINDOOR,      # 板门
             con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
             con.ACA_WALLTYPE_RAILILNG,      # 栏杆
+            con.ACA_WALLTYPE_BENCH,         # 坐凳
         ):
             continue
         
@@ -572,9 +577,8 @@ def __addQuetiFromDel(walldel:bpy.types.Object):
         if not quetiID in wall_ids:
             queti_item = bData.wall_list.add()
             queti_item.id =quetiID
-        
-        # 添加实体
-        __buildWall(buildingObj,wallID=quetiID)
+            # 添加实体
+            __buildWall(buildingObj,wallID=quetiID)
 
     return
 

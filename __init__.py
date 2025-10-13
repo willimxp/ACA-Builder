@@ -76,6 +76,7 @@ classes = (
     operators.ACA_OT_add_barwindow,
     operators.ACA_OT_add_flipwindow,
     operators.ACA_OT_add_railing,
+    operators.ACA_OT_add_bench,
     operators.ACA_OT_default_dk,
     operators.ACA_OT_save_template,
     operators.ACA_OT_del_template,

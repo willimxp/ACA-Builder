@@ -66,6 +66,7 @@ class ACA_Consts(object):
     ACA_WALLTYPE_MAINDOOR = 'maindoor'                              # 隔断属性-板门
     ACA_WALLTYPE_FLIPWINDOW = 'flipwindow'                          # 隔断属性-支摘窗
     ACA_WALLTYPE_RAILILNG = 'railing'                               # 隔断属性-栏杆
+    ACA_WALLTYPE_BENCH = 'bench'                                    # 隔断属性-坐凳
     ACA_WALLTYPE_QUETI = 'queti'                                    # 隔断属性-雀替
     ACA_TYPE_COMBO = 'combo'                                        # 组合样式
     ACA_PILLER_HIDE = 'piller_hide'                                 # 隐藏柱网
@@ -247,6 +248,13 @@ class ACA_Consts(object):
     HANDRAIL_H = 0.9                    # 桪杖高(DK)
     RAILING_ZZ_Y = 0.9                  # 折柱深(DK)
     RAILING_ZZ_W = 1.1                  # 折柱宽(DK)
+
+    # 坐凳，数据来源于汤崇平p75和马炳坚p286
+    BENCH_FACE_Y = 1.2                  # 坐凳面深度(PD)，1~1.2柱径
+    BENCH_FACE_H = 0.06                 # 坐凳面高度(m)，45~70mm
+    BENCH_FACE_Z = 0.5                  # 坐凳面垂直高度(m),50~55cm
+    BENCH_BORDER = 0.04                 # 坐凳边抹(m)，宽45~55，厚55~65
+    BENCH_YAZI_H = 0.38                 # 坐凳牙子板高度(m) 
 
     # 其他
     OFFSET_ORIENTATION = 'GLOBAL'       # 'GLOBAL'  'LOCAL' #上下层叠构件的错开方式，一般绘图是垂直位移，但其实相对方向的位移更好看

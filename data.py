@@ -195,8 +195,9 @@ def update_railing(self, context:bpy.types.Context):
     buildingObj,bData,oData = utils.getRoot(context.object)
     railingID = oData['wallID']
     # 确认选中了栏杆
-    if oData.aca_type != con.ACA_WALLTYPE_RAILILNG:
-        utils.popMessageBox("当前活动对象不是栏杆")
+    if oData.aca_type not in (con.ACA_WALLTYPE_RAILILNG,
+                              con.ACA_WALLTYPE_BENCH):
+        utils.popMessageBox("当前活动对象不是栏杆/坐凳")
         return
     
     # 所有选中的对象
@@ -218,7 +219,8 @@ def update_railing(self, context:bpy.types.Context):
     # 批量设置所有选中的对象
     for railingSelect in selected_objs:
         # 确认是踏跺
-        if railingSelect.ACA_data.aca_type != con.ACA_WALLTYPE_RAILILNG:
+        if railingSelect.ACA_data.aca_type not in (con.ACA_WALLTYPE_RAILILNG,
+                              con.ACA_WALLTYPE_BENCH):
             continue
 
         # 获取其他被选中的栏杆数据    
@@ -355,6 +357,7 @@ def update_wall(self, context:bpy.types.Context):
             con.ACA_WALLTYPE_MAINDOOR,      # 板门
             con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
             con.ACA_WALLTYPE_RAILILNG,      # 栏杆
+            con.ACA_WALLTYPE_BENCH,         # 坐凳
         ):
             # 存入选择列表
             if not wallSelected.name in selected_names:
@@ -616,8 +619,8 @@ class ACA_data_railing(bpy.types.PropertyGroup):
             name = 'id',
         ) # type: ignore
     gap : bpy.props.FloatProperty(
-        name='栏杆开口宽度',
-        description='栏杆在开间内开口的比例，设置为0时不做开口，最大为0.9',
+        name='开口宽度',
+        description='在开间内开口的比例，设置为0时不做开口，最大为0.9',
         default=0.0,
         max=0.9,
         min=0.0,

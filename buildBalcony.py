@@ -648,8 +648,7 @@ def buildBalcony(buildingObj:bpy.types.Object):
     
     return
 
-# 手工添加栏杆
-# 营造板门
+# 手工添加栏杆/坐凳
 def addRailing(wallProxy:bpy.types.Object):       
     # 载入设计数据
     buildingObj,bData,wData = utils.getRoot(wallProxy)
@@ -672,7 +671,7 @@ def addRailing(wallProxy:bpy.types.Object):
     # 栏杆长度，只能做在两个柱间
     railingLen = wallProxy.dimensions.x - bData.piller_diameter
     if railingLen <= 0:
-        utils.outputMsg(f"此位置无法做栏杆，已跳过{wallProxy.name}")
+        utils.outputMsg(f"此位置无法做栏杆/坐凳，已跳过{wallProxy.name}")
         return
     
     # 开口的最大值控制
@@ -699,10 +698,112 @@ def addRailing(wallProxy:bpy.types.Object):
     # 清理之前的子对象
     utils.deleteHierarchy(wallProxy)
 
-    # 创建栏杆
-    railingObj = __buildRailing(
-        parentObj=wallProxy,
-        proxy=proxy
-    )
+    # 区分做栏杆还是坐凳
+    wallType = railingID.split('#')[0]
+
+    if wallType == con.ACA_WALLTYPE_RAILILNG:
+        # 创建栏杆
+        railingObj = __buildRailing(
+            parentObj=wallProxy,
+            proxy=proxy
+        )
+    elif wallType == con.ACA_WALLTYPE_BENCH:
+        # 创建坐凳
+        railingObj = __buildBench(
+            parentObj=wallProxy,
+            proxy=proxy
+        )
 
     return railingObj
+
+# 构造坐凳
+def __buildBench(parentObj:bpy.types.Object,
+                   proxy,):
+    buildingObj,bData,oData = utils.getRoot(parentObj)
+    pd = bData.piller_diameter
+    # 栏杆默认做满开间
+    proxyW = proxy['length']
+
+    # 收集坐凳部件，以便合并
+    benchParts = []
+
+    # 坐凳面
+    faceDim = Vector((
+        proxyW + 1.5*pd,  # 六边形头部延伸到两根柱边缘
+        con.BENCH_FACE_Y*pd, # 坐凳面宽1.2柱径
+        con.BENCH_FACE_H, # 固定高度,45~70mm
+    ))
+    faceLoc = Vector((0,0,
+        con.BENCH_FACE_Z)) # 离地面高度50~55cm
+    benchFace:bpy.types.Object = utils.drawHexagon(
+        faceDim,
+        faceLoc,
+        name='坐凳面',
+        parent=parentObj
+        )
+    # 导角
+    utils.addModifierBevel(
+        object=benchFace,
+        width=con.BEVEL_HIGH
+    )
+    # 着色
+    mat.paint(benchFace,con.M_PAINT)
+    benchParts.append(benchFace)
+
+    # 坐凳边抹
+    # 定位，从坐凳面向下半坐等面高，再向下半牙子板高
+    yaziZ = (con.BENCH_FACE_Z 
+             - con.BENCH_FACE_H/2
+             - con.BENCH_YAZI_H/2)
+    yaziLoc = (0,0,yaziZ)
+    # 创建一个平面，转换为curve，设置curve的横截面
+    bpy.ops.mesh.primitive_plane_add(size=1,location=yaziLoc)
+    zibianObj = bpy.context.object
+    zibianObj.name = '牙子仔边'
+    zibianObj.parent = parentObj
+    # 三维的scale转为plane二维的scale
+    zibianObj.rotation_euler.x = math.radians(90)
+    zibianObj.scale = (
+        proxyW - con.BENCH_BORDER,
+        con.BENCH_YAZI_H - con.BENCH_BORDER, # 旋转90度，原Zscale给Yscale
+        1)
+    # apply scale
+    utils.applyTransform(zibianObj,use_rotation=True,use_scale=True)
+    # 转换为Curve
+    bpy.ops.object.convert(target='CURVE')
+    # 旋转所有的点45度，形成四边形
+    bpy.ops.object.editmode_toggle()
+    bpy.ops.curve.select_all(action='SELECT')
+    bpy.ops.transform.tilt(value=math.radians(45))
+    bpy.ops.object.editmode_toggle()
+    # 设置Bevel
+    zibianObj.data.bevel_mode = 'PROFILE'        
+    zibianObj.data.bevel_depth = con.BENCH_BORDER
+    zibianObj.data.bevel_resolution = 0
+    # 转为mesh
+    bpy.ops.object.convert(target='MESH')
+    zibianObj = bpy.context.object
+    # 倒角
+    utils.addModifierBevel(zibianObj,con.BEVEL_LOW)
+    # 着色
+    mat.paint(zibianObj,con.M_PAINT)
+    benchParts.append(zibianObj)
+
+    # 做棂心
+    shanxinDim = (proxyW - con.BENCH_BORDER*2,
+                  0.01,
+                  con.BENCH_YAZI_H - con.BENCH_BORDER*2,)
+    from . import buildDoor
+    shanxinObj = buildDoor.__buildShanxin(
+        parentObj,
+        Vector(shanxinDim),
+        Vector(yaziLoc),
+        lingxinMat=con.M_LINXIN_WAN)
+    utils.addModifierBevel(
+        shanxinObj,con.BEVEL_LOW)
+    benchParts.append(shanxinObj)
+
+    # 合并构件
+    benchObj = utils.joinObjects(benchParts,'坐凳')
+
+    return benchObj

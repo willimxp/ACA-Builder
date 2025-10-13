@@ -644,6 +644,10 @@ class ACA_PT_wall(bpy.types.Panel):
             buttonRailing = toolBar.column(align=True)
             buttonRailing.operator(
                 "aca.add_railing",icon='COLLAPSEMENU',text='栏  杆')
+            # 按钮：加坐凳
+            buttonBench = toolBar.column(align=True)
+            buttonBench.operator(
+                "aca.add_bench",icon='COLLAPSEMENU',text='坐  凳')
             
             # 第5行 ------------------------------
             # 通栏宽度按钮
@@ -664,6 +668,7 @@ class ACA_PT_wall(bpy.types.Panel):
                     buttonBarwindow.enabled=False
                     buttonFlipWin.enabled=False
                     buttonRailing.enabled=False
+                    buttonBench.enabled=False
 
             # 删除按钮，是否选中个隔断对象
             if oData.aca_type not in (
@@ -674,6 +679,7 @@ class ACA_PT_wall(bpy.types.Panel):
                 con.ACA_WALLTYPE_MAINDOOR,  # 板门
                 con.ACA_WALLTYPE_FLIPWINDOW,# 支摘窗
                 con.ACA_WALLTYPE_RAILILNG,  # 栏杆
+                con.ACA_WALLTYPE_BENCH,     # 坐凳
                 ):
                 buttonDel.enabled = False
 
@@ -704,6 +710,7 @@ class ACA_PT_wall(bpy.types.Panel):
                 con.ACA_WALLTYPE_FLIPWINDOW,# 支摘窗
                 con.ACA_WALLTYPE_WALL,# 墙体
                 con.ACA_WALLTYPE_RAILILNG,# 栏杆
+                con.ACA_WALLTYPE_BENCH,# 坐凳
             ):
                 # 属性框
                 toolBox = box.column(align=True)
@@ -773,11 +780,12 @@ class ACA_PT_wall(bpy.types.Panel):
                     contextData, "door_ding_num")
 
             # 6、栏杆属性         
-            if oData.aca_type == con.ACA_WALLTYPE_RAILILNG:
+            if oData.aca_type in (con.ACA_WALLTYPE_RAILILNG,
+                                  con.ACA_WALLTYPE_BENCH):
                 # 栏杆开口
                 inputRailingGap = toolBar.column(align=True)
                 inputRailingGap.prop(
-                    contextData, "gap",text="栏杆开口")
+                    contextData, "gap",text="开口比例")
         
         return
 

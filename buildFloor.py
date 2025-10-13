@@ -256,8 +256,9 @@ def __getWallRange(contextObj:bpy.types.Object):
         if wallID == '': continue
 
         setting = wallID.split('#')
-        # 判断是否是栏杆，可以与雀替并存
-        if setting[0] == con.ACA_WALLTYPE_RAILILNG:
+        # 判断是否是栏杆/坐凳，可以与雀替并存
+        if setting[0] in (con.ACA_WALLTYPE_RAILILNG,
+                          con.ACA_WALLTYPE_BENCH):
             # 不写入wallStr，跳过
             continue
 

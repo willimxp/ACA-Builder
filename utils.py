@@ -2727,7 +2727,8 @@ def getDataList(contextObj:bpy.types.Object,
     if obj_type == con.ACA_TYPE_STEP:
         list_name = 'step_list'
     # 栏杆
-    elif obj_type == con.ACA_WALLTYPE_RAILILNG:
+    elif obj_type in (con.ACA_WALLTYPE_RAILILNG,
+                      con.ACA_WALLTYPE_BENCH):
         list_name = 'railing_list'
     # 板门
     elif obj_type == con.ACA_WALLTYPE_MAINDOOR:
@@ -2812,6 +2813,7 @@ def getContextData(obj_type):
         idType = 'stepID'
     elif objType in (
             con.ACA_WALLTYPE_RAILILNG, # 栏杆
+            con.ACA_WALLTYPE_BENCH, # 坐凳
             con.ACA_WALLTYPE_MAINDOOR,  # 板门
             con.ACA_TYPE_WALL, # 槛墙
             con.ACA_WALLTYPE_WINDOW, # 槛窗

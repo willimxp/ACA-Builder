@@ -3142,13 +3142,15 @@
 		<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
 	</template>
 	<template>
+		<aca_id type="StringProperty">c6ff6ad1-9771-11f0-9bcf-a841f4d3e2cf</aca_id>
 		<aca_type type="StringProperty">building</aca_type>
-		<combo_type type="StringProperty">combo_main</combo_type>
 		<template_name type="StringProperty">廊子</template_name>
+		<combo_type type="StringProperty">combo_main</combo_type>
+		<combo_parent type="StringProperty" />
 		<combo_location type="FloatVectorProperty">0.0,0.0,0.0</combo_location>
 		<combo_rotation type="FloatVectorProperty">0.0,0.0,0.0</combo_rotation>
 		<combo_floor_height type="FloatProperty">0.0</combo_floor_height>
-		<DK type="FloatProperty">0.064</DK>
+		<DK type="FloatProperty">0.028</DK>
 		<is_showPlatform type="BoolProperty">True</is_showPlatform>
 		<is_showPillers type="BoolProperty">True</is_showPillers>
 		<is_showWalls type="BoolProperty">True</is_showWalls>
@@ -3157,34 +3159,26 @@
 		<is_showRafter type="BoolProperty">True</is_showRafter>
 		<is_showTiles type="BoolProperty">True</is_showTiles>
 		<is_showBalcony type="BoolProperty">True</is_showBalcony>
-		<platform_height type="FloatProperty">0.6</platform_height>
-		<platform_extend type="FloatProperty">0.8</platform_extend>
+		<platform_height type="FloatProperty">0.4</platform_height>
+		<platform_extend type="FloatProperty">0.4</platform_extend>
 		<use_terrace type="BoolProperty">False</use_terrace>
-		<step_list type="CollectionProperty">
-			<item_0 type="item">
-				<id type="StringProperty">9/0#9/1</id>
-				<width type="FloatProperty">0.6</width>
-			</item_0>
-			<item_1 type="item">
-				<id type="StringProperty">0/0#0/1</id>
-				<width type="FloatProperty">0.6</width>
-			</item_1>
-		</step_list>
-		<x_total type="FloatProperty">48.4</x_total>
-		<y_total type="FloatProperty">5.0</y_total>
-		<x_rooms type="IntProperty">9</x_rooms>
-		<x_1 type="FloatProperty">6.16</x_1>
-		<x_2 type="FloatProperty">5.28</x_2>
+		<step_list type="CollectionProperty" />
+		<x_total type="FloatProperty">7.5</x_total>
+		<y_total type="FloatProperty">1.8</y_total>
+		<x_rooms type="IntProperty">3</x_rooms>
+		<x_1 type="FloatProperty">2.5</x_1>
+		<x_2 type="FloatProperty">2.5</x_2>
 		<x_3 type="FloatProperty">5.28</x_3>
 		<x_4 type="FloatProperty">5.28</x_4>
 		<y_rooms type="IntProperty">1</y_rooms>
-		<y_1 type="FloatProperty">5.0</y_1>
+		<y_1 type="FloatProperty">1.8</y_1>
 		<y_2 type="FloatProperty">3.52</y_2>
 		<y_3 type="FloatProperty">1.76</y_3>
-		<piller_net type="StringProperty">0/0,0/1,1/0,1/1,2/0,2/1,3/0,3/1,4/0,4/1,5/0,5/1,6/0,6/1,7/0,7/1,8/0,8/1,9/0,9/1,</piller_net>
-		<piller_height type="FloatProperty">4.93</piller_height>
-		<piller_diameter type="FloatProperty">0.45</piller_diameter>
+		<piller_net type="StringProperty">0/0,0/1,1/0,1/1,2/0,2/1,3/0,3/1,</piller_net>
+		<piller_height type="FloatProperty">2.2</piller_height>
+		<piller_diameter type="FloatProperty">0.16</piller_diameter>
 		<use_smallfang type="BoolProperty">False</use_smallfang>
+		<piller_insert type="FloatProperty">0.0</piller_insert>
 		<railing_list type="CollectionProperty">
 			<item_0 type="item">
 				<id type="StringProperty">railing#0/0#1/0</id>
@@ -3199,73 +3193,17 @@
 				<gap type="FloatProperty">0.0</gap>
 			</item_2>
 			<item_3 type="item">
-				<id type="StringProperty">railing#3/0#4/0</id>
+				<id type="StringProperty">railing#0/1#1/1</id>
 				<gap type="FloatProperty">0.0</gap>
 			</item_3>
 			<item_4 type="item">
-				<id type="StringProperty">railing#4/0#5/0</id>
+				<id type="StringProperty">railing#1/1#2/1</id>
 				<gap type="FloatProperty">0.0</gap>
 			</item_4>
 			<item_5 type="item">
-				<id type="StringProperty">railing#5/0#6/0</id>
-				<gap type="FloatProperty">0.0</gap>
-			</item_5>
-			<item_6 type="item">
-				<id type="StringProperty">railing#6/0#7/0</id>
-				<gap type="FloatProperty">0.0</gap>
-			</item_6>
-			<item_7 type="item">
-				<id type="StringProperty">railing#7/0#8/0</id>
-				<gap type="FloatProperty">0.0</gap>
-			</item_7>
-			<item_8 type="item">
-				<id type="StringProperty">railing#8/0#9/0</id>
-				<gap type="FloatProperty">0.0</gap>
-			</item_8>
-			<item_9 type="item">
-				<id type="StringProperty">railing#0/1#1/1</id>
-				<gap type="FloatProperty">0.0</gap>
-			</item_9>
-			<item_10 type="item">
-				<id type="StringProperty">railing#1/1#2/1</id>
-				<gap type="FloatProperty">0.0</gap>
-			</item_10>
-			<item_11 type="item">
 				<id type="StringProperty">railing#2/1#3/1</id>
 				<gap type="FloatProperty">0.0</gap>
-			</item_11>
-			<item_12 type="item">
-				<id type="StringProperty">railing#3/1#4/1</id>
-				<gap type="FloatProperty">0.0</gap>
-			</item_12>
-			<item_13 type="item">
-				<id type="StringProperty">railing#4/1#5/1</id>
-				<gap type="FloatProperty">0.0</gap>
-			</item_13>
-			<item_14 type="item">
-				<id type="StringProperty">railing#5/1#6/1</id>
-				<gap type="FloatProperty">0.0</gap>
-			</item_14>
-			<item_15 type="item">
-				<id type="StringProperty">railing#6/1#7/1</id>
-				<gap type="FloatProperty">0.0</gap>
-			</item_15>
-			<item_16 type="item">
-				<id type="StringProperty">railing#7/1#8/1</id>
-				<gap type="FloatProperty">0.0</gap>
-			</item_16>
-			<item_17 type="item">
-				<id type="StringProperty">railing#8/1#9/1</id>
-				<gap type="FloatProperty">0.0</gap>
-			</item_17>
-			<item_18 type="item">
-				<id type="StringProperty">railing#9/0#9/1</id>
-				<gap type="FloatProperty">0.6</gap>
-			</item_18>
-			<item_19 type="item">
-				<id type="StringProperty">railing#0/0#0/1</id>
-				<gap type="FloatProperty">0.6</gap>
-			</item_19>
+			</item_5>
 		</railing_list>
 		<maindoor_list type="CollectionProperty" />
 		<wall_list type="CollectionProperty">
@@ -3298,72 +3236,26 @@
 				<wall_span type="FloatProperty">0.0</wall_span>
 			</item_6>
 			<item_7 type="item">
-				<id type="StringProperty">queti#3/0#4/0</id>
+				<id type="StringProperty">queti#3/0#3/1</id>
 				<wall_span type="FloatProperty">0.0</wall_span>
 			</item_7>
-			<item_8 type="item">
-				<id type="StringProperty">queti#3/1#4/1</id>
-				<wall_span type="FloatProperty">0.0</wall_span>
-			</item_8>
-			<item_9 type="item">
-				<id type="StringProperty">queti#4/0#5/0</id>
-				<wall_span type="FloatProperty">0.0</wall_span>
-			</item_9>
-			<item_10 type="item">
-				<id type="StringProperty">queti#4/1#5/1</id>
-				<wall_span type="FloatProperty">0.0</wall_span>
-			</item_10>
-			<item_11 type="item">
-				<id type="StringProperty">queti#5/0#6/0</id>
-				<wall_span type="FloatProperty">0.0</wall_span>
-			</item_11>
-			<item_12 type="item">
-				<id type="StringProperty">queti#5/1#6/1</id>
-				<wall_span type="FloatProperty">0.0</wall_span>
-			</item_12>
-			<item_13 type="item">
-				<id type="StringProperty">queti#6/0#7/0</id>
-				<wall_span type="FloatProperty">0.0</wall_span>
-			</item_13>
-			<item_14 type="item">
-				<id type="StringProperty">queti#6/1#7/1</id>
-				<wall_span type="FloatProperty">0.0</wall_span>
-			</item_14>
-			<item_15 type="item">
-				<id type="StringProperty">queti#7/0#8/0</id>
-				<wall_span type="FloatProperty">0.0</wall_span>
-			</item_15>
-			<item_16 type="item">
-				<id type="StringProperty">queti#7/1#8/1</id>
-				<wall_span type="FloatProperty">0.0</wall_span>
-			</item_16>
-			<item_17 type="item">
-				<id type="StringProperty">queti#8/0#9/0</id>
-				<wall_span type="FloatProperty">0.0</wall_span>
-			</item_17>
-			<item_18 type="item">
-				<id type="StringProperty">queti#8/1#9/1</id>
-				<wall_span type="FloatProperty">0.0</wall_span>
-			</item_18>
-			<item_19 type="item">
-				<id type="StringProperty">queti#9/0#9/1</id>
-				<wall_span type="FloatProperty">0.0</wall_span>
-			</item_19>
 		</wall_list>
 		<window_list type="CollectionProperty" />
 		<geshan_list type="CollectionProperty" />
 		<paint_style type="EnumProperty">0</paint_style>
+		<use_balcony_railing type="BoolProperty">False</use_balcony_railing>
 		<use_dg type="BoolProperty">True</use_dg>
 		<use_pingbanfang type="BoolProperty">False</use_pingbanfang>
 		<dg_style type="EnumProperty">0</dg_style>
 		<dg_extend type="FloatProperty">0.0</dg_extend>
-		<dg_height type="FloatProperty">0.333</dg_height>
+		<dg_height type="FloatProperty">0.146</dg_height>
 		<dk_scale type="FloatProperty">1.0</dk_scale>
-		<dg_gap type="FloatProperty">0.88</dg_gap>
+		<dg_gap type="FloatProperty">0.352</dg_gap>
+		<dg_withbeam type="BoolProperty">True</dg_withbeam>
 		<roof_style type="EnumProperty">6</roof_style>
 		<use_double_eave type="BoolProperty">False</use_double_eave>
 		<use_hallway type="BoolProperty">False</use_hallway>
-		<rafter_count type="IntProperty">4</rafter_count>
+		<rafter_count type="IntProperty">2</rafter_count>
 		<use_flyrafter type="BoolProperty">True</use_flyrafter>
 		<use_wangban type="BoolProperty">True</use_wangban>
 		<qiqiao type="FloatProperty">4.0</qiqiao>
@@ -3379,8 +3271,8 @@
 		<tile_scale type="FloatProperty">1.0</tile_scale>
 		<tile_color type="EnumProperty">0</tile_color>
 		<tile_alt_color type="EnumProperty">0</tile_alt_color>
-		<tile_width type="FloatProperty">0.31</tile_width>
-		<tile_length type="FloatProperty">0.4</tile_length>
+		<tile_width type="FloatProperty">0.136</tile_width>
+		<tile_length type="FloatProperty">0.175</tile_length>
 		<paoshou_count type="IntProperty">1</paoshou_count>
 		<is_4_sides type="BoolProperty">True</is_4_sides>
 		<yard_width type="FloatProperty">10.0</yard_width>
@@ -3388,11 +3280,6 @@
 		<yardwall_height type="FloatProperty">3.0</yardwall_height>
 		<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 		<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
-		<aca_id type="StringProperty">c6ff6ad1-9771-11f0-9bcf-a841f4d3e2cf</aca_id>
-		<combo_parent type="StringProperty" />
-		<piller_insert type="FloatProperty">0.0</piller_insert>
-		<use_balcony_railing type="BoolProperty">False</use_balcony_railing>
-		<dg_withbeam type="BoolProperty">True</dg_withbeam>
 	</template>
 	<template>
 		<aca_type type="StringProperty">building</aca_type>
@@ -9673,5 +9560,145 @@
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
 		</template>
+	</template>
+	<template>
+		<aca_id type="StringProperty">c6ff6ad1-9771-11f0-9bcf-a841f4d3e2cf</aca_id>
+		<aca_type type="StringProperty">building</aca_type>
+		<template_name type="StringProperty">廊子.小</template_name>
+		<combo_type type="StringProperty">combo_main</combo_type>
+		<combo_parent type="StringProperty" />
+		<combo_location type="FloatVectorProperty">0.0,0.0,0.0</combo_location>
+		<combo_rotation type="FloatVectorProperty">0.0,0.0,0.0</combo_rotation>
+		<combo_floor_height type="FloatProperty">0.0</combo_floor_height>
+		<DK type="FloatProperty">0.028</DK>
+		<is_showPlatform type="BoolProperty">True</is_showPlatform>
+		<is_showPillers type="BoolProperty">True</is_showPillers>
+		<is_showWalls type="BoolProperty">True</is_showWalls>
+		<is_showDougong type="BoolProperty">True</is_showDougong>
+		<is_showBeam type="BoolProperty">True</is_showBeam>
+		<is_showRafter type="BoolProperty">True</is_showRafter>
+		<is_showTiles type="BoolProperty">True</is_showTiles>
+		<is_showBalcony type="BoolProperty">True</is_showBalcony>
+		<platform_height type="FloatProperty">0.4</platform_height>
+		<platform_extend type="FloatProperty">0.4</platform_extend>
+		<use_terrace type="BoolProperty">False</use_terrace>
+		<step_list type="CollectionProperty" />
+		<x_total type="FloatProperty">7.5</x_total>
+		<y_total type="FloatProperty">1.8</y_total>
+		<x_rooms type="IntProperty">3</x_rooms>
+		<x_1 type="FloatProperty">2.5</x_1>
+		<x_2 type="FloatProperty">2.5</x_2>
+		<x_3 type="FloatProperty">5.28</x_3>
+		<x_4 type="FloatProperty">5.28</x_4>
+		<y_rooms type="IntProperty">1</y_rooms>
+		<y_1 type="FloatProperty">1.8</y_1>
+		<y_2 type="FloatProperty">3.52</y_2>
+		<y_3 type="FloatProperty">1.76</y_3>
+		<piller_net type="StringProperty">0/0,0/1,1/0,1/1,2/0,2/1,3/0,3/1,</piller_net>
+		<piller_height type="FloatProperty">2.2</piller_height>
+		<piller_diameter type="FloatProperty">0.16</piller_diameter>
+		<use_smallfang type="BoolProperty">False</use_smallfang>
+		<piller_insert type="FloatProperty">0.0</piller_insert>
+		<railing_list type="CollectionProperty">
+			<item_0 type="item">
+				<id type="StringProperty">railing#0/0#1/0</id>
+				<gap type="FloatProperty">0.0</gap>
+			</item_0>
+			<item_1 type="item">
+				<id type="StringProperty">railing#1/0#2/0</id>
+				<gap type="FloatProperty">0.0</gap>
+			</item_1>
+			<item_2 type="item">
+				<id type="StringProperty">railing#2/0#3/0</id>
+				<gap type="FloatProperty">0.0</gap>
+			</item_2>
+			<item_3 type="item">
+				<id type="StringProperty">railing#0/1#1/1</id>
+				<gap type="FloatProperty">0.0</gap>
+			</item_3>
+			<item_4 type="item">
+				<id type="StringProperty">railing#1/1#2/1</id>
+				<gap type="FloatProperty">0.0</gap>
+			</item_4>
+			<item_5 type="item">
+				<id type="StringProperty">railing#2/1#3/1</id>
+				<gap type="FloatProperty">0.0</gap>
+			</item_5>
+		</railing_list>
+		<maindoor_list type="CollectionProperty" />
+		<wall_list type="CollectionProperty">
+			<item_0 type="item">
+				<id type="StringProperty">queti#0/0#1/0</id>
+				<wall_span type="FloatProperty">0.0</wall_span>
+			</item_0>
+			<item_1 type="item">
+				<id type="StringProperty">queti#0/0#0/1</id>
+				<wall_span type="FloatProperty">0.0</wall_span>
+			</item_1>
+			<item_2 type="item">
+				<id type="StringProperty">queti#0/1#1/1</id>
+				<wall_span type="FloatProperty">0.0</wall_span>
+			</item_2>
+			<item_3 type="item">
+				<id type="StringProperty">queti#1/0#2/0</id>
+				<wall_span type="FloatProperty">0.0</wall_span>
+			</item_3>
+			<item_4 type="item">
+				<id type="StringProperty">queti#1/1#2/1</id>
+				<wall_span type="FloatProperty">0.0</wall_span>
+			</item_4>
+			<item_5 type="item">
+				<id type="StringProperty">queti#2/0#3/0</id>
+				<wall_span type="FloatProperty">0.0</wall_span>
+			</item_5>
+			<item_6 type="item">
+				<id type="StringProperty">queti#2/1#3/1</id>
+				<wall_span type="FloatProperty">0.0</wall_span>
+			</item_6>
+			<item_7 type="item">
+				<id type="StringProperty">queti#3/0#3/1</id>
+				<wall_span type="FloatProperty">0.0</wall_span>
+			</item_7>
+		</wall_list>
+		<window_list type="CollectionProperty" />
+		<geshan_list type="CollectionProperty" />
+		<paint_style type="EnumProperty">0</paint_style>
+		<use_balcony_railing type="BoolProperty">False</use_balcony_railing>
+		<use_dg type="BoolProperty">True</use_dg>
+		<use_pingbanfang type="BoolProperty">False</use_pingbanfang>
+		<dg_style type="EnumProperty">0</dg_style>
+		<dg_extend type="FloatProperty">0.0</dg_extend>
+		<dg_height type="FloatProperty">0.146</dg_height>
+		<dk_scale type="FloatProperty">1.0</dk_scale>
+		<dg_gap type="FloatProperty">0.352</dg_gap>
+		<dg_withbeam type="BoolProperty">True</dg_withbeam>
+		<roof_style type="EnumProperty">6</roof_style>
+		<use_double_eave type="BoolProperty">False</use_double_eave>
+		<use_hallway type="BoolProperty">False</use_hallway>
+		<rafter_count type="IntProperty">2</rafter_count>
+		<use_flyrafter type="BoolProperty">True</use_flyrafter>
+		<use_wangban type="BoolProperty">True</use_wangban>
+		<qiqiao type="FloatProperty">4.0</qiqiao>
+		<chong type="FloatProperty">3.0</chong>
+		<use_pie type="BoolProperty">True</use_pie>
+		<shengqi type="IntProperty">1</shengqi>
+		<liangtou type="FloatProperty">0.4</liangtou>
+		<tuishan type="FloatProperty">0.9</tuishan>
+		<shoushan type="FloatProperty">2.0</shoushan>
+		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
+		<juzhe type="EnumProperty">0</juzhe>
+		<roof_height type="FloatProperty">3.0</roof_height>
+		<tile_scale type="FloatProperty">1.0</tile_scale>
+		<tile_color type="EnumProperty">0</tile_color>
+		<tile_alt_color type="EnumProperty">0</tile_alt_color>
+		<tile_width type="FloatProperty">0.136</tile_width>
+		<tile_length type="FloatProperty">0.175</tile_length>
+		<paoshou_count type="IntProperty">1</paoshou_count>
+		<is_4_sides type="BoolProperty">True</is_4_sides>
+		<yard_width type="FloatProperty">10.0</yard_width>
+		<yard_depth type="FloatProperty">10.0</yard_depth>
+		<yardwall_height type="FloatProperty">3.0</yardwall_height>
+		<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
+		<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
 	</template>
 </templates>

@@ -389,7 +389,8 @@ def addQueti(wallproxy:bpy.types.Object):
     quetiObj.scale.y = dk / con.DEFAULT_DK
     quetiObj.scale.z = dk / con.DEFAULT_DK
     # 250613 有GN的对象不能应用缩放
-    # utils.applyTransform(quetiObj,use_scale=True)
+    # 251013 应该应用缩放，否则无法实现雀替大中小尺寸的正确切换
+    utils.applyTransform(quetiObj,use_scale=True)
     # 应用GN修改器
     utils.applyAllModifer(quetiObj)
     # 设置雀替外观

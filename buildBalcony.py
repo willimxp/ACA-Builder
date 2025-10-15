@@ -857,8 +857,6 @@ def __buildBench(parentObj:bpy.types.Object,
         Vector(shanxinDim),
         Vector((yaziX,0,yaziZ)),
         lingxinMat=con.M_LINXIN_WAN)
-    utils.addModifierBevel(
-        shanxinObj,con.BEVEL_LOW)
     benchParts.append(shanxinObj)
 
     # 合并构件

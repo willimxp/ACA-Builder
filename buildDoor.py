@@ -1791,8 +1791,6 @@ def __addFlipwindow(kankuangObj:bpy.types.Object):
         shanxinDim,
         Vector(flipwinLoc),
         lingxinMat=con.M_LINXIN_WAN)
-    utils.addModifierBevel(
-        shanxinObj,con.BEVEL_LOW)
     flipwinParts.append(shanxinObj)
 
     # 合并

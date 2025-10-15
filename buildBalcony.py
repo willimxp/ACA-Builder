@@ -723,16 +723,28 @@ def __buildBench(parentObj:bpy.types.Object,
     pd = bData.piller_diameter
     # 栏杆默认做满开间
     proxyW = proxy['length']
+    # 判断是否做开口
+    useGap = False
+    if 'gap' in proxy:  # 自动生成的平坐没有gap属性
+        # 处理开口
+        railingGap=proxy['gap']
+        if railingGap > 0.0001:
+            # # 只做开口后的左半幅
+            # proxyW = proxy['length']*(1-railingGap)/2
+            useGap = True
 
     # 收集坐凳部件，以便合并
     benchParts = []
 
     # 坐凳面
+    # 1、定尺寸
+    faceExtend = 0.75*pd # 坐凳面出梢(单侧)
     faceDim = Vector((
-        proxyW + 1.5*pd,  # 六边形头部延伸到两根柱边缘
+        proxyW + faceExtend*2, # 六边形头部延伸到两根柱边缘
         con.BENCH_FACE_Y*pd, # 坐凳面宽1.2柱径
         con.BENCH_FACE_H, # 固定高度,45~70mm
     ))
+    # 定位置
     faceLoc = Vector((0,0,
         con.BENCH_FACE_Z)) # 离地面高度50~55cm
     benchFace:bpy.types.Object = utils.drawHexagon(
@@ -740,6 +752,16 @@ def __buildBench(parentObj:bpy.types.Object,
         faceLoc,
         name='坐凳面',
         parent=parentObj
+        )
+    # 如果开口，做裁剪
+    if useGap:
+        cutX = proxy['length']*proxy['gap']/2
+        utils.addBisect(
+            object=benchFace,
+            pStart=parentObj.matrix_world @ Vector((0,0,0)),
+            pEnd=parentObj.matrix_world @ Vector((0,1,0)),
+            pCut=parentObj.matrix_world @ Vector((-cutX,0,0)),
+            clear_inner=True
         )
     # 导角
     utils.addModifierBevel(
@@ -750,21 +772,57 @@ def __buildBench(parentObj:bpy.types.Object,
     mat.paint(benchFace,con.M_PAINT)
     benchParts.append(benchFace)
 
+    # 做竖凳面
+    if useGap:
+        sideH = con.BENCH_FACE_Z - con.BENCH_FACE_H/2
+        benchSide = utils.addCube(
+            location=(-cutX-con.BENCH_FACE_H/2,
+                      0,
+                      sideH/2),
+            dimension=(con.BENCH_FACE_H, # 固定高度,45~70mm
+                       con.BENCH_FACE_Y*pd, # 坐凳面宽1.2柱径
+                       sideH),
+            parent=parentObj
+        )
+        # 导角
+        utils.addModifierBevel(
+            object=benchSide,
+            width=con.BEVEL_HIGH
+        )
+        # 着色
+        mat.paint(benchSide,con.M_PAINT)
+        benchParts.append(benchSide)
+
     # 坐凳边抹
+    # 定尺寸
+    if useGap:
+        # 牙子总宽，开口后，再减去一个竖凳面宽度
+        yaziWidth = (proxy['length']*(1-proxy['gap'])/2
+                     - con.BENCH_FACE_H)
+        # 牙子边框宽，减去边款宽度
+        yaziL = yaziWidth - con.BENCH_BORDER
+    else:
+        yaziL = proxy['length'] - con.BENCH_BORDER
     # 定位，从坐凳面向下半坐等面高，再向下半牙子板高
     yaziZ = (con.BENCH_FACE_Z 
              - con.BENCH_FACE_H/2
              - con.BENCH_YAZI_H/2)
-    yaziLoc = (0,0,yaziZ)
+    if useGap:
+        yaziX = proxy['length']/2 - yaziWidth/2
+    else:
+        yaziX = 0
     # 创建一个平面，转换为curve，设置curve的横截面
-    bpy.ops.mesh.primitive_plane_add(size=1,location=yaziLoc)
+    bpy.ops.mesh.primitive_plane_add(
+        size=1,
+        location=(yaziX,0,yaziZ)
+    )
     zibianObj = bpy.context.object
     zibianObj.name = '牙子仔边'
     zibianObj.parent = parentObj
     # 三维的scale转为plane二维的scale
     zibianObj.rotation_euler.x = math.radians(90)
     zibianObj.scale = (
-        proxyW - con.BENCH_BORDER,
+        yaziL,
         con.BENCH_YAZI_H - con.BENCH_BORDER, # 旋转90度，原Zscale给Yscale
         1)
     # apply scale
@@ -790,14 +848,14 @@ def __buildBench(parentObj:bpy.types.Object,
     benchParts.append(zibianObj)
 
     # 做棂心
-    shanxinDim = (proxyW - con.BENCH_BORDER*2,
+    shanxinDim = (yaziL - con.BENCH_BORDER,
                   0.01,
                   con.BENCH_YAZI_H - con.BENCH_BORDER*2,)
     from . import buildDoor
     shanxinObj = buildDoor.__buildShanxin(
         parentObj,
         Vector(shanxinDim),
-        Vector(yaziLoc),
+        Vector((yaziX,0,yaziZ)),
         lingxinMat=con.M_LINXIN_WAN)
     utils.addModifierBevel(
         shanxinObj,con.BEVEL_LOW)
@@ -805,5 +863,13 @@ def __buildBench(parentObj:bpy.types.Object,
 
     # 合并构件
     benchObj = utils.joinObjects(benchParts,'坐凳')
+
+    # 如果开口，做左右镜像
+    if useGap:
+        utils.addModifierMirror(
+            object=benchObj,
+            mirrorObj=parentObj,
+            use_axis=(True,False,False),
+        )
 
     return benchObj

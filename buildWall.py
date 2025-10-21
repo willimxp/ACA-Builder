@@ -136,7 +136,7 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     vFrom = Vector((net_x[pFrom_x],net_y[pFrom_y],0))
     vTo = Vector((net_x[pTo_x],net_y[pTo_y],0))
     dirValue = vFrom.cross(vTo).dot(zAxis)
-    if dirValue > 0:
+    if dirValue >= 0:
         # 交换起始柱子
         pTemp = pStart
         pStart = pEnd
@@ -421,10 +421,10 @@ def addWall(buildingObj:bpy.types.Object,
             pTo = piller
 
             # 验证墙体在布局中是否已经存在
-            wallID = pFrom.ACA_data['pillerID'] \
-                + '#' + pTo.ACA_data['pillerID'] 
-            wallID_alt = pTo.ACA_data['pillerID'] \
-                    + '#' + pFrom.ACA_data['pillerID'] 
+            wallID = pFrom.ACA_data['pillerID'].split('#')[0] \
+                + '#' + pTo.ACA_data['pillerID'].split('#')[0] 
+            wallID_alt = pTo.ACA_data['pillerID'].split('#')[0] \
+                    + '#' + pFrom.ACA_data['pillerID'].split('#')[0] 
             if wallID in wallSetting or wallID_alt in wallSetting:
                 utils.popMessageBox(f"无法添加{wallID}，该位置已经存在装修，wallSetting：{wallSetting}")
                 continue

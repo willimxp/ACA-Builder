@@ -206,7 +206,28 @@ class ACA_OT_reset_floor(bpy.types.Operator):
     def cancel(self, context):
         # 用户取消操作时执行撤销
         bpy.ops.ed.undo()
-        
+
+# 设置垂花柱
+class ACA_OT_set_piller(bpy.types.Operator):
+    bl_idname="aca.set_piller"
+    bl_label = "垂花柱"
+    bl_description = "设置垂花柱（先选择1根以上的柱子）"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):  
+        piller = context.object
+        pillers = context.selected_objects
+        buildingObj,bData,oData = utils.getRoot(context.object)
+
+        funproxy = partial(buildFloor.setPillerStyle,
+                    buildingObj=buildingObj,
+                    pillers=pillers,
+                    pillerStyle=con.PILLER_STYLE_LIFT)
+        result = utils.fastRun(funproxy)
+
+        self.report({'INFO'},"已设置垂花柱")
+        return {'FINISHED'}
+
 # 减柱
 class ACA_OT_del_piller(bpy.types.Operator):
     bl_idname="aca.del_piller"

@@ -517,30 +517,63 @@ class ACA_PT_pillers(bpy.types.Panel):
             # 柱径   
             grid.prop(bData, "piller_diameter")  
             grid = col.grid_flow(columns=2, align=True)
-            # 按钮:减柱
-            col = grid.column(align=True)
-            col.operator(
-                "aca.del_piller",icon='X',
-                depress=True,text='减柱')  
-            if objData.aca_type != con.ACA_TYPE_PILLER:
-                col.enabled=False
-            # 按钮:重设柱网
-            col = grid.column(align=True)
-            col.operator(
-                "aca.reset_floor",icon='FILE_REFRESH',
-                depress=True,text='重设') 
             
-            toolBar = box.column(align=True)
-            # 复选框：是否使用小额枋（不区分）
-            checkboxFang = toolBar.column(align=True)
-            if bData.use_smallfang:
-                checkbox_icon = 'CHECKBOX_HLT'
-            else:
-                checkbox_icon = 'CHECKBOX_DEHLT'
-            checkboxFang.prop(
-                bData, "use_smallfang",
-                toggle=1,text="使用小额枋",
-                icon=checkbox_icon) 
+            
+            # toolBar = box.column(align=True)
+            # # 复选框：是否使用小额枋（不区分）
+            # checkboxFang = toolBar.column(align=True)
+            # if bData.use_smallfang:
+            #     checkbox_icon = 'CHECKBOX_HLT'
+            # else:
+            #     checkbox_icon = 'CHECKBOX_DEHLT'
+            # checkboxFang.prop(
+            #     bData, "use_smallfang",
+            #     toggle=1,text="使用小额枋",
+            #     icon=checkbox_icon) 
+            
+            # 设置垂花柱
+            if objData.aca_type == con.ACA_TYPE_PILLER:
+                toolBox = box.column(align=True)
+
+                toolBar = toolBox.column(align=True)
+                # 对象名称
+                objName = context.object.name
+                inputContextName = toolBar.column(align=True)
+                inputContextName.label(
+                    text=objName,
+                    icon='KEYTYPE_MOVING_HOLD_VEC')
+                
+                # 第1行 ------------------
+                toolBar = toolBox.grid_flow(columns=2, align=True)
+                # 按钮:减柱
+                col = toolBar.column(align=True)
+                col.operator(
+                    "aca.del_piller",icon='X',
+                    depress=True,text='减柱')  
+                if objData.aca_type != con.ACA_TYPE_PILLER:
+                    col.enabled=False
+                
+                # 按钮:垂花柱
+                if con.PILLER_STYLE_LIFT in objName:
+                    checkbox_icon = 'CHECKBOX_HLT'
+                    depress = True
+                else:
+                    checkbox_icon = 'CHECKBOX_DEHLT'
+                    depress = False
+                col = toolBar.column(align=True)
+                col.operator(
+                    "aca.set_piller",
+                    icon=checkbox_icon,
+                    depress=depress,
+                    text='垂花柱')  
+
+                # 第2行 ------------------
+                toolBar = toolBox.grid_flow(columns=2, align=True)
+                # 按钮:重设柱网
+                col = toolBar.column(align=True)
+                col.operator(
+                    "aca.reset_floor",icon='FILE_REFRESH',
+                    depress=False,text='重设') 
                 
 # “装修属性”子面板
 class ACA_PT_wall(bpy.types.Panel):
@@ -601,6 +634,19 @@ class ACA_PT_wall(bpy.types.Panel):
             inputPaintStyle = toolBar.column(align=True)
             inputPaintStyle.prop(
                 cData, "paint_style",)
+            
+            # 复选框：是否使用小额枋（不区分）
+            toolBox = box.column(align=True)
+            toolBar = toolBox.grid_flow(align=True,columns=1)
+            checkboxFang = toolBar.column(align=True)
+            if bData.use_smallfang:
+                checkbox_icon = 'CHECKBOX_HLT'
+            else:
+                checkbox_icon = 'CHECKBOX_DEHLT'
+            checkboxFang.prop(
+                bData, "use_smallfang",
+                toggle=1,text="使用小额枋",
+                icon=checkbox_icon) 
 
             # 工具栏：加枋、加墙、加门、加窗、删除
             toolBox = box.column(align=True)

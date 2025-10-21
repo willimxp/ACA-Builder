@@ -798,6 +798,7 @@ def __setPillerHead2(pillerObj:bpy.types.Object,
         pillerObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
+    aData:tmpData = bpy.context.scene.ACA_temp
 
     # 计算柱头高度（大额枋/小额枋下皮）
     fangHeight = con.EFANG_LARGE_H*dk
@@ -806,7 +807,12 @@ def __setPillerHead2(pillerObj:bpy.types.Object,
             + con.EFANG_SMALL_H*dk)
     # 250822 为了让酱油色的柱头导角不会破碎，给柱素材添加了一个默认高度
     # 这里计算的时候，扣除该默认高度
-    pillerScale = pillerObj.dimensions.z / con.PILLER_HEIGHT_DEFAULT
+    # 判断是否为垂花柱，注意mesh名称中可能包含001
+    if aData.piller_lift_source.data.name in pillerObj.data.name:
+        defaultHeight = con.PILLER_LIFT_HEIGHT_DEFAULT
+    else:
+        defaultHeight = con.PILLER_HEIGHT_DEFAULT
+    pillerScale = pillerObj.dimensions.z / defaultHeight
     headHeight = fangHeight - con.PILLER_HEAD_DEFAULT* pillerScale
 
     # 2、选择中段

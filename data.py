@@ -1404,6 +1404,10 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "柱样式",
             type = bpy.types.Object,
         )# type: ignore
+    piller_lift_source : bpy.props.PointerProperty(
+            name = "垂花柱样式",
+            type = bpy.types.Object,
+        )# type: ignore
     pillerbase_source : bpy.props.PointerProperty(
             name = "柱础样式",
             type = bpy.types.Object,

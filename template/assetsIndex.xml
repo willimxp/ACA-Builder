@@ -32,6 +32,7 @@
     <mat_dougong type="Object">斗栱</mat_dougong>
     <mat_guayanban type="Object">挂檐板</mat_guayanban>
     <piller_source type="Object">直柱.彩画</piller_source>
+    <piller_lift_source type="Object">垂花柱</piller_lift_source>
     <pillerbase_source type="Object">素平柱础</pillerbase_source>
     <lingxin_source type="Object">棂心.正搭斜交</lingxin_source>
     <dg_piller_source type="List" key='dg_style'>

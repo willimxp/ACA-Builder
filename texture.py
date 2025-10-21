@@ -807,14 +807,14 @@ def __setPillerHead2(pillerObj:bpy.types.Object,
             + con.EFANG_SMALL_H*dk)
     # 250822 为了让酱油色的柱头导角不会破碎，给柱素材添加了一个默认高度
     # 这里计算的时候，扣除该默认高度
-    # 判断是否为垂花柱，注意mesh名称中可能包含001
-    if aData.piller_lift_source.data.name in pillerObj.data.name:
-        defaultHeight = con.PILLER_LIFT_HEIGHT_DEFAULT
-    else:
-        defaultHeight = con.PILLER_HEIGHT_DEFAULT
-    pillerScale = pillerObj.dimensions.z / defaultHeight
+    pillerScale = pillerObj.dimensions.z / con.PILLER_HEIGHT_DEFAULT
     headHeight = fangHeight - con.PILLER_HEAD_DEFAULT* pillerScale
-
+    # 判断是否为垂花柱，注意mesh名称中可能包含001
+    if aData.piller_lift_source is not None:
+        if aData.piller_lift_source.data.name in pillerObj.data.name:
+            pillerLiftScale = pillerObj.dimensions.x / aData.piller_lift_source.dimensions.x
+            headHeight = fangHeight - con.PILLER_HEAD_DEFAULT*pillerLiftScale
+    
     # 2、选择中段
     utils.focusObj(pillerObj)
     bpy.ops.object.mode_set(mode='EDIT')

@@ -268,7 +268,6 @@ class ACA_Consts(object):
     TILE_CORNER_SPLIT = 1               # 硬山/悬山四角滴水间距(DK)
     PILLER_HEAD_DEFAULT = 1             # 柱头贴图默认高度(素材库，贴图使用)
     PILLER_HEIGHT_DEFAULT = 5           # 柱默认高度(素材库，贴图使用)
-    PILLER_LIFT_HEIGHT_DEFAULT = 2.13   # 柱默认高度(素材库，贴图使用)
     PILLER_STYLE_LIFT = 'lift'          # 垂花柱标识
 
     # 瓦作类

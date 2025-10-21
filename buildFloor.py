@@ -1033,6 +1033,7 @@ def buildPillers(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     pd = bData.piller_diameter
+    dk = bData.DK
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]
@@ -1141,19 +1142,31 @@ def buildPillers(buildingObj:bpy.types.Object):
 
             # 251020 判断垂花柱
             useLiftPiller = False
+            # 遍历piller_net
             pillerList = bData.piller_net.rstrip(',').split(',')
             for piller in pillerList:
+                # 以柱位编号匹配柱配置
                 if pillerID in piller:
                     pillerSetting = piller.split('#')
                     if len(pillerSetting) > 1:
+                        # 获取柱形标识字
                         pillerStyle = pillerSetting[1]
                         if pillerStyle == con.PILLER_STYLE_LIFT:
                             useLiftPiller = True
+                            # 含有柱形的完成pillerID
                             pillerID = piller
             if useLiftPiller:
+                # 绑定垂花柱资产
+                if aData.piller_lift_source is None:
+                    # 重新载入资产库，以载入垂花柱模板
+                    from . import template
+                    template.loadAssetByBuilding(buildingObj)
                 piller_source = aData.piller_lift_source
+                # 垂花柱以顶部为原点
                 pillerZ = pillerHeight
-                pillerHeight = piller_source.dimensions.z * bData.DK/con.DEFAULT_DK
+                # 柱高根据斗口等比缩放
+                pillerLiftScale = pd / piller_source.dimensions.x
+                pillerHeight = piller_source.dimensions.z * pillerLiftScale
             else:
                 piller_source = aData.piller_source
                 # 250916 添加楼阁柱子下插的处理
@@ -1176,6 +1189,26 @@ def buildPillers(buildingObj:bpy.types.Object):
                 pd,pd,pillerHeight
             )
             utils.applyTransform(pillerObj,use_scale=True,autoUpdate=False)
+            # 垂花柱柱头定位
+            if useLiftPiller:
+                # 初始位置
+                headZ = -con.PILLER_HEAD_DEFAULT * pillerLiftScale
+                # 额枋高度
+                headZ += con.EFANG_LARGE_H * dk
+                if bData.use_smallfang:
+                    headZ += (con.EFANG_SMALL_H*dk
+                              + con.BOARD_YOUE_H*dk)
+                # 雀替高度
+                quetiObj = aData.queti_source
+                quetiH = quetiObj.dimensions.z * dk/con.DEFAULT_DK
+                headZ += quetiH
+                # 设置GN
+                gnMod:bpy.types.NodesModifier = \
+                    pillerObj.modifiers.get('pillerLiftrGN')
+                if gnMod != None:
+                    # 强制每个对象的node group为单一用户
+                    gnMod.node_group = gnMod.node_group.copy()
+                    utils.setGN_Input(gnMod,"Z",headZ)
             # 做柱头彩画
             mat.paint(pillerObj,con.M_PILLER_HEAD,override=True)
             pillerList.append(pillerObj)

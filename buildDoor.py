@@ -820,9 +820,12 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
 
     # 6、上抱框 ---------------------
     # 仅在做横披窗时，才做上抱框
-    if (bUseTopwin and 
-        # 251020 防止无用的上抱框
-        (frame_height - frameMax > con.KAN_UP_HEIGHT*pd)):  
+    if bUseTopwin: 
+    # 251022 这个修改出现了副作用，撤销
+    # 251020 防止无用的上抱框
+    # if (bUseTopwin and 
+    #     
+    #     (frame_height - frameMax > con.KAN_UP_HEIGHT*pd)): 
         KuangUpH = (
             topUpZ - midDownZ
             - con.KAN_UP_HEIGHT*pd

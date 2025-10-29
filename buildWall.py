@@ -458,18 +458,20 @@ def addWall(buildingObj:bpy.types.Object,
             
             # 生成墙体
             wallObj = __buildWall(buildingObj,wallID)
+            
+            # 251029 在批量添加时，逐一删除雀替
+            if wallObj != None:
+                # 除了添加栏杆/坐凳，其他装修与雀替互斥，直接删除
+                if wallType not in (con.ACA_WALLTYPE_RAILILNG,
+                                    con.ACA_WALLTYPE_BENCH):
+                    # 删除雀替
+                    __delQuetiFromAdd(wallObj)
 
             # 将柱子交换，为下一次循环做准备
             pFrom = piller
 
     # 聚焦在创建的门上
     if wallObj != None:
-        # 除了添加栏杆/坐凳，其他装修与雀替互斥，直接删除
-        if wallType not in (con.ACA_WALLTYPE_RAILILNG,
-                            con.ACA_WALLTYPE_BENCH):
-            # 删除雀替
-            __delQuetiFromAdd(wallObj)
-
         utils.focusObj(wallObj)
     else:
         utils.outputMsg(f"无墙体需要生成")

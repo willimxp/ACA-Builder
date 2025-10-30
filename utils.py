@@ -2998,3 +2998,33 @@ def intersect_curve_mesh(curve_obj:bpy.types.Object,
         pass
 
     return intersections
+
+# 对网格中指定的边线添加bevel
+def edgeBevel(bevelObj:bpy.types.Object,
+              bevelEdges,
+              bevelOffset,
+              segments = 1,
+              offset_type='ABSOLUTE',
+              ):
+    # 进入编辑模式
+    bpy.ops.object.mode_set(mode='EDIT')
+    import bmesh
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh(bevelObj.data)
+    bpy.ops.mesh.select_mode(type = 'EDGE')
+    bm.edges.ensure_lookup_table()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    # 选择内侧被裁剪的边线做折角
+    for edge in bevelEdges:
+        bm.edges[edge].select = True
+    # 折角
+    bpy.ops.mesh.bevel(affect='EDGES',
+                offset_type=offset_type,
+                offset=bevelOffset,
+                segments=segments,
+                )
+    # 更新bmesh
+    bmesh.update_edit_mesh(bevelObj.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+    return

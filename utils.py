@@ -1123,6 +1123,9 @@ def addModifierBoolean(
         operation='DIFFERENCE', # 'INTERSECT','UNION'
         solver=None,    # 'FAST','EXACT','MANIFOLD'
 ):
+    if object == boolObj:
+        outputMsg(object.name + "添加boolean失败，不能给自身添加布尔。")
+        return
     if solver == None:
         if bpy.app.version >= (4,5,0):
             # blender 4.5新提供了MANIFOLD算法，优先使用
@@ -2892,3 +2895,106 @@ def getObjByID(aca_id):
             break
     
     return obj
+
+def intersect_curve_mesh(curve_obj:bpy.types.Object,
+                         mesh_obj:bpy.types.Object,
+                         depsgraph=None,
+                         eps_offset=1e-6):
+    """
+    计算 curve_obj（Curve） 与 mesh_obj（Mesh） 的交点（3D坐标）。
+    方法：将 curve 评估为一组线段（evaluated mesh），为 mesh 构建 BVH，
+    对曲线每一条线段做一次从段起点到段终点的射线检测 (BVHTree.ray_cast)。
+    返回列表：每个元素为 dict {'location': Vector, 'normal': Vector, 'face_index': int, 'distance': float}
+    """
+    from mathutils.bvhtree import BVHTree
+
+    if depsgraph is None:
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+
+    # 评估并获取 mesh 的临时网格（包含 modifier）
+    mesh_eval = mesh_obj.evaluated_get(depsgraph).to_mesh()
+    if mesh_eval is None:
+        return []
+
+    # 构建 BVH (兼容不同 Blender 版本)
+    try:
+        # 在部分 Blender 版本中可直接从 Object 构建 BVH（保留变形信息）
+        bvh = BVHTree.FromObject(mesh_obj, depsgraph, epsilon=0.0)
+    except AttributeError:
+        try:
+            # 部分版本使用 FromMesh（注意大小写/版本差异）
+            bvh = BVHTree.FromMesh(mesh_eval, epsilon=0.0)
+        except AttributeError:
+            # 退回到从 bmesh 构建 BVH（最通用）
+            bm_tmp = bmesh.new()
+            bm_tmp.from_mesh(mesh_eval)
+            try:
+                bvh = BVHTree.FromBMesh(bm_tmp, epsilon=0.0)
+            finally:
+                bm_tmp.free()
+
+    # 评估 curve 并获取近似为线段的 mesh 表示
+    curve_eval_mesh = curve_obj.evaluated_get(depsgraph).to_mesh()
+    if curve_eval_mesh is None:
+        # 清理已创建的 mesh
+        try:
+            bpy.data.meshes.remove(mesh_eval)
+        except Exception:
+            pass
+        return []
+
+    intersections = []
+    # 遍历曲线转成的网格的每条边（每条边对应一段曲线近似）
+    # 注意：BVH 与射线需在同一坐标系下。这里把世界坐标的线段转换到 mesh 的 local 空间再检测，
+    # 命中后把位置转换回世界空间返回。
+    inv_mat = mesh_obj.matrix_world.inverted()
+    mw_curve = curve_obj.matrix_world
+
+    for edge in curve_eval_mesh.edges:
+        v0 = curve_eval_mesh.vertices[edge.vertices[0]].co.copy()
+        v1 = curve_eval_mesh.vertices[edge.vertices[1]].co.copy()
+
+        # 曲线顶点在 curve 的本地坐标，需要先转到世界空间
+        world_v0 = mw_curve @ v0
+        world_v1 = mw_curve @ v1
+
+        # 将世界空间的段转换到 mesh 的 local 空间（与 mesh_eval/BVH 保持一致）
+        local_v0 = inv_mat @ world_v0
+        local_v1 = inv_mat @ world_v1
+
+        local_seg = local_v1 - local_v0
+        seg_len_local = local_seg.length
+        if seg_len_local <= 1e-12:
+            continue
+
+        direction_local = local_seg.normalized()
+        origin_local = local_v0 + direction_local * eps_offset
+
+        # 在 local 空间投射射线，距离限制也用 local 长度
+        hit = bvh.ray_cast(origin_local, direction_local, seg_len_local + eps_offset)
+        if hit[0] is not None:
+            loc_local, normal_local, face_index, distance_local = hit
+            # 将命中位置与法线转换回世界空间再记录
+            loc_world = mesh_obj.matrix_world @ loc_local
+            if normal_local is not None:
+                normal_world = (mesh_obj.matrix_world.to_3x3() @ normal_local).normalized()
+            else:
+                normal_world = None
+            intersections.append({
+                'location': loc_world.copy(),
+                'normal': normal_world,
+                'face_index': face_index,
+                'distance': distance_local
+            })
+
+    # 清理临时 mesh 数据块（to_mesh 返回的新 mesh，需要释放）
+    try:
+        bpy.data.meshes.remove(mesh_eval)
+    except Exception:
+        pass
+    try:
+        bpy.data.meshes.remove(curve_eval_mesh)
+    except Exception:
+        pass
+
+    return intersections

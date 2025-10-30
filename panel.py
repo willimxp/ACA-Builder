@@ -250,7 +250,7 @@ class ACA_PT_basic(bpy.types.Panel):
         # 第四工具箱
         box = layout.box()
 
-        # 第一行 ------------------------------
+        # 第1行 ------------------------------
         toolBox = box.column(align=True)
         toolBar = toolBox.grid_flow(columns=2, align=True)
         # 添加楼阁
@@ -265,7 +265,18 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnAddLoggia.operator(
                         "aca.add_loggia",
                         icon='OBJECT_HIDDEN',
-                        text="添加回廊")     
+                        text="添加回廊") 
+
+        # 第2行 ------------------------------
+        toolBox = box.column(align=True)
+        toolBar = toolBox.grid_flow(columns=2, align=True)
+        # 添加抱厦
+        btnMultiFloor1 = toolBar.column(align=True)
+        op = btnMultiFloor1.operator(
+                        "aca.union_building",
+                        icon='KEY_CONTROL',
+                        text="建筑组合",
+                        depress=True)    
 
         # 性能分析按钮
         # row = layout.row()

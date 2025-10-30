@@ -53,6 +53,7 @@ class ACA_Consts(object):
     ACA_TYPE_CORNER_RAFTER_CURVE = 'corner_rafter_curve'            # 翼角椽定位线
     ACA_TYPE_CORNER_FLYRAFTER_CURVE = 'corner_flyrafter_curve'      # 翘飞椽定位线
     ACA_TYPE_CORNER_FLYRAFTER_EAVE = 'corner_flyrafter_eave'        # 大连檐
+    ACA_TYPE_TILE_CURVE_FB = 'tile_curve_fb'                        # 前后正身坡线
     ACA_TYPE_TILE_EAVE_CURVE_FB = 'tile_eave_curve_fb'              # 前后瓦口线
     ACA_TYPE_TILE_EAVE_CURVE_LR = 'tile_eave_curve_lr'              # 两山瓦口线
     ACA_TYPE_TILE_ROOT = 'tile_root'                                # ACA类型：屋瓦层
@@ -70,6 +71,7 @@ class ACA_Consts(object):
     ACA_WALLTYPE_QUETI = 'queti'                                    # 隔断属性-雀替
     ACA_TYPE_COMBO = 'combo'                                        # 组合样式
     ACA_PILLER_HIDE = 'piller_hide'                                 # 隐藏柱网
+    JOIN_SUFFIX = '.joined'                                         # 建筑合并名称后缀
 
     # 默认斗口
     DEFAULT_DK = 0.08   # 单位(m)

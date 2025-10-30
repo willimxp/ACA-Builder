@@ -161,6 +161,8 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
             tilt=math.radians(90),
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
             )
+    if direction == 'X':
+        tileCurve.ACA_data.aca_type = con.ACA_TYPE_TILE_CURVE_FB
     # 设置origin
     utils.setOrigin(tileCurve,curve_p1)
     utils.hideObj(tileCurve)

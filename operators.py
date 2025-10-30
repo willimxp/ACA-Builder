@@ -1625,3 +1625,29 @@ class ACA_OT_ADD_LOGGIA(bpy.types.Operator):
             utils.popMessageBox(msg)
         
         return {'FINISHED'}
+    
+# 添加抱厦
+class ACA_OT_UNION_BUILDING(bpy.types.Operator):
+    bl_idname="aca.union_building"
+    bl_label = "建筑组合"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '建筑组合'
+    
+    def execute(self, context): 
+        timeStart = time.time()
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        
+        from . import buildCombo
+        funproxy = partial(
+            build.unionBuilding,
+            context = context,
+        )
+        result = utils.fastRun(funproxy)
+
+        if 'FINISHED' in result:
+            runTime = time.time() - timeStart
+            msg = '建筑组合完成 | 运行时间【%.1f秒】' % runTime
+            self.report({'INFO'},msg)
+            utils.popMessageBox(msg)
+        
+        return {'FINISHED'}

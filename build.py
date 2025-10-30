@@ -397,7 +397,7 @@ def addSection(buildingObj:bpy.types.Object,
         # 布尔位移
         boolObj.location += boolPlan['offset']
         # 设置外观
-        utils.hideObjFace(boolObj)
+        utils.hideObj(boolObj)
         # boolObj.hide_select = True    # 禁止选中
 
         # 仅对需要布尔的对象添加修改器
@@ -726,8 +726,6 @@ def joinBuilding(buildingObj:bpy.types.Object,
         return
     
     # 1、参数和变量 --------------------------
-    # 合并对象的名称后缀
-    joinSuffix = '.joined'
     collcopySuffix = '.collcopy'
 
     # 根据剖视方案决定是否分层
@@ -765,7 +763,7 @@ def joinBuilding(buildingObj:bpy.types.Object,
     # 复制生成分层合并的父节点
     joinedRoot = utils.copySimplyObject(buildingObjCopy)
     # 设置名称
-    joinedRoot.name = buildingObj.name + joinSuffix
+    joinedRoot.name = buildingObj.name + con.JOIN_SUFFIX
     # 标示为ACA对象
     joinedRoot.ACA_data['aca_obj'] = True
     joinedRoot.ACA_data['aca_type'] = \
@@ -821,7 +819,7 @@ def joinBuilding(buildingObj:bpy.types.Object,
                           + layer.name)
         else:
             # 合并名称直接加'joined'后缀
-            joinedName = buildingObj.name + joinSuffix
+            joinedName = buildingObj.name + con.JOIN_SUFFIX
 
         # 合并前提取第一个子对象的父节点矩阵
         # 为后续重新绑定父节点做准备
@@ -889,11 +887,8 @@ def joinBuilding(buildingObj:bpy.types.Object,
 
 # 解除建筑合并
 def __undoJoin(buildingObj:bpy.types.Object):
-    # 合并对象的名称后缀
-    joinSuffix = '.joined'
-
     # 恢复目录显示
-    collName = buildingObj.name.removesuffix(joinSuffix)
+    collName = buildingObj.name.removesuffix(con.JOIN_SUFFIX)
     utils.hideCollection(collName,isExclude=False)
 
     # 彻底删除原来的合并对象
@@ -927,3 +922,565 @@ def __validate(buildingObj:bpy.types.Object):
             if bData.dg_extend < 0.001:
                 return "无法生成平坐，请启用斗栱，且斗栱应该有足够的出跳。"
     return
+
+# 建筑组合
+def unionBuilding(context:bpy.types.Context):
+    # 1、获取选中的建筑
+    fromBuilding = None
+    fromBuildingJoined = None
+    toBuilding = None
+    toBuildingJoined = None
+    # 遍历选中的对象，如果已合并的直接添加，未合并的记录在未合并列表
+    for obj in context.selected_objects:
+        # 活动主建筑
+        if obj == context.active_object:
+            building,bData,oData = utils.getRoot(obj)
+            if building.ACA_data.aca_type == con.ACA_TYPE_BUILDING_JOINED:
+                fromBuildingJoined = building
+                # 已合并的找到原始建筑
+                fromBuilding = __getJoinedOriginal(building)
+                bData = fromBuilding.ACA_data
+            else:
+                fromBuilding = building        
+        # 副建筑
+        else:
+            if toBuilding is not None:
+                utils.popMessageBox('不止两个建筑')
+                return {'CANCELLED'}
+            building,mData,oData = utils.getRoot(obj)
+            if building.ACA_data.aca_type == con.ACA_TYPE_BUILDING_JOINED:
+                toBuildingJoined = building
+                # 已合并的找到原始建筑
+                toBuilding = __getJoinedOriginal(building)
+                mData = toBuilding.ACA_data
+            else:
+                toBuilding = building
+
+    # 校验应该有两个建筑(在正式合并前检验，避免回滚)
+    if not fromBuilding or not toBuilding:
+        utils.popMessageBox("请选择需要组合的2个建筑")
+        return {'CANCELLED'}
+
+    # 方案一：勾连搭
+    # 两个建筑面阔相等，且为平行相交
+    if (bData.x_total == mData.x_total 
+        and fromBuilding.rotation_euler.z == 0
+        and toBuilding.rotation_euler.z == 0):
+        
+        # 是否相交
+        buildingSpan = abs(fromBuilding.location.y 
+                           - toBuilding.location.y)
+        roofSpan = (bData.y_total+mData.y_total)/2+21*bData.DK
+        if buildingSpan > roofSpan:
+            utils.popMessageBox("建筑不相交，无法进行组合")
+            return {'CANCELLED'}
+        
+        result = __unionGoulianda(
+            fromBuilding,
+            toBuilding,
+            fromBuildingJoined,
+            toBuildingJoined
+        )
+        return result
+    
+    # 方案二：平行抱厦-悬山
+    if (bData.x_total != mData.x_total
+        and fromBuilding.rotation_euler.z == 0
+        and toBuilding.rotation_euler.z == 0):
+        
+        # 是否相交
+        buildingSpan = abs(fromBuilding.location.y 
+                           - toBuilding.location.y)
+        roofSpan = (bData.y_total+mData.y_total)/2+21*bData.DK
+        if buildingSpan > roofSpan:
+            utils.popMessageBox("建筑不相交，无法进行组合")
+            return {'CANCELLED'}
+
+        # 设置面阔较小的为fromBuilding
+        if bData.x_total > mData.x_total:
+            temp = fromBuilding
+            fromBuilding = toBuilding
+            toBuilding = temp
+            temp = fromBuildingJoined
+            fromBuildingJoined = toBuildingJoined
+            toBuildingJoined = temp
+
+        bData:acaData = fromBuilding.ACA_data
+        # 是否为悬山顶
+        if bData.roof_style in (
+            con.ROOF_XUANSHAN,con.ROOF_XUANSHAN_JUANPENG):
+            result = __unionParallelXuanshan(
+                fromBuilding,
+                toBuilding,
+                fromBuildingJoined,
+                toBuildingJoined
+            )
+            return result
+    
+    # 未找到
+    utils.popMessageBox("无法处理的建筑合并")
+    return {'CANCELLED'}
+
+
+# 获取合并建筑对应的原建筑
+def __getJoinedOriginal(joinedBuilding: bpy.types.Object):
+    collName = joinedBuilding.name.removesuffix(con.JOIN_SUFFIX)
+    src_coll = bpy.data.collections.get(collName)
+    src_building = src_coll.objects[0]
+    return src_building
+
+# 建筑组合：勾连搭
+# 适用于主建筑和副建筑平行，且面阔相等
+def __unionGoulianda(fromBuilding:bpy.types.Object,
+                     toBuilding:bpy.types.Object,
+                     fromBuildingJoined:bpy.types.Object,
+                     toBuildingJoined:bpy.types.Object):    
+    # 载入数据
+    bData = fromBuilding.ACA_data
+    dk = bData.DK
+    
+    # 计算屋顶碰撞点
+    crossPoint = __getRoofCrossPoint(fromBuilding,toBuilding)
+    if crossPoint == 'CANCELLED': return {'CANCELLED'}
+    
+    # 建筑合并
+    if fromBuildingJoined is None:
+        fromBuildingJoined = joinBuilding(fromBuilding)
+    if toBuildingJoined is None:
+        toBuildingJoined = joinBuilding(toBuilding)
+
+    # 生成剪切体 ----------------------------------
+    # 1、出檐
+    # 椽飞出檐
+    eave_extend = (con.YANCHUAN_EX*dk 
+              + con.FLYRAFTER_EX*dk)
+    # 斗栱出檐
+    if bData.use_dg:
+        eave_extend += bData.dg_extend*bData.dg_scale[0]
+    # 出冲
+    eave_extend += bData.chong * con.YUANCHUAN_D*dk
+    # 保险数
+    eave_extend += 1
+
+    # 2、建筑高度
+    buildingH = bData.platform_height + bData.piller_height
+    if bData.use_dg:
+        buildingH += bData.dg_height * bData.dg_scale[0]
+    # 屋顶举高，简单的按进深1:1计算
+    buildingH += bData.y_total
+    # 保险数
+    buildingH += 1
+
+    # 3、裁剪体大小、位置
+    boolX = bData.x_total + eave_extend*2
+    boolY = bData.y_total + eave_extend*2
+    boolDim = (boolX,boolY,buildingH)
+    # 根据屋顶碰撞点定位
+    if fromBuilding.location.y > toBuilding.location.y:
+        offset = boolY/2
+    else:
+        offset = -boolY/2
+    
+    boolLoc = (0,
+               offset+crossPoint.y, # 碰撞点
+               buildingH/2)
+    boolObj = utils.addCube(
+        name="勾连搭",
+        location=boolLoc,
+        dimension=boolDim,
+        parent=fromBuildingJoined,
+    )
+    utils.hideObj(boolObj)
+
+    # 4、添加bool modifier
+    for layer in fromBuildingJoined.children:
+        # 跳过bool对象本身
+        if layer == boolObj: continue
+        utils.addModifierBoolean(
+            object=layer,
+            boolObj=boolObj,
+            operation='INTERSECT',
+        )
+    for layer in toBuildingJoined.children:
+        utils.addModifierBoolean(
+            object=layer,
+            boolObj=boolObj,
+            operation='DIFFERENCE',
+        )
+
+    return {'FINISHED'}
+
+# 建筑组合：平行抱厦-悬山
+# fromBuilding为面阔较小的抱厦
+def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
+                     toBuilding:bpy.types.Object,
+                     fromBuildingJoined:bpy.types.Object,
+                     toBuildingJoined:bpy.types.Object):
+    utils.outputMsg("平行抱厦-悬山")
+    boolSign = 'unionbool'
+    # 载入数据
+    bData:acaData = fromBuilding.ACA_data
+    mData:acaData = toBuilding.ACA_data
+    dk = bData.DK
+
+    # 1、确保抱厦和主建筑分层合并
+    # 抱厦进行分层合并
+    if fromBuildingJoined:
+        # 强制解除合并
+        __undoJoin(fromBuildingJoined)
+    # 重新分层合并
+    fromBuildingJoined = joinBuilding(fromBuilding,useLayer=True)
+    # 主建筑分层合并
+    # 已合并的话，检查是否分层
+    if toBuildingJoined:
+        # 合并根节点
+        building,mData,oData = utils.getRoot(toBuildingJoined)
+        # 如果没有分层，则重新分层
+        if len(building.children) == 1:
+            __undoJoin(building)
+            toBuildingJoined = joinBuilding(toBuilding,useLayer=True)
+        else:
+            # 如果已经分层，则保留
+            toBuildingJoined = building
+    # 未合并的话，进行分层合并
+    else:
+        toBuildingJoined = joinBuilding(toBuilding,useLayer=True)
+
+    # 一、裁剪屋顶 ------------------------
+    # 包括：装修、斗栱、梁架、椽架
+    # 不包括：台基、柱网、装修
+    # 1、主建筑屋顶裁剪：宽到柱外皮，深到瓦面交界点，高覆盖建筑高度
+    # 瓦面碰撞点
+    crossPoint = __getRoofCrossPoint(fromBuilding,toBuilding)
+    if crossPoint == 'CANCELLED': return {'CANCELLED'}
+
+    # 建筑高度
+    buildingH = bData.platform_height + bData.piller_height
+    if bData.use_dg:
+        buildingH += bData.dg_height * bData.dg_scale[0]
+    # 屋顶举高，简单的按进深1:1计算
+    buildingH += bData.y_total
+    # 保险数
+    buildingH += 1
+
+    # 出檐
+    eave_extend = (con.YANCHUAN_EX*dk 
+              + con.FLYRAFTER_EX*dk)
+    # 斗栱出檐
+    if bData.use_dg:
+        eave_extend += bData.dg_extend*bData.dg_scale[0]
+    # 保险数
+    eave_extend += 1
+
+    # 剪切体尺寸
+    boolWidth = bData.x_total + mData.piller_diameter
+    boolDeepth = bData.y_total + eave_extend*2
+    boolHeight = buildingH
+
+    # 裁剪体定位
+    if fromBuilding.location.y > toBuilding.location.y:
+        offset = boolDeepth/2
+    else:
+        offset = -boolDeepth/2
+    boolX = 0
+    boolY = offset + crossPoint.y # 碰撞点
+    boolZ = buildingH/2
+    
+    boolObj = utils.addCube(
+        name="平行抱厦-悬山-主建筑" + boolSign,
+        location=(boolX,boolY,boolZ),
+        dimension=(boolWidth,boolDeepth,boolHeight),
+        parent=fromBuildingJoined,
+    )
+    utils.hideObj(boolObj)
+
+    # 添加bool modifier
+    for layer in toBuildingJoined.children:
+        # 跳过台基、柱网、装修
+        if con.COLL_NAME_BASE in layer.name : continue
+        if con.COLL_NAME_PILLER in layer.name : continue
+        if con.COLL_NAME_WALL in layer.name : continue
+        utils.addModifierBoolean(
+            object=layer,
+            boolObj=boolObj,
+            operation='DIFFERENCE',
+        )
+
+    # 2、抱厦屋顶裁剪：宽度到悬山外侧
+    # 裁剪体尺寸
+    boolWidth = bData.x_total + 21*2*dk # 悬山出檐
+    boolDeepth = bData.y_total + eave_extend*2
+    boolHeight = buildingH
+
+    # 裁剪体定位
+    if fromBuilding.location.y > toBuilding.location.y:
+        offset = boolDeepth/2
+    else:
+        offset = -boolDeepth/2
+    boolX = 0
+    boolY = offset + crossPoint.y # 碰撞点
+    boolZ = buildingH/2
+    
+    boolObj = utils.addCube(
+        name="平行抱厦-悬山-抱厦" + boolSign,
+        location=(boolX,boolY,boolZ),
+        dimension=(boolWidth,boolDeepth,boolHeight),
+        parent=fromBuildingJoined,
+    )
+    utils.hideObj(boolObj)
+
+    # 添加bool modifier
+    for layer in fromBuildingJoined.children:
+        # 跳过bool对象
+        if boolSign in layer.name : continue
+        # 跳过台基、柱网、装修
+        if con.COLL_NAME_BASE in layer.name : continue
+        if con.COLL_NAME_PILLER in layer.name : continue
+        if con.COLL_NAME_WALL in layer.name : continue
+        utils.addModifierBoolean(
+            object=layer,
+            boolObj=boolObj,
+            operation='INTERSECT',
+        )
+
+    # 二、裁剪柱网 -------------------------------
+    # 沿着主建筑的檐面额枋进行裁剪，以同时保证不破坏主建筑的额枋，同时不产生柱础的重叠
+    # 同时，保留了主建筑保修，裁剪了抱厦可能存在的雀替等
+    boolWidth= bData.x_total + 21*2*dk # 悬山出檐
+    boolDeepth = bData.y_total + eave_extend*2
+    boolHeight = buildingH
+    # 定位点做在檐柱中线，没有按瓦面碰撞
+    # 后出抱厦的定位
+    boolY = (boolDeepth-bData.y_total+con.EFANG_LARGE_Y*dk+0.01)/2
+    if fromBuilding.location.y < toBuilding.location.y:
+        # 前出抱厦的定位
+        boolY *= -1
+    boolZ = boolHeight/2
+    boolObj = utils.addCube(
+        name="平行抱厦-悬山-柱网" + boolSign,
+        location=(boolX,boolY,boolZ),
+        dimension=(boolWidth,boolDeepth,boolHeight),
+        parent=fromBuildingJoined,
+    )
+    utils.hideObj(boolObj)
+    # 绑定boolean
+    for layer in toBuildingJoined.children:
+        if con.COLL_NAME_PILLER in layer.name :
+            utils.addModifierBoolean(
+                object=layer,
+                boolObj=boolObj,
+                operation='DIFFERENCE',
+            )
+            # 裁剪后柱体normal异常，做平滑
+            utils.shaderSmooth(layer)
+    for layer in fromBuildingJoined.children:
+        if (con.COLL_NAME_PILLER in layer.name
+            # 抱厦的装修也按这个范围裁剪，包括雀替等
+            or con.COLL_NAME_WALL in layer.name) :
+            utils.addModifierBoolean(
+                object=layer,
+                boolObj=boolObj,
+                operation='INTERSECT',
+            )
+            # 裁剪后柱体normal异常，做平滑
+            utils.shaderSmooth(layer)
+    
+    # 三、裁剪台基 --------------------------------
+    # 从柱做45度斜切
+    boolWidth= (bData.x_total 
+                + bData.platform_extend *2
+                + con.GROUND_BORDER *2
+                #+ bData.piller_diameter*2
+                )
+    boolDeepth = (bData.y_total
+                  + bData.platform_extend
+                  + con.GROUND_BORDER)
+    boolHeight = bData.platform_height
+    # 定位点做在檐柱中线，没有按瓦面碰撞
+    # 后出抱厦的定位
+    boolY = (boolDeepth-bData.y_total)/2
+    if fromBuilding.location.y < toBuilding.location.y:
+        # 前出抱厦的定位
+        boolY *= -1
+    boolZ = boolHeight/2
+    boolObj = utils.addCube(
+        name="平行抱厦-悬山-台基" + boolSign,
+        location=(boolX,boolY,boolZ),
+        dimension=(boolWidth,boolDeepth,boolHeight),
+        parent=fromBuildingJoined,
+    )
+
+    # 做45度折角
+    # 进入编辑模式
+    bpy.ops.object.mode_set(mode='EDIT')
+    import bmesh
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh(boolObj.data)
+    bpy.ops.mesh.select_mode(type = 'EDGE')
+    bm.edges.ensure_lookup_table()
+    bpy.ops.mesh.select_all(action = 'DESELECT')
+    # 选择内侧被裁剪的边线做折角
+    if fromBuilding.location.y > toBuilding.location.y:
+        bevelEdge = [1,9]
+    else:
+        bevelEdge = [3,6]
+    for edge in bevelEdge:
+        bm.edges[edge].select = True
+    # 折角
+    bpy.ops.mesh.bevel(affect='EDGES',
+                offset_type='ABSOLUTE',
+                offset=(boolWidth - bData.x_total)/2,
+                segments=1,
+                )
+    # 更新bmesh
+    bmesh.update_edit_mesh(boolObj.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+    utils.hideObj(boolObj)
+    for layer in toBuildingJoined.children:
+        if con.COLL_NAME_BASE in layer.name :
+            utils.addModifierBoolean(
+                object=layer,
+                boolObj=boolObj,
+                operation='DIFFERENCE',
+            )
+    for layer in fromBuildingJoined.children:
+        if con.COLL_NAME_BASE in layer.name :
+            utils.addModifierBoolean(
+                object=layer,
+                boolObj=boolObj,
+                operation='INTERSECT',
+            )
+
+    # 四、裁剪抱厦的博缝板
+    # 以主建筑的瓦面为基础进行拉伸
+    tileGrid = utils.getAcaChild(
+        toBuilding,con.ACA_TYPE_TILE_GRID)
+    if not tileGrid: raise Exception('无法找到主建筑瓦面')
+    tileGrid_copy = utils.copySimplyObject(
+        tileGrid,singleUser=True)
+    # 挂接到合并对象下
+    tileGrid_copy.parent = toBuildingJoined
+    # 重新映射坐标系
+    # tileGrid_copy.location = (toBuildingJoined.matrix_world 
+    #                           @ tileGrid.parent.matrix_local
+    #                           @ tileGrid.location)
+    tileGrid_copy.location = (toBuildingJoined.matrix_world.inverted()
+                              @ tileGrid.parent.matrix_world 
+                              @ tileGrid.location)
+    utils.showObj(tileGrid_copy)
+    utils.focusObj(tileGrid_copy)
+    # 镜像
+    utils.addModifierMirror(
+        object=tileGrid_copy,
+        mirrorObj=toBuildingJoined,
+        use_axis=(True,True,False),
+        use_bisect=(True,True,False),
+        use_merge=True
+    )
+    utils.applyAllModifer(tileGrid_copy)
+
+    # 推出裁剪体
+    boolDeepth = bData.y_total
+    bpy.ops.object.mode_set(mode='EDIT')
+    import bmesh
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh(tileGrid_copy.data)
+    # 选中所有面
+    for face in bm.faces: face.select = True
+    # 沿Z方向挤出
+    extrude_result = bmesh.ops.extrude_face_region(
+        bm, geom=bm.faces)
+    extruded_verts = [v for v in extrude_result['geom'] 
+                      if isinstance(v, bmesh.types.BMVert)]
+    bmesh.ops.translate(
+        bm,
+        vec=Vector((0, 0, -boolDeepth)),  # Y轴方向移动
+        verts=extruded_verts
+    )
+    # 沿Y方向缩放0
+    # 以所有挤出面的平均中心为原点
+    center = Vector((0, 0, 0))
+    for v in extruded_verts:
+        center += v.co
+    center /= len(extruded_verts)
+    for v in extruded_verts:
+        v.co.z = center.z
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bmesh.update_edit_mesh(tileGrid_copy.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+    utils.hideObj(tileGrid_copy)
+
+    for layer in fromBuildingJoined.children:
+        if con.COLL_NAME_BOARD in layer.name :
+            utils.addModifierBoolean(
+                object=layer,
+                boolObj=tileGrid_copy,
+                operation='DIFFERENCE',
+            )
+
+
+    return {'FINISHED'}
+
+# 判断屋顶相交点
+def __getRoofCrossPoint(fromBuilding:bpy.types.Object,
+                        toBuilding:bpy.types.Object,):
+    # 主建筑正身坡线
+    tileCurve = utils.getAcaChild(
+        fromBuilding,con.ACA_TYPE_TILE_CURVE_FB)
+    if tileCurve:
+        tileCurve_copy = utils.copySimplyObject(
+            tileCurve,singleUser=True)
+        utils.showObj(tileCurve_copy)
+    else:
+        utils.popMessageBox("无法获取正身坡线")
+        return {'CANCELLED'}
+    # 副建筑瓦面
+    tileGrid = utils.getAcaChild(
+        toBuilding,con.ACA_TYPE_TILE_GRID)
+    if tileGrid:
+        tileGrid_copy = utils.copySimplyObject(
+            tileGrid,singleUser=True)
+        utils.showObj(tileGrid_copy)
+        # 镜像
+        utils.addModifierMirror(
+            object=tileGrid_copy,
+            mirrorObj=toBuilding,
+            use_axis=(True,True,False),
+            use_bisect=(True,True,False),
+            use_merge=True
+        )
+        utils.applyAllModifer(tileGrid_copy)
+    else:
+        utils.popMessageBox("无法获取屋面")
+        return {'CANCELLED'}
+
+    # 3、计算交点
+    intersections = utils.intersect_curve_mesh(
+        curve_obj=tileCurve_copy,
+        mesh_obj=tileGrid_copy
+    )
+    if intersections == []:
+        tileCurve_copy.location.y = - tileCurve_copy.location.y
+        tileCurve_copy.scale.y = -1
+        intersections = utils.intersect_curve_mesh(
+            curve_obj=tileCurve_copy,
+            mesh_obj=tileGrid_copy
+        )
+        if intersections == []:
+            # 回收辅助对象
+            utils.delObject(tileCurve_copy)
+            utils.delObject(tileGrid_copy)
+            utils.delOrphan()
+            utils.popMessageBox("建筑没有相交，未做任何裁剪")
+            return {'CANCELLED'}
+    # 转换到局部坐标
+    crossPoint = fromBuilding.matrix_world.inverted() @ intersections[0]['location']
+
+    # 4、回收辅助对象
+    utils.delObject(tileCurve_copy)
+    utils.delObject(tileGrid_copy)
+    utils.delOrphan()
+    return crossPoint

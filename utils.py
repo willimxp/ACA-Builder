@@ -3028,3 +3028,282 @@ def edgeBevel(bevelObj:bpy.types.Object,
     bm.free() 
     bpy.ops.object.mode_set( mode = 'OBJECT' )
     return
+
+"""
+计算两个 Mesh 对象之间的相交点（通过将每个对象的边线与另一个对象的面做射线检测）。
+返回去重后的交点列表；
+若 create_curve=True，则同时创建一条 POLY 曲线表示交点。
+参数:
+    - obj_a, obj_b: 两个要检测的对象（应为 MESH 或 可评估为 MESH 的对象）
+    - depsgraph: 可选的 depsgraph（默认使用 bpy.context.evaluated_depsgraph_get()）
+    - eps_offset: 在射线起点上施加的微小偏移，避免起点恰好在面上导致的误判
+    - dedup_tol: 去重容差（米）
+    - create_curve: 是否基于交点创建一个 POLY 曲线并加入当前 collection
+    - curve_name: 如果创建曲线，使用的名称
+返回:
+    (points, curve_obj) 其中 curve_obj 在 create_curve=False 时为 None
+"""
+def mesh_mesh_intersection(obj_a: bpy.types.Object,
+                           obj_b: bpy.types.Object,
+                           depsgraph=None,
+                           eps_offset=1e-6,
+                           dedup_tol=1e-6,
+                           create_curve=False,
+                           curve_name="IntersectionCurve",
+                           create_mesh=True,            # 新增：是否基于闭合曲线生成网格并挤出
+                           extrude_depth=5,           # 新增：挤出深度（向下为负 Z）
+                           mesh_name="Intersection" # 新增：生成网格的基础名称
+                           ):
+    from mathutils.bvhtree import BVHTree
+
+    if depsgraph is None:
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+
+    # 获取评估后的临时网格（包含 modifier）
+    mesh_a = obj_a.evaluated_get(depsgraph).to_mesh()
+    mesh_b = obj_b.evaluated_get(depsgraph).to_mesh()
+
+    # 构建 BVH（尽量使用 FromMesh，以兼容大多数 Blender 版本）
+    try:
+        bvh_b = BVHTree.FromMesh(mesh_b, epsilon=0.0)
+    except Exception:
+        # 备用：用 bmesh 构造 BVH
+        bm_tmp = bmesh.new()
+        bm_tmp.from_mesh(mesh_b)
+        try:
+            bvh_b = BVHTree.FromBMesh(bm_tmp, epsilon=0.0)
+        finally:
+            bm_tmp.free()
+
+    try:
+        bvh_a = BVHTree.FromMesh(mesh_a, epsilon=0.0)
+    except Exception:
+        bm_tmp = bmesh.new()
+        bm_tmp.from_mesh(mesh_a)
+        try:
+            bvh_a = BVHTree.FromBMesh(bm_tmp, epsilon=0.0)
+        finally:
+            bm_tmp.free()
+
+    hits = []
+
+    inv_b_world = obj_b.matrix_world.inverted()
+    inv_a_world = obj_a.matrix_world.inverted()
+
+    # 边 (A) 对 面 (B)
+    for edge in mesh_a.edges:
+        v0 = mesh_a.vertices[edge.vertices[0]].co.copy()
+        v1 = mesh_a.vertices[edge.vertices[1]].co.copy()
+        world_v0 = obj_a.matrix_world @ v0
+        world_v1 = obj_a.matrix_world @ v1
+
+        # 转到 B 的局部空间，和 BVH 一致
+        local_v0 = inv_b_world @ world_v0
+        local_v1 = inv_b_world @ world_v1
+
+        seg = local_v1 - local_v0
+        seg_len = seg.length
+        if seg_len <= 1e-12:
+            continue
+        dir_local = seg.normalized()
+        origin_local = local_v0 + dir_local * eps_offset
+
+        hit = bvh_b.ray_cast(origin_local, dir_local, seg_len + eps_offset)
+        if hit[0] is not None:
+            loc_local, normal_local, face_index, dist = hit
+            loc_world = obj_b.matrix_world @ loc_local
+            hits.append(loc_world)
+
+    # 边 (B) 对 面 (A)
+    for edge in mesh_b.edges:
+        v0 = mesh_b.vertices[edge.vertices[0]].co.copy()
+        v1 = mesh_b.vertices[edge.vertices[1]].co.copy()
+        world_v0 = obj_b.matrix_world @ v0
+        world_v1 = obj_b.matrix_world @ v1
+
+        local_v0 = inv_a_world @ world_v0
+        local_v1 = inv_a_world @ world_v1
+
+        seg = local_v1 - local_v0
+        seg_len = seg.length
+        if seg_len <= 1e-12:
+            continue
+        dir_local = seg.normalized()
+        origin_local = local_v0 + dir_local * eps_offset
+
+        hit = bvh_a.ray_cast(origin_local, dir_local, seg_len + eps_offset)
+        if hit[0] is not None:
+            loc_local, normal_local, face_index, dist = hit
+            loc_world = obj_a.matrix_world @ loc_local
+            hits.append(loc_world)
+
+    # 清理临时 mesh 数据
+    try:
+        bpy.data.meshes.remove(mesh_a)
+    except Exception:
+        pass
+    try:
+        bpy.data.meshes.remove(mesh_b)
+    except Exception:
+        pass
+
+    # 去重（基于坐标近似）
+    unique = []
+    seen = []
+    for p in hits:
+        key = (round(p.x / dedup_tol) , round(p.y / dedup_tol), round(p.z / dedup_tol))
+        if key not in seen:
+            seen.append(key)
+            unique.append(p.copy())
+
+    curve_obj = None
+    if create_curve and len(unique) > 0:
+        # 使用 KDTree 做最近邻分段并保证连通性
+        from mathutils.kdtree import KDTree
+        from mathutils import Vector
+
+        pts = unique
+        n = len(pts)
+        kd = KDTree(n)
+        for i, p in enumerate(pts):
+            kd.insert(p, i)
+        kd.balance()
+
+        visited = [False] * n
+        segments_idx = []
+
+        # 连接阈值：基于去重容差和对象尺度自动计算，避免过小导致不能闭合
+        scene_scale = max(obj_a.dimensions.length, obj_b.dimensions.length, 1.0)
+        # 保守放大 dedup_tol，保证正常缩放下可连接；并加入基于场景尺度的下限
+        connect_tol = max(dedup_tol * 1000000.0, scene_scale * 1e-6, 1e-6)
+
+        def find_closest_unvisited_idx(src_idx, max_k=32):
+            co = pts[src_idx]
+            # find_n 返回按距离排序的 (co, index, dist)
+            k = min(n, max_k)
+            neighbors = kd.find_n(co, k)
+            for co_n, j, dist in neighbors:
+                if j == src_idx:
+                    continue
+                # dist 是距离（非平方），直接比较
+                if (not visited[j]) and dist <= connect_tol:
+                    return j, dist
+            return None, None
+
+        for i in range(n):
+            if visited[i]:
+                continue
+            # 新段：从 i 双向扩展
+            visited[i] = True
+            seg = [i]
+
+            # 向前链（从尾部扩展）
+            cur = i
+            while True:
+                nxt, dist = find_closest_unvisited_idx(cur, max_k=64)
+                if nxt is None:
+                    break
+                visited[nxt] = True
+                seg.append(nxt)
+                cur = nxt
+
+            # 向后链（从头部向另一侧扩展）
+            cur = i
+            while True:
+                nxt, dist = find_closest_unvisited_idx(cur, max_k=64)
+                if nxt is None:
+                    break
+                visited[nxt] = True
+                seg.insert(0, nxt)
+                cur = nxt
+
+            segments_idx.append(seg)
+
+        # 创建曲线对象：为每个连通段创建一个 POLY spline
+        curve_data = bpy.data.curves.new(curve_name, type='CURVE')
+        curve_data.dimensions = '3D'
+        curve_obj = bpy.data.objects.new(curve_name, curve_data)
+        bpy.context.collection.objects.link(curve_obj)
+
+        # 用于生成网格的列表（如果 create_mesh=True）
+        created_mesh_objs = []
+
+        for seg_idx, seg in enumerate(segments_idx):
+            m = len(seg)
+            if m == 0:
+                continue
+            poly = curve_data.splines.new('POLY')
+            # poly.points 初始为 1 点，需要 add(m-1)
+            poly.points.add(m - 1)
+            for pi, idx in enumerate(seg):
+                pt = pts[idx]
+                # 这里我们之前直接写入了世界坐标到 curve 的点
+                poly.points[pi].co = (pt.x, pt.y, pt.z, 1.0)
+
+            # 如果点数>=3，强制闭合并设置 cyclic
+            if m >= 3:
+                first_co = Vector(poly.points[0].co[:3])
+                # 强制末点与首点一致，设置为闭合
+                poly.points[-1].co = (first_co.x, first_co.y, first_co.z, 1.0)
+                poly.use_cyclic_u = True
+
+            # 若需要同时生成网格并挤出
+            if create_mesh and m >= 3 and poly.use_cyclic_u:
+                # 读取世界坐标的点（之前我们已用世界坐标填入）
+                verts_world = [Vector(p.co[:3]) for p in poly.points]
+
+                # 创建 bmesh，面位于世界坐标系
+                bm = bmesh.new()
+                bm_verts = []
+                for v_co in verts_world:
+                    bm_verts.append(bm.verts.new((v_co.x, v_co.y, v_co.z)))
+                bm.verts.ensure_lookup_table()
+
+                # 尝试创建面（若非平面则 Blender 会接受为 NGon，但可能被三角化）
+                try:
+                    face = bm.faces.new(tuple(bm_verts))
+                except ValueError:
+                    # 如果顶点顺序或重复导致错误，先去重再尝试
+                    unique_pts = []
+                    for v in verts_world:
+                        if len(unique_pts) == 0 or (v - unique_pts[-1]).length > (dedup_tol * 0.5):
+                            unique_pts.append(v)
+                    if len(unique_pts) >= 3:
+                        bm.clear()
+                        bm_verts = [bm.verts.new((v.x, v.y, v.z)) for v in unique_pts]
+                        bm.faces.new(tuple(bm_verts))
+                    else:
+                        bm.free()
+                        bm = None
+
+                if bm is not None:
+                    bm.normal_update()
+                    # # 挤出（向下，-Z），仅当 extrude_depth > 0
+                    # if extrude_depth != 0.0:
+                    #     # extrude face region
+                    #     faces = [f for f in bm.faces]
+                    #     ret = bmesh.ops.extrude_face_region(bm, geom=faces)
+                    #     geom_extruded = ret.get('geom', [])
+                    #     extr_verts = [ele for ele in geom_extruded if isinstance(ele, bmesh.types.BMVert)]
+                    #     # 平移挤出体（world -Z）
+                    #     import mathutils
+                    #     trans_vec = mathutils.Vector((0.0, 0.0, -abs(extrude_depth)))
+                    #     bmesh.ops.translate(bm, verts=extr_verts, vec=trans_vec)
+
+                    # 写入 mesh 并创建对象
+                    mesh_data = bpy.data.meshes.new(f"{mesh_name}.{seg_idx:03d}")
+                    bm.to_mesh(mesh_data)
+                    bm.free()
+
+                    mesh_obj = bpy.data.objects.new(f"{mesh_name}.{seg_idx:03d}", mesh_data)
+                    bpy.context.collection.objects.link(mesh_obj)
+                    created_mesh_objs.append(mesh_obj)
+
+        curve_obj.parent = None
+
+        # 回收临时的curve对象
+        delObject(curve_obj)
+        delOrphan()
+
+
+    return created_mesh_objs

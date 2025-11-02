@@ -617,7 +617,7 @@ def __drawStep(
     # 获取踏跺的全局旋转
     stepRot = stepProxy.matrix_world.to_euler().z
     # 南踏跺
-    if stepRot == 0:
+    if abs(stepRot) < 0.001:
         clear_outer=True
         dir='Y'
     # 北踏跺

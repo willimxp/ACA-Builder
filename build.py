@@ -1034,8 +1034,8 @@ def unionBuilding(context:bpy.types.Context):
     baoshaRot = fromBuilding.rotation_euler.z
     mainRot = toBuilding.rotation_euler.z
     if abs(baoshaRot - mainRot) - math.radians(90) < 0.001:
-        # 设置面阔较小的为fromBuilding(抱厦)
-        if bData.x_total > mData.x_total:
+        # 设置进深较小的为fromBuilding(抱厦)
+        if bData.y_total > mData.y_total:
             temp = fromBuilding
             fromBuilding = toBuilding
             toBuilding = temp
@@ -1569,7 +1569,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     # 二、裁剪柱网 -------------------------------
     # 沿着主建筑的檐面额枋进行裁剪，以同时保证不破坏主建筑的额枋，同时不产生柱础的重叠
     # 同时，保留了主建筑保修，裁剪了抱厦可能存在的雀替等
-    boolWidth= bData.x_total + 21*2*dk # 悬山出檐
+    boolWidth= bData.x_total + 21*2*dk # 歇山出檐
     boolDeepth = bData.y_total + eave_extend*2
     boolHeight = buildingH
     # 定位点做在檐柱中线，没有按瓦面碰撞
@@ -1580,7 +1580,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         boolY *= -1
     boolZ = boolHeight/2
     boolObj = utils.addCube(
-        name="平行抱厦-悬山-柱网" + boolSign,
+        name="平行抱厦-歇山-柱网" + boolSign,
         location=(boolX,boolY,boolZ),
         dimension=(boolWidth,boolDeepth,boolHeight),
         parent=fromBuildingJoined,
@@ -1741,6 +1741,9 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
                      fromBuildingJoined:bpy.types.Object,
                      toBuildingJoined:bpy.types.Object):
     utils.outputMsg('丁字形抱厦')
+    # 指定合并目录，以免碰撞体落在原建筑目录中
+    coll:bpy.types.Collection = utils.setCollection(
+                'ACA古建.合并',isRoot=True,colorTag=3)
     
     # 1、计算屋顶相交面 ----------------------------------
     # 抱厦瓦面
@@ -1930,7 +1933,10 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     # 5、绑定boolean
     # 添加bool modifier
     for layer in toBuildingJoined.children:
-        
+        # 跳过装修、梁架、柱网
+        if con.COLL_NAME_WALL in layer.name : continue
+        if con.COLL_NAME_BEAM in layer.name : continue
+        if con.COLL_NAME_PILLER in layer.name: continue
         utils.addModifierBoolean(
             object=layer,
             boolObj=boolObj,
@@ -1939,13 +1945,152 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
 
     # 添加bool modifier
     for layer in fromBuildingJoined.children:
-        # 跳过bool对象
+        # 跳过bool对象、柱网
         if boolSign in layer.name : continue
+        if con.COLL_NAME_PILLER in layer.name: continue
         utils.addModifierBoolean(
             object=layer,
             boolObj=boolObj,
             operation='INTERSECT',
         )
+
+    # 二、裁剪柱网 -------------------------------
+    # 1、丁字抱厦相交的开间裁剪
+    # 沿着主建筑的檐面额枋进行裁剪，以同时保证不破坏主建筑的额枋，同时不产生柱础的重叠
+    # 同时，保留了主建筑保修，裁剪了抱厦可能存在的雀替等
+    # 建筑高度
+    buildingH = bData.platform_height + bData.piller_height
+    if bData.use_dg:
+        buildingH += bData.dg_height * bData.dg_scale[0]
+    # 屋顶举高，简单的按进深1:1计算
+    buildingH += bData.y_total
+    # 保险数
+    buildingH += 20*dk
+
+    # 宽：覆盖到抱厦宽度，避免裁剪外部的柱础
+    boolWidth= bData.y_total + bData.piller_diameter
+    # 长：覆盖到檐面额枋
+    boolDeepth = mData.y_total + con.EFANG_LARGE_Y*dk + 0.01
+    boolHeight = buildingH
+    boolZ = boolHeight/2
+    boolObj = utils.addCube(
+        name="丁字抱厦-柱网" + boolSign,
+        location=(0,0,boolZ),
+        dimension=(boolWidth,boolDeepth,boolHeight),
+        parent=toBuildingJoined,
+    )
+
+    # 2、无抱厦开间的柱网保护
+    # 向外挤出，以涵盖无抱厦开间的柱网不被裁剪
+    extrudeWidth = (mData.x_total - bData.y_total)/2
+    extrudeScale = 1.5
+    extrudeExt = bData.piller_diameter
+    bpy.ops.object.mode_set(mode='EDIT')
+    import bmesh
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh(boolObj.data)
+    bm.faces.ensure_lookup_table()
+    # 2.1、挤出两侧面：0号和2号
+    # extrude_faces = [bm.faces[0],bm.faces[2]]
+    for f in bm.faces:
+        f.select = False
+    bm.faces[0].select = True
+    bm.faces[2].select = True
+    extrude_faces0 = [f for f in bm.faces if f.select]
+    extrude_result = bmesh.ops.extrude_face_region(
+        bm,geom=extrude_faces0,
+    )
+    extruded_faces1 = [g for g in extrude_result['geom'] 
+                      if isinstance(g, bmesh.types.BMFace)]
+    extruded_verts1 = [g for g in extrude_result['geom'] 
+                      if isinstance(g, bmesh.types.BMVert)]
+    # 删除原始被挤出的面（extrude_faces 是挤出前记录的原面列表）
+    for f in extrude_faces0:
+        try:
+            # 有时原面已被替换或合并，remove 前先检查仍在 bm.faces
+            if f in bm.faces:
+                bm.faces.remove(f)
+        except Exception:
+            # 忽略删除失败，继续处理
+            pass
+    # 更新索引表以保证后续访问安全
+    bm.verts.ensure_lookup_table()
+    bm.faces.ensure_lookup_table()
+    bm.edges.ensure_lookup_table()
+
+    # 2.2、放大挤出面（一柱径）
+    # 以几何中心放大
+    center = Vector()
+    for v in extruded_verts1:
+        center += v.co
+    center /= len(extruded_verts1)
+    for v in extruded_verts1:
+        if v.co.x > center.x:
+            v.co.x += extrudeExt
+        else:
+            v.co.x -= extrudeExt
+        if v.co.y > center.y:
+            v.co.y += extrudeExt
+        else:
+            v.co.y -= extrudeExt
+
+    # 2.3、再次挤出
+    extrude_result = bmesh.ops.extrude_face_region(
+        bm,
+        geom=extruded_faces1,  # 要挤出的几何元素
+        use_normal_flip=False  # 不翻转法线
+    )
+    extruded_faces2 = [g for g in extrude_result['geom'] 
+                      if isinstance(g, bmesh.types.BMFace)]
+    extruded_verts2 = [g for g in extrude_result['geom'] 
+                      if isinstance(g, bmesh.types.BMVert)]
+    # 删除原始被挤出的面（extrude_faces 是挤出前记录的原面列表）
+    for f in extruded_faces1:
+        try:
+            # 有时原面已被替换或合并，remove 前先检查仍在 bm.faces
+            if f in bm.faces:
+                bm.faces.remove(f)
+        except Exception:
+            # 忽略删除失败，继续处理
+            pass
+    # 更新索引表以保证后续访问安全
+    bm.verts.ensure_lookup_table()
+    bm.faces.ensure_lookup_table()
+    bm.edges.ensure_lookup_table()
+    for v in extruded_verts2:
+        if v.co.x > center.x:
+            v.co.x += extrudeWidth
+        else:
+            v.co.x -= extrudeWidth
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bmesh.update_edit_mesh(boolObj.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+    utils.hideObjFace(boolObj)
+    utils.hideObj(boolObj)
+
+    # 绑定boolean
+    for layer in toBuildingJoined.children:
+        if con.COLL_NAME_PILLER in layer.name :
+            utils.addModifierBoolean(
+                object=layer,
+                boolObj=boolObj,
+                operation='INTERSECT',
+            )
+            # 裁剪后柱体normal异常，做平滑
+            utils.shaderSmooth(layer)
+    for layer in fromBuildingJoined.children:
+        if (con.COLL_NAME_PILLER in layer.name
+            # 抱厦的装修也按这个范围裁剪，包括雀替等
+            or con.COLL_NAME_WALL in layer.name) :
+            utils.addModifierBoolean(
+                object=layer,
+                boolObj=boolObj,
+                operation='DIFFERENCE',
+            )
+            # 裁剪后柱体normal异常，做平滑
+            utils.shaderSmooth(layer)
 
     # 回收临时屋面
     utils.delObject(fromRoof_copy)

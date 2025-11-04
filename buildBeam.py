@@ -248,11 +248,13 @@ def getPurlinPos(buildingObj:bpy.types.Object):
             rafterSpan0 = rafterSpan    # 檐步架宽度，后续使用
         # 盝顶：直接采用用户设置的参数
         if roofStyle == con.ROOF_LUDING:
-            # 250609 盝顶步架不得超过面阔或进深的1/4(如最低四步架时做一步架)
-            ludingMax = min(bData.x_total/4,bData.y_total/4)
+            # 250609 盝顶步架不得超过面阔或进深的1/2(如最低四步架时做一步架)
+            ludingMax = min(bData.x_total/2,bData.y_total/2)
             if bData.luding_rafterspan > ludingMax:
                 bData["luding_rafterspan"] = ludingMax
-            rafterSpan = bData.luding_rafterspan
+            # 251104 盝顶允许做多步架，平分步架宽度
+            # rafterSpan = bData.luding_rafterspan
+            rafterSpan = bData.luding_rafterspan/(rafterCount/2)
             
         # 2、计算每根槫子的长度，包括推山做法、收山做法的影响--------------
         # 2.a、硬山、悬山（卷棚）不推
@@ -287,9 +289,10 @@ def getPurlinPos(buildingObj:bpy.types.Object):
         elif (roofStyle == con.ROOF_WUDIAN
             and n>0): 
             purlinWidth -= bData.tuishan**n*rafterSpan
-        # 2.4、盝顶仅做到下金桁
-        elif roofStyle== con.ROOF_LUDING and n >0:
-            continue
+        # 251104 盝顶允许多步架
+        # # 2.4、盝顶仅做到下金桁
+        # elif roofStyle== con.ROOF_LUDING and n >0:
+        #     continue
         else:
             # 面阔、进深，每次推一个步架
             purlinWidth -= rafterSpan

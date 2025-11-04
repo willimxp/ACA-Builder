@@ -114,10 +114,11 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
                         purlin_pos, -offset, direction)
 
     for n in range(len(tile_pos)):
-        # 盝顶只做到下金桁
-        if bData.roof_style == con.ROOF_LUDING:
-            if n >1:
-                continue
+        # 251104 盝顶允许多步架
+        # # 盝顶只做到下金桁
+        # if bData.roof_style == con.ROOF_LUDING:
+        #     if n >1:
+        #         continue
         # 歇山的山面只做到金桁高度（踏脚木位置）
         if (bData.roof_style in (con.ROOF_XIESHAN,
                                  con.ROOF_XIESHAN_JUANPENG,) 
@@ -1272,9 +1273,10 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
     tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
    
-    # 围脊相交点，以金桁交点为参考
-    # todo: 后续允许设置收分距离
-    ridgeCross = rafter_pos[1]
+    # 251104 盝顶允许多步架，所以做到最后一根桁檩
+    # # 围脊相交点，以金桁交点为参考
+    # ridgeCross = rafter_pos[1]
+    ridgeCross = rafter_pos[-1]
     # 偏移计算：
     offset = Vector((
             # X、Y偏移：半柱径

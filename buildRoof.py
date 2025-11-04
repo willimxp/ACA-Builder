@@ -300,16 +300,17 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
         # 5. 各层椽子平铺
         # 5.1 计算椽架宽度（从建筑中线到最后一根椽子的中线）
         # 庑殿的椽架需要延伸到下层宽度，以便后续做45度裁剪
-        if bData.roof_style == con.ROOF_WUDIAN:
+        # 251104 盝顶椽架参考庑殿制作
+        if bData.roof_style in (con.ROOF_WUDIAN,
+                                con.ROOF_LUDING):
             if n==0:
                 rafter_tile_x = purlin_pos[n+1].x
             else:
                 rafter_tile_x = purlin_pos[n].x
-        # 歇山、盝顶的椽架平铺到上层桁交点
+        # 歇山椽架平铺到上层桁交点
         elif bData.roof_style in (
                 con.ROOF_XIESHAN,
-                con.ROOF_XIESHAN_JUANPENG,
-                con.ROOF_LUDING):
+                con.ROOF_XIESHAN_JUANPENG):
             # 檐椽做到下金桁(起翘点)
             if n==0:
                 rafter_tile_x = purlin_pos[n+1].x
@@ -357,7 +358,9 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
         )
         
         # 6、裁剪，仅用于庑殿，且檐椽不涉及
-        if bData.roof_style == con.ROOF_WUDIAN and n!=0:
+        # 251104 盝顶按照庑殿裁剪
+        if (bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_LUDING)
+            and n!=0):
             # 裁剪椽架，檐椽不做裁剪
             utils.addBisect(
                     object=fbRafterObj,
@@ -499,7 +502,9 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
             utils.applyTransform(lrRafterObj,use_scale=True) # 便于后续做望板时获取真实长度
 
         # 平铺Array
-        if bData.roof_style == con.ROOF_WUDIAN and n != 0:
+        # 251104 盝顶椽架参考庑殿制作
+        if (bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_LUDING)
+            and n != 0):
             # 庑殿的椽架需要延伸到下层宽度，以便后续做45度裁剪
             rafter_tile_y = purlin_pos[n].y
         else:
@@ -515,7 +520,9 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
         )
         
         # 裁剪，仅用于庑殿，且檐椽不涉及
-        if bData.roof_style in (con.ROOF_WUDIAN) and n!=0:
+        # 251104 盝顶按照庑殿裁剪
+        if (bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_LUDING)
+            and n!=0):
             utils.addBisect(
                     object=lrRafterObj,
                     pStart=buildingObj.matrix_world @ purlin_pos[n],
@@ -610,7 +617,8 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             utils.applyTransform(wangbanObj,use_scale=True) 
 
         # 仅庑殿需要裁剪望板
-        if bData.roof_style == con.ROOF_WUDIAN:
+        # 251104 盝顶椽架参考庑殿制作
+        if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_LUDING):
             utils.addBisect(
                     object=wangbanObj,
                     pStart=buildingObj.matrix_world @ purlin_pos[n],
@@ -804,7 +812,8 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
             utils.applyTransform(wangbanObj,use_scale=True)
 
         # 仅庑殿需要裁剪望板
-        if bData.roof_style == con.ROOF_WUDIAN:
+        # 251104 盝顶椽架参考庑殿制作
+        if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_LUDING):
             utils.addBisect(
                     object=wangbanObj,
                     pStart=buildingObj.matrix_world @ purlin_pos[n],

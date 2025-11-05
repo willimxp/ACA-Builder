@@ -239,10 +239,11 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
                         purlin_pos, -offset, direction)
         
     for n in range(len(tile_pos)):
-        # 盝顶只做到下金桁
-        if bData.roof_style == con.ROOF_LUDING:
-            if n >1:
-                continue
+        # 2511055 盝顶支持多步架
+        # # 盝顶只做到下金桁
+        # if bData.roof_style == con.ROOF_LUDING:
+        #     if n >1:
+        #         continue
         # 歇山的山面只做到金桁高度（踏脚木位置）
         if (bData.roof_style in (con.ROOF_XIESHAN,
                                     con.ROOF_XIESHAN_JUANPENG,)

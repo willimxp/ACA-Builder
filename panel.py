@@ -758,6 +758,8 @@ class ACA_PT_wall(bpy.types.Panel):
                 contextData = utils.getContextData(oData.aca_type)
                 contextName = context.object.name
 
+            if contextData is None: return
+
             # 1、基本内容：构件名称
             if oData.aca_type in (
                 con.ACA_WALLTYPE_WINDOW,    # 槛窗

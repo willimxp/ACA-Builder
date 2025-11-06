@@ -243,7 +243,13 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
     else:
         tile_pos = utils.push_purlinPos(
                         purlin_pos, -offset, direction)
-        
+
+    # 251105 八架歇山过两椽
+    if bData.rafter_count == 8:
+        cornerBeamRafter = 2
+    else:
+        cornerBeamRafter = 1
+
     for n in range(len(tile_pos)):
         # 2511055 盝顶支持多步架
         # # 盝顶只做到下金桁
@@ -254,7 +260,7 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
         if (bData.roof_style in (con.ROOF_XIESHAN,
                                     con.ROOF_XIESHAN_JUANPENG,)
             and direction == 'Y' 
-            and n>1): 
+            and n>cornerBeamRafter):  # 251105 八架歇山过两椽
                 continue
         
         if direction == 'X':

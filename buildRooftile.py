@@ -113,6 +113,12 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
         tile_pos = utils.push_purlinPos(
                         purlin_pos, -offset, direction)
 
+    # 251105 八架歇山过两椽
+    if bData.rafter_count == 8:
+        cornerBeamRafter = 2
+    else:
+        cornerBeamRafter = 1
+
     for n in range(len(tile_pos)):
         # 251104 盝顶允许多步架
         # # 盝顶只做到下金桁
@@ -123,7 +129,7 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
         if (bData.roof_style in (con.ROOF_XIESHAN,
                                  con.ROOF_XIESHAN_JUANPENG,) 
             and direction == 'Y' 
-            and n>1): 
+            and n>cornerBeamRafter): # 251105 八架歇山过两椽
                 continue
         tileCurveVerts.append(tile_pos[n])
 
@@ -2472,6 +2478,12 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
     )
     ridgeObj:bpy.types.Object = aData.ridgeFront_source
     ridgeLength = ridgeObj.dimensions.x * tileScale
+
+    # 251105 八架歇山过两椽
+    if bData.rafter_count == 8:
+        cornerBeamRafter = 1
+    else:
+        cornerBeamRafter = 0
     
     # 博脊定位
     # X坐标：从山花中线，向外山花板厚度
@@ -2479,7 +2491,7 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
     x = shanPoint.x + con.BOFENG_WIDTH*dk
 
     # Y坐标：从正心桁加上推山进行计算    
-    zhengxinPoint = rafter_pos[0]
+    zhengxinPoint = rafter_pos[cornerBeamRafter]
     # 从金桁交点瓦面的计算
     y = (zhengxinPoint.y 
          - bData.shoushan           # 收山影响

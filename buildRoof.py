@@ -226,6 +226,12 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
     rafter_pos = utils.push_purlinPos(
                     purlin_pos, -offset, 'X')
     
+    # 251105 八架歇山过两椽
+    if bData.rafter_count == 8:
+        cornerBeamRafter = 1
+    else:
+        cornerBeamRafter = 0
+
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
         # 1.逐层定位椽子，直接连接上下层的桁檩(槫子)
@@ -312,8 +318,11 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG):
             # 檐椽做到下金桁(起翘点)
-            if n==0:
+            if n == 0: 
                 rafter_tile_x = purlin_pos[n+1].x
+            # 251105 八架歇山过两椽，下花架椽做到下层桁檩宽度再做裁剪
+            elif 0 < n <= cornerBeamRafter: 
+                rafter_tile_x = purlin_pos[n].x
             # 花架椽和脊椽做到山花板
             else:
                 # 避免与博缝板穿模，减半椽
@@ -359,8 +368,23 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
         
         # 6、裁剪，仅用于庑殿，且檐椽不涉及
         # 251104 盝顶按照庑殿裁剪
-        if (bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_LUDING)
+        if (bData.roof_style in (con.ROOF_WUDIAN,
+                                 con.ROOF_LUDING,)
             and n!=0):
+            # 裁剪椽架，檐椽不做裁剪
+            utils.addBisect(
+                    object=fbRafterObj,
+                    pStart=buildingObj.matrix_world @ purlin_pos[n],
+                    pEnd=buildingObj.matrix_world @ purlin_pos[n+1],
+                    pCut=buildingObj.matrix_world @ purlin_pos[n] - \
+                        Vector((con.JIAOLIANG_Y*dk/2,0,0)),
+                    clear_outer=True
+            ) 
+
+        # 251105 歇山参考庑殿制作
+        if (bData.roof_style in (con.ROOF_XIESHAN,
+                                con.ROOF_XIESHAN_JUANPENG)
+            and 0 < n <= cornerBeamRafter):
             # 裁剪椽架，檐椽不做裁剪
             utils.addBisect(
                     object=fbRafterObj,
@@ -468,12 +492,20 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
     else:
         rafter_pos = utils.push_purlinPos(
                         purlin_pos, -offset, 'Y')
+        
+    # 251105 八架歇山过两椽
+    if bData.rafter_count == 8:
+        cornerBeamRafter = 1
+    else:
+        cornerBeamRafter = 0
 
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
         if bData.roof_style in (con.ROOF_XIESHAN,
                                 con.ROOF_XIESHAN_JUANPENG): 
-            if n > 0: continue  # 歇山山面仅做一层椽架
+            # 251105 八架歇山过两椽
+            if n > cornerBeamRafter: 
+                continue  
         # 1.逐层定位椽子，直接连接上下层的桁檩(槫子)
         # 椽当坐中，空出一椽径
         rafter_offset = Vector((0,con.YUANCHUAN_D*dk,0))
@@ -503,7 +535,11 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
 
         # 平铺Array
         # 251104 盝顶椽架参考庑殿制作
-        if (bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_LUDING)
+        # 251105 歇山参考庑殿制作
+        if (bData.roof_style in (con.ROOF_WUDIAN,
+                                 con.ROOF_LUDING,
+                                 con.ROOF_XIESHAN,
+                                 con.ROOF_XIESHAN_JUANPENG)
             and n != 0):
             # 庑殿的椽架需要延伸到下层宽度，以便后续做45度裁剪
             rafter_tile_y = purlin_pos[n].y
@@ -521,7 +557,11 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
         
         # 裁剪，仅用于庑殿，且檐椽不涉及
         # 251104 盝顶按照庑殿裁剪
-        if (bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_LUDING)
+        # 251105 歇山参考庑殿制作
+        if (bData.roof_style in (con.ROOF_WUDIAN,
+                                 con.ROOF_LUDING,
+                                 con.ROOF_XIESHAN,
+                                 con.ROOF_XIESHAN_JUANPENG)
             and n!=0):
             utils.addBisect(
                     object=lrRafterObj,
@@ -569,6 +609,12 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
     wangban_pos = utils.push_purlinPos(
                     purlin_pos, -offset, 'X')
 
+    # 251105 八架歇山过两椽
+    if bData.rafter_count == 8:
+        cornerBeamRafter = 1
+    else:
+        cornerBeamRafter = 0
+
     # 望板做屋面宽度
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
@@ -577,11 +623,17 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             width = purlin_pos[n+1].x 
         else: # 其他椽架平铺到下层桁交点，然后切割
             width = purlin_pos[n].x
+        # 251106 八架歇山转两椽
         # 歇山的望板统一取脊槫宽度
-        if (bData.roof_style in (con.ROOF_XIESHAN,
-                                 con.ROOF_XIESHAN_JUANPENG)
-            and n>0):
-            width = purlin_pos[-1].x
+        if bData.roof_style in (con.ROOF_XIESHAN,
+                                 con.ROOF_XIESHAN_JUANPENG): 
+            # 251105 八架歇山过两椽
+            if n==0:
+                width = purlin_pos[n+1].x 
+            elif 0 < n <= cornerBeamRafter:
+                width = purlin_pos[n].x 
+            else:
+                width = purlin_pos[-1].x
         # 起点在上层桁檩
         pstart = wangban_pos[n+1].copy()
         pstart.x = 0
@@ -617,8 +669,22 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             utils.applyTransform(wangbanObj,use_scale=True) 
 
         # 仅庑殿需要裁剪望板
-        # 251104 盝顶椽架参考庑殿制作
-        if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_LUDING):
+        # 251104 盝顶望板参考庑殿制作
+        if bData.roof_style in (con.ROOF_WUDIAN,
+                                con.ROOF_LUDING,):
+            utils.addBisect(
+                    object=wangbanObj,
+                    pStart=buildingObj.matrix_world @ purlin_pos[n],
+                    pEnd=buildingObj.matrix_world @ purlin_pos[n+1],
+                    pCut=buildingObj.matrix_world @ purlin_pos[n] - \
+                        Vector((con.JIAOLIANG_Y*dk/2,0,0)),
+                    clear_outer=True
+            ) 
+        
+        # 251106 歇山望板参考庑殿制作
+        if (bData.roof_style in (con.ROOF_XIESHAN,
+                                con.ROOF_XIESHAN_JUANPENG)
+            and 0 < n <= cornerBeamRafter):
             utils.addBisect(
                     object=wangbanObj,
                     pStart=buildingObj.matrix_world @ purlin_pos[n],
@@ -764,14 +830,21 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
         wangban_pos = utils.push_purlinPos(
                         purlin_pos, -offset, 'Y')
 
+    # 251105 八架歇山过两椽
+    if bData.rafter_count == 8:
+        cornerBeamRafter = 1
+    else:
+        cornerBeamRafter = 0
+
     # 望板只做1象限半幅，然后镜像
     # 根据桁数组循环计算各层椽架
     for n in range(len(purlin_pos)-1):
-        # 歇山的山面只做一层望板
-        if (bData.roof_style in (con.ROOF_XIESHAN,
-                                 con.ROOF_XIESHAN_JUANPENG) 
-            and n>0):
-            continue
+        # 251106 八架歇山转两椽
+        if bData.roof_style in (con.ROOF_XIESHAN,
+                                 con.ROOF_XIESHAN_JUANPENG):
+            # 251105 八架歇山过两椽
+            if n > cornerBeamRafter: 
+                continue  
         # 望板宽度
         if n==0: # 平铺到上层桁交点     
             width = purlin_pos[n+1].y
@@ -813,7 +886,11 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
 
         # 仅庑殿需要裁剪望板
         # 251104 盝顶椽架参考庑殿制作
-        if bData.roof_style in (con.ROOF_WUDIAN,con.ROOF_LUDING):
+        # 251105 歇山参考庑殿制作
+        if bData.roof_style in (con.ROOF_WUDIAN,
+                                con.ROOF_LUDING,
+                                con.ROOF_XIESHAN,
+                                con.ROOF_XIESHAN_JUANPENG):
             utils.addBisect(
                     object=wangbanObj,
                     pStart=buildingObj.matrix_world @ purlin_pos[n],
@@ -1353,7 +1430,11 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             # 歇山只有老角梁，没有由戗
             if bData.roof_style in (con.ROOF_XIESHAN,
                                     con.ROOF_XIESHAN_JUANPENG) : 
-                continue
+                # 251105 八架歇山过两椽
+                if bData.rafter_count == 8 and n== 1:
+                    pass # 八架歇山做下金桁上的由戗
+                else:
+                    continue
             # 其他角梁为压金做法，都压在桁之上
             pStart = Vector(purlin_pos[n]) \
                 + Vector((0,0,con.JIAOLIANG_H*dk*con.YOUQIANG_YAJIN))

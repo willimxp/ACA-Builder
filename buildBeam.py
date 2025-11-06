@@ -255,6 +255,11 @@ def getPurlinPos(buildingObj:bpy.types.Object):
             # 251104 盝顶允许做多步架，平分步架宽度
             # rafterSpan = bData.luding_rafterspan
             rafterSpan = bData.luding_rafterspan/(rafterCount/2)
+        # 251105 八架歇山过两椽
+        if bData.rafter_count == 8:
+            cornerBeamRafter = 1
+        else:
+            cornerBeamRafter = 0
             
         # 2、计算每根槫子的长度，包括推山做法、收山做法的影响--------------
         # 2.a、硬山、悬山（卷棚）不推
@@ -267,7 +272,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
         elif (roofStyle in (
                     con.ROOF_XIESHAN,
                     con.ROOF_XIESHAN_JUANPENG,)
-                and n>0):
+                and n > cornerBeamRafter): # 251105 八架歇山过两椽
                 # 收山系统的选择，推荐一桁径以上，一步架以下
                 # 当超出限制值时，自动设置为限制值
                 # 注意：这里必须按照檐步架计算
@@ -283,6 +288,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
                 # 推山从山面檐檩中，向内一檩径，作为山花板外皮（博缝板内皮）
                 purlinWidth = (bData.x_total/2
                         - bData.shoushan         # 用户自定义推山尺寸
+                        - cornerBeamRafter*rafterSpan # 251105 八架歇山过两椽
                     )
         # 2.c、庑殿，下金桁以上，应用推山做法
         # 见马炳坚书p25，Xn= 0.9**n * X
@@ -351,6 +357,12 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
         # 一般的桁檩
         hengHeight = con.HENG_COMMON_D*dk
 
+    # 251105 八架歇山过两椽
+    if bData.rafter_count == 8:
+        cornerBeamRafter = 2
+    else:
+        cornerBeamRafter = 1
+
     # 二、布置前后檐桁,根据上述计算的purlin_pos数据，批量放置桁对象
     for n in range(len(purlin_pos)) :
         # 1、桁交点
@@ -376,7 +388,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 purlin_length_x = (pCross.x * 2
                          + con.GABELBEAM_DEPTH*dk)
         # 歇山檐面的下金桁延长，与上层对齐
-        if n >= 1:
+        if n >= cornerBeamRafter:
             if roofStyle in (
                     con.ROOF_XIESHAN,
                     con.ROOF_XIESHAN_JUANPENG) :
@@ -591,7 +603,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG):
             # 歇山仅做正心桁、下金桁
-            rafterRange = range(2)
+            rafterRange = range(cornerBeamRafter+1)
         if roofStyle == con.ROOF_LUDING:
             # 盝顶做所有的桁檩
             rafterRange = range(len(purlin_pos))
@@ -661,8 +673,10 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 # 歇山：山面金桁与踩步金重叠，不做垫板和枋
                 if roofStyle in (con.ROOF_XIESHAN,
                                 con.ROOF_XIESHAN_JUANPENG) :
-                    use_fang = False
-                    use_dianban = False
+                    # 251105 八架歇山过两椽
+                    if bData.rafter_count < 8:
+                        use_fang = False
+                        use_dianban = False
             # 250225 区分檐桁、金桁的不同垫板高度
             if n == 0 :
                 board_h = con.BOARD_YANHENG_H
@@ -904,6 +918,12 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
     beamRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_BEAM_ROOT)
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
+
+    # 251105 八架歇山过两椽
+    if bData.rafter_count == 8:
+        cornerBeamRafter = 2
+    else:
+        cornerBeamRafter = 1
     
     # 六架以上，才能做顺趴梁
     if bData.rafter_count < 6:
@@ -920,17 +940,24 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
         # 歇山的趴梁只从正心桁向上做一根
         if bData.roof_style in (con.ROOF_XIESHAN,
                      con.ROOF_XIESHAN_JUANPENG):
-            beamRange = range(1)
+            # 251105 八架歇山过两椽
+            beamRange = range(cornerBeamRafter)
 
     # 查找山面梁架的位置
     # 根据廊间等面阔的不同，第一幅梁架可能在第二根柱上，也可能在第三根柱子上
     beamX = 0
     for n in range(len(net_x)):
         px = abs(net_x[n])
-        # 判断梁架是否与脊槫相交
-        if (px < abs(purlin_pos[-1].x) ):
-            beamX = px
-            break
+        # 251105 歇山八架转两椽，判断是否与上金桁相交
+        if bData.rafter_count == 8:
+            if px < abs(purlin_pos[2].x):
+                beamX = px
+                break
+        else:
+            # 判断梁架是否与脊槫相交
+            if px < abs(purlin_pos[-1].x):
+                beamX = px
+                break
     
     gabelBeamList = []
     for n in beamRange:
@@ -1183,6 +1210,12 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
         ):
         del purlin_pos[0]
 
+    # 251105 八架歇山过两椽
+    if bData.rafter_count == 8:
+        cornerBeamRafter = 2
+    else:
+        cornerBeamRafter = 1
+
     # 横向循环每一幅梁架
     roofStyle = bData.roof_style
     for x in range(len(net_x)):
@@ -1199,7 +1232,19 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
         if (bData.roof_style in (con.ROOF_XIESHAN,
                                  con.ROOF_XIESHAN_JUANPENG,)
             and abs(net_x[x]) > purlin_pos[-1].x - con.HENG_EXTEND*dk
-            and x not in (0,len(net_x)-1)):
+            and x not in (0,len(net_x)-1)
+            ):
+            # 忽略此副梁架
+            continue
+
+        # 251105 歇山八架过两椽
+        # 不做超过第二层角梁（上金桁的梁架）
+        if (bData.roof_style in (con.ROOF_XIESHAN,
+                                 con.ROOF_XIESHAN_JUANPENG,)
+            and bData.rafter_count == 8
+            and abs(net_x[x]) > purlin_pos[2].x
+            and x in (1,len(net_x)-2)
+        ):
             # 忽略此副梁架
             continue
 
@@ -1252,12 +1297,14 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                         + con.HENG_COMMON_D*dk/2)
                     beam_l = purlin_pos[1].y*2
                     beam_name = '踩步金'
+                
                 # X坐标，位移到下金桁的X位置
+                # 251105 八架歇山过两椽，此时移动到上金桁X位置
                 if n > 0 :
                     if x == 0:
-                        beam_x = -purlin_pos[1].x
+                        beam_x = -purlin_pos[cornerBeamRafter].x
                     if x == len(net_x)-1:
-                        beam_x = purlin_pos[1].x
+                        beam_x = purlin_pos[cornerBeamRafter].x
 
             # 开始做横梁
             if use_beam:

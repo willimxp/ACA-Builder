@@ -200,6 +200,7 @@ class ACA_Consts(object):
     BOFENG_WIDTH = 1.2      # 博缝板厚(DK)
     BOFENG_HEIGHT = 8       # 博缝板高(DK)，实际并没有使用，而是在代码中进行了控制
     BOFENG_OFFSET_XS = 6    # 博缝板下缘距离桁下皮的距离(DK)，歇山
+    BOFENG_OFFSET_XSS = 0   # 博缝板下缘距离桁下皮的距离(DK)，歇山四架
     BOFENG_OFFSET_YS = 9   # 博缝板下缘距离桁下皮的距离(DK)，硬山/悬山
     XYB_WIDTH = 0.99         # 象眼板/山花板厚(DK)，略微退让，避免与由额垫板打架
     JIAOBEI_WIDTH = 2       # 角背厚度(DK)

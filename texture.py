@@ -471,8 +471,9 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
             con.M_BOARD_YOUE,       # 由额垫板
             con.M_FANG_PINGBAN,     # 平板枋
         ):
-            mat = aData.mat_oilpaint
-            slot = 1
+            # mat = aData.mat_oilpaint
+            # slot = 1
+            mat = aData.mat_wood
         if paintMat in (
             con.M_WALL, # 墙-抹灰
         ):

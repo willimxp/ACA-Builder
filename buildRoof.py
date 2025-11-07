@@ -3603,7 +3603,12 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         con.ROOF_XIESHAN,
         con.ROOF_XIESHAN_JUANPENG):
         # 歇山做窄一些，留出更多的山花板
-        bofengHeight += con.BOFENG_OFFSET_XS*dk
+        if (bData.rafter_count == 4 
+            and bData.paint_style in ('1','3')):
+            # 四架仿宋使用更小的山花板，以便给悬鱼留出更多空间
+            bofengExt = con.BOFENG_OFFSET_XSS*dk
+        else:
+            bofengExt = con.BOFENG_OFFSET_XS*dk
     if bData.roof_style in (
         con.ROOF_YINGSHAN,
         con.ROOF_YINGSHAN_JUANPENG,
@@ -3611,7 +3616,8 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         con.ROOF_XUANSHAN_JUANPENG,
     ):
         # 硬山、悬山做宽一些，更加美观
-        bofengHeight += con.BOFENG_OFFSET_YS*dk
+        bofengExt = con.BOFENG_OFFSET_YS*dk
+    bofengHeight += bofengExt
     # 251011 博缝板在不同斗口下保持不变形
     bofengScale = bofengHeight / bofengObj.dimensions.z
     bofengObj.dimensions = (
@@ -3685,10 +3691,20 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     mat.paint(bofengObj,
         bofengMat,override=True)
     
+    useNails = True
     # 250813 硬山顶不做雪花钉
-    if bData.roof_style not in (
+    if bData.roof_style in (
         con.ROOF_YINGSHAN,
         con.ROOF_YINGSHAN_JUANPENG,):
+        useNails = False
+    # 251107 仿宋不做雪花钉
+    if (bData.roof_style in (
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,)
+        and bData.paint_style in ('1','3')):
+        useNails = False
+    
+    if useNails:
         # 根据槫子位置，摆放雪花钉
         nailsSet = __buildBofengNails(buildingObj,
                     bofengObj,
@@ -3827,7 +3843,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         # 3.1.2、计算悬鱼高度
         xuanyu_h = (rafter_pos[-1].z    # 脊槫位置
                     - boji_top.z        # 博脊上皮
-                    - bofengHeight/2    # 半个博缝板高度
+                    - bofengExt         # 博缝板下缘高度
                     )
         # 验证悬鱼是否有足够空间
         if xuanyu_h < 0:
@@ -3835,7 +3851,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         else: 
             # 悬鱼定位
             xuanyu_loc = rafter_pos[-1] + Vector(
-                (0,0,-bofengHeight/2))
+                (0,0,-bofengExt))
             # 悬鱼缩放
             xuanyu_origin_h = aData.xuanyu_source.dimensions.z
             xuanyu_scale = xuanyu_h / xuanyu_origin_h

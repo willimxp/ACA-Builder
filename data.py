@@ -944,6 +944,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("0","清-和玺彩画",""),
                 ("1","酱油色",""),
                 ("2","白模",""),
+                ("3","红漆无彩画",""),
             ],
             update = update_building,
             options = {"ANIMATABLE"}

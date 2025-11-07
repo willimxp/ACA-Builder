@@ -276,8 +276,7 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
         ):
             mat = aData.mat_wood # 原木
     
-    
-    # 0. 金龙和玺样式
+    # 0. 金龙和玺样式---------------------
     if paintStyle == '0':
         if paintMat in (
             con.M_PAINT,            # 上漆
@@ -378,9 +377,8 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
             con.M_GUAYANBAN, # 挂檐板
         ):
             mat = aData.mat_guayanban 
-        
     
-    # 1. 酱油漆样式
+    # 1. 酱油漆样式---------------------
     if paintStyle == '1':
         if paintMat in (
             con.M_PAINT,            # 上漆
@@ -436,10 +434,69 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
         ):
             mat = aData.mat_wood
         
-
-    # 2. override，全局覆盖的着色方式
+    # 2. override，全局覆盖的着色方式---------------------
     if paintStyle == '2': 
         mat = aData.mat_override
+
+    # 3、红漆无彩画 ---------------------
+    if paintStyle == '3':
+        if paintMat in (
+            con.M_PAINT,            # 上漆
+            con.M_QUETI,            # 雀替
+            con.M_FANG_CHUANCHA,    # 穿插枋
+            con.M_FANG_JIN,         # 金枋
+            con.M_PILLER_HEAD,      # 柱头
+            con.M_BOARD_WALLHEAD,   # 走马板
+            con.M_WINDOW,           # 窗框
+            con.M_DOOR_RING,        # 绦环板
+            con.M_DOOR_BOTTOM,      # 裙板
+            con.M_BAWANGQUAN,       # 霸王拳
+            con.M_BEAM_PAINT,       # 梁架-上漆
+            con.M_ROOF_PAINT,       # 屋顶-上漆
+            con.M_CORNERBEAM,       # 老角梁
+            con.M_CORNERBEAM_S,     # 子角梁
+            con.M_RAFTER,           # 檐椽
+            con.M_FLYRAFTER,        # 飞椽
+            con.M_WANGBAN,          # 望板
+            con.M_SHANHUA,          # 山花板
+            con.M_ZHILINGCHUANG,    # 直棂窗
+            con.M_MENZAN,           # 门簪
+            con.M_RAILING,          # 栏杆(望柱、净瓶)
+            con.M_GUAYANBAN,        # 挂檐板
+        ):
+            mat = aData.mat_oilpaint
+        if paintMat in (
+            con.M_FANG_EBIG,        # 大额枋
+            con.M_FANG_ESMALL,      # 小额枋
+            con.M_BOARD_YOUE,       # 由额垫板
+            con.M_FANG_PINGBAN,     # 平板枋
+        ):
+            mat = aData.mat_oilpaint
+            slot = 1
+        if paintMat in (
+            con.M_WALL, # 墙-抹灰
+        ):
+            mat = aData.mat_dust_wall
+        if paintMat in (
+            con.M_BOARD_DG, # 栱垫板
+            con.M_BOARD_DG_S, # 栱垫板-小
+        ):
+            mat = aData.mat_dust_wall  
+            slot = 1
+        if paintMat in (
+            con.M_WINDOW_INNER, # 棂心
+        ):
+            mat = aData.mat_geshanxin 
+        if paintMat in (
+            con.M_LINXIN_WAN, # 万字锦
+        ):
+            mat = aData.mat_geshanxin_wan 
+        if paintMat in (
+            con.M_FANG_TIAOYAN, # 挑檐枋
+            con.M_FANG_DGCONNECT, # 拽枋
+            con.M_DOUGONG, # 斗栱
+        ):
+            mat = aData.mat_wood
 
     if mat == None:
         # 如果mat未成功匹配，表示无需切换材质，直接返回

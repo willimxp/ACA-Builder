@@ -2137,6 +2137,12 @@ def __buildSideTile(buildingObj: bpy.types.Object,
         use_bisect=(False,True,False)
     )
 
+    # 251106 八架歇山转两椽
+    if bData.rafter_count == 8:
+        cornerBeamRafter  = 1
+    else:
+        cornerBeamRafter = 0
+
     # 歇山屋顶的排山勾滴裁剪
     # 与山花板类似，裁剪到博脊上皮
     # 即，从正心桁上推瓦面+收山加斜+博脊高
@@ -2145,8 +2151,8 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     # 载入举折系数
     lift_ratio = buildBeam.getLiftRatio(buildingObj)
     # 收山举高，按第一层举架系数加斜
-    shouLift = bData.shoushan*lift_ratio[0]
-    cutPoint = rafter_pos[0] \
+    shouLift = bData.shoushan*lift_ratio[cornerBeamRafter]
+    cutPoint = rafter_pos[cornerBeamRafter] \
         + Vector((0,0,
             + shouLift                 # 收山举高
             + con.HENG_COMMON_D*dk/2   # 半桁径
@@ -2510,7 +2516,7 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
     # 载入举折系数
     lift_ratio = buildBeam.getLiftRatio(buildingObj)
     # 收山举高，按第一层举架系数加斜
-    shouLift = bData.shoushan*lift_ratio[0]
+    shouLift = bData.shoushan*lift_ratio[cornerBeamRafter]
     z = (zhengxinPoint.z 
          + shouLift                 # 收山举高
          + con.HENG_COMMON_D*dk/2   # 半桁径

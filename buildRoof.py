@@ -3562,19 +3562,28 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
-    dk = bData.DK
-    rafterRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_RAFTER_ROOT)
+    dk = bData.DK    
+    # 山花望板层
+    boardRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_BOARD_ROOT)
+    if boardRootObj == None:  
+        boardRootObj = __addBoardRoot(buildingObj)
+    # 锁定目录
+    buildingColl = buildingObj.users_collection[0]
+    utils.setCollection(
+        con.COLL_NAME_BOARD,
+        parentColl=buildingColl) 
 
     # 新绘制一条垂脊曲线
     bofengCurve = __drawBofengCurve(
         buildingObj,rafter_pos)
     
+    # 1、博缝板 ---------------------------------
     # 复制博缝板资产
     bofengObj = utils.copyObject(
         sourceObj=aData.bofeng_source,
         name="博缝板",
-        parentObj=rafterRootObj,
+        parentObj=boardRootObj,
         location=bofengCurve.location,
         singleUser=True
     )
@@ -3634,22 +3643,27 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         )
 
         # 歇山的博缝板裁剪，仅做到椽架
+        # 251106 八架歇山转两椽
+        if bData.rafter_count == 8:
+            cornerBeamRafter  = 1
+        else:
+            cornerBeamRafter = 0
         # 从正心桁做收山加斜，再上移半桁+1椽
         # 载入举折系数
         lift_ratio = buildBeam.getLiftRatio(buildingObj)
         # 收山举高，按第一层举架系数加斜
-        shouLift = bData.shoushan*lift_ratio[0]
-        cutPoint = rafter_pos[0] + Vector((
+        shouLift = bData.shoushan*lift_ratio[cornerBeamRafter]
+        cutPoint = rafter_pos[cornerBeamRafter] + Vector((
             0,0,
             ( shouLift                  # 收山加斜
-            + con.WANGBAN_H*dk         # 望板
-            + con.HENG_COMMON_D*dk/2   # 半桁径
-            + con.YUANCHUAN_D*dk       # 椽径
+            + con.WANGBAN_H*dk          # 望板
+            + con.HENG_COMMON_D*dk/2    # 半桁径
+            + con.YUANCHUAN_D*dk        # 椽径
             )
         ))
         utils.addBisect(
             object=bofengObj,
-            pCut=rafterRootObj.matrix_world @ cutPoint,
+            pCut=boardRootObj.matrix_world @ cutPoint,
             clear_outer=True,
             direction='V'
         )
@@ -3687,31 +3701,19 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     # 应用镜像
     utils.addModifierMirror(
         object=bofengObj,
-        mirrorObj=rafterRootObj,
+        mirrorObj=boardRootObj,
         use_axis=(True,True,False),
         use_bisect=(False,True,False),
         use_merge=True,     # 合并以实现水密
     )
     utils.applyAllModifer(bofengObj)
 
-    # 将博缝板挂接到山花望板层
-    boardRootObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_BOARD_ROOT)
-    if boardRootObj == None:  
-        boardRootObj = __addBoardRoot(buildingObj)
-    bofengObj.parent = boardRootObj
-    # 移动到望板collection
-    thisColl = bofengObj.users_collection[0]
-    thisColl.objects.unlink(bofengObj)
-    boardColl = boardRootObj.users_collection[0]
-    boardColl.objects.link(bofengObj)
-
-    # 山花板
+    # 2、山花板 ---------------------------------
     if (bData.roof_style in (
             con.ROOF_XIESHAN,
             con.ROOF_XIESHAN_JUANPENG,)
         # 唐宋样式不做山花板
-        and bData.paint_style not in ('1')):
+        and bData.paint_style not in ('1','3')):
         # 1、定位
         # 基于博缝板曲线的位移
         offset = Vector((0,
@@ -3723,7 +3725,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         shanhuaObj = utils.copyObject(
             sourceObj=aData.bofeng_source,
             name="山花板",
-            parentObj=rafterRootObj,
+            parentObj=boardRootObj,
             location=shanhuaLoc,
             singleUser=True
         )
@@ -3746,7 +3748,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         # 5、镜像
         utils.addModifierMirror(
             object=shanhuaObj,
-            mirrorObj=rafterRootObj,
+            mirrorObj=boardRootObj,
             use_axis=(True,True,False),
             use_bisect=(False,True,False),
             use_merge=True,     # 确保水密
@@ -3771,7 +3773,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
             cutPoint = Vector((Px,Py,Pz))
             utils.addBisect(
                 object=shanhuaObj,
-                pCut=rafterRootObj.matrix_world @ cutPoint,
+                pCut=boardRootObj.matrix_world @ cutPoint,
                 clear_outer=True,
                 direction='V'
             )
@@ -3793,19 +3795,68 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         # 9、贴山花板贴材质
         mat.paint(shanhuaObj,con.M_SHANHUA,
                    override=True)
-        
-        # 将山花板挂接到山花望板层
-        boardRootObj = utils.getAcaChild(
-            buildingObj,con.ACA_TYPE_BOARD_ROOT)
-        if boardRootObj == None:  
-            boardRootObj = __addBoardRoot(buildingObj)
-        shanhuaObj.parent = boardRootObj
-        # 移动到望板collection
-        thisColl = shanhuaObj.users_collection[0]
-        thisColl.objects.unlink(shanhuaObj)
-        boardColl = boardRootObj.users_collection[0]
-        boardColl.objects.link(shanhuaObj)
 
+    # 3、悬鱼 ---------------------------------
+    if (bData.roof_style in (
+            con.ROOF_XIESHAN,
+            con.ROOF_XIESHAN_JUANPENG,)
+        and bData.paint_style in ('1','3')):
+
+        # 3.1、悬鱼定尺寸
+        # 3.1.1、计算博脊上皮
+        # 251106 八架歇山转两椽
+        if bData.rafter_count == 8:
+            cornerBeamRafter  = 1
+        else:
+            cornerBeamRafter = 0
+        # 载入举折系数
+        lift_ratio = buildBeam.getLiftRatio(buildingObj)
+        # 收山举高，按第一层举架系数加斜
+        shouLift = bData.shoushan*lift_ratio[cornerBeamRafter]
+        boji_top = rafter_pos[cornerBeamRafter] + Vector((
+            0,0,
+            ( shouLift                  # 收山加斜
+            + con.WANGBAN_H*dk          # 望板
+            + con.HENG_COMMON_D*dk/2    # 半桁径
+            + con.YUANCHUAN_D*dk        # 椽径
+            + con.ROOFMUD_H*dk          # 灰泥层
+            + 7.5*dk                    # 博脊高度
+            )
+        ))
+
+        # 3.1.2、计算悬鱼高度
+        xuanyu_h = (rafter_pos[-1].z    # 脊槫位置
+                    - boji_top.z        # 博脊上皮
+                    - bofengHeight/2    # 半个博缝板高度
+                    )
+        # 验证悬鱼是否有足够空间
+        if xuanyu_h < 0:
+            print("没有足够空间摆放悬鱼")
+        else: 
+            # 悬鱼定位
+            xuanyu_loc = rafter_pos[-1] + Vector(
+                (0,0,-bofengHeight/2))
+            # 悬鱼缩放
+            xuanyu_origin_h = aData.xuanyu_source.dimensions.z
+            xuanyu_scale = xuanyu_h / xuanyu_origin_h
+            # 复制悬鱼资产
+            xuanyuObj = utils.copyObject(
+                sourceObj=aData.xuanyu_source,
+                name="悬鱼",
+                parentObj=boardRootObj,
+                location=xuanyu_loc,
+                rotation=(0,0,math.radians(90)),
+                scale=(xuanyu_scale,xuanyu_scale,xuanyu_scale),
+                singleUser=True
+            )
+            utils.applyTransform(xuanyuObj,use_scale=True)
+            # 镜像
+            utils.addModifierMirror(
+                object=xuanyuObj,
+                mirrorObj=boardRootObj,
+                use_axis=(True,False,False)
+            )
+            
     return bofengObj
 
 # 营造山墙

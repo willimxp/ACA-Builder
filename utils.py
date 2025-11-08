@@ -3056,6 +3056,7 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
                            ):
     from mathutils.bvhtree import BVHTree
 
+    # 1、使用BVH进行碰撞检测 ------------------------------------
     if depsgraph is None:
         depsgraph = bpy.context.evaluated_depsgraph_get()
 
@@ -3147,6 +3148,7 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
     except Exception:
         pass
 
+    # 2、碰撞点处理：去重 -----------------------------------------------------
     # 去重（基于坐标近似）
     unique = []
     seen = []
@@ -3156,6 +3158,7 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
             seen.append(key)
             unique.append(p.copy())
 
+    # 3、连通性判断 -----------------------------------------
     curve_obj = None
     if create_curve and len(unique) > 0:
         # 使用 KDTree 做最近邻分段并保证连通性
@@ -3219,6 +3222,7 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
 
             segments_idx.append(seg)
 
+        # 4、创建曲线 ----------------------------------------------------
         # 创建曲线对象：为每个连通段创建一个 POLY spline
         curve_data = bpy.data.curves.new(curve_name, type='CURVE')
         curve_data.dimensions = '3D'
@@ -3232,19 +3236,83 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
             m = len(seg)
             if m == 0:
                 continue
+            
+            # 重新排序----------------------------------
+            # 局部点数组（引用全局 pts）
+            seg_pts = [pts[i] for i in seg]
+
+            # 质心（可用XY或3D，这里用3D）
+            center = Vector((0.0, 0.0, 0.0))
+            for p in seg_pts:
+                center += p
+            center /= m
+
+            # 找到离质心最远的点作为起点（最外侧）
+            max_idx = 0
+            max_dist = -1.0
+            for ii, p in enumerate(seg_pts):
+                d = (p - center).length
+                if d > max_dist:
+                    max_dist = d
+                    max_idx = ii
+
+            # 构建局部 KDTree 加速最近邻查找
+            from mathutils.kdtree import KDTree
+            kdt = KDTree(m)
+            for j, p in enumerate(seg_pts):
+                kdt.insert(p, j)
+            kdt.balance()
+
+            # 最近邻链式连接（贪心）
+            visited_local = [False] * m
+            order_local = []
+            cur = max_idx
+            visited_local[cur] = True
+            order_local.append(cur)
+
+            for _ in range(m - 1):
+                co = seg_pts[cur]
+                # 查询按距离排序的邻居（包含自己），找第一个未访问的
+                neigh = kdt.find_n(co, m)
+                found = None
+                for co_n, j, dist in neigh:
+                    if j == cur:
+                        continue
+                    if not visited_local[j]:
+                        found = j
+                        break
+                if found is None:
+                    # 兜底线性扫描
+                    best = None
+                    bd = float('inf')
+                    for j in range(m):
+                        if not visited_local[j]:
+                            d = (seg_pts[j] - co).length
+                            if d < bd:
+                                bd = d
+                                best = j
+                    if best is None:
+                        break
+                    found = best
+                visited_local[found] = True
+                order_local.append(found)
+                cur = found
+
+            # 映射回全局索引序列
+            ordered_seg = [seg[i] for i in order_local]
+
+            # 创建 POLY spline 并写入点（世界坐标）
             poly = curve_data.splines.new('POLY')
-            # poly.points 初始为 1 点，需要 add(m-1)
-            poly.points.add(m - 1)
-            for pi, idx in enumerate(seg):
+            poly.points.add(len(ordered_seg) - 1)
+            for pi, idx in enumerate(ordered_seg):
                 pt = pts[idx]
-                # 这里我们之前直接写入了世界坐标到 curve 的点
                 poly.points[pi].co = (pt.x, pt.y, pt.z, 1.0)
 
             # 如果点数>=3，强制闭合并设置 cyclic
             if m >= 3:
                 first_co = Vector(poly.points[0].co[:3])
-                # 强制末点与首点一致，设置为闭合
-                poly.points[-1].co = (first_co.x, first_co.y, first_co.z, 1.0)
+                # # 强制末点与首点一致，设置为闭合
+                # poly.points[-1].co = (first_co.x, first_co.y, first_co.z, 1.0)
                 poly.use_cyclic_u = True
 
             # 若需要同时生成网格并挤出
@@ -3278,17 +3346,6 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
 
                 if bm is not None:
                     bm.normal_update()
-                    # # 挤出（向下，-Z），仅当 extrude_depth > 0
-                    # if extrude_depth != 0.0:
-                    #     # extrude face region
-                    #     faces = [f for f in bm.faces]
-                    #     ret = bmesh.ops.extrude_face_region(bm, geom=faces)
-                    #     geom_extruded = ret.get('geom', [])
-                    #     extr_verts = [ele for ele in geom_extruded if isinstance(ele, bmesh.types.BMVert)]
-                    #     # 平移挤出体（world -Z）
-                    #     import mathutils
-                    #     trans_vec = mathutils.Vector((0.0, 0.0, -abs(extrude_depth)))
-                    #     bmesh.ops.translate(bm, verts=extr_verts, vec=trans_vec)
 
                     # 写入 mesh 并创建对象
                     mesh_data = bpy.data.meshes.new(f"{mesh_name}.{seg_idx:03d}")

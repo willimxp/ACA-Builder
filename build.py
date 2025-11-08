@@ -5,6 +5,7 @@
 #   判断是建造一个新的单体建筑，还是院墙等附加建筑
 import bpy
 import math
+import bmesh
 from mathutils import Vector,Euler,Matrix,geometry
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
@@ -1405,7 +1406,6 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     # 推出裁剪体
     boolDeepth = bData.y_total
     bpy.ops.object.mode_set(mode='EDIT')
-    import bmesh
     bm = bmesh.new()
     bm = bmesh.from_edit_mesh(tileGrid_copy.data)
     # 选中所有面
@@ -1694,7 +1694,6 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     # 推出裁剪体
     boolDeepth = bData.y_total
     bpy.ops.object.mode_set(mode='EDIT')
-    import bmesh
     bm = bmesh.new()
     bm = bmesh.from_edit_mesh(tileGrid_copy.data)
     # 选中所有面
@@ -1770,6 +1769,68 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         toRoof_copy = utils.copySimplyObject(
             toRoof,singleUser=True)
         utils.showObj(toRoof_copy)
+        utils.focusObj(toRoof_copy)
+        
+        # 如果是盝顶，则将瓦面的顶部挤出高度，以确保与抱厦相交出闭合面
+        bpy.ops.object.mode_set(mode='EDIT')
+        bm = bmesh.new()
+        bm = bmesh.from_edit_mesh(toRoof_copy.data)
+        bm.edges.ensure_lookup_table()
+        # 查找几何中心
+        center = Vector((0.0, 0.0, 0.0))
+        for v in bm.verts:
+            center += v.co
+        center /= len(bm.verts)
+        # 轮询各个边，进行检测
+        for edge in bm.edges:
+            # 1、非边界边，跳过
+            if len(edge.link_faces) != 1:
+                continue
+            # 边的两个端点
+            v1 = edge.verts[0].co
+            v2 = edge.verts[1].co
+            # 边的斜率
+            dir_vec = v2 - v1
+            # 2、跳过零长度边（无效边）
+            if dir_vec.length < 1e-6:
+                continue
+            # 归一化方向向量
+            dir_vec.normalize()
+            # 与X轴做向量点积，正为同向，0为垂直，负为反向
+            axisX = Vector((1,0,0))
+            dir_alt = dir_vec.dot(axisX)
+            # 3、跳过接近于垂直的线
+            if dir_alt < 0.5:
+                continue
+            # 4、跳过下缘
+            if v1.y > center.y or v2.y > center.y:
+                continue
+            # 选中南面平行于X轴的边线
+            edge.select = True
+        # 向上挤出
+        toRoofTopEdge = []
+        for edge in bm.edges:
+            if edge.select:
+                toRoofTopEdge.append(edge)
+        extrude_result = bmesh.ops.extrude_edge_only(
+            bm, edges=toRoofTopEdge)
+        bm.verts.ensure_lookup_table()
+        bm.edges.ensure_lookup_table()
+        geom = (extrude_result.get('geom', []) 
+                or extrude_result.get('verts', []) 
+                or [])
+        extruded_verts = [ele for ele in geom 
+            if isinstance(ele, bmesh.types.BMVert)]
+        # 挤出：高度取抱厦进深
+        extrude_height = fromBuilding.ACA_data.y_total/2
+        bmesh.ops.translate(bm,
+                verts=extruded_verts,
+                vec=Vector((0, 0, extrude_height))
+            )
+        bmesh.update_edit_mesh(toRoof_copy.data ) 
+        bm.free() 
+        bpy.ops.object.mode_set( mode = 'OBJECT' )
+
         # 镜像
         utils.addModifierMirror(
             object=toRoof_copy,
@@ -1815,7 +1876,6 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         utils.focusObj(interface)
         # 编辑
         bpy.ops.object.mode_set(mode='EDIT')
-        import bmesh
         bm = bmesh.new()
         bm = bmesh.from_edit_mesh(interface.data)
 
@@ -1833,7 +1893,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         # 2.2、向外挤出，覆盖抱厦出檐
         bm.edges.ensure_lookup_table()
         # 取出最后一条边（檐口边），仅对该边做挤出并沿 Y 轴平移
-        eaveEdge = bm.edges[-1]  # 最后一条线为檐口线
+        eaveEdge = bm.edges[0]  # 第一条线为檐口线
         # 挤出
         extrude_result = bmesh.ops.extrude_edge_only(
             bm, edges=[eaveEdge])
@@ -1847,10 +1907,10 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         if extruded_verts:
             # 根据几何中心，决定向+Y还是-Y挤出
             edge_center = Vector((0.0, 0.0, 0.0))
-            for v in eaveEdge.verts:
+            for v in bm.verts:
                 edge_center += v.co
-            edge_center /= len(eaveEdge.verts)
-            if edge_center.y >= extruded_verts[0].co.y:
+            edge_center /= len(bm.verts)
+            if edge_center.y <= extruded_verts[0].co.y:
                 trans_y = extrude_Y 
             else:
                 trans_y = -extrude_Y
@@ -1861,15 +1921,15 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
             # 根据中心，决定向+X还是-X扩展
             for v in extruded_verts:
                 if v.co.y > edge_center.y:
-                    if v.co.x < edge_center.x :
-                        v.co.x -= trans_y
-                    else:
+                    if v.co.x > edge_center.x :
                         v.co.x += trans_y
+                    else:
+                        v.co.x -= trans_y
                 else:
-                    if v.co.x < edge_center.x :
-                        v.co.x += trans_y
-                    else:
+                    if v.co.x > edge_center.x :
                         v.co.x -= trans_y
+                    else:
+                        v.co.x += trans_y
         
         # 2.2、挤压出高度
         # 选中所有面
@@ -1986,7 +2046,6 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     extrudeScale = 1.5
     extrudeExt = bData.piller_diameter
     bpy.ops.object.mode_set(mode='EDIT')
-    import bmesh
     bm = bmesh.new()
     bm = bmesh.from_edit_mesh(boolObj.data)
     bm.faces.ensure_lookup_table()

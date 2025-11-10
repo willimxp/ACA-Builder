@@ -987,9 +987,15 @@ def unionBuilding(context:bpy.types.Context):
         return result
     
     # 方案二：平行抱厦
+    baoshaRot = fromBuilding.rotation_euler.z
+    mainRot = toBuilding.rotation_euler.z
+    angleDiff = abs(baoshaRot - mainRot)
+    xDiff = abs(fromBuilding.location.x - toBuilding.location.x)
+    yDiff = abs(fromBuilding.location.y - toBuilding.location.y)
     if (bData.x_total != mData.x_total
-        and (fromBuilding.rotation_euler.z ==
-              toBuilding.rotation_euler.z)
+        and xDiff < abs(mData.x_total-bData.x_total)/2
+        and yDiff > abs(mData.y_total-bData.y_total)/2
+        and angleDiff < 0.001
         ):
         
         # 是否相交
@@ -1008,8 +1014,9 @@ def unionBuilding(context:bpy.types.Context):
             temp = fromBuildingJoined
             fromBuildingJoined = toBuildingJoined
             toBuildingJoined = temp
+            bData:acaData = fromBuilding.ACA_data
+            mData:acaData = toBuilding.ACA_data
 
-        bData:acaData = fromBuilding.ACA_data
         # 抱厦为悬山顶
         if bData.roof_style in (
             con.ROOF_XUANSHAN,con.ROOF_XUANSHAN_JUANPENG):
@@ -1032,23 +1039,41 @@ def unionBuilding(context:bpy.types.Context):
             return result
     
     # 方案三：丁字形抱厦
+    # 设置进深较小的为fromBuilding(抱厦)
+    if bData.y_total > mData.y_total:
+        temp = fromBuilding
+        fromBuilding = toBuilding
+        toBuilding = temp
+        temp = fromBuildingJoined
+        fromBuildingJoined = toBuildingJoined
+        toBuildingJoined = temp
+        bData = fromBuilding.ACA_data
+        mData = toBuilding.ACA_data
+    # 1、抱厦旋转90度后，与前后檐相交
     baoshaRot = fromBuilding.rotation_euler.z
     mainRot = toBuilding.rotation_euler.z
-    if abs(baoshaRot - mainRot) - math.radians(90) < 0.001:
-        # 设置进深较小的为fromBuilding(抱厦)
-        if bData.y_total > mData.y_total:
-            temp = fromBuilding
-            fromBuilding = toBuilding
-            toBuilding = temp
-            temp = fromBuildingJoined
-            fromBuildingJoined = toBuildingJoined
-            toBuildingJoined = temp
-        
+    angleDiff = abs(baoshaRot - mainRot)
+    xDiff = abs(fromBuilding.location.x - toBuilding.location.x)
+    yDiff = abs(fromBuilding.location.y - toBuilding.location.y)
+    if (abs(angleDiff - math.radians(90)) < 0.001
+        and xDiff < abs(mData.x_total-bData.x_total)/2):
         result = __unionCrossBaosha(
             fromBuilding,
             toBuilding,
             fromBuildingJoined,
-            toBuildingJoined
+            toBuildingJoined,
+            dir='Y'
+        )
+        return result
+    # 2、抱厦直接与两山檐相交
+    if (angleDiff < 0.001
+        and yDiff < abs(mData.y_total-bData.y_total)/2):
+        result = __unionCrossBaosha(
+            fromBuilding,
+            toBuilding,
+            fromBuildingJoined,
+            toBuildingJoined,
+            dir='X'
         )
         return result
     
@@ -1120,7 +1145,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
                offset+crossPoint.y, # 碰撞点
                buildingH/2)
     boolObj = utils.addCube(
-        name="勾连搭",
+        name="勾连搭" + con.BOOL_SUFFIX,
         location=boolLoc,
         dimension=boolDim,
         parent=fromBuildingJoined,
@@ -1130,6 +1155,8 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
 
     # 4、添加bool modifier
     for layer in fromBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         # 跳过bool对象本身
         if layer == boolObj: continue
         utils.addModifierBoolean(
@@ -1138,11 +1165,15 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
             operation='INTERSECT',
         )
     for layer in toBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         utils.addModifierBoolean(
             object=layer,
             boolObj=boolObj,
             operation='DIFFERENCE',
         )
+    if fromBuildingJoined:
+        utils.focusObj(fromBuildingJoined)
 
     return {'FINISHED'}
 
@@ -1152,7 +1183,6 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
                      toBuilding:bpy.types.Object,
                      fromBuildingJoined:bpy.types.Object,
                      toBuildingJoined:bpy.types.Object):
-    boolSign = 'unionbool'
     # 载入数据
     bData:acaData = fromBuilding.ACA_data
     mData:acaData = toBuilding.ACA_data
@@ -1222,7 +1252,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     boolZ = buildingH/2
     
     boolObj = utils.addCube(
-        name="平行抱厦-悬山-主建筑" + boolSign,
+        name="平行抱厦-悬山-主建筑" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
         dimension=(boolWidth,boolDeepth,boolHeight),
         parent=fromBuildingJoined,
@@ -1232,6 +1262,8 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
 
     # 添加bool modifier
     for layer in toBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         # 跳过台基、柱网、装修
         if con.COLL_NAME_BASE in layer.name : continue
         if con.COLL_NAME_PILLER in layer.name : continue
@@ -1258,7 +1290,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     boolZ = buildingH/2
     
     boolObj = utils.addCube(
-        name="平行抱厦-悬山-抱厦" + boolSign,
+        name="平行抱厦-悬山-抱厦" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
         dimension=(boolWidth,boolDeepth,boolHeight),
         parent=fromBuildingJoined,
@@ -1269,7 +1301,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     # 添加bool modifier
     for layer in fromBuildingJoined.children:
         # 跳过bool对象
-        if boolSign in layer.name : continue
+        if con.BOOL_SUFFIX  in layer.name : continue
         # 跳过台基、柱网、装修
         if con.COLL_NAME_BASE in layer.name : continue
         if con.COLL_NAME_PILLER in layer.name : continue
@@ -1294,7 +1326,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         boolY *= -1
     boolZ = boolHeight/2
     boolObj = utils.addCube(
-        name="平行抱厦-悬山-柱网" + boolSign,
+        name="平行抱厦-悬山-柱网" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
         dimension=(boolWidth,boolDeepth,boolHeight),
         parent=fromBuildingJoined,
@@ -1304,6 +1336,8 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
 
     # 绑定boolean
     for layer in toBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         if con.COLL_NAME_PILLER in layer.name :
             utils.addModifierBoolean(
                 object=layer,
@@ -1313,6 +1347,8 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
             # 裁剪后柱体normal异常，做平滑
             utils.shaderSmooth(layer)
     for layer in fromBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         if (con.COLL_NAME_PILLER in layer.name
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in layer.name) :
@@ -1329,7 +1365,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     boolWidth= (bData.x_total 
                 + bData.platform_extend *2
                 + con.GROUND_BORDER *2
-                + bData.platform_height*3 # 保留踏跺空间
+                # + bData.platform_height*3 # 保留踏跺空间
                 )
     boolDeepth = (bData.y_total
                   + bData.platform_extend
@@ -1343,7 +1379,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         boolY *= -1
     boolZ = boolHeight/2
     boolObj = utils.addCube(
-        name="平行抱厦-悬山-台基" + boolSign,
+        name="平行抱厦-悬山-台基" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
         dimension=(boolWidth,boolDeepth,boolHeight),
         parent=fromBuildingJoined,
@@ -1364,6 +1400,8 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     utils.hideObj(boolObj)
 
     for layer in toBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         if con.COLL_NAME_BASE in layer.name :
             utils.addModifierBoolean(
                 object=layer,
@@ -1371,6 +1409,8 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
                 operation='DIFFERENCE',
             )
     for layer in fromBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         if con.COLL_NAME_BASE in layer.name :
             utils.addModifierBoolean(
                 object=layer,
@@ -1436,12 +1476,17 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     utils.hideObj(tileGrid_copy)
 
     for layer in fromBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         if con.COLL_NAME_BOARD in layer.name :
             utils.addModifierBoolean(
                 object=layer,
                 boolObj=tileGrid_copy,
                 operation='DIFFERENCE',
             )
+    
+    if fromBuildingJoined:
+        utils.focusObj(fromBuildingJoined)
 
     return {'FINISHED'}
 
@@ -1452,7 +1497,6 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
                      fromBuildingJoined:bpy.types.Object,
                      toBuildingJoined:bpy.types.Object):
     utils.outputMsg('平行抱厦-歇山')
-    boolSign = 'unionbool'
     # 载入数据
     bData:acaData = fromBuilding.ACA_data
     mData:acaData = toBuilding.ACA_data
@@ -1521,7 +1565,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     boolY = offset + crossPoint.y # 碰撞点
     boolZ = buildingH/2
     boolObj = utils.addCube(
-        name="平行抱厦-歇山屋顶" + boolSign,
+        name="平行抱厦-歇山屋顶" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
         dimension=(boolWidth,boolDeepth,boolHeight),
         parent=fromBuildingJoined,
@@ -1542,6 +1586,8 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
 
     # 添加bool modifier
     for layer in toBuildingJoined.children:
+        # 跳过bool对象
+        if con.BOOL_SUFFIX  in layer.name : continue
         # 跳过台基、柱网、装修
         if con.COLL_NAME_BASE in layer.name : continue
         if con.COLL_NAME_PILLER in layer.name : continue
@@ -1555,7 +1601,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     # 添加bool modifier
     for layer in fromBuildingJoined.children:
         # 跳过bool对象
-        if boolSign in layer.name : continue
+        if con.BOOL_SUFFIX  in layer.name : continue
         # 跳过台基、柱网、装修
         if con.COLL_NAME_BASE in layer.name : continue
         if con.COLL_NAME_PILLER in layer.name : continue
@@ -1580,7 +1626,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         boolY *= -1
     boolZ = boolHeight/2
     boolObj = utils.addCube(
-        name="平行抱厦-歇山-柱网" + boolSign,
+        name="平行抱厦-歇山-柱网" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
         dimension=(boolWidth,boolDeepth,boolHeight),
         parent=fromBuildingJoined,
@@ -1590,6 +1636,8 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
 
     # 绑定boolean
     for layer in toBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         if con.COLL_NAME_PILLER in layer.name :
             utils.addModifierBoolean(
                 object=layer,
@@ -1599,6 +1647,8 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
             # 裁剪后柱体normal异常，做平滑
             utils.shaderSmooth(layer)
     for layer in fromBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         if (con.COLL_NAME_PILLER in layer.name
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in layer.name) :
@@ -1631,7 +1681,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         boolY *= -1
     boolZ = boolHeight/2
     boolObj = utils.addCube(
-        name="平行抱厦-悬山-台基" + boolSign,
+        name="平行抱厦-悬山-台基" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
         dimension=(boolWidth,boolDeepth,boolHeight),
         parent=fromBuildingJoined,
@@ -1652,6 +1702,8 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     utils.hideObj(boolObj)
 
     for layer in toBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         if con.COLL_NAME_BASE in layer.name :
             utils.addModifierBoolean(
                 object=layer,
@@ -1659,6 +1711,8 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
                 operation='DIFFERENCE',
             )
     for layer in fromBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         if con.COLL_NAME_BASE in layer.name :
             utils.addModifierBoolean(
                 object=layer,
@@ -1724,12 +1778,17 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     utils.hideObj(tileGrid_copy)
 
     for layer in fromBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         if con.COLL_NAME_BOARD in layer.name :
             utils.addModifierBoolean(
                 object=layer,
                 boolObj=tileGrid_copy,
                 operation='DIFFERENCE',
             )
+
+    if fromBuildingJoined:
+        utils.focusObj(fromBuildingJoined)
 
     return {'FINISHED'}
 
@@ -1738,7 +1797,8 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
 def __unionCrossBaosha(fromBuilding:bpy.types.Object,
                      toBuilding:bpy.types.Object,
                      fromBuildingJoined:bpy.types.Object,
-                     toBuildingJoined:bpy.types.Object):
+                     toBuildingJoined:bpy.types.Object,
+                     dir='Y'):
     utils.outputMsg('丁字形抱厦')
     # 指定合并目录，以免碰撞体落在原建筑目录中
     coll:bpy.types.Collection = utils.setCollection(
@@ -1763,8 +1823,11 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         utils.applyAllModifer(fromRoof_copy)        
 
     # 主建筑瓦面
-    toRoof = utils.getAcaChild(
-        toBuilding,con.ACA_TYPE_TILE_GRID)
+    if dir == 'Y':
+        gridType = con.ACA_TYPE_TILE_GRID
+    else:
+        gridType = con.ACA_TYPE_TILE_GRID_LR
+    toRoof = utils.getAcaChild(toBuilding,gridType)
     if toRoof:
         toRoof_copy = utils.copySimplyObject(
             toRoof,singleUser=True)
@@ -1781,7 +1844,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         for v in bm.verts:
             center += v.co
         center /= len(bm.verts)
-        # 轮询各个边，进行检测
+        # 轮询各个边，查找靠盝顶围脊的顶边
         for edge in bm.edges:
             # 1、非边界边，跳过
             if len(edge.link_faces) != 1:
@@ -1796,17 +1859,38 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
                 continue
             # 归一化方向向量
             dir_vec.normalize()
-            # 与X轴做向量点积，正为同向，0为垂直，负为反向
-            axisX = Vector((1,0,0))
-            dir_alt = dir_vec.dot(axisX)
-            # 3、跳过接近于垂直的线
-            if dir_alt < 0.5:
-                continue
-            # 4、跳过下缘
-            if v1.y > center.y or v2.y > center.y:
-                continue
+            # 南北抱厦与X轴比较
+            if dir == 'Y':
+                # 与X轴做向量点积，正为同向，0为垂直，负为反向
+                axisX = Vector((1,0,0))
+                dir_alt = dir_vec.dot(axisX)
+                # 3、跳过接近于垂直的线
+                if dir_alt < 0.5:
+                    continue
+                # 4、跳过下缘
+                if v1.y > center.y or v2.y > center.y:
+                    continue
+            # 东西抱厦与Y轴比较
+            else:
+                # 与Y轴做向量点积，正为同向，0为垂直，负为反向
+                axisY = Vector((0,1,0))
+                dir_alt = dir_vec.dot(axisY)
+                # 3、跳过接近于垂直的线
+                if dir_alt < 0.5:
+                    continue
+                # 4、跳过下缘
+                if v1.x > center.x or v2.x > center.x:
+                    continue
             # 选中南面平行于X轴的边线
             edge.select = True
+        # 微调，以免碰撞围脊
+        offset = 0.625*toBuilding.ACA_data.DK
+        for v in bm.verts:
+            if v.select == True:
+                if dir == 'Y':
+                    v.co.y += offset
+                else:
+                    v.co.x += offset
         # 向上挤出
         toRoofTopEdge = []
         for edge in bm.edges:
@@ -1868,7 +1952,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     # 无需考虑出檐，瓦面碰撞交点已经在檐口
     baoshaExtend += bData.chong*con.YUANCHUAN_D*dk # 冲
     baoshaExtend += 20*dk # 保留宽度，考虑勾滴、角兽等
-    extrude_Y = baoshaExtend
+    extrude_eave = baoshaExtend
 
     # 可能存在多个相交面，逐一挤出
     for interface in intersections:
@@ -1910,26 +1994,49 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
             for v in bm.verts:
                 edge_center += v.co
             edge_center /= len(bm.verts)
-            if edge_center.y <= extruded_verts[0].co.y:
-                trans_y = extrude_Y 
-            else:
-                trans_y = -extrude_Y
-            bmesh.ops.translate(bm,
-                verts=extruded_verts,
-                vec=Vector((0, trans_y, 0.0))
-            )
-            # 根据中心，决定向+X还是-X扩展
-            for v in extruded_verts:
-                if v.co.y > edge_center.y:
-                    if v.co.x > edge_center.x :
-                        v.co.x += trans_y
-                    else:
-                        v.co.x -= trans_y
+
+            if dir=='Y':
+                if edge_center.y <= extruded_verts[0].co.y:
+                    trans_y = extrude_eave 
                 else:
-                    if v.co.x > edge_center.x :
-                        v.co.x -= trans_y
+                    trans_y = -extrude_eave
+                bmesh.ops.translate(bm,
+                    verts=extruded_verts,
+                    vec=Vector((0, trans_y, 0))
+                )
+                # 根据中心，决定向+X还是-X扩展
+                for v in extruded_verts:
+                    if v.co.y > edge_center.y:
+                        if v.co.x > edge_center.x :
+                            v.co.x += trans_y
+                        else:
+                            v.co.x -= trans_y
                     else:
-                        v.co.x += trans_y
+                        if v.co.x > edge_center.x :
+                            v.co.x -= trans_y
+                        else:
+                            v.co.x += trans_y
+            else:
+                if edge_center.x <= extruded_verts[0].co.x:
+                    trans_x = extrude_eave 
+                else:
+                    trans_x = -extrude_eave
+                bmesh.ops.translate(bm,
+                    verts=extruded_verts,
+                    vec=Vector((trans_x, 0, 0))
+                )
+                # 根据中心，决定向+X还是-X扩展
+                for v in extruded_verts:
+                    if v.co.x > edge_center.x:
+                        if v.co.y > edge_center.y :
+                            v.co.y += trans_x
+                        else:
+                            v.co.y -= trans_x
+                    else:
+                        if v.co.y > edge_center.y :
+                            v.co.y -= trans_x
+                        else:
+                            v.co.y += trans_x
         
         # 2.2、挤压出高度
         # 选中所有面
@@ -1975,9 +2082,8 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         toBuildingJoined = joinBuilding(toBuilding,useLayer=True)
 
     # 4、合并为一个对象
-    boolSign = 'unionbool'
     boolObj = utils.joinObjects(intersections,
-                      newName='丁字抱厦' + boolSign,)
+                      newName='丁字抱厦' + con.BOOL_SUFFIX ,)
     # 设置origin在几何中心
     utils.focusObj(boolObj)
     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
@@ -1993,6 +2099,8 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     # 5、绑定boolean
     # 添加bool modifier
     for layer in toBuildingJoined.children:
+        # 跳过bool对象、柱网
+        if con.BOOL_SUFFIX  in layer.name : continue
         # 跳过装修、梁架、柱网
         if con.COLL_NAME_WALL in layer.name : continue
         if con.COLL_NAME_BEAM in layer.name : continue
@@ -2006,8 +2114,9 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     # 添加bool modifier
     for layer in fromBuildingJoined.children:
         # 跳过bool对象、柱网
-        if boolSign in layer.name : continue
+        if con.BOOL_SUFFIX  in layer.name : continue
         if con.COLL_NAME_PILLER in layer.name: continue
+        if con.COLL_NAME_WALL in layer.name : continue
         utils.addModifierBoolean(
             object=layer,
             boolObj=boolObj,
@@ -2027,34 +2136,41 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     # 保险数
     buildingH += 20*dk
 
-    # 宽：覆盖到抱厦宽度，避免裁剪外部的柱础
-    boolWidth= bData.y_total + bData.piller_diameter
-    # 长：覆盖到檐面额枋
-    boolDeepth = mData.y_total + con.EFANG_LARGE_Y*dk + 0.01
+    if dir == 'Y':
+        # 宽：包裹抱厦宽度，避免裁剪外部的柱础
+        boolWidth= bData.y_total + bData.piller_diameter
+        # 长：包裹主建筑檐面额枋
+        boolDeepth = mData.y_total + con.EFANG_LARGE_Y*dk + 0.01
+    else:
+        # 长：包裹抱厦进深+柱径，即明间柱的外皮
+        boolDeepth = bData.y_total + bData.piller_diameter
+        # 宽：包裹主建筑檐面额枋
+        boolWidth = mData.x_total + con.EFANG_LARGE_Y*dk + 0.01
     boolHeight = buildingH
     boolZ = boolHeight/2
     boolObj = utils.addCube(
-        name="丁字抱厦-柱网" + boolSign,
+        name="丁字抱厦-柱网" + con.BOOL_SUFFIX ,
         location=(0,0,boolZ),
         dimension=(boolWidth,boolDeepth,boolHeight),
         parent=toBuildingJoined,
     )
 
     # 2、无抱厦开间的柱网保护
-    # 向外挤出，以涵盖无抱厦开间的柱网不被裁剪
-    extrudeWidth = (mData.x_total - bData.y_total)/2
-    extrudeScale = 1.5
     extrudeExt = bData.piller_diameter
     bpy.ops.object.mode_set(mode='EDIT')
     bm = bmesh.new()
     bm = bmesh.from_edit_mesh(boolObj.data)
     bm.faces.ensure_lookup_table()
     # 2.1、挤出两侧面：0号和2号
-    # extrude_faces = [bm.faces[0],bm.faces[2]]
+    if dir == 'Y':
+        extrude_faces = [0,2]
+    else:
+        extrude_faces = [1,3]
     for f in bm.faces:
-        f.select = False
-    bm.faces[0].select = True
-    bm.faces[2].select = True
+        if f.index in extrude_faces:
+            f.select = True
+        else:
+            f.select = False
     extrude_faces0 = [f for f in bm.faces if f.select]
     extrude_result = bmesh.ops.extrude_face_region(
         bm,geom=extrude_faces0,
@@ -2094,6 +2210,11 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
             v.co.y -= extrudeExt
 
     # 2.3、再次挤出
+    # 向外挤出，以涵盖无抱厦开间的柱网不被裁剪
+    if dir == 'Y':
+        extrudeWidth = (mData.x_total - bData.y_total)/2
+    else:
+        extrudeWidth = (mData.y_total - bData.y_total)/2
     extrude_result = bmesh.ops.extrude_face_region(
         bm,
         geom=extruded_faces1,  # 要挤出的几何元素
@@ -2117,10 +2238,16 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     bm.faces.ensure_lookup_table()
     bm.edges.ensure_lookup_table()
     for v in extruded_verts2:
-        if v.co.x > center.x:
-            v.co.x += extrudeWidth
+        if dir == 'Y':
+            if v.co.x > center.x:
+                v.co.x += extrudeWidth
+            else:
+                v.co.x -= extrudeWidth
         else:
-            v.co.x -= extrudeWidth
+            if v.co.y > center.y:
+                v.co.y += extrudeWidth
+            else:
+                v.co.y -= extrudeWidth
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     bmesh.update_edit_mesh(boolObj.data ) 
     bm.free() 
@@ -2131,6 +2258,8 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
 
     # 绑定boolean
     for layer in toBuildingJoined.children:
+        # 跳过bool对象
+        if con.BOOL_SUFFIX  in layer.name : continue
         if con.COLL_NAME_PILLER in layer.name :
             utils.addModifierBoolean(
                 object=layer,
@@ -2140,6 +2269,8 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
             # 裁剪后柱体normal异常，做平滑
             utils.shaderSmooth(layer)
     for layer in fromBuildingJoined.children:
+        # 跳过bool对象
+        if con.BOOL_SUFFIX in layer.name : continue
         if (con.COLL_NAME_PILLER in layer.name
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in layer.name) :
@@ -2155,6 +2286,8 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     utils.delObject(fromRoof_copy)
     utils.delObject(toRoof_copy)
     utils.delOrphan()
+    if fromBuildingJoined:
+        utils.focusObj(fromBuildingJoined)
 
     return {'FINISHED'}
 

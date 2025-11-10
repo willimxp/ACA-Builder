@@ -59,6 +59,7 @@ class ACA_Consts(object):
     ACA_TYPE_TILE_ROOT = 'tile_root'                                # ACA类型：屋瓦层
     ACA_TYPE_ASSET_ROOT ='asset_root'                               # ACA类型：斗栱根节点
     ACA_TYPE_TILE_GRID ='tile_grid'                                 # ACA类型：前后檐瓦面
+    ACA_TYPE_TILE_GRID_LR ='tile_grid_lr'                           # ACA类型：两山瓦面
     ACA_TYPE_YARDWALL = 'yard_wall'                                 # ACA类型：院墙
     ACA_WALLTYPE_WALL = 'wall'                                      # 隔断属性-墙
     ACA_WALLTYPE_WINDOW = 'window'                                  # 隔断属性-槛窗
@@ -72,6 +73,7 @@ class ACA_Consts(object):
     ACA_TYPE_COMBO = 'combo'                                        # 组合样式
     ACA_PILLER_HIDE = 'piller_hide'                                 # 隐藏柱网
     JOIN_SUFFIX = '.joined'                                         # 建筑合并名称后缀
+    BOOL_SUFFIX = '.bool'                                           # 建筑裁剪对象后缀
 
     # 默认斗口
     DEFAULT_DK = 0.08   # 单位(m)

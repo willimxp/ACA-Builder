@@ -2664,6 +2664,9 @@ def buildTile(buildingObj: bpy.types.Object):
             buildingObj,
             rafter_pos,
             direction='Y')
+        # 251109 标记两山瓦面，用于瓦面碰撞检测等场景时查找
+        oData : acaData = tileGrid.ACA_data
+        oData['aca_type'] = con.ACA_TYPE_TILE_GRID_LR
         # 在网格上铺瓦
         __arrayTileGrid(
             buildingObj,

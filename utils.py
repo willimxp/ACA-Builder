@@ -2394,6 +2394,32 @@ def extend_bezier_curve_endpoint(curve_obj, extension_length):
     last_point.handle_right = new_point.co
     new_point.tilt = last_point.tilt
 
+def extend_poly_curve_startpoint(curve_obj, extension_length):
+    if curve_obj.type != 'CURVE':
+        print("所选对象不是曲线。")
+        return
+
+    curve = curve_obj.data
+    spline = curve.splines[0]
+
+    if spline.type != 'POLY':
+        print("所选曲线不是POLY曲线。")
+        return
+
+    # 获取曲线的前两个点
+    p1 = spline.points[0].co
+    p2 = spline.points[1].co
+
+    # 计算延长方向向量
+    direction = (p1 - p2).normalized()
+
+    # 计算新的控制点位置
+    new_point_co = p1 + direction * extension_length
+
+    # 在曲线末尾添加新的控制点
+    spline.points[0].co = new_point_co
+    
+
 # 45度镜像
 def mirror45(obj:bpy.types.Object,pivot):
     # 定义枢轴点和对称轴向量
@@ -3308,15 +3334,15 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
                 pt = pts[idx]
                 poly.points[pi].co = (pt.x, pt.y, pt.z, 1.0)
 
-            # 如果点数>=3，强制闭合并设置 cyclic
-            if m >= 3:
-                first_co = Vector(poly.points[0].co[:3])
-                # # 强制末点与首点一致，设置为闭合
-                # poly.points[-1].co = (first_co.x, first_co.y, first_co.z, 1.0)
-                poly.use_cyclic_u = True
-
             # 若需要同时生成网格并挤出
-            if create_mesh and m >= 3 and poly.use_cyclic_u:
+            if create_mesh:
+                # 如果点数>=3，强制闭合并设置 cyclic
+                if m >= 3:
+                    first_co = Vector(poly.points[0].co[:3])
+                    # # 强制末点与首点一致，设置为闭合
+                    # poly.points[-1].co = (first_co.x, first_co.y, first_co.z, 1.0)
+                    poly.use_cyclic_u = True
+
                 # 读取世界坐标的点（之前我们已用世界坐标填入）
                 verts_world = [Vector(p.co[:3]) for p in poly.points]
 
@@ -3358,9 +3384,65 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
 
         curve_obj.parent = None
 
-        # 回收临时的curve对象
-        delObject(curve_obj)
-        delOrphan()
+        if create_mesh:
+            # 回收临时的curve对象
+            delObject(curve_obj)
+            delOrphan()
+            curve_obj = None
 
 
-    return created_mesh_objs
+    return created_mesh_objs, curve_obj
+
+"""可靠反转 Curve 中每个 spline 的点顺序（支持 BEZIER / POLY / NURBS）。"""
+def reverse_curve_direction(curve_obj: bpy.types.Object):
+    for spline in curve_obj.data.splines:
+        # 跳过空或单点样条
+        if len(spline.points) < 2 and getattr(spline, "bezier_points", None) is None:
+            continue
+
+        if spline.type == 'BEZIER':
+            bp = spline.bezier_points
+            n = len(bp)
+            if n < 2:
+                continue
+            # 备份属性数组
+            cos = [p.co.copy() for p in bp]
+            hl = [p.handle_left.copy() for p in bp]
+            hr = [p.handle_right.copy() for p in bp]
+            tilt = [p.tilt for p in bp]
+            radius = [p.radius for p in bp]
+            weight = [p.weight for p in bp] if hasattr(bp[0], "weight") else [None]*n
+
+            # 以倒序把备份写回（并交换左右手柄）
+            for i in range(n):
+                src = n - 1 - i
+                p = bp[i]
+                p.co = cos[src]
+                # 反转后要把左右手柄互换（保持形状）
+                p.handle_left = hr[src]
+                p.handle_right = hl[src]
+                p.tilt = tilt[src]
+                p.radius = radius[src]
+                if weight[i] is not None:
+                    p.weight = weight[src]
+
+        else:
+            # POLY / NURBS: 使用 points（Vector4）倒序写回，并保留权重/tilt/radius 等
+            pts = spline.points
+            n = len(pts)
+            if n < 2:
+                continue
+            cos = [p.co.copy() for p in pts]
+            tilt = [getattr(p, "tilt", None) for p in pts]
+            radius = [getattr(p, "radius", None) for p in pts]
+            weight = [getattr(p, "weight", None) for p in pts]
+            for i in range(n):
+                src = n - 1 - i
+                p = pts[i]
+                p.co = cos[src]
+                if tilt[i] is not None:
+                    p.tilt = tilt[src]
+                if radius[i] is not None:
+                    p.radius = radius[src]
+                if weight[i] is not None:
+                    p.weight = weight[src]

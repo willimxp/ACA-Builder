@@ -1927,7 +1927,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     
     # 基于BVH的碰撞检测
     if fromRoof_copy and toRoof_copy: 
-        intersections = utils.mesh_mesh_intersection(
+        intersections,curve = utils.mesh_mesh_intersection(
             fromRoof_copy, toRoof_copy,create_curve=True)
         if intersections == []:
             utils.popMessageBox(f"未找到屋顶相交范围")

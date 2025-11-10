@@ -2186,116 +2186,162 @@ def __buildSideTile(buildingObj: bpy.types.Object,
 
     return
 
-# 营造戗脊（庑殿垂脊）曲线
-def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
-                    purlin_pos,name='戗脊线'):
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
-    dk = bData.DK
+# # 营造戗脊（庑殿垂脊）曲线
+# def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
+#                     purlin_pos,name='戗脊线'):
+#     # 载入数据
+#     bData:acaData = buildingObj.ACA_data
+#     dk = bData.DK
+#     tileRootObj = utils.getAcaChild(
+#         buildingObj,con.ACA_TYPE_TILE_ROOT
+#     )
+#     ridgeCurveVerts = []
+#     # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+#     tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
+
+#     # 250328 改为通过檐口线进行定义
+#     # 获取檐口线（前后檐）
+#     eaveCurve = utils.getAcaChild(buildingObj,
+#                     con.ACA_TYPE_TILE_EAVE_CURVE_FB)
+#     eaveCurveData:bpy.types.Curve = eaveCurve.data
+#     bpoints = eaveCurveData.splines[0].bezier_points
+#     # 获取檐口曲线的终点
+#     end_point = eaveCurve.matrix_local @ bpoints[2].co
+#     # 子角梁头
+#     ccbHead = bData.roof_qiao_point.copy()
+#     # 90度转头向子角梁方向
+#     tangent2 = Vector((1,-1,0))
+#     normal45 = Vector((1,-1,0))   
+#     # 计算从终点沿切线方向到子角梁中心的距离
+#     distance = (ccbHead - end_point).dot(normal45) / tangent2.dot(normal45)
+#     # 将p0延长到交点
+#     p0 = end_point + tangent2 * distance
+#     # 将p0向下移动一个筒瓦高度
+#     aData:tmpData = bpy.context.scene.ACA_temp
+#     tileHeight = aData.circularTile_source.dimensions.z * tileScale
+#     offset = Vector((0,0,tileHeight))
+#     # 沿子角梁方向位移
+#     ccbObj = utils.getAcaChild(
+#         buildingObj,con.ACA_TYPE_CORNER_BEAM_CHILD)
+#     offset.rotate(ccbObj.rotation_euler)
+#     # 最终的p0位置
+#     p0 -= offset
+#     ridgeCurveVerts.append(p0)
+
+#     # 250929 尝试添加老角梁头参考点
+#     cornerBeamObj = utils.getAcaChild(
+#         buildingObj,con.ACA_TYPE_CORNER_BEAM)
+#     cornerBeam_head_co = utils.getObjectHeadPoint(
+#                             cornerBeamObj,
+#                             is_symmetry=(True,True,False)
+#                         )
+#     # 向上位移半角梁高度，达到老角梁上皮
+#     offset:Vector = Vector((0,0,con.JIAOLIANG_H*dk*1))
+#     offset.rotate(cornerBeamObj.rotation_euler)
+#     cornerBeam_head_co += offset
+#     ridgeCurveVerts.append(cornerBeam_head_co)
+
+
+#     # 庑殿垂脊做到顶部的正脊
+#     if bData.roof_style in (
+#             con.ROOF_WUDIAN,
+#             con.ROOF_LUDING):
+#         ridgeRange = range(len(purlin_pos))
+#     # 歇山戗脊仅做到金桁高度
+#     if bData.roof_style in (con.ROOF_XIESHAN,
+#                             con.ROOF_XIESHAN_JUANPENG,):
+#         ridgeRange = range(2)
+
+#     # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
+#     # 半桁径+椽径+望板高+灰泥层高 + 筒瓦高
+#     aData:tmpData = bpy.context.scene.ACA_temp
+#     tileHeight = aData.circularTile_source.dimensions.z * tileScale
+#     offset = (con.HENG_COMMON_D*dk /2 
+#                     + con.YUANCHUAN_D*dk 
+#                     + con.WANGBAN_H*dk
+#                     + con.ROOFMUD_H*dk
+#                     #+ tileHeight
+#                     )
+#     # 从桁檩中心，按法线方向提升
+#     tile_pos = utils.push_purlinPos(purlin_pos, 
+#                         -offset, 'X')
+    
+#     # 从举架定位点做偏移
+#     for n in ridgeRange:
+#         # point:Vector = Vector((
+#         #         tile_pos[n].y+ (bData.x_total-bData.y_total)/2,
+#         #         tile_pos[n].y,
+#         #         tile_pos[n].z))
+
+#         # 向上位移:半桁径+椽径+望板高+灰泥层高
+#         offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
+#                     + con.WANGBAN_H + con.ROOFMUD_H)*dk + tileHeight
+#         # 250929 为了让戗脊更加贴合瓦面，特别是盝顶很小的时候，做了手工调整
+#         offset -= 1.5*dk
+#         point:Vector = purlin_pos[n]+Vector((0,0,offset))
+#         # 曲线矫正，随着起翘幅度的增大，下金桁位置的垂脊有与瓦面分离的风险
+#         # 所以在第一点上随着起翘，反向进行了压制
+#         # 没有明确的算法，我人为估计的一个值，不够准确，先凑合着用
+#         # if n==0:
+#         #     point -= Vector((0,0,bData.qiqiao*con.YUANCHUAN_D*dk/3))
+#         ridgeCurveVerts.append(point)
+    
+#     # 创建瓦垄曲线
+#     ridgeCurve = utils.addCurveByPoints(
+#             CurvePoints=ridgeCurveVerts,
+#             name=name,
+#             root_obj=tileRootObj,
+#             order_u=4, # 取4级平滑，让坡面曲线更加流畅
+#             )
+#     utils.setOrigin(ridgeCurve,ridgeCurveVerts[0])
+#     utils.hideObj(ridgeCurve)
+#     return ridgeCurve
+
+# 营造戗脊（庑殿垂脊）曲线重构
+# 采用瓦面碰撞检测，获取相交线
+def __buildCornerRidgeCurve2(buildingObj:bpy.types.Object,
+                             name='戗脊线2'):
+    # 获取前后檐瓦面
+    tileGrid_fb = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_GRID)
+    # 两山瓦面
+    tileGrid_lr = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_GRID_LR)
+    # 瓦面碰撞获取曲线
+    intersections,curve = utils.mesh_mesh_intersection(
+            tileGrid_fb, 
+            tileGrid_lr,
+            create_curve=True,
+            create_mesh=False,
+            curve_name=name)
+    # 绑定到瓦作层
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
-    ridgeCurveVerts = []
-    # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
+    mw = curve.matrix_world.copy()
+    curve.parent = tileRootObj
+    curve.matrix_world = mw
+    # 翻转曲线方向
+    spline = curve.data.splines[0]
+    pStart = spline.points[0].co
+    pEnd = spline.points[-1].co
+    if abs(pStart.x) < abs(pEnd.x):
+        utils.reverse_curve_direction(curve)
+    # 向下适当调整
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    aData:tmpData = bpy.context.scene.ACA_temp
     tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
-
-    # 250328 改为通过檐口线进行定义
-    # 获取檐口线（前后檐）
-    eaveCurve = utils.getAcaChild(buildingObj,
-                    con.ACA_TYPE_TILE_EAVE_CURVE_FB)
-    eaveCurveData:bpy.types.Curve = eaveCurve.data
-    bpoints = eaveCurveData.splines[0].bezier_points
-    # 获取檐口曲线的终点
-    end_point = eaveCurve.matrix_local @ bpoints[2].co
-    # 子角梁头
-    ccbHead = bData.roof_qiao_point.copy()
-    # 90度转头向子角梁方向
-    tangent2 = Vector((1,-1,0))
-    normal45 = Vector((1,-1,0))   
-    # 计算从终点沿切线方向到子角梁中心的距离
-    distance = (ccbHead - end_point).dot(normal45) / tangent2.dot(normal45)
-    # 将p0延长到交点
-    p0 = end_point + tangent2 * distance
-    # 将p0向下移动一个筒瓦高度
-    aData:tmpData = bpy.context.scene.ACA_temp
     tileHeight = aData.circularTile_source.dimensions.z * tileScale
-    offset = Vector((0,0,tileHeight))
-    # 沿子角梁方向位移
-    ccbObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_CORNER_BEAM_CHILD)
-    offset.rotate(ccbObj.rotation_euler)
-    # 最终的p0位置
-    p0 -= offset
-    ridgeCurveVerts.append(p0)
+    # 瓦层的高度
+    curve.location.z -= tileHeight
+    # 瓦与脊筒的重叠高度
+    curve.location.z -= 1.5*dk
+    # 延长勾滴出檐
+    utils.extend_poly_curve_startpoint(
+        curve,con.EAVETILE_EX*dk*1.414)
 
-    # 250929 尝试添加老角梁头参考点
-    cornerBeamObj = utils.getAcaChild(
-        buildingObj,con.ACA_TYPE_CORNER_BEAM)
-    cornerBeam_head_co = utils.getObjectHeadPoint(
-                            cornerBeamObj,
-                            is_symmetry=(True,True,False)
-                        )
-    # 向上位移半角梁高度，达到老角梁上皮
-    offset:Vector = Vector((0,0,con.JIAOLIANG_H*dk*1))
-    offset.rotate(cornerBeamObj.rotation_euler)
-    cornerBeam_head_co += offset
-    ridgeCurveVerts.append(cornerBeam_head_co)
-
-
-    # 庑殿垂脊做到顶部的正脊
-    if bData.roof_style in (
-            con.ROOF_WUDIAN,
-            con.ROOF_LUDING):
-        ridgeRange = range(len(purlin_pos))
-    # 歇山戗脊仅做到金桁高度
-    if bData.roof_style in (con.ROOF_XIESHAN,
-                            con.ROOF_XIESHAN_JUANPENG,):
-        ridgeRange = range(2)
-
-    # 综合考虑桁架上铺椽、望、灰泥后的效果，主要保证整体线条的流畅
-    # 半桁径+椽径+望板高+灰泥层高 + 筒瓦高
-    aData:tmpData = bpy.context.scene.ACA_temp
-    tileHeight = aData.circularTile_source.dimensions.z * tileScale
-    offset = (con.HENG_COMMON_D*dk /2 
-                    + con.YUANCHUAN_D*dk 
-                    + con.WANGBAN_H*dk
-                    + con.ROOFMUD_H*dk
-                    #+ tileHeight
-                    )
-    # 从桁檩中心，按法线方向提升
-    tile_pos = utils.push_purlinPos(purlin_pos, 
-                        -offset, 'X')
-    
-    # 从举架定位点做偏移
-    for n in ridgeRange:
-        # point:Vector = Vector((
-        #         tile_pos[n].y+ (bData.x_total-bData.y_total)/2,
-        #         tile_pos[n].y,
-        #         tile_pos[n].z))
-
-        # 向上位移:半桁径+椽径+望板高+灰泥层高
-        offset = (con.HENG_COMMON_D/2 + con.YUANCHUAN_D 
-                    + con.WANGBAN_H + con.ROOFMUD_H)*dk + tileHeight
-        # 250929 为了让戗脊更加贴合瓦面，特别是盝顶很小的时候，做了手工调整
-        offset -= 1.5*dk
-        point:Vector = purlin_pos[n]+Vector((0,0,offset))
-        # 曲线矫正，随着起翘幅度的增大，下金桁位置的垂脊有与瓦面分离的风险
-        # 所以在第一点上随着起翘，反向进行了压制
-        # 没有明确的算法，我人为估计的一个值，不够准确，先凑合着用
-        # if n==0:
-        #     point -= Vector((0,0,bData.qiqiao*con.YUANCHUAN_D*dk/3))
-        ridgeCurveVerts.append(point)
-    
-    # 创建瓦垄曲线
-    ridgeCurve = utils.addCurveByPoints(
-            CurvePoints=ridgeCurveVerts,
-            name=name,
-            root_obj=tileRootObj,
-            order_u=4, # 取4级平滑，让坡面曲线更加流畅
-            )
-    utils.setOrigin(ridgeCurve,ridgeCurveVerts[0])
-    utils.hideObj(ridgeCurve)
-    return ridgeCurve
+    return curve
 
 # 营造四角的戗脊
 # 适用于庑殿、歇山，不涉及硬山、悬山
@@ -2321,9 +2367,12 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
                             con.ROOF_XIESHAN_JUANPENG,):
         cornerRidgeName = '戗脊'
     
-    # 绘制戗脊曲线
-    cornerRidgeCurve = __buildCornerRidgeCurve(
-        buildingObj,rafter_pos,cornerRidgeName+'线')
+    # 251110 戗脊线重构
+    # # 绘制戗脊曲线
+    # cornerRidgeCurve = __buildCornerRidgeCurve(
+    #     buildingObj,rafter_pos,cornerRidgeName+'线')
+    cornerRidgeCurve = __buildCornerRidgeCurve2(
+        buildingObj,cornerRidgeName+'线')
     
     # 垂脊兽前摆放端头盘子
     ridgeEndObj = utils.copyObject(

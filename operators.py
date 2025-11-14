@@ -1651,3 +1651,35 @@ class ACA_OT_UNION_BUILDING(bpy.types.Operator):
             utils.popMessageBox(msg)
         
         return {'FINISHED'}
+    
+# 回廊延伸
+class ACA_OT_LOGGIA_EXTEND(bpy.types.Operator):
+    bl_idname="aca.loggia_extend"
+    bl_label = "回廊延伸"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '回廊延伸'
+
+    # 延伸方向
+    dir: bpy.props.StringProperty(
+        name="剖视方案",
+        default="X+"
+    ) # type: ignore
+    
+    def execute(self, context): 
+        timeStart = time.time()
+        
+        from . import buildCombo
+        funproxy = partial(
+            build.loggia_extend,
+            contextObj = context.object,
+            dir = self.dir,
+        )
+        result = utils.fastRun(funproxy)
+
+        if 'FINISHED' in result:
+            runTime = time.time() - timeStart
+            msg = '建筑组合完成 | 运行时间【%.1f秒】' % runTime
+            self.report({'INFO'},msg)
+            # utils.popMessageBox(msg)
+        
+        return {'FINISHED'}

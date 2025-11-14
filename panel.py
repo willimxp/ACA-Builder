@@ -259,7 +259,8 @@ class ACA_PT_basic(bpy.types.Panel):
                         "aca.multi_floor_add",
                         icon='KEY_CONTROL',
                         text="添加楼阁",
-                        depress=True)
+                        # depress=True,
+                        )
         # 添加回廊
         btnAddLoggia = toolBar.column(align=True)
         op = btnAddLoggia.operator(
@@ -276,7 +277,64 @@ class ACA_PT_basic(bpy.types.Panel):
                         "aca.union_building",
                         icon='KEY_CONTROL',
                         text="建筑组合",
-                        depress=True)    
+                        # depress=True,
+                        )    
+        
+        # 回廊延伸
+        if bData.combo_type == con.COMBO_LOGGIA:
+            # 第3.1行 ------------------------------
+            toolBoxLoggia = box.column(align=True)
+            toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
+            # 回廊延伸-北
+            btnLoggiaNorth = toolBar.column(align=True)
+            opLoggiaNorth = btnLoggiaNorth.operator(
+                            "aca.loggia_extend",
+                            icon='TRIA_UP',
+                            text="",)    
+            opLoggiaNorth.dir = 'N'
+            # 第3.2行 ------------------------------
+            toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
+            # 回廊延伸-西
+            btnLoggiaWest = toolBar.column(align=True)
+            opLoggiaWest = btnLoggiaWest.operator(
+                            "aca.loggia_extend",
+                            icon='TRIA_LEFT',
+                            text="",)    
+            opLoggiaWest.dir = 'W'
+            # 回廊延伸-东
+            btnLoggiaEast = toolBar.column(align=True)
+            opLoggiaEast = btnLoggiaEast.operator(
+                            "aca.loggia_extend",
+                            icon='TRIA_RIGHT',
+                            text="",)    
+            opLoggiaEast.dir = 'E'
+            # 第3.3行 ------------------------------
+            toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
+            # 回廊延伸-南
+            btnLoggiaSouth = toolBar.column(align=True)
+            opLoggiaSouth = btnLoggiaSouth.operator(
+                            "aca.loggia_extend",
+                            icon='TRIA_DOWN',
+                            text="",)    
+            opLoggiaSouth.dir = 'S'
+
+            # 验证按钮可用性
+            if bData.aca_type == con.ACA_TYPE_BUILDING_JOINED:
+                Loggia = utils.getJoinedOriginal(buildingObj)
+            else:
+                Loggia = buildingObj
+            extSign = Loggia.ACA_data.loggia_sign
+            if 'E' in extSign:
+                btnLoggiaEast.enabled = False
+            if 'W' in extSign:
+                btnLoggiaWest.enabled = False
+            if 'N' in extSign:
+                btnLoggiaNorth.enabled = False
+            if 'S' in extSign:
+                btnLoggiaSouth.enabled = False
+
+            toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
+            toolBar.prop(Loggia.ACA_data,"loggia_sign",text="")
 
         # 性能分析按钮
         # row = layout.row()

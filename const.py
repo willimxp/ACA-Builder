@@ -355,6 +355,8 @@ class ACA_Consts(object):
     COMBO_DOUBLE_EAVE = 'combo_double_eave'
     COMBO_MULTI_FLOOR = 'combo_multi_floor'
     COMBO_PINGZUO = 'combo_pingzuo'
+    COMBO_LOGGIA = 'combo_loggia'
+    COMBO_LOGGIA_CORNER = 'combo_loggia_corner'
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

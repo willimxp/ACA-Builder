@@ -1259,6 +1259,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update=update_yardwall,
         )# type: ignore  
     
+    # 251112 回廊标识
+    loggia_sign : bpy.props.StringProperty(
+            name = "回廊标识"
+        )# type: ignore
+    
 # 全局共用的模板信息，各个建筑都进行引用
 # 包括资产库资产引用等    
 class ACA_data_template(bpy.types.PropertyGroup):

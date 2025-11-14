@@ -96,6 +96,7 @@ classes = (
     operators.ACA_OT_MULTI_FLOOR_ADD,
     operators.ACA_OT_ADD_LOGGIA,
     operators.ACA_OT_UNION_BUILDING,
+    operators.ACA_OT_LOGGIA_EXTEND,
 )
 
 def register():   

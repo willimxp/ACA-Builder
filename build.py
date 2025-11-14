@@ -2384,8 +2384,6 @@ def loggia_extend(contextObj:bpy.types.Object,
     if dir in bData.loggia_sign:
         utils.popMessageBox("无法向该方向延伸")
         return {'CANCELLED'}
-    else:
-        bData.loggia_sign += '/' + dir
 
     # 如果未合并，开始合并
     if LoggiaJoined is None:
@@ -2407,102 +2405,20 @@ def loggia_extend(contextObj:bpy.types.Object,
     # 是否需要添加转角
     useCorner = False
     # 东西转南北
-    if (Loggia.rotation_euler.z == 0 
+    if (('W' in bData.loggia_sign or 'E' in bData.loggia_sign)
         and dir in ('N','S')):
         useCorner = True
     # 南北转东西
-    if (Loggia.rotation_euler.z != 0
+    if (('N' in bData.loggia_sign or 'S' in bData.loggia_sign)
         and dir in ('W','E')):
         useCorner = True
 
+    # 生成转角
     if useCorner:
-        # 调整原廊间的裁剪
-        modBool = None
-        for obj in LoggiaJoined.children:
-            if con.BOOL_SUFFIX  in obj.name : continue
-            for mod in obj.modifiers:
-                if mod.type == 'BOOLEAN':
-                    modBool = mod
-                    break
-        if modBool:
-            boolcube = modBool.object
-        offset = buildingEave + bData.piller_diameter
-        boolcube.dimensions.x -= offset
-        boolcube.location.x -= offset/2
-        
-        # 创建回廊转角对象
-        LoggiaCorner = buildFloor.__addBuildingRoot('回廊转角')
-        # 从回廊同步设置
-        from . import buildCombo
-        buildCombo.__syncData(
-            fromBuilding=Loggia,
-            toBuilding=LoggiaCorner,
+        LoggiaCornerJoined = __add_loggia_corner(
+            baseLoggia= LoggiaJoined,
+            dir=dir
         )
-        # 重新设置柱网，并打标识
-        cornerData:acaData = LoggiaCorner.ACA_data
-        cornerData['combo_type'] = con.COMBO_LOGGIA_CORNER
-        cornerData['x_rooms'] = 1
-        cornerData['x_1'] = cornerData.y_1
-        cornerData['y_rooms'] = 1
-        # 位移
-        offset_corner = bData.x_total/2 + bData.y_total/2
-        if 'W' in bData.loggia_sign:
-            offset_corner_v = Vector((offset_corner,0,0))
-        else:
-            offset_corner_v = Vector((-offset_corner,0,0))
-        LoggiaCorner.location = Loggia.location + offset_corner_v
-        # 重新生成转角
-        buildFloor.buildFloor(LoggiaCorner)
-
-        # 合并
-        LoggiaCornerJoined = joinBuilding(LoggiaCorner)
-
-        # 45度镜像
-        mirrorOffsetX = bData.x_total/2-bData.y_total/2
-        diagnalObj = utils.addEmpty(
-            name = '45度镜像' + con.BOOL_SUFFIX,
-            parent = LoggiaCornerJoined,
-            rotation=(0,0,math.radians(45)),
-            location=(0,0,0)
-        )
-        utils.hideObj(diagnalObj)
-        for obj in LoggiaCornerJoined.children:
-            # 跳过bool对象
-            if con.BOOL_SUFFIX  in obj.name : continue
-            utils.addModifierMirror(
-                object= obj,
-                mirrorObj=diagnalObj,
-                use_axis=(True,False,False),
-                use_bisect=(True,False,False),
-                use_flip=(True,False,False),
-                use_merge=True
-            )
-
-        # 翼角裁剪
-        eaveExt = 30*dk
-        dim = (cornerData.x_total + eaveExt,
-               cornerData.y_total + eaveExt,
-               buildingH
-        )
-        loc = (eaveExt/2-bData.piller_diameter/2,
-               -eaveExt/2+bData.piller_diameter/2,
-               buildingH/2)
-        boolCube = utils.addCube(
-            name="翼角裁剪" + con.BOOL_SUFFIX,
-            location=loc,
-            dimension=dim,
-            parent=LoggiaCornerJoined,
-        )
-        utils.hideObjFace(boolCube)
-        utils.hideObj(boolCube)
-        for obj in LoggiaCornerJoined.children:
-            # 跳过bool对象
-            if con.BOOL_SUFFIX  in obj.name : continue
-            utils.addModifierBoolean(
-                object=obj,
-                boolObj=boolCube,
-                operation='INTERSECT',
-            )
     
     # 3、延伸方向的廊间生成 -----------------------
     # 向延伸方向复制
@@ -2542,10 +2458,14 @@ def loggia_extend(contextObj:bpy.types.Object,
         elif dir == 'S': # 南
             LoggiaNew.location.y -= bData.x_total
     
-    # 控制旋转
-    if dir in ('N','S'): #南北转向90度
+    # 控制旋转，顺时针
+    if dir in 'N': #南北转向90度
         LoggiaNew.rotation_euler.z = math.radians(90)
-    else:
+    if dir == 'S':
+        LoggiaNew.rotation_euler.z = math.radians(-90)
+    if dir == 'W':
+        LoggiaNew.rotation_euler.z = math.radians(180)
+    if dir == 'E':
         LoggiaNew.rotation_euler.z = 0
 
     # 标识相邻的回廊
@@ -2565,12 +2485,8 @@ def loggia_extend(contextObj:bpy.types.Object,
     buildingDeepth = bData.y_total + 60*dk # 出檐
     # 定位
     offset = bData.piller_diameter/2 + buildingEave/2
-    # 东向，北向，裁剪左侧
-    if dir in ('E','N'):
-        boolX = offset
-    # 西向，南向，裁剪右侧
-    elif dir in ('W','S'):
-        boolX = - offset
+    # 统一裁左侧
+    boolX = offset
 
     boolCube = utils.addCube(
         name="回廊裁剪" + con.BOOL_SUFFIX,
@@ -2607,12 +2523,11 @@ def loggia_extend(contextObj:bpy.types.Object,
             name="屋顶斜切" + con.BOOL_SUFFIX,
             dimension=(cubeWidth,cubeWidth,buildingH),
             location=(0,0,buildingH/2),
-            parent=LoggiaCorner,
+            parent=LoggiaCornerJoined,
         )
-        utils.dissolveEdge(boolCube,[6])
+        # 裁剪在内侧
+        utils.dissolveEdge(boolCube,[9])
         utils.hideObjFace(boolCube)
-        # utils.hideObj(boolCube)
-
         for obj in LoggiaJoined.children:
             # 跳过bool对象
             if con.BOOL_SUFFIX  in obj.name : continue
@@ -2630,7 +2545,18 @@ def loggia_extend(contextObj:bpy.types.Object,
                 operation='DIFFERENCE'
             )
 
-
+    # 对原廊间追加相邻标识
+    if useCorner:
+        if 'W' in bData.loggia_sign:
+            bData.loggia_sign += '/E'
+        elif 'E' in bData.loggia_sign:
+            bData.loggia_sign += '/W'
+        elif 'N' in bData.loggia_sign:
+            bData.loggia_sign += '/S'
+        elif 'S' in bData.loggia_sign:
+            bData.loggia_sign += '/N'
+    else:
+        bData.loggia_sign += '/' + dir
 
     # 聚焦在新loggia
     utils.focusObj(LoggiaNewJoined.children[0])
@@ -2638,6 +2564,126 @@ def loggia_extend(contextObj:bpy.types.Object,
     return {'FINISHED'}
 
 # 生成回廊转角
-def __loggia_corner(baseLoggia:bpy.types.Object,
+def __add_loggia_corner(baseLoggia:bpy.types.Object,
                   dir):
-    return
+    LoggiaJoined = baseLoggia
+    Loggia = __getJoinedOriginal(LoggiaJoined)
+    bData:acaData = Loggia.ACA_data
+    dk = bData.DK
+    buildingH = (bData.platform_height+bData.piller_height)
+    if bData.use_dg:
+        buildingH += bData.dg_height
+    buildingH += bData.y_total / 2
+    buildingH += 20*dk # 保险高度
+    buildingEave = 20*dk # 悬山出际
+
+    # 调整原廊间的裁剪
+    modBool = None
+    for obj in LoggiaJoined.children:
+        if con.BOOL_SUFFIX  in obj.name : continue
+        for mod in obj.modifiers:
+            if mod.type == 'BOOLEAN':
+                modBool = mod
+                break
+    if modBool:
+        boolcube = modBool.object
+    offset = buildingEave + bData.piller_diameter
+    boolcube.dimensions.x -= offset
+    boolcube.location.x -= offset/2
+    
+    # 创建回廊转角对象
+    LoggiaCorner = buildFloor.__addBuildingRoot('回廊转角')
+    # 从回廊同步设置
+    from . import buildCombo
+    buildCombo.__syncData(
+        fromBuilding=Loggia,
+        toBuilding=LoggiaCorner,
+    )
+    # 重新设置柱网，并打标识
+    cornerData:acaData = LoggiaCorner.ACA_data
+    cornerData['combo_type'] = con.COMBO_LOGGIA_CORNER
+    cornerData['x_rooms'] = 1
+    cornerData['x_1'] = cornerData.y_1
+    cornerData['y_rooms'] = 1
+    # 位移
+    offset_corner = bData.x_total/2 + bData.y_total/2
+    if 'W' in bData.loggia_sign:
+        offset_corner_v = Vector((offset_corner,0,0))
+    elif 'E' in bData.loggia_sign:
+        offset_corner_v = Vector((-offset_corner,0,0))
+    elif 'S' in bData.loggia_sign:
+        offset_corner_v = Vector((0,offset_corner,0))
+    elif 'N' in bData.loggia_sign:
+        offset_corner_v = Vector((0,-offset_corner,0))
+    LoggiaCorner.location = Loggia.location + offset_corner_v
+    # 旋转
+    # 顺时针
+    if 'W' in bData.loggia_sign:
+        if dir == 'S': # 东北角，
+            LoggiaCorner.rotation_euler.z = math.radians(0)
+    if 'N' in bData.loggia_sign:
+        if dir == 'W': # 东南角，顺时针
+            LoggiaCorner.rotation_euler.z = math.radians(-90)
+    if 'E' in bData.loggia_sign:
+        if dir == 'N': # 西南角，顺时针
+            LoggiaCorner.rotation_euler.z = math.radians(-180)
+    if 'S' in bData.loggia_sign:
+        if dir == 'E': # 西南角，顺时针
+            LoggiaCorner.rotation_euler.z = math.radians(-270)
+    # 重新生成转角
+    buildFloor.buildFloor(LoggiaCorner)
+
+    # 合并
+    LoggiaCornerJoined = joinBuilding(LoggiaCorner)
+
+    # 45度镜像
+    mirrorOffsetX = bData.x_total/2-bData.y_total/2
+    diagnalObj = utils.addEmpty(
+        name = '45度镜像' + con.BOOL_SUFFIX,
+        parent = LoggiaCornerJoined,
+        rotation=(0,0,math.radians(45)),
+        location=(0,0,0)
+    )
+    utils.hideObj(diagnalObj)
+    # 顺时针做法
+    use_axis=(False,True,False)
+    use_bisect=(False,True,False)
+    use_flip=(False,False,False)
+    for obj in LoggiaCornerJoined.children:
+        # 跳过bool对象
+        if con.BOOL_SUFFIX  in obj.name : continue
+        utils.addModifierMirror(
+            object= obj,
+            mirrorObj=diagnalObj,
+            use_axis=use_axis,
+            use_bisect=use_bisect,
+            use_flip=use_flip,
+            use_merge=True
+        )
+
+    # 翼角裁剪
+    eaveExt = 30*dk
+    dim = (cornerData.x_total + eaveExt,
+            cornerData.y_total + eaveExt,
+            buildingH
+    )
+    offset = eaveExt/2-bData.piller_diameter/2
+    # 裁剪在一象限
+    loc = (offset,offset,buildingH/2)
+    boolCube = utils.addCube(
+        name="翼角裁剪" + con.BOOL_SUFFIX,
+        location=loc,
+        dimension=dim,
+        parent=LoggiaCornerJoined,
+    )
+    utils.hideObjFace(boolCube)
+    # utils.hideObj(boolCube)
+    for obj in LoggiaCornerJoined.children:
+        # 跳过bool对象
+        if con.BOOL_SUFFIX  in obj.name : continue
+        utils.addModifierBoolean(
+            object=obj,
+            boolObj=boolCube,
+            operation='INTERSECT',
+        )
+    return LoggiaCornerJoined

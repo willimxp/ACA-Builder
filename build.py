@@ -2528,13 +2528,31 @@ def loggia_extend(contextObj:bpy.types.Object,
         # 裁剪在内侧
         utils.dissolveEdge(boolCube,[9])
         utils.hideObjFace(boolCube)
+        
+        # 是否为顺时针
+        isClockWise = False
+        if dir == 'S' and 'W' in bData.loggia_sign:
+            isClockWise = True
+        if dir == 'W' and 'N' in bData.loggia_sign:
+            isClockWise = True
+        if dir == 'N' and 'E' in bData.loggia_sign:
+             isClockWise = True
+        if dir == 'E' and 'S' in bData.loggia_sign:
+            isClockWise = True
+        if isClockWise:
+            boolfrom = 'INTERSECT'
+            boolto = 'DIFFERENCE'
+        else:
+            boolfrom = 'DIFFERENCE'
+            boolto = 'INTERSECT'
+
         for obj in LoggiaJoined.children:
             # 跳过bool对象
             if con.BOOL_SUFFIX  in obj.name : continue
             utils.addModifierBoolean(
                 object= obj,
                 boolObj=boolCube,
-                operation='INTERSECT'
+                operation=boolfrom
             )
         for obj in LoggiaNewJoined.children:
             # 跳过bool对象
@@ -2542,7 +2560,7 @@ def loggia_extend(contextObj:bpy.types.Object,
             utils.addModifierBoolean(
                 object= obj,
                 boolObj=boolCube,
-                operation='DIFFERENCE'
+                operation=boolto
             )
 
     # 对原廊间追加相邻标识
@@ -2617,19 +2635,23 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
         offset_corner_v = Vector((0,-offset_corner,0))
     LoggiaCorner.location = Loggia.location + offset_corner_v
     # 旋转
-    # 顺时针
-    if 'W' in bData.loggia_sign:
-        if dir == 'S': # 东北角，
+    # 东北角
+    if ((dir == 'W' and 'S' in bData.loggia_sign)
+        or (dir == 'S' and 'W' in bData.loggia_sign)): 
             LoggiaCorner.rotation_euler.z = math.radians(0)
-    if 'N' in bData.loggia_sign:
-        if dir == 'W': # 东南角，顺时针
+    # 东南角
+    if ((dir == 'W' and 'N' in bData.loggia_sign)
+        or (dir == 'N' and 'W' in bData.loggia_sign)): 
             LoggiaCorner.rotation_euler.z = math.radians(-90)
-    if 'E' in bData.loggia_sign:
-        if dir == 'N': # 西南角，顺时针
+    # 西南角
+    if ((dir == 'N' and 'E' in bData.loggia_sign)
+        or (dir == 'E' and 'N' in bData.loggia_sign)): 
             LoggiaCorner.rotation_euler.z = math.radians(-180)
-    if 'S' in bData.loggia_sign:
-        if dir == 'E': # 西南角，顺时针
-            LoggiaCorner.rotation_euler.z = math.radians(-270)
+    # 西北角
+    if ((dir == 'S' and 'E' in bData.loggia_sign)
+        or (dir == 'E' and 'S' in bData.loggia_sign)): 
+            LoggiaCorner.rotation_euler.z = math.radians(90)    
+
     # 重新生成转角
     buildFloor.buildFloor(LoggiaCorner)
 

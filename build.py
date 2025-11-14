@@ -727,6 +727,10 @@ def joinBuilding(buildingObj:bpy.types.Object,
         __undoJoin(buildingObj)
         return
     
+    # 251114 manifold boolean在合并后再做重复材质清理，会导致材质混乱
+    # 所以，统一在合并前清理材质
+    utils.cleanDupMat()
+    
     # 1、参数和变量 --------------------------
     collcopySuffix = '.collcopy'
 

@@ -3454,3 +3454,63 @@ def getJoinedOriginal(joinedBuilding: bpy.types.Object):
     src_coll = bpy.data.collections.get(collName)
     src_building = src_coll.objects[0]
     return src_building
+
+"""
+对 POLY / NURBS 类型的 spline 在 XY 平面上矫正为 ±45° 直线：
+    - 保持第1个点（索引0）位置不变
+    - 保持每点的 Z 高度和权重 (w) 不变
+    - 仅修改 X/Y
+适用于你指出的 POLY 曲线（无需处理贝塞尔手柄）。
+"""
+def align_poly_curve_xy_to_45(curve_obj: bpy.types.Object, 
+                              spline_index: int = 0):
+    if curve_obj is None or curve_obj.type != 'CURVE':
+        return
+
+    if spline_index >= len(curve_obj.data.splines):
+        return
+
+    spline = curve_obj.data.splines[spline_index]
+    # 仅处理 POLY / NURBS points（四维向量）
+    if spline.type not in ('POLY', 'NURBS'):
+        return
+
+    pts = spline.points
+    n = len(pts)
+    if n < 2:
+        return
+
+    # 读取3D点
+    pts3 = [Vector((p.co[0], p.co[1], p.co[2])) for p in pts]
+
+    p0 = pts3[0]
+    # 计算平均方向（排除第0点）
+    avg = Vector((0.0, 0.0))
+    for v in pts3[1:]:
+        avg += Vector((v.x - p0.x, v.y - p0.y))
+    avg /= max(1, n - 1)
+
+    if avg.length < 1e-6:
+        last = pts3[-1]
+        avg = Vector((last.x - p0.x, last.y - p0.y))
+        if avg.length < 1e-6:
+            avg = Vector((1.0, 1.0))
+
+    sign = 1.0 if (avg.x * avg.y) >= 0.0 else -1.0
+    d = Vector((1.0, sign)).normalized()
+
+    # 逐点投影到通过 p0 且方向为 d 的直线上，保持 original Z & weight
+    for i, p in enumerate(pts):
+        v = pts3[i]
+        rel = Vector((v.x - p0.x, v.y - p0.y))
+        t = rel.dot(d)
+        proj = Vector((p0.x, p0.y)) + d * t
+        z = v.z
+        w = p.co[3] if len(p.co) > 3 else 1.0
+        p.co = (proj.x, proj.y, z, w)
+
+    try:
+        curve_obj.data.update()
+    except Exception:
+        pass
+    return

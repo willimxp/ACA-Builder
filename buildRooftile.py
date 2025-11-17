@@ -2389,6 +2389,14 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     cornerRidgeCurve = __buildCornerRidgeCurve2(
         buildingObj,cornerRidgeName+'线')
     
+    # 251117 歇山戗脊在碰撞算法下变成了曲线，强制“扳直”
+    if bData.roof_style in (con.ROOF_XIESHAN,
+                            con.ROOF_XIESHAN_JUANPENG,):
+        # cornerRidgeCurve_copy = utils.copySimplyObject(
+        #     cornerRidgeCurve,
+        #     singleUser=True)
+        utils.align_poly_curve_xy_to_45(cornerRidgeCurve)
+    
     # 垂脊兽前摆放端头盘子
     ridgeEndObj = utils.copyObject(
             sourceObj=aData.ridgeEnd_source,

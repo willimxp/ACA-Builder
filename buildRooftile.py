@@ -869,6 +869,171 @@ def __drawTileBool(
 
     return tileboolObj
 
+# 基于瓦面碰撞，生成裁剪体
+# 用于庑殿
+def __drawTileBoolByGrid(
+        buildingObj:bpy.types.Object,
+        name='tilegrid.bool',):
+    # 1、获取前后檐和两山瓦面 --------------------------
+    # 获取前后檐瓦面
+    tileGrid_fb = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_GRID)
+    tileGrid_fb_copy = utils.copySimplyObject(
+            tileGrid_fb,singleUser=True)
+    utils.showObj(tileGrid_fb_copy)
+    # 镜像
+    utils.addModifierMirror(
+        object=tileGrid_fb_copy,
+        mirrorObj=buildingObj,
+        use_axis=(True,True,False),
+        use_bisect=(True,True,False),
+        use_merge=True
+    )
+    utils.applyAllModifer(tileGrid_fb_copy)
+
+    # 两山瓦面
+    tileGrid_lr = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_GRID_LR)
+    tileGrid_lr_copy = utils.copySimplyObject(
+            tileGrid_lr,singleUser=True)
+    utils.showObj(tileGrid_lr_copy)
+    # 镜像
+    utils.addModifierMirror(
+        object=tileGrid_lr_copy,
+        mirrorObj=buildingObj,
+        use_axis=(True,True,False),
+        use_bisect=(True,True,False),
+        use_merge=True
+    )
+    utils.applyAllModifer(tileGrid_lr_copy)
+
+    # 2、基于BVH的碰撞检测,获取相交曲面 ------------------
+    intersections,curve = utils.mesh_mesh_intersection(
+            tileGrid_fb_copy, 
+            tileGrid_lr_copy,
+            create_curve=True,
+            create_mesh=True,
+            curve_name=name,
+            mesh_name=name)
+    # 绑定到瓦作层
+    tileRootObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_TILE_ROOT
+    )
+    for section in intersections:
+        mw = section.matrix_world.copy()
+        section.parent = tileRootObj
+        section.matrix_world = mw
+
+    # 3、挤出裁剪体 -------------------------------
+    bData:acaData = buildingObj.ACA_data
+    dk = bData.DK
+    # 拉伸高度，屋面高度+屋身高度+上保留+下保留
+    topSpan = 40*dk # 向上预留的空间，考虑屋脊、脊兽等
+    bottomSpan = 20*dk # 向下预留的空间，考虑勾滴等
+    extrude_Z = bData.y_total/2 + topSpan + bottomSpan
+    extrude_Z += bData.piller_height + bData.platform_height
+    if bData.use_dg:
+        extrude_Z += bData.dg_height
+    # 拉伸出檐
+    extrude_eave = 20*dk # 保留宽度，考虑勾滴、角兽等
+
+    # 可能存在多个相交面，逐一挤出
+    for interface in intersections:
+        # 选中
+        utils.focusObj(interface)
+        # 编辑
+        bpy.ops.object.mode_set(mode='EDIT')
+        bm = bmesh.new()
+        bm = bmesh.from_edit_mesh(interface.data)
+
+        # 2.1、做平行地面的投影面
+        # 以最高点挤压投影平面
+        zmax = -999999
+        for v in bm.verts:
+            if v.co.z > zmax:
+                zmax = v.co.z
+        for v in bm.verts:
+            v.co.z = zmax
+            # 向上抬升，以包裹瓦面
+            v.co.z += topSpan
+
+        # 2.2、向外挤出，覆盖抱厦出檐
+        bm.edges.ensure_lookup_table()
+        # 取出最后一条边（檐口边），仅对该边做挤出并沿 Y 轴平移
+        eaveEdge = bm.edges[0]  # 第一条线为檐口线
+        # 挤出
+        extrude_result = bmesh.ops.extrude_edge_only(
+            bm, edges=[eaveEdge])
+        bm.verts.ensure_lookup_table()
+        bm.edges.ensure_lookup_table()
+        geom = (extrude_result.get('geom', []) 
+                or extrude_result.get('verts', []) 
+                or [])
+        extruded_verts = [ele for ele in geom 
+            if isinstance(ele, bmesh.types.BMVert)]
+        if extruded_verts:
+            # 计算几何中心
+            edge_center = Vector((0.0, 0.0, 0.0))
+            for v in bm.verts:
+                edge_center += v.co
+            edge_center /= len(bm.verts)
+
+            # 根据几何中心，决定向+X还是-X挤出
+            if edge_center.x <= extruded_verts[0].co.x:
+                trans_x = extrude_eave 
+            else:
+                trans_x = -extrude_eave
+            bmesh.ops.translate(bm,
+                verts=extruded_verts,
+                vec=Vector((trans_x, 0, 0))
+            )
+
+            # 根据中心，决定向+Y还是-Y扩展
+            for v in extruded_verts:
+                if v.co.x > edge_center.x:
+                    if v.co.y > edge_center.y :
+                        v.co.y += trans_x
+                    else:
+                        v.co.y -= trans_x
+                else:
+                    if v.co.y > edge_center.y :
+                        v.co.y -= trans_x
+                    else:
+                        v.co.y += trans_x
+        
+        # 2.2、挤压出高度
+        # 选中所有面
+        for face in bm.faces: face.select = True
+        # 沿Z方向挤出
+        extrude_result = bmesh.ops.extrude_face_region(
+            bm, geom=bm.faces)
+        extruded_verts = [v for v in extrude_result['geom'] 
+                        if isinstance(v, bmesh.types.BMVert)]
+        bmesh.ops.translate(
+            bm,
+            vec=Vector((0, 0, -extrude_Z)),  # Y轴方向移动
+            verts=extruded_verts
+        )
+
+        # 更新bmesh
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        bmesh.update_edit_mesh(interface.data ) 
+        bm.free() 
+        bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+    
+    # 回收临时屋面
+    utils.delObject(tileGrid_fb_copy)
+    utils.delObject(tileGrid_lr_copy)
+    utils.delOrphan()
+    
+    tileboolObj = utils.joinObjects(
+        intersections,newName='tilegrid.bool')
+    utils.hideObjFace(tileboolObj)
+    utils.hideObj(tileboolObj)
+
+    return tileboolObj
+
 # 在face上放置瓦片
 def __setTile(
             sourceObj,
@@ -939,12 +1104,6 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     # 计算瓦垄的数量
     tileCols = __getTileCols(buildingObj,direction)
     GridCols = tileCols*2-1
-
-    # 构造一个裁剪对象，做boolean
-    # 瓦面不适合像椽架那样做三个bisect面的切割
-    # 因为推山导致的由戗角度交叉，使得三个bisect面也有交叉，导致上下被裁剪的过多
-    tile_bool_obj = __drawTileBool(
-        buildingObj,rafter_pos,direction=direction)
     
     # 檐面与山面的差异
     if direction=='X':
@@ -1099,10 +1258,16 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     utils.changeParent(tileSet,tileRootObj)
     # 庑殿、歇山做裁剪
     if bData.roof_style in (
-                con.ROOF_WUDIAN,
+                # con.ROOF_WUDIAN, # 251117 改用BVH裁剪
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,
                 con.ROOF_LUDING,):
+        # 构造一个裁剪对象，做boolean
+        # 瓦面不适合像椽架那样做三个bisect面的切割
+        # 因为推山导致的由戗角度交叉，使得三个bisect面也有交叉，导致上下被裁剪的过多
+        tile_bool_obj = __drawTileBool(
+            buildingObj,rafter_pos,direction=direction)
+    
         if isBoolInside:
             operation = 'INTERSECT'
         else:
@@ -1112,6 +1277,9 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
             boolObj=tile_bool_obj,
             operation=operation,
         )
+        # 隐藏辅助对象
+        utils.hideObj(tile_bool_obj)
+
     # 添加镜像
     utils.addModifierMirror(
         object=tileSet,
@@ -1131,13 +1299,12 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     # 250209 使用cubeProject时有明显的横纹，改为smartProject
     mat.setGlazeUV(tileSet,uvType=None)
 
-    # 隐藏辅助对象
-    utils.hideObj(tile_bool_obj)
-
     bpy.data.objects.remove(flatTile)
     bpy.data.objects.remove(circularTile)
     bpy.data.objects.remove(eaveTile)
     bpy.data.objects.remove(dripTile)
+
+    return tileSet
 
 # 计算正脊长度
 # 并且可以在硬山、悬山、歇山的垂脊、排山勾滴等复用
@@ -1166,8 +1333,16 @@ def __getTopRidgeLength(buildingObj: bpy.types.Object,
             -bData.tile_width_real/2)
     # 庑殿正脊外皮与垂脊相交
     elif bData.roof_style == con.ROOF_WUDIAN:
+        # 251117 庑殿正脊在推山时，考虑灰泥层的影响
+        offset = (con.YUANCHUAN_D*dk        # 椽架厚度
+                + con.WANGBAN_H*dk          # 望板厚度
+                + con.ROOFMUD_H*dk )        # 灰泥厚度
+        dx = rafter_pos[-2].x - rafter_pos[-1].x
+        dz = rafter_pos[-1].z - rafter_pos[-2].z
+        angle = math.atan(dx/dz)
+        dl = offset * math.cos(angle)
         zhengji_length = (rafter_pos[-1].x
-            + bData.tile_width_real/2)
+            + dl)
     # 歇山正脊对齐排山勾滴定位
     elif bData.roof_style in (
             con.ROOF_XIESHAN,
@@ -1283,6 +1458,15 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         mirrorObj=tileRootObj,
         use_axis=(True,False,False)
     )
+    # 251117 庑殿正脊在推山时，适当调整
+    if bData.roof_style == con.ROOF_WUDIAN:
+        offset = 2.5*dk
+        dx = rafter_pos[-2].x - rafter_pos[-1].x
+        dz = rafter_pos[-1].z - rafter_pos[-2].z
+        angle = math.atan(dx/dz)
+        dl = offset * math.cos(angle)
+        chiwenObj.location.x -= dl
+    
     # 设置材质
     mat.setGlazeStyle(chiwenObj,resetUV=False)
     return
@@ -2724,7 +2908,7 @@ def buildTile(buildingObj: bpy.types.Object):
     oData : acaData = tileGrid.ACA_data
     oData['aca_type'] = con.ACA_TYPE_TILE_GRID
     # 在网格上铺瓦
-    __arrayTileGrid(
+    tile_fb = __arrayTileGrid(
         buildingObj,
         rafter_pos,
         tileGrid,
@@ -2746,11 +2930,25 @@ def buildTile(buildingObj: bpy.types.Object):
         oData : acaData = tileGrid.ACA_data
         oData['aca_type'] = con.ACA_TYPE_TILE_GRID_LR
         # 在网格上铺瓦
-        __arrayTileGrid(
+        tile_lr = __arrayTileGrid(
             buildingObj,
             rafter_pos,
             tileGrid,
             direction='Y')
+        
+        # 251117 基于BVH的瓦面裁剪
+        if bData.roof_style == con.ROOF_WUDIAN:
+            boolObj = __drawTileBoolByGrid(buildingObj)
+            utils.addModifierBoolean(
+                object=tile_fb,
+                boolObj=boolObj,
+                operation='DIFFERENCE',
+            )
+            utils.addModifierBoolean(
+                object=tile_lr,
+                boolObj=boolObj,
+                operation='INTERSECT'
+            )
         
     # 添加屋脊
     utils.outputMsg("Building Ridge...")

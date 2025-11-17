@@ -1264,6 +1264,17 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "回廊标识"
         )# type: ignore
     
+    # 251117 举折系数
+    juzhe_var :bpy.props.FloatProperty(
+            name="举折系数",
+            default=0.1,
+            precision=3,
+            min=0.1,
+            max=0.3,
+            update = update_roof,
+            description="举折系数，默认0.1，适当调大可以获得更加明显的瓦面弧度",
+        )# type: ignore
+    
 # 全局共用的模板信息，各个建筑都进行引用
 # 包括资产库资产引用等    
 class ACA_data_template(bpy.types.PropertyGroup):

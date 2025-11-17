@@ -1108,6 +1108,11 @@ class ACA_PT_beam(bpy.types.Panel):
                 inputRoofHeight.prop(
                     bData,"roof_height"
                 )
+                # 举折系数
+                inputJuzheVar = toolBar.column(align=True)
+                inputJuzheVar.prop(
+                    bData,"juzhe_var"
+                )
             # 步架数量          
             inputRaftercount = toolBar.column(align=True)
             inputRaftercount.prop(

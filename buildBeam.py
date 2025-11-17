@@ -65,6 +65,8 @@ def getLiftRatio(buildingObj:bpy.types.Object,
                  ):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
+    # 251117 举折系数允许用户在panel中修改
+    v1 = bData.juzhe_var
     lift_ratio = []
 
     # 1、可直接返回的预设举架系数 -----------------

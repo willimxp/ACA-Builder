@@ -645,7 +645,7 @@ class ACA_OT_build_roof(bpy.types.Operator):
                     % (buildingName,runTime)
         
         if message != '':
-            utils.popMessageBox(message)
+            # utils.popMessageBox(message)
             self.report(type,message)
 
         return {'FINISHED'}

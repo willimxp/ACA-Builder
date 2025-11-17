@@ -2468,7 +2468,7 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
                 break
     if modBool:
         boolcube = modBool.object
-    offset = buildingEave + bData.piller_diameter
+    offset = buildingEave
     boolcube.dimensions.x -= offset
     boolcube.location.x -= offset/2
     
@@ -2552,7 +2552,7 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
             cornerData.y_total + eaveExt,
             buildingH
     )
-    offset = eaveExt/2-bData.piller_diameter/2
+    offset = eaveExt/2
     # 裁剪在一象限
     loc = (offset,offset,buildingH/2)
     boolCube = utils.addCube(
@@ -2571,6 +2571,8 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
             boolObj=boolCube,
             operation='INTERSECT',
         )
+        # 裁剪后柱体normal异常，做平滑
+        utils.shaderSmooth(obj)
     return LoggiaCornerJoined
 
 # 向指定方向延伸一个廊间
@@ -2651,7 +2653,7 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
     # 裁剪
     buildingDeepth = bData.y_total + 60*dk # 出檐
     # 定位
-    offset = bData.piller_diameter/2 + buildingEave/2
+    offset = buildingEave/2
     # 统一裁左侧
     boolX = offset
 
@@ -2674,6 +2676,8 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
                 boolObj=boolCube,
                 operation='DIFFERENCE'
             )
+            # 裁剪后柱体normal异常，做平滑
+            utils.shaderSmooth(obj)
     for obj in LoggiaNewJoined.children:
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue
@@ -2682,6 +2686,8 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
             boolObj=boolCube,
             operation='INTERSECT'
         )
+        # 裁剪后柱体normal异常，做平滑
+        utils.shaderSmooth(obj)
     return LoggiaNewJoined
 
 # 转角处相邻廊间的屋顶裁剪

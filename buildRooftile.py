@@ -2366,6 +2366,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     aData:tmpData = bpy.context.scene.ACA_temp
     # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
     tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
+    dk = bData.DK
 
     cornerRidgeBeforeObj = None
     cornerRidgeAfterObj = None
@@ -2452,6 +2453,8 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
                   = cornerRidgeAfterObj.modifiers['曲线平铺']
             modArray.fit_type = 'FIT_LENGTH'
             curveLength = cornerRidgeCurve.data.splines[0].calc_length()
+            # 251115 盝顶的垂脊没有闭合
+            curveLength += 15*dk
             ridegLength = curveLength - paoLength - ridgeUnit_Length
             modArray.fit_length = ridegLength
         utils.applyAllModifer(cornerRidgeAfterObj)
@@ -2485,8 +2488,12 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
 
     # 歇山戗脊，沿垂脊裁剪
     if bData.roof_style in (con.ROOF_XIESHAN,
-                            con.ROOF_XIESHAN_JUANPENG):
+                            con.ROOF_XIESHAN_JUANPENG,
+                            con.ROOF_LUDING):
         pcut = tileRootObj.matrix_world @ rafter_pos[-1]
+        if bData.roof_style == con.ROOF_LUDING:
+            # 盝顶戗脊裁剪到围脊位置
+            pcut.x += 4*dk
         # 偏移半垄，与垂脊相交
         pcut += Vector((-bData.tile_width_real/2,0,0))
         

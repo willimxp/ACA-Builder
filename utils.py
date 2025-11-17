@@ -3073,7 +3073,7 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
                            obj_b: bpy.types.Object,
                            depsgraph=None,
                            eps_offset=1e-6,
-                           dedup_tol=1e-6,
+                           dedup_tol=0.01, # 容差设置为1cm
                            create_curve=False,
                            curve_name="IntersectionCurve",
                            create_mesh=True,            # 新增：是否基于闭合曲线生成网格并挤出
@@ -3204,7 +3204,8 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
         # 连接阈值：基于去重容差和对象尺度自动计算，避免过小导致不能闭合
         scene_scale = max(obj_a.dimensions.length, obj_b.dimensions.length, 1.0)
         # 保守放大 dedup_tol，保证正常缩放下可连接；并加入基于场景尺度的下限
-        connect_tol = max(dedup_tol * 1000000.0, scene_scale * 1e-6, 1e-6)
+        # 251117 连接阈值设置为1米
+        connect_tol = max(dedup_tol*100, scene_scale * 1e-6, 1e-6)
 
         def find_closest_unvisited_idx(src_idx, max_k=32):
             co = pts[src_idx]

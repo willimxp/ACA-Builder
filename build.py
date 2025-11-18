@@ -2440,13 +2440,21 @@ def loggia_extend(contextObj:bpy.types.Object,
         bData.loggia_sign += '/' + dir
 
     # 聚焦在新loggia
-    utils.focusObj(LoggiaNewJoined.children[0])
+    for obj in LoggiaNewJoined.children:
+        # 跳过bool对象
+        if con.BOOL_SUFFIX  in obj.name : continue
+        utils.focusObj(obj)
 
     return {'FINISHED'}
 
 # 生成回廊转角
 def __add_loggia_corner(baseLoggia:bpy.types.Object,
                   dir):
+    # 开启进度条
+    global isFinished,progress
+    isFinished = False
+    progress = 0
+
     LoggiaJoined = baseLoggia
     Loggia = __getJoinedOriginal(LoggiaJoined)
     bData:acaData = Loggia.ACA_data
@@ -2486,6 +2494,7 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
     cornerData['x_rooms'] = 1
     cornerData['x_1'] = cornerData.y_1
     cornerData['y_rooms'] = 1
+    cornerData['loggia_sign'] += '/' + dir
     # 位移
     offset_corner = bData.x_total/2 + bData.y_total/2
     if 'W' in bData.loggia_sign:
@@ -2562,7 +2571,7 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
         parent=LoggiaCornerJoined,
     )
     utils.hideObjFace(boolCube)
-    # utils.hideObj(boolCube)
+    utils.hideObj(boolCube)
     for obj in LoggiaCornerJoined.children:
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue
@@ -2573,6 +2582,10 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
         )
         # 裁剪后柱体normal异常，做平滑
         utils.shaderSmooth(obj)
+    
+    # 关闭进度条
+    isFinished = True
+
     return LoggiaCornerJoined
 
 # 向指定方向延伸一个廊间
@@ -2719,6 +2732,7 @@ def __add_loggia_intersection(fromLoggia:bpy.types.Object,
     # 裁剪在内侧
     utils.dissolveEdge(boolCube,[9])
     utils.hideObjFace(boolCube)
+    utils.hideObj(boolCube)
     
     # 是否为顺时针
     isClockWise = False

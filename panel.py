@@ -281,7 +281,8 @@ class ACA_PT_basic(bpy.types.Panel):
                         )    
         
         # 回廊延伸
-        if bData.combo_type == con.COMBO_LOGGIA:
+        if bData.combo_type in (con.COMBO_LOGGIA,
+                                con.COMBO_LOGGIA_CORNER):
             # 第3.1行 ------------------------------
             toolBoxLoggia = box.column(align=True)
             toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
@@ -332,6 +333,13 @@ class ACA_PT_basic(bpy.types.Panel):
                 btnLoggiaNorth.enabled = False
             if 'S' in extSign:
                 btnLoggiaSouth.enabled = False
+            # 中段禁止分支
+            if 'W' in extSign and 'E' in extSign:
+                btnLoggiaNorth.enabled = False
+                btnLoggiaSouth.enabled = False
+            if 'S' in extSign and 'N' in extSign:
+                btnLoggiaWest.enabled = False
+                btnLoggiaEast.enabled = False
 
             toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
             toolBar.prop(Loggia.ACA_data,"loggia_sign",text="")

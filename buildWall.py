@@ -462,10 +462,12 @@ def addWall(buildingObj:bpy.types.Object,
             # 251029 在批量添加时，逐一删除雀替
             if wallObj != None:
                 # 除了添加栏杆/坐凳，其他装修与雀替互斥，直接删除
-                if wallType not in (con.ACA_WALLTYPE_RAILILNG,
-                                    con.ACA_WALLTYPE_BENCH):
+                if wallType not in (con.ACA_WALLTYPE_RAILILNG,):
                     # 删除雀替
                     __delQuetiFromAdd(wallObj)
+                # 251118 坐凳刷新雀替
+                if wallType == con.ACA_WALLTYPE_BENCH:
+                    __addQuetiFromDel(wallObj)
 
             # 将柱子交换，为下一次循环做准备
             pFrom = piller
@@ -507,16 +509,20 @@ def delWall(buildingObj:bpy.types.Object,
         delete_walls.append(wall)
     
     # 删除墙体
-    for wall in delete_walls:
-        # 添加雀替
-        __addQuetiFromDel(wall)
-            
+    for wall in delete_walls:  
         # 删除列表数据
         utils.delDataChild(
             contextObj=buildingObj,
             obj_type=wall.ACA_data['aca_type'],
             obj_id=wall.ACA_data['wallID'],
         )
+
+        # 251118 坐凳刷新雀替
+        if wall.ACA_data.aca_type == con.ACA_WALLTYPE_BENCH:
+            __delQuetiFromAdd(wall)
+        # 添加雀替
+        __addQuetiFromDel(wall)
+
         # 删除wall实体    
         utils.deleteHierarchy(wall,del_parent=True)
 

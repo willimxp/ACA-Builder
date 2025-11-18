@@ -799,7 +799,7 @@ def __buildBench(parentObj:bpy.types.Object,
         # 牙子总宽，开口后，再减去一个竖凳面宽度
         yaziWidth = (proxy['length']*(1-proxy['gap'])/2
                      - con.BENCH_FACE_H)
-        # 牙子边框宽，减去边款宽度
+        # 牙子边框宽，减去边框宽度
         yaziL = yaziWidth - con.BENCH_BORDER
     else:
         yaziL = proxy['length'] - con.BENCH_BORDER
@@ -858,6 +858,69 @@ def __buildBench(parentObj:bpy.types.Object,
         Vector((yaziX,0,yaziZ)),
         lingxinMat=con.M_LINXIN_WAN)
     benchParts.append(shanxinObj)
+
+    # 做楣子
+    # 定尺寸
+    if useGap:
+        # 楣子总宽，按开口计算
+        meiziWidth = proxy['length']*(1-proxy['gap'])/2
+        # 楣子边框宽，减去边框宽度
+        meiziL = meiziWidth - con.BENCH_BORDER
+    else:
+        meiziL = proxy['length'] - con.BENCH_BORDER
+    # 定位，从柱头向下楣子板高度
+    meiziZ = parentObj.dimensions.z - con.BENCH_MEIZI_H/2
+    if useGap:
+        meiziX = proxy['length']/2 - meiziWidth/2
+    else:
+        meiziX = 0
+    # 创建一个平面，转换为curve，设置curve的横截面
+    bpy.ops.mesh.primitive_plane_add(
+        size=1,
+        location=(meiziX,0,meiziZ)
+    )
+    meizibianObj = bpy.context.object
+    meizibianObj.name = '楣子仔边'
+    meizibianObj.parent = parentObj
+    # 三维的scale转为plane二维的scale
+    meizibianObj.rotation_euler.x = math.radians(90)
+    meizibianObj.scale = (
+        meiziL,
+        con.BENCH_MEIZI_H - con.BENCH_BORDER, # 旋转90度，原Zscale给Yscale
+        1)
+    # apply scale
+    utils.applyTransform(meizibianObj,use_rotation=True,use_scale=True)
+    # 转换为Curve
+    bpy.ops.object.convert(target='CURVE')
+    # 旋转所有的点45度，形成四边形
+    bpy.ops.object.editmode_toggle()
+    bpy.ops.curve.select_all(action='SELECT')
+    bpy.ops.transform.tilt(value=math.radians(45))
+    bpy.ops.object.editmode_toggle()
+    # 设置Bevel
+    meizibianObj.data.bevel_mode = 'PROFILE'        
+    meizibianObj.data.bevel_depth = con.BENCH_BORDER
+    meizibianObj.data.bevel_resolution = 0
+    # 转为mesh
+    bpy.ops.object.convert(target='MESH')
+    meizibianObj = bpy.context.object
+    # 倒角
+    utils.addModifierBevel(meizibianObj,con.BEVEL_LOW)
+    # 着色
+    mat.paint(meizibianObj,con.M_PAINT)
+    benchParts.append(meizibianObj)
+
+    # 做棂心
+    meizishanxinDim = (meiziL - con.BENCH_BORDER,
+                  0.01,
+                  con.BENCH_MEIZI_H - con.BENCH_BORDER*2,)
+    from . import buildDoor
+    meizishanxinObj = buildDoor.__buildShanxin(
+        parentObj,
+        Vector(meizishanxinDim),
+        Vector((meiziX,0,meiziZ)),
+        lingxinMat=con.M_LINXIN_WAN)
+    benchParts.append(meizishanxinObj)
 
     # 合并构件
     benchObj = utils.joinObjects(benchParts,'坐凳')

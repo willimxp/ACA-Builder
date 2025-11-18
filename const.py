@@ -260,6 +260,7 @@ class ACA_Consts(object):
     BENCH_FACE_Z = 0.5                  # 坐凳面垂直高度(m),50~55cm
     BENCH_BORDER = 0.04                 # 坐凳边抹(m)，宽45~55，厚55~65
     BENCH_YAZI_H = 0.38                 # 坐凳牙子板高度(m) 
+    BENCH_MEIZI_H = 0.3                 # 坐等楣子板高度(m)
 
     # 其他
     OFFSET_ORIENTATION = 'GLOBAL'       # 'GLOBAL'  'LOCAL' #上下层叠构件的错开方式，一般绘图是垂直位移，但其实相对方向的位移更好看

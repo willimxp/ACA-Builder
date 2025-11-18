@@ -361,7 +361,6 @@ def addQueti(wallproxy:bpy.types.Object):
     if buildingObj == None:
         raise Exception(
             "未找到建筑根节点或设计数据")
-        return
     dk = bData.DK
 
     # 清理之前的子对象
@@ -376,6 +375,14 @@ def addQueti(wallproxy:bpy.types.Object):
     if bData.use_smallfang:
         zoffset -= (con.BOARD_YOUE_H*dk
                     +con.EFANG_SMALL_H*dk)
+    # 251118 如果开间有坐凳，则雀替做在楣子下枋
+    wallID = wallproxy.ACA_data['wallID']
+    wallsplit = wallID.split('#')
+    wallpos = wallsplit[1] + '#' + wallsplit[2]
+    for railing in bData.railing_list:
+        if wallpos in railing.id:
+            zoffset -= con.BENCH_MEIZI_H
+
     # 雀替对象在blender中用Geometry Nodes预先进行了自动拼装
     quetiObj = utils.copyObject(
         sourceObj=aData.queti_source,

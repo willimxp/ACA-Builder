@@ -550,7 +550,7 @@ def __paintMat(object:bpy.types.Object,
         object = __setTileMat(object,
                      mat,
                      uvType=uvType.CUBE,
-                     cubesize=0.3)  
+                     cubesize=0.25)  
 
     # 挑檐枋工王云，仅在前后两面做彩画
     if mat in (

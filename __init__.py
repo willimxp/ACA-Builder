@@ -31,6 +31,7 @@ classes = (
     data.TemplateThumbItem,
     data.ACA_data_pavilion,
     data.ACA_data_scene,
+    data.ACA_id_list,
     data.ACA_data_wall_common,
     data.ACA_data_door_common,
     data.ACA_data_taduo,

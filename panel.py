@@ -4,6 +4,7 @@
 #   定义插件面板的UI
 
 import bpy
+import math
 from . import data
 from .data import ACA_data_obj as acaData
 from .const import ACA_Consts as con
@@ -115,11 +116,11 @@ class ACA_PT_basic(bpy.types.Panel):
             ):
             col.enabled = False
 
-        # # 调试信息 -------------------- 
-        # col = box.row() 
-        # col.prop(bData,"aca_id",text="id")
-        # col = box.row() 
-        # col.prop(bData,"combo_parent",text="parent")
+        # 调试信息 -------------------- 
+        col = box.row() 
+        col.prop(bData,"aca_id",text="id")
+        col = box.row() 
+        col.prop(bData,"combo_parent",text="parent")
         
         #----------------------------
         toolBox = box.row(align=True) 
@@ -285,7 +286,14 @@ class ACA_PT_basic(bpy.types.Panel):
                                 con.COMBO_LOGGIA_CORNER):
             # 第3.1行 ------------------------------
             toolBoxLoggia = box.column(align=True)
-            toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
+            toolBar = toolBoxLoggia.grid_flow(columns=3, align=True)
+            # 回廊延伸-西北
+            btnLoggiaNW = toolBar.column(align=True)
+            opLoggiaNW = btnLoggiaNW.operator(
+                            "aca.loggia_extend",
+                            icon='PASTEFLIPUP',
+                            text="",)    
+            opLoggiaNW.dir = 'NW'
             # 回廊延伸-北
             btnLoggiaNorth = toolBar.column(align=True)
             opLoggiaNorth = btnLoggiaNorth.operator(
@@ -293,6 +301,13 @@ class ACA_PT_basic(bpy.types.Panel):
                             icon='TRIA_UP',
                             text="",)    
             opLoggiaNorth.dir = 'N'
+            # 回廊延伸-东北
+            btnLoggiaNE = toolBar.column(align=True)
+            opLoggiaNE = btnLoggiaNE.operator(
+                            "aca.loggia_extend",
+                            icon='COPYDOWN',
+                            text="",)    
+            opLoggiaNE.dir = 'NE'
             # 第3.2行 ------------------------------
             toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
             # 回廊延伸-西
@@ -310,7 +325,14 @@ class ACA_PT_basic(bpy.types.Panel):
                             text="",)    
             opLoggiaEast.dir = 'E'
             # 第3.3行 ------------------------------
-            toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
+            toolBar = toolBoxLoggia.grid_flow(columns=3, align=True)
+            # 回廊延伸-西南
+            btnLoggiaSW = toolBar.column(align=True)
+            opLoggiaSW = btnLoggiaSW.operator(
+                            "aca.loggia_extend",
+                            icon='PASTEFLIPDOWN',
+                            text="",)    
+            opLoggiaSW.dir = 'SW'
             # 回廊延伸-南
             btnLoggiaSouth = toolBar.column(align=True)
             opLoggiaSouth = btnLoggiaSouth.operator(
@@ -318,28 +340,77 @@ class ACA_PT_basic(bpy.types.Panel):
                             icon='TRIA_DOWN',
                             text="",)    
             opLoggiaSouth.dir = 'S'
+            # 回廊延伸-东南
+            btnLoggiaSE = toolBar.column(align=True)
+            opLoggiaSE = btnLoggiaSE.operator(
+                            "aca.loggia_extend",
+                            icon='PASTEDOWN',
+                            text="",)    
+            opLoggiaSE.dir = 'SE'
 
             # 验证按钮可用性
             if bData.aca_type == con.ACA_TYPE_BUILDING_JOINED:
                 Loggia = utils.getJoinedOriginal(buildingObj)
             else:
                 Loggia = buildingObj
+            if Loggia is None: return
+
+            # 原始廊间是横版，还是竖版？
+            zRot = Loggia.rotation_euler.z
+            if (abs(zRot - math.radians(0)) < 0.001
+                or abs(zRot - math.radians(180)) < 0.001):
+                isWE = True
+            else:
+                isWE = False
+
             extSign = Loggia.ACA_data.loggia_sign
-            if 'E' in extSign:
-                btnLoggiaEast.enabled = False
-            if 'W' in extSign:
-                btnLoggiaWest.enabled = False
-            if 'N' in extSign:
-                btnLoggiaNorth.enabled = False
-            if 'S' in extSign:
-                btnLoggiaSouth.enabled = False
-            # 中段禁止分支
-            if 'W' in extSign and 'E' in extSign:
-                btnLoggiaNorth.enabled = False
-                btnLoggiaSouth.enabled = False
-            if 'S' in extSign and 'N' in extSign:
-                btnLoggiaWest.enabled = False
-                btnLoggiaEast.enabled = False
+
+            # 非转角屋限制
+            if bData.combo_type == con.COMBO_LOGGIA:
+                # 东西向，禁止南北延伸
+                if isWE:
+                    btnLoggiaNorth.enabled = False
+                    btnLoggiaSouth.enabled = False
+                # 南北向，禁止东西延伸
+                else:
+                    btnLoggiaEast.enabled = False
+                    btnLoggiaWest.enabled = False
+
+                # 禁止已标注存在的方向操作
+                if 'N' in extSign:
+                    btnLoggiaNorth.enabled = False
+                    btnLoggiaNE.enabled = False
+                    btnLoggiaNW.enabled = False
+                if 'W' in extSign:
+                    btnLoggiaWest.enabled = False
+                    btnLoggiaNW.enabled = False
+                    btnLoggiaSW.enabled = False
+                if 'E' in extSign:
+                    btnLoggiaEast.enabled = False
+                    btnLoggiaNE.enabled = False
+                    btnLoggiaSE.enabled = False
+                if 'S' in extSign:
+                    btnLoggiaSouth.enabled = False
+                    btnLoggiaSE.enabled = False
+                    btnLoggiaSW.enabled = False
+
+            # 转角屋限制
+            if bData.combo_type == con.COMBO_LOGGIA_CORNER:
+                # 禁止四向转角
+                btnLoggiaNE.enabled = False
+                btnLoggiaNW.enabled = False
+                btnLoggiaSE.enabled = False
+                btnLoggiaSW.enabled = False
+
+                # 北向已有廊间，禁止北向操作
+                if 'N' in extSign:
+                    btnLoggiaNorth.enabled = False
+                if 'W' in extSign:
+                    btnLoggiaWest.enabled = False
+                if 'E' in extSign:
+                    btnLoggiaEast.enabled = False
+                if 'S' in extSign:
+                    btnLoggiaSouth.enabled = False
 
             toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
             toolBar.prop(Loggia.ACA_data,"loggia_sign",text="")

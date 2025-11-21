@@ -597,6 +597,11 @@ def getDougongList(self, context):
     dougongList = template.getDougongList()
     return dougongList
 
+class ACA_id_list(bpy.types.PropertyGroup):
+    id: bpy.props.StringProperty(
+            name = 'id',
+        ) # type: ignore
+    
 # 踏跺属性
 class ACA_data_taduo(bpy.types.PropertyGroup):
     id: bpy.props.StringProperty(
@@ -722,6 +727,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     combo_parent:bpy.props.StringProperty(
             name = '组合关联对象',
         ) # type: ignore
+    combo_children: bpy.props.CollectionProperty(
+        type=ACA_id_list, name="组合关联子对象"
+    ) # type: ignore
     combo_location : bpy.props.FloatVectorProperty(
             name = '根节点位移',
             default=(0.0, 0.0, 0.0),

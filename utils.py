@@ -3450,9 +3450,12 @@ def reverse_curve_direction(curve_obj: bpy.types.Object):
 
 # 获取合并建筑对应的原建筑
 def getJoinedOriginal(joinedBuilding: bpy.types.Object):
+    if joinedBuilding is None: return
+    src_building = None
     collName = joinedBuilding.name.removesuffix(con.JOIN_SUFFIX)
     src_coll = bpy.data.collections.get(collName)
-    src_building = src_coll.objects[0]
+    if src_coll:
+        src_building = src_coll.objects[0]
     return src_building
 
 """

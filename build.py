@@ -2385,20 +2385,17 @@ def loggia_extend(contextObj:bpy.types.Object,
         if LoggiaJoined is None:
             utils.popMessageBox("未能合并建筑")
             return {'CANCELLED'}
-
-    # 原始廊间是横版，还是竖版？
-    zRot = Loggia.rotation_euler.z
-    if (abs(zRot - math.radians(0)) < 0.001
-        or abs(zRot - math.radians(180)) < 0.001):
-        isWE = True
-    else:
-        isWE = False
     
     # 2、判断转角，并生成转角 ---------------------------
-    if bData.combo_type == con.COMBO_LOGGIA_CORNER:
-        LoggiaCornerJoined = LoggiaJoined
+    # 做L形转角
     if dir in ('NW','NE','SW','SE'): 
         LoggiaCornerJoined = __add_loggia_corner(
+            baseLoggia = LoggiaJoined,
+            dir = dir,
+        )
+    # 做丁字或十字交叉
+    if bData.combo_type == con.COMBO_LOGGIA_CORNER:
+        LoggiaCornerJoined = __update_loggia_corner(
             baseLoggia = LoggiaJoined,
             dir = dir,
         )
@@ -2422,6 +2419,13 @@ def loggia_extend(contextObj:bpy.types.Object,
     # 未合并对象的标注
     if dir in ('E','W','N','S'):
         bData.loggia_sign += '/' + dir
+    # 原始廊间是横版，还是竖版？
+    zRot = Loggia.rotation_euler.z
+    if (abs(zRot - math.radians(0)) < 0.001
+        or abs(zRot - math.radians(180)) < 0.001):
+        isWE = True
+    else:
+        isWE = False
     if isWE:
         if dir in ('NE','SE'):
             bData.loggia_sign += '/E' 
@@ -2630,6 +2634,124 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
     
     # 关闭进度条
     isFinished = True
+
+    return LoggiaCornerJoined
+
+# 更新转角
+# 用于在转角上做丁字或十字交叉
+def __update_loggia_corner(baseLoggia:bpy.types.Object,
+                  dir):
+    LoggiaCornerJoined = baseLoggia
+    bData:acaData = LoggiaCornerJoined.ACA_data
+    dk = bData.DK
+    buildingH = (bData.platform_height+bData.piller_height)
+    if bData.use_dg:
+        buildingH += bData.dg_height
+    buildingH += bData.y_total / 2
+    buildingH += 20*dk # 保险高度
+    buildingEave = 20*dk # 悬山出际
+    
+    # 转角链接的廊间数量
+    linkCount = len(bData.combo_children)
+    # 找到转角屋
+    cornerObj = None
+    for obj in LoggiaCornerJoined.children:
+        if con.BOOL_SUFFIX not in obj.name : 
+            cornerObj = obj
+            break
+    if cornerObj is None:
+        raise Exception("无法找到转角对象")
+    
+    # 做丁字交叉
+    if linkCount == 2:
+        # 已有的2个廊间，加上将要做的第3的廊间，推断丁字方向
+        cornerLinked = bData.loggia_sign + '/' + dir
+        # 丁字方向，丁头顶不出头的方向
+        tdir = ''
+        if 'N' not in cornerLinked:
+            tdir = 'N'
+            tdim = Vector((0,1,0))
+            tloc = Vector((0,1,0))
+        elif 'S' not in cornerLinked:
+            tdir = 'S'
+            tdim = Vector((0,1,0))
+            tloc = Vector((0,-1,0))
+        elif 'W' not in cornerLinked:
+            tdir = 'W'
+            tdim = Vector((1,0,0))
+            tloc = Vector((-1,0,0))
+        elif 'E' not in cornerLinked:
+            tdir = 'E'
+            tdim = Vector((1,0,0))
+            tloc = Vector((1,0,0))
+            
+        print(f'dir={dir},tdir={tdir}')
+
+        # 原廊间的调整 -------------------------------
+        # 移除原有45度镜像
+        mod = cornerObj.modifiers.get('Mirror')
+        cornerObj.modifiers.remove(mod)
+        # 与丁字方向对应
+        if tdir in ('W','E'):
+            cornerObj.rotation_euler.z = math.radians(90)
+
+        # 原廊间的裁剪 ------------------------------------
+        # 默认出檐尺寸
+        eaveExt = 30*dk
+        # 不出檐尺寸
+        # 根据丁字头的出檐调整
+        dimAdj = Vector((eaveExt,
+                         eaveExt,
+                         0)) * tdim
+        dim = Vector((bData.x_total,
+                      bData.x_total,
+                      buildingH)) + dimAdj
+        # 根据丁字头的出檐调整
+        locAdj = Vector((eaveExt/2,
+                         eaveExt/2,
+                         0)) * tloc
+        loc = Vector((0,
+                      0,
+                      buildingH/2)) + locAdj
+        mod = cornerObj.modifiers.get('Boolean')
+        cornerBoolCube:bpy.types.Object = mod.object
+        cornerBoolCube.dimensions = dim
+        cornerBoolCube.location = loc
+
+        # 复制转角屋并裁剪 ----------------------------------
+        cornerCopy = utils.copySimplyObject(cornerObj)
+        # 旋转并交叉
+        cornerCopy.rotation_euler.z += math.radians(90)
+        # 在丁字方向进行裁剪        
+        size = (bData.y_total + buildingEave) * 1.414
+        center = size * 1.414/2
+        dim = (size,size,buildingH)
+        locAdj = Vector((-center,-center,0)) * tloc
+        loc = Vector((0,0,buildingH/2)) + locAdj
+        # 添加裁剪
+        boolCube = utils.addCube(
+            name='丁字裁剪' + con.BOOL_SUFFIX,
+            location=loc,
+            dimension=dim,
+            parent=LoggiaCornerJoined,
+            rotation=(0,0,math.radians(45))
+        )
+        utils.hideObjFace(boolCube)
+        utils.hideObj(boolCube)
+        utils.addModifierBoolean(
+            object=cornerCopy,
+            boolObj=boolCube,
+            operation='INTERSECT',
+        )
+        utils.addModifierBoolean(
+            object=cornerObj,
+            boolObj=boolCube,
+            operation='DIFFERENCE',
+        )
+
+    # 做十字交叉
+    if linkCount ==3:
+        pass
 
     return LoggiaCornerJoined
 

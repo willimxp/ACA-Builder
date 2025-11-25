@@ -381,19 +381,22 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     split = con.TILE_CORNER_SPLIT*dk
     p2 = p1 + Vector((ridge_x+aside-split,0,0))
 
-    # 251111 悬山/硬山保证明间的瓦垄取整，以便做延伸时瓦面对齐
-    # 计算瓦垄的数量
-    tileCols = __getTileCols(buildingObj,direction)-0.5
-    # 粗估的瓦垄宽度
-    tile_width_real = p2.x/tileCols
-    # 明间取整后的瓦垄数量
-    center_room_width = bData.x_1/2 # 半幅镜像
-    center_room_col = math.floor(center_room_width/tile_width_real)
-    # 明间取整后的瓦垄宽度
-    tile_width_adj = center_room_width/center_room_col
-    # 调整后的X位置
-    grid_width_adj = tileCols*tile_width_adj
-    p2.x = grid_width_adj
+    # 251125 仅在做回廊时应用该逻辑
+    if bData.combo_type in (con.COMBO_LOGGIA,
+                            con.COMBO_LOGGIA_CORNER):
+        # 251111 悬山/硬山保证明间的瓦垄取整，以便做延伸时瓦面对齐
+        # 计算瓦垄的数量
+        tileCols = __getTileCols(buildingObj,direction)-0.5
+        # 粗估的瓦垄宽度
+        tile_width_real = p2.x/tileCols
+        # 明间取整后的瓦垄数量
+        center_room_width = bData.x_1/2 # 半幅镜像
+        center_room_col = math.floor(center_room_width/tile_width_real)
+        # 明间取整后的瓦垄宽度
+        tile_width_adj = center_room_width/center_room_col
+        # 调整后的X位置
+        grid_width_adj = tileCols*tile_width_adj
+        p2.x = grid_width_adj
 
     # 绘制檐口线
     CurvePoints = utils.setEaveCurvePoint(p1,p2,direction)

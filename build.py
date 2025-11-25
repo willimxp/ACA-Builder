@@ -2296,6 +2296,286 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
 
     return {'FINISHED'}
 
+# 建筑组合：L相交
+# 暂时只考虑2坡顶
+def __unionCrossL(fromBuilding:bpy.types.Object,
+                     toBuilding:bpy.types.Object,
+                     fromBuildingJoined:bpy.types.Object,
+                     toBuildingJoined:bpy.types.Object,
+                     dir='Y'):
+    utils.outputMsg('L形相交')
+    # 指定合并目录，以免碰撞体落在原建筑目录中
+    coll:bpy.types.Collection = utils.setCollection(
+                'ACA古建.合并',isRoot=True,colorTag=3)
+    bData:acaData = fromBuilding.ACA_data
+    mData:acaData = toBuilding.ACA_data
+    dk = bData.DK
+    
+    if bData.roof_style not in (con.ROOF_YINGSHAN,
+                                con.ROOF_YINGSHAN_JUANPENG,
+                                con.ROOF_XUANSHAN,
+                                con.ROOF_XUANSHAN_JUANPENG,):
+        utils.outputMsg('只支持2坡顶')
+        return
+    if mData.roof_style not in (con.ROOF_YINGSHAN,
+                                con.ROOF_YINGSHAN_JUANPENG,
+                                con.ROOF_XUANSHAN,
+                                con.ROOF_XUANSHAN_JUANPENG,):
+        utils.outputMsg('只支持2坡顶')
+        return
+    
+    # 裁剪体高度
+    buildingH = (bData.platform_height+bData.piller_height)
+    if bData.use_dg:
+        buildingH += bData.dg_height
+    buildingH += bData.y_total / 2
+    buildingH += 20*dk # 保险高度
+    buildingEave = 30*dk 
+    
+    # 获取相交瓦面 ---------------------------------
+    # A建筑瓦面
+    fromRoof = utils.getAcaChild(
+        fromBuilding,con.ACA_TYPE_TILE_GRID)
+    if fromRoof:
+        fromRoof_copy = utils.copySimplyObject(
+            fromRoof,singleUser=True)
+        utils.showObj(fromRoof_copy)
+        # 镜像
+        utils.addModifierMirror(
+            object=fromRoof_copy,
+            mirrorObj=fromBuilding,
+            use_axis=(True,True,False),
+            use_bisect=(True,True,False),
+            use_merge=True
+        )
+        utils.applyAllModifer(fromRoof_copy)
+    # B建筑瓦面
+    toRoof = utils.getAcaChild(
+        toBuilding,con.ACA_TYPE_TILE_GRID)
+    if toRoof:
+        toRoof_copy = utils.copySimplyObject(
+            toRoof,singleUser=True)
+        utils.showObj(toRoof_copy)
+        # 镜像
+        utils.addModifierMirror(
+            object=toRoof_copy,
+            mirrorObj=toBuilding,
+            use_axis=(True,True,False),
+            use_bisect=(True,True,False),
+            use_merge=True
+        )
+        utils.applyAllModifer(toRoof_copy)
+
+    # 基于BVH的碰撞检测 ---------------------------
+    if fromRoof_copy and toRoof_copy: 
+        intersections,curve = utils.mesh_mesh_intersection(
+            fromRoof_copy, 
+            toRoof_copy,
+            create_curve=True,
+            create_mesh=False)
+        if curve is None:
+            utils.outputMsg(f"未找到屋顶相交范围")
+            # 回收对象
+            utils.delObject(fromRoof_copy)
+            utils.delObject(toRoof_copy)
+            utils.delOrphan()
+            return {'CANCELLED'}
+    else:
+        print(f"未找到屋顶相交范围")
+        return {'CANCELLED'}
+    
+    # 碰撞线二次调整 --------------------
+    spline = curve.data.splines[0]
+    pStart = spline.points[0].co
+    pEnd = spline.points[-1].co
+    # 以中点与toBuilding的位置关系，决定做哪个象限
+    pMid = (pStart + pEnd)/2
+    toCenter = toBuilding.location
+    # 添加5个包裹点
+    spline.points.add(5)
+    pEndExt = spline.points[-5].co
+    pCornerEnd = spline.points[-4].co
+    pCorner = spline.points[-3].co
+    pCornerStart = spline.points[-2].co
+    pStartExt = spline.points[-1].co
+    
+    # 裁剪西南角
+    isClockWise = True
+    if pMid.x < toCenter.x and pMid.y < toCenter.y:
+        pCorner.x = toBuilding.location.x + bData.y_total/2 + buildingEave
+        pCorner.y = toBuilding.location.y + bData.x_total/2 + buildingEave
+        # 逆时针包裹
+        if pStart.x < pEnd.x:
+            isClockWise = False
+            pEndExt.x = pEnd.x + buildingEave
+            pEndExt.y = pEnd.y - buildingEave
+            pStartExt.x = pStart.x - buildingEave
+            pStartExt.y = pStart.y + buildingEave  
+        # 顺时针包裹
+        else:
+            pEndExt.x = pEnd.x - buildingEave
+            pEndExt.y = pEnd.y + buildingEave
+            pStartExt.x = pStart.x + buildingEave
+            pStartExt.y = pStart.y - buildingEave  
+    
+    # 裁剪西北角
+    if pMid.x < toCenter.x and pMid.y > toCenter.y:
+        pCorner.x = toBuilding.location.x + bData.y_total/2 + buildingEave
+        pCorner.y = toBuilding.location.y - bData.x_total/2 - buildingEave
+        # 逆时针包裹
+        if pStart.x < pEnd.x:
+            isClockWise = False
+            pEndExt.x = pEnd.x + buildingEave
+            pEndExt.y = pEnd.y + buildingEave
+            pStartExt.x = pStart.x - buildingEave
+            pStartExt.y = pStart.y - buildingEave  
+        # 顺时针包裹
+        else:
+            pEndExt.x = pEnd.x - buildingEave
+            pEndExt.y = pEnd.y - buildingEave
+            pStartExt.x = pStart.x + buildingEave
+            pStartExt.y = pStart.y + buildingEave 
+
+    # 裁剪东南角
+    if pMid.x > toCenter.x and pMid.y < toCenter.y:
+        pCorner.x = toBuilding.location.x - bData.y_total/2 - buildingEave
+        pCorner.y = toBuilding.location.y + bData.x_total/2 + buildingEave
+        # 逆时针包裹
+        if pStart.x > pEnd.x:
+            isClockWise = False
+            pEndExt.x = pEnd.x - buildingEave
+            pEndExt.y = pEnd.y - buildingEave
+            pStartExt.x = pStart.x + buildingEave
+            pStartExt.y = pStart.y + buildingEave 
+        # 顺时针包裹
+        else:
+            pEndExt.x = pEnd.x + buildingEave
+            pEndExt.y = pEnd.y + buildingEave
+            pStartExt.x = pStart.x - buildingEave
+            pStartExt.y = pStart.y - buildingEave 
+    
+    # 裁剪东北角
+    if pMid.x > toCenter.x and pMid.y > toCenter.y:
+        pCorner.x = toBuilding.location.x - bData.y_total/2 - buildingEave
+        pCorner.y = toBuilding.location.y - bData.x_total/2 - buildingEave
+        # 逆时针包裹
+        if pStart.x > pEnd.x:
+            isClockWise = False
+            pEndExt.x = pEnd.x - buildingEave
+            pEndExt.y = pEnd.y + buildingEave
+            pStartExt.x = pStart.x + buildingEave
+            pStartExt.y = pStart.y - buildingEave 
+        # 顺时针包裹
+        else:
+            pEndExt.x = pEnd.x + buildingEave
+            pEndExt.y = pEnd.y - buildingEave
+            pStartExt.x = pStart.x - buildingEave
+            pStartExt.y = pStart.y + buildingEave 
+
+    if isClockWise:
+        pCornerEnd.x = pEndExt.x
+        pCornerEnd.y = pCorner.y
+
+        pCornerStart.x = pCorner.x
+        pCornerStart.y = pStartExt.y
+    else:
+        pCornerEnd.x = pCorner.x
+        pCornerEnd.y = pEndExt.y
+
+        pCornerStart.x = pStartExt.x
+        pCornerStart.y = pCorner.y
+
+    # 压缩成一个水平面
+    for p in spline.points:
+        p.co.z = 0
+
+    # 生成几何面 --------------------------
+    # 读取世界坐标的点（之前我们已用世界坐标填入）
+    verts_world = [Vector(p.co[:3]) for p in spline.points]
+    # 创建 bmesh，面位于世界坐标系
+    bm = bmesh.new()
+    bm_verts = []
+    for v_co in verts_world:
+        bm_verts.append(bm.verts.new((v_co.x, v_co.y, v_co.z)))
+    bm.verts.ensure_lookup_table()
+    # 尝试创建面（若非平面则 Blender 会接受为 NGon，但可能被三角化）
+    try:
+        face = bm.faces.new(tuple(bm_verts))
+    except ValueError:
+        # 如果顶点顺序或重复导致错误，先去重再尝试
+        unique_pts = []
+        for v in verts_world:
+            if len(unique_pts) == 0 or (v - unique_pts[-1]).length > 0.01:
+                unique_pts.append(v)
+        if len(unique_pts) >= 3:
+            bm.clear()
+            bm_verts = [bm.verts.new((v.x, v.y, v.z)) for v in unique_pts]
+            bm.faces.new(tuple(bm_verts))
+        else:
+            bm.free()
+            bm = None
+
+    # 生成几何体 -------------------------------
+    # 挤出垂直高度
+    # 选中所有面
+    for face in bm.faces: face.select = True
+    # 沿Z方向挤出
+    extrude_result = bmesh.ops.extrude_face_region(
+        bm, geom=bm.faces)
+    extruded_verts = [v for v in extrude_result['geom'] 
+                      if isinstance(v, bmesh.types.BMVert)]
+    bmesh.ops.translate(
+        bm,
+        vec=Vector((0, 0, buildingH)),  # Y轴方向移动
+        verts=extruded_verts
+    )
+
+    if bm is not None:
+        bm.normal_update()
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        # 写入 mesh 并创建对象
+        intersectionData = bpy.data.meshes.new(
+            '屋顶相交'+con.BOOL_SUFFIX )
+        bm.to_mesh(intersectionData)
+        bm.free()
+        intersectionObj = bpy.data.objects.new(
+            '屋顶相交'+con.BOOL_SUFFIX , intersectionData)
+        bpy.context.collection.objects.link(intersectionObj)
+    
+    # 绑定在新廊间之下
+    mw = intersectionObj.matrix_world.copy()
+    intersectionObj.parent = toBuildingJoined
+    intersectionObj.matrix_world = mw
+
+    utils.hideObjFace(intersectionObj)
+    utils.hideObj(intersectionObj)
+
+    # 4、回收辅助对象
+    utils.delObject(curve)
+    utils.delObject(fromRoof_copy)
+    utils.delObject(toRoof_copy)
+    utils.delOrphan()
+
+    # 应用裁剪 -------------------------------------------
+    for obj in toBuildingJoined.children:
+        # 跳过bool对象
+        if con.BOOL_SUFFIX  in obj.name : continue
+        utils.addModifierBoolean(
+            object=obj,
+            boolObj=intersectionObj,
+            operation='INTERSECT'
+        )
+    for obj in fromBuildingJoined.children:
+        # 跳过bool对象
+        if con.BOOL_SUFFIX  in obj.name : continue
+        utils.addModifierBoolean(
+            object=obj,
+            boolObj=intersectionObj,
+            operation='DIFFERENCE'
+        )
+
+    return
+
 # 判断屋顶相交点
 def __getRoofCrossPoint(fromBuilding:bpy.types.Object,
                         toBuilding:bpy.types.Object,):
@@ -2387,14 +2667,22 @@ def loggia_extend(contextObj:bpy.types.Object,
             return {'CANCELLED'}
     
     # 2、判断转角，并生成转角 ---------------------------
+    if dir in ('NW','NE','SW','SE'):
+        isCorner = True
+    else:
+        isCorner = False
+    if bData.combo_type == con.COMBO_LOGGIA_CORNER:
+        isBranch = True
+    else:
+        isBranch = False
     # 做L形转角
-    if dir in ('NW','NE','SW','SE'): 
+    if isCorner: 
         LoggiaCornerJoined = __add_loggia_corner(
             baseLoggia = LoggiaJoined,
             dir = dir,
         )
     # 做丁字或十字交叉
-    if bData.combo_type == con.COMBO_LOGGIA_CORNER:
+    if isBranch:
         LoggiaCornerJoined = __update_loggia_corner(
             baseLoggia = LoggiaJoined,
             dir = dir,
@@ -2406,16 +2694,34 @@ def loggia_extend(contextObj:bpy.types.Object,
         dir = dir,
     )
 
-    # # 4、转角屋顶裁剪 ---------------------------
-    # if useCorner:
-    #     __add_loggia_intersection(
-    #         fromLoggia = LoggiaJoined,
-    #         toLoggia = LoggiaNewJoined,
-    #         cornerLoggia = LoggiaCornerJoined,
-    #         dir = dir,
-    #     )
+    # 4、转角屋顶裁剪 ---------------------------
+    if isCorner or isBranch:
+        __add_loggia_intersection(
+            fromLoggia = LoggiaJoined,
+            toLoggia = LoggiaNewJoined,
+            cornerLoggia = LoggiaCornerJoined,
+            dir = dir,
+        )
 
-    # 5、标识原廊间的相邻廊间，以便panel上禁用不合理的延伸方向
+    # 5、标识转角与廊间的关联，以便在做T形或X形交叉时找回参考廊间
+    if isCorner or isBranch:
+        # 转角ID
+        LoggiaCorner = __getJoinedOriginal(LoggiaCornerJoined)
+        cornerJData:acaData = LoggiaCornerJoined.ACA_data
+        cornerData:acaData = LoggiaCorner.ACA_data
+        # 新廊间ID
+        childID = cornerData.combo_children.add()
+        childID.id = LoggiaNewJoined.ACA_data.aca_id
+        childID = cornerJData.combo_children.add()
+        childID.id = LoggiaNewJoined.ACA_data.aca_id
+        if dir in ('NW','NE','SW','SE'):
+            # 老廊间关联转角
+            childID = cornerData.combo_children.add()
+            childID.id = LoggiaJoined.ACA_data.aca_id
+            childID = cornerJData.combo_children.add()
+            childID.id = LoggiaJoined.ACA_data.aca_id
+
+    # 6、标识原廊间的相邻廊间，以便panel上禁用不合理的延伸方向
     # 未合并对象的标注
     if dir in ('E','W','N','S'):
         bData.loggia_sign += '/' + dir
@@ -2443,25 +2749,6 @@ def loggia_extend(contextObj:bpy.types.Object,
         if con.BOOL_SUFFIX  in obj.name : continue
         oData:acaData = obj.ACA_data
         oData.loggia_sign = bData.loggia_sign
-
-    # 6、标识转角与廊间的关联，以便在做T形或X形交叉时找回参考廊间
-    if (dir in ('NW','NE','SW','SE')
-        or bData.combo_type == con.COMBO_LOGGIA_CORNER):
-        # 转角ID
-        LoggiaCorner = __getJoinedOriginal(LoggiaCornerJoined)
-        cornerJData:acaData = LoggiaCornerJoined.ACA_data
-        cornerData:acaData = LoggiaCorner.ACA_data
-        # 新廊间ID
-        childID = cornerData.combo_children.add()
-        childID.id = LoggiaNewJoined.ACA_data.aca_id
-        childID = cornerJData.combo_children.add()
-        childID.id = LoggiaNewJoined.ACA_data.aca_id
-        if dir in ('NW','NE','SW','SE'):
-            # 老廊间关联转角
-            childID = cornerData.combo_children.add()
-            childID.id = LoggiaJoined.ACA_data.aca_id
-            childID = cornerJData.combo_children.add()
-            childID.id = LoggiaJoined.ACA_data.aca_id
 
     # 聚焦在新loggia
     for obj in LoggiaNewJoined.children:
@@ -2812,7 +3099,11 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
         isWE = True
     else:
         isWE = False
-
+    # 是否为转角
+    if dir in ('NW','NE','SW','SE'):
+        isCorner = True
+    else:
+        isCorner = False
     # 是否做T字或X字分支？
     isBranch = False
     if oData.combo_type == con.COMBO_LOGGIA_CORNER:
@@ -2828,8 +3119,7 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
     # 仅一字延伸需要裁剪原廊间
     # L转角在生成转角时已经裁剪过一次，不要重复裁剪
     # 另外，如果是从转角做T字或X字延伸，也不需要对转角进行裁剪
-    if (dir in ('N','S','W','E')
-        and not isBranch):
+    if (not isCorner and not isBranch):
         __cut_base_loggia(baseLoggia,dir)
 
     # 3、向延伸方向复制 --------------------------------
@@ -2978,65 +3268,39 @@ def __add_loggia_intersection(fromLoggia:bpy.types.Object,
                               cornerLoggia:bpy.types.Object,
                               dir = 'E'):
     LoggiaJoined = fromLoggia
-    LoggiaNewJoined = toLoggia
-    LoggiaCornerJoined = cornerLoggia
     Loggia = __getJoinedOriginal(LoggiaJoined)
+    LoggiaNewJoined = toLoggia
+    LoggiaNew = __getJoinedOriginal(LoggiaNewJoined)
+    LoggiaCornerJoined = cornerLoggia
+    LoggiaCorner = __getJoinedOriginal(LoggiaCornerJoined)
+
     bData:acaData = Loggia.ACA_data
-    dk = bData.DK
-    
-    cubeWidth = bData.y_total + 60*dk + bData.x_total*2 # 出檐
-    # 建筑高度
-    buildingH = (bData.platform_height+bData.piller_height)
-    if bData.use_dg:
-        buildingH += bData.dg_height
-    buildingH += bData.y_total / 2
-    buildingH += 20*dk # 保险高度
-
-    boolCube = utils.addCube(
-        name="屋顶斜切" + con.BOOL_SUFFIX,
-        dimension=(cubeWidth,cubeWidth,buildingH),
-        location=(0,0,buildingH/2),
-        parent=LoggiaCornerJoined,
-    )
-    # 裁剪在内侧
-    utils.dissolveEdge(boolCube,[9])
-    utils.hideObjFace(boolCube)
-    utils.hideObj(boolCube)
-    
-    # 是否为顺时针
-    isClockWise = False
-    if dir == 'S' and 'W' in bData.loggia_sign:
-        isClockWise = True
-    if dir == 'W' and 'N' in bData.loggia_sign:
-        isClockWise = True
-    if dir == 'N' and 'E' in bData.loggia_sign:
-            isClockWise = True
-    if dir == 'E' and 'S' in bData.loggia_sign:
-        isClockWise = True
-    if isClockWise:
-        boolfrom = 'INTERSECT'
-        boolto = 'DIFFERENCE'
-    else:
-        boolfrom = 'DIFFERENCE'
-        boolto = 'INTERSECT'
-
-    for obj in LoggiaJoined.children:
-        # 跳过bool对象
-        if con.BOOL_SUFFIX  in obj.name : continue
-        utils.addModifierBoolean(
-            object= obj,
-            boolObj=boolCube,
-            operation=boolfrom
+    # L转角的两个廊间裁剪
+    if bData.combo_type == con.COMBO_LOGGIA:
+        __unionCrossL(
+            fromBuilding= Loggia,
+            toBuilding= LoggiaNew,
+            fromBuildingJoined= LoggiaJoined,
+            toBuildingJoined= LoggiaNewJoined,
         )
-    for obj in LoggiaNewJoined.children:
-        # 跳过bool对象
-        if con.BOOL_SUFFIX  in obj.name : continue
-        utils.addModifierBoolean(
-            object= obj,
-            boolObj=boolCube,
-            operation=boolto
-        )
-    return
+    # T转角裁剪
+    if bData.combo_type == con.COMBO_LOGGIA_CORNER:
+        cornerData:acaData = LoggiaCorner.ACA_data
+        linkLoggiaList = cornerData.combo_children
+        # 与转角每个相连廊间做裁剪
+        for linkLoggia in linkLoggiaList:
+            Loggia = utils.getObjByID(linkLoggia.id)
+            LoggiaJoined = utils.getObjByID(
+                linkLoggia.id,
+                aca_type=con.ACA_TYPE_BUILDING_JOINED)
+            __unionCrossL(
+                fromBuilding= Loggia,
+                toBuilding= LoggiaNew,
+                fromBuildingJoined= LoggiaJoined,
+                toBuildingJoined= LoggiaNewJoined,
+            )
+
+    return 
 
 # 原廊间的裁剪
 def __cut_base_loggia(baseLoggia:bpy.types.Object,

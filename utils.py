@@ -1135,6 +1135,8 @@ def addModifierBoolean(
             solver = 'FAST'
     modBool:bpy.types.BooleanModifier = \
             object.modifiers.new(name,'BOOLEAN')
+    if modBool is None:
+        raise Exception(f'对象[{object.name}]无法添加修改器,对象类型为：{object.type}')
     modBool.object = boolObj
     modBool.solver = solver
     modBool.operation = operation
@@ -2908,13 +2910,14 @@ def clearChildData(bData):
     return bData
 
 # 根据id获取对象
-def getObjByID(aca_id):
+def getObjByID(aca_id, 
+               aca_type = con.ACA_TYPE_BUILDING,):
     obj = None
     for obj in bpy.data.objects:
         if not hasattr(obj,'ACA_data'):
             continue
 
-        if obj.ACA_data.aca_type != con.ACA_TYPE_BUILDING:
+        if obj.ACA_data.aca_type != aca_type:
             continue
         
         if obj.ACA_data.aca_id == aca_id:
@@ -3186,6 +3189,8 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
 
     # 3、连通性判断 -----------------------------------------
     curve_obj = None
+    # 用于生成网格的列表（如果 create_mesh=True）
+    created_mesh_objs = []
     if create_curve and len(unique) > 0:
         # 使用 KDTree 做最近邻分段并保证连通性
         from mathutils.kdtree import KDTree
@@ -3255,9 +3260,6 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
         curve_data.dimensions = '3D'
         curve_obj = bpy.data.objects.new(curve_name, curve_data)
         bpy.context.collection.objects.link(curve_obj)
-
-        # 用于生成网格的列表（如果 create_mesh=True）
-        created_mesh_objs = []
 
         for seg_idx, seg in enumerate(segments_idx):
             m = len(seg)

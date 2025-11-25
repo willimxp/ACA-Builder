@@ -3604,7 +3604,8 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         con.ROOF_XIESHAN_JUANPENG):
         # 歇山做窄一些，留出更多的山花板
         if (bData.rafter_count == 4 
-            and bData.paint_style in ('1','3')):
+            and bData.paint_style in ('1','3')
+            and bData.roof_style == con.ROOF_XIESHAN):
             # 四架仿宋使用更小的山花板，以便给悬鱼留出更多空间
             bofengExt = con.BOFENG_OFFSET_XSS*dk
         else:
@@ -3813,9 +3814,10 @@ def __buildBofeng(buildingObj: bpy.types.Object,
                    override=True)
 
     # 3、悬鱼 ---------------------------------
+    # 251125 歇山卷棚不做悬鱼，悬山顶加上悬鱼
     if (bData.roof_style in (
             con.ROOF_XIESHAN,
-            con.ROOF_XIESHAN_JUANPENG,)
+            con.ROOF_XUANSHAN,)
         and bData.paint_style in ('1','3')):
 
         # 3.1、悬鱼定尺寸
@@ -3854,7 +3856,13 @@ def __buildBofeng(buildingObj: bpy.types.Object,
                 (0,0,-bofengExt))
             # 悬鱼缩放
             xuanyu_origin_h = aData.xuanyu_source.dimensions.z
-            xuanyu_scale = xuanyu_h / xuanyu_origin_h
+            # 251125 悬山加入悬鱼
+            if bData.roof_style == con.ROOF_XIESHAN:
+                # 歇山顶按博脊位置缩放
+                xuanyu_scale = xuanyu_h / xuanyu_origin_h
+            else:
+                # 悬山顶按斗口缩放
+                xuanyu_scale = bData.DK / con.DEFAULT_DK
             # 复制悬鱼资产
             xuanyuObj = utils.copyObject(
                 sourceObj=aData.xuanyu_source,
@@ -3872,6 +3880,8 @@ def __buildBofeng(buildingObj: bpy.types.Object,
                 mirrorObj=boardRootObj,
                 use_axis=(True,False,False)
             )
+            # 上色
+            mat.paint(xuanyuObj,con.M_PAINT,override=True)
             
     return bofengObj
 

@@ -533,7 +533,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                             parent= dgrootObj,
                         )
                         utils.hideObjFace(boolCube)
-                        # utils.hideObj(boolCube)
+                        utils.hideObj(boolCube)
                     utils.addModifierBoolean(
                         object=dgPillerCopy,
                         boolObj= boolCube,

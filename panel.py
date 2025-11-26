@@ -291,38 +291,45 @@ class ACA_PT_basic(bpy.types.Panel):
             btnLoggiaNW = toolBar.column(align=True)
             opLoggiaNW = btnLoggiaNW.operator(
                             "aca.loggia_extend",
-                            icon='PASTEFLIPUP',
-                            text="",)    
+                            #icon='PASTEFLIPUP',
+                            text="◤",)    
             opLoggiaNW.dir = 'NW'
             # 回廊延伸-北
             btnLoggiaNorth = toolBar.column(align=True)
             opLoggiaNorth = btnLoggiaNorth.operator(
                             "aca.loggia_extend",
-                            icon='TRIA_UP',
-                            text="",)    
+                            #icon='TRIA_UP',
+                            text="▲",)    
             opLoggiaNorth.dir = 'N'
             # 回廊延伸-东北
             btnLoggiaNE = toolBar.column(align=True)
             opLoggiaNE = btnLoggiaNE.operator(
                             "aca.loggia_extend",
-                            icon='COPYDOWN',
-                            text="",)    
+                            #icon='COPYDOWN',
+                            text="◥",)    
             opLoggiaNE.dir = 'NE'
             # 第3.2行 ------------------------------
-            toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
+            toolBar = toolBoxLoggia.grid_flow(columns=3, align=True)
             # 回廊延伸-西
             btnLoggiaWest = toolBar.column(align=True)
             opLoggiaWest = btnLoggiaWest.operator(
                             "aca.loggia_extend",
-                            icon='TRIA_LEFT',
-                            text="",)    
+                            #icon='TRIA_LEFT',
+                            text="◀",)    
             opLoggiaWest.dir = 'W'
+            # 空
+            btnEmpty = toolBar.column(align=True)
+            opEmpty = btnEmpty.operator(
+                            "aca.loggia_extend",
+                            #icon='TRIA_LEFT',
+                            text="▢",)   
+            btnEmpty.enabled = False
             # 回廊延伸-东
             btnLoggiaEast = toolBar.column(align=True)
             opLoggiaEast = btnLoggiaEast.operator(
                             "aca.loggia_extend",
-                            icon='TRIA_RIGHT',
-                            text="",)    
+                            #icon='TRIA_RIGHT',
+                            text="▶",)    
             opLoggiaEast.dir = 'E'
             # 第3.3行 ------------------------------
             toolBar = toolBoxLoggia.grid_flow(columns=3, align=True)
@@ -330,22 +337,22 @@ class ACA_PT_basic(bpy.types.Panel):
             btnLoggiaSW = toolBar.column(align=True)
             opLoggiaSW = btnLoggiaSW.operator(
                             "aca.loggia_extend",
-                            icon='PASTEFLIPDOWN',
-                            text="",)    
+                            #icon='PASTEFLIPDOWN',
+                            text="◣",)    
             opLoggiaSW.dir = 'SW'
             # 回廊延伸-南
             btnLoggiaSouth = toolBar.column(align=True)
             opLoggiaSouth = btnLoggiaSouth.operator(
                             "aca.loggia_extend",
-                            icon='TRIA_DOWN',
-                            text="",)    
+                            #icon='TRIA_DOWN',
+                            text="▼",)    
             opLoggiaSouth.dir = 'S'
             # 回廊延伸-东南
             btnLoggiaSE = toolBar.column(align=True)
             opLoggiaSE = btnLoggiaSE.operator(
                             "aca.loggia_extend",
-                            icon='PASTEDOWN',
-                            text="",)    
+                            #icon='PASTEDOWN',
+                            text="◢",)    
             opLoggiaSE.dir = 'SE'
 
             # 验证按钮可用性

@@ -904,8 +904,8 @@ def __drawTileBoolByGrid(
     utils.addModifierMirror(
         object=tileGrid_lr_copy,
         mirrorObj=buildingObj,
-        use_axis=(True,True,False),
-        use_bisect=(True,True,False),
+        use_axis=(False,True,False),
+        use_bisect=(False,True,False),
         use_merge=True
     )
     utils.applyAllModifer(tileGrid_lr_copy)
@@ -922,10 +922,13 @@ def __drawTileBoolByGrid(
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
-    for section in intersections:
-        mw = section.matrix_world.copy()
-        section.parent = tileRootObj
-        section.matrix_world = mw
+    if len(intersections) != 1:
+        raise Exception('瓦面碰撞检测失败，001')
+    else:
+        interface = intersections[0]
+        mw = interface.matrix_world.copy()
+        interface.parent = tileRootObj
+        interface.matrix_world = mw
 
     # 3、挤出裁剪体 -------------------------------
     bData:acaData = buildingObj.ACA_data
@@ -940,102 +943,106 @@ def __drawTileBoolByGrid(
     # 拉伸出檐
     extrude_eave = 20*dk # 保留宽度，考虑勾滴、角兽等
 
-    # 可能存在多个相交面，逐一挤出
-    for interface in intersections:
-        # 选中
-        utils.focusObj(interface)
-        # 编辑
-        bpy.ops.object.mode_set(mode='EDIT')
-        bm = bmesh.new()
-        bm = bmesh.from_edit_mesh(interface.data)
+    # 选中
+    utils.focusObj(interface)
+    # 编辑
+    bpy.ops.object.mode_set(mode='EDIT')
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh(interface.data)
 
-        # 2.1、做平行地面的投影面
-        # 以最高点挤压投影平面
-        zmax = -999999
+    # 2.1、做平行地面的投影面
+    # 以最高点挤压投影平面
+    zmax = -999999
+    for v in bm.verts:
+        if v.co.z > zmax:
+            zmax = v.co.z
+    for v in bm.verts:
+        v.co.z = zmax
+        # 向上抬升，以包裹瓦面
+        v.co.z += topSpan
+
+    # 2.2、向外挤出，覆盖抱厦出檐
+    bm.edges.ensure_lookup_table()
+    # 取出最后一条边（檐口边），仅对该边做挤出并沿 Y 轴平移
+    eaveEdge = bm.edges[0]  # 第一条线为檐口线
+    # 挤出
+    extrude_result = bmesh.ops.extrude_edge_only(
+        bm, edges=[eaveEdge])
+    bm.verts.ensure_lookup_table()
+    bm.edges.ensure_lookup_table()
+    geom = (extrude_result.get('geom', []) 
+            or extrude_result.get('verts', []) 
+            or [])
+    extruded_verts = [ele for ele in geom 
+        if isinstance(ele, bmesh.types.BMVert)]
+    if extruded_verts:
+        # 计算几何中心
+        edge_center = Vector((0.0, 0.0, 0.0))
         for v in bm.verts:
-            if v.co.z > zmax:
-                zmax = v.co.z
-        for v in bm.verts:
-            v.co.z = zmax
-            # 向上抬升，以包裹瓦面
-            v.co.z += topSpan
+            edge_center += v.co
+        edge_center /= len(bm.verts)
 
-        # 2.2、向外挤出，覆盖抱厦出檐
-        bm.edges.ensure_lookup_table()
-        # 取出最后一条边（檐口边），仅对该边做挤出并沿 Y 轴平移
-        eaveEdge = bm.edges[0]  # 第一条线为檐口线
-        # 挤出
-        extrude_result = bmesh.ops.extrude_edge_only(
-            bm, edges=[eaveEdge])
-        bm.verts.ensure_lookup_table()
-        bm.edges.ensure_lookup_table()
-        geom = (extrude_result.get('geom', []) 
-                or extrude_result.get('verts', []) 
-                or [])
-        extruded_verts = [ele for ele in geom 
-            if isinstance(ele, bmesh.types.BMVert)]
-        if extruded_verts:
-            # 计算几何中心
-            edge_center = Vector((0.0, 0.0, 0.0))
-            for v in bm.verts:
-                edge_center += v.co
-            edge_center /= len(bm.verts)
-
-            # 根据几何中心，决定向+X还是-X挤出
-            if edge_center.x <= extruded_verts[0].co.x:
-                trans_x = extrude_eave 
-            else:
-                trans_x = -extrude_eave
-            bmesh.ops.translate(bm,
-                verts=extruded_verts,
-                vec=Vector((trans_x, 0, 0))
-            )
-
-            # 根据中心，决定向+Y还是-Y扩展
-            for v in extruded_verts:
-                if v.co.x > edge_center.x:
-                    if v.co.y > edge_center.y :
-                        v.co.y += trans_x
-                    else:
-                        v.co.y -= trans_x
-                else:
-                    if v.co.y > edge_center.y :
-                        v.co.y -= trans_x
-                    else:
-                        v.co.y += trans_x
-        
-        # 2.2、挤压出高度
-        # 选中所有面
-        for face in bm.faces: face.select = True
-        # 沿Z方向挤出
-        extrude_result = bmesh.ops.extrude_face_region(
-            bm, geom=bm.faces)
-        extruded_verts = [v for v in extrude_result['geom'] 
-                        if isinstance(v, bmesh.types.BMVert)]
-        bmesh.ops.translate(
-            bm,
-            vec=Vector((0, 0, -extrude_Z)),  # Y轴方向移动
-            verts=extruded_verts
+        # 根据几何中心，决定向+X还是-X挤出
+        if edge_center.x <= extruded_verts[0].co.x:
+            trans_x = extrude_eave 
+        else:
+            trans_x = -extrude_eave
+        bmesh.ops.translate(bm,
+            verts=extruded_verts,
+            vec=Vector((trans_x, 0, 0))
         )
 
-        # 更新bmesh
-        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-        bmesh.update_edit_mesh(interface.data ) 
-        bm.free() 
-        bpy.ops.object.mode_set( mode = 'OBJECT' )
+        # 根据中心，决定向+Y还是-Y扩展
+        for v in extruded_verts:
+            if v.co.x > edge_center.x:
+                if v.co.y > edge_center.y :
+                    v.co.y += trans_x
+                else:
+                    v.co.y -= trans_x
+            else:
+                if v.co.y > edge_center.y :
+                    v.co.y -= trans_x
+                else:
+                    v.co.y += trans_x
+    
+    # 2.2、挤压出高度
+    # 选中所有面
+    for face in bm.faces: face.select = True
+    # 沿Z方向挤出
+    extrude_result = bmesh.ops.extrude_face_region(
+        bm, geom=bm.faces)
+    extruded_verts = [v for v in extrude_result['geom'] 
+                    if isinstance(v, bmesh.types.BMVert)]
+    bmesh.ops.translate(
+        bm,
+        vec=Vector((0, 0, -extrude_Z)),  # Y轴方向移动
+        verts=extruded_verts
+    )
+
+    # 更新bmesh
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bmesh.update_edit_mesh(interface.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+    # 做水平镜像
+    utils.addModifierMirror(
+        object=interface,
+        mirrorObj=tileRootObj,
+        use_axis=(True,False,False),
+        use_bisect=(True,False,False),
+    )
+    utils.applyAllModifer(interface)
+    utils.hideObjFace(interface)
+    utils.hideObj(interface)
 
     
     # 回收临时屋面
     utils.delObject(tileGrid_fb_copy)
     utils.delObject(tileGrid_lr_copy)
     utils.delOrphan()
-    
-    tileboolObj = utils.joinObjects(
-        intersections,newName='tilegrid.bool')
-    utils.hideObjFace(tileboolObj)
-    utils.hideObj(tileboolObj)
 
-    return tileboolObj
+    return interface
 
 # 在face上放置瓦片
 def __setTile(

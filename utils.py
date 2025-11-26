@@ -3346,44 +3346,44 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
                     # poly.points[-1].co = (first_co.x, first_co.y, first_co.z, 1.0)
                     poly.use_cyclic_u = True
 
-                # 读取世界坐标的点（之前我们已用世界坐标填入）
-                verts_world = [Vector(p.co[:3]) for p in poly.points]
+                    # 读取世界坐标的点（之前我们已用世界坐标填入）
+                    verts_world = [Vector(p.co[:3]) for p in poly.points]
 
-                # 创建 bmesh，面位于世界坐标系
-                bm = bmesh.new()
-                bm_verts = []
-                for v_co in verts_world:
-                    bm_verts.append(bm.verts.new((v_co.x, v_co.y, v_co.z)))
-                bm.verts.ensure_lookup_table()
+                    # 创建 bmesh，面位于世界坐标系
+                    bm = bmesh.new()
+                    bm_verts = []
+                    for v_co in verts_world:
+                        bm_verts.append(bm.verts.new((v_co.x, v_co.y, v_co.z)))
+                    bm.verts.ensure_lookup_table()
 
-                # 尝试创建面（若非平面则 Blender 会接受为 NGon，但可能被三角化）
-                try:
-                    face = bm.faces.new(tuple(bm_verts))
-                except ValueError:
-                    # 如果顶点顺序或重复导致错误，先去重再尝试
-                    unique_pts = []
-                    for v in verts_world:
-                        if len(unique_pts) == 0 or (v - unique_pts[-1]).length > (dedup_tol * 0.5):
-                            unique_pts.append(v)
-                    if len(unique_pts) >= 3:
-                        bm.clear()
-                        bm_verts = [bm.verts.new((v.x, v.y, v.z)) for v in unique_pts]
-                        bm.faces.new(tuple(bm_verts))
-                    else:
+                    # 尝试创建面（若非平面则 Blender 会接受为 NGon，但可能被三角化）
+                    try:
+                        face = bm.faces.new(tuple(bm_verts))
+                    except ValueError:
+                        # 如果顶点顺序或重复导致错误，先去重再尝试
+                        unique_pts = []
+                        for v in verts_world:
+                            if len(unique_pts) == 0 or (v - unique_pts[-1]).length > (dedup_tol * 0.5):
+                                unique_pts.append(v)
+                        if len(unique_pts) >= 3:
+                            bm.clear()
+                            bm_verts = [bm.verts.new((v.x, v.y, v.z)) for v in unique_pts]
+                            bm.faces.new(tuple(bm_verts))
+                        else:
+                            bm.free()
+                            bm = None
+
+                    if bm is not None:
+                        bm.normal_update()
+
+                        # 写入 mesh 并创建对象
+                        mesh_data = bpy.data.meshes.new(f"{mesh_name}.{seg_idx:03d}")
+                        bm.to_mesh(mesh_data)
                         bm.free()
-                        bm = None
 
-                if bm is not None:
-                    bm.normal_update()
-
-                    # 写入 mesh 并创建对象
-                    mesh_data = bpy.data.meshes.new(f"{mesh_name}.{seg_idx:03d}")
-                    bm.to_mesh(mesh_data)
-                    bm.free()
-
-                    mesh_obj = bpy.data.objects.new(f"{mesh_name}.{seg_idx:03d}", mesh_data)
-                    bpy.context.collection.objects.link(mesh_obj)
-                    created_mesh_objs.append(mesh_obj)
+                        mesh_obj = bpy.data.objects.new(f"{mesh_name}.{seg_idx:03d}", mesh_data)
+                        bpy.context.collection.objects.link(mesh_obj)
+                        created_mesh_objs.append(mesh_obj)
 
         curve_obj.parent = None
 

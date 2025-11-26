@@ -162,7 +162,7 @@ class ACA_PT_basic(bpy.types.Panel):
             con.ACA_TYPE_BUILDING_JOINED:
             btnSaveTemplate.enabled = False
             btnUpdate.enabled = False
-            btnDelete.enabled = False
+            # btnDelete.enabled = False
             btnRefresh.enabled = False
 
         ###################################################

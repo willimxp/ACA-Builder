@@ -498,6 +498,14 @@ def update_roofstyle(self, context:bpy.types.Context):
     ):
         bData['use_flyrafter'] = True
 
+    # 盝顶默认2步架
+    if bData.roof_style in (
+        con.ROOF_LUDING,
+    ):
+        bData['rafter_count'] = 2
+    else:
+        bData['rafter_count'] = 6
+
     # 250907 切换平坐屋顶时，需要更新平坐斗栱
     from . import template
     template.updateDougongData(buildingObj)
@@ -1102,7 +1110,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore 
     liangtou: bpy.props.FloatProperty(
             name="梁头位置", 
-            default=0.4,
+            default=0.5,
             min=0,
             max=1.0,
             precision=3,

@@ -104,7 +104,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -359,7 +359,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">1.336</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -553,7 +553,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">0.384</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -755,7 +755,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">1.304</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -1112,7 +1112,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">1.336</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -1461,14 +1461,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">8</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.336</shoushan>
 			<luding_rafterspan type="FloatProperty">0.88</luding_rafterspan>
@@ -1486,6 +1486,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">dfbb7c36-9767-11f0-9d4f-a841f4d3e2cf</aca_id>
@@ -1624,102 +1627,6 @@
 					<id type="StringProperty">queti#7/4#7/5</id>
 					<wall_span type="FloatProperty">0.0</wall_span>
 				</item_23>
-				<item_24 type="item">
-					<id type="StringProperty">queti#0/0#1/0</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_24>
-				<item_25 type="item">
-					<id type="StringProperty">queti#0/0#0/1</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_25>
-				<item_26 type="item">
-					<id type="StringProperty">queti#0/1#0/2</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_26>
-				<item_27 type="item">
-					<id type="StringProperty">queti#0/2#0/3</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_27>
-				<item_28 type="item">
-					<id type="StringProperty">queti#0/3#0/4</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_28>
-				<item_29 type="item">
-					<id type="StringProperty">queti#0/4#0/5</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_29>
-				<item_30 type="item">
-					<id type="StringProperty">queti#0/5#1/5</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_30>
-				<item_31 type="item">
-					<id type="StringProperty">queti#1/0#2/0</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_31>
-				<item_32 type="item">
-					<id type="StringProperty">queti#1/5#2/5</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_32>
-				<item_33 type="item">
-					<id type="StringProperty">queti#2/0#3/0</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_33>
-				<item_34 type="item">
-					<id type="StringProperty">queti#2/5#3/5</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_34>
-				<item_35 type="item">
-					<id type="StringProperty">queti#3/0#4/0</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_35>
-				<item_36 type="item">
-					<id type="StringProperty">queti#3/5#4/5</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_36>
-				<item_37 type="item">
-					<id type="StringProperty">queti#4/0#5/0</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_37>
-				<item_38 type="item">
-					<id type="StringProperty">queti#4/5#5/5</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_38>
-				<item_39 type="item">
-					<id type="StringProperty">queti#5/0#6/0</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_39>
-				<item_40 type="item">
-					<id type="StringProperty">queti#5/5#6/5</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_40>
-				<item_41 type="item">
-					<id type="StringProperty">queti#6/0#7/0</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_41>
-				<item_42 type="item">
-					<id type="StringProperty">queti#6/5#7/5</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_42>
-				<item_43 type="item">
-					<id type="StringProperty">queti#7/0#7/1</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_43>
-				<item_44 type="item">
-					<id type="StringProperty">queti#7/1#7/2</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_44>
-				<item_45 type="item">
-					<id type="StringProperty">queti#7/2#7/3</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_45>
-				<item_46 type="item">
-					<id type="StringProperty">queti#7/3#7/4</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_46>
-				<item_47 type="item">
-					<id type="StringProperty">queti#7/4#7/5</id>
-					<wall_span type="FloatProperty">0.0</wall_span>
-				</item_47>
 			</wall_list>
 			<window_list type="CollectionProperty" />
 			<geshan_list type="CollectionProperty">
@@ -1888,7 +1795,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.101</shoushan>
 			<luding_rafterspan type="FloatProperty">0.88</luding_rafterspan>
@@ -1906,6 +1813,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 	</template>
 	<template>
@@ -2075,7 +1985,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -2221,7 +2131,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">1.336</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -2305,7 +2215,7 @@
 		<x_total type="FloatProperty">16.72</x_total>
 		<y_total type="FloatProperty">10.56</y_total>
 		<dg_style type="EnumProperty">0</dg_style>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tile_color type="EnumProperty">0</tile_color>
 		<tile_alt_color type="EnumProperty">0</tile_alt_color>
 		<paint_style type="EnumProperty">1</paint_style>
@@ -2429,7 +2339,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">1.336</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -2563,7 +2473,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.336</shoushan>
 			<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -2644,7 +2554,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.336</shoushan>
 			<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -2779,7 +2689,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">0.544</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -2891,7 +2801,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -3003,7 +2913,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -3122,7 +3032,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">1.299</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -3271,7 +3181,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -3387,7 +3297,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">1.0</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -3513,7 +3423,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">1.0</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -3626,14 +3536,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">6</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">1.0</tuishan>
 			<shoushan type="FloatProperty">2.0</shoushan>
 			<luding_rafterspan type="FloatProperty">0.55</luding_rafterspan>
@@ -3651,6 +3561,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">c9c80834-9831-11f0-a34a-a841f4d3e2cf</aca_id>
@@ -3749,7 +3662,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">1.0</tuishan>
 			<shoushan type="FloatProperty">2.0</shoushan>
 			<luding_rafterspan type="FloatProperty">0.55</luding_rafterspan>
@@ -3767,6 +3680,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 	</template>
 	<template>
@@ -3827,7 +3743,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -3904,7 +3820,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -4140,7 +4056,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">0.544</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -4359,7 +4275,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">0.544</shoushan>
 			<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -4454,7 +4370,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">0.544</shoushan>
 			<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -4846,7 +4762,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">0.544</shoushan>
 			<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -4975,7 +4891,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">1.321</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -5095,14 +5011,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">6</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.321</shoushan>
 			<luding_rafterspan type="FloatProperty">0.24</luding_rafterspan>
@@ -5120,6 +5036,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">056c1996-9777-11f0-84f8-a841f4d3e2cf</aca_id>
@@ -5230,7 +5149,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.321</shoushan>
 			<luding_rafterspan type="FloatProperty">0.24</luding_rafterspan>
@@ -5248,6 +5167,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">056c8ce8-9777-11f0-855d-a841f4d3e2cf</aca_id>
@@ -5346,14 +5268,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">6</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.161</shoushan>
 			<luding_rafterspan type="FloatProperty">0.24</luding_rafterspan>
@@ -5371,6 +5293,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">59c3029b-9777-11f0-ba16-a841f4d3e2cf</aca_id>
@@ -5476,7 +5401,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.081</shoushan>
 			<luding_rafterspan type="FloatProperty">0.24</luding_rafterspan>
@@ -5494,6 +5419,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 	</template>
 	<template>
@@ -5601,7 +5529,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">1.299</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -5717,14 +5645,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">6</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.299</shoushan>
 			<luding_rafterspan type="FloatProperty">0.704</luding_rafterspan>
@@ -5742,6 +5670,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">2374af29-983c-11f0-9b65-a841f4d3e2cf</aca_id>
@@ -5848,7 +5779,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.299</shoushan>
 			<luding_rafterspan type="FloatProperty">0.704</luding_rafterspan>
@@ -5866,6 +5797,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">2375245c-983c-11f0-aafc-a841f4d3e2cf</aca_id>
@@ -6122,14 +6056,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">6</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.299</shoushan>
 			<luding_rafterspan type="FloatProperty">0.704</luding_rafterspan>
@@ -6147,6 +6081,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">4b8fa5ca-983c-11f0-a5a2-a841f4d3e2cf</aca_id>
@@ -6409,7 +6346,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">1.064</shoushan>
 			<luding_rafterspan type="FloatProperty">0.704</luding_rafterspan>
@@ -6427,6 +6364,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 	</template>
 	<template>
@@ -6744,7 +6684,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">0.544</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -6944,14 +6884,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">4</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">0.544</shoushan>
 			<luding_rafterspan type="FloatProperty">0.204</luding_rafterspan>
@@ -6969,6 +6909,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">8afdcb30-9864-11f0-a364-a841f4d3e2cf</aca_id>
@@ -7285,7 +7228,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">0.544</shoushan>
 			<luding_rafterspan type="FloatProperty">0.816</luding_rafterspan>
@@ -7303,6 +7246,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">b2928d3d-9861-11f0-9fb0-a841f4d3e2cf</aca_id>
@@ -7602,14 +7548,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">4</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">0.544</shoushan>
 			<luding_rafterspan type="FloatProperty">0.816</luding_rafterspan>
@@ -7627,6 +7573,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">8afe677f-9864-11f0-a898-a841f4d3e2cf</aca_id>
@@ -7650,7 +7599,7 @@
 			<platform_extend type="FloatProperty">0.204</platform_extend>
 			<use_terrace type="BoolProperty">False</use_terrace>
 			<step_list type="CollectionProperty" />
-			<x_total type="FloatProperty">26.171</x_total>
+			<x_total type="FloatProperty">26.172</x_total>
 			<y_total type="FloatProperty">13.456</y_total>
 			<x_rooms type="IntProperty">7</x_rooms>
 			<x_1 type="FloatProperty">5.236</x_1>
@@ -8023,14 +7972,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">4</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">0.544</shoushan>
 			<luding_rafterspan type="FloatProperty">0.748</luding_rafterspan>
@@ -8048,6 +7997,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">17c1f2c2-9865-11f0-991e-a841f4d3e2cf</aca_id>
@@ -8071,7 +8023,7 @@
 			<platform_extend type="FloatProperty">0.204</platform_extend>
 			<use_terrace type="BoolProperty">False</use_terrace>
 			<step_list type="CollectionProperty" />
-			<x_total type="FloatProperty">24.675</x_total>
+			<x_total type="FloatProperty">24.676</x_total>
 			<y_total type="FloatProperty">11.96</y_total>
 			<x_rooms type="IntProperty">7</x_rooms>
 			<x_1 type="FloatProperty">5.236</x_1>
@@ -8364,7 +8316,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">0.9</tuishan>
 			<shoushan type="FloatProperty">0.544</shoushan>
 			<luding_rafterspan type="FloatProperty">0.748</luding_rafterspan>
@@ -8382,6 +8334,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 	</template>
 	<template>
@@ -8484,7 +8439,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">1.0</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -8661,14 +8616,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">6</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">1.0</tuishan>
 			<shoushan type="FloatProperty">2.0</shoushan>
 			<luding_rafterspan type="FloatProperty">0.55</luding_rafterspan>
@@ -8686,6 +8641,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">651cf940-98eb-11f0-bc06-a841f4d3e2cf</aca_id>
@@ -8787,7 +8745,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">1.0</tuishan>
 			<shoushan type="FloatProperty">2.0</shoushan>
 			<luding_rafterspan type="FloatProperty">0.15</luding_rafterspan>
@@ -8805,6 +8763,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">8a123a01-98eb-11f0-a13c-a841f4d3e2cf</aca_id>
@@ -8906,7 +8867,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">1.0</tuishan>
 			<shoushan type="FloatProperty">2.0</shoushan>
 			<luding_rafterspan type="FloatProperty">0.15</luding_rafterspan>
@@ -8924,6 +8885,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">ac2732bd-98eb-11f0-9881-a841f4d3e2cf</aca_id>
@@ -9025,7 +8989,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">1.0</tuishan>
 			<shoushan type="FloatProperty">2.0</shoushan>
 			<luding_rafterspan type="FloatProperty">0.15</luding_rafterspan>
@@ -9043,6 +9007,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">651d704e-98eb-11f0-a9dd-a841f4d3e2cf</aca_id>
@@ -9137,14 +9104,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">6</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">1.0</tuishan>
 			<shoushan type="FloatProperty">2.0</shoushan>
 			<luding_rafterspan type="FloatProperty">0.15</luding_rafterspan>
@@ -9162,6 +9129,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">8a13249c-98eb-11f0-a218-a841f4d3e2cf</aca_id>
@@ -9256,14 +9226,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">6</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">1.0</tuishan>
 			<shoushan type="FloatProperty">2.0</shoushan>
 			<luding_rafterspan type="FloatProperty">0.15</luding_rafterspan>
@@ -9281,6 +9251,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">ac27cead-98eb-11f0-a12f-a841f4d3e2cf</aca_id>
@@ -9382,7 +9355,7 @@
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">1.0</tuishan>
 			<shoushan type="FloatProperty">2.0</shoushan>
 			<luding_rafterspan type="FloatProperty">0.15</luding_rafterspan>
@@ -9400,6 +9373,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 		<template>
 			<aca_id type="StringProperty">7a3b7e51-98f1-11f0-9ff2-a841f4d3e2cf</aca_id>
@@ -9543,14 +9519,14 @@
 			<roof_style type="EnumProperty">5</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">6</rafter_count>
+			<rafter_count type="IntProperty">2</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
 			<chong type="FloatProperty">3.0</chong>
 			<use_pie type="BoolProperty">True</use_pie>
 			<shengqi type="IntProperty">1</shengqi>
-			<liangtou type="FloatProperty">0.4</liangtou>
+			<liangtou type="FloatProperty">0.5</liangtou>
 			<tuishan type="FloatProperty">1.0</tuishan>
 			<shoushan type="FloatProperty">2.0</shoushan>
 			<luding_rafterspan type="FloatProperty">0.55</luding_rafterspan>
@@ -9568,6 +9544,9 @@
 			<yardwall_height type="FloatProperty">3.0</yardwall_height>
 			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
 			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<combo_children type="CollectionProperty" />
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
 		</template>
 	</template>
 	<template>
@@ -9659,7 +9638,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -9788,7 +9767,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -9913,7 +9892,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
@@ -10026,7 +10005,7 @@
 		<chong type="FloatProperty">3.0</chong>
 		<use_pie type="BoolProperty">True</use_pie>
 		<shengqi type="IntProperty">1</shengqi>
-		<liangtou type="FloatProperty">0.4</liangtou>
+		<liangtou type="FloatProperty">0.5</liangtou>
 		<tuishan type="FloatProperty">0.9</tuishan>
 		<shoushan type="FloatProperty">2.0</shoushan>
 		<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>

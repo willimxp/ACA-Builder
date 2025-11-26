@@ -809,6 +809,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
         if use_mideave:
             # 下层屋顶：改为盝顶
             bData['roof_style'] = int(con.ROOF_LUDING)
+            bData['rafter_count'] = 2
             bData['luding_rafterspan'] = taper
         # 如果不做腰檐，屋顶改作平坐
         else:
@@ -1051,6 +1052,7 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
         mData['roof_style'] = int(comboRootObj.ACA_data.roof_style)
     else:
         mData['roof_style'] = int(con.ROOF_LUDING)
+        bData['rafter_count'] = 2
 
     # 2、设置楼板 ----------------------
     # 如果建于平坐之上，或不做重屋，关闭上层台基

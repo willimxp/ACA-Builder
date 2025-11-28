@@ -2736,7 +2736,8 @@ def loggia_extend(contextObj:bpy.types.Object,
     # 尝试廊间和廊间的闭合
     # 可能是在一字延伸时触发
     # 也可能是经过转角时触发
-    isConnected = __connect_loggia_loggia(LoggiaNewJoined)
+    isConnected = __connect_loggia_loggia(
+        LoggiaNewJoined,dir)
 
     # 尝试转角处的闭合
     # 可能时从转角延伸到廊间，
@@ -3392,7 +3393,22 @@ def __cut_base_loggia(baseLoggia:bpy.types.Object,
     return
 
 # 转角闭合判断，做转角时连接廊间和廊间
-def __connect_loggia_loggia(newLoggiaJoined:bpy.types.Object):
+def __connect_loggia_loggia(LoggiaNewJoined:bpy.types.Object,dir):
+    bData:acaData = LoggiaNewJoined.ACA_data
+
+    # 一字廊间撞转角
+    if dir == 'N': dir2 = 'S'
+    if dir == 'S': dir2 = 'N'
+    if dir == 'W': dir2 = 'E'
+    if dir == 'E': dir2 = 'W'
+    # L廊间撞转角
+    if LoggiaNewJoined.rotation_euler.z == 0:
+        if dir in ('NW','SW'): dir2 = 'W'
+        if dir in ('NE','SE'): dir2 = 'E'
+    else:
+        if dir in ('NW','NE'): dir2 = 'N'
+        if dir in ('SW','SE'): dir2 = 'S'
+
     # 找到合并目录
     JoinedColl:bpy.types.Collection = \
         bpy.context.scene.collection.children[con.COLL_NAME_ROOT_JOINED]
@@ -3400,7 +3416,7 @@ def __connect_loggia_loggia(newLoggiaJoined:bpy.types.Object):
     # 遍历根目录下的每个建筑
     for joinedObj in JoinedColl.objects:
         # 跳过新建的廊间
-        if joinedObj == newLoggiaJoined: continue
+        if joinedObj == LoggiaNewJoined: continue
 
         # 仅遍历合并的廊间
         if joinedObj.ACA_data.combo_type != con.COMBO_LOGGIA:
@@ -3408,57 +3424,46 @@ def __connect_loggia_loggia(newLoggiaJoined:bpy.types.Object):
 
         # 只取3位小数，否则无法比较
         joinedLoc = utils.round_vector(joinedObj.location)
-        newLoggiaLoc = utils.round_vector(newLoggiaJoined.location)
-        if joinedLoc == newLoggiaLoc:
+        newLoggiaLoc = utils.round_vector(LoggiaNewJoined.location)
+        distance = utils.getVectorDistance(joinedLoc,newLoggiaLoc)
+        roomdis = bData.x_total
+        # 判断新廊间与现有廊间是否接近（面阔宽度）
+        if distance - roomdis < 0.001:
+            # 判断该廊间是否为已连接的相邻廊间
+            if dir == 'W':
+                if joinedLoc.x > newLoggiaLoc.x:
+                    continue
+            if dir == 'E':
+                if joinedLoc.x < newLoggiaLoc.x:
+                    continue
+            if dir == 'N':
+                if joinedLoc.y < newLoggiaLoc.y:
+                    continue
+            if dir == 'S':
+                if joinedLoc.y > newLoggiaLoc.y:
+                    continue
             connectObj = joinedObj
             break
     if connectObj is None: return
-    
-    connectBuilding = None
-    for obj in connectObj.children:
-        if con.BOOL_SUFFIX  in obj.name : 
-            # 将裁剪体移入新廊间
-            mw = obj.matrix_world.copy()
-            obj.parent = newLoggiaJoined
-            obj.matrix_world = mw
-            continue
-        connectBuilding = obj
-        break
-    if connectBuilding is None:return 
-    
-    newloggiaBuilding = None
-    for obj in newLoggiaJoined.children:
-        if con.BOOL_SUFFIX  in obj.name : continue
-        newloggiaBuilding = obj
-        break
-    if newloggiaBuilding is None:return 
-    
-    # 新廊间继承重叠廊间的修改器
-    for modifier in connectBuilding.modifiers:
-        # 跳过Smooth by Angle修改器
-        if 'Smooth' in modifier.name: continue
+    # print("找到待闭合廊间：" + connectObj.name)
 
-        # 创建一个新的修改器并复制属性
-        new_modifier = newloggiaBuilding.modifiers.new(
-            name=modifier.name, type=modifier.type)
-        
-        # 复制修改器的属性
-        for attr in dir(modifier):
-            if not attr.startswith("_") and attr not in ['name', 'type']:
-                try:
-                    setattr(new_modifier, attr, getattr(modifier, attr))
-                except AttributeError:
-                    pass  # 忽略无法复制的属性
+    # 廊间接头处裁剪
+    __cut_base_loggia(LoggiaNewJoined,dir)
+    __cut_base_loggia(connectObj,dir2)
     
     # 新廊间继承重叠廊间的标识
     connected_sign = connectObj.ACA_data.loggia_sign
-    newLoggiaJoined.ACA_data['loggia_sign'] += connected_sign
-    newLoggia = __getJoinedOriginal(newLoggiaJoined)
+    new_sign =  LoggiaNewJoined.ACA_data.loggia_sign
+
+    LoggiaNewJoined.ACA_data['loggia_sign'] += connected_sign
+    newLoggia = __getJoinedOriginal(LoggiaNewJoined)
     newLoggia.ACA_data['loggia_sign'] += connected_sign
 
-    # 删除原廊间
-    delBuilding(connectObj)
-    print("廊间与廊间的闭合")
+    connectObj.ACA_data['loggia_sign'] += new_sign
+    connectOrg = __getJoinedOriginal(connectObj)
+    connectOrg.ACA_data['loggia_sign'] += new_sign
+
+    # print("廊间与廊间的闭合")
     return True
 
 # 延伸时，尝试连接廊间和转角
@@ -3539,5 +3544,5 @@ def __connect_loggia_corner(LoggiaNewJoined:bpy.types.Object,
     childID = cornerJData.combo_children.add()
     childID.id = LoggiaNewJoined.ACA_data.aca_id
 
-    print("廊间与转角的闭合")
+    # print("廊间与转角的闭合")
     return LoggiaCornerJoined

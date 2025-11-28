@@ -10,6 +10,7 @@ class ACA_Consts(object):
 
     # 目录名称
     COLL_NAME_ROOT = 'ACA筑韵古建'
+    COLL_NAME_ROOT_JOINED = 'ACA古建.合并'
     COLL_NAME_BASE = '1-台基层'
     COLL_NAME_PILLER = '2-柱网层'
     COLL_NAME_WALL = '3-装修层'

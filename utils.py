@@ -3519,3 +3519,16 @@ def align_poly_curve_xy_to_45(curve_obj: bpy.types.Object,
     except Exception:
         pass
     return
+
+def round_vector(vec: Vector, decimals: int = 3) -> Vector:
+    """
+    对Vector的每个分量保留指定位数的小数
+    
+    参数:
+        vec: 待处理的mathutils.Vector对象
+        decimals: 保留的小数位数，默认3位
+    
+    返回:
+        处理后的新Vector对象
+    """
+    return Vector((round(comp, decimals) for comp in vec))

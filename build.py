@@ -362,7 +362,7 @@ def addSection(buildingObj:bpy.types.Object,
     # 2、开始做剖视 -----------------------
     # 指定在合并目录中操作
     coll:bpy.types.Collection = utils.setCollection(
-                'ACA古建.合并',isRoot=True,colorTag=3)
+                con.COLL_NAME_ROOT_JOINED,isRoot=True,colorTag=3)
     
     # 寻找剖视对象
     sectionObjs = []
@@ -773,7 +773,7 @@ def joinBuilding(buildingObj:bpy.types.Object,
 
     # 2.2、新建/绑定合并集合
     collJoined = utils.setCollection(
-            'ACA古建.合并',isRoot=True,colorTag=3)
+            con.COLL_NAME_ROOT_JOINED,isRoot=True,colorTag=3)
     
     # 2.3、复制原始建筑根节点，做为合并对象的根节点
     # 第一个对象就是建筑根节点，这样判断可能不够安全
@@ -1818,7 +1818,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     utils.outputMsg('丁字形抱厦')
     # 指定合并目录，以免碰撞体落在原建筑目录中
     coll:bpy.types.Collection = utils.setCollection(
-                'ACA古建.合并',isRoot=True,colorTag=3)
+                con.COLL_NAME_ROOT_JOINED,isRoot=True,colorTag=3)
     
     # 1、计算屋顶相交面 ----------------------------------
     # 抱厦瓦面
@@ -1946,10 +1946,10 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         intersections,curve = utils.mesh_mesh_intersection(
             fromRoof_copy, toRoof_copy,create_curve=True)
         if intersections == []:
-            utils.popMessageBox(f"未找到屋顶相交范围")
+            utils.popMessageBox(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
             return {'CANCELLED'}
     else:
-        print(f"未找到屋顶相交范围")
+        # print(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
         return {'CANCELLED'}
     
     # 2、拉伸相交面，成为剪切体 ----------------------------
@@ -2314,10 +2314,9 @@ def __unionCrossL(fromBuilding:bpy.types.Object,
                      fromBuildingJoined:bpy.types.Object,
                      toBuildingJoined:bpy.types.Object,
                      dir='Y'):
-    utils.outputMsg('L形相交')
     # 指定合并目录，以免碰撞体落在原建筑目录中
     coll:bpy.types.Collection = utils.setCollection(
-                'ACA古建.合并',isRoot=True,colorTag=3)
+                con.COLL_NAME_ROOT_JOINED,isRoot=True,colorTag=3)
     bData:acaData = fromBuilding.ACA_data
     mData:acaData = toBuilding.ACA_data
     dk = bData.DK
@@ -2385,14 +2384,14 @@ def __unionCrossL(fromBuilding:bpy.types.Object,
             create_curve=True,
             create_mesh=False)
         if curve is None:
-            utils.outputMsg(f"未找到屋顶相交范围")
+            # print(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
             # 回收对象
             utils.delObject(fromRoof_copy)
             utils.delObject(toRoof_copy)
             utils.delOrphan()
             return {'CANCELLED'}
     else:
-        print(f"未找到屋顶相交范围")
+        # print(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
         return {'CANCELLED'}
     
     # 碰撞线二次调整 --------------------
@@ -2706,12 +2705,12 @@ def loggia_extend(contextObj:bpy.types.Object,
     )
 
     # 4、转角屋顶裁剪 ---------------------------
+    # 注意：要在新廊间转角关联前处理，以新廊间重复自我裁剪
     if isCorner or isBranch:
         __add_loggia_intersection(
             fromLoggia = LoggiaJoined,
             toLoggia = LoggiaNewJoined,
             cornerLoggia = LoggiaCornerJoined,
-            dir = dir,
         )
 
     # 5、标识转角与廊间的关联，以便在做T形或X形交叉时找回参考廊间
@@ -2731,8 +2730,22 @@ def loggia_extend(contextObj:bpy.types.Object,
             childID.id = LoggiaJoined.ACA_data.aca_id
             childID = cornerJData.combo_children.add()
             childID.id = LoggiaJoined.ACA_data.aca_id
+    
+    # 6、转角闭合判断 ----------------------------- 
+    isConnected = False
+    # 尝试廊间和廊间的闭合
+    # 可能是在一字延伸时触发
+    # 也可能是经过转角时触发
+    isConnected = __connect_loggia_loggia(LoggiaNewJoined)
 
-    # 6、标识原廊间的相邻廊间，以便panel上禁用不合理的延伸方向
+    # 尝试转角处的闭合
+    # 可能时从转角延伸到廊间，
+    # 也可能时一字延伸碰撞到廊间
+    if not isConnected:
+        # 如果廊间已经闭合过，则不再触发转角闭合，避免修改了原来的转角
+        __connect_loggia_corner(LoggiaNewJoined,dir)
+
+    # 7、标识原廊间的相邻廊间，以便panel上禁用不合理的延伸方向
     # 未合并对象的标注
     if dir in ('E','W','N','S'):
         bData.loggia_sign += '/' + dir
@@ -2940,7 +2953,7 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
 # 更新转角
 # 用于在转角上做丁字或十字交叉
 def __update_loggia_corner(baseLoggia:bpy.types.Object,
-                  dir):
+                  dir=''):
     LoggiaCornerJoined = baseLoggia
     bData:acaData = LoggiaCornerJoined.ACA_data
     dk = bData.DK
@@ -2970,15 +2983,19 @@ def __update_loggia_corner(baseLoggia:bpy.types.Object,
         # 丁字方向，丁头顶不出头的方向
         tdir = ''
         if 'N' not in cornerLinked:
+            tdir = 'N'
             tdim = Vector((0,1,0))
             tloc = Vector((0,1,0))
         elif 'S' not in cornerLinked:
+            tdir = 'S'
             tdim = Vector((0,1,0))
             tloc = Vector((0,-1,0))
         elif 'W' not in cornerLinked:
+            tdir = 'W'
             tdim = Vector((1,0,0))
             tloc = Vector((-1,0,0))
         elif 'E' not in cornerLinked:
+            tdir = 'E'
             tdim = Vector((1,0,0))
             tloc = Vector((1,0,0))
 
@@ -3073,6 +3090,9 @@ def __update_loggia_corner(baseLoggia:bpy.types.Object,
         # 删除丁字裁剪
         mod = cornerObj.modifiers.get('T-Cut')
         cornerObj.modifiers.remove(mod)
+
+        # 恢复旋转（不同的旋转，45度镜像的效果不同）
+        cornerObj.rotation_euler.z = 0
 
         # 调整转角裁剪
         dim = Vector((bData.x_total,bData.x_total,buildingH))
@@ -3276,8 +3296,7 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
 # 转角处相邻廊间的屋顶裁剪
 def __add_loggia_intersection(fromLoggia:bpy.types.Object,
                               toLoggia:bpy.types.Object,
-                              cornerLoggia:bpy.types.Object,
-                              dir = 'E'):
+                              cornerLoggia:bpy.types.Object,):
     LoggiaJoined = fromLoggia
     Loggia = __getJoinedOriginal(LoggiaJoined)
     LoggiaNewJoined = toLoggia
@@ -3371,3 +3390,154 @@ def __cut_base_loggia(baseLoggia:bpy.types.Object,
         # 裁剪后柱体normal异常，做平滑
         utils.shaderSmooth(obj)
     return
+
+# 转角闭合判断，做转角时连接廊间和廊间
+def __connect_loggia_loggia(newLoggiaJoined:bpy.types.Object):
+    # 找到合并目录
+    JoinedColl:bpy.types.Collection = \
+        bpy.context.scene.collection.children[con.COLL_NAME_ROOT_JOINED]
+    connectObj = None
+    # 遍历根目录下的每个建筑
+    for joinedObj in JoinedColl.objects:
+        # 跳过新建的廊间
+        if joinedObj == newLoggiaJoined: continue
+
+        # 仅遍历合并的廊间
+        if joinedObj.ACA_data.combo_type != con.COMBO_LOGGIA:
+            continue
+
+        # 只取3位小数，否则无法比较
+        joinedLoc = utils.round_vector(joinedObj.location)
+        newLoggiaLoc = utils.round_vector(newLoggiaJoined.location)
+        if joinedLoc == newLoggiaLoc:
+            connectObj = joinedObj
+            break
+    if connectObj is None: return
+    
+    connectBuilding = None
+    for obj in connectObj.children:
+        if con.BOOL_SUFFIX  in obj.name : 
+            # 将裁剪体移入新廊间
+            mw = obj.matrix_world.copy()
+            obj.parent = newLoggiaJoined
+            obj.matrix_world = mw
+            continue
+        connectBuilding = obj
+        break
+    if connectBuilding is None:return 
+    
+    newloggiaBuilding = None
+    for obj in newLoggiaJoined.children:
+        if con.BOOL_SUFFIX  in obj.name : continue
+        newloggiaBuilding = obj
+        break
+    if newloggiaBuilding is None:return 
+    
+    # 新廊间继承重叠廊间的修改器
+    for modifier in connectBuilding.modifiers:
+        # 跳过Smooth by Angle修改器
+        if 'Smooth' in modifier.name: continue
+
+        # 创建一个新的修改器并复制属性
+        new_modifier = newloggiaBuilding.modifiers.new(
+            name=modifier.name, type=modifier.type)
+        
+        # 复制修改器的属性
+        for attr in dir(modifier):
+            if not attr.startswith("_") and attr not in ['name', 'type']:
+                try:
+                    setattr(new_modifier, attr, getattr(modifier, attr))
+                except AttributeError:
+                    pass  # 忽略无法复制的属性
+    
+    # 新廊间继承重叠廊间的标识
+    connected_sign = connectObj.ACA_data.loggia_sign
+    newLoggiaJoined.ACA_data['loggia_sign'] += connected_sign
+    newLoggia = __getJoinedOriginal(newLoggiaJoined)
+    newLoggia.ACA_data['loggia_sign'] += connected_sign
+
+    # 删除原廊间
+    delBuilding(connectObj)
+    print("廊间与廊间的闭合")
+    return True
+
+# 延伸时，尝试连接廊间和转角
+def __connect_loggia_corner(LoggiaNewJoined:bpy.types.Object,
+                            dir):
+    bData:acaData = LoggiaNewJoined.ACA_data
+    
+    # 找到合并目录
+    JoinedColl:bpy.types.Collection = \
+        bpy.context.scene.collection.children[con.COLL_NAME_ROOT_JOINED]
+    LoggiaCornerJoined = None
+    # 遍历根目录下的每个建筑
+    for joinedObj in JoinedColl.objects:
+        # 跳过新建的廊间
+        if joinedObj == LoggiaNewJoined: continue
+
+        # 仅遍历合并的转角
+        if joinedObj.ACA_data.combo_type != con.COMBO_LOGGIA_CORNER:
+            continue
+
+        # 只取3位小数，否则无法比较
+        joinedLoc = utils.round_vector(joinedObj.location)
+        newLoggiaLoc = utils.round_vector(LoggiaNewJoined.location)
+        # 判断新廊间与转角是否接近（面阔/2+进深/2）
+        distance = utils.getVectorDistance(joinedLoc,newLoggiaLoc)
+        roomdis = bData.x_total/2 + bData.y_total/2
+        if distance - roomdis < 0.001:
+            LoggiaCornerJoined = joinedObj
+            break
+    if LoggiaCornerJoined is None: return
+
+    # 如果廊间和转角已经连接，则无需后续处理
+    cornerData:acaData = LoggiaCornerJoined.ACA_data
+    for linkLoggia in cornerData.combo_children:
+        if linkLoggia.id == bData.aca_id:
+            return None
+
+    # 转角丁字或十字屋顶更新
+    # 一字廊间撞转角
+    if dir == 'N': dir2 = 'S'
+    if dir == 'S': dir2 = 'N'
+    if dir == 'W': dir2 = 'E'
+    if dir == 'E': dir2 = 'W'
+    # L廊间撞转角
+    if LoggiaCornerJoined.rotation_euler.z == 0:
+        if dir in ('NW','SW'): dir2 = 'W'
+        if dir in ('NE','SE'): dir2 = 'E'
+    else:
+        if dir in ('NW','NE'): dir2 = 'N'
+        if dir in ('SW','SE'): dir2 = 'S'
+    LoggiaCornerJoined = __update_loggia_corner(
+        baseLoggia = LoggiaCornerJoined,
+        dir = dir2
+    )
+
+    # 新廊间的更新
+    __cut_base_loggia(LoggiaNewJoined,dir)
+
+    # 新廊间屋顶碰撞
+    __add_loggia_intersection(
+            fromLoggia = LoggiaCornerJoined,
+            toLoggia = LoggiaNewJoined,
+            cornerLoggia = LoggiaCornerJoined,
+        )
+    
+    # 追加转角的相邻标识
+    LoggiaCorner = __getJoinedOriginal(LoggiaCornerJoined)
+    LoggiaCorner.ACA_data['loggia_sign'] += '/' + dir2
+    LoggiaNew = __getJoinedOriginal(LoggiaNewJoined)
+    LoggiaNew.ACA_data['loggia_sign'] += '/' + dir
+
+    # 标识转角与廊间的关联，以便在做T形或X形交叉时找回参考廊间
+    cornerJData:acaData = LoggiaCornerJoined.ACA_data
+    cornerData:acaData = LoggiaCorner.ACA_data
+    # 新廊间ID
+    childID = cornerData.combo_children.add()
+    childID.id = LoggiaNewJoined.ACA_data.aca_id
+    childID = cornerJData.combo_children.add()
+    childID.id = LoggiaNewJoined.ACA_data.aca_id
+
+    print("廊间与转角的闭合")
+    return LoggiaCornerJoined

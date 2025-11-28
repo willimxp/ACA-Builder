@@ -198,7 +198,7 @@ def __syncData(fromBuilding:bpy.types.Object,
                syncKeys = None, # 同步的字段
                skipKeys = None, # 跳过的字段
                ):
-    print(f"-- syncData fromBuilding={fromBuilding.name},toBuilding={toBuilding.name},syncAll={syncAll},syncKeys={syncKeys},skipKeys={skipKeys}")
+    # print(f"-- syncData fromBuilding={fromBuilding.name},toBuilding={toBuilding.name},syncAll={syncAll},syncKeys={syncKeys},skipKeys={skipKeys}")
     defaultSkipKeys = [
                 'aca_id',
                 'aca_type',

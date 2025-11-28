@@ -223,7 +223,7 @@ def updateDougongData(buildingObj:bpy.types.Object,
         if 'dgHeight' in dgObj:
             bData['dg_height'] = dgObj['dgHeight']*dgScale
 
-    print(f"斗栱数据已更新：dgHeight={bData.dg_height},dgExtend={bData.dg_extend}")
+    # print(f"斗栱数据已更新：dgHeight={bData.dg_height},dgExtend={bData.dg_extend}")
 
     # 恢复原有目录
     utils.focusCollection(preColl)

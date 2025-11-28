@@ -3403,11 +3403,19 @@ def __connect_loggia_loggia(LoggiaNewJoined:bpy.types.Object,dir):
     if dir == 'E': dir2 = 'W'
     # L廊间撞转角
     if LoggiaNewJoined.rotation_euler.z == 0:
-        if dir in ('NW','SW'): dir2 = 'W'
-        if dir in ('NE','SE'): dir2 = 'E'
+        if dir in ('NW','SW'): 
+            dir = 'W'
+            dir2 = 'E'
+        if dir in ('NE','SE'): 
+            dir = 'E'
+            dir2 = 'W'
     else:
-        if dir in ('NW','NE'): dir2 = 'N'
-        if dir in ('SW','SE'): dir2 = 'S'
+        if dir in ('NW','NE'): 
+            dir = 'N'
+            dir2 = 'S'
+        if dir in ('SW','SE'): 
+            dir = 'S'
+            dir2 = 'N'
 
     # 找到合并目录
     JoinedColl:bpy.types.Collection = \
@@ -3431,16 +3439,16 @@ def __connect_loggia_loggia(LoggiaNewJoined:bpy.types.Object,dir):
         if distance - roomdis < 0.001:
             # 判断该廊间是否为已连接的相邻廊间
             if dir == 'W':
-                if joinedLoc.x > newLoggiaLoc.x:
+                if joinedLoc.x - newLoggiaLoc.x == roomdis:
                     continue
             if dir == 'E':
-                if joinedLoc.x < newLoggiaLoc.x:
+                if joinedLoc.x - newLoggiaLoc.x == -roomdis:
                     continue
             if dir == 'N':
-                if joinedLoc.y < newLoggiaLoc.y:
+                if joinedLoc.y - newLoggiaLoc.y == -roomdis:
                     continue
             if dir == 'S':
-                if joinedLoc.y > newLoggiaLoc.y:
+                if joinedLoc.y - newLoggiaLoc.y == roomdis:
                     continue
             connectObj = joinedObj
             break
@@ -3544,5 +3552,5 @@ def __connect_loggia_corner(LoggiaNewJoined:bpy.types.Object,
     childID = cornerJData.combo_children.add()
     childID.id = LoggiaNewJoined.ACA_data.aca_id
 
-    # print("廊间与转角的闭合")
+    print("廊间与转角的闭合")
     return LoggiaCornerJoined

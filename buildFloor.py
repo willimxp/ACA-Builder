@@ -381,7 +381,10 @@ def addQueti(wallproxy:bpy.types.Object):
     wallpos = wallsplit[1] + '#' + wallsplit[2]
     for railing in bData.railing_list:
         if wallpos in railing.id:
-            zoffset -= con.BENCH_MEIZI_H
+            # 251201 仅坐凳的雀替让出楣子高度，栏杆不做位移
+            railingsplit = railing.id.split('#')
+            if railingsplit[0] == con.ACA_WALLTYPE_BENCH:
+                zoffset -= con.BENCH_MEIZI_H
 
     # 雀替对象在blender中用Geometry Nodes预先进行了自动拼装
     quetiObj = utils.copyObject(

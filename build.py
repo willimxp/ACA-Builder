@@ -2730,23 +2730,8 @@ def loggia_extend(contextObj:bpy.types.Object,
             childID.id = LoggiaJoined.ACA_data.aca_id
             childID = cornerJData.combo_children.add()
             childID.id = LoggiaJoined.ACA_data.aca_id
-    
-    # 6、转角闭合判断 ----------------------------- 
-    isConnected = False
-    # 尝试廊间和廊间的闭合
-    # 可能是在一字延伸时触发
-    # 也可能是经过转角时触发
-    isConnected = __connect_loggia_loggia(
-        LoggiaNewJoined,dir)
 
-    # 尝试转角处的闭合
-    # 可能时从转角延伸到廊间，
-    # 也可能时一字延伸碰撞到廊间
-    if not isConnected:
-        # 如果廊间已经闭合过，则不再触发转角闭合，避免修改了原来的转角
-        __connect_loggia_corner(LoggiaNewJoined,dir)
-
-    # 7、标识原廊间的相邻廊间，以便panel上禁用不合理的延伸方向
+    # 6、标识原廊间的相邻廊间，以便panel上禁用不合理的延伸方向
     # 未合并对象的标注
     if dir in ('E','W','N','S'):
         bData.loggia_sign += '/' + dir
@@ -2775,7 +2760,25 @@ def loggia_extend(contextObj:bpy.types.Object,
         oData:acaData = obj.ACA_data
         oData.loggia_sign = bData.loggia_sign
 
-    # 聚焦在新loggia
+    # 7、转角闭合判断 ----------------------------- 
+    isConnected = False
+    # 尝试闭合廊间与廊间的碰撞
+    # 可能是在一字延伸时触发
+    # 也可能是经过转角时触发
+    isConnected = __connect_loggia_loggia(
+        LoggiaNewJoined,dir)
+
+    # 尝试闭合转角处的碰撞
+    # 可能时从转角延伸到廊间，
+    # 也可能时一字延伸碰撞到廊间
+    if not isConnected:
+        # 如果廊间已经闭合过，则不再触发转角闭合，避免修改了原来的转角
+        __connect_loggia_corner(LoggiaNewJoined,dir)
+
+    # 尝试闭合开放的转角
+    __connect_open_corner(LoggiaNewJoined,dir)
+
+    # 8、聚焦在新loggia
     for obj in LoggiaNewJoined.children:
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue
@@ -3498,7 +3501,7 @@ def __connect_loggia_corner(LoggiaNewJoined:bpy.types.Object,
         # 判断新廊间与转角是否接近（面阔/2+进深/2）
         distance = utils.getVectorDistance(joinedLoc,newLoggiaLoc)
         roomdis = bData.x_total/2 + bData.y_total/2
-        if distance - roomdis < 0.001:
+        if abs(distance - roomdis) < 0.001:
             LoggiaCornerJoined = joinedObj
             break
     if LoggiaCornerJoined is None: return
@@ -3552,5 +3555,124 @@ def __connect_loggia_corner(LoggiaNewJoined:bpy.types.Object,
     childID = cornerJData.combo_children.add()
     childID.id = LoggiaNewJoined.ACA_data.aca_id
 
-    print("廊间与转角的闭合")
+    # print("廊间与转角的闭合")
     return LoggiaCornerJoined
+
+# 尝试连接开放的转角
+def __connect_open_corner(LoggiaNewJoined:bpy.types.Object,
+                            dir):
+    bData:acaData = LoggiaNewJoined.ACA_data
+    
+    # 找到合并目录
+    JoinedColl:bpy.types.Collection = \
+        bpy.context.scene.collection.children[con.COLL_NAME_ROOT_JOINED]
+    LoggiaOpenCorner = None
+    # 遍历根目录下的每个建筑
+    for joinedObj in JoinedColl.objects:
+        # 跳过新建的廊间
+        if joinedObj == LoggiaNewJoined: continue
+        # 仅遍历合并的廊间
+        if joinedObj.ACA_data.combo_type != con.COMBO_LOGGIA:
+            continue
+        # 只取3位小数，否则无法比较
+        joinedLoc = utils.round_vector(joinedObj.location)
+        newLoggiaLoc = utils.round_vector(LoggiaNewJoined.location)
+
+        # 判断新廊间与转角是否接近（面阔/2+进深/2）
+        distance = utils.getVectorDistance(joinedLoc,newLoggiaLoc)
+        roomdis = (bData.x_total/2 + bData.y_total/2)*1.414
+        if abs(distance - roomdis) < 0.001:
+            # 再进一步判断相邻廊间之间是否已经存在转角
+            hasCorner = False
+            for cornerObj in JoinedColl.objects:
+                if cornerObj.ACA_data.combo_type != con.COMBO_LOGGIA_CORNER:
+                    continue # 只检查转角，其他跳过
+                if (cornerObj.location.x == joinedObj.location.x
+                    and cornerObj.location.y == LoggiaNewJoined.location.y):
+                    # 一侧有转角，跳过
+                    hasCorner = True
+                    break
+                if (cornerObj.location.y == joinedObj.location.y
+                    and cornerObj.location.x == LoggiaNewJoined.location.x):
+                    # 一侧有转角，跳过
+                    hasCorner = True
+                    break
+            
+            # 如果未找到相连的转角，找到需闭合廊间
+            if not hasCorner:
+                LoggiaOpenCorner = joinedObj
+                break # 命中退出循环
+
+    if LoggiaOpenCorner is None: return
+    # print("找到待闭合转角，廊间名称为：" + LoggiaOpenCorner.name)
+
+    dirNext = None
+    if joinedLoc.x > newLoggiaLoc.x and joinedLoc.y > newLoggiaLoc.y:
+        dirNext = 'NE'
+    if joinedLoc.x > newLoggiaLoc.x and joinedLoc.y < newLoggiaLoc.y:
+        dirNext = 'SE'
+    if joinedLoc.x < newLoggiaLoc.x and joinedLoc.y < newLoggiaLoc.y:
+        dirNext = 'SW'
+    if joinedLoc.x < newLoggiaLoc.x and joinedLoc.y > newLoggiaLoc.y:
+        dirNext = 'NW'
+
+    # 做L形转角
+    LoggiaCornerJoined = __add_loggia_corner(
+        baseLoggia = LoggiaNewJoined,
+        dir = dirNext,
+    )
+
+    # 闭合廊间的裁剪 ------------------------
+    # 横版
+    if LoggiaOpenCorner.rotation_euler.z == 0:
+        if dirNext in ('NE','SE'):
+            dirCut = 'W'
+        if dirNext in ('NW','SW'):
+            dirCut = 'E'
+    else:
+        if dirNext in ('NE','NW'):
+            dirCut = 'S'
+        if dirNext in ('SW','SE'):
+            dirCut = 'N'
+    __cut_base_loggia(LoggiaOpenCorner,dirCut)
+
+    # 转角屋顶裁剪 ---------------------------
+    __add_loggia_intersection(
+            fromLoggia = LoggiaNewJoined,
+            toLoggia = LoggiaOpenCorner,
+            cornerLoggia = LoggiaCornerJoined,
+        )
+    
+    # 相邻廊间的标注
+    if LoggiaOpenCorner.rotation_euler.z == 0:
+        if dirNext == 'NE':
+            signA = 'N'
+            signB = 'W'
+        if dirNext == 'NW':
+            signA = 'N'
+            signB = 'E'
+        if dirNext == 'SW':
+            signA = 'S'
+            signB = 'E'
+        if dirNext == 'SE':
+            signA = 'S'
+            signB = 'W'
+    else:
+        if dirNext == 'NE':
+            signA = 'E'
+            signB = 'S'
+        if dirNext == 'NW':
+            signA = 'W'
+            signB = 'S'
+        if dirNext == 'SW':
+            signA = 'W'
+            signB = 'N'
+        if dirNext == 'SE':
+            signA = 'E'
+            signB = 'N'
+    LoggiaNew = __getJoinedOriginal(LoggiaNewJoined)
+    LoggiaNew.ACA_data['loggia_sign'] += '/' + signA
+    LoggiaOpen = __getJoinedOriginal(LoggiaOpenCorner)
+    LoggiaOpen.ACA_data['loggia_sign'] += '/' + signB
+
+    return

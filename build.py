@@ -3445,16 +3445,20 @@ def __connect_loggia_loggia(LoggiaNewJoined:bpy.types.Object,dir):
         if distance - roomdis < 0.001:
             # 判断该廊间是否为已连接的相邻廊间
             if dir == 'W':
-                if joinedLoc.x - newLoggiaLoc.x == roomdis:
+                # 想左延伸时，相连廊间在右侧
+                if joinedLoc.x > newLoggiaLoc.x and joinedLoc.y == newLoggiaLoc.y:
                     continue
             if dir == 'E':
-                if joinedLoc.x - newLoggiaLoc.x == -roomdis:
+                # 想右延伸时，相连廊间在左侧
+                if joinedLoc.x < newLoggiaLoc.x and joinedLoc.y == newLoggiaLoc.y:
                     continue
             if dir == 'N':
-                if joinedLoc.y - newLoggiaLoc.y == -roomdis:
+                # 想上延伸时，相连廊间在下侧
+                if joinedLoc.y < newLoggiaLoc.y and joinedLoc.x == newLoggiaLoc.x:
                     continue
             if dir == 'S':
-                if joinedLoc.y - newLoggiaLoc.y == roomdis:
+                # 想下延伸时，相连廊间在上侧
+                if joinedLoc.y > newLoggiaLoc.y and joinedLoc.x == newLoggiaLoc.x:
                     continue
             connectObj = joinedObj
             break

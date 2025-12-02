@@ -2551,6 +2551,9 @@ def __unionCrossL(fromBuilding:bpy.types.Object,
         intersectionObj = bpy.data.objects.new(
             '屋顶相交'+con.BOOL_SUFFIX , intersectionData)
         bpy.context.collection.objects.link(intersectionObj)
+
+    # 251202 添加一次细分，以免柱子和坐凳之间产生异常的破碎面
+    utils.subdivideObject(intersectionObj,level=1)
     
     # 绑定在新廊间之下
     mw = intersectionObj.matrix_world.copy()

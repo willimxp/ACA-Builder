@@ -792,11 +792,17 @@ def joinBuilding(buildingObj:bpy.types.Object,
     partObjList = []    # 在addChild中递归填充
     def addChild(buildingObjCopy):
         for childObj in buildingObjCopy.children:
+            childObj: bpy.types.Object
             useObj = True
             # 仅处理可见的实体对象
             if childObj.type not in ('MESH'):
                 useObj = False
             if childObj.hide_viewport or childObj.hide_render:
+                useObj = False
+            # 251204 判断对象所属的集合是否可见
+            parentColl = childObj.users_collection[0]
+            print(f"{parentColl.name}-{parentColl.hide_viewport}-{childObj.name}")
+            if parentColl.hide_viewport:
                 useObj = False
             # 记录对象名称
             if useObj:

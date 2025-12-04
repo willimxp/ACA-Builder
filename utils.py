@@ -341,6 +341,8 @@ def copyCollection(src_coll_name, new_coll_name):
             obj_map[obj] = obj_copy
         for child_coll in src_coll.children:
             child_copy = bpy.data.collections.new(child_coll.name)
+            # 251204 继承原集合的可见性
+            child_copy.hide_viewport = child_coll.hide_viewport
             dst_coll.children.link(child_copy)
             copy_objects_recursive(child_coll, child_copy)
 

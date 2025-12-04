@@ -852,11 +852,11 @@ def addStep(buildingObj:bpy.types.Object,
         # 获取开间的左右两根柱子
         if pFrom == None: 
             # 找到起点柱子
-            pFrom = piller.ACA_data['pillerID']
+            pFrom = piller.ACA_data['pillerID'].split('#')[0]
             continue 
         else:
             # 找到终点柱子
-            pTo = piller.ACA_data['pillerID']
+            pTo = piller.ACA_data['pillerID'].split('#')[0]
         # 校验柱子是否相邻
         valid = utils.validPillerNext(pFrom,pTo)
         if not valid:

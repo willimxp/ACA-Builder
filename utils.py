@@ -102,6 +102,7 @@ def recurLayerCollection(layerColl, collName,is_like = False):
 # 隐藏目录
 def hideCollection(coll_name:str,
                    isExclude = True,
+                   hideViewport = None,
                    parentColl:bpy.types.Collection=None,
                    isLike = False # 模糊匹配
                    ):
@@ -119,7 +120,11 @@ def hideCollection(coll_name:str,
          )
     if layerColl != None:
         layerColl.exclude = isExclude
-        #layerColl.hide_viewport = not isShow
+        # 251204 添加了是否隐藏viewport的选项，在更新建筑时，不改变viewport
+        # 但在hidelayer时
+        if hideViewport is not None:
+            layerColl.hide_viewport = isExclude
+            layerColl.collection.hide_viewport = isExclude
         # 递归循环子目录
         if layerColl.children:
             for child in layerColl.children:
@@ -1845,6 +1850,8 @@ def hideLayer(buildingObj,name,isShow):
     # 隐藏
     hideCollection(name,
         isExclude=not isShow,
+        # 251204 同时改变viewport属性
+        hideViewport=not isShow,
         parentColl=buildingColl,
         isLike=True, # 模糊匹配
         )

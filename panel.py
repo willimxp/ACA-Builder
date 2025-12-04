@@ -116,11 +116,11 @@ class ACA_PT_basic(bpy.types.Panel):
             ):
             col.enabled = False
 
-        # 调试信息 -------------------- 
-        col = box.row() 
-        col.prop(bData,"aca_id",text="id")
-        col = box.row() 
-        col.prop(bData,"combo_parent",text="parent")
+        # # 调试信息 -------------------- 
+        # col = box.row() 
+        # col.prop(bData,"aca_id",text="id")
+        # col = box.row() 
+        # col.prop(bData,"combo_parent",text="parent")
         
         #----------------------------
         toolBox = box.row(align=True) 
@@ -279,7 +279,11 @@ class ACA_PT_basic(bpy.types.Panel):
                         icon='KEY_CONTROL',
                         text="建筑组合",
                         # depress=True,
-                        )    
+                        )   
+
+        ###################################################
+        # 第五工具箱
+        box = layout.box() 
         
         # 回廊延伸
         if bData.combo_type in (con.COMBO_LOGGIA,
@@ -322,7 +326,7 @@ class ACA_PT_basic(bpy.types.Panel):
             opEmpty = btnEmpty.operator(
                             "aca.loggia_extend",
                             #icon='TRIA_LEFT',
-                            text="▢",)   
+                            text="回廊",)   
             btnEmpty.enabled = False
             # 回廊延伸-东
             btnLoggiaEast = toolBar.column(align=True)
@@ -419,8 +423,8 @@ class ACA_PT_basic(bpy.types.Panel):
                 if 'S' in extSign:
                     btnLoggiaSouth.enabled = False
 
-            toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
-            toolBar.prop(Loggia.ACA_data,"loggia_sign",text="")
+            # toolBar = toolBoxLoggia.grid_flow(columns=2, align=True)
+            # toolBar.prop(Loggia.ACA_data,"loggia_sign",text="")
 
         # 性能分析按钮
         # row = layout.row()

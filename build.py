@@ -1123,13 +1123,20 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
     
     # 计算屋顶碰撞点
     crossPoint = __getRoofCrossPoint(fromBuilding,toBuilding)
-    if crossPoint == 'CANCELLED': return {'CANCELLED'}
+    if 'CANCELLED' in crossPoint: 
+        # 如果屋顶碰撞失败，则取主建筑临近副建筑的额枋外皮
+        boolY = (bData.y_total+con.EFANG_LARGE_Y*dk+0.01)/2
+        if fromBuilding.location.y > toBuilding.location.y:
+            boolY *= -1
+        crossPoint = Vector((0,boolY,0))
     
     # 建筑合并
     if fromBuildingJoined is None:
-        fromBuildingJoined = joinBuilding(fromBuilding)
+        fromBuildingJoined = joinBuilding(
+            fromBuilding,useLayer=True)
     if toBuildingJoined is None:
-        toBuildingJoined = joinBuilding(toBuilding)
+        toBuildingJoined = joinBuilding(
+            toBuilding,useLayer=True)
 
     # 生成剪切体 ----------------------------------
     # 1、出檐
@@ -1181,6 +1188,8 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX  in layer.name : continue
         # 跳过bool对象本身
         if layer == boolObj: continue
+        # 跳过装修层
+        if con.COLL_NAME_WALL in layer.name : continue
         utils.addModifierBoolean(
             object=layer,
             boolObj=boolObj,
@@ -1239,7 +1248,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     # 1、主建筑屋顶裁剪：宽到柱外皮，深到瓦面交界点，高覆盖建筑高度
     # 瓦面碰撞点
     crossPoint = __getRoofCrossPoint(fromBuilding,toBuilding)
-    if crossPoint == 'CANCELLED': return {'CANCELLED'}
+    if 'CANCELLED' in crossPoint: return {'CANCELLED'}
 
     # 建筑高度
     buildingH = bData.platform_height + bData.piller_height
@@ -1553,7 +1562,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     # 宽到抱厦正身出檐，45度折角
     # 瓦面碰撞点
     crossPoint = __getRoofCrossPoint(fromBuilding,toBuilding)
-    if crossPoint == 'CANCELLED': return {'CANCELLED'}
+    if 'CANCELLED' in crossPoint: return {'CANCELLED'}
 
     # 建筑高度
     buildingH = bData.platform_height + bData.piller_height
@@ -2606,7 +2615,7 @@ def __getRoofCrossPoint(fromBuilding:bpy.types.Object,
             tileCurve,singleUser=True)
         utils.showObj(tileCurve_copy)
     else:
-        utils.popMessageBox("无法获取正身坡线")
+        utils.outputMsg("无法获取正身坡线")
         return {'CANCELLED'}
     # 副建筑瓦面
     tileGrid = utils.getAcaChild(

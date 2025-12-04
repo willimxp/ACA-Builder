@@ -2533,7 +2533,9 @@ def __buildCornerRidgeCurve2(buildingObj:bpy.types.Object,
     spline = curve.data.splines[0]
     pStart = spline.points[0].co
     pEnd = spline.points[-1].co
-    if abs(pStart.x) < abs(pEnd.x):
+    # 251203 如果建筑原点不在世界中心，不能取abs绝对值
+    # if abs(pStart.x) < abs(pEnd.x):
+    if pStart.x < pEnd.x:
         utils.reverse_curve_direction(curve)
     # 向下适当调整
     bData:acaData = buildingObj.ACA_data

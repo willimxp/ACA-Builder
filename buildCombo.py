@@ -14,14 +14,17 @@ from . import buildPlatform
 from . import buildRoof
 
 # 添加combo根节点
-def __addComboRoot(templateName):
+def __addComboRoot(templateName,
+                   location=None):
     # 创建或锁定根目录
     coll = utils.setCollection(templateName)
     # 创建buildObj根节点
-    # 原点摆放在3D Cursor位置
+    if location == None:
+        # 默认原点摆放在3D Cursor位置
+        location =  bpy.context.scene.cursor.location
     comboObj = utils.addEmpty(
         name=templateName,
-        location=bpy.context.scene.cursor.location
+        location=location
     )
     cData:acaData = comboObj.ACA_data
     cData['template_name'] = templateName
@@ -44,7 +47,8 @@ def __addComboLevel(buildingObj:bpy.types.Object):
     rootColl = utils.setCollection(con.COLL_NAME_ROOT,
                         isRoot=True,colorTag=2)
     # 添加combo根节点
-    comboObj = __addComboRoot(buildingObj.name + '.combo')
+    comboObj = __addComboRoot(buildingObj.name + '.combo',
+                              location = buildingObj.location)
 
     # 更改对象父节点
     m = buildingObj.matrix_world.copy()
@@ -1411,3 +1415,49 @@ def __updateMultiFloorParent(parentObj:bpy.types.Object,
             cData['combo_parent'] = mData.aca_id
             break
     return
+
+# 将选中的对象合并为一个combo
+def addCombo(context:bpy.types.Context):
+    # 查找待合并的建筑
+    buildingList = []
+    selectObjs = context.selected_objects
+    for obj in selectObjs:
+        buildingObj,bData,oData = utils.getRoot(obj)
+        if buildingObj:
+            if buildingObj not in buildingList:
+                buildingList.append(buildingObj)
+    
+    # 确保至少选择了2个建筑
+    if len(buildingList) < 2: return {'CANCELLED'}
+
+    # 查找是否已有combo根节点
+    for buildingObj in buildingList:
+        comboObj = utils.getComboRoot(buildingObj)
+        if comboObj is not None:
+            break
+
+    # 如果不存在combo则新建
+    if comboObj is None:
+        comboObj = __addComboLevel(buildingList[0])
+
+    parentColl = comboObj.users_collection[0]
+
+    # 将其他对象纳入combo
+    for buildingObj in buildingList:
+        buildingObj:bpy.types.Object
+        parentObj = utils.getComboRoot(buildingObj)
+        if parentObj is None:
+            # 关联父对象
+            mw = buildingObj.matrix_world
+            buildingObj.parent = comboObj
+            buildingObj.matrix_world = mw
+            # 更新combo_location
+            bData:acaData = buildingObj.ACA_data
+            bData['combo_location'] = buildingObj.location
+            # 关联父目录
+            buildingColl = buildingObj.users_collection[0]
+            parentColl.children.link(buildingColl)
+            # 从根目录移除
+            rootColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
+            rootColl.children.unlink(buildingColl)
+    return {'FINISHED'}

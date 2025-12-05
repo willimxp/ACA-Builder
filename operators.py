@@ -1683,3 +1683,29 @@ class ACA_OT_LOGGIA_EXTEND(bpy.types.Operator):
             # utils.popMessageBox(msg)
         
         return {'FINISHED'}
+    
+# 添加抱厦
+class ACA_OT_COMBO_BUILDING(bpy.types.Operator):
+    bl_idname="aca.combo_building"
+    bl_label = "建筑集成"
+    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = '建筑集成'
+    
+    def execute(self, context): 
+        timeStart = time.time()
+        buildingObj,bData,objData = utils.getRoot(context.object)
+        
+        from . import buildCombo
+        funproxy = partial(
+            buildCombo.addCombo,
+            context = context,
+        )
+        result = utils.fastRun(funproxy)
+
+        if 'FINISHED' in result:
+            runTime = time.time() - timeStart
+            msg = '建筑集成完成 | 运行时间【%.1f秒】' % runTime
+            self.report({'INFO'},msg)
+            # utils.popMessageBox(msg)
+        
+        return {'FINISHED'}

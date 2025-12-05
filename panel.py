@@ -280,6 +280,14 @@ class ACA_PT_basic(bpy.types.Panel):
                         text="建筑组合",
                         # depress=True,
                         )   
+        # 建筑集成
+        btnMultiFloor1 = toolBar.column(align=True)
+        op = btnMultiFloor1.operator(
+                        "aca.combo_building",
+                        icon='KEY_CONTROL',
+                        text="建筑集成",
+                        # depress=True,
+                        ) 
 
         ###################################################
         # 第五工具箱        

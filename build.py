@@ -731,6 +731,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
 def joinBuilding(buildingObj:bpy.types.Object,
                  useLayer=False, # 是否分层合并
                  sectionPlan=None, # 可根据剖视方案自动决定是否分层
+                 joinCombo=True, # 是否合并整个combo
                 ):
     # 判断组合或解除组合
     buildingObj,bData,objData = utils.getRoot(buildingObj)
@@ -759,10 +760,13 @@ def joinBuilding(buildingObj:bpy.types.Object,
     # 2、准备合并的组织结构 ------------------------------------
     # 2.0、combo组合替换根对象
     isCombo = False
-    comboObj = utils.getComboRoot(buildingObj)
-    if comboObj is not None:
-        buildingObj = comboObj
-        isCombo = True
+    # 251205 调用参数joinCombo来决定是否要合并整个combo
+    # 如，在垂花门内部进行抱厦裁剪时，不应该组合combo
+    if joinCombo:
+        comboObj = utils.getComboRoot(buildingObj)
+        if comboObj is not None:
+            buildingObj = comboObj
+            isCombo = True
 
     # 2.1、复制建筑的整个集合，在复制集合上进行合并
     # 250909 确保目录与对象名称一致，以免后续取消组合时找不到原目录
@@ -899,7 +903,8 @@ def joinBuilding(buildingObj:bpy.types.Object,
         collJoined.objects.link(joinedModel)
 
     # 3、删除复制的建筑，包括复制的集合
-    delBuilding(buildingObjCopy)
+    # 251205 根据joinCombo参数决定是否删除整个集合
+    delBuilding(buildingObjCopy,withCombo=joinCombo)
 
     # 4、隐藏原建筑
     utils.hideCollection(collName)
@@ -1133,10 +1138,10 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
     # 建筑合并
     if fromBuildingJoined is None:
         fromBuildingJoined = joinBuilding(
-            fromBuilding,useLayer=True)
+            fromBuilding,useLayer=True,joinCombo=False)
     if toBuildingJoined is None:
         toBuildingJoined = joinBuilding(
-            toBuilding,useLayer=True)
+            toBuilding,useLayer=True,joinCombo=False)
 
     # 生成剪切体 ----------------------------------
     # 1、出檐
@@ -1225,7 +1230,8 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         # 强制解除合并
         __undoJoin(fromBuildingJoined)
     # 重新分层合并
-    fromBuildingJoined = joinBuilding(fromBuilding,useLayer=True)
+    fromBuildingJoined = joinBuilding(
+        fromBuilding,useLayer=True,joinCombo=False)
     # 主建筑分层合并
     # 已合并的话，检查是否分层
     if toBuildingJoined:
@@ -1234,13 +1240,15 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         # 如果没有分层，则重新分层
         if len(building.children) == 1:
             __undoJoin(building)
-            toBuildingJoined = joinBuilding(toBuilding,useLayer=True)
+            toBuildingJoined = joinBuilding(
+                toBuilding,useLayer=True,joinCombo=False)
         else:
             # 如果已经分层，则保留
             toBuildingJoined = building
     # 未合并的话，进行分层合并
     else:
-        toBuildingJoined = joinBuilding(toBuilding,useLayer=True)
+        toBuildingJoined = joinBuilding(
+            toBuilding,useLayer=True,joinCombo=False)
 
     # 一、裁剪屋顶 ------------------------
     # 包括：装修、斗栱、梁架、椽架
@@ -1539,7 +1547,8 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         # 强制解除合并
         __undoJoin(fromBuildingJoined)
     # 重新分层合并
-    fromBuildingJoined = joinBuilding(fromBuilding,useLayer=True)
+    fromBuildingJoined = joinBuilding(
+        fromBuilding,useLayer=True,joinCombo=False)
     # 主建筑分层合并
     # 已合并的话，检查是否分层
     if toBuildingJoined:
@@ -1548,13 +1557,15 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         # 如果没有分层，则重新分层
         if len(building.children) == 1:
             __undoJoin(building)
-            toBuildingJoined = joinBuilding(toBuilding,useLayer=True)
+            toBuildingJoined = joinBuilding(
+                toBuilding,useLayer=True,joinCombo=False)
         else:
             # 如果已经分层，则保留
             toBuildingJoined = building
     # 未合并的话，进行分层合并
     else:
-        toBuildingJoined = joinBuilding(toBuilding,useLayer=True)
+        toBuildingJoined = joinBuilding(
+            toBuilding,useLayer=True,joinCombo=False)
 
     # 一、裁剪屋顶 ------------------------
     # 包括：装修、斗栱、梁架、椽架
@@ -2095,7 +2106,8 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         # 强制解除合并
         __undoJoin(fromBuildingJoined)
     # 重新分层合并
-    fromBuildingJoined = joinBuilding(fromBuilding,useLayer=True)
+    fromBuildingJoined = joinBuilding(
+        fromBuilding,useLayer=True,joinCombo=False)
     # 主建筑分层合并
     # 已合并的话，检查是否分层
     if toBuildingJoined:
@@ -2104,13 +2116,15 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         # 如果没有分层，则重新分层
         if len(building.children) == 1:
             __undoJoin(building)
-            toBuildingJoined = joinBuilding(toBuilding,useLayer=True)
+            toBuildingJoined = joinBuilding(
+                toBuilding,useLayer=True,joinCombo=False)
         else:
             # 如果已经分层，则保留
             toBuildingJoined = building
     # 未合并的话，进行分层合并
     else:
-        toBuildingJoined = joinBuilding(toBuilding,useLayer=True)
+        toBuildingJoined = joinBuilding(
+            toBuilding,useLayer=True,joinCombo=False)
 
     # 4、合并为一个对象
     boolObj = utils.joinObjects(intersections,

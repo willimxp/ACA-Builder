@@ -460,6 +460,9 @@ def __loadTemplateSingle(
         # 针对combo模板，跳过子模板解析
         if node.tag == 'template':
             continue
+
+        # 251205 不使用模板中存在的aca_id，维持对象随机生成
+        if node.tag == 'aca_id':continue
         
         tag = node.tag
         type = node.attrib['type']
@@ -594,6 +597,7 @@ def __saveTemplate(buildingObj:bpy.types.Object):
     # 忽略处理的节点
     ignoreKeys = {
         # 辅助参数，无需处理
+        'aca_id', # 251205 不在模板中保存建筑id，维持随机生成
         'aca_obj',
         'wall_layout',
         'roof_qiao_point',

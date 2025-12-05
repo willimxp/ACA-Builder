@@ -1170,7 +1170,8 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         
     # 14、门簪 ------------------------
     # 仅板门需要
-    if wallType == con.ACA_WALLTYPE_MAINDOOR:
+    if (wallType == con.ACA_WALLTYPE_MAINDOOR
+        and childData.door_num != 4):
         # 定位
         span = (doorWidth 
                 + con.BAOKUANG_WIDTH*pd*2)/4
@@ -1283,7 +1284,7 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
     
     # 1、门板 --------
     # 宽度考虑门轴
-    doorWidth = (holeWidth/2
+    doorWidth = (holeWidth/maindoorData.door_num
                  + con.MAINDOOR_DEPTH*pd # 考虑门轴长度取门厚
                  + con.DOOR_YANFENG*pd
                  - con.DOOR_MIDFENG
@@ -1314,7 +1315,7 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
 
     # 2、门轴 ----------------------
     # 定位
-    zhouX = (holeWidth/2 
+    zhouX = (holeWidth/maindoorData.door_num
             + con.MAINDOOR_DEPTH*pd/2 
             + con.DOOR_YANFENG*pd
              )
@@ -1370,86 +1371,88 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
     doorParts.append(bianObj)
 
     # 4、门钉 ---------------------------
-    dingNum = maindoorData.door_ding_num   # 实际的排布行数和列数 
-    if dingNum > 0:
-        # 导入门钉
-        dingObj = utils.copyObject(
-            sourceObj=aData.door_ding,
-            name='门钉',
+    if maindoorData.door_num != 4:
+        dingNum = maindoorData.door_ding_num   # 实际的排布行数和列数 
+        if dingNum > 0:
+            # 导入门钉
+            dingObj = utils.copyObject(
+                sourceObj=aData.door_ding,
+                name='门钉',
+                parentObj=kankuangObj,
+                singleUser=True
+            )
+            mat.paint(dingObj,con.M_GOLD,True)
+            # 根据门口宽度，调整门钉尺寸
+            # 门钉分布范围，门口一半，去掉门缝
+            dingTotalWidth = holeWidth/maindoorData.door_num - con.DOOR_MIDFENG
+            # 这里按照最多9路门钉，门钉中到中2倍门钉直径计算
+            # 因为7路2.2D，5路4D，为了简化计算，就统一在9路定尺寸了
+            dingWidth = dingTotalWidth/18
+            dingObj.dimensions.x = dingWidth
+            utils.updateScene()
+            dingObj.scale.y = dingObj.scale.x
+            dingObj.scale.z = dingObj.scale.x
+            utils.applyTransform(dingObj,use_scale=True)
+            # 排布门钉
+            # 排布起点(右下角)，以门口进行计算，不能按门板进行计算
+            dingX = holeWidth/maindoorData.door_num - dingTotalWidth/dingNum/2
+            dingY = doorY - con.MAINDOOR_DEPTH*pd/2
+            dingZ = con.KAN_DOWN_HEIGHT*pd + holeHeight/dingNum/2
+            dingObj.location = (dingX,dingY,dingZ)
+            # 添加Array
+            # X向
+            utils.addModifierArray(
+                object=dingObj,
+                count=dingNum,
+                offset=(-dingTotalWidth/dingNum,0,0),
+            )
+            # Z向
+            utils.addModifierArray(
+                object=dingObj,
+                count=dingNum,
+                offset=(0,0,holeHeight/dingNum),
+            )
+            doorParts.append(dingObj)
+
+    # 5、铺首 ---------------------------
+    if maindoorData.door_num != 4:
+        # 导入铺首
+        pushouObj = utils.copyObject(
+            sourceObj=aData.door_pushou,
+            name='铺首',
             parentObj=kankuangObj,
             singleUser=True
         )
-        mat.paint(dingObj,con.M_GOLD,True)
-        # 根据门口宽度，调整门钉尺寸
-        # 门钉分布范围，门口一半，去掉门缝
-        dingTotalWidth = holeWidth/2 - con.DOOR_MIDFENG
-        # 这里按照最多9路门钉，门钉中到中2倍门钉直径计算
-        # 因为7路2.2D，5路4D，为了简化计算，就统一在9路定尺寸了
-        dingWidth = dingTotalWidth/18
-        dingObj.dimensions.x = dingWidth
+        mat.paint(pushouObj,con.M_GOLD,True)
+        # 尺寸
+        # 无门钉时，取腰枋高度
+        pushouH = pushouObj.dimensions.z
+        if dingNum > 0:
+            # 有门钉时，不超过门钉间距
+            span = holeHeight/dingNum - dingWidth
+            if pushouH > span:
+                pushouH = span
+        pushouObj.dimensions.z = pushouH
         utils.updateScene()
-        dingObj.scale.y = dingObj.scale.x
-        dingObj.scale.z = dingObj.scale.x
-        utils.applyTransform(dingObj,use_scale=True)
-        # 排布门钉
-        # 排布起点(右下角)，以门口进行计算，不能按门板进行计算
-        dingX = holeWidth/2 - dingTotalWidth/dingNum/2
-        dingY = doorY - con.MAINDOOR_DEPTH*pd/2
-        dingZ = con.KAN_DOWN_HEIGHT*pd + holeHeight/dingNum/2
-        dingObj.location = (dingX,dingY,dingZ)
-        # 添加Array
-        # X向
-        utils.addModifierArray(
-            object=dingObj,
-            count=dingNum,
-            offset=(-dingTotalWidth/dingNum,0,0),
-        )
-        # Z向
-        utils.addModifierArray(
-            object=dingObj,
-            count=dingNum,
-            offset=(0,0,holeHeight/dingNum),
-        )
-        doorParts.append(dingObj)
-
-    # 5、铺首 ---------------------------
-    # 导入铺首
-    pushouObj = utils.copyObject(
-        sourceObj=aData.door_pushou,
-        name='铺首',
-        parentObj=kankuangObj,
-        singleUser=True
-    )
-    mat.paint(pushouObj,con.M_GOLD,True)
-    # 尺寸
-    # 无门钉时，取腰枋高度
-    pushouH = pushouObj.dimensions.z
-    if dingNum > 0:
-        # 有门钉时，不超过门钉间距
-        span = holeHeight/dingNum - dingWidth
-        if pushouH > span:
-            pushouH = span
-    pushouObj.dimensions.z = pushouH
-    utils.updateScene()
-    pushouObj.scale.y = pushouObj.scale.z
-    pushouObj.scale.x = pushouObj.scale.z
-    utils.applyTransform(pushouObj,use_scale=True)
-    # 定位
-    pushouX = (
-        pushouObj.dimensions.x/2
-        + con.DOOR_MIDFENG
-        + doorWidth * 0.1
-        )
-    pushouY = doorY-con.MAINDOOR_DEPTH*pd/2
-    if dingNum == 0 :
-        # 无门钉时与腰枋对齐
-        pushouZ = doorZ
-    else:
-        # 有门钉时，放置在中间两行门钉间
-        pushouZ = (con.KAN_DOWN_HEIGHT*pd 
-                   + round(dingNum/2)*holeHeight/dingNum)
-    pushouObj.location = (pushouX,pushouY,pushouZ)
-    doorParts.append(pushouObj)
+        pushouObj.scale.y = pushouObj.scale.z
+        pushouObj.scale.x = pushouObj.scale.z
+        utils.applyTransform(pushouObj,use_scale=True)
+        # 定位
+        pushouX = (
+            pushouObj.dimensions.x/2
+            + con.DOOR_MIDFENG
+            + doorWidth * 0.1
+            )
+        pushouY = doorY-con.MAINDOOR_DEPTH*pd/2
+        if dingNum == 0 :
+            # 无门钉时与腰枋对齐
+            pushouZ = doorZ
+        else:
+            # 有门钉时，放置在中间两行门钉间
+            pushouZ = (con.KAN_DOWN_HEIGHT*pd 
+                    + round(dingNum/2)*holeHeight/dingNum)
+        pushouObj.location = (pushouX,pushouY,pushouZ)
+        doorParts.append(pushouObj)
 
     # 6、批量后处理 ----------------------
     # 批量设置所有子对象材质
@@ -1477,6 +1480,13 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.flip_normals()
     bpy.ops.object.mode_set(mode='OBJECT')
+
+    # 4扇的板门进行生成
+    if maindoorData.door_num == 4:
+        doorJoin3 = utils.copySimplyObject(doorJoin2)
+        doorJoin3.location.x = doorJoin2.location.x + doorWidth*2 + con.DOOR_YANFENG*pd*2
+        doorJoin4 = utils.copySimplyObject(doorJoin)
+        doorJoin4.location.x = doorJoin.location.x - doorWidth*2 - con.DOOR_YANFENG*pd*2
 
     return doorJoin
 

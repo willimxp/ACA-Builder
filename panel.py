@@ -981,6 +981,10 @@ class ACA_PT_wall(bpy.types.Panel):
                 # 属性框
                 toolBox = box.column(align=True)
                 toolBar = toolBox.grid_flow(align=True,columns=1)
+                # 板门数量
+                inputDoorNum = toolBar.column(align=True)
+                inputDoorNum.prop(
+                    contextData, "door_num",text='板门数量')
                 # 门钉数量
                 inputDingNum = toolBar.column(align=True)
                 inputDingNum.prop(

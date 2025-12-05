@@ -685,6 +685,12 @@ class ACA_data_door_common(ACA_data_wall_common):
     
 # 板门属性
 class ACA_data_maindoor(ACA_data_door_common):
+    door_num : bpy.props.IntProperty(
+            name="板门数量",
+            default=2, max=4,step=2,min=2,
+            update = update_wall,
+            description="板门可以做2扇，也可以做4扇",
+        )# type: ignore 
     door_ding_num : bpy.props.IntProperty(
             name="门钉数量",
             default=5,

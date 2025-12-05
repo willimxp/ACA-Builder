@@ -583,7 +583,10 @@ def saveTemplateWithCombo(buildingObj:bpy.types.Object):
 
     # 保存子模板
     for buildingObj in comboObj.children:
-        __saveTemplate(buildingObj)
+        # 不在模板中保存合并的建筑对象
+        if buildingObj.ACA_data.aca_type != \
+            con.ACA_TYPE_BUILDING_JOINED:
+            __saveTemplate(buildingObj)
 
     return {'FINISHED'}
 

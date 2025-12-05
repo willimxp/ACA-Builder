@@ -282,12 +282,11 @@ class ACA_PT_basic(bpy.types.Panel):
                         )   
 
         ###################################################
-        # 第五工具箱
-        box = layout.box() 
-        
+        # 第五工具箱        
         # 回廊延伸
         if bData.combo_type in (con.COMBO_LOGGIA,
                                 con.COMBO_LOGGIA_CORNER):
+            box = layout.box() 
             # 第3.1行 ------------------------------
             toolBoxLoggia = box.column(align=True)
             toolBar = toolBoxLoggia.grid_flow(columns=3, align=True)

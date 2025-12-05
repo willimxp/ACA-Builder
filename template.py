@@ -1028,5 +1028,5 @@ def __float2xml(value,keytype):
     # 浮点数组，对应于FloatVectorProperty
     if type(value).__name__ == 'bpy_prop_array':
         keytype = 'FloatVectorProperty'
-        value = ",".join(str(num) for num in value)
+        value = ",".join(str(round(num,3)) for num in value)
     return value,keytype

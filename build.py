@@ -849,14 +849,14 @@ def joinBuilding(buildingObj:bpy.types.Object,
             # 合并名称直接加'joined'后缀
             joinedName = buildingObj.name + con.JOIN_SUFFIX
 
-        # 合并前提取第一个子对象的父节点矩阵
-        # 为后续重新绑定父节点做准备
-        if isCombo:
-            # 组合建筑要分别取两层的转换
-            baseMatrix = partObjList[0].parent.parent.matrix_local.copy()
-        else:
-            # 一般可能是台基层，或柱网层根节点
-            baseMatrix = partObjList[0].parent.matrix_local.copy()
+        # # 合并前提取第一个子对象的父节点矩阵
+        # # 为后续重新绑定父节点做准备
+        # if isCombo:
+        #     # 组合建筑要分别取两层的转换
+        #     baseMatrix = partObjList[0].parent.parent.matrix_local.copy()
+        # else:
+        #     # 一般可能是台基层，或柱网层根节点
+        #     baseMatrix = partObjList[0].parent.matrix_local.copy()
 
         # 250929 提取combo对象的属性
         if isCombo:
@@ -872,28 +872,34 @@ def joinBuilding(buildingObj:bpy.types.Object,
             joinedModel.ACA_data['combo_type'] = comboType
             # print(joinedName + " joinedComboType=" + comboType)
         
-        # 区分是否分层的坐标映射
-        if useLayer:
-            if isCombo:
-                # 组合建筑要分别取两层的转换
-                matrix = (joinedModel.parent.parent.matrix_local 
-                          @ joinedModel.parent.matrix_local)
-            else:
-                # 取各个分层的局部坐标
-                matrix = joinedModel.parent.matrix_local  
-        else:
-            # 墙体只有一级层次，不区分是否分层
-            if joinedModel.parent.ACA_data.aca_type == \
-                con.ACA_TYPE_YARDWALL:
-                matrix = joinedModel.matrix_local
-            else:                
-                # 不分层的建筑体，取合并基准的父节点坐标系
-                matrix = baseMatrix
+        # # 区分是否分层的坐标映射
+        # if useLayer:
+        #     if isCombo:
+        #         # 组合建筑要分别取两层的转换
+        #         matrix = (joinedModel.parent.parent.matrix_local 
+        #                   @ joinedModel.parent.matrix_local)
+        #     else:
+        #         # 取各个分层的局部坐标
+        #         matrix = joinedModel.parent.matrix_local  
+        # else:
+        #     # 墙体只有一级层次，不区分是否分层
+        #     if joinedModel.parent.ACA_data.aca_type == \
+        #         con.ACA_TYPE_YARDWALL:
+        #         matrix = joinedModel.matrix_local
+        #     else:                
+        #         # 不分层的建筑体，取合并基准的父节点坐标系
+        #         matrix = baseMatrix
 
-        # 重新绑定父级对象
+        # # 重新绑定父级对象
+        # joinedModel.parent = joinedRoot
+        # # 重新映射坐标
+        # joinedModel.location = matrix @ joinedModel.location
+
+        # 251205 采用更简洁的坐标转换
+        mw = joinedModel.matrix_world
         joinedModel.parent = joinedRoot
-        # 重新映射坐标
-        joinedModel.location = matrix @ joinedModel.location
+        joinedModel.matrix_world = mw
+
         utils.applyTransform2(joinedModel,
                                 use_location=True,
                                 use_rotation=True,

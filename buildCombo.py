@@ -4,6 +4,7 @@
 #   组合建筑的营造
 import bpy
 from mathutils import Vector
+from typing import List
 
 from . import utils
 from .const import ACA_Consts as con
@@ -47,7 +48,7 @@ def __addComboLevel(buildingObj:bpy.types.Object):
     rootColl = utils.setCollection(con.COLL_NAME_ROOT,
                         isRoot=True,colorTag=2)
     # 添加combo根节点
-    comboObj = __addComboRoot(buildingObj.name + '.combo',
+    comboObj = __addComboRoot('建筑组合',
                               location = buildingObj.location)
 
     # 更改对象父节点
@@ -1417,47 +1418,79 @@ def __updateMultiFloorParent(parentObj:bpy.types.Object,
     return
 
 # 将选中的对象合并为一个combo
-def addCombo(context:bpy.types.Context):
-    # 查找待合并的建筑
-    buildingList = []
-    selectObjs = context.selected_objects
-    for obj in selectObjs:
-        buildingObj,bData,oData = utils.getRoot(obj)
-        if buildingObj:
-            if buildingObj not in buildingList:
-                buildingList.append(buildingObj)
-    
-    # 确保至少选择了2个建筑
-    if len(buildingList) < 2: return {'CANCELLED'}
-
-    # 查找是否已有combo根节点
+def addCombo(buildingList:List[bpy.types.Object]):
+    # 检验合并涉及的集合，并预先记录
+    # 如果是单体与单体集成就不涉及
+    # 如果是单体和集合，或集合与集合之间的集成，需要先记录下来，最后清理
+    comboList = []
     for buildingObj in buildingList:
         comboObj = utils.getComboRoot(buildingObj)
         if comboObj is not None:
-            break
+            if comboObj not in comboList:
+                comboList.append(comboObj)
 
-    # 如果不存在combo则新建
-    if comboObj is None:
-        comboObj = __addComboLevel(buildingList[0])
+    # 验证是否已经集成，不再重复集成
+    if len(comboList) == 1:
+        utils.outputMsg("建筑已在同一个集合中，不再做集成")
+        return {'CANCELLED'},None
+    
+    # 新建一个combo
+    # 锁定在ACA根目录下
+    rootColl = utils.setCollection(con.COLL_NAME_ROOT)
+    # 无论是单体和单体的集成，还是单体与combo的集成，或者combo与combo的集成
+    comboNewObj = __addComboRoot(templateName='建筑组合',
+                                 location=buildingList[0].location)
+    comboNewColl = comboNewObj.users_collection[0]
 
-    parentColl = comboObj.users_collection[0]
-
-    # 将其他对象纳入combo
+    # 将所有对象迁移到新comboNew中
     for buildingObj in buildingList:
         buildingObj:bpy.types.Object
-        parentObj = utils.getComboRoot(buildingObj)
-        if parentObj is None:
-            # 关联父对象
-            mw = buildingObj.matrix_world
-            buildingObj.parent = comboObj
-            buildingObj.matrix_world = mw
-            # 更新combo_location
-            bData:acaData = buildingObj.ACA_data
-            bData['combo_location'] = buildingObj.location
-            # 关联父目录
-            buildingColl = buildingObj.users_collection[0]
-            parentColl.children.link(buildingColl)
-            # 从根目录移除
-            rootColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
-            rootColl.children.unlink(buildingColl)
-    return {'FINISHED'}
+        parentCombo = utils.getComboRoot(buildingObj)
+        # 关联父对象
+        mw = buildingObj.matrix_world
+        buildingObj.parent = comboNewObj
+        buildingObj.matrix_world = mw
+        # 更新combo_location
+        bData:acaData = buildingObj.ACA_data
+        bData['combo_location'] = buildingObj.location
+        # 更新parent id
+        bData['combo_parent'] = comboNewObj.ACA_data.aca_id
+        # 关联集合目录
+        buildingColl = buildingObj.users_collection[0]
+        comboNewColl.children.link(buildingColl)
+        # 从原集合目录中移除
+        if parentCombo is None:
+            # 如果单体建筑，从'ACA筑韵古建'目录中移除
+            oldColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
+        else:
+            # 如果是combo子建筑，从原来的combo中移除
+            oldColl = parentCombo.users_collection[0]
+        oldColl.children.unlink(buildingColl)
+
+    # 清理老combo
+    # 如果是单体与集合，或集合与集合的合并，需要清理
+    # 如果是单体与单体的组合就不涉及
+    for comboObj in comboList:
+        comboObj: bpy.types.Collection
+        # 迁移comboObj的postProcess
+        comboData:acaData = comboObj.ACA_data
+        ppData = comboData.postProcess
+        if len(ppData) > 0:
+            for item in ppData:
+                newpp = comboNewObj.ACA_data.postProcess.add()
+                newpp.action = item.action
+                newpp.parameter = item.parameter
+
+        comboColl = comboObj.users_collection[0]
+        for obj in comboColl.objects:
+            obj:bpy.types.Object
+            # 跳过老combo root
+            if obj.ACA_data.aca_type == con.ACA_TYPE_COMBO:continue
+            # 其他对象迁移到新combo中
+            comboColl.objects.unlink(obj)
+            comboNewColl.objects.link(obj)
+
+        # 删除combo Coll
+        bpy.data.collections.remove(comboColl)  
+
+    return {'FINISHED'},comboNewObj

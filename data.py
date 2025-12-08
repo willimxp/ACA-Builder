@@ -419,8 +419,9 @@ def update_wall(self, context:bpy.types.Context):
     for objName in selected_names:
         wallObj = bpy.data.objects[objName]
         wallObj.select_set(True)
-    activeObj = bpy.data.objects[activeObjName]
-    bpy.context.view_layer.objects.active = activeObj
+    if activeObjName in bpy.data.objects:
+        activeObj = bpy.data.objects[activeObjName]
+        bpy.context.view_layer.objects.active = activeObj
     return
 
 # 刷新斗栱布局
@@ -713,6 +714,17 @@ class ACA_data_geshan(ACA_data_door_common):
             update = update_wall,
             description="2~6抹头都可以，根据需要自由设置",
         )# type: ignore 
+    
+# 251205 后处理操作属性
+class ACA_data_postProcess(bpy.types.PropertyGroup):
+    # 操作类型：如，建筑拼接union
+    action:bpy.props.StringProperty(
+            name = 'Action',
+        ) # type: ignore
+    # 操作参数：将多个操作参数拼接成字串，如，"from=building1,to=building2"
+    parameter:bpy.props.StringProperty(
+            name = 'Parameter',
+        ) # type: ignore
 
 # 对象范围的数据
 # 可绑定面板参数属性
@@ -721,9 +733,14 @@ class ACA_data_geshan(ACA_data_door_common):
 # https://blender.stackexchange.com/questions/311578/how-do-you-correctly-add-ui-elements-to-adhere-to-the-typing-spec
 class ACA_data_obj(bpy.types.PropertyGroup):
     # 通用对象属性
+    # aca_id是建筑的唯一编号，在生成时随机编号，不会重复
     aca_id : bpy.props.StringProperty(
             name = 'ID',
         ) # type: ignore
+    # splice_id拼接编号在拼接时生成，便于后续根据模板生成或更新建筑时自动触发
+    splice_id : bpy.props.StringProperty(
+            name = '建筑ID'
+        ) #type: ignore
     aca_obj : bpy.props.BoolProperty(
             name = '是ACA对象',
             default = False
@@ -1296,6 +1313,11 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_roof,
             description="举折系数，默认0.1，适当调大可以获得更加明显的瓦面弧度",
         )# type: ignore
+    
+    # 251205 后处理操作列表
+    postProcess: bpy.props.CollectionProperty(
+        type=ACA_data_postProcess, name="后处理列表"
+    ) # type: ignore
     
 # 全局共用的模板信息，各个建筑都进行引用
 # 包括资产库资产引用等    

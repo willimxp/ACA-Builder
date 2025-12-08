@@ -2905,7 +2905,7 @@ def getWallSetting(contextObj:bpy.types.Object):
 # 生成一个ID
 def generateID():
     import uuid
-    id = str(uuid.uuid1())
+    id = str(uuid.uuid4())
     return id
 
 # 删除柱网的墙体、踏跺、栏杆等
@@ -3541,3 +3541,27 @@ def round_vector(vec: Vector, decimals: int = 3) -> Vector:
         处理后的新Vector对象
     """
     return Vector((round(comp, decimals) for comp in vec))
+
+# 选择所有建筑子对象
+def getChildrenHierarchy(buildingObj:bpy.types.Object):
+    childrenList = []
+
+    def addChild(buildingObj):
+        for childObj in buildingObj.children:
+            useObj = True
+            # 仅返回可见对象
+            if childObj.hide_viewport or childObj.hide_render:
+                useObj = False
+            # 仅返回实体对象
+            if childObj.type not in ('MESH'):
+                useObj = False
+            # 记录对象名称
+            if useObj:
+                childrenList.append(childObj)
+                
+            # 次级递归
+            if childObj.children:
+                addChild(childObj)
+
+    addChild(buildingObj)
+    return childrenList

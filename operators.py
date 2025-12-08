@@ -1627,28 +1627,53 @@ class ACA_OT_ADD_LOGGIA(bpy.types.Operator):
         return {'FINISHED'}
     
 # 添加抱厦
-class ACA_OT_UNION_BUILDING(bpy.types.Operator):
-    bl_idname="aca.union_building"
-    bl_label = "建筑组合"
+class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
+    bl_idname="aca.splice_building"
+    bl_label = "建筑拼接"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '建筑组合'
+    bl_description = '建筑拼接'
     
     def execute(self, context): 
         timeStart = time.time()
-        buildingObj,bData,objData = utils.getRoot(context.object)
         
-        from . import buildCombo
+        # 1、验证用户选择的context --------------------------
+        # 获取选中的建筑
+        fromBuilding = None
+        toBuilding = None
+        # 遍历选中的对象，如果已合并的直接添加，未合并的记录在未合并列表
+        for obj in context.selected_objects:
+            # 活动主建筑
+            if obj == context.active_object:
+                building,bData,oData = utils.getRoot(obj)
+                fromBuilding = building        
+            # 副建筑
+            else:
+                if toBuilding is not None:
+                    utils.popMessageBox('不止两个建筑')
+                    return {'CANCELLED'}
+                building,mData,oData = utils.getRoot(obj)
+                toBuilding = building
+
+        # 校验应该有两个建筑(在正式合并前检验，避免回滚)
+        if (not fromBuilding
+            or not toBuilding
+            or fromBuilding == toBuilding) :
+            utils.popMessageBox("请选择需要组合的2个建筑")
+            return {'CANCELLED'}
+        
+        from . import buildSplice
         funproxy = partial(
-            build.unionBuilding,
-            context = context,
+            buildSplice.spliceBuilding,
+            fromBuilding = fromBuilding,
+            toBuilding = toBuilding,
         )
         result = utils.fastRun(funproxy)
 
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
-            msg = '建筑组合完成 | 运行时间【%.1f秒】' % runTime
+            msg = '建筑拼接完成 | 运行时间【%.1f秒】' % runTime
             self.report({'INFO'},msg)
-            utils.popMessageBox(msg)
+            # utils.popMessageBox(msg)
         
         return {'FINISHED'}
     
@@ -1678,7 +1703,7 @@ class ACA_OT_LOGGIA_EXTEND(bpy.types.Operator):
 
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
-            msg = '建筑组合完成 | 运行时间【%.1f秒】' % runTime
+            msg = '建筑拼接完成 | 运行时间【%.1f秒】' % runTime
             self.report({'INFO'},msg)
             # utils.popMessageBox(msg)
         
@@ -1693,14 +1718,36 @@ class ACA_OT_COMBO_BUILDING(bpy.types.Operator):
     
     def execute(self, context): 
         timeStart = time.time()
-        buildingObj,bData,objData = utils.getRoot(context.object)
+
+        # 查找待合并的建筑
+        buildingList = []
+        selectObjs = context.selected_objects
+        for obj in selectObjs:
+            buildingObj,bData,oData = utils.getRoot(obj)
+            if buildingObj:
+                if buildingObj not in buildingList:
+                    buildingList.append(buildingObj)
+
+        # 确保至少选择了2个建筑
+        if len(buildingList) < 2: 
+            print("建筑集成失败，未找到多个待集成的建筑")
+            return {'CANCELLED'}
+
+        # 查找是否已有combo根节点
+        for buildingObj in buildingList:
+            comboObj = utils.getComboRoot(buildingObj)
+            if comboObj is not None:
+                # 将集合中的其他建筑也加入集成
+                for building in comboObj.children:
+                    if building not in buildingList:
+                        buildingList.append(building)
         
         from . import buildCombo
         funproxy = partial(
             buildCombo.addCombo,
-            context = context,
+            buildingList = buildingList,
         )
-        result = utils.fastRun(funproxy)
+        result,comboObj = utils.fastRun(funproxy)
 
         if 'FINISHED' in result:
             runTime = time.time() - timeStart

@@ -958,7 +958,7 @@ def __validate(buildingObj:bpy.types.Object):
                 return "无法生成平坐，请启用斗栱，且斗栱应该有足够的出跳。"
     return
 
-# 建筑组合
+# 建筑拼接
 def unionBuilding(context:bpy.types.Context):
     # 1、获取选中的建筑
     fromBuilding = None
@@ -1122,7 +1122,7 @@ def __getJoinedOriginal(joinedBuilding: bpy.types.Object):
     src_building = src_coll.objects[0]
     return src_building
 
-# 建筑组合：勾连搭
+# 建筑拼接：勾连搭
 # 适用于主建筑和副建筑平行，且面阔相等
 def __unionGoulianda(fromBuilding:bpy.types.Object,
                      toBuilding:bpy.types.Object,
@@ -1219,7 +1219,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
 
     return {'FINISHED'}
 
-# 建筑组合：平行抱厦-悬山
+# 建筑拼接：平行抱厦-悬山
 # fromBuilding为面阔较小的抱厦
 def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
                      toBuilding:bpy.types.Object,
@@ -1535,7 +1535,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
 
     return {'FINISHED'}
 
-# 建筑组合：平行抱厦-歇山
+# 建筑拼接：平行抱厦-歇山
 # fromBuilding为面阔较小的抱厦
 def __unionParallelXieshan(fromBuilding:bpy.types.Object,
                      toBuilding:bpy.types.Object,
@@ -1840,7 +1840,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
 
     return {'FINISHED'}
 
-# 建筑组合：丁字形抱厦
+# 建筑拼接：丁字形抱厦
 # fromBuilding为面阔较小的抱厦
 def __unionCrossBaosha(fromBuilding:bpy.types.Object,
                      toBuilding:bpy.types.Object,
@@ -2342,7 +2342,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
 
     return {'FINISHED'}
 
-# 建筑组合：L相交
+# 建筑拼接：L相交
 # 暂时只考虑2坡顶
 def __unionCrossL(fromBuilding:bpy.types.Object,
                      toBuilding:bpy.types.Object,

@@ -27,6 +27,7 @@ bl_info = {
 # 定义一个注入类列表，在register和unregister时自动批量处理
 classes = (
     # 全局数据类
+    data.ACA_data_postProcess,
     data.TemplateListItem,
     data.TemplateThumbItem,
     data.ACA_data_pavilion,
@@ -96,7 +97,7 @@ classes = (
     operators.ACA_OT_TERRACE_ADD,
     operators.ACA_OT_MULTI_FLOOR_ADD,
     operators.ACA_OT_ADD_LOGGIA,
-    operators.ACA_OT_UNION_BUILDING,
+    operators.ACA_OT_SPLICE_BUILDING,
     operators.ACA_OT_LOGGIA_EXTEND,
     operators.ACA_OT_COMBO_BUILDING,
 )

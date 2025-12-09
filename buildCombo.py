@@ -1458,14 +1458,17 @@ def addCombo(buildingList:List[bpy.types.Object]):
     # 如果是单体与单体集成就不涉及
     # 如果是单体和集合，或集合与集合之间的集成，需要先记录下来，最后清理
     comboList = []
+    isAllComboChild = True
     for buildingObj in buildingList:
         comboObj = utils.getComboRoot(buildingObj)
-        if comboObj is not None:
+        if comboObj is None:
+            isAllComboChild = False
+        else:
             if comboObj not in comboList:
                 comboList.append(comboObj)
 
     # 验证是否已经集成，不再重复集成
-    if len(comboList) == 1:
+    if len(comboList) == 1 and isAllComboChild:
         utils.outputMsg("建筑已在同一个集合中，不再做集成")
         return {'CANCELLED'},comboList[0]
     

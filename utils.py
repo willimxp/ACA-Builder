@@ -2534,6 +2534,16 @@ def copyAcaData(fromObj,toObj,
         print("错误: 对象没有 ACA_data 属性组")
         return False
     
+    # 251209 跳过id、spliceid、parent
+    # 出现因为装修个性化，将建筑信息传递到装修上，导致拼接判断错误
+    defaultskip = ['aca_id','splice_id','combo_type','combo_parent']
+    if skip is None:
+        skip = defaultskip
+    else:
+        for key in skip:
+            if key not in defaultskip:
+                skip.append(key)
+    
     # 获取源和目标属性组
     source_props = fromObj.ACA_data
     target_props = toObj.ACA_data

@@ -73,7 +73,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     # 记录操作
     comboData:acaData = comboObj.ACA_data
     pp = comboData.postProcess.add()
-    pp.action = spliceType
+    pp.action = con.POSTPROC_SPLICE
     pp.parameter = f"{bData.splice_id}#{mData.splice_id}"
 
     return result
@@ -89,12 +89,18 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
     
     # 计算屋顶碰撞点
     crossPoint = __getRoofCrossPoint(fromBuilding,toBuilding)
-    if 'CANCELLED' in crossPoint: 
+    if 'CANCELLED' not in crossPoint: 
+        # 将碰撞点转换到combo坐标系
+        if comboObj:
+            crossPoint = comboObj.matrix_world.inverted() @ crossPoint
+    else:
         # 如果屋顶碰撞失败，则取主建筑临近副建筑的额枋外皮
         boolY = (bData.y_total+con.EFANG_LARGE_Y*dk+0.01)/2
         if fromBuilding.location.y > toBuilding.location.y:
             boolY *= -1
         crossPoint = Vector((0,boolY,0))
+        # 基于主建筑转换坐标
+        crossPoint = fromBuilding.matrix_local @ crossPoint
 
     # 生成剪切体 ----------------------------------
     # 1、出檐
@@ -229,8 +235,10 @@ def __getRoofCrossPoint(fromBuilding:bpy.types.Object,
             utils.delOrphan()
             utils.popMessageBox("建筑没有相交，未做任何裁剪")
             return {'CANCELLED'}
-    # 转换到局部坐标
-    crossPoint = fromBuilding.matrix_world.inverted() @ intersections[0]['location']
+    # # 转换到局部坐标
+    # crossPoint = fromBuilding.matrix_world.inverted() @ intersections[0]['location']
+    # 251209 使用全局坐标
+    crossPoint = intersections[0]['location']
 
     # 4、回收辅助对象
     utils.delObject(tileCurve_copy)

@@ -360,6 +360,9 @@ class ACA_Consts(object):
     COMBO_LOGGIA = 'combo_loggia'
     COMBO_LOGGIA_CORNER = 'combo_loggia_corner'
 
+    # 后处理类型
+    POSTPROC_SPLICE = 'SPLICE'
+
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")
 

@@ -125,6 +125,41 @@ def buildCombo(
             templateName = child['templateName'],
             comboObj = comboObj
         )
+
+    # 执行组合后处理
+    comboData:acaData = comboObj.ACA_data
+    postProcess = comboData.postProcess
+    # 解析后处理列表
+    for pp in postProcess:
+        # 建筑拼接
+        if pp.action == con.POSTPROC_SPLICE:
+            paraList = pp.parameter.split('#')
+            # 验证拼接只能有2个参数
+            if len(paraList) != 2:
+                utils.outputMsg("后处理异常：参数中不是期望的两个id")
+                continue
+
+            # 根据spliceid查找建筑
+            fromBuilding = toBuilding = None
+            for obj in bpy.data.objects:
+                if not hasattr(obj,'ACA_data'):
+                    continue
+                if obj.ACA_data.splice_id == paraList[0]:
+                    fromBuilding = obj
+                if obj.ACA_data.splice_id == paraList[1]:
+                    toBuilding = obj
+            if fromBuilding is None or toBuilding is None:
+                utils.outputMsg("后处理异常：无法匹配建筑spliceid")
+                continue
+            
+            # 执行拼接
+            from . import buildSplice
+            buildSplice.spliceBuilding(
+                fromBuilding=fromBuilding,
+                toBuilding=toBuilding)
+        else:
+            utils.outputMsg("无法识别的后处理类型")
+
     return {'FINISHED'}
 
 # 刷新组合建筑
@@ -1432,7 +1467,7 @@ def addCombo(buildingList:List[bpy.types.Object]):
     # 验证是否已经集成，不再重复集成
     if len(comboList) == 1:
         utils.outputMsg("建筑已在同一个集合中，不再做集成")
-        return {'CANCELLED'},None
+        return {'CANCELLED'},comboList[0]
     
     # 新建一个combo
     # 锁定在ACA根目录下

@@ -116,13 +116,13 @@ class ACA_PT_basic(bpy.types.Panel):
             ):
             col.enabled = False
 
-        # 调试信息 -------------------- 
-        col = box.row() 
-        col.prop(bData,"aca_id",text="id")
-        col = box.row() 
-        col.prop(bData,"splice_id",text="spliceid")
-        col = box.row() 
-        col.prop(bData,"combo_parent",text="parent")
+        # # 调试信息 -------------------- 
+        # col = box.row() 
+        # col.prop(objData,"aca_id",text="id")
+        # col = box.row() 
+        # col.prop(objData,"splice_id",text="spliceid")
+        # col = box.row() 
+        # col.prop(objData,"combo_parent",text="parent")
         
         #----------------------------
         toolBox = box.row(align=True) 

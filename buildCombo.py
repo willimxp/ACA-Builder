@@ -1467,6 +1467,13 @@ def addCombo(buildingList:List[bpy.types.Object]):
             if comboObj not in comboList:
                 comboList.append(comboObj)
 
+            # 将集合中的其他建筑也加入集成
+            for building in comboObj.children:
+                if hasattr(building,'ACA_data'):
+                    if building.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+                        if building not in buildingList:
+                            buildingList.append(building)
+
     # 验证是否已经集成，不再重复集成
     if len(comboList) == 1 and isAllComboChild:
         utils.outputMsg("建筑已在同一个集合中，不再做集成")
@@ -1476,13 +1483,17 @@ def addCombo(buildingList:List[bpy.types.Object]):
     # 锁定在ACA根目录下
     rootColl = utils.setCollection(con.COLL_NAME_ROOT)
     # 无论是单体和单体的集成，还是单体与combo的集成，或者combo与combo的集成
+    fromBuilding = buildingList[0]
+    # 251210 可以用translation直接获取全局坐标
+    fromLoc = fromBuilding.matrix_world.translation
     comboNewObj = __addComboRoot(templateName='建筑组合',
-                                 location=buildingList[0].location)
+                                 location=fromLoc)
     comboNewColl = comboNewObj.users_collection[0]
 
     # 将所有对象迁移到新comboNew中
     for buildingObj in buildingList:
         buildingObj:bpy.types.Object
+        # 预先保存对象的原始父节点
         parentCombo = utils.getComboRoot(buildingObj)
         # 关联父对象
         mw = buildingObj.matrix_world
@@ -1520,10 +1531,13 @@ def addCombo(buildingList:List[bpy.types.Object]):
                 newpp.parameter = item.parameter
 
         comboColl = comboObj.users_collection[0]
+        # 迁移子对象，如bool对象等
         for obj in comboColl.objects:
             obj:bpy.types.Object
             # 跳过老combo root
             if obj.ACA_data.aca_type == con.ACA_TYPE_COMBO:continue
+            # 绑定在新组合root
+            obj.parent = comboNewObj
             # 其他对象迁移到新combo中
             comboColl.objects.unlink(obj)
             comboNewColl.objects.link(obj)

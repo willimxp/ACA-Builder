@@ -1732,15 +1732,6 @@ class ACA_OT_COMBO_BUILDING(bpy.types.Operator):
         if len(buildingList) < 2: 
             print("建筑集成失败，未找到多个待集成的建筑")
             return {'CANCELLED'}
-
-        # 查找是否已有combo根节点
-        for buildingObj in buildingList:
-            comboObj = utils.getComboRoot(buildingObj)
-            if comboObj is not None:
-                # 将集合中的其他建筑也加入集成
-                for building in comboObj.children:
-                    if building not in buildingList:
-                        buildingList.append(building)
         
         from . import buildCombo
         funproxy = partial(

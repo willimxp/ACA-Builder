@@ -25,6 +25,10 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
 
     # 1、判断拼接方式 -------------------------------
     spliceType = None
+    # 拼接对象可能为单体与combo的拼接，需要将location转换到全局坐标系
+    # 251210 可以用translation直接获取全局坐标
+    fromLoc = fromBuilding.matrix_world.translation
+    toLoc = toBuilding.matrix_world.translation
 
     # 方案一：勾连搭
     # 两个建筑面阔相等，且为平行相交
@@ -33,8 +37,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
               toBuilding.rotation_euler.z)
         ):
         # 是否相交
-        buildingSpan = abs(fromBuilding.location.y 
-                           - toBuilding.location.y)
+        buildingSpan = abs(fromLoc.y - toLoc.y)
         roofSpan = (bData.y_total+mData.y_total)/2+21*bData.DK
         if buildingSpan > roofSpan:
             utils.popMessageBox("建筑不相交，无法进行组合")
@@ -46,8 +49,8 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     baoshaRot = fromBuilding.rotation_euler.z
     mainRot = toBuilding.rotation_euler.z
     angleDiff = abs(baoshaRot - mainRot)
-    xDiff = abs(fromBuilding.location.x - toBuilding.location.x)
-    yDiff = abs(fromBuilding.location.y - toBuilding.location.y)
+    xDiff = abs(fromLoc.x - toLoc.x)
+    yDiff = abs(fromLoc.y - toLoc.y)
     if (bData.x_total != mData.x_total
         and xDiff < abs(mData.x_total-bData.x_total)/2
         and yDiff > abs(mData.y_total-bData.y_total)/2
@@ -55,8 +58,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
         ):
         
         # 是否相交
-        buildingSpan = abs(fromBuilding.location.y 
-                           - toBuilding.location.y)
+        buildingSpan = abs(fromLoc.y - toLoc.y)
         roofSpan = (bData.y_total+mData.y_total)/2+21*bData.DK
         if buildingSpan > roofSpan:
             utils.popMessageBox("建筑不相交，无法进行组合")
@@ -87,8 +89,9 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     # 2、预处理 ------------------------------------
     from . import buildCombo
     # 建筑集成到一个统一的combo中
+    # 以第一个建筑为origin原点
     result,comboObj = buildCombo.addCombo(
-        [fromBuilding,toBuilding])
+        [toBuilding,fromBuilding])
 
     # 3、执行拼接 -------------------------------------
     if spliceType == 'goulianda':
@@ -117,13 +120,19 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     toColl = toBuilding.users_collection[0]
     toColl.color_tag = 'COLOR_05'
     # 给拼接对象编号
-    bData.splice_id = utils.generateID()
-    mData.splice_id = utils.generateID()
+    # 如果没有编号，则自动生成
+    # 如果有编号，是否有其他重复的对象，如果有则重新生成，
+    # 没有没有重复对象，则保留原编号
+    __setSpliceID(fromBuilding)
+    __setSpliceID(toBuilding)
     # 记录操作
     comboData:acaData = comboObj.ACA_data
     pp = comboData.postProcess.add()
     pp.action = con.POSTPROC_SPLICE
     pp.parameter = f"{bData.splice_id}#{mData.splice_id}"
+
+    # 5、聚焦在主建筑
+    utils.focusObj(toBuilding)
 
     return result
 
@@ -227,8 +236,6 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
             boolObj=boolObj,
             operation='DIFFERENCE',
         )
-
-    utils.focusObj(fromBuilding)
 
     return {'FINISHED'}
 
@@ -620,9 +627,6 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
                 boolObj=tileGrid_copy,
                 operation='DIFFERENCE',
             )
-    
-    if fromBuilding:
-        utils.focusObj(fromBuilding)
 
     return {'FINISHED'}
 
@@ -940,7 +944,33 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
                 operation='DIFFERENCE',
             )
 
-    if fromBuilding:
-        utils.focusObj(fromBuilding)
-
     return {'FINISHED'}
+
+# 生成拼接编号
+def __setSpliceID(buildingObj:bpy.types.Object):
+    # 拼接编号如果不存在，直接生成新ID
+    bData:acaData = buildingObj.ACA_data
+    if bData.splice_id == '':
+        bData['splice_id'] = utils.generateID()
+    # 拼接编号如果已经存在，可能是通过模板自动初始化的
+    else:
+        hasDuplicate = False
+        # 查询当前项目，是否有重复的拼接编号
+        for obj in bpy.data.objects:
+            # 跳过非ACA对象
+            if not hasattr(obj,'ACA_data'):continue
+            # 跳过自身
+            if obj == buildingObj:continue
+            # 检查重复
+            if obj.ACA_data.splice_id == bData.splice_id:
+                hasDuplicate = True
+                break
+
+        # 如果有重复的，则更新为新的拼接编号
+        if hasDuplicate:
+            bData['splice_id'] = utils.generateID()
+        # 如果没有重复，则保留原编号
+        else:
+            pass
+        
+    return

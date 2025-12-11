@@ -1186,6 +1186,10 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
     # 查找底层节点
     comboBase = None
     for comboChild in comboRoot.children:
+        # 251211 combo节点下可能有splice对象，需要排除
+        if comboChild.ACA_data.aca_type != con.ACA_TYPE_BUILDING:
+            continue
+        
         if comboChild.ACA_data.combo_parent == '':
             comboBase = comboChild
             break
@@ -1476,7 +1480,7 @@ def addCombo(buildingList:List[bpy.types.Object]):
 
     # 验证是否已经集成，不再重复集成
     if len(comboList) == 1 and isAllComboChild:
-        utils.outputMsg("建筑已在同一个集合中，不再做集成")
+        print("建筑已在同一个集合中，不再做集成")
         return {'CANCELLED'},comboList[0]
     
     # 新建一个combo

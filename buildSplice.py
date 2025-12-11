@@ -95,18 +95,21 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
 
     # 3、执行拼接 -------------------------------------
     if spliceType == 'goulianda':
+        utils.outputMsg("拼接建筑：勾连搭...")
         result = __unionGoulianda(
             fromBuilding,
             toBuilding,
             comboObj,
         )
     if spliceType == 'parallelXuanshan':
+        utils.outputMsg("拼接建筑：平行抱厦/悬山...")
         result = __unionParallelXuanshan(
             fromBuilding,
             toBuilding,
             comboObj,
         )
     if spliceType == 'parallelXieshan':
+        utils.outputMsg("拼接建筑：平行抱厦/歇山...")
         result = __unionParallelXieshan(
             fromBuilding,
             toBuilding,
@@ -201,11 +204,6 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
         dimension=boolDim,
         parent=comboObj,
     )
-    # 放入frombuilding的Collection中
-    cubeColl = boolObj.users_collection[0]
-    cubeColl.objects.unlink(boolObj)
-    comboColl = comboObj.users_collection[0]
-    comboColl.objects.link(boolObj)
     utils.hideObjFace(boolObj)
     utils.hideObj(boolObj)
 
@@ -489,11 +487,12 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     boolWidth= (bData.x_total 
                 + bData.platform_extend *2
                 + con.GROUND_BORDER *2
-                # + bData.platform_height*3 # 保留踏跺空间
                 )
     boolDeepth = (bData.y_total
                   + bData.platform_extend
-                  + con.GROUND_BORDER)
+                  + con.GROUND_BORDER
+                  + bData.platform_height*3 # 保留踏跺空间
+                  )
     boolHeight = bData.platform_height
     # 定位点做在檐柱中线，没有按瓦面碰撞
     # 后出抱厦的定位
@@ -524,6 +523,45 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     utils.edgeBevel(bevelObj=boolObj,
                     bevelEdges=bevelEdges,
                     bevelOffset=offset)
+
+    # 向两侧推出侧踏跺空间
+    # 挤出距离
+    extrude_distance = bData.platform_height * 3
+    # 编辑模式
+    bpy.ops.object.mode_set(mode='EDIT')
+    # 载入boolObj的mesh数据
+    bm = bmesh.from_edit_mesh(boolObj.data)
+    # 全部取消选中
+    for face in bm.faces: face.select = False
+    # 待挤出的面
+    bm.faces.ensure_lookup_table()
+    face_refs = [bm.faces[4],bm.faces[7]]
+    # 使用面引用逐一挤出
+    for target_face in face_refs:
+        normal = target_face.normal.copy()
+        res = bmesh.ops.extrude_face_region(bm, geom=[target_face])
+        bm.verts.ensure_lookup_table()
+        new_verts = [ele for ele in res.get('geom', []) 
+                     if isinstance(ele, bmesh.types.BMVert)]
+        if new_verts:
+            bmesh.ops.translate(
+                bm, 
+                verts=new_verts, 
+                vec=normal * extrude_distance)
+    # 删除原始被挤出的面
+    for f in face_refs:
+        try:
+            # 有时原面已被替换或合并，remove 前先检查仍在 bm.faces
+            if f in bm.faces:
+                bm.faces.remove(f)
+        except Exception:
+            # 忽略删除失败，继续处理
+            pass
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bmesh.update_edit_mesh(boolObj.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+
     utils.hideObjFace(boolObj)
     utils.hideObj(boolObj)
 
@@ -635,7 +673,6 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
 def __unionParallelXieshan(fromBuilding:bpy.types.Object,
                      toBuilding:bpy.types.Object,
                      comboObj:bpy.types.Object):
-    utils.outputMsg('平行抱厦-歇山')
     # 载入数据
     bData:acaData = fromBuilding.ACA_data
     mData:acaData = toBuilding.ACA_data
@@ -804,7 +841,6 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     boolWidth= (bData.x_total 
                 + bData.platform_extend *2
                 + con.GROUND_BORDER *2
-                #+ bData.piller_diameter*2
                 )
     boolDeepth = (bData.y_total
                   + bData.platform_extend
@@ -840,6 +876,45 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     utils.edgeBevel(bevelObj=boolObj,
                     bevelEdges=bevelEdges,
                     bevelOffset=offset)
+
+    # 向两侧推出侧踏跺空间
+    # 挤出距离
+    extrude_distance = bData.platform_height * 3
+    # 编辑模式
+    bpy.ops.object.mode_set(mode='EDIT')
+    # 载入boolObj的mesh数据
+    bm = bmesh.from_edit_mesh(boolObj.data)
+    # 全部取消选中
+    for face in bm.faces: face.select = False
+    # 待挤出的面
+    bm.faces.ensure_lookup_table()
+    face_refs = [bm.faces[4],bm.faces[7]]
+    # 使用面引用逐一挤出
+    for target_face in face_refs:
+        normal = target_face.normal.copy()
+        res = bmesh.ops.extrude_face_region(bm, geom=[target_face])
+        bm.verts.ensure_lookup_table()
+        new_verts = [ele for ele in res.get('geom', []) 
+                     if isinstance(ele, bmesh.types.BMVert)]
+        if new_verts:
+            bmesh.ops.translate(
+                bm, 
+                verts=new_verts, 
+                vec=normal * extrude_distance)
+    # 删除原始被挤出的面
+    for f in face_refs:
+        try:
+            # 有时原面已被替换或合并，remove 前先检查仍在 bm.faces
+            if f in bm.faces:
+                bm.faces.remove(f)
+        except Exception:
+            # 忽略删除失败，继续处理
+            pass
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bmesh.update_edit_mesh(boolObj.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+
     utils.hideObjFace(boolObj)
     utils.hideObj(boolObj)
 

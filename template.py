@@ -117,10 +117,10 @@ def updateDougongData(buildingObj:bpy.types.Object,
     if bData.aca_type != con.ACA_TYPE_BUILDING:
         if bData.combo_type == con.COMBO_ROOT:
             # comboRoot节点无需更新斗栱数据
-            utils.outputMsg("组合建筑根节点，无需更新斗栱数据")
+            print("组合建筑根节点，无需更新斗栱数据")
             return
         if bData.aca_type == con.ACA_TYPE_YARDWALL:
-            utils.outputMsg("院墙，无需更新斗栱数据")
+            print("院墙，无需更新斗栱数据")
             return
         else:
             raise Exception("更新斗栱数据异常，输入的不是建筑根节点")

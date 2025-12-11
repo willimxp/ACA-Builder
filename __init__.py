@@ -117,6 +117,10 @@ def register():
     # 最终发现是该选项会导致生成的'UVMap'变成'UV贴图'
     # 禁用语言-翻译-新建数据
     bpy.context.preferences.view.use_translate_new_dataname = False
+
+    # 251211 解决在terminal中的中文乱码问题
+    import os
+    os.system("chcp 65001")  # 65001 = UTF-8编码
     
     return
     

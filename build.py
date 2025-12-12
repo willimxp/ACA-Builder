@@ -2635,7 +2635,7 @@ def __getRoofCrossPoint(fromBuilding:bpy.types.Object,
             tileCurve,singleUser=True)
         utils.showObj(tileCurve_copy)
     else:
-        utils.outputMsg("无法获取正身坡线")
+        print("无法获取正身坡线")
         return {'CANCELLED'}
     # 副建筑瓦面
     tileGrid = utils.getAcaChild(

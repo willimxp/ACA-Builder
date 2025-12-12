@@ -81,6 +81,11 @@ def update_dk(self, context:bpy.types.Context):
 
 # 更新柱高
 def update_pillerHeight(self, context:bpy.types.Context):
+    # 判断自动重建开关
+    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    if not isRebuild:
+        return
+    
     # 如果有楼阁，更新楼阁层高
     comboRoot = utils.getComboRoot(context.object)
     if comboRoot is not None:

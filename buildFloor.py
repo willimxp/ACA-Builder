@@ -1454,13 +1454,15 @@ def resetFloor(buildingObj:bpy.types.Object,
     # bData.is_showRafter = False
     # bData.is_showTiles = False
 
-    # 调用
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if isRebuild:
-        result = buildFloor(buildingObj,
-                            comboObj=comboObj)
-    else:
-        result = {'CANCELLED'}
+    # # 调用
+    # isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+    # if isRebuild:
+    #     result = buildFloor(buildingObj,
+    #                         comboObj=comboObj)
+    # else:
+    #     result = {'CANCELLED'}
+    # 251212 暂停刷新时，修改面阔间数等重要修改仍会强行重置，所以这里不做控制
+    result = buildFloor(buildingObj,comboObj=comboObj)
     return result
 
 # 执行营造整体过程

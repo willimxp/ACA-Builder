@@ -92,6 +92,8 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     # 以第一个建筑为origin原点
     result,comboObj = buildCombo.addCombo(
         [toBuilding,fromBuilding])
+    # 聚焦在combo目录中
+    utils.focusCollByObj(comboObj)
 
     # 3、执行拼接 -------------------------------------
     if spliceType == 'goulianda':

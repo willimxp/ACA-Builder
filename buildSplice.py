@@ -495,14 +495,14 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
                   + con.GROUND_BORDER
                   + bData.platform_height*3 # 保留踏跺空间
                   )
-    boolHeight = bData.platform_height
+    boolHeight = bData.platform_height + con.BOOL_RESERVE*2 # 保留安全包裹
     # 定位点做在檐柱中线，没有按瓦面碰撞
     # 后出抱厦的定位
     boolY = (boolDeepth-bData.y_total)/2
     if fromBuilding.location.y < toBuilding.location.y:
         # 前出抱厦的定位
         boolY *= -1
-    boolZ = boolHeight/2
+    boolZ = boolHeight/2 - con.BOOL_RESERVE
 
     # 位置按主建筑转换
     loc = Vector((boolX,boolY,boolZ))
@@ -849,14 +849,14 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
                   + con.GROUND_BORDER
                   + bData.platform_height*3 # 保留踏跺空间
                   )
-    boolHeight = bData.platform_height
+    boolHeight = bData.platform_height + con.BOOL_RESERVE*2 # 保留安全包裹
     # 定位点做在檐柱中线，没有按瓦面碰撞
     # 后出抱厦的定位
     boolY = (boolDeepth-bData.y_total)/2
     if fromBuilding.location.y < toBuilding.location.y:
         # 前出抱厦的定位
         boolY *= -1
-    boolZ = boolHeight/2
+    boolZ = boolHeight/2 - con.BOOL_RESERVE
     # 位置按主建筑转换
     loc = Vector((boolX,boolY,boolZ))
     loc = fromBuilding.matrix_local @ loc

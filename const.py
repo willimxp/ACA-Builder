@@ -362,6 +362,7 @@ class ACA_Consts(object):
 
     # 后处理类型
     POSTPROC_SPLICE = 'SPLICE'
+    BOOL_RESERVE = 0.02     # 裁剪体包裹的出血尺寸
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

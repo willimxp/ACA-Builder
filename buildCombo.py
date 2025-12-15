@@ -1197,7 +1197,16 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
     # 依次设置上层节点
     hasNextLevel = (comboBase is not None)
     preFloor = comboBase
+    if comboBase is None: return
+    # print(f"updatefloorloc,combobase={comboBase.name},hasnextlevel={hasNextLevel}")
+
+    whilecount = 0
     while hasNextLevel:
+        if whilecount<10:
+            whilecount += 1
+        else:
+            break
+
         preData:acaData = preFloor.ACA_data
 
         # 查找下一层(上层)

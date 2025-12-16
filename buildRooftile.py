@@ -2531,12 +2531,22 @@ def __buildCornerRidgeCurve2(buildingObj:bpy.types.Object,
     curve.matrix_world = mw
     # 翻转曲线方向
     spline = curve.data.splines[0]
-    pStart = spline.points[0].co
-    pEnd = spline.points[-1].co
-    # 251203 如果建筑原点不在世界中心，不能取abs绝对值
-    # if abs(pStart.x) < abs(pEnd.x):
-    if pStart.x < pEnd.x:
+    # pStart = spline.points[0].co
+    # pEnd = spline.points[-1].co
+    # # 251203 如果建筑原点不在世界中心，不能取abs绝对值
+    # # if abs(pStart.x) < abs(pEnd.x):
+    # if pStart.x < pEnd.x:
+    #     utils.reverse_curve_direction(curve)
+    # 251216 如果建筑旋转了90度，用pStart.x判断就错了
+    # 改为比较向量长度
+    vStart = Vector(spline.points[0].co[:3]) - curve.parent.matrix_world.translation
+    vEnd = Vector(spline.points[-1].co[:3]) - curve.parent.matrix_world.translation
+    if vStart.length < vEnd.length:
         utils.reverse_curve_direction(curve)
+    
+    # 251216 应用curve旋转，否则在建筑旋转90度后，curve修改器异常
+    utils.applyTransform2(curve,use_rotation=True)
+
     # 向下适当调整
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -2588,9 +2598,6 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     # 251117 歇山戗脊在碰撞算法下变成了曲线，强制“扳直”
     if bData.roof_style in (con.ROOF_XIESHAN,
                             con.ROOF_XIESHAN_JUANPENG,):
-        # cornerRidgeCurve_copy = utils.copySimplyObject(
-        #     cornerRidgeCurve,
-        #     singleUser=True)
         utils.align_poly_curve_xy_to_45(cornerRidgeCurve)
     
     # 垂脊兽前摆放端头盘子

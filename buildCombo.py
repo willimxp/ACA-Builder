@@ -1515,6 +1515,7 @@ def addCombo(buildingList:List[bpy.types.Object]):
         # 更新combo_location
         bData:acaData = buildingObj.ACA_data
         bData['combo_location'] = buildingObj.location
+        bData['combo_rotation'] = buildingObj.rotation_euler
         # 更新parent id
         bData['combo_parent'] = comboNewObj.ACA_data.aca_id
         # 关联集合目录

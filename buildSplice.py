@@ -29,8 +29,14 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     # 251210 可以用translation直接获取全局坐标
     fromLoc = fromBuilding.matrix_world.translation
     toLoc = toBuilding.matrix_world.translation
+    xDiff = abs(fromLoc.x - toLoc.x)
+    yDiff = abs(fromLoc.y - toLoc.y)
+    # 判断角度
+    baoshaRot = fromBuilding.rotation_euler.z
+    mainRot = toBuilding.rotation_euler.z
+    angleDiff = abs(baoshaRot - mainRot)
 
-    # 方案一：勾连搭
+    # 方案一：勾连搭 ------------------------------
     # 两个建筑面阔相等，且为平行相交
     if (bData.x_total == mData.x_total 
         and (fromBuilding.rotation_euler.z ==
@@ -45,12 +51,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
         # 确定勾连搭
         spliceType = 'goulianda'
 
-    # 方案二：平行抱厦
-    baoshaRot = fromBuilding.rotation_euler.z
-    mainRot = toBuilding.rotation_euler.z
-    angleDiff = abs(baoshaRot - mainRot)
-    xDiff = abs(fromLoc.x - toLoc.x)
-    yDiff = abs(fromLoc.y - toLoc.y)
+    # 方案二：平行抱厦 -----------------------------------
     if (bData.x_total != mData.x_total
         and xDiff < abs(mData.x_total-bData.x_total)/2
         and yDiff > abs(mData.y_total-bData.y_total)/2
@@ -81,7 +82,39 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
             con.ROOF_XIESHAN,con.ROOF_XIESHAN_JUANPENG):
             spliceType = 'parallelXieshan'
 
-    # 无法判断拼接方式
+    # 方案三：丁字形抱厦 -------------------------------------
+    # 1、抱厦旋转90度后，与前后檐相交
+    if (abs(angleDiff - math.radians(90)) < 0.001
+        and xDiff < abs(mData.x_total-bData.x_total)/2
+    ):
+        # 设置进深较小的为fromBuilding(抱厦)
+        if bData.y_total > mData.y_total:
+            temp = fromBuilding
+            fromBuilding = toBuilding
+            toBuilding = temp
+            bData:acaData = fromBuilding.ACA_data
+            mData:acaData = toBuilding.ACA_data
+
+        spliceType = 'crossBaosha_FB'
+
+    # 2、抱厦直接与两山檐相交
+    if (angleDiff < 0.001
+        and yDiff < abs(mData.y_total-bData.y_total)/2
+        # 主建筑应该为四坡顶
+        and mData.roof_style in (con.ROOF_LUDING,
+                                 con.ROOF_WUDIAN,
+                                 con.ROOF_XIESHAN,
+                                 con.ROOF_XIESHAN_JUANPENG,)):
+        # 设置进深较小的为fromBuilding(抱厦)
+        if bData.y_total > mData.y_total:
+            temp = fromBuilding
+            fromBuilding = toBuilding
+            toBuilding = temp
+            bData:acaData = fromBuilding.ACA_data
+            mData:acaData = toBuilding.ACA_data
+        spliceType = 'crossBaosha_LR'
+
+    # 无法判断拼接方式 ---------------------------------------
     if spliceType == None:
         utils.popMessageBox("无法处理的建筑合并")
         return {'CANCELLED'}
@@ -89,7 +122,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     # 2、预处理 ------------------------------------
     from . import buildCombo
     # 建筑集成到一个统一的combo中
-    # 以第一个建筑为origin原点
+    # 以第一个建筑为origin原点(主建筑)
     result,comboObj = buildCombo.addCombo(
         [toBuilding,fromBuilding])
     # 聚焦在combo目录中
@@ -117,6 +150,27 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
             toBuilding,
             comboObj,
         )
+    if spliceType == 'crossBaosha_FB':
+        utils.outputMsg("拼接建筑：丁字抱厦/前后檐...")
+        result = __unionCrossBaosha(
+            fromBuilding,
+            toBuilding,
+            comboObj,
+            dir='Y'
+        )
+    if spliceType == 'crossBaosha_LR':
+        utils.outputMsg("拼接建筑：丁字抱厦/两山...")
+        result = __unionCrossBaosha(
+            fromBuilding,
+            toBuilding,
+            comboObj,
+            dir='X'
+        )
+    
+    if 'FINISHED' not in result:
+        utils.outputMsg("拼接建筑失败")
+        # 关闭进度条
+        return result
     
     # 4、标注和记录 ——————————————————————————————————
     # 标注颜色
@@ -1051,3 +1105,497 @@ def __setSpliceID(buildingObj:bpy.types.Object):
             pass
         
     return
+
+# 建筑拼接：丁字形抱厦
+# fromBuilding为进深较小的抱厦
+def __unionCrossBaosha(fromBuilding:bpy.types.Object,
+                     toBuilding:bpy.types.Object,
+                     comboObj:bpy.types.Object,
+                     dir='Y'):    
+    # 1、计算屋顶相交面 ----------------------------------
+    # 抱厦瓦面
+    fromRoof = utils.getAcaChild(
+        fromBuilding,con.ACA_TYPE_TILE_GRID)
+    if fromRoof is None:
+        utils.outputMsg("丁字抱厦拼接：无法找到抱厦瓦面")
+        return {'CANCELLED'}
+    else:
+        fromRoof_copy = utils.copySimplyObject(
+            fromRoof,singleUser=True)
+        utils.showObj(fromRoof_copy)
+        # 镜像
+        utils.addModifierMirror(
+            object=fromRoof_copy,
+            mirrorObj=fromBuilding,
+            use_axis=(True,True,False),
+            use_bisect=(True,True,False),
+            use_merge=True
+        )
+        utils.applyAllModifer(fromRoof_copy)        
+
+    # 主建筑瓦面
+    if dir == 'Y':
+        gridType = con.ACA_TYPE_TILE_GRID
+    else:
+        gridType = con.ACA_TYPE_TILE_GRID_LR
+    toRoof = utils.getAcaChild(toBuilding,gridType)
+    if toRoof is None:
+        utils.outputMsg("丁字抱厦拼接：无法找到主建筑瓦面")
+        return {'CANCELLED'}
+    else:
+        toRoof_copy = utils.copySimplyObject(
+            toRoof,singleUser=True)
+        utils.showObj(toRoof_copy)
+        utils.focusObj(toRoof_copy)
+        
+        # 如果是盝顶，则将瓦面的顶部挤出高度，以确保与抱厦相交出闭合面
+        toData:acaData = toBuilding.ACA_data
+        if toData.roof_style == con.ROOF_LUDING:
+            bpy.ops.object.mode_set(mode='EDIT')
+            bm = bmesh.new()
+            bm = bmesh.from_edit_mesh(toRoof_copy.data)
+            bm.edges.ensure_lookup_table()
+            # 查找几何中心
+            center = Vector((0.0, 0.0, 0.0))
+            for v in bm.verts:
+                center += v.co
+            center /= len(bm.verts)
+            # 轮询各个边，查找靠盝顶围脊的顶边
+            for edge in bm.edges:
+                # 1、非边界边，跳过
+                if len(edge.link_faces) != 1:
+                    continue
+                # 边的两个端点
+                v1 = edge.verts[0].co
+                v2 = edge.verts[1].co
+                # 边的斜率
+                dir_vec = v2 - v1
+                # 2、跳过零长度边（无效边）
+                if dir_vec.length < 1e-6:
+                    continue
+                # 归一化方向向量
+                dir_vec.normalize()
+                # 南北抱厦与X轴比较
+                if dir == 'Y':
+                    # 与X轴做向量点积，正为同向，0为垂直，负为反向
+                    axisX = Vector((1,0,0))
+                    dir_alt = dir_vec.dot(axisX)
+                    # 3、跳过接近于垂直的线
+                    if dir_alt < 0.5:
+                        continue
+                    # 4、跳过下缘
+                    if v1.y > center.y or v2.y > center.y:
+                        continue
+                # 东西抱厦与Y轴比较
+                else:
+                    # 与Y轴做向量点积，正为同向，0为垂直，负为反向
+                    axisY = Vector((0,1,0))
+                    dir_alt = dir_vec.dot(axisY)
+                    # 3、跳过接近于垂直的线
+                    if dir_alt < 0.5:
+                        continue
+                    # 4、跳过下缘
+                    if v1.x > center.x or v2.x > center.x:
+                        continue
+                # 选中南面平行于X轴的边线
+                edge.select = True
+            # 微调，以免碰撞围脊
+            offset = 0.625*toBuilding.ACA_data.DK
+            for v in bm.verts:
+                if v.select == True:
+                    if dir == 'Y':
+                        v.co.y += offset
+                    else:
+                        v.co.x += offset
+            # 向上挤出
+            toRoofTopEdge = []
+            for edge in bm.edges:
+                if edge.select:
+                    toRoofTopEdge.append(edge)
+            extrude_result = bmesh.ops.extrude_edge_only(
+                bm, edges=toRoofTopEdge)
+            bm.verts.ensure_lookup_table()
+            bm.edges.ensure_lookup_table()
+            geom = (extrude_result.get('geom', []) 
+                    or extrude_result.get('verts', []) 
+                    or [])
+            extruded_verts = [ele for ele in geom 
+                if isinstance(ele, bmesh.types.BMVert)]
+            # 挤出：高度取抱厦进深
+            extrude_height = fromBuilding.ACA_data.y_total/2
+            bmesh.ops.translate(bm,
+                    verts=extruded_verts,
+                    vec=Vector((0, 0, extrude_height))
+                )
+            bmesh.update_edit_mesh(toRoof_copy.data ) 
+            bm.free() 
+            bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+        # 镜像
+        utils.addModifierMirror(
+            object=toRoof_copy,
+            mirrorObj=toBuilding,
+            use_axis=(True,True,False),
+            use_bisect=(True,True,False),
+            use_merge=True
+        )
+        utils.applyAllModifer(toRoof_copy)
+    
+    # 基于BVH的碰撞检测
+    if fromRoof_copy and toRoof_copy: 
+        intersections,curve = utils.mesh_mesh_intersection(
+            fromRoof_copy, toRoof_copy,create_curve=True)
+        if intersections == []:
+            utils.popMessageBox(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
+            return {'CANCELLED'}
+    else:
+        # print(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
+        return {'CANCELLED'}
+    
+    # 2、拉伸相交面，成为剪切体 ----------------------------
+    bData:acaData = fromBuilding.ACA_data
+    mData:acaData = toBuilding.ACA_data
+    dk = bData.DK
+    # 拉伸高度，屋面高度+屋身高度+上保留+下保留
+    topSpan = 40*dk # 向上预留的空间，考虑屋脊、脊兽等
+    bottomSpan = 20*dk # 向下预留的空间，考虑勾滴等
+    extrude_Z = bData.y_total/2 + topSpan + bottomSpan
+    extrude_Z += bData.piller_height + bData.platform_height
+    if bData.use_dg:
+        extrude_Z += bData.dg_height
+    # 拉伸出檐
+    baoshaExtend = (bData.x_total - mData.y_total)/2 # 抱厦出头
+    # 无需考虑出檐，瓦面碰撞交点已经在檐口
+    baoshaExtend += bData.chong*con.YUANCHUAN_D*dk # 冲
+    baoshaExtend += 20*dk # 保留宽度，考虑勾滴、角兽等
+    extrude_eave = baoshaExtend
+
+    # 可能存在多个相交面，逐一挤出
+    for interface in intersections:
+        # 选中
+        utils.focusObj(interface)
+        # 编辑
+        bpy.ops.object.mode_set(mode='EDIT')
+        bm = bmesh.new()
+        bm = bmesh.from_edit_mesh(interface.data)
+
+        # 2.1、做平行地面的投影面
+        # 以最高点挤压投影平面
+        zmax = -999999
+        for v in bm.verts:
+            if v.co.z > zmax:
+                zmax = v.co.z
+        for v in bm.verts:
+            v.co.z = zmax
+            # 向上抬升，以包裹瓦面
+            v.co.z += topSpan
+
+        # 2.2、向外挤出，覆盖抱厦出檐
+        bm.edges.ensure_lookup_table()
+        # 取出最后一条边（檐口边），仅对该边做挤出并沿 Y 轴平移
+        eaveEdge = bm.edges[0]  # 第一条线为檐口线
+        # 挤出
+        extrude_result = bmesh.ops.extrude_edge_only(
+            bm, edges=[eaveEdge])
+        bm.verts.ensure_lookup_table()
+        bm.edges.ensure_lookup_table()
+        geom = (extrude_result.get('geom', []) 
+                or extrude_result.get('verts', []) 
+                or [])
+        extruded_verts = [ele for ele in geom 
+            if isinstance(ele, bmesh.types.BMVert)]
+        if extruded_verts:
+            # 根据几何中心，决定向+Y还是-Y挤出
+            edge_center = Vector((0.0, 0.0, 0.0))
+            for v in bm.verts:
+                edge_center += v.co
+            edge_center /= len(bm.verts)
+
+            if dir=='Y':
+                if edge_center.y <= extruded_verts[0].co.y:
+                    trans_y = extrude_eave 
+                else:
+                    trans_y = -extrude_eave
+                bmesh.ops.translate(bm,
+                    verts=extruded_verts,
+                    vec=Vector((0, trans_y, 0))
+                )
+                # 根据中心，决定向+X还是-X扩展
+                for v in extruded_verts:
+                    if v.co.y > edge_center.y:
+                        if v.co.x > edge_center.x :
+                            v.co.x += trans_y
+                        else:
+                            v.co.x -= trans_y
+                    else:
+                        if v.co.x > edge_center.x :
+                            v.co.x -= trans_y
+                        else:
+                            v.co.x += trans_y
+            else:
+                if edge_center.x <= extruded_verts[0].co.x:
+                    trans_x = extrude_eave 
+                else:
+                    trans_x = -extrude_eave
+                bmesh.ops.translate(bm,
+                    verts=extruded_verts,
+                    vec=Vector((trans_x, 0, 0))
+                )
+                # 根据中心，决定向+X还是-X扩展
+                for v in extruded_verts:
+                    if v.co.x > edge_center.x:
+                        if v.co.y > edge_center.y :
+                            v.co.y += trans_x
+                        else:
+                            v.co.y -= trans_x
+                    else:
+                        if v.co.y > edge_center.y :
+                            v.co.y -= trans_x
+                        else:
+                            v.co.y += trans_x
+        
+        # 2.2、挤压出高度
+        # 选中所有面
+        for face in bm.faces: face.select = True
+        # 沿Z方向挤出
+        extrude_result = bmesh.ops.extrude_face_region(
+            bm, geom=bm.faces)
+        extruded_verts = [v for v in extrude_result['geom'] 
+                        if isinstance(v, bmesh.types.BMVert)]
+        bmesh.ops.translate(
+            bm,
+            vec=Vector((0, 0, -extrude_Z)),  # Y轴方向移动
+            verts=extruded_verts
+        )
+
+        # 更新bmesh
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        bmesh.update_edit_mesh(interface.data ) 
+        bm.free() 
+        bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+    # 4、合并为一个对象
+    boolObj = utils.joinObjects(intersections,
+                      newName='丁字抱厦' + con.BOOL_SUFFIX ,)
+    # 设置origin在几何中心
+    utils.focusObj(boolObj)
+    bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
+    utils.updateScene()
+    # 重新映射坐标系
+    wm = boolObj.matrix_world.copy()
+    boolObj.parent = comboObj
+    boolObj.matrix_world = wm
+    # 隐藏
+    utils.hideObjFace(boolObj)
+    utils.hideObj(boolObj)
+    
+    # 5、绑定boolean
+    # 添加bool modifier
+    toChildren = utils.getChildrenHierarchy(toBuilding)
+    for obj in toChildren:
+        obj:bpy.types.Object
+        # 跳过bool对象
+        if con.BOOL_SUFFIX  in obj.name : continue
+        # 跳过装修、梁架、柱网
+        collName = obj.users_collection[0].name
+        if con.COLL_NAME_WALL in collName : continue
+        if con.COLL_NAME_BEAM in collName : continue
+        if con.COLL_NAME_PILLER in collName: continue
+        utils.addModifierBoolean(
+            object=obj,
+            boolObj=boolObj,
+            operation='DIFFERENCE',
+        )
+
+    # 添加bool modifier
+    fromChildren = utils.getChildrenHierarchy(fromBuilding)
+    for obj in fromChildren:
+        obj:bpy.types.Object
+        # 跳过bool对象
+        if con.BOOL_SUFFIX  in obj.name : continue
+        # 跳过装修、柱网（保留抱厦的梁架）
+        collName = obj.users_collection[0].name
+        if con.COLL_NAME_PILLER in collName: continue
+        if con.COLL_NAME_WALL in collName : continue
+        utils.addModifierBoolean(
+            object=obj,
+            boolObj=boolObj,
+            operation='INTERSECT',
+        )
+
+    # 二、裁剪柱网 -------------------------------
+    # 1、丁字抱厦相交的开间裁剪
+    # 沿着主建筑的檐面额枋进行裁剪，以同时保证不破坏主建筑的额枋，同时不产生柱础的重叠
+    # 同时，保留了主建筑保修，裁剪了抱厦可能存在的雀替等
+    # 建筑高度
+    buildingH = bData.platform_height + bData.piller_height
+    if bData.use_dg:
+        buildingH += bData.dg_height * bData.dg_scale[0]
+    # 屋顶举高，简单的按进深1:1计算
+    buildingH += bData.y_total
+    # 保险数
+    buildingH += 20*dk
+
+    if dir == 'Y':
+        # 宽：包裹抱厦宽度，避免裁剪外部的柱础
+        boolWidth= bData.y_total + bData.piller_diameter
+        # 长：包裹主建筑檐面额枋
+        boolDeepth = mData.y_total + con.EFANG_LARGE_Y*dk + 0.01
+    else:
+        # 长：包裹抱厦进深+柱径，即明间柱的外皮
+        boolDeepth = bData.y_total + bData.piller_diameter
+        # 宽：包裹主建筑檐面额枋
+        boolWidth = mData.x_total + con.EFANG_LARGE_Y*dk + 0.01
+    boolHeight = buildingH
+    boolZ = boolHeight/2
+    boolObj = utils.addCube(
+        name="丁字抱厦-柱网" + con.BOOL_SUFFIX ,
+        location=(0,0,boolZ),
+        dimension=(boolWidth,boolDeepth,boolHeight),
+        parent=comboObj,
+    )
+
+    # 2、无抱厦开间的柱网保护
+    extrudeExt = bData.piller_diameter
+    bpy.ops.object.mode_set(mode='EDIT')
+    bm = bmesh.new()
+    bm = bmesh.from_edit_mesh(boolObj.data)
+    bm.faces.ensure_lookup_table()
+    # 2.1、挤出两侧面：0号和2号
+    if dir == 'Y':
+        extrude_faces = [0,2]
+    else:
+        extrude_faces = [1,3]
+    for f in bm.faces:
+        if f.index in extrude_faces:
+            f.select = True
+        else:
+            f.select = False
+    extrude_faces0 = [f for f in bm.faces if f.select]
+    extrude_result = bmesh.ops.extrude_face_region(
+        bm,geom=extrude_faces0,
+    )
+    extruded_faces1 = [g for g in extrude_result['geom'] 
+                      if isinstance(g, bmesh.types.BMFace)]
+    extruded_verts1 = [g for g in extrude_result['geom'] 
+                      if isinstance(g, bmesh.types.BMVert)]
+    # 删除原始被挤出的面（extrude_faces 是挤出前记录的原面列表）
+    for f in extrude_faces0:
+        try:
+            # 有时原面已被替换或合并，remove 前先检查仍在 bm.faces
+            if f in bm.faces:
+                bm.faces.remove(f)
+        except Exception:
+            # 忽略删除失败，继续处理
+            pass
+    # 更新索引表以保证后续访问安全
+    bm.verts.ensure_lookup_table()
+    bm.faces.ensure_lookup_table()
+    bm.edges.ensure_lookup_table()
+
+    # 2.2、放大挤出面（一柱径）
+    # 以几何中心放大
+    center = Vector()
+    for v in extruded_verts1:
+        center += v.co
+    center /= len(extruded_verts1)
+    for v in extruded_verts1:
+        if v.co.x > center.x:
+            v.co.x += extrudeExt
+        else:
+            v.co.x -= extrudeExt
+        if v.co.y > center.y:
+            v.co.y += extrudeExt
+        else:
+            v.co.y -= extrudeExt
+
+    # 2.3、再次挤出
+    # 向外挤出，以涵盖无抱厦开间的柱网不被裁剪
+    if dir == 'Y':
+        extrudeWidth = (mData.x_total - bData.y_total)/2
+    else:
+        extrudeWidth = (mData.y_total - bData.y_total)/2
+    extrude_result = bmesh.ops.extrude_face_region(
+        bm,
+        geom=extruded_faces1,  # 要挤出的几何元素
+        use_normal_flip=False  # 不翻转法线
+    )
+    extruded_faces2 = [g for g in extrude_result['geom'] 
+                      if isinstance(g, bmesh.types.BMFace)]
+    extruded_verts2 = [g for g in extrude_result['geom'] 
+                      if isinstance(g, bmesh.types.BMVert)]
+    # 删除原始被挤出的面（extrude_faces 是挤出前记录的原面列表）
+    for f in extruded_faces1:
+        try:
+            # 有时原面已被替换或合并，remove 前先检查仍在 bm.faces
+            if f in bm.faces:
+                bm.faces.remove(f)
+        except Exception:
+            # 忽略删除失败，继续处理
+            pass
+    # 更新索引表以保证后续访问安全
+    bm.verts.ensure_lookup_table()
+    bm.faces.ensure_lookup_table()
+    bm.edges.ensure_lookup_table()
+    for v in extruded_verts2:
+        if dir == 'Y':
+            if v.co.x > center.x:
+                v.co.x += extrudeWidth
+            else:
+                v.co.x -= extrudeWidth
+        else:
+            if v.co.y > center.y:
+                v.co.y += extrudeWidth
+            else:
+                v.co.y -= extrudeWidth
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bmesh.update_edit_mesh(boolObj.data ) 
+    bm.free() 
+    bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+    utils.hideObjFace(boolObj)
+    utils.hideObj(boolObj)
+
+    # 绑定boolean
+    toChildren = utils.getChildrenHierarchy(toBuilding)
+    for obj in toChildren:
+        obj:bpy.types.Object
+        # 跳过bool对象
+        if con.BOOL_SUFFIX in obj.name : continue
+        # 仅裁剪柱网（不裁剪主建筑装修）
+        collName = obj.users_collection[0].name
+        if con.COLL_NAME_PILLER in collName :
+            utils.addModifierBoolean(
+                object=obj,
+                boolObj=boolObj,
+                operation='INTERSECT',
+            )
+        # 裁剪后柱体normal异常，做平滑
+        if '柱子' in obj.name:
+            utils.shaderSmooth(obj)
+
+    fromChildren = utils.getChildrenHierarchy(fromBuilding)
+    for obj in fromChildren:
+        obj:bpy.types.Object
+        # 跳过bool对象
+        if con.BOOL_SUFFIX in obj.name : continue
+        # 裁剪柱网和装修
+        collName = obj.users_collection[0].name
+        if (con.COLL_NAME_PILLER in collName
+            # 抱厦的装修也按这个范围裁剪，包括雀替等
+            or con.COLL_NAME_WALL in collName) :
+            utils.addModifierBoolean(
+                object=obj,
+                boolObj=boolObj,
+                operation='DIFFERENCE',
+            )
+        # 裁剪后柱体normal异常，做平滑
+        if '柱子' in obj.name:
+            utils.shaderSmooth(obj)
+
+    # 回收临时屋面
+    utils.delObject(fromRoof_copy)
+    utils.delObject(toRoof_copy)
+    utils.delOrphan()
+
+    return {'FINISHED'}

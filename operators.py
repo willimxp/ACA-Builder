@@ -1634,6 +1634,12 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
     bl_description = '建筑拼接'
     
     def execute(self, context): 
+        # 开启进度条
+        from . import build
+        build.isFinished = False
+        build.progress = 0
+        utils.outputMsg("拼接建筑：分析中...")
+
         timeStart = time.time()
         
         # 1、验证用户选择的context --------------------------
@@ -1650,6 +1656,8 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
             else:
                 if toBuilding is not None:
                     utils.popMessageBox('不止两个建筑')
+                    # 关闭进度条
+                    build.isFinished = True
                     return {'CANCELLED'}
                 building,mData,oData = utils.getRoot(obj)
                 toBuilding = building
@@ -1659,6 +1667,8 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
             or not toBuilding
             or fromBuilding == toBuilding) :
             utils.popMessageBox("请选择需要组合的2个建筑")
+            # 关闭进度条
+            build.isFinished = True
             return {'CANCELLED'}
         
         from . import buildSplice
@@ -1671,10 +1681,12 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
 
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
-            msg = '建筑拼接完成 | 运行时间【%.1f秒】' % runTime
+            msg = '拼接建筑完成 | 运行时间【%.1f秒】' % runTime
             self.report({'INFO'},msg)
             # utils.popMessageBox(msg)
-        
+
+        # 关闭进度条
+        build.isFinished = True        
         return {'FINISHED'}
     
 # 回廊延伸
@@ -1721,6 +1733,13 @@ class ACA_OT_COMBO_BUILDING(bpy.types.Operator):
 
         # 查找待合并的建筑
         buildingList = []
+        
+        # 将活动对象做为第一个对象
+        activeObj = context.active_object
+        buildingObj,bData,oData = utils.getRoot(activeObj)
+        buildingList.append(buildingObj)
+
+        # 再加入其他的选择对象
         selectObjs = context.selected_objects
         for obj in selectObjs:
             buildingObj,bData,oData = utils.getRoot(obj)

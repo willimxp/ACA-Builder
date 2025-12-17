@@ -1411,9 +1411,9 @@ class ACA_OT_TERRACE_ADD(bpy.types.Operator):
 # 添加重楼
 class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     bl_idname="aca.multi_floor_add"
-    bl_label = "添加重楼"
+    bl_label = "添加楼阁"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '添加重楼'
+    bl_description = '基于一个单体建筑，向上垒叠一层或多层楼阁'
     
     # 弹出参数输入框
     def invoke(self, context, event):
@@ -1551,7 +1551,7 @@ class ACA_OT_ADD_LOGGIA(bpy.types.Operator):
     bl_idname="aca.add_loggia"
     bl_label = "添加周围廊"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '添加周围廊'
+    bl_description = '基于当前单体建筑的柱网，快速添加一圈周围廊'
 
     # 参数
     width: bpy.props.FloatProperty(
@@ -1629,9 +1629,9 @@ class ACA_OT_ADD_LOGGIA(bpy.types.Operator):
 # 添加抱厦
 class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
     bl_idname="aca.splice_building"
-    bl_label = "建筑拼接"
+    bl_label = "拼接建筑"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '建筑拼接'
+    bl_description = '将多个建筑重叠的瓦面、柱网等进行裁剪拼接'
     
     def execute(self, context): 
         # 开启进度条
@@ -1724,9 +1724,9 @@ class ACA_OT_LOGGIA_EXTEND(bpy.types.Operator):
 # 添加抱厦
 class ACA_OT_COMBO_BUILDING(bpy.types.Operator):
     bl_idname="aca.combo_building"
-    bl_label = "建筑集成"
+    bl_label = "组合建筑"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '建筑集成'
+    bl_description = '将多个单体建筑组合，可以保存在一个模板中，并可以一同更新'
     
     def execute(self, context): 
         timeStart = time.time()

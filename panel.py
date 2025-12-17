@@ -255,12 +255,12 @@ class ACA_PT_basic(bpy.types.Panel):
 
         # 第1行 ------------------------------
         toolBox = box.column(align=True)
-        toolBar = toolBox.grid_flow(columns=2, align=True)
+        toolBar = toolBox.grid_flow(columns=2, align=True,even_columns=True)
         # 添加楼阁
         btnMultiFloor1 = toolBar.column(align=True)
         op = btnMultiFloor1.operator(
                         "aca.multi_floor_add",
-                        icon='KEY_CONTROL',
+                        icon='AREA_JOIN_UP',
                         text="添加楼阁",
                         # depress=True,
                         )
@@ -269,7 +269,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnAddLoggia.operator(
                         "aca.add_loggia",
                         icon='OBJECT_HIDDEN',
-                        text="添加回廊") 
+                        text="添加周围廊") 
 
         # 第2行 ------------------------------
         toolBox = box.column(align=True)
@@ -278,7 +278,7 @@ class ACA_PT_basic(bpy.types.Panel):
         btnMultiFloor1 = toolBar.column(align=True)
         op = btnMultiFloor1.operator(
                         "aca.splice_building",
-                        icon='KEY_CONTROL',
+                        icon='AUTOMERGE_ON',
                         text="拼接建筑",
                         # depress=True,
                         )   
@@ -286,8 +286,8 @@ class ACA_PT_basic(bpy.types.Panel):
         btnMultiFloor1 = toolBar.column(align=True)
         op = btnMultiFloor1.operator(
                         "aca.combo_building",
-                        icon='KEY_CONTROL',
-                        text="建筑集成",
+                        icon='COLLECTION_NEW',
+                        text="组合建筑",
                         # depress=True,
                         ) 
 

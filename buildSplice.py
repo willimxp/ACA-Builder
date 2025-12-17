@@ -184,11 +184,21 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     # 没有没有重复对象，则保留原编号
     __setSpliceID(fromBuilding)
     __setSpliceID(toBuilding)
-    # 记录操作
+    # 记录操作，判断是否已经存在记录
+    # 如，从模板生成时已经记录过，这里不再重复记录
     comboData:acaData = comboObj.ACA_data
-    pp = comboData.postProcess.add()
-    pp.action = con.POSTPROC_SPLICE
-    pp.parameter = f"{bData.splice_id}#{mData.splice_id}"
+    postProcess = comboData.postProcess
+    para = f"{bData.splice_id}#{mData.splice_id}"
+    para_alt = f"{mData.splice_id}#{bData.splice_id}"
+    isExsit = False
+    for pp in postProcess:
+        if (pp.action == con.POSTPROC_SPLICE
+            and pp.parameter in (para,para_alt)):
+            isExsit = True
+    if not isExsit:
+        pp = comboData.postProcess.add()
+        pp.action = con.POSTPROC_SPLICE
+        pp.parameter = para
 
     # 5、聚焦在主建筑
     utils.focusObj(toBuilding)
@@ -273,7 +283,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
         collName = obj.users_collection[0].name
         if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
-            name='建筑拼接' + con.BOOL_SUFFIX,
+            name=con.POSTPROC_SPLICE,
             object=obj,
             boolObj=boolObj,
             operation='INTERSECT',
@@ -285,7 +295,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue
         utils.addModifierBoolean(
-            name='建筑拼接' + con.BOOL_SUFFIX,
+            name=con.POSTPROC_SPLICE,
             object=obj,
             boolObj=boolObj,
             operation='DIFFERENCE',
@@ -430,6 +440,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         if con.COLL_NAME_PILLER in collName : continue
         if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
+            name=con.POSTPROC_SPLICE,
             object=obj,
             boolObj=boolObj,
             operation='DIFFERENCE',
@@ -471,6 +482,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         if con.COLL_NAME_PILLER in collName : continue
         if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
+            name=con.POSTPROC_SPLICE,
             object=obj,
             boolObj=boolObj,
             operation='INTERSECT',
@@ -512,6 +524,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         collName = obj.users_collection[0].name
         if con.COLL_NAME_PILLER in collName:
             utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=boolObj,
                 operation='DIFFERENCE',
@@ -530,6 +543,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in collName) :
             utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=boolObj,
                 operation='INTERSECT',
@@ -630,6 +644,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         collName = obj.users_collection[0].name
         if con.COLL_NAME_BASE in collName :
             utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=boolObj,
                 operation='DIFFERENCE',
@@ -643,6 +658,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         collName = obj.users_collection[0].name
         if con.COLL_NAME_BASE in collName :
             utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=boolObj,
                 operation='INTERSECT',
@@ -717,6 +733,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         collName = obj.users_collection[0].name
         if con.COLL_NAME_BOARD in collName :
             utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=tileGrid_copy,
                 operation='DIFFERENCE',
@@ -808,6 +825,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         if con.COLL_NAME_PILLER in collName : continue
         if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
+            name=con.POSTPROC_SPLICE,
             object=obj,
             boolObj=boolObj,
             operation='DIFFERENCE',
@@ -825,6 +843,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         if con.COLL_NAME_PILLER in collName : continue
         if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
+            name=con.POSTPROC_SPLICE,
             object=obj,
             boolObj=boolObj,
             operation='INTERSECT',
@@ -865,6 +884,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         collName = obj.users_collection[0].name
         if con.COLL_NAME_PILLER in collName :
             utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=boolObj,
                 operation='DIFFERENCE',
@@ -884,6 +904,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in collName) :
             utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=boolObj,
                 operation='INTERSECT',
@@ -983,6 +1004,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         collName = obj.users_collection[0].name
         if con.COLL_NAME_BASE in collName :
             utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=boolObj,
                 operation='DIFFERENCE',
@@ -997,6 +1019,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         collName = obj.users_collection[0].name
         if con.COLL_NAME_BASE in collName :
             utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=boolObj,
                 operation='INTERSECT',
@@ -1070,6 +1093,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         collName = obj.users_collection[0].name
         if con.COLL_NAME_BOARD in collName :
             utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=tileGrid_copy,
                 operation='DIFFERENCE',
@@ -1402,6 +1426,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         if con.COLL_NAME_BEAM in collName : continue
         if con.COLL_NAME_PILLER in collName: continue
         utils.addModifierBoolean(
+            name=con.POSTPROC_SPLICE,
             object=obj,
             boolObj=boolObj,
             operation='DIFFERENCE',
@@ -1418,6 +1443,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         if con.COLL_NAME_PILLER in collName: continue
         if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
+            name=con.POSTPROC_SPLICE,
             object=obj,
             boolObj=boolObj,
             operation='INTERSECT',
@@ -1566,6 +1592,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         collName = obj.users_collection[0].name
         if con.COLL_NAME_PILLER in collName :
             utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=boolObj,
                 operation='INTERSECT',
@@ -1585,6 +1612,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in collName) :
             utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=boolObj,
                 operation='DIFFERENCE',
@@ -1599,3 +1627,81 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     utils.delOrphan()
 
     return {'FINISHED'}
+
+# 删除建筑(以及相关的建筑)的拼接操作
+def undoSplice(buildingObj:bpy.types.Object):
+    # 验证buildingObj
+    buildingObj,bData,oData = utils.getRoot(buildingObj)
+    if buildingObj is None:
+        print("取消拼接：无法识别的建筑")
+        return
+    
+    # 找到combo
+    comboObj = utils.getComboRoot(buildingObj)
+    if comboObj is None:
+        print("取消拼接：无法找到combo根节点")
+        return
+    
+    # 找到相关建筑
+    spliceBuildingIDs = []
+    # 提取comboRoot中记录的PostProcess
+    comboData:acaData = comboObj.ACA_data
+    ppList = comboData.postProcess
+    # 分析相关的postProcess记录
+    removeSplice = []
+    for i,pp in enumerate(ppList):
+        isRelated = False
+        if pp.action == con.POSTPROC_SPLICE:
+            ppParaList = pp.parameter.split('#')
+            for para in ppParaList:
+                if para == bData.splice_id:
+                    # 把这一条postProcess记录中的两个建筑ID都存入列表
+                    spliceBuildingIDs += ppParaList
+                    isRelated = True
+                    break
+        if isRelated:
+            removeSplice.append(i)
+    # 验证是否存在需要清除的拼接
+    if spliceBuildingIDs == []:
+        print("没有需要清除的拼接操作")
+        return
+
+    # 删除对应的记录(从后向前删除)
+    for i in reversed(removeSplice):
+        ppList.remove(i)
+
+    # ID转换为building对象
+    spliceBuildingObjs = []
+    for id in spliceBuildingIDs:
+        for obj in comboObj.children:
+            if obj.ACA_data.splice_id == id:
+                if obj not in spliceBuildingObjs: # 去重
+                    spliceBuildingObjs.append(obj)
+
+    # 清除splice信息
+    boolObjs = []
+    for buildingObj in spliceBuildingObjs:
+        # 清除集合颜色标识
+        coll = buildingObj.users_collection[0]
+        coll.color_tag = 'NONE'
+
+        # 清除修改器
+        buildingChildren = utils.getChildrenHierarchy(buildingObj)
+        for obj in buildingChildren:
+            obj:bpy.types.Object
+            # 可能有.001的后缀
+            for mod in obj.modifiers:
+                if mod.name.startswith('SPLICE'):
+                    # 记录涉及的bool对象
+                    if hasattr(mod,'object'):
+                        boolObj = mod.object
+                        if boolObj not in boolObjs:
+                            boolObjs.append(boolObj)
+                    # 删除修改器
+                    obj.modifiers.remove(mod)
+
+    # 清除bool对象
+    for obj in boolObjs:
+        bpy.data.objects.remove(obj)
+
+    return

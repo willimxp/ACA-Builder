@@ -168,6 +168,11 @@ def updateCombo(buildingObj:bpy.types.Object,
                 resetFloor=False,
                 resetRoof=False,):
     utils.outputMsg("开始更新......")
+
+    # 251217 添加清除拼接
+    from . import buildSplice
+    buildSplice.undoSplice(buildingObj)
+
     comboObj = utils.getComboRoot(buildingObj)
     bData:acaData = buildingObj.ACA_data
     mainBuilding = utils.getMainBuilding(buildingObj)

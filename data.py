@@ -275,6 +275,10 @@ def update_platform(self, context:bpy.types.Context):
     # 从self属性找到对应的Object，用self.id_data
     # https://blender.stackexchange.com/questions/145245/how-to-access-object-instance-from-property-instance-in-update-callback
     refObj = self.id_data
+
+    # 251217 添加清除拼接
+    from . import buildSplice
+    buildSplice.undoSplice(buildingObj)
     
     # 调用台基缩放
     from . import buildPlatform
@@ -527,6 +531,10 @@ def update_rooftile(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bData,oData = utils.getRoot(context.object)
     if buildingObj != None:
+        # 251217 添加清除拼接
+        from . import buildSplice
+        buildSplice.undoSplice(buildingObj)
+
         from . import buildRooftile
         # 重新生成屋顶
         funproxy = partial(

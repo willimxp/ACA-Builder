@@ -1272,9 +1272,8 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
                 windowWidth = windowWidth*2
                 windowHeight = windowHeight*2
             
-            w = int(windowWidth/2)
-            h = int(windowHeight/2)
-            h = h + (20*len(self.message.split("|")))
+            w = int(windowWidth*0.4)
+            h = int(windowHeight*0.8)
             context.window.cursor_warp(w, h)
         
         scnData : data.ACA_data_scene = context.scene.ACA_data

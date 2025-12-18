@@ -1556,7 +1556,9 @@ def addCombo(buildingList:List[bpy.types.Object]):
             # 跳过老combo root
             if obj.ACA_data.aca_type == con.ACA_TYPE_COMBO:continue
             # 绑定在新组合root
+            mw = obj.matrix_world
             obj.parent = comboNewObj
+            obj.matrix_world = mw
             # 其他对象迁移到新combo中
             comboColl.objects.unlink(obj)
             comboNewColl.objects.link(obj)

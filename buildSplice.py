@@ -279,9 +279,6 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
         obj:bpy.types.Object
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue
-        # 跳过装修层
-        collName = obj.users_collection[0].name
-        if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
             name=con.POSTPROC_SPLICE,
             object=obj,
@@ -294,6 +291,12 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
         obj:bpy.types.Object
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue
+        # 跳过装修层，不裁剪主建筑
+        collName = obj.users_collection[0].name
+        if con.COLL_NAME_WALL in collName : 
+            # 例外，裁剪雀替
+            if '雀替' not in obj.name:
+                continue
         utils.addModifierBoolean(
             name=con.POSTPROC_SPLICE,
             object=obj,

@@ -125,6 +125,13 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     # 以第一个建筑为origin原点(主建筑)
     result,comboObj = buildCombo.addCombo(
         [toBuilding,fromBuilding])
+    # 251219 如果已经在一个combo中，更新combo_location
+    if 'CANCELLED' in result:
+        toBuilding.ACA_data['combo_location'] = toBuilding.location
+        toBuilding.ACA_data['combo_rotation'] = toBuilding.rotation_euler
+        fromBuilding.ACA_data['combo_location'] = fromBuilding.location
+        fromBuilding.ACA_data['combo_rotation'] = fromBuilding.rotation_euler
+
     # 聚焦在combo目录中
     utils.focusCollByObj(comboObj)
 
@@ -190,15 +197,15 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     postProcess = comboData.postProcess
     para = f"{bData.splice_id}#{mData.splice_id}"
     para_alt = f"{mData.splice_id}#{bData.splice_id}"
-    isExsit = False
-    for pp in postProcess:
+    # 如果该规则已经存在，则删除
+    for i,pp in enumerate(postProcess):
         if (pp.action == con.POSTPROC_SPLICE
-            and pp.parameter in (para,para_alt)):
-            isExsit = True
-    if not isExsit:
-        pp = comboData.postProcess.add()
-        pp.action = con.POSTPROC_SPLICE
-        pp.parameter = para
+                and pp.parameter in (para,para_alt)):
+            postProcess.remove(i)
+    # 插入新规则
+    pp = comboData.postProcess.add()
+    pp.action = con.POSTPROC_SPLICE
+    pp.parameter = para
 
     # 5、聚焦在主建筑
     utils.focusObj(toBuilding)
@@ -1394,15 +1401,21 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     bData:acaData = fromBuilding.ACA_data
     mData:acaData = toBuilding.ACA_data
     dk = bData.DK
-    # 拉伸高度，屋面高度+屋身高度+上保留+下保留
-    topSpan = 40*dk # 向上预留的空间，考虑屋脊、脊兽等
-    bottomSpan = 20*dk # 向下预留的空间，考虑勾滴等
-    extrude_Z = bData.y_total/2 + topSpan + bottomSpan
-    extrude_Z += bData.piller_height + bData.platform_height
+
+    # 向上拉伸高度，取屋顶高度(通进深的一半)
+    topSpan = bData.y_total/2 
+    # 向上预留的空间，考虑屋脊、脊兽等
+    topSpan += 40*dk 
+    # 拉升的总高度
+    extrude_Z = (topSpan * 2
+                 + bData.piller_height 
+                 + bData.platform_height 
+                 + bData.dg_height)
+    
     if bData.use_dg:
         extrude_Z += bData.dg_height
     # 拉伸出檐
-    baoshaExtend = (bData.x_total - mData.y_total)/2 # 抱厦出头
+    baoshaExtend = mData.x_total# 抱厦出头
     # 无需考虑出檐，瓦面碰撞交点已经在檐口
     baoshaExtend += bData.chong*con.YUANCHUAN_D*dk # 冲
     baoshaExtend += 20*dk # 保留宽度，考虑勾滴、角兽等
@@ -1587,10 +1600,12 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         # 宽：包裹主建筑檐面额枋
         boolWidth = mData.x_total + con.EFANG_LARGE_Y*dk + 0.01
     boolHeight = buildingH
+    # 251219 以主建筑坐标为依据
+    boolY = toBuilding.location.y
     boolZ = boolHeight/2
     boolObj = utils.addCube(
         name="丁字抱厦-柱网" + con.BOOL_SUFFIX ,
-        location=(0,0,boolZ),
+        location=(0,boolY,boolZ),
         dimension=(boolWidth,boolDeepth,boolHeight),
         parent=comboObj,
     )

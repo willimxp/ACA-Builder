@@ -568,18 +568,16 @@ def saveTemplateWithCombo(buildingObj:bpy.types.Object):
     
     # 遍历查找对应的combo节点
     templateName = comboObj.name
-    isNewTemplate = True
     for templateNode in templateNodeList:
         nameNode = templateNode.find('template_name')
         if nameNode != None:
             if nameNode.text == templateName:
-                # 找到对应模板
-                isNewTemplate = False
+                # 251219 为了更新combo的postProcess，这里直接删除combo
+                delTemplate(templateName)
                 break
-    # 如果没有找到，则新建combo节点
-    if isNewTemplate:
-        # 将根节点bData存入模板
-        __saveTemplate(comboObj)
+    # 新建combo节点
+    # 将根节点bData存入模板
+    __saveTemplate(comboObj)
 
     # 保存子模板
     for buildingObj in comboObj.children:

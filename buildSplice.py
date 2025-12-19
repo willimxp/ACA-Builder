@@ -1217,12 +1217,30 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         fromRoof_copy = utils.copySimplyObject(
             fromRoof,singleUser=True)
         utils.showObj(fromRoof_copy)
-        # 镜像
+        # 先做前后檐镜像
         utils.addModifierMirror(
             object=fromRoof_copy,
             mirrorObj=fromBuilding,
-            use_axis=(True,True,False),
-            use_bisect=(True,True,False),
+            use_axis=(False,True,False),
+            use_bisect=(False,True,False),
+            use_merge=True
+        )
+
+        # 然后做瓦面裁剪
+        tileBoolObj = utils.getAcaChild(
+            fromBuilding,con.ACA_TYPE_TILE_BOOL_FB)
+        utils.addModifierBoolean(
+            object=fromRoof_copy,
+            boolObj=tileBoolObj,
+            solver='FAST',# 面片的裁剪，不能用manifold
+        )
+
+        # 最后做左右镜像
+        utils.addModifierMirror(
+            object=fromRoof_copy,
+            mirrorObj=fromBuilding,
+            use_axis=(True,False,False),
+            use_bisect=(True,False,False),
             use_merge=True
         )
         utils.applyAllModifer(fromRoof_copy)        
@@ -1325,12 +1343,38 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
             bm.free() 
             bpy.ops.object.mode_set( mode = 'OBJECT' )
 
-        # 镜像
+        # 先做前后檐镜像
+        if dir == 'Y':
+            axis = (False,True,False)
+        else:
+            axis = (True,False,False)
         utils.addModifierMirror(
             object=toRoof_copy,
             mirrorObj=toBuilding,
-            use_axis=(True,True,False),
-            use_bisect=(True,True,False),
+            use_axis=axis,
+            use_bisect=axis,
+            use_merge=True
+        )
+
+        # 然后做瓦面裁剪
+        tileBoolObj = utils.getAcaChild(
+            toBuilding,con.ACA_TYPE_TILE_BOOL_FB)
+        utils.addModifierBoolean(
+            object=toRoof_copy,
+            boolObj=tileBoolObj,
+            solver='FAST',# 面片的裁剪，不能用manifold
+        )
+
+        # 最后做左右镜像
+        if dir == 'Y':
+            axis = (True,False,False)
+        else:
+            axis = (False,True,False)
+        utils.addModifierMirror(
+            object=toRoof_copy,
+            mirrorObj=toBuilding,
+            use_axis=axis,
+            use_bisect=axis,
             use_merge=True
         )
         utils.applyAllModifer(toRoof_copy)

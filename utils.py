@@ -1140,6 +1140,11 @@ def addModifierBoolean(
         else:
             # 老版本仍然使用EXACT算法
             solver = 'FAST'
+    # Blender 5.0中FAST模式改为了FLOAT
+    if solver == 'FAST' and bpy.app.version >= (5,0,0):
+        solver = 'FLOAT'
+    if solver == 'FLOAT' and bpy.app.version < (5,0,0):
+        solver = 'FAST'
     modBool:bpy.types.BooleanModifier = \
             object.modifiers.new(name,'BOOLEAN')
     if modBool is None:

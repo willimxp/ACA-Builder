@@ -870,6 +870,12 @@ def __drawTileBool(
         use_axis=(True,False,False),
     )
 
+    # 251219 标识瓦面裁剪对象，以便在瓦面拼接碰撞时复用
+    if direction == 'X':
+        tileboolObj.ACA_data.aca_type = con.ACA_TYPE_TILE_BOOL_FB
+    else:
+        tileboolObj.ACA_data.aca_type = con.ACA_TYPE_TILE_BOOL_LR
+
     return tileboolObj
 
 # 基于瓦面碰撞，生成裁剪体

@@ -57,6 +57,8 @@ class ACA_Consts(object):
     ACA_TYPE_TILE_CURVE_FB = 'tile_curve_fb'                        # 前后正身坡线
     ACA_TYPE_TILE_EAVE_CURVE_FB = 'tile_eave_curve_fb'              # 前后瓦口线
     ACA_TYPE_TILE_EAVE_CURVE_LR = 'tile_eave_curve_lr'              # 两山瓦口线
+    ACA_TYPE_TILE_BOOL_FB = 'tile_bool_fb'                          # 前后瓦面裁剪
+    ACA_TYPE_TILE_BOOL_LR = 'tile_bool_lr'                          # 两山瓦面裁剪
     ACA_TYPE_TILE_ROOT = 'tile_root'                                # ACA类型：屋瓦层
     ACA_TYPE_ASSET_ROOT ='asset_root'                               # ACA类型：斗栱根节点
     ACA_TYPE_TILE_GRID ='tile_grid'                                 # ACA类型：前后檐瓦面

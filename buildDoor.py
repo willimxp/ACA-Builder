@@ -1061,7 +1061,9 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
 
     # 12、门枕 --------------------------
     # 仅板门需要
-    if wallType == con.ACA_WALLTYPE_MAINDOOR:
+    if (wallType == con.ACA_WALLTYPE_MAINDOOR
+        # 251219 四扇的屏门不做门枕
+        and childData.door_num != 4):
         # 定位
         zhenX = (doorWidth/2 
                 + con.MAINDOOR_DEPTH*pd/2 

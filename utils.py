@@ -3234,7 +3234,8 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
         scene_scale = max(obj_a.dimensions.length, obj_b.dimensions.length, 1.0)
         # 保守放大 dedup_tol，保证正常缩放下可连接；并加入基于场景尺度的下限
         # 251117 连接阈值设置为1米
-        connect_tol = max(dedup_tol*100, scene_scale * 1e-6, 1e-6)
+        # 251219 改为10米，以便在钉子抱厦较大开口时也能闭合
+        connect_tol = max(dedup_tol*1000, scene_scale * 1e-6, 1e-6)
 
         def find_closest_unvisited_idx(src_idx, max_k=32):
             co = pts[src_idx]

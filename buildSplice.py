@@ -211,23 +211,8 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
                      toBuilding:bpy.types.Object,
                      comboObj:bpy.types.Object):    
     # 载入数据
-    bData = fromBuilding.ACA_data
+    bData = toBuilding.ACA_data
     dk = bData.DK
-    
-    # 计算屋顶碰撞点
-    crossPoint = __getRoofCrossPoint(fromBuilding,toBuilding)
-    if 'CANCELLED' not in crossPoint: 
-        # 将碰撞点转换到combo坐标系
-        if comboObj:
-            crossPoint = comboObj.matrix_world.inverted() @ crossPoint
-    else:
-        # 如果屋顶碰撞失败，则取主建筑临近副建筑的额枋外皮
-        boolY = (bData.y_total+con.EFANG_LARGE_Y*dk+0.01)/2
-        if fromBuilding.location.y > toBuilding.location.y:
-            boolY *= -1
-        crossPoint = Vector((0,boolY,0))
-        # 基于主建筑转换坐标
-        crossPoint = fromBuilding.matrix_local @ crossPoint
 
     # 生成剪切体 ----------------------------------
     # 1、出檐
@@ -251,11 +236,87 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
     # 保险数
     buildingH += 20*dk
 
+    # 一、裁剪屋顶 ----------------------------------------
+    # 计算屋顶碰撞点
+    crossPoint = __getRoofCrossPoint(fromBuilding,toBuilding)
+    if 'CANCELLED' in crossPoint: 
+        print("未找到屋顶碰撞点，未裁剪屋顶")
+    else:
+        # 将碰撞点转换到combo坐标系
+        if comboObj:
+            crossPoint = comboObj.matrix_world.inverted() @ crossPoint
+
+        # 3、裁剪体大小、位置
+        boolX = bData.x_total + eave_extend*2
+        boolY = bData.y_total + eave_extend*2
+        boolDim = (boolX,boolY,buildingH)
+        # 根据屋顶碰撞点定位
+        if fromBuilding.location.y > toBuilding.location.y:
+            offset = boolY/2
+        else:
+            offset = -boolY/2
+        
+        boolLoc = (0,
+                offset+crossPoint.y, # 碰撞点
+                buildingH/2)
+        boolObj = utils.addCube(
+            name="勾连搭-屋顶" + con.BOOL_SUFFIX,
+            location=boolLoc,
+            dimension=boolDim,
+            parent=comboObj,
+        )
+        utils.hideObjFace(boolObj)
+        utils.hideObj(boolObj)
+
+        # 4、添加bool modifier
+        fromChildren = utils.getChildrenHierarchy(fromBuilding)
+        for obj in fromChildren:
+            obj:bpy.types.Object
+            # 跳过bool对象
+            if con.BOOL_SUFFIX  in obj.name : continue
+            # 跳过台基、柱网、装修
+            collName = obj.users_collection[0].name
+            if con.COLL_NAME_BASE in collName : continue
+            if con.COLL_NAME_PILLER in collName : continue
+            if con.COLL_NAME_WALL in collName : continue
+            utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
+                object=obj,
+                boolObj=boolObj,
+                operation='INTERSECT',
+            )
+
+        toChildren = utils.getChildrenHierarchy(toBuilding)
+        for obj in toChildren:
+            obj:bpy.types.Object
+            # 跳过bool对象
+            if con.BOOL_SUFFIX  in obj.name : continue
+            # 跳过台基、柱网、装修
+            collName = obj.users_collection[0].name
+            if con.COLL_NAME_BASE in collName : continue
+            if con.COLL_NAME_PILLER in collName : continue
+            if con.COLL_NAME_WALL in collName : continue
+            utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
+                object=obj,
+                boolObj=boolObj,
+                operation='DIFFERENCE',
+            )
+
+    # 二、裁剪屋身(台基、柱网、装修) ------------------------
+    # 取主建筑临近副建筑的额枋外皮
+    cutpos = (bData.y_total+con.EFANG_LARGE_Y*dk+0.01)/2
+    if fromBuilding.location.y < toBuilding.location.y:
+        cutpos *= -1
+    crossPoint = Vector((0,cutpos,0))
+    # 基于主建筑转换坐标
+    crossPoint = toBuilding.matrix_local @ crossPoint
+
     # 3、裁剪体大小、位置
     boolX = bData.x_total + eave_extend*2
     boolY = bData.y_total + eave_extend*2
     boolDim = (boolX,boolY,buildingH)
-    # 根据屋顶碰撞点定位
+    # 根据两个拼接建筑的位置，判断裁剪前檐还是后檐
     if fromBuilding.location.y > toBuilding.location.y:
         offset = boolY/2
     else:
@@ -265,7 +326,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
                offset+crossPoint.y, # 碰撞点
                buildingH/2)
     boolObj = utils.addCube(
-        name="勾连搭" + con.BOOL_SUFFIX,
+        name="勾连搭-屋身" + con.BOOL_SUFFIX,
         location=boolLoc,
         dimension=boolDim,
         parent=comboObj,
@@ -279,30 +340,36 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
         obj:bpy.types.Object
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue
-        utils.addModifierBoolean(
-            name=con.POSTPROC_SPLICE,
-            object=obj,
-            boolObj=boolObj,
-            operation='INTERSECT',
-        )
+        # 仅裁剪台基、柱网、装修
+        collName = obj.users_collection[0].name
+        if (con.COLL_NAME_BASE in collName 
+            or con.COLL_NAME_PILLER in collName
+            or con.COLL_NAME_WALL in collName):
+                utils.addModifierBoolean(
+                    name=con.POSTPROC_SPLICE,
+                    object=obj,
+                    boolObj=boolObj,
+                    operation='INTERSECT',
+                )
 
     toChildren = utils.getChildrenHierarchy(toBuilding)
     for obj in toChildren:
         obj:bpy.types.Object
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue
-        # 跳过装修层，不裁剪主建筑
+        # 跳过板门（避免裁剪门槛石）
+        if '板门'  in obj.name : continue
+        # 仅裁剪台基、柱网、装修
         collName = obj.users_collection[0].name
-        if con.COLL_NAME_WALL in collName : 
-            # 例外，裁剪雀替
-            if '雀替' not in obj.name:
-                continue
-        utils.addModifierBoolean(
-            name=con.POSTPROC_SPLICE,
-            object=obj,
-            boolObj=boolObj,
-            operation='DIFFERENCE',
-        )
+        if (con.COLL_NAME_BASE in collName 
+            or con.COLL_NAME_PILLER in collName
+            or con.COLL_NAME_WALL in collName):
+            utils.addModifierBoolean(
+                name=con.POSTPROC_SPLICE,
+                object=obj,
+                boolObj=boolObj,
+                operation='DIFFERENCE',
+            )
 
     return {'FINISHED'}
 

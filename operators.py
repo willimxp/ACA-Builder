@@ -1630,7 +1630,7 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
     bl_idname="aca.splice_building"
     bl_label = "拼接建筑"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '将多个建筑重叠的瓦面、柱网等进行裁剪拼接'
+    bl_description = '将多个建筑重叠的瓦面、柱网等进行裁剪拼接，请将抱厦做为活动的选择项(最后选择)'
     
     def execute(self, context): 
         # 开启进度条

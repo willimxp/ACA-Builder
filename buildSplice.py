@@ -185,27 +185,31 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     fromColl.color_tag = 'COLOR_05'
     toColl = toBuilding.users_collection[0]
     toColl.color_tag = 'COLOR_05'
+
     # 给拼接对象编号
     # 如果没有编号，则自动生成
     # 如果有编号，是否有其他重复的对象，如果有则重新生成，
     # 没有没有重复对象，则保留原编号
     __setSpliceID(fromBuilding)
     __setSpliceID(toBuilding)
+
     # 记录操作，判断是否已经存在记录
     # 如，从模板生成时已经记录过，这里不再重复记录
+    isExsit = False
     comboData:acaData = comboObj.ACA_data
     postProcess = comboData.postProcess
     para = f"{bData.splice_id}#{mData.splice_id}"
     para_alt = f"{mData.splice_id}#{bData.splice_id}"
-    # 如果该规则已经存在，则删除
+    # 2512220 这里不要做删除，否则buildCombo时postProcess列表不停变化，就无法正确依次执行
     for i,pp in enumerate(postProcess):
         if (pp.action == con.POSTPROC_SPLICE
                 and pp.parameter in (para,para_alt)):
-            postProcess.remove(i)
-    # 插入新规则
-    pp = comboData.postProcess.add()
-    pp.action = con.POSTPROC_SPLICE
-    pp.parameter = para
+            isExsit = True
+    if not isExsit:
+        # 插入新规则
+        pp = comboData.postProcess.add()
+        pp.action = con.POSTPROC_SPLICE
+        pp.parameter = para
 
     # 5、聚焦在主建筑
     utils.focusObj(toBuilding)

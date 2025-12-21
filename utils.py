@@ -3310,11 +3310,16 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
                     max_dist = d
                     max_idx = ii
 
-            # 构建局部 KDTree 加速最近邻查找
+            # 构建局部 KDTree 加速最近邻查找（在XY平面插入点）
+            # 251221 在亭子的瓦面碰撞中，最高点附近的连接错误
+            # 我觉得可能是这里的举折太大，导致顶点与相邻点的距离过大，而无法联通
+            # 所以折衷的方法就是把点投影到XY平面上进行判断，因为都在45度斜线上，就不会有问题了
             from mathutils.kdtree import KDTree
             kdt = KDTree(m)
             for j, p in enumerate(seg_pts):
-                kdt.insert(p, j)
+                # 251221 做XY投影
+                p_xy = Vector((p.x, p.y, 0.0))
+                kdt.insert(p_xy, j)
             kdt.balance()
 
             # 最近邻链式连接（贪心）
@@ -3326,8 +3331,10 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
 
             for _ in range(m - 1):
                 co = seg_pts[cur]
+                # 251221 做XY投影
+                co_xy = Vector((co.x, co.y, 0.0))
                 # 查询按距离排序的邻居（包含自己），找第一个未访问的
-                neigh = kdt.find_n(co, m)
+                neigh = kdt.find_n(co_xy, m)
                 found = None
                 for co_n, j, dist in neigh:
                     if j == cur:
@@ -3341,7 +3348,9 @@ def mesh_mesh_intersection(obj_a: bpy.types.Object,
                     bd = float('inf')
                     for j in range(m):
                         if not visited_local[j]:
-                            d = (seg_pts[j] - co).length
+                            # 251221 做XY投影
+                            pj_xy = Vector((seg_pts[j].x, seg_pts[j].y, 0.0))
+                            d = (pj_xy - co_xy).length
                             if d < bd:
                                 bd = d
                                 best = j

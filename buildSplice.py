@@ -1355,37 +1355,39 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
             bpy.ops.object.mode_set( mode = 'OBJECT' )
 
         # 先做前后檐镜像
-        if dir == 'Y':
-            axis = (False,True,False)
-        else:
-            axis = (True,False,False)
         utils.addModifierMirror(
             object=toRoof_copy,
             mirrorObj=toBuilding,
-            use_axis=axis,
-            use_bisect=axis,
+            use_axis=(False,True,False),
+            use_bisect=(False,True,False),
             use_merge=True
         )
 
         # 然后做瓦面裁剪
+        # 251221 前后檐和两山的bool对象位置相同
+        # 但名称不同（fb/lr）
+        # 操作不同（DIFFERENCE/INERSECT）
+        if dir == 'Y':
+            boolType = con.ACA_TYPE_TILE_BOOL_FB
+            boolOper = 'DIFFERENCE'
+        else:
+            boolType = con.ACA_TYPE_TILE_BOOL_LR
+            boolOper = 'INTERSECT'
         tileBoolObj = utils.getAcaChild(
-            toBuilding,con.ACA_TYPE_TILE_BOOL_FB)
+            toBuilding,boolType)
         utils.addModifierBoolean(
             object=toRoof_copy,
             boolObj=tileBoolObj,
             solver='FAST',# 面片的裁剪，不能用manifold
+            operation=boolOper
         )
 
         # 最后做左右镜像
-        if dir == 'Y':
-            axis = (True,False,False)
-        else:
-            axis = (False,True,False)
         utils.addModifierMirror(
             object=toRoof_copy,
             mirrorObj=toBuilding,
-            use_axis=axis,
-            use_bisect=axis,
+            use_axis=(True,False,False),
+            use_bisect=(True,False,False),
             use_merge=True
         )
         utils.applyAllModifer(toRoof_copy)

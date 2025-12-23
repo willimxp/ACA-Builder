@@ -3602,14 +3602,20 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     if bData.roof_style in (
         con.ROOF_XIESHAN,
         con.ROOF_XIESHAN_JUANPENG):
-        # 歇山做窄一些，留出更多的山花板
-        if (bData.rafter_count == 4 
-            and bData.paint_style in ('1','3')
-            and bData.roof_style == con.ROOF_XIESHAN):
-            # 四架仿宋使用更小的山花板，以便给悬鱼留出更多空间
-            bofengExt = con.BOFENG_OFFSET_XSS*dk
-        else:
+        # # 歇山做窄一些，留出更多的山花板
+        # if (bData.rafter_count == 4 
+        #     and bData.paint_style in ('1','3')
+        #     and bData.roof_style == con.ROOF_XIESHAN):
+        #     # 四架仿宋使用更小的山花板，以便给悬鱼留出更多空间
+        #     bofengExt = con.BOFENG_OFFSET_XSS*dk
+        # else:
+        #     bofengExt = con.BOFENG_OFFSET_XS*dk
+        # 251223 清式的博缝板大一些，其他样式的博缝板小一些
+        if bData.paint_style in ('0'):
             bofengExt = con.BOFENG_OFFSET_XS*dk
+        else:
+            bofengExt = con.BOFENG_OFFSET_XSS*dk
+
     if bData.roof_style in (
         con.ROOF_YINGSHAN,
         con.ROOF_YINGSHAN_JUANPENG,
@@ -3838,7 +3844,8 @@ def __buildBofeng(buildingObj: bpy.types.Object,
             + con.HENG_COMMON_D*dk/2    # 半桁径
             + con.YUANCHUAN_D*dk        # 椽径
             + con.ROOFMUD_H*dk          # 灰泥层
-            + 7.5*dk                    # 博脊高度
+            # 251223 博脊高度加上缩放系数的影响
+            + 7.5*dk*bData.tile_scale   # 博脊高度
             )
         ))
 

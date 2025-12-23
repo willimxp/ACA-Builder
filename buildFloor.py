@@ -852,9 +852,14 @@ def __buildFang(buildingObj:bpy.types.Object):
             con.ROOF_XIESHAN,
             con.ROOF_XIESHAN_JUANPENG,
             con.ROOF_LUDING,
+            # 251223 平坐顶也做霸王拳
+            con.ROOF_BALCONY,
         ):
             # 重檐的上檐不做霸王拳
-            if (bData.use_double_eave and
+            # if (bData.use_double_eave and
+            #     bData.combo_type != con.COMBO_DOUBLE_EAVE):
+            # 251223 发现之前的判断有误，导致霸王拳丢失
+            if (not bData.use_double_eave and
                 bData.combo_type != con.COMBO_DOUBLE_EAVE):
                 __buildFangBWQ(bigFangObj)
 

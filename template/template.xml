@@ -9510,7 +9510,7 @@
 		<wall_list type="CollectionProperty" />
 		<window_list type="CollectionProperty" />
 		<geshan_list type="CollectionProperty" />
-		<paint_style type="EnumProperty">3</paint_style>
+		<paint_style type="EnumProperty">1</paint_style>
 		<use_balcony_railing type="BoolProperty">False</use_balcony_railing>
 		<use_dg type="BoolProperty">False</use_dg>
 		<use_pingbanfang type="BoolProperty">True</use_pingbanfang>
@@ -9553,13 +9553,13 @@
 		<postProcess type="CollectionProperty">
 			<item_0 type="item">
 				<action type="StringProperty">SPLICE</action>
-				<parameter type="StringProperty">139ffc22-5250-4c9b-9a09-d672ee0c4b42#6f8a02e2-1542-4bac-9050-046fde7bbb84</parameter>
+				<parameter type="StringProperty">139ffc22-5250-4c9b-9a09-d672ee0c4b42#c4a237cb-c1b0-4962-b329-e17540360f8f</parameter>
 			</item_0>
 		</postProcess>
 		<template>
 			<splice_id type="StringProperty">6f8a02e2-1542-4bac-9050-046fde7bbb84</splice_id>
 			<aca_type type="StringProperty">building</aca_type>
-			<template_name type="StringProperty">十字歇山.X</template_name>
+			<template_name type="StringProperty">十字歇山.屋身</template_name>
 			<combo_type type="StringProperty">combo_main</combo_type>
 			<combo_parent type="StringProperty">577b83f2-3253-4000-9faa-884b2976f45e</combo_parent>
 			<combo_children type="CollectionProperty" />
@@ -9570,15 +9570,20 @@
 			<is_showPlatform type="BoolProperty">True</is_showPlatform>
 			<is_showPillers type="BoolProperty">True</is_showPillers>
 			<is_showWalls type="BoolProperty">True</is_showWalls>
-			<is_showDougong type="BoolProperty">True</is_showDougong>
-			<is_showBeam type="BoolProperty">True</is_showBeam>
-			<is_showRafter type="BoolProperty">True</is_showRafter>
-			<is_showTiles type="BoolProperty">True</is_showTiles>
+			<is_showDougong type="BoolProperty">False</is_showDougong>
+			<is_showBeam type="BoolProperty">False</is_showBeam>
+			<is_showRafter type="BoolProperty">False</is_showRafter>
+			<is_showTiles type="BoolProperty">False</is_showTiles>
 			<is_showBalcony type="BoolProperty">True</is_showBalcony>
 			<platform_height type="FloatProperty">1.0</platform_height>
 			<platform_extend type="FloatProperty">1.7</platform_extend>
 			<use_terrace type="BoolProperty">False</use_terrace>
-			<step_list type="CollectionProperty" />
+			<step_list type="CollectionProperty">
+				<item_0 type="item">
+					<id type="StringProperty">0/0#1/0</id>
+					<width type="FloatProperty">0.5</width>
+				</item_0>
+			</step_list>
 			<x_total type="FloatProperty">5.632</x_total>
 			<y_total type="FloatProperty">5.632</y_total>
 			<x_rooms type="IntProperty">1</x_rooms>
@@ -9617,7 +9622,7 @@
 			</wall_list>
 			<window_list type="CollectionProperty" />
 			<geshan_list type="CollectionProperty" />
-			<paint_style type="EnumProperty">3</paint_style>
+			<paint_style type="EnumProperty">1</paint_style>
 			<use_balcony_railing type="BoolProperty">False</use_balcony_railing>
 			<use_dg type="BoolProperty">True</use_dg>
 			<use_pingbanfang type="BoolProperty">True</use_pingbanfang>
@@ -9645,7 +9650,110 @@
 			<roof_height type="FloatProperty">3.0</roof_height>
 			<tile_scale type="FloatProperty">0.8</tile_scale>
 			<tile_color type="EnumProperty">2</tile_color>
-			<tile_alt_color type="EnumProperty">3</tile_alt_color>
+			<tile_alt_color type="EnumProperty">2</tile_alt_color>
+			<tile_width type="FloatProperty">0.248</tile_width>
+			<tile_length type="FloatProperty">0.32</tile_length>
+			<paoshou_count type="IntProperty">7</paoshou_count>
+			<is_4_sides type="BoolProperty">True</is_4_sides>
+			<yard_width type="FloatProperty">10.0</yard_width>
+			<yard_depth type="FloatProperty">10.0</yard_depth>
+			<yardwall_height type="FloatProperty">3.0</yardwall_height>
+			<yardwall_depth type="FloatProperty">1.0</yardwall_depth>
+			<yardwall_angle type="FloatProperty">30.0</yardwall_angle>
+			<loggia_sign type="StringProperty" />
+			<juzhe_var type="FloatProperty">0.1</juzhe_var>
+			<postProcess type="CollectionProperty" />
+		</template>
+		<template>
+			<splice_id type="StringProperty">c4a237cb-c1b0-4962-b329-e17540360f8f</splice_id>
+			<aca_type type="StringProperty">building</aca_type>
+			<template_name type="StringProperty">十字歇山.X</template_name>
+			<combo_type type="StringProperty">combo_main</combo_type>
+			<combo_parent type="StringProperty">577b83f2-3253-4000-9faa-884b2976f45e</combo_parent>
+			<combo_children type="CollectionProperty" />
+			<combo_location type="FloatVectorProperty">0.0,0.0,0.0</combo_location>
+			<combo_rotation type="FloatVectorProperty">0.0,0.0,0.0</combo_rotation>
+			<combo_floor_height type="FloatProperty">0.0</combo_floor_height>
+			<DK type="FloatProperty">0.064</DK>
+			<is_showPlatform type="BoolProperty">False</is_showPlatform>
+			<is_showPillers type="BoolProperty">False</is_showPillers>
+			<is_showWalls type="BoolProperty">False</is_showWalls>
+			<is_showDougong type="BoolProperty">True</is_showDougong>
+			<is_showBeam type="BoolProperty">True</is_showBeam>
+			<is_showRafter type="BoolProperty">True</is_showRafter>
+			<is_showTiles type="BoolProperty">True</is_showTiles>
+			<is_showBalcony type="BoolProperty">True</is_showBalcony>
+			<platform_height type="FloatProperty">1.0</platform_height>
+			<platform_extend type="FloatProperty">1.7</platform_extend>
+			<use_terrace type="BoolProperty">False</use_terrace>
+			<step_list type="CollectionProperty" />
+			<x_total type="FloatProperty">5.632</x_total>
+			<y_total type="FloatProperty">5.632</y_total>
+			<x_rooms type="IntProperty">1</x_rooms>
+			<x_1 type="FloatProperty">5.632</x_1>
+			<x_2 type="FloatProperty">4.224</x_2>
+			<x_3 type="FloatProperty">5.28</x_3>
+			<x_4 type="FloatProperty">1.76</x_4>
+			<y_rooms type="IntProperty">1</y_rooms>
+			<y_1 type="FloatProperty">5.632</y_1>
+			<y_2 type="FloatProperty">2.816</y_2>
+			<y_3 type="FloatProperty">1.76</y_3>
+			<piller_net type="StringProperty">0/0,0/1,1/0,1/1,</piller_net>
+			<piller_height type="FloatProperty">3.52</piller_height>
+			<piller_diameter type="FloatProperty">0.384</piller_diameter>
+			<use_smallfang type="BoolProperty">False</use_smallfang>
+			<piller_insert type="FloatProperty">0.0</piller_insert>
+			<railing_list type="CollectionProperty" />
+			<maindoor_list type="CollectionProperty" />
+			<wall_list type="CollectionProperty">
+				<item_0 type="item">
+					<id type="StringProperty">queti#0/0#1/0</id>
+					<wall_span type="FloatProperty">0.0</wall_span>
+				</item_0>
+				<item_1 type="item">
+					<id type="StringProperty">queti#1/0#1/1</id>
+					<wall_span type="FloatProperty">0.0</wall_span>
+				</item_1>
+				<item_2 type="item">
+					<id type="StringProperty">queti#0/1#1/1</id>
+					<wall_span type="FloatProperty">0.0</wall_span>
+				</item_2>
+				<item_3 type="item">
+					<id type="StringProperty">queti#0/0#0/1</id>
+					<wall_span type="FloatProperty">0.0</wall_span>
+				</item_3>
+			</wall_list>
+			<window_list type="CollectionProperty" />
+			<geshan_list type="CollectionProperty" />
+			<paint_style type="EnumProperty">1</paint_style>
+			<use_balcony_railing type="BoolProperty">False</use_balcony_railing>
+			<use_dg type="BoolProperty">True</use_dg>
+			<use_pingbanfang type="BoolProperty">True</use_pingbanfang>
+			<dg_style type="EnumProperty">5</dg_style>
+			<dg_extend type="FloatProperty">0.54</dg_extend>
+			<dg_height type="FloatProperty">1.188</dg_height>
+			<dk_scale type="FloatProperty">1.5</dk_scale>
+			<dg_gap type="FloatProperty">1.8</dg_gap>
+			<dg_withbeam type="BoolProperty">False</dg_withbeam>
+			<roof_style type="EnumProperty">2</roof_style>
+			<use_double_eave type="BoolProperty">False</use_double_eave>
+			<use_hallway type="BoolProperty">False</use_hallway>
+			<rafter_count type="IntProperty">6</rafter_count>
+			<use_flyrafter type="BoolProperty">True</use_flyrafter>
+			<use_wangban type="BoolProperty">True</use_wangban>
+			<qiqiao type="FloatProperty">4.0</qiqiao>
+			<chong type="FloatProperty">3.0</chong>
+			<use_pie type="BoolProperty">True</use_pie>
+			<shengqi type="IntProperty">1</shengqi>
+			<liangtou type="FloatProperty">0.5</liangtou>
+			<tuishan type="FloatProperty">0.9</tuishan>
+			<shoushan type="FloatProperty">0.0</shoushan>
+			<luding_rafterspan type="FloatProperty">3.0</luding_rafterspan>
+			<juzhe type="EnumProperty">0</juzhe>
+			<roof_height type="FloatProperty">3.0</roof_height>
+			<tile_scale type="FloatProperty">0.8</tile_scale>
+			<tile_color type="EnumProperty">2</tile_color>
+			<tile_alt_color type="EnumProperty">2</tile_alt_color>
 			<tile_width type="FloatProperty">0.248</tile_width>
 			<tile_length type="FloatProperty">0.32</tile_length>
 			<paoshou_count type="IntProperty">7</paoshou_count>
@@ -9670,9 +9778,9 @@
 			<combo_rotation type="FloatVectorProperty">0.0,-0.0,1.571</combo_rotation>
 			<combo_floor_height type="FloatProperty">0.0</combo_floor_height>
 			<DK type="FloatProperty">0.064</DK>
-			<is_showPlatform type="BoolProperty">True</is_showPlatform>
-			<is_showPillers type="BoolProperty">True</is_showPillers>
-			<is_showWalls type="BoolProperty">True</is_showWalls>
+			<is_showPlatform type="BoolProperty">False</is_showPlatform>
+			<is_showPillers type="BoolProperty">False</is_showPillers>
+			<is_showWalls type="BoolProperty">False</is_showWalls>
 			<is_showDougong type="BoolProperty">True</is_showDougong>
 			<is_showBeam type="BoolProperty">True</is_showBeam>
 			<is_showRafter type="BoolProperty">True</is_showRafter>
@@ -9681,12 +9789,7 @@
 			<platform_height type="FloatProperty">1.0</platform_height>
 			<platform_extend type="FloatProperty">1.7</platform_extend>
 			<use_terrace type="BoolProperty">False</use_terrace>
-			<step_list type="CollectionProperty">
-				<item_0 type="item">
-					<id type="StringProperty">0/0#0/1</id>
-					<width type="FloatProperty">0.5</width>
-				</item_0>
-			</step_list>
+			<step_list type="CollectionProperty" />
 			<x_total type="FloatProperty">5.632</x_total>
 			<y_total type="FloatProperty">5.632</y_total>
 			<x_rooms type="IntProperty">1</x_rooms>
@@ -9725,7 +9828,7 @@
 			</wall_list>
 			<window_list type="CollectionProperty" />
 			<geshan_list type="CollectionProperty" />
-			<paint_style type="EnumProperty">3</paint_style>
+			<paint_style type="EnumProperty">1</paint_style>
 			<use_balcony_railing type="BoolProperty">False</use_balcony_railing>
 			<use_dg type="BoolProperty">True</use_dg>
 			<use_pingbanfang type="BoolProperty">True</use_pingbanfang>
@@ -9753,7 +9856,7 @@
 			<roof_height type="FloatProperty">3.0</roof_height>
 			<tile_scale type="FloatProperty">0.8</tile_scale>
 			<tile_color type="EnumProperty">2</tile_color>
-			<tile_alt_color type="EnumProperty">3</tile_alt_color>
+			<tile_alt_color type="EnumProperty">2</tile_alt_color>
 			<tile_width type="FloatProperty">0.248</tile_width>
 			<tile_length type="FloatProperty">0.32</tile_length>
 			<paoshou_count type="IntProperty">7</paoshou_count>

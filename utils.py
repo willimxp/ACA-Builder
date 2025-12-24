@@ -1924,6 +1924,11 @@ def resizeObj(object:bpy.types.Object,
 
 # 表面平滑
 def shaderSmooth(object:bpy.types.Object):
+    #251224 如果对象不在view_layer显示，以下操作会报错，所以直接忽略返回
+    if object.name not in bpy.context.view_layer.objects:
+        print(object.name+"不在viewLayer中，无法做shaderSmooth")
+        return 
+    
     focusObj(object)
     if bpy.app.version >= (4, 2, 0) :
         # 此方法为Blender 4.2以上才有

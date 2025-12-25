@@ -3614,7 +3614,11 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         if bData.paint_style in ('0'):
             bofengExt = con.BOFENG_OFFSET_XS*dk
         else:
-            bofengExt = con.BOFENG_OFFSET_XSS*dk
+            # 251225 四出抱厦模板中上檐8架的跨度很大，博缝板不需要缩小
+            if bData.rafter_count == 8:
+                bofengExt = con.BOFENG_OFFSET_XS*dk
+            else:
+                bofengExt = con.BOFENG_OFFSET_XSS*dk
 
     if bData.roof_style in (
         con.ROOF_YINGSHAN,

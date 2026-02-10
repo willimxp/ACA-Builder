@@ -55,8 +55,15 @@ def register():
     bpy.context.preferences.view.use_translate_new_dataname = False
 
     # 251211 解决在terminal中的中文乱码问题
-    import os
-    os.system("chcp 65001")  # 65001 = UTF-8编码
+    # 260210 添加平台检测和用户偏好设置，仅在Windows系统上执行
+    import platform
+    if platform.system() == "Windows":
+        preferences = bpy.context.preferences
+        addon_main_name = __name__.split('.')[0]
+        addon_prefs = preferences.addons[addon_main_name].preferences
+        if addon_prefs.fix_windows_cli_encoding:
+            import os
+            os.system("chcp 65001")  # 65001 = UTF-8编码
     
     return
     

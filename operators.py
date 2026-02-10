@@ -1161,7 +1161,15 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
             description = "取消后，不再使用倒角，直接生成直角构件",
         ) # type: ignore
 
+    # 260210 Windows CLI中文乱码矫正选项
+    fix_windows_cli_encoding : bpy.props.BoolProperty(
+            default = True,
+            name = "Windows CLI中文乱码矫正",
+            description = "在Windows系统上自动设置UTF-8编码以解决中文乱码问题（仅Windows有效）",
+        ) # type: ignore
+
     def draw(self, context):
+        import platform
         layout = self.layout
         row = layout.row()
         filepath = self.filepath
@@ -1175,6 +1183,14 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
         
         row = layout.row()
         row.prop(self,'use_bevel')
+        
+        # 260210 Windows CLI中文乱码矫正选项：仅在Windows系统上可用
+        row = layout.row()
+        is_windows = platform.system() == "Windows"
+        if not is_windows:
+            row.enabled = False
+            self.fix_windows_cli_encoding = False
+        row.prop(self,'fix_windows_cli_encoding')
     
 # 关联素材库
 class ACA_OT_LINK_ASSETS(bpy.types.Operator):

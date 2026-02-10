@@ -2550,8 +2550,11 @@ def copyAcaData(fromObj,toObj,
     if skip is None:
         skip = defaultskip
     else:
-        for key in skip:
-            if key not in defaultskip:
+        # 260105 修复死循环
+        # for key in skip:
+        #     if key not in defaultskip:
+        for key in defaultskip:
+            if key not in skip:
                 skip.append(key)
     
     # 获取源和目标属性组

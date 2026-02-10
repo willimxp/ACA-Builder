@@ -1,6 +1,16 @@
 __pycache__/
 *.pyc
-.___pycache__
+
+# 隐藏文件和目录 (macOS/Linux)
+.*
+!/.gitignore
+!/.github/
+
+# macOS 系统文件
+.DS_Store
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store
 template/acaAssets.blend1
 template/._acaAssets.blend
 *.blend

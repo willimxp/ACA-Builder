@@ -181,7 +181,12 @@ def updateCombo(buildingObj:bpy.types.Object,
     updateBuildingList = []
     # 如果基于combo根节点，全部更新
     if bData.aca_type == con.ACA_TYPE_COMBO:
-        updateBuildingList = comboObj.children
+        # 251224 排除combo下的bool等对象的影响
+        # updateBuildingList = comboObj.children
+        for child in comboObj.children:
+            if child.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+                updateBuildingList.append(child)
+                
         # ComboRoot通用数据下发
         # 目前仅用于paint_style的下发同步
         #　utils.outputMsg("更新组合建筑：ComboRoot【通用数据】下发...")

@@ -77,7 +77,6 @@ def __excludeOther(isExclude=True,
         # 如果是当前建筑所在的目录，跳过
         if coll == currentColl:
             continue
-        
         # 排除集合时，将集合状态存入缓存
         if isExclude:
             layerColl = utils.recurLayerCollection(
@@ -96,8 +95,38 @@ def __excludeOther(isExclude=True,
                 if layerExclude:
                     # print(f"collexclude skip {coll.name}")
                     continue
-
         utils.hideCollection(coll.name,isExclude=isExclude)
+
+    # 251221 排除同一个combo下的其他建筑
+    if keepObj != None:
+        comboObj = utils.getComboRoot(keepObj)
+        if comboObj is not None:
+            comboColl = comboObj.users_collection[0]
+            currentColl = keepObj.users_collection[0]
+            for coll in comboColl.children:
+                # 如果是当前建筑所在的目录，跳过
+                if coll == currentColl:
+                    continue
+                # 排除集合时，将集合状态存入缓存
+                if isExclude:
+                    layerColl = utils.recurLayerCollection(
+                        bpy.context.view_layer.layer_collection, 
+                        coll.name,)
+                    # 将键值对存入字典
+                    collExclude[coll.name] = layerColl.exclude
+                    # print(f"write collexclude {coll.name}:{layerColl.exclude}")
+                # 恢复集合时，从缓存判断
+                else:
+                    # 缓存有滞后性，本次新增的集合没有键值
+                    if coll.name in collExclude:
+                        layerExclude = collExclude[coll.name]
+                        # print(f"read collexclude {coll.name}:{layerExclude}")
+                        # 如果原始状态就是隐藏，则跳出本次循环
+                        if layerExclude:
+                            # print(f"collexclude skip {coll.name}")
+                            continue
+                utils.hideCollection(coll.name,isExclude=isExclude)
+
     utils.redrawViewport() # 刷新视图
     return
 

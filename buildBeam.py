@@ -293,7 +293,9 @@ def getPurlinPos(buildingObj:bpy.types.Object):
                 # 推山从山面檐檩中，向内一檩径，作为山花板外皮（博缝板内皮）
                 purlinWidth = (bData.x_total/2
                         - bData.shoushan         # 用户自定义推山尺寸
-                        - cornerBeamRafter*rafterSpan # 251105 八架歇山过两椽
+                        # - cornerBeamRafter*rafterSpan # 251105 八架歇山过两椽
+                        # 251221 八架歇山过两椽，廊间举架时采用檐步架rafterSpan0
+                        - cornerBeamRafter*rafterSpan0
                     )
         # 2.c、庑殿，下金桁以上，应用推山做法
         # 见马炳坚书p25，Xn= 0.9**n * X

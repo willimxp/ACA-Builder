@@ -7,6 +7,7 @@ from . import panel
 from . import operators
 from . import data
 from . import utils
+from .tools import auto_register
 import logging
 import pathlib
 
@@ -17,90 +18,19 @@ bl_info = {
     "author" : "皮皮 willimxp",
     "description" : "模板化生成清官式建筑。Generate architecher in chinese style.",
     "blender" : (4, 2, 0),
-    "version" : (0, 4, 3),
+    "version" : (0, 6, 0),
     "location" : "View3D > Properties > ACA Builder",
     "tracker_url": "https://github.com/willimxp/ACA-Builder/issues",
     "doc_url": "https://docs.qq.com/doc/DYXpwbUp1UWR0RXpu",
     "category" : "Add Mesh"
 }
 
-# 定义一个注入类列表，在register和unregister时自动批量处理
-classes = (
-    # 全局数据类
-    data.ACA_data_postProcess,
-    data.TemplateListItem,
-    data.TemplateThumbItem,
-    data.ACA_data_pavilion,
-    data.ACA_data_scene,
-    data.ACA_id_list,
-    data.ACA_data_wall_common,
-    data.ACA_data_door_common,
-    data.ACA_data_taduo,
-    data.ACA_data_railing,
-    data.ACA_data_maindoor,
-    data.ACA_data_geshan,
-    data.ACA_data_obj,
-    data.ACA_data_template,
-    
-    # 基本面板类
-    panel.ACA_PT_basic,
-    panel.ACA_PT_props, 
-    panel.ACA_PT_roof_props,
-    panel.ACA_PT_pillers,
-    panel.ACA_PT_platform, 
-    panel.ACA_PT_wall,
-    panel.ACA_PT_dougong,
-    panel.ACA_PT_beam,
-    panel.ACA_PT_rafter,
-    panel.ACA_PT_tiles,
-    panel.ACA_PT_yardwall_props,
-    
-    # 操作逻辑类  
-    operators.ACA_OT_LINK_ASSETS,
-    operators.ACA_OT_Preferences,     # 插件设置
-    operators.ACA_OT_test,
-    operators.ACA_OT_add_building,
-    operators.ACA_OT_update_building,
-    operators.ACA_OT_del_building,
-    operators.ACA_OT_reset_wall_layout,
-    operators.ACA_OT_build_dougong,
-    operators.ACA_OT_build_roof,
-    operators.ACA_OT_focusBuilding,
-    operators.ACA_OT_reset_floor,
-    operators.ACA_OT_add_step,
-    operators.ACA_OT_del_step,
-    operators.ACA_OT_del_piller,
-    operators.ACA_OT_set_piller,
-    operators.ACA_OT_add_wall,
-    operators.ACA_OT_del_wall,
-    operators.ACA_OT_add_window,
-    operators.ACA_OT_add_door,
-    operators.ACA_OT_add_maindoor,
-    operators.ACA_OT_add_barwindow,
-    operators.ACA_OT_add_flipwindow,
-    operators.ACA_OT_add_railing,
-    operators.ACA_OT_add_bench,
-    operators.ACA_OT_default_dk,
-    operators.ACA_OT_save_template,
-    operators.ACA_OT_del_template,
-    operators.ACA_OT_build_yardwall,
-    operators.ACA_OT_default_ludingRafterSpan,
-    operators.ACA_OT_Show_Message_Box,
-    operators.ACA_OT_PROFILE,
-    operators.ACA_OT_EXPORT_FBX,
-    operators.ACA_OT_EXPORT_GLB,
-    operators.ACA_OT_JOIN,
-    operators.ACA_UL_Template_Items,
-    operators.ACA_OT_SELECT_TEMPLATE_DIALOG,
-    operators.ACA_OT_SECTION,
-    operators.ACA_OT_TERRACE_DEL,
-    operators.ACA_OT_TERRACE_ADD,
-    operators.ACA_OT_MULTI_FLOOR_ADD,
-    operators.ACA_OT_ADD_LOGGIA,
-    operators.ACA_OT_SPLICE_BUILDING,
-    operators.ACA_OT_LOGGIA_EXTEND,
-    operators.ACA_OT_COMBO_BUILDING,
-)
+# 自动从模块中发现并注册所有Blender类
+# 这样新增类时无需手动添加到这个列表中
+classes = auto_register.auto_register_classes(data, panel, operators)
+
+# 可选：打印注册信息到控制台（调试用）
+# print(auto_register.get_registration_info(classes))
 
 def register():   
     # 注入类
@@ -112,6 +42,12 @@ def register():
 
     # 初始化日志记录器
     initLogger()
+    
+    # 记录类注册信息（可选）
+    logger = logging.getLogger("ACA")
+    logger.info(f"成功注册 {len(classes)} 个类")
+    logger.debug("类注册详情：")
+    logger.debug(auto_register.get_registration_info(classes))
 
     # 250311 发现在中文版中UV贴图异常
     # 最终发现是该选项会导致生成的'UVMap'变成'UV贴图'

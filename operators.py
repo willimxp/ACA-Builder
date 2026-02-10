@@ -1167,6 +1167,25 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
             name = "Windows CLI中文乱码矫正",
             description = "在Windows系统上自动设置UTF-8编码以解决中文乱码问题（仅Windows有效）",
         ) # type: ignore
+    
+    # 260210 日志配置选项
+    log_level: bpy.props.EnumProperty(
+        name="日志级别",
+        description="设置日志记录的详细程度，DEBUG级别会记录更多信息但可能影响性能",
+        items=[
+            ('DEBUG', '调试 (Debug)', '详细的调试信息'),
+            ('INFO', '信息 (Info)', '一般信息'),
+            ('WARNING', '警告 (Warning)', '警告信息'),
+            ('ERROR', '错误 (Error)', '错误信息'),
+        ],
+        default='INFO',
+    ) # type: ignore
+    
+    use_log_rotation: bpy.props.BoolProperty(
+        default=True,
+        name="启用日志轮转",
+        description="自动归档旧日志文件，防止日志文件过大",
+    ) # type: ignore
 
     def draw(self, context):
         import platform
@@ -1191,6 +1210,15 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
             row.enabled = False
             self.fix_windows_cli_encoding = False
         row.prop(self,'fix_windows_cli_encoding')
+        
+        # 260210 日志配置选项
+        layout.separator()
+        box = layout.box()
+        box.label(text="日志设置:", icon='TEXT')
+        row = box.row()
+        row.prop(self, 'log_level')
+        row = box.row()
+        row.prop(self, 'use_log_rotation')
     
 # 关联素材库
 class ACA_OT_LINK_ASSETS(bpy.types.Operator):

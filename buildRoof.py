@@ -47,7 +47,7 @@ def __addRafterRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 250108 屋顶层原点改为柱头，椽望层相应抬高到斗栱高度
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    zLoc = bData.platform_height + bData.piller_height 
+    zLoc = bData.platform_height + bData.pillar_height 
     # 如果有斗栱，抬高斗栱高度
     if bData.use_dg:
         zLoc += bData.dg_height
@@ -88,7 +88,7 @@ def __addBoardRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 250108 屋顶层原点改为柱头，椽望层相应抬高到斗栱高度
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    zLoc = bData.platform_height + bData.piller_height 
+    zLoc = bData.platform_height + bData.pillar_height 
     # 如果有斗栱，抬高斗栱高度
     if bData.use_dg:
         zLoc += bData.dg_height
@@ -3364,7 +3364,7 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
+    pd = con.PILLAR_D_EAVE * dk
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     ridgeCurveVerts = []
@@ -3905,7 +3905,7 @@ def __buildShanWall(
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
+    pd = con.PILLAR_D_EAVE * dk
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     ShanWallVerts = []
@@ -3913,7 +3913,7 @@ def __buildShanWall(
     ridge_x = bData.x_total/2
 
     # 从墙根底部做起，从屋顶层反向推算
-    tile_base = bData.piller_height
+    tile_base = bData.pillar_height
     # 如果有斗栱，抬高斗栱高度
     if bData.use_dg:
         tile_base += bData.dg_height
@@ -4015,7 +4015,7 @@ def __buildShanWall(
     
     # 2、创建下碱对象
     # 下碱一般取柱高度的1/3
-    bottomheight = bData.piller_height * con.WALL_BOTTOM_RATE
+    bottomheight = bData.pillar_height * con.WALL_BOTTOM_RATE
     # 但最高不超过1.5m
     if bottomheight > con.WALL_BOTTOM_LIMIT:
         bottomheight = con.WALL_BOTTOM_LIMIT

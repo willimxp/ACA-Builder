@@ -572,7 +572,7 @@ class ACA_PT_platform(bpy.types.Panel):
                 group.prop(stepData, "width",text="踏跺宽度")
 
             # 添加踏跺，至少应选择两根柱子
-            if objData.aca_type != con.ACA_TYPE_PILLER \
+            if objData.aca_type != con.ACA_TYPE_PILLAR \
                 or len(context.selected_objects)<2:
                 btnAddTaduo.enabled = False
             # 删除踏跺，必须选中踏跺
@@ -609,7 +609,7 @@ class ACA_PT_platform(bpy.types.Panel):
                 layout.enabled = False
                 
 # “柱网属性”子面板
-class ACA_PT_pillers(bpy.types.Panel):
+class ACA_PT_pillars(bpy.types.Panel):
     # 常规属性
     bl_context = "objectmode"       # 关联的上下文，如，objectmode, mesh_edit, armature_edit等
     bl_region_type = 'UI'           # UI代表sidebar形式
@@ -630,7 +630,7 @@ class ACA_PT_pillers(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
-        row.prop(bData, "is_showPillers",text='柱网属性')
+        row.prop(bData, "is_showPillars",text='柱网属性')
         if bData.aca_type not in (con.ACA_TYPE_BUILDING,
                                 con.ACA_TYPE_COMBO,):
             layout.enabled = False
@@ -681,9 +681,9 @@ class ACA_PT_pillers(bpy.types.Panel):
             col = box.column(align=True)
             grid = col.grid_flow(columns=1, align=True)
             # 柱高
-            grid.prop(bData, "piller_height") 
+            grid.prop(bData, "pillar_height") 
             # 柱径   
-            grid.prop(bData, "piller_diameter")  
+            grid.prop(bData, "pillar_diameter")  
             grid = col.grid_flow(columns=2, align=True)
             
             
@@ -700,7 +700,7 @@ class ACA_PT_pillers(bpy.types.Panel):
             #     icon=checkbox_icon) 
             
             # 设置垂花柱
-            if objData.aca_type == con.ACA_TYPE_PILLER:
+            if objData.aca_type == con.ACA_TYPE_PILLAR:
                 toolBox = box.column(align=True)
 
                 toolBar = toolBox.column(align=True)
@@ -716,13 +716,13 @@ class ACA_PT_pillers(bpy.types.Panel):
                 # 按钮:减柱
                 col = toolBar.column(align=True)
                 col.operator(
-                    "aca.del_piller",icon='X',
+                    "aca.del_pillar",icon='X',
                     depress=True,text='减柱')  
-                if objData.aca_type != con.ACA_TYPE_PILLER:
+                if objData.aca_type != con.ACA_TYPE_PILLAR:
                     col.enabled=False
                 
                 # 按钮:垂花柱
-                if con.PILLER_STYLE_LIFT in objName:
+                if con.PILLAR_STYLE_LIFT in objName:
                     checkbox_icon = 'CHECKBOX_HLT'
                     depress = True
                 else:
@@ -730,7 +730,7 @@ class ACA_PT_pillers(bpy.types.Panel):
                     depress = False
                 col = toolBar.column(align=True)
                 col.operator(
-                    "aca.set_piller",
+                    "aca.set_pillar",
                     icon=checkbox_icon,
                     depress=depress,
                     text='垂花柱')  
@@ -873,7 +873,7 @@ class ACA_PT_wall(bpy.types.Panel):
             
             # 工具可用性判断
             # 至少应选择两根柱子
-            if oData.aca_type != con.ACA_TYPE_PILLER \
+            if oData.aca_type != con.ACA_TYPE_PILLAR \
                 or len(context.selected_objects)<2:
                     buttonDoor.enabled=False
                     buttonWall.enabled=False

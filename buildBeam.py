@@ -34,7 +34,7 @@ def __addBeamRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 250108 屋顶层原点改为柱头，椽望层相应抬高到斗栱高度
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    zLoc = bData.platform_height + bData.piller_height
+    zLoc = bData.platform_height + bData.pillar_height
     # 如果有斗栱，抬高斗栱高度
     if bData.use_dg:
         zLoc += bData.dg_height
@@ -153,7 +153,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
+    pd = con.PILLAR_D_EAVE * dk
     # 房屋总进深
     roomDepth = bData.y_total
     # 步架数量
@@ -921,7 +921,7 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
+    pd = con.PILLAR_D_EAVE * dk
     beamRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_BEAM_ROOT)
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
@@ -1107,7 +1107,7 @@ def __addSafeBeam(buildingObj,purlin_pos):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
+    pd = con.PILLAR_D_EAVE * dk
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
     beamRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_BEAM_ROOT)
@@ -1203,7 +1203,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
+    pd = con.PILLAR_D_EAVE * dk
     net_x,net_y = buildFloor.getFloorDate(buildingObj)
     beamRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_BEAM_ROOT)
@@ -1349,11 +1349,11 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     and not bData.use_dg):
                     # 取廊间进深
                     BaotouliangLength = (abs(net_y[1]-net_y[0])
-                                        - bData.piller_diameter/4)
+                                        - bData.pillar_diameter/4)
                 # 盝顶仅做抱头梁
                 if roofStyle == con.ROOF_LUDING:
                     BaotouliangLength = (bData.luding_rafterspan
-                                        - bData.piller_diameter/4)
+                                        - bData.pillar_diameter/4)
                 if BaotouliangLength != 0:
                     # 剪切到金柱位置
                     # 20250109 添加坐标全局转换
@@ -1457,8 +1457,8 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     purlin_pos[n].z + shuzhu_height/2 + beamShoulderHeight
                 ))
                 shuzhu_dimensions = Vector((
-                    con.PILLER_CHILD*dk,
-                    con.PILLER_CHILD*dk,
+                    con.PILLAR_CHILD*dk,
+                    con.PILLAR_CHILD*dk,
                     shuzhu_height
                 ))                
                 shuzhuCopyObj = utils.addCube(
@@ -1664,12 +1664,12 @@ def __drawJiaobei(shuzhuObj:bpy.types.Object):
     
     shuzhu_height = shuzhuObj.dimensions.z
     # 仅柱高大于柱径才需要角背，否则直接返回
-    if shuzhu_height <= con.PILLER_CHILD*dk: 
+    if shuzhu_height <= con.PILLAR_CHILD*dk: 
         return None
     
     # 计算尺寸
     # 角背高度可以取1/2，也可以取1/3
-    if shuzhu_height/(con.PILLER_CHILD*dk) >2:
+    if shuzhu_height/(con.PILLAR_CHILD*dk) >2:
         height = shuzhu_height/3
     else:
         height = shuzhu_height/2

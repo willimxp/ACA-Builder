@@ -27,7 +27,7 @@ def __addDougongRoot(buildingObj:bpy.types.Object):
     if dgrootObj == None:       
         # 计算位置
         bData : acaData = buildingObj.ACA_data
-        zLoc = bData.platform_height + bData.piller_height 
+        zLoc = bData.platform_height + bData.pillar_height 
         # 创建根对象（empty）
         dgrootObj = utils.addEmpty(
             name=con.COLL_NAME_DOUGONG,
@@ -59,7 +59,7 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
         bData.combo_type == con.COMBO_DOUBLE_EAVE):
         extendLength = 0
     else:
-        extendLength = bData.piller_diameter*2
+        extendLength = bData.pillar_diameter*2
     # 檐面平板枋
     loc = (0,net_y[0],con.PINGBANFANG_H*dk/2)
     dimensions =(
@@ -366,7 +366,7 @@ def __buildDGFangbyRoom(
     return
 
 # 放置柱头斗栱
-def __buildPillerDG(name = '柱头斗栱',
+def __buildPillarDG(name = '柱头斗栱',
                     location = (0,0,0),
                     scale = (1,1,1),
                     rotation = (0,0,0),
@@ -378,15 +378,15 @@ def __buildPillerDG(name = '柱头斗栱',
     aData:tmpData = bpy.context.scene.ACA_temp
 
     # 判断是否做平坐斗栱
-    dgSource = aData.dg_piller_source
+    dgSource = aData.dg_pillar_source
     if parent != None:
         buildingObj,bData,oData = utils.getRoot(parent)
         if buildingObj is not None:
             if bData.roof_style == con.ROOF_BALCONY:
-                dgSource = aData.dg_balcony_piller_source
+                dgSource = aData.dg_balcony_pillar_source
     
     # 复制对象
-    dgPillerCopy:bpy.types.Object = utils.copySimplyObject(
+    dgPillarCopy:bpy.types.Object = utils.copySimplyObject(
         sourceObj = dgSource,
         name = name,
         location=location,
@@ -399,21 +399,21 @@ def __buildPillerDG(name = '柱头斗栱',
     # 调整前后檐桃尖梁长度
     extendLength = tailExtend/scale[1]  # 考虑到斗口不同的缩放，还原到缩放前
     gnMod:bpy.types.NodesModifier = \
-        dgPillerCopy.modifiers.get('dgPillerGN')
+        dgPillarCopy.modifiers.get('dgPillarGN')
     if gnMod != None:
         # 强制每个对象的node group为单一用户
         gnMod.node_group = gnMod.node_group.copy()
         utils.setGN_Input(gnMod,"Length",extendLength)
     # UV 矫正
-    mat.UvUnwrap(dgPillerCopy,type=mat.uvType.CUBE)
+    mat.UvUnwrap(dgPillarCopy,type=mat.uvType.CUBE)
     
     # 镜像
     utils.addModifierMirror(
-        object=dgPillerCopy,
+        object=dgPillarCopy,
         mirrorObj=parent,
         use_axis=mirror
     )
-    return dgPillerCopy
+    return dgPillarCopy
 
 # 排布斗栱
 # 包括转角斗栱、柱头斗栱、补间斗栱
@@ -473,7 +473,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
             mat.paint(dgCornerCopy,con.M_DOUGONG,override=True)
 
     # 柱头斗栱
-    if aData.dg_piller_source != None:
+    if aData.dg_pillar_source != None:
         # 前后坡的柱头斗栱
         if bData.roof_style in (
                 con.ROOF_WUDIAN,
@@ -496,12 +496,12 @@ def __buildDougong(dgrootObj:bpy.types.Object):
             if bData.use_hallway:
                 # 廊间进深-1/4柱径（搭接了1/4更好看）
                 taojianLength = (abs(net_y[1]-net_y[0]) 
-                                 - bData.piller_diameter/4)
+                                 - bData.pillar_diameter/4)
             # 否则桃尖梁做前后通檐
             else:
                 taojianLength = bData.y_total / 2
             
-            dgPillerCopy = __buildPillerDG(
+            dgPillarCopy = __buildPillarDG(
                 location=(net_x[n],net_y[0],dgZ),
                 scale=bData.dg_scale,
                 rotation=(0,0,0),
@@ -510,7 +510,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 tailExtend=taojianLength
             )
             # 设置斗栱配色
-            mat.paint(dgPillerCopy,con.M_DOUGONG,override=True)
+            mat.paint(dgPillarCopy,con.M_DOUGONG,override=True)
 
             # 251125 硬山角柱上的柱头斗栱做裁剪，以免超出山墙
             # 由原来的bisect，改为采用boolean来做裁剪，确保水密
@@ -535,7 +535,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                         utils.hideObjFace(boolCube)
                         utils.hideObj(boolCube)
                     utils.addModifierBoolean(
-                        object=dgPillerCopy,
+                        object=dgPillarCopy,
                         boolObj= boolCube,
                         operation='INTERSECT'
                     )
@@ -550,9 +550,9 @@ def __buildDougong(dgrootObj:bpy.types.Object):
             for n in range(len(net_y)-2) : 
                 # 廊间进深-1/4柱径（搭接了1/4更好看）
                 taojianLength = (abs(net_x[1]-net_x[0]) 
-                                 - bData.piller_diameter/4)
+                                 - bData.pillar_diameter/4)
 
-                dgPillerCopy = __buildPillerDG(
+                dgPillarCopy = __buildPillarDG(
                     location=(net_x[-1],net_y[n+1],dgZ),
                     scale=bData.dg_scale,
                     rotation=(0,0,math.radians(90)),
@@ -561,7 +561,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                     tailExtend=taojianLength
                 )
                 # 设置斗栱配色
-                mat.paint(dgPillerCopy,con.M_DOUGONG,override=True)
+                mat.paint(dgPillarCopy,con.M_DOUGONG,override=True)
     
     # 补间斗栱/平身科
     if aData.dg_fillgap_source != '' :
@@ -708,9 +708,9 @@ def buildDougong(buildingObj:bpy.types.Object):
 
     # 3、排布斗栱间的枋子
     # 判断是否做平坐斗栱
-    dgSource = aData.dg_piller_source
+    dgSource = aData.dg_pillar_source
     if bData.roof_style == con.ROOF_BALCONY:
-        dgSource = aData.dg_balcony_piller_source
+        dgSource = aData.dg_balcony_pillar_source
 
     # 循环处理各个连接件
     for fangObj in dgSource.children:

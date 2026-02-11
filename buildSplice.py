@@ -260,7 +260,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
     eave_extend += 20*dk
 
     # 2、建筑高度
-    buildingH = bData.platform_height + bData.piller_height
+    buildingH = bData.platform_height + bData.pillar_height
     if bData.use_dg:
         buildingH += bData.dg_height * bData.dg_scale[0]
     # 屋顶举高，简单的按进深1:1计算
@@ -309,7 +309,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
             # 跳过台基、柱网、装修
             collName = obj.users_collection[0].name
             if con.COLL_NAME_BASE in collName : continue
-            if con.COLL_NAME_PILLER in collName : continue
+            if con.COLL_NAME_PILLAR in collName : continue
             if con.COLL_NAME_WALL in collName : continue
             utils.addModifierBoolean(
                 name=con.POSTPROC_SPLICE,
@@ -326,7 +326,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
             # 跳过台基、柱网、装修
             collName = obj.users_collection[0].name
             if con.COLL_NAME_BASE in collName : continue
-            if con.COLL_NAME_PILLER in collName : continue
+            if con.COLL_NAME_PILLAR in collName : continue
             if con.COLL_NAME_WALL in collName : continue
             utils.addModifierBoolean(
                 name=con.POSTPROC_SPLICE,
@@ -375,7 +375,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
         # 仅裁剪台基、柱网、装修
         collName = obj.users_collection[0].name
         if (con.COLL_NAME_BASE in collName 
-            or con.COLL_NAME_PILLER in collName
+            or con.COLL_NAME_PILLAR in collName
             or con.COLL_NAME_WALL in collName):
                 utils.addModifierBoolean(
                     name=con.POSTPROC_SPLICE,
@@ -394,7 +394,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
         # 仅裁剪台基、柱网、装修
         collName = obj.users_collection[0].name
         if (con.COLL_NAME_BASE in collName 
-            or con.COLL_NAME_PILLER in collName
+            or con.COLL_NAME_PILLAR in collName
             or con.COLL_NAME_WALL in collName):
             utils.addModifierBoolean(
                 name=con.POSTPROC_SPLICE,
@@ -490,7 +490,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         crossPoint = comboObj.matrix_world.inverted() @ crossPoint
 
     # 建筑高度
-    buildingH = bData.platform_height + bData.piller_height
+    buildingH = bData.platform_height + bData.pillar_height
     if bData.use_dg:
         buildingH += bData.dg_height * bData.dg_scale[0]
     # 屋顶举高，简单的按进深1:1计算
@@ -508,7 +508,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     eave_extend += 20*dk
 
     # 剪切体尺寸
-    boolWidth = bData.x_total + mData.piller_diameter
+    boolWidth = bData.x_total + mData.pillar_diameter
     boolDeepth = bData.y_total + eave_extend*2
     boolHeight = buildingH
 
@@ -539,7 +539,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         # 跳过台基、柱网、装修
         collName = obj.users_collection[0].name
         if con.COLL_NAME_BASE in collName : continue
-        if con.COLL_NAME_PILLER in collName : continue
+        if con.COLL_NAME_PILLAR in collName : continue
         if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
             name=con.POSTPROC_SPLICE,
@@ -581,7 +581,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         # 跳过台基、柱网、装修
         collName = obj.users_collection[0].name
         if con.COLL_NAME_BASE in collName : continue
-        if con.COLL_NAME_PILLER in collName : continue
+        if con.COLL_NAME_PILLAR in collName : continue
         if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
             name=con.POSTPROC_SPLICE,
@@ -624,7 +624,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX  in obj.name : continue
         # 仅裁剪柱网层
         collName = obj.users_collection[0].name
-        if con.COLL_NAME_PILLER in collName:
+        if con.COLL_NAME_PILLAR in collName:
             utils.addModifierBoolean(
                 name=con.POSTPROC_SPLICE,
                 object=obj,
@@ -641,7 +641,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX  in obj.name : continue
         # 仅裁剪柱网层、装修层
         collName = obj.users_collection[0].name
-        if (con.COLL_NAME_PILLER in collName
+        if (con.COLL_NAME_PILLAR in collName
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in collName) :
             utils.addModifierBoolean(
@@ -865,7 +865,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         crossPoint = comboObj.matrix_world.inverted() @ crossPoint
 
     # 建筑高度
-    buildingH = bData.platform_height + bData.piller_height
+    buildingH = bData.platform_height + bData.pillar_height
     if bData.use_dg:
         buildingH += bData.dg_height * bData.dg_scale[0]
     # 屋顶举高，简单的按进深1:1计算
@@ -924,7 +924,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         # 跳过台基、柱网、装修
         collName = obj.users_collection[0].name
         if con.COLL_NAME_BASE in collName : continue
-        if con.COLL_NAME_PILLER in collName : continue
+        if con.COLL_NAME_PILLAR in collName : continue
         if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
             name=con.POSTPROC_SPLICE,
@@ -942,7 +942,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         # 跳过台基、柱网、装修
         collName = obj.users_collection[0].name
         if con.COLL_NAME_BASE in collName : continue
-        if con.COLL_NAME_PILLER in collName : continue
+        if con.COLL_NAME_PILLAR in collName : continue
         if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
             name=con.POSTPROC_SPLICE,
@@ -984,7 +984,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX  in obj.name : continue
         # 仅裁剪柱网
         collName = obj.users_collection[0].name
-        if con.COLL_NAME_PILLER in collName :
+        if con.COLL_NAME_PILLAR in collName :
             utils.addModifierBoolean(
                 name=con.POSTPROC_SPLICE,
                 object=obj,
@@ -1002,7 +1002,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX in obj.name : continue
         # 仅裁剪柱网和装修
         collName = obj.users_collection[0].name
-        if (con.COLL_NAME_PILLER in collName
+        if (con.COLL_NAME_PILLAR in collName
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in collName) :
             utils.addModifierBoolean(
@@ -1435,7 +1435,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
     topSpan += 40*dk 
     # 拉升的总高度
     extrude_Z = (topSpan * 2
-                 + bData.piller_height 
+                 + bData.pillar_height 
                  + bData.platform_height 
                  + bData.dg_height)
     
@@ -1578,7 +1578,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
         collName = obj.users_collection[0].name
         if con.COLL_NAME_WALL in collName : continue
         if con.COLL_NAME_BEAM in collName : continue
-        if con.COLL_NAME_PILLER in collName: continue
+        if con.COLL_NAME_PILLAR in collName: continue
         utils.addModifierBoolean(
             name=con.POSTPROC_SPLICE,
             object=obj,
@@ -1594,7 +1594,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX  in obj.name : continue
         # 跳过装修、柱网（保留抱厦的梁架）
         collName = obj.users_collection[0].name
-        if con.COLL_NAME_PILLER in collName: continue
+        if con.COLL_NAME_PILLAR in collName: continue
         if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
             name=con.POSTPROC_SPLICE,
@@ -1608,7 +1608,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
     # 沿着主建筑的檐面额枋进行裁剪，以同时保证不破坏主建筑的额枋，同时不产生柱础的重叠
     # 同时，保留了主建筑保修，裁剪了抱厦可能存在的雀替等
     # 建筑高度
-    buildingH = bData.platform_height + bData.piller_height
+    buildingH = bData.platform_height + bData.pillar_height
     if bData.use_dg:
         buildingH += bData.dg_height * bData.dg_scale[0]
     # 屋顶举高，简单的按进深1:1计算
@@ -1618,12 +1618,12 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
 
     if dir == 'Y':
         # 宽：包裹抱厦宽度，避免裁剪外部的柱础
-        boolWidth= bData.y_total + bData.piller_diameter
+        boolWidth= bData.y_total + bData.pillar_diameter
         # 长：包裹主建筑檐面额枋
         boolDeepth = mData.y_total + con.EFANG_LARGE_Y*dk + 0.01
     else:
         # 长：包裹抱厦进深+柱径，即明间柱的外皮
-        boolDeepth = bData.y_total + bData.piller_diameter
+        boolDeepth = bData.y_total + bData.pillar_diameter
         # 宽：包裹主建筑檐面额枋
         boolWidth = mData.x_total + con.EFANG_LARGE_Y*dk + 0.01
     boolHeight = buildingH
@@ -1638,7 +1638,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
     )
 
     # 2、无抱厦开间的柱网保护
-    extrudeExt = bData.piller_diameter
+    extrudeExt = bData.pillar_diameter
     bpy.ops.object.mode_set(mode='EDIT')
     bm = bmesh.new()
     bm = bmesh.from_edit_mesh(boolObj.data)
@@ -1746,7 +1746,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX in obj.name : continue
         # 仅裁剪柱网（不裁剪主建筑装修）
         collName = obj.users_collection[0].name
-        if con.COLL_NAME_PILLER in collName :
+        if con.COLL_NAME_PILLAR in collName :
             utils.addModifierBoolean(
                 name=con.POSTPROC_SPLICE,
                 object=obj,
@@ -1764,7 +1764,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX in obj.name : continue
         # 裁剪柱网和装修
         collName = obj.users_collection[0].name
-        if (con.COLL_NAME_PILLER in collName
+        if (con.COLL_NAME_PILLAR in collName
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in collName) :
             utils.addModifierBoolean(
@@ -1934,7 +1934,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
     topSpan += 40*dk 
     # 拉升的总高度
     extrude_Z = (topSpan * 2
-                 + bData.piller_height 
+                 + bData.pillar_height 
                  + bData.platform_height 
                  + bData.dg_height)
     
@@ -2082,7 +2082,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
         collName = obj.users_collection[0].name
         if con.COLL_NAME_WALL in collName : continue
         if con.COLL_NAME_BEAM in collName : continue
-        if con.COLL_NAME_PILLER in collName: continue
+        if con.COLL_NAME_PILLAR in collName: continue
         utils.addModifierBoolean(
             name=con.POSTPROC_SPLICE,
             object=obj,
@@ -2098,7 +2098,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX  in obj.name : continue
         # 跳过装修、柱网（保留抱厦的梁架）
         collName = obj.users_collection[0].name
-        if con.COLL_NAME_PILLER in collName: continue
+        if con.COLL_NAME_PILLAR in collName: continue
         if con.COLL_NAME_WALL in collName : continue
         utils.addModifierBoolean(
             name=con.POSTPROC_SPLICE,
@@ -2112,7 +2112,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
     # 沿着主建筑的檐面额枋进行裁剪，以同时保证不破坏主建筑的额枋，同时不产生柱础的重叠
     # 同时，保留了主建筑保修，裁剪了抱厦可能存在的雀替等
     # 建筑高度
-    buildingH = bData.platform_height + bData.piller_height
+    buildingH = bData.platform_height + bData.pillar_height
     if bData.use_dg:
         buildingH += bData.dg_height * bData.dg_scale[0]
     # 屋顶举高，简单的按进深1:1计算
@@ -2122,12 +2122,12 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
 
     if dir == 'Y':
         # 宽：包裹抱厦宽度，避免裁剪外部的柱础
-        boolWidth= bData.y_total + bData.piller_diameter
+        boolWidth= bData.y_total + bData.pillar_diameter
         # 长：包裹主建筑檐面额枋
         boolDeepth = mData.y_total + con.EFANG_LARGE_Y*dk + 0.01
     else:
         # 长：包裹抱厦进深+柱径，即明间柱的外皮
-        boolDeepth = bData.y_total + bData.piller_diameter
+        boolDeepth = bData.y_total + bData.pillar_diameter
         # 宽：包裹主建筑檐面额枋
         boolWidth = mData.x_total + con.EFANG_LARGE_Y*dk + 0.01
     boolHeight = buildingH
@@ -2142,7 +2142,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
     )
 
     # 2、无抱厦开间的柱网保护
-    extrudeExt = bData.piller_diameter
+    extrudeExt = bData.pillar_diameter
     bpy.ops.object.mode_set(mode='EDIT')
     bm = bmesh.new()
     bm = bmesh.from_edit_mesh(boolObj.data)
@@ -2250,7 +2250,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX in obj.name : continue
         # 仅裁剪柱网（不裁剪主建筑装修）
         collName = obj.users_collection[0].name
-        if con.COLL_NAME_PILLER in collName :
+        if con.COLL_NAME_PILLAR in collName :
             utils.addModifierBoolean(
                 name=con.POSTPROC_SPLICE,
                 object=obj,
@@ -2268,7 +2268,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX in obj.name : continue
         # 裁剪柱网和装修
         collName = obj.users_collection[0].name
-        if (con.COLL_NAME_PILLER in collName
+        if (con.COLL_NAME_PILLAR in collName
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in collName) :
             utils.addModifierBoolean(

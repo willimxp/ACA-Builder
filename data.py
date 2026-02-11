@@ -80,7 +80,7 @@ def update_dk(self, context:bpy.types.Context):
     return
 
 # 更新柱高
-def update_pillerHeight(self, context:bpy.types.Context):
+def update_pillarHeight(self, context:bpy.types.Context):
     # 判断自动重建开关
     isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
     if not isRebuild:
@@ -266,8 +266,8 @@ def update_platform(self, context:bpy.types.Context):
     # 台基最小值控制
     buildingObj,bData,oData = utils.getRoot(context.object)
     # 下出不小于柱径
-    if bData.platform_extend<bData.piller_diameter:
-        bData['platform_extend'] = bData.piller_diameter/2
+    if bData.platform_extend<bData.pillar_diameter:
+        bData['platform_extend'] = bData.pillar_diameter/2
     # 高度不小于方砖曼地
     if bData.platform_height<con.STEP_HEIGHT:
         bData['platform_height'] = con.STEP_HEIGHT
@@ -291,7 +291,7 @@ def update_platform(self, context:bpy.types.Context):
     return
 
 # 仅更新柱体样式，不触发其他重建
-def update_PillerStyle(self, context:bpy.types.Context):
+def update_PillarStyle(self, context:bpy.types.Context):
     # 判断自动重建开关
     isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
     if not isRebuild:
@@ -302,9 +302,9 @@ def update_PillerStyle(self, context:bpy.types.Context):
     if buildingObj != None:
         # 调用营造序列
         from . import buildFloor
-        # buildFloor.buildPillers(buildingObj)
+        # buildFloor.buildPillars(buildingObj)
         funproxy = partial(
-                buildFloor.buildPillers,
+                buildFloor.buildPillars,
                 buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
@@ -312,7 +312,7 @@ def update_PillerStyle(self, context:bpy.types.Context):
     return
 
 # 更新柱体尺寸，会自动触发墙体重建
-def update_piller(self, context:bpy.types.Context):
+def update_pillar(self, context:bpy.types.Context):
     # 判断自动重建开关
     isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
     if not isRebuild:
@@ -323,13 +323,13 @@ def update_piller(self, context:bpy.types.Context):
     if buildingObj != None:
         # 缩放柱形
         from . import buildFloor
-        # buildFloor.resizePiller(buildingObj)
+        # buildFloor.resizePillar(buildingObj)
         funproxy = partial(
-                buildFloor.resizePiller,
+                buildFloor.resizePillar,
                 buildingObj=buildingObj)
         utils.fastRun(funproxy)
     else:
-        utils.outputMsg("updated piller failed, context should be pillerObj")
+        utils.outputMsg("updated pillar failed, context should be pillarObj")
     return
 
 def update_wall(self, context:bpy.types.Context):
@@ -445,7 +445,7 @@ def update_dougong(self, context:bpy.types.Context):
     if buildingObj != None:
         # 250813 禁用以下处理
         # 1、在重檐建筑中，如果修改上檐斗栱，导致重檐抬升计算错误
-        # 2、因为这里抢先用上檐柱头科替换掉了aData.dg_piller_source
+        # 2、因为这里抢先用上檐柱头科替换掉了aData.dg_pillar_source
         # 从而导致buildCombo.__getDoubleEaveLift时获取了错误的dg_extend
         # 3、同时，在buildDougong.__buildDougong中已经调用了updateDougongData，
         # 所以，这里直接禁用掉，目前看起来没有问题
@@ -554,11 +554,11 @@ def hide_platform(self, context:bpy.types.Context):
         self.is_showPlatform)
 
 # 显示/隐藏柱网层
-def hide_pillers(self, context:bpy.types.Context):
+def hide_pillars(self, context:bpy.types.Context):
     buildingObj = self.id_data
     utils.hideLayer(
-        buildingObj,con.COLL_NAME_PILLER,
-        self.is_showPillers)
+        buildingObj,con.COLL_NAME_PILLAR,
+        self.is_showPillars)
 
 # 显示/隐藏装修层
 def hide_walls(self, context:bpy.types.Context):
@@ -804,10 +804,10 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "是否显示台基",
             update=hide_platform
         ) # type: ignore
-    is_showPillers: bpy.props.BoolProperty(
+    is_showPillars: bpy.props.BoolProperty(
             default = True,
             name = "是否显示柱网",
-            update=hide_pillers
+            update=hide_pillars
         ) # type: ignore
     is_showWalls: bpy.props.BoolProperty(
             default = True,
@@ -938,23 +938,23 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore
     
     # 柱子属性
-    piller_net : bpy.props.StringProperty(
+    pillar_net : bpy.props.StringProperty(
             name = "保存的柱网列表"
         )# type: ignore
-    piller_height : bpy.props.FloatProperty(
+    pillar_height : bpy.props.FloatProperty(
             name = "檐柱高",
             default = 0.0,
             min = 0.01, 
             precision=3,
-            update = update_pillerHeight,
+            update = update_pillarHeight,
             description="有斗拱的取57-60斗口，无斗拱的取面阔的8/10",
         )# type: ignore
-    piller_diameter : bpy.props.FloatProperty(
+    pillar_diameter : bpy.props.FloatProperty(
             name = "檐柱径",
             default = 0.0,
             min = 0.01, 
             precision=3,
-            # update = update_piller
+            # update = update_pillar
             update = update_building,
             description="有斗拱的取6斗口，无斗拱的取1/10柱高",
         )# type: ignore
@@ -964,7 +964,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             update = update_building,
             description="同时使用大额枋、由额垫板、小额枋的三件套连接两根柱",
         )# type: ignore 
-    piller_insert: bpy.props.FloatProperty(
+    pillar_insert: bpy.props.FloatProperty(
             name = "插柱深度",
             default = 0.0,
             min = 0.01, 
@@ -1388,7 +1388,7 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "梁枋彩画.小额枋",
             type = bpy.types.Object,
         )# type: ignore 
-    mat_paint_pillerhead :bpy.props.PointerProperty(
+    mat_paint_pillarhead :bpy.props.PointerProperty(
             name = "柱头贴图",
             type = bpy.types.Object,
         )# type: ignore 
@@ -1474,15 +1474,15 @@ class ACA_data_template(bpy.types.PropertyGroup):
         )# type: ignore 
     
     # 柱对象
-    piller_source : bpy.props.PointerProperty(
+    pillar_source : bpy.props.PointerProperty(
             name = "柱样式",
             type = bpy.types.Object,
         )# type: ignore
-    piller_lift_source : bpy.props.PointerProperty(
+    pillar_lift_source : bpy.props.PointerProperty(
             name = "垂花柱样式",
             type = bpy.types.Object,
         )# type: ignore
-    pillerbase_source : bpy.props.PointerProperty(
+    pillarbase_source : bpy.props.PointerProperty(
             name = "柱础样式",
             type = bpy.types.Object,
         )# type: ignore
@@ -1495,7 +1495,7 @@ class ACA_data_template(bpy.types.PropertyGroup):
         )# type: ignore 
     
     # 斗栱对象
-    dg_piller_source:bpy.props.PointerProperty(
+    dg_pillar_source:bpy.props.PointerProperty(
             name = "柱头斗栱",
             type = bpy.types.Object,
         )# type: ignore 
@@ -1511,7 +1511,7 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "转角斗栱",
             type = bpy.types.Object,
         )# type: ignore 
-    dg_balcony_piller_source:bpy.props.PointerProperty(
+    dg_balcony_pillar_source:bpy.props.PointerProperty(
             name = "平坐柱头斗栱",
             type = bpy.types.Object,
         )# type: ignore 
@@ -1675,7 +1675,7 @@ class ACA_data_template(bpy.types.PropertyGroup):
             name = "门簪",
             type = bpy.types.Object,
         )# type: ignore 
-    railing_piller:bpy.props.PointerProperty(
+    railing_pillar:bpy.props.PointerProperty(
             name = "栏杆望柱",
             type = bpy.types.Object,
         )# type: ignore 

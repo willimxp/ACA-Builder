@@ -40,14 +40,14 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
 
     # 2.0、夯土，填充在台基内部，以免剖视图中空心很奇怪
     stoneWidth = (bData.platform_extend
-                - bData.piller_diameter)
+                - bData.pillar_diameter)
     width = (bData.x_total 
-        + bData.piller_diameter*2
+        + bData.pillar_diameter*2
         + stoneWidth*2
         - con.STEP_HEIGHT*2
         - 0.02)
     deepth = (bData.y_total 
-        + bData.piller_diameter*2
+        + bData.pillar_diameter*2
         + stoneWidth*2
         - con.STEP_HEIGHT*2
         - 0.02)
@@ -70,10 +70,10 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
 
     # 2.1、阶条石宽度
     # 阶条石宽度，从台基边缘做到柱顶石边缘
-    stoneWidth = bData.platform_extend-bData.piller_diameter
+    stoneWidth = bData.platform_extend-bData.pillar_diameter
     if stoneWidth < 0: stoneWidth=0
     # 250907 限制阶条石上限，为2.4柱径，14.4dk
-    stoneWidth_max = con.PLATFORM_EXTEND*con.PILLER_D_EAVE*dk
+    stoneWidth_max = con.PLATFORM_EXTEND*con.PILLAR_D_EAVE*dk
     if stoneWidth > stoneWidth_max:
         stoneWidth = stoneWidth_max
 
@@ -164,32 +164,32 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
 
         # 2.3、埋头角柱
         # 角柱高度：台基总高度 - 阶条石 - 土衬
-        cornerPillerH = (pHeight 
+        cornerPillarH = (pHeight 
                 - con.STEP_HEIGHT 
                 - con.GROUND_BORDER) 
-        conrnerPillerObj = utils.addCube(
+        conrnerPillarObj = utils.addCube(
             name='埋头角柱',
             location=(
                 pWidth/2-stoneWidth/2,
                 pDeepth/2-stoneWidth/2,
                 (pHeight
                 -con.STEP_HEIGHT
-                -cornerPillerH/2)
+                -cornerPillarH/2)
             ),
             dimension=(
                 stoneWidth,             # 与阶条石同宽
                 stoneWidth,             # 与阶条石同宽
-                cornerPillerH
+                cornerPillarH
             ),
             parent=baseRootObj
         )
         # 四面镜像
         utils.addModifierMirror(
-            object=conrnerPillerObj,
+            object=conrnerPillarObj,
             mirrorObj=baseRootObj,
             use_axis=(True,True,False)
         )
-        taimingList.append(conrnerPillerObj)
+        taimingList.append(conrnerPillarObj)
 
     # 陡板高度
     h = pHeight - con.STEP_HEIGHT - con.GROUND_BORDER
@@ -495,9 +495,9 @@ def __drawStep(
     bevel = con.BEVEL_HIGH
     # 阶条石宽度，取下出-半个柱顶石（柱顶石为2pd，这里直接减1pd）
     stoneWidth = bData.platform_extend \
-                    -bData.piller_diameter
+                    -bData.pillar_diameter
     # 250907 限制阶条石上限，为2.4柱径，14.4dk
-    stoneWidth_max = con.PLATFORM_EXTEND*con.PILLER_D_EAVE*dk
+    stoneWidth_max = con.PLATFORM_EXTEND*con.PILLAR_D_EAVE*dk
     if stoneWidth > stoneWidth_max:
         stoneWidth = stoneWidth_max
     
@@ -822,43 +822,43 @@ def __addPlatformExpand(
 
 # 添加踏跺
 def addStep(buildingObj:bpy.types.Object,
-            pillers:List[bpy.types.Object]):
+            pillars:List[bpy.types.Object]):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
 
     # 校验用户至少选择2根柱子
-    pillerNum = 0
-    for piller in pillers:
-        if 'aca_type' in piller.ACA_data:   # 可能选择了没有属性的对象
-            if piller.ACA_data['aca_type'] \
-                == con.ACA_TYPE_PILLER:
-                pillerNum += 1
-    if pillerNum < 2:
+    pillarNum = 0
+    for pillar in pillars:
+        if 'aca_type' in pillar.ACA_data:   # 可能选择了没有属性的对象
+            if pillar.ACA_data['aca_type'] \
+                == con.ACA_TYPE_PILLAR:
+                pillarNum += 1
+    if pillarNum < 2:
         utils.popMessageBox("请至少选择2根柱子")
         return
     
     # 构造枋网设置
     pFrom = None
     pTo= None
-    for piller in pillers:
+    for pillar in pillars:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
-        if 'aca_type' not in piller.ACA_data:
+        if 'aca_type' not in pillar.ACA_data:
             continue
         # 校验是否为柱子实体
-        if piller.ACA_data['aca_type'] \
-            != con.ACA_TYPE_PILLER:
+        if pillar.ACA_data['aca_type'] \
+            != con.ACA_TYPE_PILLAR:
             continue
 
         # 获取开间的左右两根柱子
         if pFrom == None: 
             # 找到起点柱子
-            pFrom = piller.ACA_data['pillerID'].split('#')[0]
+            pFrom = pillar.ACA_data['pillarID'].split('#')[0]
             continue 
         else:
             # 找到终点柱子
-            pTo = piller.ACA_data['pillerID'].split('#')[0]
+            pTo = pillar.ACA_data['pillarID'].split('#')[0]
         # 校验柱子是否相邻
-        valid = utils.validPillerNext(pFrom,pTo)
+        valid = utils.validPillarNext(pFrom,pTo)
         if not valid:
             utils.popMessageBox(
                 f"无法生成踏跺，{pFrom}，{pTo}不是相邻的柱子")
@@ -909,7 +909,7 @@ def addStep(buildingObj:bpy.types.Object,
         step.id = f"{pFrom}#{pTo}"
 
         # 交换柱子，为下一次循环做准备
-        pFrom = piller.ACA_data['pillerID']
+        pFrom = pillar.ACA_data['pillarID']
     
     # 241115 重新生成台基，以便刷新合并后的散水
     buildPlatform(buildingObj)
@@ -1021,7 +1021,7 @@ def resizePlatform(buildingObj:bpy.types.Object):
         wallRoot.location.z = bData.platform_height    
     # 柱头高度
     roofBaseZ = (bData.platform_height
-                    + bData.piller_height)
+                    + bData.pillar_height)
     # 斗栱层
     dgrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_DG_ROOT)

@@ -517,7 +517,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
         if con.COLL_NAME_BASE in layerName:
             pass
         # 2-柱网层
-        elif con.COLL_NAME_PILLER in layerName:
+        elif con.COLL_NAME_PILLAR in layerName:
             pass
         # 3-装修层
         # 因为装修没有做到柱头（额枋），所以实际比柱网层裁剪更低
@@ -572,7 +572,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
                 ))
                 boolPlan['mat'] = con.M_STONE
         # 2-柱网层
-        elif con.COLL_NAME_PILLER in layerName:
+        elif con.COLL_NAME_PILLAR in layerName:
             # 判断combo对象
             if isComboNext:
                 boolZ = 0
@@ -670,7 +670,7 @@ def __getSectionPlan(boolObj:bpy.types.Object,
                 ))
                 boolPlan['mat'] = con.M_STONE
         # 2-柱网层
-        elif con.COLL_NAME_PILLER in layerName:
+        elif con.COLL_NAME_PILLAR in layerName:
             # 判断combo对象
             if isComboNext:
                 boolZ = 0
@@ -1192,7 +1192,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
     eave_extend += 20*dk
 
     # 2、建筑高度
-    buildingH = bData.platform_height + bData.piller_height
+    buildingH = bData.platform_height + bData.pillar_height
     if bData.use_dg:
         buildingH += bData.dg_height * bData.dg_scale[0]
     # 屋顶举高，简单的按进深1:1计算
@@ -1294,7 +1294,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     if 'CANCELLED' in crossPoint: return {'CANCELLED'}
 
     # 建筑高度
-    buildingH = bData.platform_height + bData.piller_height
+    buildingH = bData.platform_height + bData.pillar_height
     if bData.use_dg:
         buildingH += bData.dg_height * bData.dg_scale[0]
     # 屋顶举高，简单的按进深1:1计算
@@ -1312,7 +1312,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     eave_extend += 20*dk
 
     # 剪切体尺寸
-    boolWidth = bData.x_total + mData.piller_diameter
+    boolWidth = bData.x_total + mData.pillar_diameter
     boolDeepth = bData.y_total + eave_extend*2
     boolHeight = buildingH
 
@@ -1340,7 +1340,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX  in layer.name : continue
         # 跳过台基、柱网、装修
         if con.COLL_NAME_BASE in layer.name : continue
-        if con.COLL_NAME_PILLER in layer.name : continue
+        if con.COLL_NAME_PILLAR in layer.name : continue
         if con.COLL_NAME_WALL in layer.name : continue
         utils.addModifierBoolean(
             object=layer,
@@ -1378,7 +1378,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX  in layer.name : continue
         # 跳过台基、柱网、装修
         if con.COLL_NAME_BASE in layer.name : continue
-        if con.COLL_NAME_PILLER in layer.name : continue
+        if con.COLL_NAME_PILLAR in layer.name : continue
         if con.COLL_NAME_WALL in layer.name : continue
         utils.addModifierBoolean(
             object=layer,
@@ -1412,7 +1412,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     for layer in toBuildingJoined.children:
         # 跳过bool对象、柱网
         if con.BOOL_SUFFIX  in layer.name : continue
-        if con.COLL_NAME_PILLER in layer.name :
+        if con.COLL_NAME_PILLAR in layer.name :
             utils.addModifierBoolean(
                 object=layer,
                 boolObj=boolObj,
@@ -1423,7 +1423,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     for layer in fromBuildingJoined.children:
         # 跳过bool对象、柱网
         if con.BOOL_SUFFIX  in layer.name : continue
-        if (con.COLL_NAME_PILLER in layer.name
+        if (con.COLL_NAME_PILLAR in layer.name
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in layer.name) :
             utils.addModifierBoolean(
@@ -1611,7 +1611,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     if 'CANCELLED' in crossPoint: return {'CANCELLED'}
 
     # 建筑高度
-    buildingH = bData.platform_height + bData.piller_height
+    buildingH = bData.platform_height + bData.pillar_height
     if bData.use_dg:
         buildingH += bData.dg_height * bData.dg_scale[0]
     # 屋顶举高，简单的按进深1:1计算
@@ -1667,7 +1667,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX  in layer.name : continue
         # 跳过台基、柱网、装修
         if con.COLL_NAME_BASE in layer.name : continue
-        if con.COLL_NAME_PILLER in layer.name : continue
+        if con.COLL_NAME_PILLAR in layer.name : continue
         if con.COLL_NAME_WALL in layer.name : continue
         utils.addModifierBoolean(
             object=layer,
@@ -1681,7 +1681,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         if con.BOOL_SUFFIX  in layer.name : continue
         # 跳过台基、柱网、装修
         if con.COLL_NAME_BASE in layer.name : continue
-        if con.COLL_NAME_PILLER in layer.name : continue
+        if con.COLL_NAME_PILLAR in layer.name : continue
         if con.COLL_NAME_WALL in layer.name : continue
         utils.addModifierBoolean(
             object=layer,
@@ -1715,7 +1715,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     for layer in toBuildingJoined.children:
         # 跳过bool对象、柱网
         if con.BOOL_SUFFIX  in layer.name : continue
-        if con.COLL_NAME_PILLER in layer.name :
+        if con.COLL_NAME_PILLAR in layer.name :
             utils.addModifierBoolean(
                 object=layer,
                 boolObj=boolObj,
@@ -1726,7 +1726,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     for layer in fromBuildingJoined.children:
         # 跳过bool对象、柱网
         if con.BOOL_SUFFIX  in layer.name : continue
-        if (con.COLL_NAME_PILLER in layer.name
+        if (con.COLL_NAME_PILLAR in layer.name
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in layer.name) :
             utils.addModifierBoolean(
@@ -1742,7 +1742,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     boolWidth= (bData.x_total 
                 + bData.platform_extend *2
                 + con.GROUND_BORDER *2
-                #+ bData.piller_diameter*2
+                #+ bData.pillar_diameter*2
                 )
     boolDeepth = (bData.y_total
                   + bData.platform_extend
@@ -2021,7 +2021,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     topSpan = 40*dk # 向上预留的空间，考虑屋脊、脊兽等
     bottomSpan = 20*dk # 向下预留的空间，考虑勾滴等
     extrude_Z = bData.y_total/2 + topSpan + bottomSpan
-    extrude_Z += bData.piller_height + bData.platform_height
+    extrude_Z += bData.pillar_height + bData.platform_height
     if bData.use_dg:
         extrude_Z += bData.dg_height
     # 拉伸出檐
@@ -2184,7 +2184,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         # 跳过装修、梁架、柱网
         if con.COLL_NAME_WALL in layer.name : continue
         if con.COLL_NAME_BEAM in layer.name : continue
-        if con.COLL_NAME_PILLER in layer.name: continue
+        if con.COLL_NAME_PILLAR in layer.name: continue
         utils.addModifierBoolean(
             object=layer,
             boolObj=boolObj,
@@ -2195,7 +2195,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     for layer in fromBuildingJoined.children:
         # 跳过bool对象、柱网
         if con.BOOL_SUFFIX  in layer.name : continue
-        if con.COLL_NAME_PILLER in layer.name: continue
+        if con.COLL_NAME_PILLAR in layer.name: continue
         if con.COLL_NAME_WALL in layer.name : continue
         utils.addModifierBoolean(
             object=layer,
@@ -2208,7 +2208,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     # 沿着主建筑的檐面额枋进行裁剪，以同时保证不破坏主建筑的额枋，同时不产生柱础的重叠
     # 同时，保留了主建筑保修，裁剪了抱厦可能存在的雀替等
     # 建筑高度
-    buildingH = bData.platform_height + bData.piller_height
+    buildingH = bData.platform_height + bData.pillar_height
     if bData.use_dg:
         buildingH += bData.dg_height * bData.dg_scale[0]
     # 屋顶举高，简单的按进深1:1计算
@@ -2218,12 +2218,12 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
 
     if dir == 'Y':
         # 宽：包裹抱厦宽度，避免裁剪外部的柱础
-        boolWidth= bData.y_total + bData.piller_diameter
+        boolWidth= bData.y_total + bData.pillar_diameter
         # 长：包裹主建筑檐面额枋
         boolDeepth = mData.y_total + con.EFANG_LARGE_Y*dk + 0.01
     else:
         # 长：包裹抱厦进深+柱径，即明间柱的外皮
-        boolDeepth = bData.y_total + bData.piller_diameter
+        boolDeepth = bData.y_total + bData.pillar_diameter
         # 宽：包裹主建筑檐面额枋
         boolWidth = mData.x_total + con.EFANG_LARGE_Y*dk + 0.01
     boolHeight = buildingH
@@ -2236,7 +2236,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     )
 
     # 2、无抱厦开间的柱网保护
-    extrudeExt = bData.piller_diameter
+    extrudeExt = bData.pillar_diameter
     bpy.ops.object.mode_set(mode='EDIT')
     bm = bmesh.new()
     bm = bmesh.from_edit_mesh(boolObj.data)
@@ -2340,7 +2340,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     for layer in toBuildingJoined.children:
         # 跳过bool对象
         if con.BOOL_SUFFIX  in layer.name : continue
-        if con.COLL_NAME_PILLER in layer.name :
+        if con.COLL_NAME_PILLAR in layer.name :
             utils.addModifierBoolean(
                 object=layer,
                 boolObj=boolObj,
@@ -2351,7 +2351,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     for layer in fromBuildingJoined.children:
         # 跳过bool对象
         if con.BOOL_SUFFIX in layer.name : continue
-        if (con.COLL_NAME_PILLER in layer.name
+        if (con.COLL_NAME_PILLAR in layer.name
             # 抱厦的装修也按这个范围裁剪，包括雀替等
             or con.COLL_NAME_WALL in layer.name) :
             utils.addModifierBoolean(
@@ -2399,7 +2399,7 @@ def __unionCrossL(fromBuilding:bpy.types.Object,
         return
     
     # 裁剪体高度
-    buildingH = (bData.platform_height+bData.piller_height)
+    buildingH = (bData.platform_height+bData.pillar_height)
     if bData.use_dg:
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2
@@ -2931,7 +2931,7 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
     # 6.1、裁剪位置
     eaveExt = 30*dk
     offset = eaveExt/2
-    buildingH = (bData.platform_height+bData.piller_height)
+    buildingH = (bData.platform_height+bData.pillar_height)
     if bData.use_dg:
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2
@@ -3028,7 +3028,7 @@ def __update_loggia_corner(baseLoggia:bpy.types.Object,
     LoggiaCornerJoined = baseLoggia
     bData:acaData = LoggiaCornerJoined.ACA_data
     dk = bData.DK
-    buildingH = (bData.platform_height+bData.piller_height)
+    buildingH = (bData.platform_height+bData.pillar_height)
     if bData.use_dg:
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2
@@ -3305,7 +3305,7 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
 
     # 7、裁剪 ------------------------------------
     dk = bData.DK
-    buildingH = (bData.platform_height+bData.piller_height)
+    buildingH = (bData.platform_height+bData.pillar_height)
     if bData.use_dg:
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2
@@ -3410,7 +3410,7 @@ def __cut_base_loggia(baseLoggia:bpy.types.Object,
     Loggia = __getJoinedOriginal(LoggiaJoined)
     bData:acaData = Loggia.ACA_data
     dk = bData.DK
-    buildingH = (bData.platform_height+bData.piller_height)
+    buildingH = (bData.platform_height+bData.pillar_height)
     if bData.use_dg:
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2

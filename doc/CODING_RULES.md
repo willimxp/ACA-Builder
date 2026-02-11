@@ -149,7 +149,7 @@ def __drawBWQ(fangObj, bwqX, rotZ):
 class ACA_Consts(object):
     # 系统类型常量
     ACA_TYPE_BUILDING = 'building'
-    ACA_TYPE_PILLER = 'piller'
+    ACA_TYPE_PILLAR = 'pillar'
     
     # 几何参数常量
     DEFAULT_DK = 0.08           # 默认斗口(m)
@@ -169,7 +169,7 @@ class ACA_Consts(object):
 ```python
 # 描述性命名
 buildingObj = None          # 建筑对象
-piller_height = 5.0         # 柱高
+pillar_height = 5.0         # 柱高
 roof_type = 'xieshan'       # 屋顶类型
 
 # 布尔变量
@@ -178,7 +178,7 @@ has_error = True            # 错误状态
 
 # 计数变量
 template_count = 0          # 模板数量
-piller_index = 0            # 柱索引
+pillar_index = 0            # 柱索引
 ```
 
 ---
@@ -233,7 +233,7 @@ class ACA_OT_add_building(bpy.types.Operator):
 ### 3.3 函数定义规范
 
 ```python
-def update_pillerHeight(self, context: bpy.types.Context):
+def update_pillarHeight(self, context: bpy.types.Context):
     """
     更新柱高参数
     
@@ -478,7 +478,7 @@ def update_dk(self, context: bpy.types.Context):
         # 重建建筑
         update_building(self, context)
 
-def update_pillerHeight(self, context: bpy.types.Context):
+def update_pillarHeight(self, context: bpy.types.Context):
     """
     柱高参数更新回调函数
     """
@@ -1107,7 +1107,7 @@ class ACA_PT_props(bpy.types.Panel):
         col_left.prop(bData, "building_width", text="面阔")
         col_left.prop(bData, "building_depth", text="进深")
         col_right.prop(bData, "floor_count", text="层数")
-        col_right.prop(bData, "piller_height", text="柱高")
+        col_right.prop(bData, "pillar_height", text="柱高")
         
         # 屋顶参数
         box = layout.box()

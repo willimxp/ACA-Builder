@@ -76,11 +76,11 @@ def getBuildingType(templateName):
 
 # 解析XML，获取斗栱样式列表
 # 配置如下
-# <dg_piller_source type="List">
+# <dg_pillar_source type="List">
 #     <item type='Object' style='斗口单昂'>斗口单昂.柱头科</item>
 #     <item type='Object' style='斗口重昂'>斗口重昂.柱头科</item>
 #     <item type='Object' style='单翘重昂'>单翘重昂.柱头科</item>
-# </dg_piller_source>
+# </dg_pillar_source>
 def getDougongList():
     dougong_list = []
 
@@ -90,13 +90,13 @@ def getDougongList():
     # 根节点<assets>
     root = tree.getroot()
     # 查找“柱头科”配置
-    dgPillerNode = root.find('dg_piller_source')
-    if dgPillerNode != None:
+    dgPillarNode = root.find('dg_pillar_source')
+    if dgPillarNode != None:
         # 判断type属性
-        type = dgPillerNode.attrib['type']
+        type = dgPillarNode.attrib['type']
         if type == 'List':
             # 查找“item”子节点
-            items = dgPillerNode.findall('item')
+            items = dgPillarNode.findall('item')
             for n,item in enumerate(items):
                 dgStyle = item.attrib['style']
                 dougong_list.append(
@@ -135,7 +135,7 @@ def updateDougongData(buildingObj:bpy.types.Object,
 
         # 计算位置
         bData : acaData = buildingObj.ACA_data
-        zLoc = bData.platform_height + bData.piller_height 
+        zLoc = bData.platform_height + bData.pillar_height 
         # 创建根对象（empty）
         dgrootObj = utils.addEmpty(
             name=con.COLL_NAME_DOUGONG,
@@ -156,7 +156,7 @@ def updateDougongData(buildingObj:bpy.types.Object,
     # 1.2、更新aData中的斗栱样式
     if reloadAssets:
         __updateAssetStyle(
-            buildingObj,'dg_piller_source',
+            buildingObj,'dg_pillar_source',
             parent=dgrootObj)
         __updateAssetStyle(
             buildingObj,'dg_fillgap_source',
@@ -168,7 +168,7 @@ def updateDougongData(buildingObj:bpy.types.Object,
             buildingObj,'dg_corner_source',
             parent=dgrootObj)
         __updateAssetStyle(
-            buildingObj,'dg_balcony_piller_source',
+            buildingObj,'dg_balcony_pillar_source',
             parent=dgrootObj)
         __updateAssetStyle(
             buildingObj,'dg_balcony_corner_source',
@@ -179,11 +179,11 @@ def updateDougongData(buildingObj:bpy.types.Object,
         __updateAssetStyle(
             buildingObj,'dg_balcony_fillgap_alt_source',
             parent=dgrootObj)
-        if (aData.dg_piller_source == None
+        if (aData.dg_pillar_source == None
                 or aData.dg_fillgap_source == None
                 or aData.dg_fillgap_alt_source == None
                 or aData.dg_corner_source == None
-                # or aData.dg_balcony_piller_source == None
+                # or aData.dg_balcony_pillar_source == None
                 ):
             raise Exception("斗栱配置不完整，请检查")
     
@@ -197,7 +197,7 @@ def updateDougongData(buildingObj:bpy.types.Object,
     # 2.2、dg_height,dg_extend
     # 仅以柱头斗栱为依据，
     # 在blender中应该提前给柱头斗栱定义好dgHeight和dgExtend属性
-    dgObj = aData.dg_piller_source
+    dgObj = aData.dg_pillar_source
     # 防止无法载入斗栱时的崩溃
     if dgObj == None:
         utils.outputMsg('无法读取斗栱挑高和出跳数据')
@@ -218,8 +218,8 @@ def updateDougongData(buildingObj:bpy.types.Object,
 
     # 250902 如果屋顶为平坐，且有平坐斗栱，覆盖dgHeight
     if (bData.roof_style == con.ROOF_BALCONY and 
-        aData.dg_balcony_piller_source != None):
-        dgObj = aData.dg_balcony_piller_source
+        aData.dg_balcony_pillar_source != None):
+        dgObj = aData.dg_balcony_pillar_source
         if 'dgHeight' in dgObj:
             bData['dg_height'] = dgObj['dgHeight']*dgScale
 
@@ -262,7 +262,7 @@ def __updateAssetStyle(buildingObj:bpy.types.Object,
                         # 250104 为了解决以下报错，做的安全性验证
                         # 似乎是4.2中做了一个Breaking changes：Statically Typed IDProperties
                         # https://developer.blender.org/docs/release_notes/4.2/python_api/#statically-typed-idproperties
-                        # TypeError: Cannot assign a 'Object' value to the existing 'dg_piller_source' Group IDProperty
+                        # TypeError: Cannot assign a 'Object' value to the existing 'dg_pillar_source' Group IDProperty
                         if assetName in aData:  
                             # 250907 删除老资产对象
                             utils.deleteHierarchy(aData[assetName],del_parent=True)
@@ -340,12 +340,12 @@ def __loadDefaultData(buildingObj:bpy.types.Object):
     if bData.DK == 0.0:
         bData['DK'] = con.DEFAULT_DK
     DK = bData.DK
-    if bData.piller_diameter == 0.0:
-        bData['piller_diameter'] = con.PILLER_D_EAVE*DK    
-    PD = bData.piller_diameter
+    if bData.pillar_diameter == 0.0:
+        bData['pillar_diameter'] = con.PILLAR_D_EAVE*DK    
+    PD = bData.pillar_diameter
 
     # 柱高
-    bData['piller_height'] = con.PILLER_H_EAVE*DK
+    bData['pillar_height'] = con.PILLAR_H_EAVE*DK
     # 默认台基高度
     bData['platform_height'] = con.PLATFORM_HEIGHT*PD
     # 默认台基下出      
@@ -449,9 +449,9 @@ def __loadTemplateSingle(
     if dk != None: 
         bData['DK'] = round(float(dk.text),3)
     # 柱径
-    pd = template.find('piller_diameter')
+    pd = template.find('pillar_diameter')
     if pd != None:
-        bData['piller_diameter'] = round(float(pd.text),3)
+        bData['pillar_diameter'] = round(float(pd.text),3)
     # 刷新bData默认值
     bData = __loadDefaultData(buildingObj)
 

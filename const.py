@@ -12,7 +12,7 @@ class ACA_Consts(object):
     COLL_NAME_ROOT = 'ACA筑韵古建'
     COLL_NAME_ROOT_JOINED = 'ACA古建.合并'
     COLL_NAME_BASE = '1-台基层'
-    COLL_NAME_PILLER = '2-柱网层'
+    COLL_NAME_PILLAR = '2-柱网层'
     COLL_NAME_WALL = '3-装修层'
     COLL_NAME_DOUGONG = '4-斗栱层'
     COLL_NAME_BEAM = '5-梁架层'
@@ -30,7 +30,7 @@ class ACA_Consts(object):
     ACA_TYPE_PLATFORM = 'platform'                                  # ACA类型：台基
     ACA_TYPE_STEP = 'step'                                          # ACA类型：踏跺
     ACA_TYPE_FLOOR_ROOT = 'floor'                                   # ACA类型：柱网
-    ACA_TYPE_PILLER = 'piller'                                      # ACA类型：柱子
+    ACA_TYPE_PILLAR = 'pillar'                                      # ACA类型：柱子
     ACA_TYPE_FANG = 'fang'                                          # ACA类型：枋
     ACA_TYPE_WALL_ROOT = 'wall_root'                                # ACA类型：装修布局，墙体的父节点
     ACA_TYPE_WALL = 'wall'                                          # ACA类型：墙体
@@ -74,7 +74,7 @@ class ACA_Consts(object):
     ACA_WALLTYPE_BENCH = 'bench'                                    # 隔断属性-坐凳
     ACA_WALLTYPE_QUETI = 'queti'                                    # 隔断属性-雀替
     ACA_TYPE_COMBO = 'combo'                                        # 组合样式
-    ACA_PILLER_HIDE = 'piller_hide'                                 # 隐藏柱网
+    ACA_PILLAR_HIDE = 'pillar_hide'                                 # 隐藏柱网
     JOIN_SUFFIX = '.joined'                                         # 建筑合并名称后缀
     BOOL_SUFFIX = '.bool'                                           # 建筑裁剪对象后缀
 
@@ -119,11 +119,11 @@ class ACA_Consts(object):
     HALLWAY_DEEPTH = 22 # 廊间面阔/进深(DK)
 
     # 柱子
-    PILLER_D_EAVE = 6       # 檐柱直径(DK)
-    PILLER_H_EAVE = 57      # 檐柱高(DK)
-    PILLER_D_JIN = 6.6      # 金柱直径(DK)
-    PILLER_CHILD = 5.2      # 蜀柱边长(DK)
-    PILLERBASE_WIDTH = 2    # 柱顶石边长(PD)
+    PILLAR_D_EAVE = 6       # 檐柱直径(DK)
+    PILLAR_H_EAVE = 57      # 檐柱高(DK)
+    PILLAR_D_JIN = 6.6      # 金柱直径(DK)
+    PILLAR_CHILD = 5.2      # 蜀柱边长(DK)
+    PILLARBASE_WIDTH = 2    # 柱顶石边长(PD)
 
     # 枋类
     EFANG_LARGE_H = 6       # 大额枋高(DK)
@@ -241,8 +241,8 @@ class ACA_Consts(object):
     BALCONY_EAVE_Y = 0.5                # 挂檐板厚度(DK)
     BALCONY_FANG_H = 5                  # 平坐枋的高度(DK)，资产中要保持一致
     RAILING_DEEPTH = 4                  # 栏杆深度(DK)
-    RAILING_PILLER_H = 16               # 望柱高(DK)
-    RAILING_PILLER_D = 1.8              # 望柱径(DK)
+    RAILING_PILLAR_H = 16               # 望柱高(DK)
+    RAILING_PILLAR_D = 1.8              # 望柱径(DK)
     RAILING_DIFU_Y = 2.5                # 地栿宽(DK)
     RAILING_DIFU_H = 1                  # 地栿高(DK)
     RAILING_FANG_Y = 1.1                # 中/下枋宽(DK)
@@ -271,13 +271,13 @@ class ACA_Consts(object):
     CURVE_RESOLUTION = 500              # 曲线的精细度，在细分翼角椽坐标时提高精确度
     CORNER_RAFTER_START_SPREAD = 2      # 翼角椽尾散开的宽度，单位斗口
     BOOLEAN_TYPE = 'FAST'               # boolean.solver类型：FAST/EXACT
-    DEFAULT_PILLER_HEIGHT = 0.8         # 默认柱高，取明间的0.8，马炳坚p4
+    DEFAULT_PILLAR_HEIGHT = 0.8         # 默认柱高，取明间的0.8，马炳坚p4
     SANSHUI_WIDTH = 20                  # 散水宽度(DK)
     SANSHUI_HEIGHT = 0.02               # 散水高度(m)
     TILE_CORNER_SPLIT = 1               # 硬山/悬山四角滴水间距(DK)
-    PILLER_HEAD_DEFAULT = 1             # 柱头贴图默认高度(素材库，贴图使用)
-    PILLER_HEIGHT_DEFAULT = 5           # 柱默认高度(素材库，贴图使用)
-    PILLER_STYLE_LIFT = 'lift'          # 垂花柱标识
+    PILLAR_HEAD_DEFAULT = 1             # 柱头贴图默认高度(素材库，贴图使用)
+    PILLAR_HEIGHT_DEFAULT = 5           # 柱默认高度(素材库，贴图使用)
+    PILLAR_STYLE_LIFT = 'lift'          # 垂花柱标识
 
     # 瓦作类
     # 屋瓦灰背层高度，用于计算铺瓦的高度
@@ -318,9 +318,9 @@ class ACA_Consts(object):
     M_FANG_ESMALL = '小额枋'
     M_BOARD_YOUE = '由额垫板'
     M_BOARD_WALLHEAD = '走马板'
-    M_PILLER_BASE = '柱顶石'
-    M_PILLER = '柱'
-    M_PILLER_HEAD = '柱头'
+    M_PILLAR_BASE = '柱顶石'
+    M_PILLAR = '柱'
+    M_PILLAR_HEAD = '柱头'
     M_WALL_BOTTOM = '墙-下碱'
     M_WALL = '墙-抹灰'
     M_WINDOW = '窗框'

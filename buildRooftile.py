@@ -43,7 +43,7 @@ def __setTileRoot(buildingObj:bpy.types.Object)->bpy.types.Object:
     # 250108 屋顶层原点改为柱头，椽望层相应抬高到斗栱高度
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    zLoc = bData.platform_height + bData.piller_height 
+    zLoc = bData.platform_height + bData.pillar_height 
     # 如果有斗栱，抬高斗栱高度
     if bData.use_dg:
         zLoc += bData.dg_height
@@ -728,7 +728,7 @@ def __drawTileBool(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
     roofBaseZ = (bData.platform_height 
-                 + bData.piller_height )
+                 + bData.pillar_height )
 
     # 任意添加一个对象，具体几何数据在bmesh中建立
     bpy.ops.mesh.primitive_cube_add(
@@ -943,7 +943,7 @@ def __drawTileBoolByGrid(
     topSpan = 40*dk # 向上预留的空间，考虑屋脊、脊兽等
     bottomSpan = 20*dk # 向下预留的空间，考虑勾滴等
     extrude_Z = bData.y_total/2 + topSpan + bottomSpan
-    extrude_Z += bData.piller_height + bData.platform_height
+    extrude_Z += bData.pillar_height + bData.platform_height
     if bData.use_dg:
         extrude_Z += bData.dg_height
     # 拉伸出檐
@@ -1329,7 +1329,7 @@ def __getTopRidgeLength(buildingObj: bpy.types.Object,
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = bData.piller_diameter
+    pd = bData.pillar_diameter
 
     # 硬山正脊，山墙向内半垄瓦
     if bData.roof_style in (
@@ -1507,8 +1507,8 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     # 偏移计算：
     offset = Vector((
             # X、Y偏移：半柱径
-            bData.piller_diameter/2,
-            bData.piller_diameter/2,
+            bData.pillar_diameter/2,
+            bData.pillar_diameter/2,
             # Z偏移：槫子上皮+椽径+望板高+灰泥层高
             (con.HENG_COMMON_D/2*dk     # 槫子上皮
                 + con.YUANCHUAN_D*dk    # 椽架厚度
@@ -1674,7 +1674,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
-    pd = bData.piller_diameter
+    pd = bData.pillar_diameter
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
@@ -1792,7 +1792,7 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = bData.piller_diameter
+    pd = bData.pillar_diameter
     tileRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )

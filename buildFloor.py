@@ -222,7 +222,7 @@ def __drawBWQ(fangObj:bpy.types.Object,
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
+    pd = con.PILLAR_D_EAVE * dk
     # 添加霸王拳，以大额枋为父对象，继承位置和旋转
     bawangquanObj = utils.copyObject(
         sourceObj=aData.bawangquan_source,
@@ -239,7 +239,7 @@ def __drawBWQ(fangObj:bpy.types.Object,
     )
     # 250613 根据斗口的缩放，调整霸王拳的位置
     bawangquanObj.location.x += \
-        (bData.piller_diameter - pd)/2*utils.getSign(bwqX)
+        (bData.pillar_diameter - pd)/2*utils.getSign(bwqX)
     utils.applyTransform(bawangquanObj,use_scale=True)
     # 霸王拳着色
     mat.paint(bawangquanObj,con.M_BAWANGQUAN,override=True)
@@ -371,7 +371,7 @@ def addQueti(wallproxy:bpy.types.Object):
     # 雀替的尺度参考马炳坚P183，长度为净面宽的1/4，高同大额枋或小额枋，厚为檐柱的3/10
     # 栱长1/2瓜子栱，高2斗口，厚同雀替
     # 雀替Z坐标从柱头向下额枋+由额垫板+小额枋
-    zoffset = bData.piller_height - con.EFANG_LARGE_H*dk
+    zoffset = bData.pillar_height - con.EFANG_LARGE_H*dk
     if bData.use_smallfang:
         zoffset -= (con.BOARD_YOUE_H*dk
                     +con.EFANG_SMALL_H*dk)
@@ -395,7 +395,7 @@ def addQueti(wallproxy:bpy.types.Object):
         singleUser=True
     )
     # 宽度适配到开间的净面宽
-    quetiObj.dimensions.x = wallLength-bData.piller_diameter
+    quetiObj.dimensions.x = wallLength-bData.pillar_diameter
     # 250613 根据斗口的缩放，调整雀替的尺度
     quetiObj.scale.y = dk / con.DEFAULT_DK
     quetiObj.scale.z = dk / con.DEFAULT_DK
@@ -435,19 +435,19 @@ def __buildCCFang(buildingObj:bpy.types.Object):
     if bData.use_double_eave:
         # 重檐主建筑(下檐)，柱网拼接，以便穿插枋连接上檐和下檐柱网
         if bData.combo_type == con.COMBO_MAIN:
-            pillerNet = __getComboPillerNet(buildingObj)
+            pillarNet = __getComboPillarNet(buildingObj)
         # 重檐的上檐，不做穿插枋，由金枋代替
         if bData.combo_type == con.COMBO_DOUBLE_EAVE:
             return {'CANCELLED'}
     else:
-        pillerNet = bData.piller_net
+        pillarNet = bData.pillar_net
     # 柱网列表
-    pillerList = pillerNet.rstrip(',').split(',')
+    pillarList = pillarNet.rstrip(',').split(',')
 
     # 循环所有的柱子
-    for pillerID in pillerList:
-        pillerPos = pillerID.split('#')[0]
-        px,py = pillerPos.split('/')
+    for pillarID in pillarList:
+        pillarPos = pillarID.split('#')[0]
+        px,py = pillarPos.split('/')
         px = int(px)
         py = int(py)
 
@@ -456,11 +456,11 @@ def __buildCCFang(buildingObj:bpy.types.Object):
         if (py in (0,bData.y_rooms)
              and px not in (0, bData.x_rooms) ):
             if net_y[py] > 0: # 北面
-                pillerNext = f"{px}/{py-1}" 
+                pillarNext = f"{px}/{py-1}" 
             else: # 南面
-                pillerNext = f"{px}/{py+1}" 
-            if pillerNext in pillerNet:
-                ccfangList.append(f"{pillerPos}#{pillerNext}") 
+                pillarNext = f"{px}/{py+1}" 
+            if pillarNext in pillarNet:
+                ccfangList.append(f"{pillarPos}#{pillarNext}") 
 
         # 如果4坡顶，两山做穿插枋
         # 对于2坡顶，两山廊间应该做金枋，而不是穿插枋
@@ -473,11 +473,11 @@ def __buildCCFang(buildingObj:bpy.types.Object):
             if (px in (0, bData.x_rooms) and 
                 py not in (0,bData.y_rooms)):
                 if net_x[px] > 0: # 东面
-                    pillerNext = f"{px-1}/{py}" 
+                    pillarNext = f"{px-1}/{py}" 
                 else: # 西面
-                    pillerNext = f"{px+1}/{py}" 
-                if pillerNext in pillerNet:
-                    ccfangList.append(f"{pillerPos}#{pillerNext}")
+                    pillarNext = f"{px+1}/{py}" 
+                if pillarNext in pillarNet:
+                    ccfangList.append(f"{pillarPos}#{pillarNext}")
 
 
     # 循环生成穿插枋
@@ -485,26 +485,26 @@ def __buildCCFang(buildingObj:bpy.types.Object):
     ccfangOffset = con.EFANG_LARGE_H*dk
     for ccfang in ccfangList:
         # 找到相对较矮的柱高
-        startPillerID,endPillerID = ccfang.split('#')
-        startPillerHeight = getPillerHeight(
-                    buildingObj,startPillerID)
-        endPillerHeight = getPillerHeight(
-                    buildingObj,endPillerID)
-        if startPillerHeight > endPillerHeight:
-            pillerHeight = endPillerHeight
+        startPillarID,endPillarID = ccfang.split('#')
+        startPillarHeight = getPillarHeight(
+                    buildingObj,startPillarID)
+        endPillarHeight = getPillarHeight(
+                    buildingObj,endPillarID)
+        if startPillarHeight > endPillarHeight:
+            pillarHeight = endPillarHeight
         else:
-            pillerHeight = startPillerHeight
+            pillarHeight = startPillarHeight
         # 起点檐柱
-        px1,py1 = startPillerID.split('/')
+        px1,py1 = startPillarID.split('/')
         pStart = Vector((
             net_x[int(px1)],net_y[int(py1)],
-            pillerHeight-ccfangOffset
+            pillarHeight-ccfangOffset
         ))
         # 终点金柱
-        px2,py2 = endPillerID.split('/')
+        px2,py2 = endPillarID.split('/')
         pEnd = Vector((
             net_x[int(px2)],net_y[int(py2)],
-            pillerHeight-ccfangOffset
+            pillarHeight-ccfangOffset
         ))
         # 做穿插枋proxy，定下尺寸、位置、大小
         ccFangProxy = utils.addCubeBy2Points(
@@ -533,7 +533,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
         # 强制每个对象的node group为单一用户
         gnMod.node_group = gnMod.node_group.copy()
         if gnMod != None:
-            pd = bData.piller_diameter/2
+            pd = bData.pillar_diameter/2
             # 出梢0.1m，并根据斗口缩放
             extend = 0.1 * bData.DK / con.DEFAULT_DK
             # 根据实际穿插枋的拉伸进行缩放
@@ -561,11 +561,11 @@ def __buildJinFang(buildingObj:bpy.types.Object):
     jinfangList = []
 
     # 生成金枋列表jinfangList
-    # 循环解析柱网piller_net，删除结尾的','，并用','分割
-    pillerList = bData.piller_net.rstrip(',').split(',')
-    for pillerID in pillerList:
-        pillerPos = pillerID.split('#')[0]
-        px,py = pillerPos.split('/')
+    # 循环解析柱网pillar_net，删除结尾的','，并用','分割
+    pillarList = bData.pillar_net.rstrip(',').split(',')
+    for pillarID in pillarList:
+        pillarPos = pillarID.split('#')[0]
+        px,py = pillarPos.split('/')
         px = int(px)
         py = int(py)
 
@@ -582,9 +582,9 @@ def __buildJinFang(buildingObj:bpy.types.Object):
         if (px not in pxRangeNot and 
             py not in (0,1,bData.y_rooms-1,bData.y_rooms)):  
             # 250802 是否存在相邻的柱子？
-            pillerNext = f"{px+1}/{py}"  
-            if pillerNext in bData.piller_net:
-                jinfangList.append(f"{pillerPos}#{pillerNext}")
+            pillarNext = f"{px+1}/{py}"  
+            if pillarNext in bData.pillar_net:
+                jinfangList.append(f"{pillarPos}#{pillarNext}")
         
         # 纵向金枋，无论内外金柱，都做纵向金枋
         # 四坡顶廊间不做纵向金枋，改作额枋
@@ -598,16 +598,16 @@ def __buildJinFang(buildingObj:bpy.types.Object):
         if (px not in pxRangeNot and 
             py not in (0,bData.y_rooms-1, bData.y_rooms)):
             # 250802 是否存在相邻的柱子？
-            pillerNext = f"{px}/{py+1}"   
-            if pillerNext in bData.piller_net:
-                jinfangList.append(f"{pillerPos}#{pillerNext}")
+            pillarNext = f"{px}/{py+1}"   
+            if pillarNext in bData.pillar_net:
+                jinfangList.append(f"{pillarPos}#{pillarNext}")
 
     # 重檐上檐代替穿插枋做的金枋
     if (bData.use_double_eave and 
         bData.combo_type == con.COMBO_DOUBLE_EAVE):
         # 循环所有的柱子
-        for pillerID in pillerList:
-            px,py = pillerID.split('/')
+        for pillarID in pillarList:
+            px,py = pillarID.split('/')
             px = int(px)
             py = int(py)
 
@@ -616,11 +616,11 @@ def __buildJinFang(buildingObj:bpy.types.Object):
             if (py in (0,bData.y_rooms)
                 and px not in (0, bData.x_rooms) ):
                 if net_y[py] > 0: # 北面
-                    pillerNext = f"{px}/{py-1}" 
+                    pillarNext = f"{px}/{py-1}" 
                 else: # 南面
-                    pillerNext = f"{px}/{py+1}" 
-                if pillerNext in bData.piller_net:
-                    jinfangList.append(f"{pillerPos}#{pillerNext}") 
+                    pillarNext = f"{px}/{py+1}" 
+                if pillarNext in bData.pillar_net:
+                    jinfangList.append(f"{pillarPos}#{pillarNext}") 
 
             # 如果4坡顶，两山做穿插枋
             # 对于2坡顶，两山廊间应该做金枋，而不是穿插枋
@@ -633,35 +633,35 @@ def __buildJinFang(buildingObj:bpy.types.Object):
                 if (px in (0, bData.x_rooms) and 
                     py not in (0,bData.y_rooms)):
                     if net_x[px] > 0: # 东面
-                        pillerNext = f"{px-1}/{py}" 
+                        pillarNext = f"{px-1}/{py}" 
                     else: # 西面
-                        pillerNext = f"{px+1}/{py}" 
-                    if pillerNext in bData.piller_net:
-                        jinfangList.append(f"{pillerPos}#{pillerNext}")
+                        pillarNext = f"{px+1}/{py}" 
+                    if pillarNext in bData.pillar_net:
+                        jinfangList.append(f"{pillarPos}#{pillarNext}")
 
     # 循环生成金枋（金枋在柱头）
     for jinfang in jinfangList:
-        startPillerID,endPillerID = jinfang.split('#')
+        startPillarID,endPillarID = jinfang.split('#')
         # 找到相对较矮的柱高
-        startPillerHeight = getPillerHeight(
-                    buildingObj,startPillerID)
-        endPillerHeight = getPillerHeight(
-                    buildingObj,endPillerID)
-        if startPillerHeight > endPillerHeight:
-            pillerHeight = endPillerHeight
+        startPillarHeight = getPillarHeight(
+                    buildingObj,startPillarID)
+        endPillarHeight = getPillarHeight(
+                    buildingObj,endPillarID)
+        if startPillarHeight > endPillarHeight:
+            pillarHeight = endPillarHeight
         else:
-            pillerHeight = startPillerHeight
+            pillarHeight = startPillarHeight
         # 起点檐柱
-        px1,py1 = startPillerID.split('/')
+        px1,py1 = startPillarID.split('/')
         pStart = Vector((
             net_x[int(px1)],net_y[int(py1)],
-            pillerHeight-con.HENGFANG_H*dk/2
+            pillarHeight-con.HENGFANG_H*dk/2
         ))
         # 终点金柱
-        px2,py2 = endPillerID.split('/')
+        px2,py2 = endPillarID.split('/')
         pEnd = Vector((
             net_x[int(px2)],net_y[int(py2)],
-            pillerHeight-con.HENGFANG_H*dk/2
+            pillarHeight-con.HENGFANG_H*dk/2
         ))
         # 做金枋，定下尺寸、位置、大小
         # 金枋做小一圈，以免和梁架生成的桁枋打架
@@ -693,10 +693,10 @@ def __buildFang(buildingObj:bpy.types.Object):
     # 自动生成fangstr
     fangNet = ''
     # 提取柱网列表
-    pillerList = bData.piller_net.rstrip(',').split(',')
-    for pillerID in pillerList:
-        pillerPos = pillerID.split('#')[0]
-        px,py = pillerPos.split('/')
+    pillarList = bData.pillar_net.rstrip(',').split(',')
+    for pillarID in pillarList:
+        pillarPos = pillarID.split('#')[0]
+        px,py = pillarPos.split('/')
         px = int(px)
         py = int(py)
 
@@ -719,11 +719,11 @@ def __buildFang(buildingObj:bpy.types.Object):
                     and px not in (bData.x_rooms,))
         if (waiyan_range or neiyan_range):
             # 250714是否存在相邻的柱子？
-            pillerNext = f"{px+1}/{py}"
-            if pillerNext in bData.piller_net:
+            pillarNext = f"{px+1}/{py}"
+            if pillarNext in bData.pillar_net:
                 # 构造fangID
-                sfang = f"{pillerPos}#{pillerNext},"
-                sfang_alt = f"{pillerNext}#{pillerPos},"
+                sfang = f"{pillarPos}#{pillarNext},"
+                sfang_alt = f"{pillarNext}#{pillarPos},"
                 # 判断该fangID是否已经在fangNet中
                 if (sfang not in fangNet 
                     and sfang_alt not in fangNet):
@@ -743,10 +743,10 @@ def __buildFang(buildingObj:bpy.types.Object):
         else:
             neiyan_range = False
         if (waiyan_range or neiyan_range):
-            pillerNext = f"{px}/{py+1}"
-            if pillerNext in bData.piller_net:
-                sfang = f"{pillerPos}#{pillerNext},"
-                sfang_alt = f"{pillerNext}#{pillerPos},"
+            pillarNext = f"{px}/{py+1}"
+            if pillarNext in bData.pillar_net:
+                sfang = f"{pillarPos}#{pillarNext},"
+                sfang_alt = f"{pillarNext}#{pillarPos},"
                 # 判断该fangStr是否已经在fangNet中
                 if (sfang not in fangNet 
                     and sfang_alt not in fangNet):
@@ -759,7 +759,7 @@ def __buildFang(buildingObj:bpy.types.Object):
     net_x,net_y = getFloorDate(buildingObj)
     buildingColl = buildingObj.users_collection[0]
     utils.setCollection(
-        con.COLL_NAME_PILLER,
+        con.COLL_NAME_PILLAR,
         parentColl=buildingColl)
 
     # 删除现有枋
@@ -794,19 +794,19 @@ def __buildFang(buildingObj:bpy.types.Object):
         pTo_y = int(pTo[1])
 
         # 获取实际柱高，取比较矮的柱高
-        pillerFromHeight = getPillerHeight(
+        pillarFromHeight = getPillarHeight(
             buildingObj,setting[0])
-        pillerToHeight = getPillerHeight(
+        pillarToHeight = getPillarHeight(
             buildingObj,setting[1])
-        if pillerFromHeight > pillerToHeight:
-            pillerHeight = pillerToHeight
+        if pillarFromHeight > pillarToHeight:
+            pillarHeight = pillarToHeight
         else:
-            pillerHeight = pillerFromHeight
+            pillarHeight = pillarFromHeight
 
         # 计算枋的坐标        
         fang_x = (net_x[pFrom_x]+net_x[pTo_x])/2
         fang_y = (net_y[pFrom_y]+net_y[pTo_y])/2
-        fang_z = pillerHeight - con.EFANG_LARGE_H*dk/2
+        fang_z = pillarHeight - con.EFANG_LARGE_H*dk/2
         # 为了防止柱头与大额枋之间穿模，同时也便于在俯视图中选择柱头
         # 将额枋轻微位移1mm
         fang_z -= 0.001
@@ -929,19 +929,19 @@ def __buildFang(buildingObj:bpy.types.Object):
 # 金柱如果不做斗拱、不做廊间举架，与檐柱通高
 # 如果做斗拱，则抬升斗拱高度-2*正心枋
 # 如果做廊间举架，则额外抬升檐步举高
-def getPillerHeight(buildingObj,pillerID):
+def getPillarHeight(buildingObj,pillarID):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    pillerIndex = pillerID.split('/')
-    x = int(pillerIndex[0])
-    y = int(pillerIndex[1])
+    pillarIndex = pillarID.split('/')
+    x = int(pillarIndex[0])
+    y = int(pillarIndex[1])
     # 举折系数
     from . import buildBeam
     lift_ratio = buildBeam.getLiftRatio(buildingObj)
 
     # 默认为用户输入的檐柱高
-    pillerHeight = bData.piller_height
+    pillarHeight = bData.pillar_height
 
     # 1、判断是否要做斗栱增高
     needLiftDG = False
@@ -968,30 +968,30 @@ def getPillerHeight(buildingObj,pillerID):
     
     # 如果有斗拱，先增高到挑檐桁底皮
     if needLiftDG and bData.use_dg:
-        pillerHeight += bData.dg_height
+        pillarHeight += bData.dg_height
         # 是否使用平板枋
         if bData.use_pingbanfang:
-            pillerHeight += con.PINGBANFANG_H*dk
+            pillarHeight += con.PINGBANFANG_H*dk
         # 斗栱与大梁的计算
         if bData.dg_withbeam:
             # 斗栱资产自带大梁，与资产库中的资产设计相匹配
             if bData.roof_style == con.ROOF_BALCONY:
                 # 平坐斗栱的大梁默认为5DK，
-                pillerHeight -= con.BALCONY_FANG_H*dk
+                pillarHeight -= con.BALCONY_FANG_H*dk
             else:
                 # 梁底统一做在挑檐桁下两根拽枋高度(4DK)
                 # 这里取了金桁垫板高度替代
-                pillerHeight -= con.BOARD_JINHENG_H*dk
+                pillarHeight -= con.BOARD_JINHENG_H*dk
         else:
             # 斗栱资产不带大梁
             # 从挑檐桁下皮，找到正心桁下皮
-            pillerHeight += bData.dg_extend*lift_ratio[0]
+            pillarHeight += bData.dg_extend*lift_ratio[0]
             # 向下一个檐桁垫板，即为梁底
-            pillerHeight -= con.BOARD_YANHENG_H*dk
+            pillarHeight -= con.BOARD_YANHENG_H*dk
 
 
     # 2、判断是否需要做廊步举架
-    needResizePiller = False
+    needResizePillar = False
     if bData.y_rooms>=3 and bData.use_hallway:
         # 如果2坡顶，则前后廊柱全部升高
         if bData.roof_style in (
@@ -1001,7 +1001,7 @@ def getPillerHeight(buildingObj,pillerID):
             con.ROOF_YINGSHAN_JUANPENG,
         ):
             if y not in (0,bData.y_rooms):
-                needResizePiller = True
+                needResizePillar = True
         # 如果4坡顶，则仅内圈廊柱升高（无论前后廊，还是周围廊）
         if bData.roof_style in (
             con.ROOF_LUDING,
@@ -1013,13 +1013,13 @@ def getPillerHeight(buildingObj,pillerID):
             # 前后檐
             if x not in (0,bData.x_rooms) \
                 and y not in (0,bData.y_rooms):
-                needResizePiller = True
+                needResizePillar = True
             # 两山
             if x not in (0,bData.x_rooms)  \
                 and y not in (0,bData.y_rooms):
-                needResizePiller = True
+                needResizePillar = True
 
-    if needResizePiller:
+    if needResizePillar:
         # 计算廊间进深
         net_x,net_y = getFloorDate(buildingObj)
         rafterSpan = abs(net_y[1]-net_y[0])
@@ -1027,15 +1027,15 @@ def getPillerHeight(buildingObj,pillerID):
         if bData.use_dg:
             rafterSpan += bData.dg_extend
         # 乘以举折系数
-        pillerHeight += rafterSpan*lift_ratio[0]  
+        pillarHeight += rafterSpan*lift_ratio[0]  
 
         # 250225 补偿檐桁垫板与金桁垫板的高度差
         # 无斗栱时，正心桁由檐垫板支撑，金桁由金桁垫板支撑，导致了该高度差
         if not bData.use_dg:
-            pillerHeight += (con.BOARD_YANHENG_H
+            pillarHeight += (con.BOARD_YANHENG_H
                     -con.BOARD_JINHENG_H)*dk
 
-    return pillerHeight
+    return pillarHeight
 
 # 根据柱网数组，排布柱子
 # 1. 第一次按照模板生成，柱网下没有柱，一切从0开始；
@@ -1043,17 +1043,17 @@ def getPillerHeight(buildingObj,pillerID):
 # 3. 修改柱样式时，也会重排柱子
 # 建筑根节点（内带设计参数集）
 # 不涉及墙体重建，很快
-def buildPillers(buildingObj:bpy.types.Object):
+def buildPillars(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
-    pd = bData.piller_diameter
+    pd = bData.pillar_diameter
     dk = bData.DK
 
     # 锁定操作目录
     buildingColl = buildingObj.users_collection[0]
     utils.setCollection(
-        con.COLL_NAME_PILLER,
+        con.COLL_NAME_PILLAR,
         parentColl=buildingColl)
 
     # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
@@ -1068,7 +1068,7 @@ def buildPillers(buildingObj:bpy.types.Object):
         floor_z = bData.platform_height
         # 创建新地盘对象（empty）
         floorRootObj = utils.addEmpty(
-            name=con.COLL_NAME_PILLER,
+            name=con.COLL_NAME_PILLAR,
             parent=buildingObj,
             location = (0,0,floor_z)
         )
@@ -1080,24 +1080,24 @@ def buildPillers(buildingObj:bpy.types.Object):
 
     # 2、柱子素材准备
     # 生成柱顶石模板，因为是简单立方体，就不做模板导入了
-    pillerBase_h = 0.3
-    pillerBase_popup = 0.02
+    pillarBase_h = 0.3
+    pillarBase_popup = 0.02
     # 柱顶石边长（为了防止与方砖缦地交叠，做了1/10000的放大）
-    pillerBase_size = con.PILLERBASE_WIDTH*pd * 1.0001
-    pillerBottom_basemesh = utils.addCube(
+    pillarBase_size = con.PILLARBASE_WIDTH*pd * 1.0001
+    pillarBottom_basemesh = utils.addCube(
         name='柱顶石',
         location=(0,0,
-                    (- pillerBase_h/2
-                    +pillerBase_popup)),
-        dimension=(pillerBase_size,
-                pillerBase_size,
-                pillerBase_h),
+                    (- pillarBase_h/2
+                    +pillarBase_popup)),
+        dimension=(pillarBase_size,
+                pillarBase_size,
+                pillarBase_h),
         parent=floorRootObj,
     )
     # 柱顶石材质：石头
-    mat.paint(pillerBottom_basemesh,con.M_PILLER_BASE)
+    mat.paint(pillarBottom_basemesh,con.M_PILLAR_BASE)
     # 添加bevel
-    utils.addModifierBevel(pillerBottom_basemesh, 
+    utils.addModifierBevel(pillarBottom_basemesh, 
                            width=con.BEVEL_HIGH, 
                            type='WIDTH',)
     
@@ -1105,109 +1105,109 @@ def buildPillers(buildingObj:bpy.types.Object):
     net_x,net_y = getFloorDate(buildingObj)
     x_rooms = bData.x_rooms   # 面阔几间
     y_rooms = bData.y_rooms   # 进深几间
-    pillerList = []
+    pillarList = []
     for y in range(y_rooms + 1):
         for x in range(x_rooms + 1):
             # 统一命名为“柱.x/y”，以免更换不同柱形时，减柱设置失效
-            pillerID = str(x) + '/' + str(y)
+            pillarID = str(x) + '/' + str(y)
 
             # 1、减柱逻辑 ----------------------------
             # 包括：用户在单体减柱中手工减柱，或在月台/重檐场景中自动减柱
-            useEmptyPiller = False
-            # 1.1、pillernet为hide，月台场景，全部自动减柱
-            if bData.piller_net == con.ACA_PILLER_HIDE:
-                useEmptyPiller = True
-            # 1.2、pillernet为''时，柱网全部重建
-            elif bData.piller_net == '':
+            useEmptyPillar = False
+            # 1.1、pillarnet为hide，月台场景，全部自动减柱
+            if bData.pillar_net == con.ACA_PILLAR_HIDE:
+                useEmptyPillar = True
+            # 1.2、pillarnet为''时，柱网全部重建
+            elif bData.pillar_net == '':
                 # 重檐下檐，內檐金柱全部自动减柱
                 if (bData.use_double_eave and 
                     bData.combo_type == con.COMBO_MAIN):
                     if not (x in (0,x_rooms) 
                             or y in (0,y_rooms)):
-                        useEmptyPiller = True
-            # 1.3、pillernet不为空，按照pillernet判断减柱
+                        useEmptyPillar = True
+            # 1.3、pillarnet不为空，按照pillarnet判断减柱
             else:
                 # 廊间举架，不做减柱
                 if not bData.use_hallway:
-                    # 柱ID是否在piller_net，就减柱
-                    if pillerID not in bData.piller_net:
-                        useEmptyPiller = True
+                    # 柱ID是否在pillar_net，就减柱
+                    if pillarID not in bData.pillar_net:
+                        useEmptyPillar = True
             
             # 2、减柱的，显示empty标识 -------------------
             # 空柱位上用Empty标识，以便添加踏跺等操作
-            if useEmptyPiller:
-                pillerObj = utils.addEmpty(
-                    name = '柱定位点.' + pillerID,
+            if useEmptyPillar:
+                pillarObj = utils.addEmpty(
+                    name = '柱定位点.' + pillarID,
                     type='CONE',
                     radius=pd,
                     location = (net_x[x],net_y[y],0),
                     parent = floorRootObj,
                     rotation=(math.radians(90),0,0)
                 )
-                pillerObj.ACA_data['aca_obj'] = True
-                pillerObj.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
-                pillerObj.ACA_data['pillerID'] = pillerID
+                pillarObj.ACA_data['aca_obj'] = True
+                pillarObj.ACA_data['aca_type'] = con.ACA_TYPE_PILLAR
+                pillarObj.ACA_data['pillarID'] = pillarID
                 # 不再继续做柱实体
                 continue    # 结束本次循环
 
             # 3、非减柱的，显示正常柱体 ----------------
             # 250212 金柱的升高处理（包含廊间举架）
-            pillerHeight = getPillerHeight(
-                    buildingObj,pillerID)
+            pillarHeight = getPillarHeight(
+                    buildingObj,pillarID)
 
             # 251020 判断垂花柱
-            useLiftPiller = False
-            # 遍历piller_net
-            pillerList = bData.piller_net.rstrip(',').split(',')
-            for piller in pillerList:
+            useLiftPillar = False
+            # 遍历pillar_net
+            pillarList = bData.pillar_net.rstrip(',').split(',')
+            for pillar in pillarList:
                 # 以柱位编号匹配柱配置
-                if pillerID in piller:
-                    pillerSetting = piller.split('#')
-                    if len(pillerSetting) > 1:
+                if pillarID in pillar:
+                    pillarSetting = pillar.split('#')
+                    if len(pillarSetting) > 1:
                         # 获取柱形标识字
-                        pillerStyle = pillerSetting[1]
-                        if pillerStyle == con.PILLER_STYLE_LIFT:
-                            useLiftPiller = True
-                            # 含有柱形的完成pillerID
-                            pillerID = piller
-            if useLiftPiller:
+                        pillarStyle = pillarSetting[1]
+                        if pillarStyle == con.PILLAR_STYLE_LIFT:
+                            useLiftPillar = True
+                            # 含有柱形的完成pillarID
+                            pillarID = pillar
+            if useLiftPillar:
                 # 绑定垂花柱资产
-                if aData.piller_lift_source is None:
+                if aData.pillar_lift_source is None:
                     # 重新载入资产库，以载入垂花柱模板
                     from . import template
                     template.loadAssetByBuilding(buildingObj)
-                piller_source = aData.piller_lift_source
+                pillar_source = aData.pillar_lift_source
                 # 垂花柱以顶部为原点
-                pillerZ = pillerHeight
+                pillarZ = pillarHeight
                 # 柱高根据斗口等比缩放
-                pillerLiftScale = pd / piller_source.dimensions.x
-                pillerHeight = piller_source.dimensions.z * pillerLiftScale
+                pillarLiftScale = pd / pillar_source.dimensions.x
+                pillarHeight = pillar_source.dimensions.z * pillarLiftScale
             else:
-                piller_source = aData.piller_source
+                pillar_source = aData.pillar_source
                 # 250916 添加楼阁柱子下插的处理
-                pillerZ = bData.piller_insert
+                pillarZ = bData.pillar_insert
                 # 250916 添加楼阁插柱处理
-                pillerHeight -= pillerZ
+                pillarHeight -= pillarZ
 
             # 复制柱子，仅instance，包含modifier
-            pillerObj = utils.copySimplyObject(
-                sourceObj = piller_source,
-                name = '柱子.'+pillerID,
-                location=(net_x[x],net_y[y],pillerZ),
+            pillarObj = utils.copySimplyObject(
+                sourceObj = pillar_source,
+                name = '柱子.'+pillarID,
+                location=(net_x[x],net_y[y],pillarZ),
                 parentObj = floorRootObj,
                 singleUser=True # 内外柱不等高，为避免打架，全部
             )
-            pillerObj.ACA_data['aca_obj'] = True
-            pillerObj.ACA_data['aca_type'] = con.ACA_TYPE_PILLER
-            pillerObj.ACA_data['pillerID'] = pillerID
-            pillerObj.dimensions = (
-                pd,pd,pillerHeight
+            pillarObj.ACA_data['aca_obj'] = True
+            pillarObj.ACA_data['aca_type'] = con.ACA_TYPE_PILLAR
+            pillarObj.ACA_data['pillarID'] = pillarID
+            pillarObj.dimensions = (
+                pd,pd,pillarHeight
             )
-            utils.applyTransform(pillerObj,use_scale=True,autoUpdate=False)
+            utils.applyTransform(pillarObj,use_scale=True,autoUpdate=False)
             # 垂花柱柱头定位
-            if useLiftPiller:
+            if useLiftPillar:
                 # 初始位置
-                headZ = -con.PILLER_HEAD_DEFAULT * pillerLiftScale
+                headZ = -con.PILLAR_HEAD_DEFAULT * pillarLiftScale
                 # 额枋高度
                 headZ += con.EFANG_LARGE_H * dk
                 if bData.use_smallfang:
@@ -1219,66 +1219,66 @@ def buildPillers(buildingObj:bpy.types.Object):
                 headZ += quetiH
                 # 设置GN
                 gnMod:bpy.types.NodesModifier = \
-                    pillerObj.modifiers.get('pillerLiftrGN')
+                    pillarObj.modifiers.get('pillarLiftrGN')
                 if gnMod != None:
                     # 强制每个对象的node group为单一用户
                     gnMod.node_group = gnMod.node_group.copy()
                     utils.setGN_Input(gnMod,"Z",headZ)
             # 做柱头彩画
-            mat.paint(pillerObj,con.M_PILLER_HEAD,override=True)
-            pillerList.append(pillerObj)
+            mat.paint(pillarObj,con.M_PILLAR_HEAD,override=True)
+            pillarList.append(pillarObj)
 
             # 判断柱础和柱顶石
-            usePillerBase = False
+            usePillarBase = False
             # 250909 不做台基或楼阁时，不做柱础和柱顶石
             if (bData.is_showPlatform and
                 bData.combo_type!=con.COMBO_MULTI_FLOOR):
-                usePillerBase = True
+                usePillarBase = True
             # 垂花柱不做柱础柱顶石
-            if useLiftPiller: usePillerBase = False
+            if useLiftPillar: usePillarBase = False
             
-            if usePillerBase:
+            if usePillarBase:
                 # 复制柱础
-                pillerbase_basemesh:bpy.types.Object = utils.copySimplyObject(
-                    sourceObj=aData.pillerbase_source,
+                pillarbase_basemesh:bpy.types.Object = utils.copySimplyObject(
+                    sourceObj=aData.pillarbase_source,
                     location=(0,0,0),
-                    parentObj=pillerObj
+                    parentObj=pillarObj
                 )
-                pillerbase_basemesh.scale = (
-                            pd/piller_source.dimensions.x,
-                            pd/piller_source.dimensions.y,
-                            pd/piller_source.dimensions.x,
+                pillarbase_basemesh.scale = (
+                            pd/pillar_source.dimensions.x,
+                            pd/pillar_source.dimensions.y,
+                            pd/pillar_source.dimensions.x,
                         )
                 # 柱础材质：石头
-                mat.paint(pillerbase_basemesh,con.M_PILLER_BASE)
+                mat.paint(pillarbase_basemesh,con.M_PILLAR_BASE)
                 
                 # 复制柱顶石
-                pillerBottomObj = utils.copySimplyObject(
-                    sourceObj=pillerBottom_basemesh,
-                    parentObj=pillerObj
+                pillarBottomObj = utils.copySimplyObject(
+                    sourceObj=pillarBottom_basemesh,
+                    parentObj=pillarObj
                 )
 
     # 移除柱子和柱顶石模板    
-    utils.delObject(pillerBottom_basemesh)
+    utils.delObject(pillarBottom_basemesh)
 
     # 4、后处理 ---------------------
     # 月台隐藏柱网时，无需后处理
-    if bData.piller_net == con.ACA_PILLER_HIDE:
+    if bData.pillar_net == con.ACA_PILLAR_HIDE:
         return
     
     # 4.1、重新生成柱网配置
-    bData.piller_net = ''
+    bData.pillar_net = ''
     floorChildren:List[bpy.types.Object] = floorRootObj.children
-    for piller in floorChildren:
-        if piller.type == 'EMPTY': continue
-        if 'aca_type' in piller.ACA_data:
-            if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER:
-                pillerID = piller.ACA_data['pillerID']
-                bData.piller_net += pillerID + ','
+    for pillar in floorChildren:
+        if pillar.type == 'EMPTY': continue
+        if 'aca_type' in pillar.ACA_data:
+            if pillar.ACA_data['aca_type']==con.ACA_TYPE_PILLAR:
+                pillarID = pillar.ACA_data['pillarID']
+                bData.pillar_net += pillarID + ','
 
 
     # 4.2、重新生成额枋、穿插枋、金枋
-    if bData.piller_net != '':
+    if bData.pillar_net != '':
         # 添加柱间的额枋
         # 函数内部会自动生成默认额枋
         utils.outputMsg("Building Fangs...")
@@ -1297,73 +1297,73 @@ def buildPillers(buildingObj:bpy.types.Object):
     return
 
 # 设置柱子样式，如，垂花柱等
-def setPillerStyle(buildingObj:bpy.types.Object,
-                   pillers:List[bpy.types.Object],
-                   pillerStyle):
+def setPillarStyle(buildingObj:bpy.types.Object,
+                   pillars:List[bpy.types.Object],
+                   pillarStyle):
     # 载入数据
     buildingObj,bData,oData = utils.getRoot(buildingObj)
-    selectedPillerName = bpy.context.object.name
+    selectedPillarName = bpy.context.object.name
 
-    selectedPillers = []
-    for piller in pillers:
+    selectedPillars = []
+    for pillar in pillars:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
-        if 'aca_type' in piller.ACA_data:
+        if 'aca_type' in pillar.ACA_data:
             # 柱身向上查找柱proxy
-            if piller.ACA_data['aca_type'] == \
-                    con.ACA_TYPE_PILLER:
+            if pillar.ACA_data['aca_type'] == \
+                    con.ACA_TYPE_PILLAR:
                 # 验证柱proxy没有重复
-                if piller.name not in selectedPillers:
-                    selectedPillers.append(piller.name)  
+                if pillar.name not in selectedPillars:
+                    selectedPillars.append(pillar.name)  
 
     # 查找柱子，并设置样式
-    pillerSettings = bData.piller_net.split(',')
-    for pillerName in selectedPillers: 
-        # 获取选中柱对象的pillerID
-        piller = bpy.data.objects[pillerName]
-        pillerID_old = piller.ACA_data['pillerID']
+    pillarSettings = bData.pillar_net.split(',')
+    for pillarName in selectedPillars: 
+        # 获取选中柱对象的pillarID
+        pillar = bpy.data.objects[pillarName]
+        pillarID_old = pillar.ACA_data['pillarID']
 
         # 查找柱设置
-        for n,pillerStr in enumerate(pillerSettings):
+        for n,pillarStr in enumerate(pillarSettings):
             # 找到柱子
-            if pillerID_old in pillerStr:
-                # 拼接新pillerID
-                pillerPos = pillerStr.split('#')[0]
-                pillerID_new = f"{pillerPos}#{pillerStyle}"
-                # 更新pillerID
-                if pillerID_old == pillerID_new:
-                    pillerID_new = pillerPos # 恢复原状
-                pillerSettings[n] = pillerID_new
+            if pillarID_old in pillarStr:
+                # 拼接新pillarID
+                pillarPos = pillarStr.split('#')[0]
+                pillarID_new = f"{pillarPos}#{pillarStyle}"
+                # 更新pillarID
+                if pillarID_old == pillarID_new:
+                    pillarID_new = pillarPos # 恢复原状
+                pillarSettings[n] = pillarID_new
 
-    # 回写更新的piller_net
-    new_piller_net = ''
-    for piller in pillerSettings:
-        if piller == '': continue
-        new_piller_net += piller + ','
-    bData['piller_net'] = new_piller_net
+    # 回写更新的pillar_net
+    new_pillar_net = ''
+    for pillar in pillarSettings:
+        if pillar == '': continue
+        new_pillar_net += pillar + ','
+    bData['pillar_net'] = new_pillar_net
 
-    # print('piller_net = ' + bData['piller_net'])
+    # print('pillar_net = ' + bData['pillar_net'])
 
     # 更新柱体
-    buildPillers(buildingObj)
+    buildPillars(buildingObj)
     # 刷新墙体，重建雀替
     buildWall.buildWallLayout(buildingObj)
 
     # 恢复选择
-    selectPiller = None
+    selectPillar = None
     floorRoot = utils.getAcaChild(buildingObj,
                                   con.ACA_TYPE_FLOOR_ROOT)
     for obj in floorRoot.children:
-        if pillerID_new in obj.name:
-            selectPiller = obj
+        if pillarID_new in obj.name:
+            selectPillar = obj
             break
-    if selectPiller is not None:
-        utils.focusObj(selectPiller)
+    if selectPillar is not None:
+        utils.focusObj(selectPillar)
 
     return
 
 # 减柱并保存
-def delPiller(buildingObj:bpy.types.Object,
-              pillers:List[bpy.types.Object]):
+def delPillar(buildingObj:bpy.types.Object,
+              pillars:List[bpy.types.Object]):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
 
@@ -1372,37 +1372,37 @@ def delPiller(buildingObj:bpy.types.Object,
     # 发现执行柱子删除时，顺带删除了柱础，导致真的轮询到柱础时已经找不到对象
     # 为了解决这个问题，先把要删除的对象名称挑出来，然后仅执行这些对象的删除
     # https://blender.stackexchange.com/questions/206060/how-to-resolve-referenceerror-structrna-of-type-object-has-been-removed
-    delPillerNames = []
-    for piller in pillers:
+    delPillarNames = []
+    for pillar in pillars:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
-        if 'aca_type' in piller.ACA_data:
+        if 'aca_type' in pillar.ACA_data:
             # 柱身向上查找柱proxy
-            if piller.ACA_data['aca_type'] == \
-                    con.ACA_TYPE_PILLER:
+            if pillar.ACA_data['aca_type'] == \
+                    con.ACA_TYPE_PILLAR:
                 # 验证柱proxy没有重复
-                if piller.name not in delPillerNames:
-                    delPillerNames.append(piller.name)    
+                if pillar.name not in delPillarNames:
+                    delPillarNames.append(pillar.name)    
     
     # 批量删除所有的柱proxy
-    for name in delPillerNames:
-        piller = bpy.data.objects[name]
-        utils.deleteHierarchy(piller,del_parent=True)
+    for name in delPillarNames:
+        pillar = bpy.data.objects[name]
+        utils.deleteHierarchy(pillar,del_parent=True)
 
     # 重新生成柱网配置
     floorRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_FLOOR_ROOT
     )    
     floorChildren:List[bpy.types.Object] = floorRootObj.children
-    bData.piller_net = ''
-    for piller in floorChildren:
-        if piller.type == 'EMPTY': continue
-        if 'aca_type' in piller.ACA_data:
-            if piller.ACA_data['aca_type']==con.ACA_TYPE_PILLER:
-                pillerID = piller.ACA_data['pillerID']
-                bData.piller_net += pillerID + ','
+    bData.pillar_net = ''
+    for pillar in floorChildren:
+        if pillar.type == 'EMPTY': continue
+        if 'aca_type' in pillar.ACA_data:
+            if pillar.ACA_data['aca_type']==con.ACA_TYPE_PILLAR:
+                pillarID = pillar.ACA_data['pillarID']
+                bData.pillar_net += pillarID + ','
 
     # 刷新柱网
-    buildPillers(buildingObj)
+    buildPillars(buildingObj)
 
     # 聚焦根节点
     utils.focusObj(buildingObj)
@@ -1411,19 +1411,19 @@ def delPiller(buildingObj:bpy.types.Object,
 # 根据用户在插件面板修改的柱高、柱径，缩放柱子外观
 # 会自动触发墙体的重建，速度很慢
 # 绑定于data.py中objdata属性中触发的回调
-def resizePiller(buildingObj:bpy.types.Object):   
+def resizePillar(buildingObj:bpy.types.Object):   
     bData:acaData = buildingObj.ACA_data
     
     floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
     if len(floorRootObj.children) >0 :
-        for pillerProxy in floorRootObj.children:
-            if pillerProxy.ACA_data['aca_type'] == con.ACA_TYPE_PILLER:
-                for child in pillerProxy.children:
+        for pillarProxy in floorRootObj.children:
+            if pillarProxy.ACA_data['aca_type'] == con.ACA_TYPE_PILLAR:
+                for child in pillarProxy.children:
                     if '柱子' in child.name:
                         child.dimensions = (
-                            bData.piller_diameter,
-                            bData.piller_diameter,
-                            bData.piller_height
+                            bData.pillar_diameter,
+                            bData.pillar_diameter,
+                            bData.pillar_height
                         )
 
     # 柱高、柱径的变化，都会引起隔扇、墙体的变化，需要重建
@@ -1433,7 +1433,7 @@ def resizePiller(buildingObj:bpy.types.Object):
 
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
-    utils.outputMsg("Piller resized")
+    utils.outputMsg("Pillar resized")
 
 # 重设柱网设置，让减柱重新显示
 def resetFloor(buildingObj:bpy.types.Object,
@@ -1441,8 +1441,8 @@ def resetFloor(buildingObj:bpy.types.Object,
                ):
     # 清空柱网、额枋、装修的设置
     bData:acaData = buildingObj.ACA_data
-    if bData.piller_net != con.ACA_PILLER_HIDE:
-        bData.piller_net = ''
+    if bData.pillar_net != con.ACA_PILLAR_HIDE:
+        bData.pillar_net = ''
     bData.wall_list.clear()
     bData.geshan_list.clear()
     bData.window_list.clear()
@@ -1524,9 +1524,9 @@ def buildFloor(buildingObj:bpy.types.Object,
             buildingObj.rotation_euler = bData.combo_rotation
 
     # 生成柱网
-    if bData.is_showPillers:
-        utils.outputMsg("Building Pillers...")
-        buildPillers(buildingObj)
+    if bData.is_showPillars:
+        utils.outputMsg("Building Pillars...")
+        buildPillars(buildingObj)
     
     # 生成台基
     if bData.is_showPlatform:
@@ -1551,41 +1551,41 @@ def buildFloor(buildingObj:bpy.types.Object,
 
 # 获取重檐柱网
 # 在做穿插枋时，需要连接下檐柱网和上檐柱网
-def __getComboPillerNet(buildingObj:bpy.types.Object):
+def __getComboPillarNet(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     # 下檐柱网
-    pillerNet = bData.piller_net
+    pillarNet = bData.pillar_net
     
     # 验证是否为重檐
     if not bData.use_double_eave:
         utils.outputMsg("穿插枋拼接上檐柱网失败，该建筑没有做重檐")
-        return pillerNet
+        return pillarNet
     
     # 查找上檐
     doubleEaveObj = utils.getComboChild(
         buildingObj,con.COMBO_DOUBLE_EAVE)
     if doubleEaveObj is None:
         utils.outputMsg("穿插枋拼接上檐柱网失败，未找到上檐柱网")
-        return pillerNet
+        return pillarNet
 
     # 处理上檐柱网
     dData:acaData = doubleEaveObj.ACA_data
-    innerPillerNet = dData.piller_net
+    innerPillarNet = dData.pillar_net
     # 所有柱编号按照一廊间做偏移
-    innerPillerOffset = ''
-    pillerList = innerPillerNet.rstrip(',').split(',')
-    for pillerID in pillerList:
-        px,py = pillerID.split('/')
+    innerPillarOffset = ''
+    pillarList = innerPillarNet.rstrip(',').split(',')
+    for pillarID in pillarList:
+        px,py = pillarID.split('/')
         px = int(px) + 1
         py = int(py) + 1
         # 重新拼接新柱网
-        innerPillerOffset += f"{px}/{py},"
+        innerPillarOffset += f"{px}/{py},"
 
     # 最终的拼接柱网
-    pillerNet += innerPillerOffset
+    pillarNet += innerPillarOffset
 
-    return pillerNet
+    return pillarNet
 
 # 添加回廊
 def addLoggia(buildingObj:bpy.types.Object,
@@ -1631,7 +1631,7 @@ def setLoggiaData(bData:acaData,
                   use_railing=True,
               ):
     # 重新生成柱网
-    bData.piller_net = ''
+    bData.pillar_net = ''
     preRooms_x = bData.x_rooms
     preRooms_y = bData.y_rooms
 
@@ -1683,14 +1683,14 @@ def setLoggiaData(bData:acaData,
 def __setLoggiaWidth(bData:acaData,
               width,side='X'): 
     # 验证回廊最小宽度
-    if abs(width) < bData.piller_diameter:
+    if abs(width) < bData.pillar_diameter:
         raise Exception(f"回廊宽度太小，建议在[{round(bData.DK*12,2)}]~[{round(bData.DK*22,2)}]左右")   
     
     # 验证回廊内收宽度
     xRooms = bData.x_rooms
     yRooms = bData.y_rooms
     if width < 0:
-        width_min = width+bData.piller_diameter
+        width_min = width+bData.pillar_diameter
         if xRooms == 3:
             if bData.x_1 < width_min:
                 raise Exception("面阔明间宽度不足以做内收廊间")

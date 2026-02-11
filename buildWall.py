@@ -36,7 +36,7 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
+    pd = con.PILLAR_D_EAVE * dk
     # 墙体根节点
     wallrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_WALL_ROOT)
@@ -75,17 +75,17 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     wallName = "%s.%s#%s" % (wallName,setting[1],setting[2])
 
     # 获取实际柱高   
-    pillerFromHeight = buildFloor.getPillerHeight(
+    pillarFromHeight = buildFloor.getPillarHeight(
         buildingObj,setting[1])
-    pillerToHeight = buildFloor.getPillerHeight(
+    pillarToHeight = buildFloor.getPillarHeight(
         buildingObj,setting[2])
     # 装修高度取较低的柱高
-    if pillerFromHeight > pillerToHeight:
-        pillerHeight = pillerToHeight
+    if pillarFromHeight > pillarToHeight:
+        pillarHeight = pillarToHeight
     else:
-        pillerHeight = pillerFromHeight
+        pillarHeight = pillarFromHeight
     # 装修在额枋下
-    wall_height = pillerHeight \
+    wall_height = pillarHeight \
         - con.EFANG_LARGE_H*dk # 除去大额枋高度
     if bData.use_smallfang:
         wall_height += \
@@ -124,7 +124,7 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
         # 穿插枋下皮与由额垫板下皮持平
         # (简化处理，上槛中线对齐大额枋底皮)
         # 上槛和穿插枋高度可能不同，存在误差
-        wall_height = (pillerHeight 
+        wall_height = (pillarHeight 
                        - con.EFANG_LARGE_H*dk
                        + con.KAN_UP_HEIGHT*pd/2)
 
@@ -162,7 +162,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     dk = bData.DK
     (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
     # 覆盖墙体厚度
-    wallDeepth = con.WALL_DEPTH * bData.piller_diameter
+    wallDeepth = con.WALL_DEPTH * bData.pillar_diameter
     # 退花碱厚度
     bodyShrink = con.WALL_SHRINK
 
@@ -379,19 +379,19 @@ def __buildWall(buildingObj:bpy.types.Object,
 
 # 手工添加隔断
 def addWall(buildingObj:bpy.types.Object,
-              pillers:List[bpy.types.Object],
+              pillars:List[bpy.types.Object],
               wallType:str):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
 
     # 校验用户至少选择2根柱子
-    pillerNum = 0
-    for piller in pillers:
-        if 'aca_type' in piller.ACA_data:   # 可能选择了没有属性的对象
-            if piller.ACA_data['aca_type'] \
-                == con.ACA_TYPE_PILLER:
-                pillerNum += 1
-    if pillerNum < 2:
+    pillarNum = 0
+    for pillar in pillars:
+        if 'aca_type' in pillar.ACA_data:   # 可能选择了没有属性的对象
+            if pillar.ACA_data['aca_type'] \
+                == con.ACA_TYPE_PILLAR:
+                pillarNum += 1
+    if pillarNum < 2:
         utils.popMessageBox("请至少选择2根柱子")
         return
 
@@ -403,28 +403,28 @@ def addWall(buildingObj:bpy.types.Object,
 
     # 逐一生成墙体
     # 如果用户选择了2根以上的柱子，将依次生成多个墙体
-    for piller in pillers:
+    for pillar in pillars:
         # 校验用户选择的对象，可能误选了其他东西，直接忽略
-        if 'aca_type' not in piller.ACA_data:   # 可能选择了没有属性的对象
+        if 'aca_type' not in pillar.ACA_data:   # 可能选择了没有属性的对象
             continue
-        if piller.ACA_data['aca_type'] \
-            != con.ACA_TYPE_PILLER:
+        if pillar.ACA_data['aca_type'] \
+            != con.ACA_TYPE_PILLAR:
             continue
         
         # 判断起点柱和终点柱
         if pFrom == None: 
             #暂存起点
-            pFrom = piller
+            pFrom = pillar
             continue 
         else:
             # 暂存终点
-            pTo = piller
+            pTo = pillar
 
             # 验证墙体在布局中是否已经存在
-            wallID = pFrom.ACA_data['pillerID'].split('#')[0] \
-                + '#' + pTo.ACA_data['pillerID'].split('#')[0] 
-            wallID_alt = pTo.ACA_data['pillerID'].split('#')[0] \
-                    + '#' + pFrom.ACA_data['pillerID'].split('#')[0] 
+            wallID = pFrom.ACA_data['pillarID'].split('#')[0] \
+                + '#' + pTo.ACA_data['pillarID'].split('#')[0] 
+            wallID_alt = pTo.ACA_data['pillarID'].split('#')[0] \
+                    + '#' + pFrom.ACA_data['pillarID'].split('#')[0] 
             if wallID in wallSetting or wallID_alt in wallSetting:
                 utils.popMessageBox(f"无法添加{wallID}，该位置已经存在装修，wallSetting：{wallSetting}")
                 continue
@@ -470,7 +470,7 @@ def addWall(buildingObj:bpy.types.Object,
                     __addQuetiFromDel(wallObj)
 
             # 将柱子交换，为下一次循环做准备
-            pFrom = piller
+            pFrom = pillar
 
     # 聚焦在创建的门上
     if wallObj != None:

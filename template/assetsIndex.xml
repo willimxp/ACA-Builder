@@ -13,7 +13,7 @@
     <mat_dust_wall type="Object">墙体抹灰</mat_dust_wall>
     <mat_paint_beam_big type="Object">梁枋彩画.大额枋</mat_paint_beam_big>
     <mat_paint_beam_small type="Object">梁枋彩画.小额枋</mat_paint_beam_small>
-    <mat_paint_pillerhead type="Object">柱头贴图</mat_paint_pillerhead>
+    <mat_paint_pillarhead type="Object">柱头贴图</mat_paint_pillarhead>
     <mat_paint_walkdragon type="Object">平板枋.行龙</mat_paint_walkdragon>
     <mat_paint_grasscouple type="Object">垫板.公母草</mat_paint_grasscouple>
     <mat_paint_dgfillboard type="Object">材质.栱垫板</mat_paint_dgfillboard>
@@ -31,18 +31,18 @@
     <mat_geshanxin_wan type="Object">万字锦棂心</mat_geshanxin_wan>
     <mat_dougong type="Object">斗栱</mat_dougong>
     <mat_guayanban type="Object">挂檐板</mat_guayanban>
-    <piller_source type="Object">直柱.彩画</piller_source>
-    <piller_lift_source type="Object">垂花柱</piller_lift_source>
-    <pillerbase_source type="Object">素平柱础</pillerbase_source>
+    <pillar_source type="Object">直柱.彩画</pillar_source>
+    <pillar_lift_source type="Object">垂花柱</pillar_lift_source>
+    <pillarbase_source type="Object">素平柱础</pillarbase_source>
     <lingxin_source type="Object">棂心.正搭斜交</lingxin_source>
-    <dg_piller_source type="List" key='dg_style'>
+    <dg_pillar_source type="List" key='dg_style'>
         <item type='Object' style='一斗三升'>一斗三升.柱头科</item>
         <item type='Object' style='斗口单昂'>斗口单昂.柱头科</item>
         <item type='Object' style='单翘单昂'>单翘单昂.柱头科</item>
         <item type='Object' style='斗口重昂'>斗口重昂.柱头科</item>
         <item type='Object' style='单翘重昂'>单翘重昂.柱头科</item>
         <item type='Object' style='宋-四铺作'>四铺作插昂.柱头</item>
-    </dg_piller_source>
+    </dg_pillar_source>
     <dg_fillgap_source type="List" key='dg_style'>
         <item type='Object' style='一斗三升'>一斗三升.平身科</item>
         <item type='Object' style='斗口单昂'>斗口单昂.平身科</item>
@@ -67,14 +67,14 @@
         <item type='Object' style='单翘重昂'>单翘重昂.角科</item>
         <item type='Object' style='宋-四铺作'>四铺作插昂.转角</item>
     </dg_corner_source>
-    <dg_balcony_piller_source type="List" key='dg_style'>
+    <dg_balcony_pillar_source type="List" key='dg_style'>
         <item type='Object' style='一斗三升'>一斗三升.平坐</item>
         <item type='Object' style='斗口单昂'>斗口单昂.平坐</item>
         <item type='Object' style='单翘单昂'>单翘单昂.平坐</item>
         <item type='Object' style='斗口重昂'>斗口重昂.平坐</item>
         <item type='Object' style='单翘重昂'>单翘重昂.平坐</item>
         <item type='Object' style='宋-四铺作'>四铺作插昂.平坐</item>
-    </dg_balcony_piller_source>
+    </dg_balcony_pillar_source>
     <dg_balcony_fillgap_source type="List" key='dg_style'>
         <item type='Object' style='一斗三升'>一斗三升.平身科</item>
         <item type='Object' style='斗口单昂'>斗口单昂.平身科.平坐</item>
@@ -132,7 +132,7 @@
     <door_pushou type="Object">铺首</door_pushou>
     <door_ding type="Object">门钉</door_ding>
     <door_zan type="Object">门簪</door_zan>
-    <railing_piller type="Object">栏杆望柱</railing_piller>
+    <railing_pillar type="Object">栏杆望柱</railing_pillar>
     <railing_vase type="Object">栏杆净瓶</railing_vase>
     <xuanyu_source type="Object">悬鱼</xuanyu_source>
 </assets>

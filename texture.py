@@ -265,7 +265,7 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
             mat = aData.mat_brick_2 # 条砖竖铺
     if paintMat in (
             con.M_STONE, # 石头
-            con.M_PILLER_BASE, # 柱顶石
+            con.M_PILLAR_BASE, # 柱顶石
             con.M_XIANGYAN, # 象眼板
         ):
             mat = aData.mat_stone # 石头
@@ -300,9 +300,9 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
         ):
             mat = aData.mat_paint_grasscouple   
         if paintMat in (
-            con.M_PILLER_HEAD, # 柱头
+            con.M_PILLAR_HEAD, # 柱头
         ):
-            mat = aData.mat_paint_pillerhead 
+            mat = aData.mat_paint_pillarhead 
         if paintMat in (
             con.M_WALL, # 墙-抹灰
         ):
@@ -388,7 +388,7 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
             con.M_FANG_EBIG,        # 大额枋
             con.M_FANG_ESMALL,      # 小额枋
             con.M_BOARD_YOUE,       # 由额垫板
-            con.M_PILLER_HEAD,      # 柱头
+            con.M_PILLAR_HEAD,      # 柱头
             con.M_BOARD_WALLHEAD,   # 走马板
             con.M_WINDOW,           # 窗框
             con.M_DOOR_RING,        # 绦环板
@@ -445,7 +445,7 @@ def paint(paintObj:bpy.types.Object,        # 着色对象
             con.M_QUETI,            # 雀替
             con.M_FANG_CHUANCHA,    # 穿插枋
             con.M_FANG_JIN,         # 金枋
-            con.M_PILLER_HEAD,      # 柱头
+            con.M_PILLAR_HEAD,      # 柱头
             con.M_BOARD_WALLHEAD,   # 走马板
             con.M_WINDOW,           # 窗框
             con.M_DOOR_RING,        # 绦环板
@@ -587,8 +587,8 @@ def __paintMat(object:bpy.types.Object,
         object = __setYOUE(object,mat)
 
     # 柱头贴图
-    if mat == aData.mat_paint_pillerhead:
-        object = __setPillerHead2(object,mat)
+    if mat == aData.mat_paint_pillarhead:
+        object = __setPillarHead2(object,mat)
 
     # 栱垫板(小号和普通版)
     if mat in (aData.mat_paint_dgfillboard,
@@ -757,10 +757,10 @@ def __setFlyrafterMat(flyrafter:bpy.types.Object,mat):
 
 # 计算柱头贴图的高度
 # 依据大额枋、由额垫板、小额枋的高度计算
-def __setPillerHead(pillerObj:bpy.types.Object,
+def __setPillarHead(pillarObj:bpy.types.Object,
                     mat:bpy.types.Object):
     buildingObj = utils.getAcaParent(
-        pillerObj,con.ACA_TYPE_BUILDING)
+        pillarObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
@@ -768,18 +768,18 @@ def __setPillerHead(pillerObj:bpy.types.Object,
     # 为了使用静态的PBR贴图的同时，动态的控制柱头贴图高度    
     # 将柱子分为上中下分别裁切、拼接    
     # 柱身对象
-    pillerBodyObj = utils.copySimplyObject(
-        pillerObj,singleUser=True)
+    pillarBodyObj = utils.copySimplyObject(
+        pillarObj,singleUser=True)
     # 柱头对象
-    pillerHeadObj = utils.copySimplyObject(
-        pillerObj,singleUser=True)
+    pillarHeadObj = utils.copySimplyObject(
+        pillarObj,singleUser=True)
     # 柱顶对象
-    pillerTopObj = utils.copySimplyObject(
-        pillerObj,singleUser=True)
-    pillerParts=[]
-    pillerParts.append(pillerBodyObj)
-    pillerParts.append(pillerHeadObj)
-    pillerParts.append(pillerTopObj)
+    pillarTopObj = utils.copySimplyObject(
+        pillarObj,singleUser=True)
+    pillarParts=[]
+    pillarParts.append(pillarBodyObj)
+    pillarParts.append(pillarHeadObj)
+    pillarParts.append(pillarTopObj)
     
     # 刷新，否则出现柱头计算错误
     utils.updateScene()
@@ -790,17 +790,17 @@ def __setPillerHead(pillerObj:bpy.types.Object,
         fangHeight += (con.BOARD_YOUE_H*dk
             + con.EFANG_SMALL_H*dk)
     # 裁切柱头
-    pCut = pillerObj.matrix_world @ Vector((
-        0,0,pillerObj.dimensions.z-fangHeight))
+    pCut = pillarObj.matrix_world @ Vector((
+        0,0,pillarObj.dimensions.z-fangHeight))
     utils.addBisect(
-        object=pillerBodyObj,
+        object=pillarBodyObj,
         pCut=pCut,
         clear_inner=True,
         direction='V',
         use_fill=False,
     )
     utils.addBisect(
-        object=pillerHeadObj,
+        object=pillarHeadObj,
         pCut=pCut,
         clear_outer=True,
         direction='V',
@@ -808,17 +808,17 @@ def __setPillerHead(pillerObj:bpy.types.Object,
     )
 
     # 裁切柱顶（剪掉顶面，只保留圆筒形状，做贴图）
-    pCut = pillerObj.matrix_world @ Vector((
-        0,0,pillerObj.dimensions.z-0.02))
+    pCut = pillarObj.matrix_world @ Vector((
+        0,0,pillarObj.dimensions.z-0.02))
     utils.addBisect(
-        object=pillerTopObj,
+        object=pillarTopObj,
         pCut=pCut,
         clear_outer=True,
         direction='V',
         use_fill=False,
     )
     utils.addBisect(
-        object=pillerHeadObj,
+        object=pillarHeadObj,
         pCut=pCut,
         clear_inner=True,
         direction='V',
@@ -826,34 +826,34 @@ def __setPillerHead(pillerObj:bpy.types.Object,
     )
 
     # 绑定柱头材质
-    __copyMaterial(mat,pillerHeadObj)
-    __copyMaterial(aData.mat_oilpaint,pillerBodyObj)
-    __copyMaterial(aData.mat_oilpaint,pillerTopObj)
+    __copyMaterial(mat,pillarHeadObj)
+    __copyMaterial(aData.mat_oilpaint,pillarBodyObj)
+    __copyMaterial(aData.mat_oilpaint,pillarTopObj)
     # 重新展UV
-    UvUnwrap(pillerHeadObj,uvType.CYLINDER)
-    UvUnwrap(pillerBodyObj,uvType.CUBE,cubesize=2)
-    UvUnwrap(pillerTopObj,uvType.CUBE,cubesize=2)
+    UvUnwrap(pillarHeadObj,uvType.CYLINDER)
+    UvUnwrap(pillarBodyObj,uvType.CUBE,cubesize=2)
+    UvUnwrap(pillarTopObj,uvType.CUBE,cubesize=2)
     # 旋转45度，让金龙面对前方
-    pillerHeadObj.rotation_euler.z = math.radians(45)
+    pillarHeadObj.rotation_euler.z = math.radians(45)
 
     # 表面平滑
-    for part in pillerParts:
+    for part in pillarParts:
         utils.shaderSmooth(part)
     # 移除原有的柱身，并将柱名称让给新对象
-    pillerName = pillerObj.name
-    bpy.data.objects.remove(pillerObj)
+    pillarName = pillarObj.name
+    bpy.data.objects.remove(pillarObj)
     # 柱身、柱头合并
-    newPiller = utils.joinObjects(pillerParts,pillerName,cleanup=True)
+    newPillar = utils.joinObjects(pillarParts,pillarName,cleanup=True)
     
-    return newPiller
+    return newPillar
 
 # 重构，不再用bisect拼接的方式，直接控制vertex group
 # 计算柱头贴图的高度
 # 依据大额枋、由额垫板、小额枋的高度计算
-def __setPillerHead2(pillerObj:bpy.types.Object,
+def __setPillarHead2(pillarObj:bpy.types.Object,
                     mat:bpy.types.Object):
     buildingObj = utils.getAcaParent(
-        pillerObj,con.ACA_TYPE_BUILDING)
+        pillarObj,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     aData:tmpData = bpy.context.scene.ACA_temp
@@ -865,22 +865,22 @@ def __setPillerHead2(pillerObj:bpy.types.Object,
             + con.EFANG_SMALL_H*dk)
     # 250822 为了让酱油色的柱头导角不会破碎，给柱素材添加了一个默认高度
     # 这里计算的时候，扣除该默认高度
-    pillerScale = pillerObj.dimensions.z / con.PILLER_HEIGHT_DEFAULT
-    headHeight = fangHeight - con.PILLER_HEAD_DEFAULT* pillerScale
+    pillarScale = pillarObj.dimensions.z / con.PILLAR_HEIGHT_DEFAULT
+    headHeight = fangHeight - con.PILLAR_HEAD_DEFAULT* pillarScale
     # 判断是否为垂花柱，注意mesh名称中可能包含001
-    if aData.piller_lift_source is not None:
-        if aData.piller_lift_source.data.name in pillerObj.data.name:
-            pillerLiftScale = pillerObj.dimensions.x / aData.piller_lift_source.dimensions.x
-            headHeight = fangHeight - con.PILLER_HEAD_DEFAULT*pillerLiftScale
+    if aData.pillar_lift_source is not None:
+        if aData.pillar_lift_source.data.name in pillarObj.data.name:
+            pillarLiftScale = pillarObj.dimensions.x / aData.pillar_lift_source.dimensions.x
+            headHeight = fangHeight - con.PILLAR_HEAD_DEFAULT*pillarLiftScale
     
     # 2、选择中段
-    utils.focusObj(pillerObj)
+    utils.focusObj(pillarObj)
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='DESELECT')
     # 选择中段中段控制采用了对象的vertex group
     vertex_group_name = 'neck'  # 在模板中预定义的vertex group名称
-    pillerObj.vertex_groups.active = \
-        pillerObj.vertex_groups[vertex_group_name]
+    pillarObj.vertex_groups.active = \
+        pillarObj.vertex_groups[vertex_group_name]
     bpy.ops.object.vertex_group_select()
 
     # 3、拉伸柱头贴图区
@@ -890,7 +890,7 @@ def __setPillerHead2(pillerObj:bpy.types.Object,
     # 4、退出编辑状态，以便后续获取uvmap
     bpy.ops.object.mode_set(mode='OBJECT')
     
-    return pillerObj
+    return pillarObj
     
 # 判断枋子使用的AB配色
 def __setFangMat(fangObj:bpy.types.Object,

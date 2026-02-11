@@ -208,41 +208,41 @@ class ACA_OT_reset_floor(bpy.types.Operator):
         bpy.ops.ed.undo()
 
 # 设置垂花柱
-class ACA_OT_set_piller(bpy.types.Operator):
-    bl_idname="aca.set_piller"
+class ACA_OT_set_pillar(bpy.types.Operator):
+    bl_idname="aca.set_pillar"
     bl_label = "垂花柱"
     bl_description = "设置垂花柱（先选择1根以上的柱子）"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        piller = context.object
-        pillers = context.selected_objects
+        pillar = context.object
+        pillars = context.selected_objects
         buildingObj,bData,oData = utils.getRoot(context.object)
 
-        funproxy = partial(buildFloor.setPillerStyle,
+        funproxy = partial(buildFloor.setPillarStyle,
                     buildingObj=buildingObj,
-                    pillers=pillers,
-                    pillerStyle=con.PILLER_STYLE_LIFT)
+                    pillars=pillars,
+                    pillarStyle=con.PILLAR_STYLE_LIFT)
         result = utils.fastRun(funproxy)
 
         self.report({'INFO'},"已设置垂花柱")
         return {'FINISHED'}
 
 # 减柱
-class ACA_OT_del_piller(bpy.types.Operator):
-    bl_idname="aca.del_piller"
+class ACA_OT_del_pillar(bpy.types.Operator):
+    bl_idname="aca.del_pillar"
     bl_label = "减柱"
     bl_description = "删除柱子（先选择1根以上的柱子）"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        piller = context.object
-        pillers = context.selected_objects
+        pillar = context.object
+        pillars = context.selected_objects
         buildingObj,bData,oData = utils.getRoot(context.object)
 
-        funproxy = partial(buildFloor.delPiller,
+        funproxy = partial(buildFloor.delPillar,
                     buildingObj=buildingObj,
-                    pillers=pillers)
+                    pillars=pillars)
         result = utils.fastRun(funproxy)
 
         self.report({'INFO'},"已删除柱子")
@@ -256,13 +256,13 @@ class ACA_OT_del_piller(bpy.types.Operator):
 
     def draw(self, context):
         row = self.layout
-        pillers = context.selected_objects
-        pillersName = ''
-        for piller in pillers:
-            pillersName += piller.name + '，'
+        pillars = context.selected_objects
+        pillarsName = ''
+        for pillar in pillars:
+            pillarsName += pillar.name + '，'
         row.label(
             text=("确定删除【" 
-                  + pillersName[:-1]
+                  + pillarsName[:-1]
                   + "】吗？"),
             icon='QUESTION'
             )
@@ -279,16 +279,16 @@ class ACA_OT_add_step(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        piller = context.object
-        pillers = context.selected_objects
+        pillar = context.object
+        pillars = context.selected_objects
         # 校验用户至少选择2根柱子
-        pillerNum = 0
-        for piller in pillers:
-            if 'aca_type' in piller.ACA_data:   # 可能选择了没有属性的对象
-                if piller.ACA_data['aca_type'] \
-                    == con.ACA_TYPE_PILLER:
-                    pillerNum += 1
-        if pillerNum < 2:
+        pillarNum = 0
+        for pillar in pillars:
+            if 'aca_type' in pillar.ACA_data:   # 可能选择了没有属性的对象
+                if pillar.ACA_data['aca_type'] \
+                    == con.ACA_TYPE_PILLAR:
+                    pillarNum += 1
+        if pillarNum < 2:
             utils.popMessageBox("请至少选择2根柱子")
             return {'CANCELLED'}
         
@@ -296,7 +296,7 @@ class ACA_OT_add_step(bpy.types.Operator):
         from . import buildPlatform
         funproxy = partial(
                 buildPlatform.addStep,
-                buildingObj=buildingObj,pillers=pillers)
+                buildingObj=buildingObj,pillars=pillars)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
                 self.report({'INFO'},"已添加踏跺")
@@ -369,13 +369,13 @@ class ACA_OT_add_wall(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        piller = context.object
-        pillers = context.selected_objects
+        pillar = context.object
+        pillars = context.selected_objects
         buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
-                pillers=pillers,
+                pillars=pillars,
                 wallType=con.ACA_WALLTYPE_WALL)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
@@ -391,13 +391,13 @@ class ACA_OT_add_door(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        piller = context.object
-        pillers = context.selected_objects
+        pillar = context.object
+        pillars = context.selected_objects
         buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
-                pillers=pillers,
+                pillars=pillars,
                 wallType=con.ACA_WALLTYPE_GESHAN)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
@@ -413,13 +413,13 @@ class ACA_OT_add_window(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        piller = context.object
-        pillers = context.selected_objects
+        pillar = context.object
+        pillars = context.selected_objects
         buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
-                pillers=pillers,
+                pillars=pillars,
                 wallType=con.ACA_WALLTYPE_WINDOW)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
@@ -489,13 +489,13 @@ class ACA_OT_add_maindoor(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        piller = context.object
-        pillers = context.selected_objects
+        pillar = context.object
+        pillars = context.selected_objects
         buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
-                pillers=pillers,
+                pillars=pillars,
                 wallType=con.ACA_WALLTYPE_MAINDOOR)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
@@ -511,13 +511,13 @@ class ACA_OT_add_barwindow(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        piller = context.object
-        pillers = context.selected_objects
+        pillar = context.object
+        pillars = context.selected_objects
         buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
-                pillers=pillers,
+                pillars=pillars,
                 wallType=con.ACA_WALLTYPE_BARWINDOW)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
@@ -533,13 +533,13 @@ class ACA_OT_add_flipwindow(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        piller = context.object
-        pillers = context.selected_objects
+        pillar = context.object
+        pillars = context.selected_objects
         buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
-                pillers=pillers,
+                pillars=pillars,
                 wallType=con.ACA_WALLTYPE_FLIPWINDOW)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
@@ -555,13 +555,13 @@ class ACA_OT_add_railing(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        piller = context.object
-        pillers = context.selected_objects
+        pillar = context.object
+        pillars = context.selected_objects
         buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
-                pillers=pillers,
+                pillars=pillars,
                 wallType=con.ACA_WALLTYPE_RAILILNG)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
@@ -577,13 +577,13 @@ class ACA_OT_add_bench(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
-        piller = context.object
-        pillers = context.selected_objects
+        pillar = context.object
+        pillars = context.selected_objects
         buildingObj,bData,oData = utils.getRoot(context.object)
         funproxy = partial(
                 buildWall.addWall,
                 buildingObj=buildingObj,
-                pillers=pillers,
+                pillars=pillars,
                 wallType=con.ACA_WALLTYPE_BENCH)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
@@ -662,8 +662,8 @@ class ACA_OT_default_dk(bpy.types.Operator):
         if buildingObj != None:
             # 计算斗口推荐值，取明间的0.8，再除以柱高57斗口
             dk = (bData.x_1 
-                * con.DEFAULT_PILLER_HEIGHT 
-                / con.PILLER_H_EAVE)
+                * con.DEFAULT_PILLAR_HEIGHT 
+                / con.PILLAR_H_EAVE)
             # 取整
             bData['DK'] = int(dk*100)/100
             # funproxy = partial(

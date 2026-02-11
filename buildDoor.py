@@ -30,7 +30,7 @@ def __buildShanxin(
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
     # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
+    pd = con.PILLAR_D_EAVE * dk
     # 收集扇心对象
     linxingList = []
     if borderWidth == None:
@@ -143,7 +143,7 @@ def __getGeshanData(
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     # 考虑到柱的艺术夸张可能性，隔扇按6dk计算
-    pd = con.PILLER_D_EAVE * dk
+    pd = con.PILLAR_D_EAVE * dk
     # 输入的隔扇三维尺寸
     geshan_width,geshan_depth,geshan_height = scale
     # 边梃/抹头宽（看面）: 1/10隔扇宽（或1/5D）
@@ -330,7 +330,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
     aData:tmpData = bpy.context.scene.ACA_temp
     wData:acaData = wallproxy.ACA_data
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
+    pd = con.PILLAR_D_EAVE * dk
     # 隔扇导角大小
     geshan_bevel = con.BEVEL_LOW
     wallType = wData['wallID'].split('#')[0]
@@ -442,8 +442,8 @@ def __buildKanqiang(wallproxy:bpy.types.Object
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
     # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
-    pillerD = bData.piller_diameter
+    pd = con.PILLAR_D_EAVE * dk
+    pillarD = bData.pillar_diameter
     # 分解槛框的长、宽、高
     frame_width,frame_depth,frame_height = wallproxy.dimensions
     # 解析wallProxy
@@ -579,8 +579,8 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
     # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
-    pillerD = bData.piller_diameter
+    pd = con.PILLAR_D_EAVE * dk
+    pillarD = bData.pillar_diameter
     # 分解槛框的长、宽、高
     frame_width,frame_depth,frame_height = wallproxy.dimensions
     KankuangObjs = []
@@ -595,7 +595,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         raise Exception(f"无法找到childData:{wData.wallID}")
     
     doorWidth = ((frame_width
-                  - pillerD
+                  - pillarD
                   - con.BAOKUANG_WIDTH*pd*2)
                  *childData.doorFrame_width_per)   # 门口宽度
     # 解析wallProxy
@@ -606,7 +606,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     # 门口宽度限制：不超过开间，去除两侧抱框，去除柱径
     doorWMax = (frame_width
                 - con.BAOKUANG_WIDTH * pd * 2
-                - pillerD)
+                - pillarD)
     if doorWidth > doorWMax:
         # 此时不做余塞板，门板直接做到抱框
         doorWidth = doorWMax
@@ -614,7 +614,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     # 250814 门口高度以外檐柱高做为限制，不再与frame_height关联
     # 以便在“九檩歇山前后廊”这样需要在廊间做装修时，获得一致的高度
     # 同时內檐装修也会自动按金柱的抬升用横披窗填充
-    frameMax = bData.piller_height - con.EFANG_LARGE_H*dk
+    frameMax = bData.pillar_height - con.EFANG_LARGE_H*dk
     if bData.use_smallfang:
         frameMax -= (con.EFANG_SMALL_H*dk
                        +con.BOARD_YOUE_H*dk)
@@ -799,7 +799,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         KuangDownZ = (
             KuangDownH/2 + doorBottom)
         # 定位X：半柱间距 - 半柱径 - 半抱框宽度
-        KuangDownX = frame_width/2 - pillerD/2 - con.BAOKUANG_WIDTH*pd/2
+        KuangDownX = frame_width/2 - pillarD/2 - con.BAOKUANG_WIDTH*pd/2
         KuangDownLoc = Vector((KuangDownX,0,KuangDownZ))
         # 添加下抱框
         KuangDownObj = utils.addCube(
@@ -839,7 +839,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         KuangUpZ = (
             midDownZ + KuangUpH/2 + con.KAN_MID_HEIGHT*pd)
         # 定位X：半柱间距 - 半柱径 - 半抱框宽度
-        KuangUpX = frame_width/2 - pillerD/2 - con.BAOKUANG_WIDTH*pd/2
+        KuangUpX = frame_width/2 - pillarD/2 - con.BAOKUANG_WIDTH*pd/2
         KuangUpLoc = Vector((KuangUpX,0,KuangUpZ))
         # 添加上抱框
         KuangUpObj = utils.addCube(
@@ -861,7 +861,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     # 7、余塞板 ---------------------
     if doorWidth >= (frame_width 
                     - con.BAOKUANG_WIDTH*pd*4
-                    - pillerD
+                    - pillarD
                     ):
         # 在下抱框和门框都完整显示前，无需余塞板
         pass
@@ -869,7 +869,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         boardYusaiWidth = (
             frame_width/2 
             - doorWidth/2
-            - pillerD/2
+            - pillarD/2
             - con.BAOKUANG_WIDTH*pd*2
             + con.KANKUANG_INSET*2)
         boardYusaiDim = Vector((
@@ -900,7 +900,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
     # 8、腰枋 ----------------------
     if doorWidth >= (frame_width 
                     - con.BAOKUANG_WIDTH*pd*4
-                    - pillerD
+                    - pillarD
                     ):
         # 在下抱框和门框都完整显示前，无需腰枋
         pass
@@ -908,7 +908,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         fangMidWidth = (
             frame_width/2 
             - doorWidth/2
-            - pillerD/2
+            - pillarD/2
             - con.BAOKUANG_WIDTH * pd * 2)
         fangMidDim = Vector((
                     fangMidWidth,
@@ -947,7 +947,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
                         - con.KAN_MID_HEIGHT * pd
                         + con.KANKUANG_INSET*2)
             boardWindW = (frame_width 
-                        - pillerD
+                        - pillarD
                         - con.BAOKUANG_WIDTH * pd * 2
                         + con.KANKUANG_INSET*2)
             boardWindDim = Vector((boardWindW, 
@@ -990,7 +990,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
                 window_top_num = 3
             # 横披窗宽度:(柱间距-柱径-抱框*(横披窗数量+1))/3
             window_top_width = ((frame_width 
-                                - pillerD 
+                                - pillarD 
                                 - (window_top_num+1)
                                 *con.BAOKUANG_WIDTH*pd)
                                 /window_top_num)
@@ -1261,8 +1261,8 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
     # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
-    pillerD = bData.piller_diameter
+    pd = con.PILLAR_D_EAVE * dk
+    pillarD = bData.pillar_diameter
     
     # 提取maindoorData
     maindoorID = kankuangObj.ACA_data['wallID']    
@@ -1278,7 +1278,7 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
     frame_width,frame_depth,frame_height = kankuangObj.dimensions
     holeHeight = maindoorData.doorFrame_height  # 门口高度
     holeWidth = ((frame_width
-                  - pillerD
+                  - pillarD
                   - con.BAOKUANG_WIDTH*pd*2)
                  *maindoorData.doorFrame_width_per)   # 门口宽度
 
@@ -1504,8 +1504,8 @@ def __addGeshan(kankuangObj:bpy.types.Object):
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
     # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
-    pillerD = bData.piller_diameter
+    pd = con.PILLAR_D_EAVE * dk
+    pillarD = bData.pillar_diameter
 
     # 提取geshanData
     geshanID = kankuangObj.ACA_data['wallID']    
@@ -1521,7 +1521,7 @@ def __addGeshan(kankuangObj:bpy.types.Object):
     frame_width,frame_depth,frame_height = kankuangObj.dimensions
     holeHeight = geshanData.doorFrame_height  # 门口高度
     holeWidth = ((frame_width
-                  - pillerD
+                  - pillarD
                   - con.BAOKUANG_WIDTH*pd*2)
                  *geshanData.doorFrame_width_per)   # 门口宽度
     geshanParts = []
@@ -1570,8 +1570,8 @@ def __addBarwindow(kankuangObj:bpy.types.Object):
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
     # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
-    pillerD = bData.piller_diameter
+    pd = con.PILLAR_D_EAVE * dk
+    pillarD = bData.pillar_diameter
 
     # 提取geshanData
     windowID = kankuangObj.ACA_data['wallID']    
@@ -1587,7 +1587,7 @@ def __addBarwindow(kankuangObj:bpy.types.Object):
     frame_width,frame_depth,frame_height = kankuangObj.dimensions
     holeHeight = windowData.doorFrame_height  # 门口高度
     holeWidth = ((frame_width
-                  - pillerD
+                  - pillarD
                   - con.BAOKUANG_WIDTH*pd*2)
                  *windowData.doorFrame_width_per)   # 门口宽度
     
@@ -1699,8 +1699,8 @@ def __addFlipwindow(kankuangObj:bpy.types.Object):
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关
     # todo：是采用用户可调整的设计值，还是取模板中定义的理论值？
     dk = bData.DK
-    pd = con.PILLER_D_EAVE * dk
-    pillerD = bData.piller_diameter
+    pd = con.PILLAR_D_EAVE * dk
+    pillarD = bData.pillar_diameter
 
     # 提取geshanData
     windowID = kankuangObj.ACA_data['wallID']    
@@ -1716,7 +1716,7 @@ def __addFlipwindow(kankuangObj:bpy.types.Object):
     frame_width,frame_depth,frame_height = kankuangObj.dimensions
     holeHeight = windowData.doorFrame_height  # 门口高度
     holeWidth = ((frame_width
-                  - pillerD
+                  - pillarD
                   - con.BAOKUANG_WIDTH*pd*2)
                  *windowData.doorFrame_width_per)   # 门口宽度
     

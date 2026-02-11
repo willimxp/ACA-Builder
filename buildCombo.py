@@ -255,16 +255,16 @@ def __syncData(fromBuilding:bpy.types.Object,
                 'combo_type',
                 'combo_parent'
                 # 'is_showPlatform',
-                # 'is_showPillers',
+                # 'is_showPillars',
                 # 'is_showWalls',
                 # 'is_showDougong',
                 # 'is_showBeam',
                 # 'is_showRafter',
                 # 'is_showTiles',
-                # 250812 重檐上檐需要同步pillernet，
+                # 250812 重檐上檐需要同步pillarnet，
                 # 所以默认的数据上传需要上传这些字段
-                # 月台不需要pillernet，不要用这个skip
-                # 'piller_net',
+                # 月台不需要pillarnet，不要用这个skip
+                # 'pillar_net',
             ]
     defaultSyncKeys = [
                 'DK',
@@ -327,8 +327,8 @@ def __syncMainData(toBuilding:bpy.types.Object,
                 'y_1',
                 'y_2',
                 'y_3',
-                'piller_height',
-                'piller_diameter',
+                'pillar_height',
+                'pillar_diameter',
                 'use_smallfang',]
     
     # 仅在重置柱网时，同步面阔/进深间数
@@ -359,17 +359,17 @@ def __uploadData(fromBuilding:bpy.types.Object):
                 'combo_type',
                 'combo_parent',
                 'is_showPlatform',
-                'is_showPillers',
+                'is_showPillars',
                 'is_showWalls',
                 'is_showDougong',
                 'is_showBeam',
                 'is_showRafter',
                 'is_showTiles',
-                # 250812 comboRoot中需要与主建筑同步pillernet
+                # 250812 comboRoot中需要与主建筑同步pillarnet
                 # 子建筑可以自行决定是否要继承该柱网，
                 # 如，月台初始化时继承，修改更新时不继承，
                 # 如，重檐上檐始终继承
-                # 'piller_net',
+                # 'pillar_net',
                 # 250819 roof_style不能跳过，否则默认值为'0'
                 #'roof_style',   # 250819 不上传屋顶类型，将始终保留继承的主建筑屋顶类型
             ]
@@ -483,7 +483,7 @@ def addTerrace(buildingObj:bpy.types.Object):
     terraceRoot.location = bData.combo_location
 
     # 重做柱网（显示柱定位标识）
-    buildFloor.buildPillers(terraceRoot)
+    buildFloor.buildPillars(terraceRoot)
 
     # 聚焦新生成的月台
     terraceObj = utils.getAcaChild(
@@ -604,7 +604,7 @@ def __setTerraceData(parentObj:bpy.types.Object,
     # 2、其他数据的设置 --------------------------
     # 分层显示控制
     bData['is_showPlatform'] = True
-    bData['is_showPillers'] = True
+    bData['is_showPillars'] = True
     bData['is_showWalls'] = False
     bData['is_showDougong'] = False
     bData['is_showBeam'] = False
@@ -616,7 +616,7 @@ def __setTerraceData(parentObj:bpy.types.Object,
     bData['use_terrace'] = True
     mData['use_terrace'] = True
     # 柱网仅显示定位点
-    bData['piller_net'] = con.ACA_PILLER_HIDE
+    bData['pillar_net'] = con.ACA_PILLAR_HIDE
         
     # 月台定位 ------------------------
     # 更新地盘数据，计算当前的y_total
@@ -700,7 +700,7 @@ def set_multiFloor_plan(self, context:bpy.types.Context):
         setting.taper = 3*dk  # 默认收分1拽架
         pingzuo_extend = (bData.dg_extend   # 斗栱出跳
               + con.BALCONY_EXTENT*bData.DK*bData.dk_scale # 平坐出跳，对齐桁出梢
-              - con.PILLER_D_EAVE*bData.DK/2 # 柱的保留深度
+              - con.PILLAR_D_EAVE*bData.DK/2 # 柱的保留深度
               - bData.DK # 保留1斗口边线
             ) 
         setting.pingzuo_taper = -pingzuo_extend
@@ -1025,7 +1025,7 @@ def __addPingzuo(baseFloor:bpy.types.Object,
     # 设置柱高:叉柱到斗栱上
     # 从斗栱顶(挑檐桁下皮)，到围脊向上额枋高度
     mideaveHeight = __getPingzuoHeight(baseFloor)
-    mData['piller_height'] = mideaveHeight
+    mData['pillar_height'] = mideaveHeight
     # 250916 新的逻辑中，建筑数据层层向上传递（不再使用comboRoot数据）
     # 所以这里不要清除，延迟到buildWall函数中判断
     # # 不做装修
@@ -1113,21 +1113,21 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
     else:
         mData['is_showPlatform'] = True
         mData['platform_height'] = con.BALCONY_FLOOR_H*dk
-        mData['platform_extend'] = mData.piller_diameter/2
+        mData['platform_extend'] = mData.pillar_diameter/2
 
     # 3、设置柱子 ------------------------------
     # 3.1、设置柱高
     # 柱高默认从下层传递，但下层如果是平座层，则柱高太短
     if use_floor:
         # 这里统一重新设置为55DK
-        mData['piller_height'] = 55*dk
+        mData['pillar_height'] = 55*dk
     # 不做重屋时(单一重檐)，只露出额枋
     else:
-        mData['piller_height'] = __getPingzuoHeight(lowerFloor)
+        mData['pillar_height'] = __getPingzuoHeight(lowerFloor)
 
     # 3.2、设置插柱
     # 插柱初始化，以免继承下层数据
-    mData['piller_insert'] = 0
+    mData['pillar_insert'] = 0
     # 如果立于腰檐之上且要做重楼(边靖楼模式)，柱子下插
     # 这里通过use_floor来判断是否是重檐，重檐直接落在梁上，不用再重复计算下插
     if bData.roof_style == con.ROOF_LUDING and use_floor:
@@ -1153,14 +1153,14 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
         insert_height += bData.luding_rafterspan * lift_radio[0]
         # 半根正心桁(梁上皮在正心桁中心)
         insert_height += con.HENG_COMMON_D*dk        
-        mData['piller_insert'] = - insert_height
+        mData['pillar_insert'] = - insert_height
 
     # 4、设置栏杆与回廊 -----------------------------
     if use_loggia:
         # 回廊宽度，与平坐做法一致，参考buildBalcony.__buildFloor()
         pingzuo_extend = (bData.dg_extend   # 斗栱出跳
               + con.BALCONY_EXTENT*bData.DK*bData.dk_scale # 平坐出跳，对齐桁出梢
-              - con.PILLER_D_EAVE*bData.DK/2 # 柱的保留深度
+              - con.PILLAR_D_EAVE*bData.DK/2 # 柱的保留深度
               - bData.DK # 保留1斗口边线
             ) 
         # 如果不在平坐上，回廊采用内收做法，宽度取负数
@@ -1245,7 +1245,7 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
             floorHeight = 0
             if preData.is_showPlatform:
                 floorHeight += preData.platform_height
-            floorHeight += preData.piller_height
+            floorHeight += preData.pillar_height
             if preData.use_dg:
                 if preData.use_pingbanfang:
                     floorHeight += con.PINGBANFANG_H*dk
@@ -1274,7 +1274,7 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
             
 
             # 4、边靖楼类型，楼顶落于围脊上皮
-            # （柱下插在piller_insert中另行处理）
+            # （柱下插在pillar_insert中另行处理）
             elif preData.roof_style == con.ROOF_LUDING:
             # if (preData.roof_style == con.ROOF_LUDING
             #         and nextData.roof_style != con.ROOF_BALCONY):
@@ -1335,22 +1335,22 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
 # 从大梁上皮到围脊上露额枋的高度
 def __getPingzuoHeight(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
-    pillerLift = 0.0
+    pillarLift = 0.0
     dk = bData.DK
 
     # 从大梁上皮开始计算
     # 已包括台基、柱高、斗栱挑高、斗栱出跳加斜、半根正心桁
 
     # 正心桁上皮，半根正心桁
-    pillerLift += con.HENG_COMMON_D*dk/2
+    pillarLift += con.HENG_COMMON_D*dk/2
 
     # 盝顶步架加斜
     from . import buildBeam
     lift_radio = buildBeam.getLiftRatio(buildingObj)
-    pillerLift += bData.luding_rafterspan * lift_radio[0]
+    pillarLift += bData.luding_rafterspan * lift_radio[0]
 
     # 屋瓦层抬升
-    pillerLift += (con.YUANCHUAN_D*dk   # 椽架
+    pillarLift += (con.YUANCHUAN_D*dk   # 椽架
                    + con.WANGBAN_H*dk   # 望板
                    + con.ROOFMUD_H*dk   # 灰泥
                    )
@@ -1362,19 +1362,19 @@ def __getPingzuoHeight(buildingObj:bpy.types.Object):
     # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
     tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
     ridgeH = ridgeH * tileScale
-    pillerLift += ridgeH
-    pillerLift -= con.RIDGE_SURR_OFFSET*dk   # 围脊调整
+    pillarLift += ridgeH
+    pillarLift -= con.RIDGE_SURR_OFFSET*dk   # 围脊调整
 
     # 额枋高度
     # 大额枋
-    pillerLift += con.EFANG_LARGE_H*dk
+    pillarLift += con.EFANG_LARGE_H*dk
     if bData.use_smallfang:
         # 由额垫板
-        pillerLift += con.BOARD_YOUE_H*dk
+        pillarLift += con.BOARD_YOUE_H*dk
         # 小额枋
-        pillerLift += con.EFANG_SMALL_H*dk
+        pillarLift += con.EFANG_SMALL_H*dk
 
-    return pillerLift
+    return pillarLift
 
 # 根据收分要求，设置地盘数据
 def __setTaperData(mData,taper):

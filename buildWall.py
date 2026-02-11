@@ -160,9 +160,9 @@ def __drawWall(wallProxy:bpy.types.Object):
     buildingObj = utils.getAcaParent(wallProxy,con.ACA_TYPE_BUILDING)
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
-    (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
+    (wallLength,wallDepth,wallHeight) = wallProxy.dimensions
     # 覆盖墙体厚度
-    wallDeepth = con.WALL_DEPTH * bData.pillar_diameter
+    wallDepth = con.WALL_DEPTH * bData.pillar_diameter
     # 退花碱厚度
     bodyShrink = con.WALL_SHRINK
 
@@ -194,7 +194,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     bottomObj = utils.drawHexagon(
         name='下碱',
         dimensions=Vector((wallLength,
-               wallDeepth+bodyShrink*2,
+               wallDepth+bodyShrink*2,
                height)),
         location=Vector((0,0,height/2-heightOffset)),
         parent=wallProxy,
@@ -209,7 +209,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     bodyObj = utils.drawHexagon(
         name='墙体',
         dimensions=Vector((wallLength-bodyShrink*2,
-               wallDeepth,
+               wallDepth,
                wallHeight-extrudeHeight)),
         location=Vector((0,0,wallHeight/2-extrudeHeight/2)),
         parent=wallProxy,

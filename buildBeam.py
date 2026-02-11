@@ -172,7 +172,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
 
     # 0、槫子布局起点
     purlinWidth = bData.x_total/2
-    purlinDeepth = bData.y_total/2
+    purlinDepth = bData.y_total/2
     # 屋顶起点root在挑檐枋下皮，所以初始即上移半桁
     purlinHeight = con.HENG_TIAOYAN_D/2*dk
     # 硬山桁檩：做到梁的外皮
@@ -205,7 +205,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
         # 插入挑檐桁等位点
         purlin_pos.append(Vector((
             purlinWidth_dg,
-            purlinDeepth+bData.dg_extend,
+            purlinDepth+bData.dg_extend,
             purlinHeight)))  
         # 补偿正心桁的抬升挑檐桁举折
         purlinHeight += bData.dg_extend*lift_ratio[0]
@@ -213,7 +213,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
     # 2、构造正心桁
     purlin_pos.append(Vector((
             purlinWidth,
-            purlinDeepth,
+            purlinDepth,
             purlinHeight,
         )))
 
@@ -312,14 +312,14 @@ def getPurlinPos(buildingObj:bpy.types.Object):
 
         # 3. 计算每根槫子的举折
         # 3.a、进深Y方向的举折
-        purlinDeepth -= rafterSpan
+        purlinDepth -= rafterSpan
         # 3.b、举折：举架高度 = 步架 * 举架系数
         purlinHeight += rafterSpan*lift_ratio[n]
 
         # 4、存入槫子参数集合
         purlin_pos.append(Vector((
             purlinWidth,
-            purlinDeepth,
+            purlinDepth,
             purlinHeight)))
 
     # 返回桁檩定位数据集

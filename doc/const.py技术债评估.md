@@ -53,8 +53,8 @@ const/
 
 | 行号 | 常量名 | 问题 |
 |------|--------|------|
-| 33 | `ACA_TYPE_PILLAR` | 拼写错误，应为 `PILLAR` |
-| 122-126 | `PILLAR_*` | 多处使用错误拼写 `PILLAR` |
+| 33 | `ACA_TYPE_PILLER` | 拼写错误，应为 `PILLAR` |
+| 122-126 | `PILLER_*` | 多处使用错误拼写 `PILLAR` |
 | 244 | `RAILING_DEEPTH` | 拼写错误，应为 `DEPTH` |
 | 119 | `HALLWAY_DEEPTH` | 同样拼写错误 |
 | 76 | `ACA_TYPE_COMBO` | 与第26行重复定义 |
@@ -243,7 +243,7 @@ class ACA_Consts:
    ```python
    # 修复前
    PILLAR_D_EAVE = 6
-   RAILING_DEEPTH = 4
+   RAILING_DEPTH = 4
    
    # 修复后
    PILLAR_D_EAVE = 6  # 注意：需要全局替换
@@ -388,7 +388,7 @@ class RoofTileConsts:
 
 **阶段一（立即）**: 修复拼写错误
 - 修复 `PILLAR` → `PILLAR`
-- 修复 `DEEPTH` → `DEPTH`
+- 修复 `DEPTH` → `DEPTH`
 - 删除重复定义的 `ACA_TYPE_COMBO`
 
 **阶段二（短期）**: 添加单位后缀

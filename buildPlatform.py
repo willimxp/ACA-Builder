@@ -32,7 +32,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
     # 构造cube三维
     pHeight = platform_height
     pWidth = platform_extend * 2 + bData.x_total
-    pDeepth = platform_extend * 2 + bData.y_total
+    pDepth = platform_extend * 2 + bData.y_total
 
     #2、营造台明结构
     # 收集待合并的台明构件
@@ -46,7 +46,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         + stoneWidth*2
         - con.STEP_HEIGHT*2
         - 0.02)
-    deepth = (bData.y_total 
+    depth = (bData.y_total 
         + bData.pillar_diameter*2
         + stoneWidth*2
         - con.STEP_HEIGHT*2
@@ -62,7 +62,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         earthObj = utils.addCube(
             name = '夯土',
             location=(0,0,z),
-            dimension=(width,deepth,height),
+            dimension=(width,depth,height),
             parent=baseRootObj
         )
         mat.paint(earthObj,con.M_ROCK)
@@ -86,7 +86,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         ),
         dimension=(
             pWidth - stoneWidth*2,
-            pDeepth - stoneWidth*2,
+            pDepth - stoneWidth*2,
             con.STEP_HEIGHT
         ),
         parent=baseRootObj
@@ -116,7 +116,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
                 name='阶条石',
                 location=(
                     (net_x[n+1]+net_x[n])/2,
-                    pDeepth/2-stoneWidth/2,
+                    pDepth/2-stoneWidth/2,
                     pHeight-con.STEP_HEIGHT/2
                 ),
                 dimension=(
@@ -136,8 +136,8 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
 
         # 2.2.2、两山阶条石
         # 延长尽间阶条石，与好头石相接
-        net_y[0] = -pDeepth/2 + stoneWidth
-        net_y[-1] = pDeepth/2 - stoneWidth
+        net_y[0] = -pDepth/2 + stoneWidth
+        net_y[-1] = pDepth/2 - stoneWidth
         # 依次做出前后檐阶条石
         for n in range((len(net_y)-1)):
             sidebrickObj = utils.addCube(
@@ -171,7 +171,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
             name='埋头角柱',
             location=(
                 pWidth/2-stoneWidth/2,
-                pDeepth/2-stoneWidth/2,
+                pDepth/2-stoneWidth/2,
                 (pHeight
                 -con.STEP_HEIGHT
                 -cornerPillarH/2)
@@ -199,7 +199,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         aroundbrickObj = utils.addCube(
             name='陡板-前后檐',
             location=(
-                0,pDeepth/2- con.STEP_HEIGHT/2,
+                0,pDepth/2- con.STEP_HEIGHT/2,
                 (pHeight - con.STEP_HEIGHT - h/2)
             ),
             dimension=(
@@ -220,7 +220,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         
         # 2.4.2、陡板两山
         # 台基宽度 - 两头的角柱（与阶条石同宽）
-        brickLength = pDeepth - stoneWidth*2
+        brickLength = pDepth - stoneWidth*2
         # 050909 如果台基很小没有角柱时，退让前后山陡板
         if stoneWidth == 0.0:
             brickLength -= con.STEP_HEIGHT*2
@@ -429,9 +429,9 @@ def __addStepProxy(baseRootObj:bpy.types.Object,
     # 踏跺与台基同高
     stepHeight = bData.platform_height
     # 踏跺进深取固定的2.5倍高
-    stepDeepth = stepHeight * con.STEP_RATIO
+    stepDepth = stepHeight * con.STEP_RATIO
     # 踏跺几何中心：柱头+台基下出+半踏跺
-    offset = bData.platform_extend+stepDeepth/2
+    offset = bData.platform_extend+stepDepth/2
     if step_dir in ('N','S'):
         stepWidth = abs(net_x[pTo_x] - net_x[pFrom_x])
         # 横坐标对齐两柱连线的中间点
@@ -462,7 +462,7 @@ def __addStepProxy(baseRootObj:bpy.types.Object,
     stepProxy = utils.addCube(
         name='踏跺proxy',
         location=(x,y,stepHeight/2),
-        dimension=(stepWidth,stepDeepth,stepHeight),
+        dimension=(stepWidth,stepDepth,stepHeight),
         rotation=rot,
     )
     stepProxy.parent = baseRootObj
@@ -506,7 +506,7 @@ def __drawStep(
         baseRootObj,stepData)
     # 251011 踏跺生成失败时退出
     if stepProxy == None: return
-    (pWidth,pDeepth,pHeight) = stepProxy.dimensions
+    (pWidth,pDepth,pHeight) = stepProxy.dimensions
     
     # 判断是否与前后踏跺“连做”，如，三连踏跺
     # 连做时，垂带对齐柱中线，不连做时，垂带在柱边线内侧，且可以设置缩放比例
@@ -570,7 +570,7 @@ def __drawStep(
         ),
         dimension=(
             stoneWidth,             
-            pDeepth - con.STEP_HEIGHT*con.STEP_RATIO,
+            pDepth - con.STEP_HEIGHT*con.STEP_RATIO,
             pHeight-con.GROUND_BORDER-con.STEP_HEIGHT
         ),
         parent=stepProxy
@@ -600,7 +600,7 @@ def __drawStep(
         dimension=(
             # 宽度与阶条石宽度相同
             stoneWidth,             
-            pDeepth,
+            pDepth,
             pHeight-con.GROUND_BORDER
         ),
         parent=stepProxy
@@ -608,7 +608,7 @@ def __drawStep(
     # 删除一条边，变成三角形，index=11
     utils.dissolveEdge(brickObj,[11])
     # 裁剪掉象眼石的部分，仅剩垂带高度
-    pStart:Vector = stepProxy.matrix_world @ Vector((0,pDeepth/2,pHeight/2))
+    pStart:Vector = stepProxy.matrix_world @ Vector((0,pDepth/2,pHeight/2))
     pEnd:Vector = stepProxy.matrix_world @ Vector((0,0,con.GROUND_BORDER/2))
     pCut:Vector=stepProxy.matrix_world @ Vector((0,0,con.GROUND_BORDER/2-con.STEP_HEIGHT))
     clear_outer = False
@@ -654,19 +654,19 @@ def __drawStep(
     count = round(pHeight/con.STEP_HEIGHT)
     if count == 0: count += 1
     stepHeight = (pHeight-con.GROUND_BORDER)/count
-    stepDeepth = pDeepth/count
+    stepDepth = pDepth/count
     brickObj = utils.addCube(
         name='台阶',
         location=(
             0,
-            (-pDeepth/2+stepDeepth*1.5),
+            (-pDepth/2+stepDepth*1.5),
             (-pHeight/2
                 + con.GROUND_BORDER/2
                 + stepHeight/2)
         ),
         dimension=(
             pWidth-stoneWidth,
-            stepDeepth+bevel*2,
+            stepDepth+bevel*2,
             stepHeight
         ),
         parent=stepProxy
@@ -674,7 +674,7 @@ def __drawStep(
     utils.addModifierArray(
         object=brickObj,
         count=count-1,
-        offset=(0,stepDeepth,stepHeight)
+        offset=(0,stepDepth,stepHeight)
     )
     taduoObjs.append(brickObj)
 

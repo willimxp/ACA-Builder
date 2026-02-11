@@ -116,7 +116,7 @@ class ACA_Consts(object):
     ROOM_Y1 = 44    # 明间宽(DK)
     ROOM_Y2 = 44    # 明间宽(DK)
     ROOM_Y3 = 22    # 明间宽(DK)
-    HALLWAY_DEEPTH = 22 # 廊间面阔/进深(DK)
+    HALLWAY_DEPTH = 22 # 廊间面阔/进深(DK)
 
     # 柱子
     PILLAR_D_EAVE = 6       # 檐柱直径(DK)
@@ -240,7 +240,7 @@ class ACA_Consts(object):
     BALCONY_EAVE_H = 5                  # 挂檐板高度(DK)
     BALCONY_EAVE_Y = 0.5                # 挂檐板厚度(DK)
     BALCONY_FANG_H = 5                  # 平坐枋的高度(DK)，资产中要保持一致
-    RAILING_DEEPTH = 4                  # 栏杆深度(DK)
+    RAILING_DEPTH = 4                  # 栏杆深度(DK)
     RAILING_PILLAR_H = 16               # 望柱高(DK)
     RAILING_PILLAR_D = 1.8              # 望柱径(DK)
     RAILING_DIFU_Y = 2.5                # 地栿宽(DK)

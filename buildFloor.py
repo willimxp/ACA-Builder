@@ -366,7 +366,7 @@ def addQueti(wallproxy:bpy.types.Object):
     # 清理之前的子对象
     utils.deleteHierarchy(wallproxy)
 
-    (wallLength,wallDeepth,wallHeight) = wallproxy.dimensions
+    (wallLength,wallDepth,wallHeight) = wallproxy.dimensions
 
     # 雀替的尺度参考马炳坚P183，长度为净面宽的1/4，高同大额枋或小额枋，厚为檐柱的3/10
     # 栱长1/2瓜子栱，高2斗口，厚同雀替

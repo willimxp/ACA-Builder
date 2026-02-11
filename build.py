@@ -1313,14 +1313,14 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
 
     # 剪切体尺寸
     boolWidth = bData.x_total + mData.pillar_diameter
-    boolDeepth = bData.y_total + eave_extend*2
+    boolDepth = bData.y_total + eave_extend*2
     boolHeight = buildingH
 
     # 裁剪体定位
     if fromBuilding.location.y > toBuilding.location.y:
-        offset = boolDeepth/2
+        offset = boolDepth/2
     else:
-        offset = -boolDeepth/2
+        offset = -boolDepth/2
     boolX = 0
     boolY = offset + crossPoint.y # 碰撞点
     boolZ = buildingH/2
@@ -1328,7 +1328,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     boolObj = utils.addCube(
         name="平行抱厦-悬山-主建筑" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
-        dimension=(boolWidth,boolDeepth,boolHeight),
+        dimension=(boolWidth,boolDepth,boolHeight),
         parent=fromBuildingJoined,
     )
     utils.hideObjFace(boolObj)
@@ -1351,14 +1351,14 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     # 2、抱厦屋顶裁剪：宽度到悬山外侧
     # 裁剪体尺寸
     boolWidth = bData.x_total + 21*2*dk # 悬山出檐
-    boolDeepth = bData.y_total + eave_extend*2
+    boolDepth = bData.y_total + eave_extend*2
     boolHeight = buildingH
 
     # 裁剪体定位
     if fromBuilding.location.y > toBuilding.location.y:
-        offset = boolDeepth/2
+        offset = boolDepth/2
     else:
-        offset = -boolDeepth/2
+        offset = -boolDepth/2
     boolX = 0
     boolY = offset + crossPoint.y # 碰撞点
     boolZ = buildingH/2
@@ -1366,7 +1366,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     boolObj = utils.addCube(
         name="平行抱厦-悬山-抱厦" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
-        dimension=(boolWidth,boolDeepth,boolHeight),
+        dimension=(boolWidth,boolDepth,boolHeight),
         parent=fromBuildingJoined,
     )
     utils.hideObjFace(boolObj)
@@ -1390,11 +1390,11 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     # 沿着主建筑的檐面额枋进行裁剪，以同时保证不破坏主建筑的额枋，同时不产生柱础的重叠
     # 同时，保留了主建筑保修，裁剪了抱厦可能存在的雀替等
     boolWidth= bData.x_total + 21*2*dk # 悬山出檐
-    boolDeepth = bData.y_total + eave_extend*2
+    boolDepth = bData.y_total + eave_extend*2
     boolHeight = buildingH
     # 定位点做在檐柱中线，没有按瓦面碰撞
     # 后出抱厦的定位
-    boolY = (boolDeepth-bData.y_total+con.EFANG_LARGE_Y*dk+0.01)/2
+    boolY = (boolDepth-bData.y_total+con.EFANG_LARGE_Y*dk+0.01)/2
     if fromBuilding.location.y < toBuilding.location.y:
         # 前出抱厦的定位
         boolY *= -1
@@ -1402,7 +1402,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     boolObj = utils.addCube(
         name="平行抱厦-悬山-柱网" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
-        dimension=(boolWidth,boolDeepth,boolHeight),
+        dimension=(boolWidth,boolDepth,boolHeight),
         parent=fromBuildingJoined,
     )
     utils.hideObjFace(boolObj)
@@ -1441,13 +1441,13 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
                 + con.GROUND_BORDER *2
                 # + bData.platform_height*3 # 保留踏跺空间
                 )
-    boolDeepth = (bData.y_total
+    boolDepth = (bData.y_total
                   + bData.platform_extend
                   + con.GROUND_BORDER)
     boolHeight = bData.platform_height
     # 定位点做在檐柱中线，没有按瓦面碰撞
     # 后出抱厦的定位
-    boolY = (boolDeepth-bData.y_total)/2
+    boolY = (boolDepth-bData.y_total)/2
     if fromBuilding.location.y < toBuilding.location.y:
         # 前出抱厦的定位
         boolY *= -1
@@ -1455,7 +1455,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     boolObj = utils.addCube(
         name="平行抱厦-悬山-台基" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
-        dimension=(boolWidth,boolDeepth,boolHeight),
+        dimension=(boolWidth,boolDepth,boolHeight),
         parent=fromBuildingJoined,
     )
 
@@ -1518,7 +1518,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     utils.applyAllModifer(tileGrid_copy)
 
     # 推出裁剪体
-    boolDeepth = bData.y_total
+    boolDepth = bData.y_total
     bpy.ops.object.mode_set(mode='EDIT')
     bm = bmesh.new()
     bm = bmesh.from_edit_mesh(tileGrid_copy.data)
@@ -1531,7 +1531,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
                       if isinstance(v, bmesh.types.BMVert)]
     bmesh.ops.translate(
         bm,
-        vec=Vector((0, 0, -boolDeepth)),  # Y轴方向移动
+        vec=Vector((0, 0, -boolDepth)),  # Y轴方向移动
         verts=extruded_verts
     )
     # 沿Y方向缩放0
@@ -1630,21 +1630,21 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
 
     # 剪切体尺寸
     boolWidth = bData.x_total + eave_extend*2
-    boolDeepth = bData.y_total + eave_extend*2
+    boolDepth = bData.y_total + eave_extend*2
     boolHeight = buildingH
 
     # 裁剪体定位
     if fromBuilding.location.y > toBuilding.location.y:
-        offset = boolDeepth/2
+        offset = boolDepth/2
     else:
-        offset = -boolDeepth/2
+        offset = -boolDepth/2
     boolX = 0
     boolY = offset + crossPoint.y # 碰撞点
     boolZ = buildingH/2
     boolObj = utils.addCube(
         name="平行抱厦-歇山屋顶" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
-        dimension=(boolWidth,boolDeepth,boolHeight),
+        dimension=(boolWidth,boolDepth,boolHeight),
         parent=fromBuildingJoined,
     )
     # 做45度折角
@@ -1693,11 +1693,11 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     # 沿着主建筑的檐面额枋进行裁剪，以同时保证不破坏主建筑的额枋，同时不产生柱础的重叠
     # 同时，保留了主建筑保修，裁剪了抱厦可能存在的雀替等
     boolWidth= bData.x_total + 21*2*dk # 歇山出檐
-    boolDeepth = bData.y_total + eave_extend*2
+    boolDepth = bData.y_total + eave_extend*2
     boolHeight = buildingH
     # 定位点做在檐柱中线，没有按瓦面碰撞
     # 后出抱厦的定位
-    boolY = (boolDeepth-bData.y_total+con.EFANG_LARGE_Y*dk+0.01)/2
+    boolY = (boolDepth-bData.y_total+con.EFANG_LARGE_Y*dk+0.01)/2
     if fromBuilding.location.y < toBuilding.location.y:
         # 前出抱厦的定位
         boolY *= -1
@@ -1705,7 +1705,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     boolObj = utils.addCube(
         name="平行抱厦-歇山-柱网" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
-        dimension=(boolWidth,boolDeepth,boolHeight),
+        dimension=(boolWidth,boolDepth,boolHeight),
         parent=fromBuildingJoined,
     )
     utils.hideObjFace(boolObj)
@@ -1744,7 +1744,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
                 + con.GROUND_BORDER *2
                 #+ bData.pillar_diameter*2
                 )
-    boolDeepth = (bData.y_total
+    boolDepth = (bData.y_total
                   + bData.platform_extend
                   + con.GROUND_BORDER
                   + bData.platform_height*3 # 保留踏跺空间
@@ -1752,7 +1752,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     boolHeight = bData.platform_height
     # 定位点做在檐柱中线，没有按瓦面碰撞
     # 后出抱厦的定位
-    boolY = (boolDeepth-bData.y_total)/2
+    boolY = (boolDepth-bData.y_total)/2
     if fromBuilding.location.y < toBuilding.location.y:
         # 前出抱厦的定位
         boolY *= -1
@@ -1760,7 +1760,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     boolObj = utils.addCube(
         name="平行抱厦-悬山-台基" + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
-        dimension=(boolWidth,boolDeepth,boolHeight),
+        dimension=(boolWidth,boolDepth,boolHeight),
         parent=fromBuildingJoined,
     )
 
@@ -1823,7 +1823,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     utils.applyAllModifer(tileGrid_copy)
 
     # 推出裁剪体
-    boolDeepth = bData.y_total
+    boolDepth = bData.y_total
     bpy.ops.object.mode_set(mode='EDIT')
     bm = bmesh.new()
     bm = bmesh.from_edit_mesh(tileGrid_copy.data)
@@ -1836,7 +1836,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
                       if isinstance(v, bmesh.types.BMVert)]
     bmesh.ops.translate(
         bm,
-        vec=Vector((0, 0, -boolDeepth)),  # Y轴方向移动
+        vec=Vector((0, 0, -boolDepth)),  # Y轴方向移动
         verts=extruded_verts
     )
     # 沿Y方向缩放0
@@ -2220,10 +2220,10 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         # 宽：包裹抱厦宽度，避免裁剪外部的柱础
         boolWidth= bData.y_total + bData.pillar_diameter
         # 长：包裹主建筑檐面额枋
-        boolDeepth = mData.y_total + con.EFANG_LARGE_Y*dk + 0.01
+        boolDepth = mData.y_total + con.EFANG_LARGE_Y*dk + 0.01
     else:
         # 长：包裹抱厦进深+柱径，即明间柱的外皮
-        boolDeepth = bData.y_total + bData.pillar_diameter
+        boolDepth = bData.y_total + bData.pillar_diameter
         # 宽：包裹主建筑檐面额枋
         boolWidth = mData.x_total + con.EFANG_LARGE_Y*dk + 0.01
     boolHeight = buildingH
@@ -2231,7 +2231,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
     boolObj = utils.addCube(
         name="丁字抱厦-柱网" + con.BOOL_SUFFIX ,
         location=(0,0,boolZ),
-        dimension=(boolWidth,boolDeepth,boolHeight),
+        dimension=(boolWidth,boolDepth,boolHeight),
         parent=toBuildingJoined,
     )
 
@@ -3313,7 +3313,7 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
     buildingEave = 20*dk # 悬山出际
 
     # 裁剪
-    buildingDeepth = bData.y_total + 60*dk # 出檐
+    buildingDepth = bData.y_total + 60*dk # 出檐
     # 定位
     offset = buildingEave/2
     # 根据新延伸的回廊的横竖，判断裁剪偏移
@@ -3345,7 +3345,7 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
         name="出檐A裁剪" + con.BOOL_SUFFIX,
         location=Vector((boolX,0,buildingH/2)),
         dimension=(bData.x_total+buildingEave,
-                   buildingDeepth,
+                   buildingDepth,
                    buildingH),
         parent=LoggiaNewJoined,
     )
@@ -3426,7 +3426,7 @@ def __cut_base_loggia(baseLoggia:bpy.types.Object,
         isWE = False
 
     # 原廊间可能已经做了一侧的转角裁剪，这里继续做另一侧的转角裁剪
-    buildingDeepth = bData.y_total + 60*dk # 出檐
+    buildingDepth = bData.y_total + 60*dk # 出檐
     # 定位
     offset = buildingEave/2
     if isWE:
@@ -3443,7 +3443,7 @@ def __cut_base_loggia(baseLoggia:bpy.types.Object,
         name="出檐B裁剪" + con.BOOL_SUFFIX,
         location=Vector((boolX,0,buildingH/2)),
         dimension=(bData.x_total+buildingEave,
-                buildingDeepth,
+                buildingDepth,
                 buildingH),
         parent=LoggiaJoined,
     )

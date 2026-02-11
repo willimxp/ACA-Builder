@@ -44,7 +44,7 @@ def __arrayTile(
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     # 墙体的长宽高，以wallproxy为依据
-    (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
+    (wallLength,wallDepth,wallHeight) = wallProxy.dimensions
 
     # 瓦件缩放，当前设置的斗口与默认斗口
     tileScale = bData.DK / con.DEFAULT_DK * bData.tile_scale
@@ -120,7 +120,7 @@ def buildSingleWall(
         wallProxy.dimensions.x += cutExtend*2
         utils.applyTransform(wallProxy,use_scale=True)
     # 墙体的长宽高，以wallproxy为依据
-    (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
+    (wallLength,wallDepth,wallHeight) = wallProxy.dimensions
 
     wallParts = []
 
@@ -129,7 +129,7 @@ def buildSingleWall(
     bottomObj = utils.addCube(
         name='下碱',
         dimension=(wallLength,
-               wallDeepth,
+               wallDepth,
                height),
         location=(0,0,height/2-wallHeight/2),
         parent=wallProxy,
@@ -141,7 +141,7 @@ def buildSingleWall(
     bodyObj = utils.addCube(
         name='上身',
         dimension=(wallLength-bodyShrink*2,
-               wallDeepth-bodyShrink*2,
+               wallDepth-bodyShrink*2,
                wallHeight-bodyShrink*2),
         location=(0,0,0),
         parent=wallProxy,
@@ -175,7 +175,7 @@ def buildSingleWall(
         name = '滴水',
         sourceObj=aData.dripTile_source,
         location=(-wallLength/2+colWidth/2,
-                  -wallDeepth/2,
+                  -wallDepth/2,
                   wallHeight/2),
         rotation=(tileAngle,0,0),
         wallProxy=wallProxy,
@@ -187,7 +187,7 @@ def buildSingleWall(
         name = '瓦当',
         sourceObj=aData.eaveTile_source,
         location=(-wallLength/2,
-                  -wallDeepth/2
+                  -wallDepth/2
                   ,wallHeight/2),
         rotation=(tileAngle,0,0),
         wallProxy=wallProxy,
@@ -199,12 +199,12 @@ def buildSingleWall(
         name = '板瓦',
         sourceObj=aData.flatTile_source,
         location=(-wallLength/2+colWidth/2,
-                  -wallDeepth/2,
+                  -wallDepth/2,
                   wallHeight/2),
         rotation=(tileAngle,0,0),
         wallProxy=wallProxy,
         arrayLength=wallLength-colWidth/2,
-        arrayWidth=wallDeepth,)
+        arrayWidth=wallDepth,)
     wallParts.append(banwaObj)
 
     # 3.4、筒瓦
@@ -212,12 +212,12 @@ def buildSingleWall(
         name = '筒瓦',
         sourceObj=aData.circularTile_source,
         location=(-wallLength/2,
-                  -wallDeepth/2,
+                  -wallDepth/2,
                   wallHeight/2),
         rotation=(tileAngle,0,0),
         wallProxy=wallProxy,
         arrayLength=wallLength,
-        arrayWidth=wallDeepth,)
+        arrayWidth=wallDepth,)
     wallParts.append(tongwaObj)
     
     # 4、端头做博缝板
@@ -226,7 +226,7 @@ def buildSingleWall(
         name="博缝板",
         parentObj=wallProxy,
         location=(-wallLength/2+bodyShrink,
-                  -wallDeepth/2-con.EAVETILE_EX*dk*2,
+                  -wallDepth/2-con.EAVETILE_EX*dk*2,
                   wallHeight/2),
         rotation=(0,-tileAngle,math.radians(90)),
         singleUser=True
@@ -252,7 +252,7 @@ def buildSingleWall(
                      * tileScale*0.5
     ridgeLength = wallLength + bofengWidth
     # 正脊高度，根据瓦顶斜率计算，略作微调
-    ridgeHeight = wallDeepth/2 * math.tan(tileAngle)-con.TILE_HEIGHT
+    ridgeHeight = wallDepth/2 * math.tan(tileAngle)-con.TILE_HEIGHT
     # 导入正脊
     ridgeObj = utils.copyObject(
         sourceObj=aData.ridgeFront_source,
@@ -350,7 +350,7 @@ def buildSingleWall(
 def __wallCutDiagnal(wallObj:bpy.types.Object,
                    wallProxy:bpy.types.Object):
     # 墙体的长宽高，以wallproxy为依据
-    (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
+    (wallLength,wallDepth,wallHeight) = wallProxy.dimensions
     cutExtend = 0.22    # 改变这个值，可以看到转角合并的瓦的变化
 
     # 左侧剪切
@@ -359,7 +359,7 @@ def __wallCutDiagnal(wallObj:bpy.types.Object,
         pStart=wallProxy.matrix_world @Vector((0,0,0)),
         pEnd=wallProxy.matrix_world @Vector((-1,-1,0)),
         pCut=wallProxy.matrix_world @ \
-            Vector((-wallLength/2+wallDeepth/2+cutExtend,0,0)),
+            Vector((-wallLength/2+wallDepth/2+cutExtend,0,0)),
         clear_inner=True,
         use_fill=True,
     )
@@ -369,7 +369,7 @@ def __wallCutDiagnal(wallObj:bpy.types.Object,
         pStart=wallProxy.matrix_world @Vector((0,0,0)),
         pEnd=wallProxy.matrix_world @Vector((-1,1,0)),
         pCut=wallProxy.matrix_world @ \
-            Vector((wallLength/2-wallDeepth/2-cutExtend,0,0)),
+            Vector((wallLength/2-wallDepth/2-cutExtend,0,0)),
         clear_inner=True,
         use_fill=True,
     )
@@ -383,7 +383,7 @@ def __wallBoolDiagnal(wallObj:bpy.types.Object,
         return
 
     # 墙体的长宽高，以wallproxy为依据
-    (wallLength,wallDeepth,wallHeight) = wallProxy.dimensions
+    (wallLength,wallDepth,wallHeight) = wallProxy.dimensions
     cutExtend = 0.22    # 改变这个值，可以看到转角合并的瓦的变化
 
     x,y,z = wallProxy.location
@@ -446,11 +446,11 @@ def buildYardWall(buildingObj:bpy.types.Object,
 
     # 院子参数
     yardWidth = bData.yard_width
-    yardDeepth = bData.yard_depth
+    yardDepth = bData.yard_depth
 
     # 院墙参数
     wallHeight = bData.yardwall_height
-    wallDeepth = bData.yardwall_depth
+    wallDepth = bData.yardwall_depth
     # 退花碱厚度
     bodyShrink = con.WALL_SHRINK
     # 瓦顶斜率
@@ -463,7 +463,7 @@ def buildYardWall(buildingObj:bpy.types.Object,
     if not bData.is_4_sides:
         wallItem = {
             'dim': ((yardWidth,
-                    wallDeepth,
+                    wallDepth,
                     wallHeight)),
             'loc': (0,0,wallHeight/2),
             'rot': (0,0,0),
@@ -475,28 +475,28 @@ def buildYardWall(buildingObj:bpy.types.Object,
     else:
         # 南墙
         wallItem = {
-            'dim': ((yardWidth+wallDeepth,
-                    wallDeepth,
+            'dim': ((yardWidth+wallDepth,
+                    wallDepth,
                     wallHeight)),
-            'loc': (0,-yardDeepth/2,wallHeight/2),
+            'loc': (0,-yardDepth/2,wallHeight/2),
             'rot': (0,0,0),
             'name': '南院墙',
         }
         wallGroup.append(wallItem)
         # 北墙
         wallItem = {
-            'dim': ((yardWidth+wallDeepth,
-                    wallDeepth,
+            'dim': ((yardWidth+wallDepth,
+                    wallDepth,
                     wallHeight)),
-            'loc': (0,yardDeepth/2,wallHeight/2),
+            'loc': (0,yardDepth/2,wallHeight/2),
             'rot': (0,0,math.radians(180)),
             'name': '北院墙',
         }
         wallGroup.append(wallItem)
         # 西墙
         wallItem = {
-            'dim': ((yardDeepth+wallDeepth,
-                    wallDeepth,
+            'dim': ((yardDepth+wallDepth,
+                    wallDepth,
                     wallHeight)),
             'loc': (-yardWidth/2,0,wallHeight/2),
             'rot': (0,0,math.radians(270)),
@@ -505,8 +505,8 @@ def buildYardWall(buildingObj:bpy.types.Object,
         wallGroup.append(wallItem)
         # 东墙
         wallItem = {
-            'dim': ((yardDeepth+wallDeepth,
-                    wallDeepth,
+            'dim': ((yardDepth+wallDepth,
+                    wallDepth,
                     wallHeight)),
             'loc': (yardWidth/2,0,wallHeight/2),
             'rot': (0,0,math.radians(90)),

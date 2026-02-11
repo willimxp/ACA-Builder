@@ -1502,11 +1502,11 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
                     text='四面环绕',
                     icon=checkbox_icon)
                 # 院墙进深
-                inputYardDeepth = toolBar.column(align=True)
-                inputYardDeepth.prop(bData,'yard_depth',
+                inputYardDepth = toolBar.column(align=True)
+                inputYardDepth.prop(bData,'yard_depth',
                     text='院墙进深')
                 if not bData.is_4_sides:
-                    inputYardDeepth.enabled = False
+                    inputYardDepth.enabled = False
                 # 院墙面阔
                 inputYardWidth = toolBar.column(align=True)
                 inputYardWidth.prop(bData,'yard_width',
@@ -1517,8 +1517,8 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
                     'yardwall_height',
                     text='院墙高度')
                 # 院墙厚度
-                inputYardwallDeepth = toolBar.column(align=True)
-                inputYardwallDeepth.prop(bData,
+                inputYardwallDepth = toolBar.column(align=True)
+                inputYardwallDepth.prop(bData,
                     'yardwall_depth',
                     text='院墙厚度')
                 # 帽瓦斜率

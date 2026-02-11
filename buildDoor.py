@@ -40,7 +40,7 @@ def __buildShanxin(
 
     # 扇心高度校验，以免出现row=0的异常
     linxingHeight = scale.z - borderWidth*2
-    unitWidth,unitDeepth,unitHeight = utils.getMeshDims(aData.lingxin_source)
+    unitWidth,unitDepth,unitHeight = utils.getMeshDims(aData.lingxin_source)
     rows = math.ceil(linxingHeight/unitHeight)+1
     if rows<=0:
         return
@@ -93,7 +93,7 @@ def __buildShanxin(
     #     location=loc,
     #     singleUser=True)
     # # 计算平铺的行列数
-    # unitWidth,unitDeepth,unitHeight = utils.getMeshDims(lingxin)
+    # unitWidth,unitDepth,unitHeight = utils.getMeshDims(lingxin)
     # lingxingWidth = scale.x- con.ZIBIAN_WIDTH*2*pd
     # linxingHeight = scale.z- con.ZIBIAN_WIDTH*2*pd
     # rows = math.ceil(linxingHeight/unitHeight)+1 #加一，尽量让棂心紧凑，避免出现割裂

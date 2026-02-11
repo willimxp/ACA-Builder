@@ -1097,10 +1097,10 @@ def __buildFlyrafterWangban(buildingObj,purlin_pos,direction):
     # 以飞椽为参考基准
     flyrafterObj = utils.getAcaChild(buildingObj,flyrafterType)
     # 长度取飞椽长度，闪躲大连檐
-    frwDeepth = utils.getMeshDims(flyrafterObj).x \
+    frwDepth = utils.getMeshDims(flyrafterObj).x \
             -(con.QUETAI+con.DALIANYAN_Y)*dk
     # 从飞椽尾，平移半飞椽长，向上半望板高
-    offset = Vector((frwDeepth/2,0,con.WANGBAN_H/2*dk))
+    offset = Vector((frwDepth/2,0,con.WANGBAN_H/2*dk))
     offset.rotate(flyrafterObj.rotation_euler)
     if direction == 'X':
         frwLoc = (flyrafterObj.location+offset) * Vector((0,1,1)) # 飞椽尾
@@ -1110,7 +1110,7 @@ def __buildFlyrafterWangban(buildingObj,purlin_pos,direction):
     fwbObj = utils.addCube(
         name=frwName,
         location=frwLoc,
-        dimension=(frwDeepth,frwWidth,con.WANGBAN_H*dk),
+        dimension=(frwDepth,frwWidth,con.WANGBAN_H*dk),
         rotation=flyrafterObj.rotation_euler, 
         parent=rafterRootObj,
     )

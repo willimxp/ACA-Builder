@@ -133,20 +133,20 @@ def __buildFloor(balconyRoot:bpy.types.Object):
         # 平坐出跳
         extend = (bData.dg_extend   # 斗栱出跳
                 + con.BALCONY_EXTENT*dk # 平坐出跳，对齐桁出梢
-                - con.RAILING_DEEPTH*dk/2 # 栏杆保留深度
+                - con.RAILING_DEPTH*dk/2 # 栏杆保留深度
                 )
         
         # 因为栏杆按照0.08的斗口固定大小，所以这次的地栿也固定使用0.08斗口
-        difuDeepth = con.RAILING_DIFU_Y*con.DEFAULT_DK
+        difuDepth = con.RAILING_DIFU_Y*con.DEFAULT_DK
         difuHeight = con.RAILING_DIFU_H*con.DEFAULT_DK
 
         # 前后檐
         # 地栿长度
         difuLength = (floorX # 楼板总宽
-                    - con.RAILING_DEEPTH*dk # 收一个栏杆的保留宽度
-                    + difuDeepth) # 出头一个边框
-        difuDim = (difuLength,difuDeepth,difuHeight)
-        difuY = floorY/2 - con.RAILING_DEEPTH*dk/2
+                    - con.RAILING_DEPTH*dk # 收一个栏杆的保留宽度
+                    + difuDepth) # 出头一个边框
+        difuDim = (difuLength,difuDepth,difuHeight)
+        difuY = floorY/2 - con.RAILING_DEPTH*dk/2
         difuZ = floorZ + difuHeight/2
         difuLoc = (0,difuY,difuZ)
         difuObjFB = utils.addCube(
@@ -168,10 +168,10 @@ def __buildFloor(balconyRoot:bpy.types.Object):
         # 两山
         # 地栿长度
         difuLength = (floorY # 楼板总宽
-                    - con.RAILING_DEEPTH*dk # 收一个栏杆的保留宽度
-                    - difuDeepth) # 出头一个边框
-        difuDim = (difuDeepth,difuLength,difuHeight)
-        difuX = floorX/2 - con.RAILING_DEEPTH*dk/2
+                    - con.RAILING_DEPTH*dk # 收一个栏杆的保留宽度
+                    - difuDepth) # 出头一个边框
+        difuDim = (difuDepth,difuLength,difuHeight)
+        difuX = floorX/2 - con.RAILING_DEPTH*dk/2
         difuZ = floorZ + difuHeight/2
         difuLoc = (difuX,0,difuZ)
         difuObjLR = utils.addCube(
@@ -213,7 +213,7 @@ def __buildProxy(balconyRoot:bpy.types.Object):
     # 平坐出跳
     extend = (bData.dg_extend   # 斗栱出跳
               + con.BALCONY_EXTENT*dk*bData.dk_scale # 平坐出跳，对齐桁出梢
-              - con.RAILING_DEEPTH*dk/2 # 栏杆保留深度
+              - con.RAILING_DEPTH*dk/2 # 栏杆保留深度
             ) 
     # 楼板高度
     floorTop = con.BALCONY_FLOOR_H*dk
@@ -340,7 +340,7 @@ def __buildRailing(parentObj:bpy.types.Object,
 
     # proxy，体现栏杆的实际体积
     proxyH = con.RAILING_PILLAR_H*dk
-    proxyD = con.RAILING_DEEPTH*dk
+    proxyD = con.RAILING_DEPTH*dk
     proxyDim = (proxyW,proxyD,proxyH)
     # 考虑了开口和不开口的proxy定位
     if useGap:
@@ -401,9 +401,9 @@ def __buildRailing(parentObj:bpy.types.Object,
 
     # 桪杖扶手，固定高度
     handrailWidth = proxyW - con.RAILING_PILLAR_D*dk
-    handrailDeepth = con.HANDRAIL_Y*dk
+    handrailDepth = con.HANDRAIL_Y*dk
     handrailHeight = con.HANDRAIL_H*dk
-    handrailDim = (handrailWidth,handrailDeepth,handrailHeight)
+    handrailDim = (handrailWidth,handrailDepth,handrailHeight)
     handrailLoc = (proxyX,0,con.HANDRAIL_Z)
     handrailObj = utils.addCube(
         name=f"桪杖扶手.{proxy['id']}",
@@ -420,9 +420,9 @@ def __buildRailing(parentObj:bpy.types.Object,
     for n in range(sectionCount+1):
         # 折柱
         zzWidth = con.RAILING_ZZ_W*dk
-        zzDeepth = con.RAILING_ZZ_Y*dk
+        zzDepth = con.RAILING_ZZ_Y*dk
         zzHeight = con.HANDRAIL_Z
-        zzDim = (zzWidth,zzDeepth,zzHeight)
+        zzDim = (zzWidth,zzDepth,zzHeight)
         zzX = (-proxy['length']/2 # 左侧边框
                + con.RAILING_PILLAR_D*dk # 整根望柱
                # + con.RAILING_ZZ_W*dk/2  # 半根折柱
@@ -491,8 +491,8 @@ def __buildRailing(parentObj:bpy.types.Object,
         # 地栿
         # 地栿长度略出头，两侧各1/4望柱
         difuWidth = proxyW + con.RAILING_PILLAR_D*dk/2
-        difuDeepth = con.RAILING_DIFU_Y*dk
-        difuDim = (difuWidth,difuDeepth,difuHeight)
+        difuDepth = con.RAILING_DIFU_Y*dk
+        difuDim = (difuWidth,difuDepth,difuHeight)
         difuLoc = (proxyX,0,difuHeight/2)
         difuObj = utils.addCube(
             name=f"地栿.{proxy['id']}",
@@ -510,9 +510,9 @@ def __buildRailing(parentObj:bpy.types.Object,
     # 尺寸
     yaziWidth = (sectionWidth # 分栏宽度
                     -con.RAILING_ZZ_W*dk)  # 扣除两侧各半根折柱
-    yaziDeepth = con.RAILING_YAZI_Y*dk
+    yaziDepth = con.RAILING_YAZI_Y*dk
     yaziHeight = con.RAILING_YAZI_H*dk
-    yaziDim = (yaziWidth,yaziDeepth,yaziHeight)
+    yaziDim = (yaziWidth,yaziDepth,yaziHeight)
     for n in range(sectionCount):
         # 定位
         yaziX = (-proxy['length']/2 # 左侧边线
@@ -534,9 +534,9 @@ def __buildRailing(parentObj:bpy.types.Object,
 
     # 下枋
     downFangWidth = proxyW - con.RAILING_PILLAR_D*dk
-    downFangDeepth = con.RAILING_FANG_Y*dk
+    downFangDepth = con.RAILING_FANG_Y*dk
     downFangHeight = con.RAILING_FANG_H*dk
-    downFangDim = (downFangWidth,downFangDeepth,downFangHeight)
+    downFangDim = (downFangWidth,downFangDepth,downFangHeight)
     downFangLoc = (proxyX,0,sumZ + downFangHeight/2)
     downFangObj = utils.addCube(
         name=f"下枋.{proxy['id']}",
@@ -555,9 +555,9 @@ def __buildRailing(parentObj:bpy.types.Object,
         # 尺寸
         taohuanWidth = (sectionWidth # 分栏宽度
                      -con.RAILING_ZZ_W*dk)  # 扣除两侧各半根折柱
-        taohuanDeepth = con.RAILING_TAOHUAN_Y*dk
+        taohuanDepth = con.RAILING_TAOHUAN_Y*dk
         taohuanHeight = con.RAILING_TAOHUAN_H*dk
-        taohuanDim = (taohuanWidth,taohuanDeepth,taohuanHeight)
+        taohuanDim = (taohuanWidth,taohuanDepth,taohuanHeight)
         # 定位
         taohuanX = (-proxy['length']/2 # 左侧边线
                  + con.RAILING_PILLAR_D*dk # 整根望柱
@@ -578,9 +578,9 @@ def __buildRailing(parentObj:bpy.types.Object,
     
     # 中枋
     midFangWidth = proxyW - con.RAILING_PILLAR_D*dk
-    midFangDeepth = con.RAILING_FANG_Y*dk
+    midFangDepth = con.RAILING_FANG_Y*dk
     midFangHeight = con.RAILING_FANG_H*dk
-    midFangDim = (midFangWidth,midFangDeepth,midFangHeight)
+    midFangDim = (midFangWidth,midFangDepth,midFangHeight)
     midFangLoc = (proxyX,0,sumZ + midFangHeight/2)
     midFangObj = utils.addCube(
         name=f"中枋.{proxy['id']}",

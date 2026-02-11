@@ -72,8 +72,7 @@ class ACA_Consts(object):
     ACA_WALLTYPE_FLIPWINDOW = 'flipwindow'                          # 隔断属性-支摘窗
     ACA_WALLTYPE_RAILILNG = 'railing'                               # 隔断属性-栏杆
     ACA_WALLTYPE_BENCH = 'bench'                                    # 隔断属性-坐凳
-    ACA_WALLTYPE_QUETI = 'queti'                                    # 隔断属性-雀替
-    ACA_TYPE_COMBO = 'combo'                                        # 组合样式
+    ACA_WALLTYPE_QUETI = 'queti'                                    # 隔断属性-雀替                                       # 组合样式
     ACA_PILLAR_HIDE = 'pillar_hide'                                 # 隐藏柱网
     JOIN_SUFFIX = '.joined'                                         # 建筑合并名称后缀
     BOOL_SUFFIX = '.bool'                                           # 建筑裁剪对象后缀

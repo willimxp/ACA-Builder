@@ -6,13 +6,10 @@
 #   触发控件数据更新
 
 import bpy
-import time 
-from functools import partial
-
-from .const import ACA_Consts as con
-from . import utils
 from . import data_callback as dc
 
+#######################################################
+### Section 1: 数据管理的入口 (Entry)
 # 初始化自定义属性
 def initprop():
     # 在scene中添加可全局访问的自定义数据集
@@ -60,13 +57,125 @@ def delprop():
     del bpy.types.Scene.pavilion_browser_items
     del bpy.types.Scene.pavilion_browser_enum
 
+#######################################################
+### Section 2: 对话框初始数据 (UI & Resources)
 
+#### 2.1 建筑模板列表 (Building Template)
+# 模板样式列表的行对象，绑定在UI_list上
+class TemplateListItem(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(
+        name="Name", default="Item"
+    ) # type: ignore
 
-class ACA_id_list(bpy.types.PropertyGroup):
-    id: bpy.props.StringProperty(
-            name = 'id',
+# 模板缩略图控件对象，绑定在template_view_icon上
+class TemplateThumbItem(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty()# type: ignore     
+    path: bpy.props.StringProperty()# type: ignore     
+
+#### 2.2 楼阁模板列表 (Pavilion Template)
+# 楼阁设置属性集
+class ACA_data_pavilion(bpy.types.PropertyGroup):
+    # 收分
+    taper: bpy.props.FloatProperty(
+        name="重楼收分",
+        default=0.0
+    ) # type: ignore
+    # 添加重屋
+    use_floor:bpy.props.BoolProperty(
+            name = "添加重屋",
+            default=True,
         ) # type: ignore
-    
+    # 添加平坐
+    use_pingzuo:bpy.props.BoolProperty(
+            name = "添加平坐",
+            default=False,
+        ) # type: ignore
+    # 回廊宽度
+    pingzuo_taper: bpy.props.FloatProperty(
+        name="平坐收分",
+        default=0.0
+    ) # type: ignore
+    # 添加腰檐
+    use_mideave:bpy.props.BoolProperty(
+            name = "添加腰檐",
+            default=True,
+        ) # type: ignore
+    # 添加栏杆
+    use_railing:bpy.props.BoolProperty(
+            name = "添加栏杆",
+            default=False,
+        ) # type: ignore
+    # 添加回廊
+    use_loggia:bpy.props.BoolProperty(
+            name = "添加回廊",
+            default=False,
+        ) # type: ignore
+    # 回廊宽度
+    loggia_width: bpy.props.FloatProperty(
+        name="回廊宽度",
+        default=0.0
+    ) # type: ignore
+    # 下出平坐
+    use_lower_pingzuo:bpy.props.BoolProperty(
+        name = "下出平坐",
+        default=False,
+    ) # type: ignore
+
+#######################################################
+### Section 3: 场景全局数据 (Scene Settings)
+# 场景范围的数据
+# 可绑定面板参数属性
+# 也可做为全局变量访问
+# 属性声明的格式在vscode有告警，但blender表示为了保持兼容性，无需更改
+# 直接添加“# type:ignore”
+# https://blender.stackexchange.com/questions/311578/how-do-you-correctly-add-ui-elements-to-adhere-to-the-typing-spec
+class ACA_data_scene(bpy.types.PropertyGroup):
+    is_auto_redraw : bpy.props.BoolProperty(
+            default = True,
+            name = "是否实时重绘",
+            description = "取消后，生成过程中不进行刷新，直到全部生成后才显示",
+        ) # type: ignore
+    is_auto_viewall : bpy.props.BoolProperty(
+            default = True,
+            name = "是否设置视角",
+            description = "取消后，不再自动切换视角，始终保持当前视角",
+        ) # type: ignore
+    is_auto_rebuild : bpy.props.BoolProperty(
+            default = True,
+            name = "是否实时重建",
+            description = "取消后，在大部分参数修改时，不会自动重建，直到手工点击更新建筑",
+        ) # type: ignore
+    # template原来提供给模板下拉框使用，现在改为列表，则不再使用该属性
+    # template : bpy.props.EnumProperty(
+    #         name = "样式列表",
+    #         description = "样式列表",
+    #         items = getTemplateList,
+    #         options = {"ANIMATABLE"},
+    #     ) # type: ignore
+    templateItem : bpy.props.CollectionProperty(
+        type=TemplateListItem)# type: ignore
+    templateIndex: bpy.props.IntProperty(
+            name="Active List Index",
+            default=0, 
+            update=dc.updateSelectedThumb,
+        )# type: ignore 
+    pavilionItem : bpy.props.CollectionProperty(
+        type=TemplateListItem)# type: ignore
+    pavilionIndex: bpy.props.IntProperty(
+            name="请选择上出楼阁的做法",
+            description="请选择上出阁楼的做法",
+            default=0, 
+            update=dc.updateSelectedPavilionThumb,
+        )# type: ignore 
+    pavilionSetting: bpy.props.PointerProperty(
+        type=ACA_data_pavilion,
+        name="楼阁设置"
+    )# type: ignore
+
+#######################################################
+### Section 4: 建筑管理数据 (Building Settings)
+
+#### 4.1 单体建筑构件 (Building Components)
 # 踏跺属性
 class ACA_data_taduo(bpy.types.PropertyGroup):
     id: bpy.props.StringProperty(
@@ -170,6 +279,13 @@ class ACA_data_geshan(ACA_data_door_common):
             update=dc.update_wall,
             description="2~6抹头都可以，根据需要自由设置",
         )# type: ignore 
+
+#### 4.2 组合建筑数据 (Combo Building)
+# 子建筑索引列表
+class ACA_id_list(bpy.types.PropertyGroup):
+    id: bpy.props.StringProperty(
+            name = 'id',
+        ) # type: ignore
     
 # 251205 后处理操作属性
 class ACA_data_postProcess(bpy.types.PropertyGroup):
@@ -182,6 +298,7 @@ class ACA_data_postProcess(bpy.types.PropertyGroup):
             name = 'Parameter',
         ) # type: ignore
 
+#### 4.3 建筑主数据 (Building Main Data)
 # 对象范围的数据
 # 可绑定面板参数属性
 # 属性声明的格式在vscode有告警，但blender表示为了保持兼容性，无需更改
@@ -774,7 +891,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     postProcess: bpy.props.CollectionProperty(
         type=ACA_data_postProcess, name="后处理列表"
     ) # type: ignore
-    
+
+#######################################################
+### Section 5: 建筑素材库 (Building Assets)
 # 全局共用的模板信息，各个建筑都进行引用
 # 包括资产库资产引用等    
 class ACA_data_template(bpy.types.PropertyGroup):
@@ -1131,114 +1250,3 @@ class ACA_data_template(bpy.types.PropertyGroup):
             type = bpy.types.Object,
         )# type: ignore 
     
-
-
-# 模板样式列表的行对象，绑定在UI_list上
-class TemplateListItem(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(
-        name="Name", default="Item"
-    ) # type: ignore
-
-# 模板缩略图控件对象，绑定在template_view_icon上
-class TemplateThumbItem(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty()# type: ignore     
-    path: bpy.props.StringProperty()# type: ignore     
-
-
-
-# 楼阁设置属性集
-class ACA_data_pavilion(bpy.types.PropertyGroup):
-    # 收分
-    taper: bpy.props.FloatProperty(
-        name="重楼收分",
-        default=0.0
-    ) # type: ignore
-    # 添加重屋
-    use_floor:bpy.props.BoolProperty(
-            name = "添加重屋",
-            default=True,
-        ) # type: ignore
-    # 添加平坐
-    use_pingzuo:bpy.props.BoolProperty(
-            name = "添加平坐",
-            default=False,
-        ) # type: ignore
-    # 回廊宽度
-    pingzuo_taper: bpy.props.FloatProperty(
-        name="平坐收分",
-        default=0.0
-    ) # type: ignore
-    # 添加腰檐
-    use_mideave:bpy.props.BoolProperty(
-            name = "添加腰檐",
-            default=True,
-        ) # type: ignore
-    # 添加栏杆
-    use_railing:bpy.props.BoolProperty(
-            name = "添加栏杆",
-            default=False,
-        ) # type: ignore
-    # 添加回廊
-    use_loggia:bpy.props.BoolProperty(
-            name = "添加回廊",
-            default=False,
-        ) # type: ignore
-    # 回廊宽度
-    loggia_width: bpy.props.FloatProperty(
-        name="回廊宽度",
-        default=0.0
-    ) # type: ignore
-    # 下出平坐
-    use_lower_pingzuo:bpy.props.BoolProperty(
-        name = "下出平坐",
-        default=False,
-    ) # type: ignore
-
-# 场景范围的数据
-# 可绑定面板参数属性
-# 也可做为全局变量访问
-# 属性声明的格式在vscode有告警，但blender表示为了保持兼容性，无需更改
-# 直接添加“# type:ignore”
-# https://blender.stackexchange.com/questions/311578/how-do-you-correctly-add-ui-elements-to-adhere-to-the-typing-spec
-class ACA_data_scene(bpy.types.PropertyGroup):
-    is_auto_redraw : bpy.props.BoolProperty(
-            default = True,
-            name = "是否实时重绘",
-            description = "取消后，生成过程中不进行刷新，直到全部生成后才显示",
-        ) # type: ignore
-    is_auto_viewall : bpy.props.BoolProperty(
-            default = True,
-            name = "是否设置视角",
-            description = "取消后，不再自动切换视角，始终保持当前视角",
-        ) # type: ignore
-    is_auto_rebuild : bpy.props.BoolProperty(
-            default = True,
-            name = "是否实时重建",
-            description = "取消后，在大部分参数修改时，不会自动重建，直到手工点击更新建筑",
-        ) # type: ignore
-    # template原来提供给模板下拉框使用，现在改为列表，则不再使用该属性
-    # template : bpy.props.EnumProperty(
-    #         name = "样式列表",
-    #         description = "样式列表",
-    #         items = getTemplateList,
-    #         options = {"ANIMATABLE"},
-    #     ) # type: ignore
-    templateItem : bpy.props.CollectionProperty(
-        type=TemplateListItem)# type: ignore
-    templateIndex: bpy.props.IntProperty(
-            name="Active List Index",
-            default=0, 
-            update=dc.updateSelectedThumb,
-        )# type: ignore 
-    pavilionItem : bpy.props.CollectionProperty(
-        type=TemplateListItem)# type: ignore
-    pavilionIndex: bpy.props.IntProperty(
-            name="请选择上出楼阁的做法",
-            description="请选择上出阁楼的做法",
-            default=0, 
-            update=dc.updateSelectedPavilionThumb,
-        )# type: ignore 
-    pavilionSetting: bpy.props.PointerProperty(
-        type=ACA_data_pavilion,
-        name="楼阁设置"
-    )# type: ignore

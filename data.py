@@ -11,6 +11,7 @@ from functools import partial
 
 from .const import ACA_Consts as con
 from . import utils
+from . import data_callback as dc
 
 # 初始化自定义属性
 def initprop():
@@ -35,7 +36,7 @@ def initprop():
     bpy.types.Scene.image_browser_enum = bpy.props.EnumProperty(
         name="Images",
         items=template.getThumbEnum,
-        update=updateSelectedTemplate,
+        update=dc.updateSelectedTemplate,
     )
 
     # 用于楼阁缩略图控件的载入
@@ -44,7 +45,7 @@ def initprop():
     bpy.types.Scene.pavilion_browser_enum = bpy.props.EnumProperty(
         name="pavilion",
         items=template.getPavilionEnum,
-        update=updateSelectedPavilion,
+        update=dc.updateSelectedPavilion,
     )
     return
 
@@ -59,565 +60,7 @@ def delprop():
     del bpy.types.Scene.pavilion_browser_items
     del bpy.types.Scene.pavilion_browser_enum
 
-# # 筛选资产目录
-# def p_filter(self, object:bpy.types.Object):
-#     # 仅返回Assets collection中的对象
-#     return object.users_collection[0].name == 'Assets'
 
-# 刷新斗口
-def update_dk(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
-    # 确认选中为building节点
-    buildingObj,bData,odata = utils.getRoot(context.object)
-    if buildingObj != None:
-        from . import template
-        template.updateDougongData(buildingObj)
-        update_building(self,context)
-    return
-
-# 更新柱高
-def update_pillarHeight(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
-    # 如果有楼阁，更新楼阁层高
-    comboRoot = utils.getComboRoot(context.object)
-    if comboRoot is not None:
-        # 显示进度条 
-        from . import build
-        build.isFinished = False
-        build.progress = 0
-
-        from . import buildCombo
-        buildCombo.__updateFloorLoc(comboRoot)
-    
-    # 重建当前建筑
-    update_building(self,context)
-    
-
-# 更新建筑，但不重设柱网
-def update_building(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-
-    # 根据数据集合，找到对应的建筑
-    # 在panel中指定bData时，指向context.object,
-    # 在panel中指定为mData时，指向主建筑
-    buildingObj = self.id_data
-    if buildingObj != None:
-        bpy.ops.aca.update_building(buildingName=buildingObj.name)
-    else:
-        utils.popMessageBox("更新建筑失败")
-    return
-    
-# 更新建筑，但不重设柱网
-def reset_building(self, context:bpy.types.Context):
-    # 这里是重要修改，无论自动开关是否开启，都应该立即执行
-    # # 判断自动重建开关
-    # isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    # if not isRebuild:
-    #     return
-
-    # 根据数据集合，找到对应的建筑
-    # 在panel中指定bData时，指向context.object,
-    # 在panel中指定为mData时，指向主建筑
-    buildingObj = self.id_data
-
-    if buildingObj != None:
-        # 直接调用operator，并且调用invoke，弹出确认提示
-        # https://docs.blender.org/api/current/bpy.types.Operator.html#invoke-function
-        bpy.ops.aca.reset_floor('INVOKE_DEFAULT',
-            buildingName = buildingObj.name)
-    else:
-        utils.popMessageBox("重设柱网失败")
-
-# 更新院墙
-def update_yardwall(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
-    bpy.ops.aca.build_yardwall()
-    return
-
-# 更新踏跺
-def update_step(self, context:bpy.types.Context):
-    # 建筑根节点数据
-    buildingObj,bData,oData = utils.getRoot(context.object)
-    # 确认选中了踏跺
-    if oData.aca_type != con.ACA_TYPE_STEP:
-        utils.popMessageBox("当前活动对象不是踏跺")
-        return
-    
-    # 获取当前踏跺数据
-    for step in bData.step_list:
-        if step.id == oData['stepID'] :
-            currentStepData = step
-    
-    # 所有选中的对象
-    selected_steps = context.selected_objects
-    # 暂存选中的对象
-    selected_names = []
-    for stepSelected in selected_steps:
-        selected_names.append(stepSelected.name)
-    
-    # 批量设置所有选中的对象
-    for stepSelected in selected_steps:
-        # 确认是踏跺
-        if stepSelected.ACA_data.aca_type != con.ACA_TYPE_STEP:
-            continue
-
-        # 全部修改为当前值
-        for stepData in bData.step_list:
-            if stepData.id == stepSelected.ACA_data['stepID']:
-                stepData['width'] = currentStepData.width
-
-    # 更新整个台基
-    update_platform(self,context)
-
-    # 恢复踏跺选择
-    # 先取消所有选中（因为可能再update_platform中focus了root）
-    bpy.ops.object.select_all(action='DESELECT')
-    for objName in selected_names:
-        stepObj = bpy.data.objects[objName]
-        stepObj.select_set(True)
-        bpy.context.view_layer.objects.active = stepObj
-
-    return
-
-# 更新栏杆，设置开口参数
-def update_railing(self, context:bpy.types.Context):
-    # 建筑根节点数据
-    buildingObj,bData,oData = utils.getRoot(context.object)
-    railingID = oData['wallID']
-    # 确认选中了栏杆
-    if oData.aca_type not in (con.ACA_WALLTYPE_RAILILNG,
-                              con.ACA_WALLTYPE_BENCH):
-        utils.popMessageBox("当前活动对象不是栏杆/坐凳")
-        return
-    
-    # 所有选中的对象
-    selected_objs = context.selected_objects
-    # 暂存选中的对象
-    selected_names = []
-    for objSelected in selected_objs:
-        selected_names.append(objSelected.name)
-
-    # 获取当前栏杆数据    
-    currentRailingData = utils.getDataChild(
-        contextObj = buildingObj,
-        obj_type = con.ACA_WALLTYPE_RAILILNG,
-        obj_id = railingID,
-    )
-    if currentRailingData is None:
-        raise Exception("无法获取railing_list中的{railingID}数据集")
-    
-    # 批量设置所有选中的对象
-    for railingSelect in selected_objs:
-        # 确认是踏跺
-        if railingSelect.ACA_data.aca_type not in (con.ACA_WALLTYPE_RAILILNG,
-                              con.ACA_WALLTYPE_BENCH):
-            continue
-
-        # 获取其他被选中的栏杆数据    
-        selectedID = railingSelect.ACA_data['wallID']
-        selectedRailingData = utils.getDataChild(
-            contextObj = buildingObj,
-            obj_type=con.ACA_WALLTYPE_RAILILNG,
-            obj_id=selectedID,
-        )
-        if selectedRailingData is None:
-            raise Exception("无法获取railing_list中的{railingID}数据集")
-        
-        # 设置数据
-        selectedRailingData['gap'] = currentRailingData.gap
-
-        # 更新实体
-        from . import buildWall
-        funproxy = partial(buildWall.updateWall,
-                        wallObj=railingSelect)
-        utils.fastRun(funproxy)
-
-    # 恢复踏跺选择
-    # 先取消所有选中（因为可能再update_platform中focus了root）
-    bpy.ops.object.select_all(action='DESELECT')
-    for objName in selected_names:
-        stepObj = bpy.data.objects[objName]
-        stepObj.select_set(True)
-        bpy.context.view_layer.objects.active = stepObj
-
-    return
-
-def update_platform(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
-    # 台基最小值控制
-    buildingObj,bData,oData = utils.getRoot(context.object)
-    # 下出不小于柱径
-    if bData.platform_extend<bData.pillar_diameter:
-        bData['platform_extend'] = bData.pillar_diameter/2
-    # 高度不小于方砖曼地
-    if bData.platform_height<con.STEP_HEIGHT:
-        bData['platform_height'] = con.STEP_HEIGHT
-    
-    # 从self属性找到对应的Object，用self.id_data
-    # https://blender.stackexchange.com/questions/145245/how-to-access-object-instance-from-property-instance-in-update-callback
-    refObj = self.id_data
-
-    # 251217 添加清除拼接
-    from . import buildSplice
-    buildSplice.undoSplice(buildingObj)
-    
-    # 调用台基缩放
-    from . import buildPlatform
-    # buildPlatform.resizePlatform(buildingObj)
-    funproxy = partial(
-            buildPlatform.resizePlatform,
-            buildingObj=refObj)
-    utils.fastRun(funproxy)
-
-    return
-
-# 仅更新柱体样式，不触发其他重建
-def update_PillarStyle(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
-    # 确认选中为building节点
-    buildingObj,bdata,odata = utils.getRoot(context.object)
-    if buildingObj != None:
-        # 调用营造序列
-        from . import buildFloor
-        # buildFloor.buildPillars(buildingObj)
-        funproxy = partial(
-                buildFloor.buildPillars,
-                buildingObj=buildingObj)
-        utils.fastRun(funproxy)
-    else:
-        utils.outputMsg("updated building failed, context.object should be buildingObj")
-    return
-
-# 更新柱体尺寸，会自动触发墙体重建
-def update_pillar(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-
-    # 确认选中为building节点
-    buildingObj,bdata,odata = utils.getRoot(context.object)
-    if buildingObj != None:
-        # 缩放柱形
-        from . import buildFloor
-        # buildFloor.resizePillar(buildingObj)
-        funproxy = partial(
-                buildFloor.resizePillar,
-                buildingObj=buildingObj)
-        utils.fastRun(funproxy)
-    else:
-        utils.outputMsg("updated pillar failed, context should be pillarObj")
-    return
-
-def update_wall(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
-    contextObj = context.active_object
-    # 暂存，以便批量更新后的恢复选择
-    activeObjName = contextObj.name
-    buildingObj,bData,oData = utils.getRoot(contextObj)
-
-    # 1、预处理，校验所有选中的对象---------------------------
-    # 所有选中的对象
-    selected_walls = context.selected_objects
-    # 暂存选中的对象
-    selected_names = []
-    # 经过确认需要更新的墙体对象，如，将隔扇子对象，替换成槛框父对象
-    update_walls = []
-    for wallSelected in selected_walls:
-        # 验证是否跨建筑
-        wallbuilding,wbData,woData = utils.getRoot(wallSelected)
-        if wallbuilding != buildingObj:
-            # 丢弃跨建筑的对象
-            continue
-
-        # 验证为待更新的装修对象
-        if wallSelected.ACA_data.aca_type in (
-            con.ACA_TYPE_WALL,              # 槛墙
-            con.ACA_WALLTYPE_WINDOW,        # 槛窗
-            con.ACA_WALLTYPE_GESHAN,        # 隔扇
-            con.ACA_WALLTYPE_BARWINDOW,     # 直棂窗
-            con.ACA_WALLTYPE_MAINDOOR,      # 板门
-            con.ACA_WALLTYPE_FLIPWINDOW,    # 支摘窗
-            con.ACA_WALLTYPE_RAILILNG,      # 栏杆
-            con.ACA_WALLTYPE_BENCH,         # 坐凳
-        ):
-            # 存入选择列表
-            if not wallSelected.name in selected_names:
-                selected_names.append(wallSelected.name)
-            # 存入待更新列表
-            if not wallSelected in update_walls:
-                update_walls.append(wallSelected)
-        # 如果是门窗子对象，自动选择槛框
-        elif wallSelected.ACA_data.aca_type == con.ACA_TYPE_WALL_CHILD:
-            kankuangObj = wallSelected.parent
-            # 自动选择槛框父对象
-            kankuangObj.select_set(True)
-            # 如果门窗子对象是活动对象
-            if context.active_object == wallSelected:
-                # 设置槛框父对象为活动对象
-                bpy.context.view_layer.objects.active = kankuangObj
-            # 存入选择列表
-            if not kankuangObj.name in selected_names:
-                selected_names.append(kankuangObj.name)
-            # 存入待更新列表
-            if not kankuangObj in update_walls:
-                update_walls.append(kankuangObj)
-        # 其他不符合的构件，不做处理
-        else:
-            continue
-
-    # 2、开始批量处理--------------------------------------
-    from . import buildWall
-    # 活动对象，批量设置时，以此对象的设置为准
-    contextObj = context.active_object
-    buildingObj,bData,oData = utils.getRoot(contextObj)
-    # 批量设置所有选中的对象
-    for wallUpdate in update_walls:
-        # 多选时，数据传递
-        if wallUpdate != contextObj:
-            # 获取对应的data
-            walldata = utils.getDataChild(
-                contextObj=buildingObj,
-                obj_type=wallUpdate.ACA_data.aca_type,
-                obj_id=wallUpdate.ACA_data['wallID'])
-            # 全部修改为当前值
-            for prop in self.bl_rna.properties:
-                if prop.is_runtime:
-                    key = prop.identifier
-                    value = getattr(self,key)
-                    # id不要覆盖哦！
-                    if key == 'id' : continue
-
-                    # 只传递有的字段，没有的字段就抛弃
-                    if hasattr(walldata,key):
-                        walldata[key] = value
-        # 执行更新
-        funproxy = partial(buildWall.updateWall,
-                                wallObj=wallUpdate)
-        utils.fastRun(funproxy)
-
-    # 恢复墙体选择
-    bpy.ops.object.select_all(action='DESELECT')
-    for objName in selected_names:
-        wallObj = bpy.data.objects[objName]
-        wallObj.select_set(True)
-    if activeObjName in bpy.data.objects:
-        activeObj = bpy.data.objects[activeObjName]
-        bpy.context.view_layer.objects.active = activeObj
-    return
-
-# 刷新斗栱布局
-def update_dougong(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
-    # 确认选中为building节点
-    buildingObj,bData,odata = utils.getRoot(context.object)
-    if buildingObj != None:
-        # 250813 禁用以下处理
-        # 1、在重檐建筑中，如果修改上檐斗栱，导致重檐抬升计算错误
-        # 2、因为这里抢先用上檐柱头科替换掉了aData.dg_pillar_source
-        # 从而导致buildCombo.__getDoubleEaveLift时获取了错误的dg_extend
-        # 3、同时，在buildDougong.__buildDougong中已经调用了updateDougongData，
-        # 所以，这里直接禁用掉，目前看起来没有问题
-        # 以观后效
-        # 250831 重新调用此斗栱数据更新，否则在单体建筑切换斗栱时，柱高未及时更新
-        # 重檐的问题，晚些再说
-        # -------------
-        # 初始化斗栱数据，避免跨建筑时公用的aData干扰
-        from . import template
-        template.updateDougongData(buildingObj)
-
-        # 如果有楼阁，更新楼阁层高
-        comboRoot = utils.getComboRoot(context.object)
-        if comboRoot is not None:
-            # 显示进度条 
-            from . import build
-            build.isFinished = False
-            build.progress = 0
-
-            from . import buildCombo
-            buildCombo.__updateFloorLoc(comboRoot)
-        
-        # 241125 修改斗栱时，涉及到柱高的变化，最好是全屋更新
-        update_building(self,context)
-    else:
-        utils.outputMsg("updated dougong failed, context.object should be buildingObj")
-    return
-
-def update_juzhe(self, context:bpy.types.Context):
-    # 如果为3-自定义屋架高度时，不触发刷新
-    if self.juzhe != '3':
-        update_roof(self,context)
-    return
-
-def update_roof(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
-    # 确认选中为building节点
-    buildingObj,bData,oData = utils.getRoot(context.object)
-    if buildingObj != None:
-        bpy.ops.aca.build_roof()
-
-# 用户修改屋顶类型时的回调
-def update_roofstyle(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
-    buildingObj,bData,oData = utils.getRoot(context.object)
-    # 庑殿、歇山不可以不做飞椽
-    if bData.roof_style in (
-        con.ROOF_WUDIAN,
-        con.ROOF_XIESHAN,
-        con.ROOF_XIESHAN_JUANPENG,
-        con.ROOF_LUDING,
-    ):
-        bData['use_flyrafter'] = True
-
-    # 盝顶默认2步架
-    if bData.roof_style in (
-        con.ROOF_LUDING,
-    ):
-        bData['rafter_count'] = 2
-    else:
-        bData['rafter_count'] = 6
-
-    # 250907 切换平坐屋顶时，需要更新平坐斗栱
-    from . import template
-    template.updateDougongData(buildingObj)
-
-    return
-
-def update_rooftile(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
-    # 确认选中为building节点
-    buildingObj,bData,oData = utils.getRoot(context.object)
-    if buildingObj != None:
-        # 251217 添加清除拼接
-        from . import buildSplice
-        buildSplice.undoSplice(buildingObj)
-
-        from . import buildRooftile
-        # 重新生成屋顶
-        funproxy = partial(
-            buildRooftile.buildTile,
-            buildingObj=buildingObj)
-        utils.fastRun(funproxy)
-    else:
-        utils.outputMsg(
-            "updated rooftile failed, context.object should be buildingObj")
-    return
-
-# 显示/隐藏台基层
-def hide_platform(self, context:bpy.types.Context):
-    buildingObj = self.id_data
-    utils.hideLayer(
-        buildingObj,con.COLL_NAME_BASE,
-        self.is_showPlatform)
-
-# 显示/隐藏柱网层
-def hide_pillars(self, context:bpy.types.Context):
-    buildingObj = self.id_data
-    utils.hideLayer(
-        buildingObj,con.COLL_NAME_PILLAR,
-        self.is_showPillars)
-
-# 显示/隐藏装修层
-def hide_walls(self, context:bpy.types.Context):
-    buildingObj = self.id_data
-    utils.hideLayer(
-        buildingObj,con.COLL_NAME_WALL,
-        self.is_showWalls)
-
-# 显示/隐藏斗栱层
-def hide_dougong(self, context:bpy.types.Context):
-    buildingObj = self.id_data
-    utils.hideLayer(
-        buildingObj,con.COLL_NAME_DOUGONG,
-        self.is_showDougong)
-
-# 显示/隐藏梁架层
-def hide_beam(self, context:bpy.types.Context):
-    buildingObj = self.id_data
-    utils.hideLayer(
-        buildingObj,con.COLL_NAME_BEAM,
-        self.is_showBeam)
-
-# 显示/隐藏椽架层
-def hide_rafter(self, context:bpy.types.Context):
-    buildingObj = self.id_data
-    utils.hideLayer(
-        buildingObj,con.COLL_NAME_RAFTER,
-        self.is_showRafter)
-
-# 显示/隐藏瓦作层
-def hide_tiles(self, context:bpy.types.Context):
-    buildingObj = self.id_data
-    utils.hideLayer(
-        buildingObj,con.COLL_NAME_TILE,
-        self.is_showTiles)
-    utils.hideLayer(
-        buildingObj,con.COLL_NAME_BOARD,
-        self.is_showTiles)
-    
-# 显示/隐藏平坐层
-def hide_balcony(self, context:bpy.types.Context):
-    buildingObj = self.id_data
-    utils.hideLayer(
-        buildingObj,con.COLL_NAME_BALCONY,
-        self.is_showBalcony)
-
-# 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据
-# https://docs.blender.org/api/current/bpy.props.html
-# Warning
-# There is a known bug with using a callback, 
-# Python must keep a reference to the strings 
-# returned by the callback or Blender will 
-# misbehave or even crash.
-dougongList = []
-def getDougongList(self, context):
-    from . import template
-    global dougongList
-    dougongList = template.getDougongList()
-    return dougongList
 
 class ACA_id_list(bpy.types.PropertyGroup):
     id: bpy.props.StringProperty(
@@ -636,7 +79,7 @@ class ACA_data_taduo(bpy.types.PropertyGroup):
         max=1.0,
         min=0.3,
         step=10,    # 这里是[n/100],10代表0.1
-        update=update_step,
+        update=dc.update_step,
         precision=3,
     ) # type: ignore
 
@@ -653,7 +96,7 @@ class ACA_data_railing(bpy.types.PropertyGroup):
         min=0.0,
         step=10,    # 这里是[n/100],10代表0.1
         precision=3,
-        update=update_railing,
+        update=dc.update_railing,
     ) # type: ignore
 
 # 墙体共用属性
@@ -667,7 +110,7 @@ class ACA_data_wall_common(bpy.types.PropertyGroup):
             min=0,
             precision=3,
             description='重檐时，装修不做到柱头，用走马板填充，输入0则不做走马板',
-            update = update_wall,
+            update=dc.update_wall,
         )# type: ignore 
 
 # 门窗共用属性
@@ -679,7 +122,7 @@ class ACA_data_door_common(ACA_data_wall_common):
             min=0.1,
             precision=3,
             description='开间中的门口/窗口宽度比例，小于1则开间的部分做余塞板，不可大于1',
-            update = update_wall,
+            update=dc.update_wall,
         )# type: ignore 
     doorFrame_height : bpy.props.FloatProperty(
             name="门口高度",
@@ -687,13 +130,13 @@ class ACA_data_door_common(ACA_data_wall_common):
             min=0.1,
             precision=3,
             description='开间中的门口高度，小于柱高的空间将自动布置横披窗/迎风板',
-            update = update_wall,
+            update=dc.update_wall,
         )# type: ignore 
     topwin_height : bpy.props.FloatProperty(
             name="横披窗高度",
             default=0,
             precision=3,
-            update = update_wall,
+            update=dc.update_wall,
             description="横披窗（棂心）的高度，输入0则不做横披窗",
         )# type: ignore 
     
@@ -702,14 +145,14 @@ class ACA_data_maindoor(ACA_data_door_common):
     door_num : bpy.props.IntProperty(
             name="板门数量",
             default=2, max=4,step=2,min=2,
-            update = update_wall,
+            update=dc.update_wall,
             description="板门可以做2扇，也可以做4扇",
         )# type: ignore 
     door_ding_num : bpy.props.IntProperty(
             name="门钉数量",
             default=5,
             min=0,max=9,
-            update = update_wall,
+            update=dc.update_wall,
             description="门钉的路数，最大9路，取0时不做门钉",
         )# type: ignore 
     
@@ -718,13 +161,13 @@ class ACA_data_geshan(ACA_data_door_common):
     door_num : bpy.props.IntProperty(
             name="隔扇数量",
             default=4, max=6,step=2,min=2,
-            update = update_wall,
+            update=dc.update_wall,
             description="一般做4扇隔扇",
         )# type: ignore 
     gap_num : bpy.props.IntProperty(
             name="抹头数量",
             default=5,min=2,max=6,
-            update = update_wall,
+            update=dc.update_wall,
             description="2~6抹头都可以，根据需要自由设置",
         )# type: ignore 
     
@@ -797,47 +240,47 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             step=0.01,
             precision=3,
             description="比例模数(m)，清官式常用0.08(二寸半)、0.096(三寸)等",
-            update = update_dk
+            update=dc.update_dk
         ) # type: ignore
     is_showPlatform: bpy.props.BoolProperty(
             default = True,
             name = "是否显示台基",
-            update=hide_platform
+            update=dc.hide_platform
         ) # type: ignore
     is_showPillars: bpy.props.BoolProperty(
             default = True,
             name = "是否显示柱网",
-            update=hide_pillars
+            update=dc.hide_pillars
         ) # type: ignore
     is_showWalls: bpy.props.BoolProperty(
             default = True,
             name = "是否显示墙体",
-            update=hide_walls
+            update=dc.hide_walls
         ) # type: ignore
     is_showDougong: bpy.props.BoolProperty(
             default = True,
             name = "是否显示斗栱",
-            update=hide_dougong
+            update=dc.hide_dougong
         ) # type: ignore
     is_showBeam: bpy.props.BoolProperty(
             default = True,
             name = "是否显示梁架",
-            update=hide_beam
+            update=dc.hide_beam
         ) # type: ignore
     is_showRafter: bpy.props.BoolProperty(
             default = True,
             name = "是否显示椽望",
-            update=hide_rafter
+            update=dc.hide_rafter
         ) # type: ignore
     is_showTiles: bpy.props.BoolProperty(
             default = True,
             name = "是否显示瓦作",
-            update=hide_tiles
+            update=dc.hide_tiles
         ) # type: ignore
     is_showBalcony: bpy.props.BoolProperty(
             default = True,
             name = "是否显示平坐",
-            update=hide_balcony
+            update=dc.hide_balcony
         ) # type: ignore
     
     # 台基对象属性
@@ -845,14 +288,14 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             name = "台基高度",
             min = 0.01, 
             precision=3,
-            update = update_platform, # 绑定回调
+            update=dc.update_platform, # 绑定回调
             description="一般为柱高的1/5，或2柱径",
         ) # type: ignore
     platform_extend : bpy.props.FloatProperty(
             name = "台基下出",
             precision=3,
             min = 0.01, 
-            update = update_platform,    # 绑定回调
+            update=dc.update_platform,    # 绑定回调
             description="檐柱的2.4倍，或上出檐的3/4~4/5",
         ) # type: ignore
     use_terrace: bpy.props.BoolProperty(
@@ -877,63 +320,63 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min = 1, 
             # max = 11,
             step = 2,
-            update= reset_building,
+            update=dc.reset_building,
             description="必须为奇数，建议最多不超过11间",
         )# type: ignore
     x_1 : bpy.props.FloatProperty(
             name = "明间宽度",
             min = 0, 
             precision=3,
-            update = update_building,
+            update=dc.update_building,
             description="常取7攒斗栱，且一般柱不越间广（柱高小于明间宽度）",
         )# type: ignore
     x_2 : bpy.props.FloatProperty(
             name = "次间宽度",
             min = 0, 
             precision=3,
-            update = update_building,
+            update=dc.update_building,
             description="常取6攒斗栱",
         )# type: ignore
     x_3 : bpy.props.FloatProperty(
             name = "梢间宽度",
             min = 0, 
             precision=3,
-            update = update_building,
+            update=dc.update_building,
             description="可以与次间宽度相同",
         )# type: ignore
     x_4 : bpy.props.FloatProperty(
             name = "尽间宽度",
             min = 0, 
             precision=3,
-            update = update_building,
+            update=dc.update_building,
             description="如果做四面廊，一般取2攒斗栱",
         )# type: ignore
     y_rooms : bpy.props.IntProperty(
             name = "进深间数",
             #max = 5,
             min = 1, 
-            update = reset_building,
+            update=dc.reset_building,
             description="根据通进深的需要，以及是否做前后廊，可以为偶数",
         )# type: ignore
     y_1 : bpy.props.FloatProperty(
             name = "明间深度",
             min = 0, 
             precision=3,
-            update = update_building,
+            update=dc.update_building,
             description="需综合考虑步架进行设计",
         )# type: ignore
     y_2 : bpy.props.FloatProperty(
             name = "次间深度",
             min = 0, 
             precision=3,
-            update = update_building,
+            update=dc.update_building,
             description="需综合考虑步架进行设计",
         )# type: ignore
     y_3 : bpy.props.FloatProperty(
             name = "梢间深度",
             min = 0, 
             precision=3,
-            update = update_building,
+            update=dc.update_building,
             description="需综合考虑步架进行设计",
         )# type: ignore
     
@@ -946,7 +389,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default = 0.0,
             min = 0.01, 
             precision=3,
-            update = update_pillarHeight,
+            update=dc.update_pillarHeight,
             description="有斗拱的取57-60斗口，无斗拱的取面阔的8/10",
         )# type: ignore
     pillar_diameter : bpy.props.FloatProperty(
@@ -954,14 +397,14 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default = 0.0,
             min = 0.01, 
             precision=3,
-            # update = update_pillar
-            update = update_building,
+            # update=dc.update_pillar
+            update=dc.update_building,
             description="有斗拱的取6斗口，无斗拱的取1/10柱高",
         )# type: ignore
     use_smallfang: bpy.props.BoolProperty(
             default=False,
             name="双重额枋",
-            update = update_building,
+            update=dc.update_building,
             description="同时使用大额枋、由额垫板、小额枋的三件套连接两根柱",
         )# type: ignore 
     pillar_insert: bpy.props.FloatProperty(
@@ -998,13 +441,13 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("2","白模",""),
                 ("3","红漆无彩画",""),
             ],
-            update = update_building,
+            update=dc.update_building,
             options = {"ANIMATABLE"}
         ) # type: ignore
     use_balcony_railing :  bpy.props.BoolProperty(
             default=False,
             name="使用平坐栏杆",
-            update=update_dougong,
+            update=dc.update_dougong,
             description="自动添加围绕平坐的连续栏杆",
         )# type: ignore 
     
@@ -1012,21 +455,21 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     use_dg :  bpy.props.BoolProperty(
             default=False,
             name="使用斗栱",
-            update=update_dougong,
+            update=dc.update_dougong,
             description="小式建筑可以不使用斗栱，大梁直接坐在柱头",
         )# type: ignore 
     use_pingbanfang: bpy.props.BoolProperty(
             default=True,
             name="使用平板枋",
-            update=update_dougong,
+            update=dc.update_dougong,
             description="在柱头和斗栱之间的一层垫板，明清式建筑一般都会使用",
         )# type: ignore 
     dg_style : bpy.props.EnumProperty(
             name = "斗栱类型",
             description = "根据建筑等级的不同，斗栱有严格的限制",
-            items = getDougongList,
+            items=dc.getDougongList,
             options = {"ANIMATABLE"},
-            update=update_dougong,
+            update=dc.update_dougong,
             default=0,
         ) # type: ignore
     dg_extend : bpy.props.FloatProperty(
@@ -1053,7 +496,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             precision=3,
             min=0.5,
             max=2.5,
-            update=update_dougong,
+            update=dc.update_dougong,
         )# type: ignore 
     dg_gap:bpy.props.FloatProperty(
             name="斗栱间距",    # 斗栱间距
@@ -1061,7 +504,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=0.99,
             precision=3,
             min=0.1,
-            update=update_dougong,
+            update=dc.update_dougong,
         )# type: ignore 
     dg_withbeam:bpy.props.BoolProperty(
             name="斗栱与大梁连做",    # 斗栱间距
@@ -1084,65 +527,65 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ('8','歇山卷棚顶',""),
                 ('9','平坐',""),
             ],
-            #update = update_roof,
-            update = update_roofstyle,
+            #update=dc.update_roof,
+            update=dc.update_roofstyle,
             description="请选择一种屋顶样式",
         ) # type: ignore
     use_double_eave: bpy.props.BoolProperty(
             default=False,
             name="使用重檐",
-            update = update_roof,
+            update=dc.update_roof,
             description="使用重檐形式的屋顶",
         )# type: ignore 
     use_hallway : bpy.props.BoolProperty(
             default=False,
             name="做廊步架",
-            update = update_building,
+            update=dc.update_building,
             description="在前后廊和周围廊做法时，升高金柱到下金桁高度",
         )# type: ignore 
     rafter_count : bpy.props.IntProperty(
             name="步架数量",
             default=8,
             min=2,max=9,
-            update = update_roof,
+            update=dc.update_roof,
             description="以通进深除以22斗口来估算，过大过小会有很多潜在问题",
         )# type: ignore 
     use_flyrafter :  bpy.props.BoolProperty(
             default=True,
             name="使用飞椽",
-            update = update_roof,
+            update=dc.update_roof,
             description="小式的硬山、悬山可以不做飞椽，但四坡面必须使用飞椽做翼角",
         )# type: ignore 
     use_wangban :  bpy.props.BoolProperty(
             default=True,
             name="添加望板",
-            update = update_roof,
+            update=dc.update_roof,
             description="可以不做望板，更直观的查看屋顶结构",
         )# type: ignore 
     qiqiao: bpy.props.FloatProperty(
             name="起翘(椽径倍数)",
             default=4, 
             min=0,
-            update=update_roof,
+            update=dc.update_roof,
             description="常做4椽起翘，也可以视情况适当增加",
         )# type: ignore 
     chong: bpy.props.FloatProperty(
             name="出冲(椽径倍数)",
             default=3,
             min=0, 
-            update=update_roof,
+            update=dc.update_roof,
             description="常做3椽出冲，也可以视情况适当增加",
         )# type: ignore 
     use_pie: bpy.props.BoolProperty(
             name="使用撇",
             default=True,
-            update=update_roof,
+            update=dc.update_roof,
             description="翼角翘飞椽可以选择是否做官式的撇向做法，起翘夸张的非官式做法建议关闭",
     )# type: ignore
     shengqi: bpy.props.IntProperty(
             name="生起(椽径倍数)",
             default=1, 
-            update=update_roof
+            update=dc.update_roof
         )# type: ignore 
     liangtou: bpy.props.FloatProperty(
             name="梁头位置", 
@@ -1150,7 +593,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0,
             max=1.0,
             precision=3,
-            update = update_roof,
+            update=dc.update_roof,
             description="老梁头压挑檐桁的尺度，建议在0.5左右，可根据起翘形态适当调整"
         )# type: ignore
     tuishan: bpy.props.FloatProperty(
@@ -1159,7 +602,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0.1,
             max=1.0,
             precision=3,
-            update = update_roof,
+            update=dc.update_roof,
             description="庑殿顶两山坡度的调整系数，标准值为0.9，设置为1.0即不做推山"
         )# type: ignore
     shoushan: bpy.props.FloatProperty(
@@ -1168,7 +611,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0,
             max=2,
             precision=3,
-            update = update_roof,
+            update=dc.update_roof,
             description="歇山顶的山花板从檐檩中向内移动的距离(米)，一般为1檩径(4斗口)，最大不超过檐步架"
         )# type: ignore
     luding_rafterspan:bpy.props.FloatProperty(
@@ -1177,7 +620,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0.01,
             max=6,
             precision=3,
-            update = update_roof,
+            update=dc.update_roof,
             description="盝顶檐步架宽度，用于重檐时，请设置为上下层面阔/进深收分的距离"
         )# type: ignore
     juzhe : bpy.props.EnumProperty(
@@ -1189,7 +632,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
                 ("3","   举折系数：按屋架高度推算","根据输入屋架高度，进行举折计算")
             ],
             description="决定了屋面坡度的曲率",
-            update = update_juzhe,
+            update=dc.update_juzhe,
         ) # type: ignore
     roof_height:bpy.props.FloatProperty(
             name="屋架高度", 
@@ -1197,7 +640,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0.01,
             max=10,
             precision=3,
-            update = update_roof,
+            update=dc.update_roof,
             description="从正心桁到脊桁的垂直高度"
         )# type: ignore
     roof_qiao_point : bpy.props.FloatVectorProperty(
@@ -1214,7 +657,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0.5,max=2.0,
             precision=2,
             description="放大或缩小瓦作的比例，默认1.0",
-            update = update_building,
+            update=dc.update_building,
         )# type: ignore
     tile_color : bpy.props.EnumProperty(
             name = "瓦面颜色",
@@ -1259,7 +702,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=6,
             min=0,
             max=10,
-            update=update_rooftile,
+            update=dc.update_rooftile,
             description="包括骑鸡仙人的数量",
         )# type: ignore 
     
@@ -1275,7 +718,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             precision=3,
             min=1,
             description="围墙的长度",
-            update=update_yardwall,
+            update=dc.update_yardwall,
         )# type: ignore 
     yard_depth :bpy.props.FloatProperty(
             name="庭院进深",
@@ -1283,7 +726,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             precision=3,
             min=1,
             description="仅在四面合围墙体时设置",
-            update=update_yardwall,
+            update=dc.update_yardwall,
         )# type: ignore
     yardwall_height:bpy.props.FloatProperty(
             name="院墙高度",
@@ -1291,7 +734,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             precision=3,
             min=1,
             description="院墙高度，不含帽瓦",
-            update=update_yardwall,
+            update=dc.update_yardwall,
         )# type: ignore
     yardwall_depth:bpy.props.FloatProperty(
             name="院墙厚度",
@@ -1299,7 +742,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             precision=3,
             min=0.5,
             description="院墙厚度，不含帽瓦",
-            update=update_yardwall,
+            update=dc.update_yardwall,
         )# type: ignore
     yardwall_angle:bpy.props.FloatProperty(
             name="院墙帽瓦斜率",
@@ -1308,7 +751,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min=0,
             max=45,
             description="帽瓦斜率，一般可维持30度",
-            update=update_yardwall,
+            update=dc.update_yardwall,
         )# type: ignore  
     
     # 251112 回廊标识
@@ -1323,7 +766,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             precision=3,
             min=0.1,
             max=0.3,
-            update = update_roof,
+            update=dc.update_roof,
             description="举折系数，默认0.1，适当调大可以获得更加明显的瓦面弧度",
         )# type: ignore
     
@@ -1491,7 +934,7 @@ class ACA_data_template(bpy.types.PropertyGroup):
     lingxin_source:bpy.props.PointerProperty(
             name = "棂心",
             type = bpy.types.Object,
-            update = update_wall
+            update=dc.update_wall
         )# type: ignore 
     
     # 斗栱对象
@@ -1688,20 +1131,7 @@ class ACA_data_template(bpy.types.PropertyGroup):
             type = bpy.types.Object,
         )# type: ignore 
     
-# template下拉框已经废弃，本方法也随之废弃
-# # 使用动态enumproperty时，必须声明全局变量持久化返回的回调数据
-# # https://docs.blender.org/api/current/bpy.props.html
-# # Warning
-# # There is a known bug with using a callback, 
-# # Python must keep a reference to the strings 
-# # returned by the callback or Blender will 
-# # misbehave or even crash.
-# templateList = []
-# def getTemplateList(self, context):
-#     from . import template
-#     global templateList
-#     templateList = template.getTemplateList()
-#     return templateList
+
 
 # 模板样式列表的行对象，绑定在UI_list上
 class TemplateListItem(bpy.types.PropertyGroup):
@@ -1714,53 +1144,7 @@ class TemplateThumbItem(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty()# type: ignore     
     path: bpy.props.StringProperty()# type: ignore     
 
-# 模板列表更新时，联动右侧缩略图
-def updateSelectedThumb(self,context):    
-    scene = bpy.context.scene
-    tIndex = self.templateIndex
-    tName = self.templateItem[tIndex].name
-    try:
-        scene.image_browser_enum = tName
-    except Exception as e:
-        utils.outputMsg(f"无法显示缩略图 {tName}") 
-    return
 
-def updateSelectedTemplate(self, context:bpy.types.Context):
-    selectedThumb = self.image_browser_enum
-    scnData = context.scene.ACA_data
-    templateItems = scnData.templateItem
-    for index,item in enumerate(templateItems):
-        if item.name == selectedThumb:
-            scnData['templateIndex'] = index
-    return
-
-# 模板列表更新时，联动右侧缩略图
-def updateSelectedPavilionThumb(self,context):    
-    scene = bpy.context.scene
-    tIndex = self.pavilionIndex
-    tName = self.pavilionItem[tIndex].name
-    try:
-        scene.pavilion_browser_enum = tName
-    except Exception as e:
-        utils.outputMsg(f"无法显示缩略图 {tName}") 
-    
-    # 更新默认参数
-    from . import buildCombo
-    buildCombo.set_multiFloor_plan(self,context)
-    return
-
-def updateSelectedPavilion(self, context:bpy.types.Context):
-    selectedThumb = self.pavilion_browser_enum
-    scnData = context.scene.ACA_data
-    pavilionItems = scnData.pavilionItem
-    for index,item in enumerate(pavilionItems):
-        if item.name == selectedThumb:
-            scnData['pavilionIndex'] = index
-
-    # 更新默认参数
-    from . import buildCombo
-    buildCombo.set_multiFloor_plan(self,context)
-    return
 
 # 楼阁设置属性集
 class ACA_data_pavilion(bpy.types.PropertyGroup):
@@ -1844,7 +1228,7 @@ class ACA_data_scene(bpy.types.PropertyGroup):
     templateIndex: bpy.props.IntProperty(
             name="Active List Index",
             default=0, 
-            update=updateSelectedThumb,
+            update=dc.updateSelectedThumb,
         )# type: ignore 
     pavilionItem : bpy.props.CollectionProperty(
         type=TemplateListItem)# type: ignore
@@ -1852,7 +1236,7 @@ class ACA_data_scene(bpy.types.PropertyGroup):
             name="请选择上出楼阁的做法",
             description="请选择上出阁楼的做法",
             default=0, 
-            update=updateSelectedPavilionThumb,
+            update=dc.updateSelectedPavilionThumb,
         )# type: ignore 
     pavilionSetting: bpy.props.PointerProperty(
         type=ACA_data_pavilion,

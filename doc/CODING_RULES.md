@@ -10,6 +10,7 @@
 7. [数据管理规则](#7-数据管理规则)
 8. [版本兼容规则](#8-版本兼容规则)
 9. [国际化考虑](#9-国际化考虑)
+10. [代码重构专项规范](#10-代码重构专项规范)
 
 ---
 
@@ -25,6 +26,7 @@
 
 **数据管理层**
 - `data.py` - 自定义数据结构和属性绑定
+- `data_callback.py` - 数据属性更新回调函数集合
 - `const.py` - 全局常量和配置定义
 - `template.py` - 模板管理系统
 
@@ -35,6 +37,7 @@
 **工具类模块层**
 - `tools/` - 工具类模块目录
   - `auto_register.py` - 自动类注册工具
+  - `aca_logging.py` - 日志管理模块
 
 **测试文件层**
 - `test/` - 测试脚本和调试工具目录
@@ -73,6 +76,8 @@ UI层(panel.py) → 业务逻辑层(operators.py) → 构建引擎(build.py)
 
 ## 2. 命名规范
 
+> **⚠️ 重要提示**：本章节规范仅适用于**新编写的代码**。对于从旧版本迁移的代码，必须严格遵守 [REFACTOR_FUNCTION_MIGRATION_RULES.md](REFACTOR_FUNCTION_MIGRATION_RULES.md) 中的“等效迁移”原则，保留原始变量名（即使不符合本规范）。
+
 ### 2.1 文件命名规则
 
 **Python文件**
@@ -84,6 +89,7 @@ UI层(panel.py) → 业务逻辑层(operators.py) → 构建引擎(build.py)
 - 资源目录：`template/`、`thumb/`、`pavilion/`
 - 配置目录：`.vscode/`、`.qoder/`
 - 工具目录：`tools/`、`test/`
+- 文档目录：`doc/`
 
 **文档文件命名**
 - 格式：`{python模块名}_{功能描述}_使用说明.md`
@@ -185,7 +191,19 @@ pillar_index = 0            # 柱索引
 
 ## 3. 代码结构规则
 
-### 3.1 文件头部注释规范
+### 3.1 注释与文档规范
+
+> **⚠️ 重要提示**：对于重构和迁移过程中的注释处理（如保留历史注释、迁移废弃代码等），请严格参考 [REFACTOR_FUNCTION_MIGRATION_RULES.md](REFACTOR_FUNCTION_MIGRATION_RULES.md) 中的“注释与内容保真”部分。本节规范主要适用于**新编写的代码**。
+
+- **文档字符串 (Docstring)**：所有公开的类和函数必须包含文档字符串，说明其功能、参数和返回值。
+- **复杂逻辑注释**：对于复杂的算法或业务逻辑，应在代码上方添加中文注释进行解释。
+- **TODO标记**：使用 `# TODO: [描述]` 标记待完成或待优化的功能。
+- **FIXME标记**：使用 `# FIXME: [描述]` 标记已知的问题或需要修复的缺陷。
+- **BUG修复注释**：在修复Bug时，必须添加带日期的注释说明。
+  - 格式：`# YYMMDD [修改理由]`
+  - 示例：`# 260212 修复了空指针异常，增加了空值检查`
+
+### 3.2 文件头部注释规范
 
 ```python
 # 作者：willimxp
@@ -195,7 +213,7 @@ pillar_index = 0            # 柱索引
 # 最后修改：[YYYY-MM-DD]
 ```
 
-### 3.2 类定义结构规范
+### 3.3 类定义结构规范
 
 ```python
 class ACA_OT_add_building(bpy.types.Operator):
@@ -230,7 +248,7 @@ class ACA_OT_add_building(bpy.types.Operator):
         pass
 ```
 
-### 3.3 函数定义规范
+### 3.4 函数定义规范
 
 ```python
 def update_pillarHeight(self, context: bpy.types.Context):
@@ -258,7 +276,7 @@ def update_pillarHeight(self, context: bpy.types.Context):
         buildCombo.__updateFloorLoc(comboRoot)
 ```
 
-### 3.4 常量类定义规范
+### 3.5 常量类定义规范
 
 ```python
 class ACA_Consts(object):
@@ -284,6 +302,8 @@ class ACA_Consts(object):
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")
 ```
+
+
 
 ---
 
@@ -1124,3 +1144,8 @@ class ACA_PT_props(bpy.types.Panel):
 ```
 
 这套代码规则为ACA Builder项目的开发提供了完整的规范指导，确保代码的一致性、可维护性和专业性。
+
+---
+
+## 10. 代码重构专项规范
+函数跨文件迁移的详细规则，请参考：[函数跨文件迁移编码规范](./REFACTOR_FUNCTION_MIGRATION_RULES.md)

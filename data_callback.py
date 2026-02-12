@@ -3,13 +3,23 @@
 # 功能概述：
 #   自定义数据结构的业务逻辑回调
 #   从data.py中分离出的逻辑代码
+#   260212 提取了自动重建开关的判断修饰符，让代码更加简洁
 
 import bpy
-import time 
-from functools import partial
-
+from functools import partial, wraps
 from .const import ACA_Consts as con
 from . import utils
+
+# 260212 新增判断“自动刷新”开关的修饰符
+def check_auto_rebuild(func):
+    @wraps(func)
+    def wrapper(self, context, *args, **kwargs):
+        # 判断自动刷新开关
+        isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
+        if not isRebuild:
+            return
+        return func(self, context, *args, **kwargs)
+    return wrapper
 
 # # 筛选资产目录
 # def p_filter(self, object:bpy.types.Object):
@@ -17,12 +27,8 @@ from . import utils
 #     return object.users_collection[0].name == 'Assets'
 
 # 刷新斗口
+@check_auto_rebuild
 def update_dk(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
     # 确认选中为building节点
     buildingObj,bData,odata = utils.getRoot(context.object)
     if buildingObj != None:
@@ -32,12 +38,8 @@ def update_dk(self, context:bpy.types.Context):
     return
 
 # 更新柱高
+@check_auto_rebuild
 def update_pillarHeight(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
     # 如果有楼阁，更新楼阁层高
     comboRoot = utils.getComboRoot(context.object)
     if comboRoot is not None:
@@ -51,15 +53,10 @@ def update_pillarHeight(self, context:bpy.types.Context):
     
     # 重建当前建筑
     update_building(self,context)
-    
 
 # 更新建筑，但不重设柱网
+@check_auto_rebuild
 def update_building(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-
     # 根据数据集合，找到对应的建筑
     # 在panel中指定bData时，指向context.object,
     # 在panel中指定为mData时，指向主建筑
@@ -92,12 +89,8 @@ def reset_building(self, context:bpy.types.Context):
         utils.popMessageBox("重设柱网失败")
 
 # 更新院墙
+@check_auto_rebuild
 def update_yardwall(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
     bpy.ops.aca.build_yardwall()
     return
 
@@ -209,12 +202,8 @@ def update_railing(self, context:bpy.types.Context):
 
     return
 
+@check_auto_rebuild
 def update_platform(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
     # 台基最小值控制
     buildingObj,bData,oData = utils.getRoot(context.object)
     # 下出不小于柱径
@@ -243,12 +232,8 @@ def update_platform(self, context:bpy.types.Context):
     return
 
 # 仅更新柱体样式，不触发其他重建
+@check_auto_rebuild
 def update_PillarStyle(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
@@ -264,12 +249,8 @@ def update_PillarStyle(self, context:bpy.types.Context):
     return
 
 # 更新柱体尺寸，会自动触发墙体重建
+@check_auto_rebuild
 def update_pillar(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-
     # 确认选中为building节点
     buildingObj,bdata,odata = utils.getRoot(context.object)
     if buildingObj != None:
@@ -284,12 +265,8 @@ def update_pillar(self, context:bpy.types.Context):
         utils.outputMsg("updated pillar failed, context should be pillarObj")
     return
 
+@check_auto_rebuild
 def update_wall(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
     contextObj = context.active_object
     # 暂存，以便批量更新后的恢复选择
     activeObjName = contextObj.name
@@ -386,12 +363,8 @@ def update_wall(self, context:bpy.types.Context):
     return
 
 # 刷新斗栱布局
+@check_auto_rebuild
 def update_dougong(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
     # 确认选中为building节点
     buildingObj,bData,odata = utils.getRoot(context.object)
     if buildingObj != None:
@@ -432,24 +405,16 @@ def update_juzhe(self, context:bpy.types.Context):
         update_roof(self,context)
     return
 
+@check_auto_rebuild
 def update_roof(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
     # 确认选中为building节点
     buildingObj,bData,oData = utils.getRoot(context.object)
     if buildingObj != None:
         bpy.ops.aca.build_roof()
 
 # 用户修改屋顶类型时的回调
+@check_auto_rebuild
 def update_roofstyle(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
     buildingObj,bData,oData = utils.getRoot(context.object)
     # 庑殿、歇山不可以不做飞椽
     if bData.roof_style in (
@@ -474,12 +439,8 @@ def update_roofstyle(self, context:bpy.types.Context):
 
     return
 
+@check_auto_rebuild
 def update_rooftile(self, context:bpy.types.Context):
-    # 判断自动重建开关
-    isRebuild = bpy.context.scene.ACA_data.is_auto_rebuild
-    if not isRebuild:
-        return
-    
     # 确认选中为building节点
     buildingObj,bData,oData = utils.getRoot(context.object)
     if buildingObj != None:

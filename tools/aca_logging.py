@@ -115,7 +115,8 @@ def init_logger(
     console_handler = logging.StreamHandler()
     console_handler.setLevel(log_level)
     console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
+    # 260225 日志只写入日志文件，不再重复打印到控制台
+    # logger.addHandler(console_handler)
     
     # 添加文件日志处理器
     if log_path is None:

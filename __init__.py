@@ -74,6 +74,13 @@ def register():
         if addon_prefs.fix_windows_cli_encoding:
             import os
             os.system("chcp 65001")  # 65001 = UTF-8编码
+
+    # 260225 插件加载完成后，输出提示信息
+    print("=" * 60)
+    utils.outputMsg(f"{bl_info['name']} v{'.'.join(map(str, bl_info['version']))} 已成功加载")
+    print(f"{bl_info['description']}")
+    print(f"{bl_info['doc_url']}")
+    print("=" * 60)
     
     return
     

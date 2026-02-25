@@ -1353,9 +1353,9 @@ def setOrigin(object:bpy.types.Object,origin:Vector):
 # 这时可以手工刷新一次
 # 老中医，药到病除的办法
 def updateScene():
-    #bpy.context.view_layer.update() 
-
-    # 按照文章的说法，这个消耗更低
+    # bpy.context.view_layer.update() 
+    # 260225 view_layer.update更快(<1ms)，但是只能刷新视图中对象的位置和大小
+    # depsgraph.update稍慢(1~10ms)，但可以及时获取matrix_world的变化
     dg = bpy.context.evaluated_depsgraph_get() 
     dg.update()
 

@@ -281,12 +281,6 @@ def loadAssets(assetName : str,
                hide=True,
                link=True):   
     import os
-    # 260225 检查对象是否已经存在于数据块中
-    # 如果已存在且是link模式，直接返回现有对象，避免重复加载导致警告
-    # 如“石头”资产，已经在blender中加载过，再次加载会报错
-    if link and assetName in bpy.data.objects:
-        return bpy.data.objects[assetName]
-
     # 查找默认插件目录下的素材库
     filepath = __getPath(blenderFileName)
     # 如果找不到文件，尝试查找用户自定义路径

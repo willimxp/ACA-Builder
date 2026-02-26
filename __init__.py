@@ -16,7 +16,7 @@ import logging
 bl_info = {
     "name" : "ACA Builder",
     "author" : "皮皮 willimxp",
-    "description" : "模板化生成清官式建筑。Generate architecher in chinese style.",
+    "description" : "筑韵古建：模板化生成清官式建筑。Generate architecher in chinese style.",
     "blender" : (4, 2, 0),
     "version" : (0, 6, 0),
     "location" : "View3D > Properties > ACA Builder",
@@ -39,18 +39,23 @@ def register():
 
     # 注册自定义属性
     data.initprop()
-
+    
     # 260210 从偏好设置读取日志配置并初始化日志记录器
     preferences = bpy.context.preferences
     addon_main_name = __name__.split('.')[0]
     addon_prefs = preferences.addons[addon_main_name].preferences
-    
     log_level = aca_logging.get_log_level_from_string(addon_prefs.log_level)
     logger = aca_logging.init_logger(
         log_level=log_level,
         use_rotating=addon_prefs.use_log_rotation
     )
-    
+
+    # 260225 插件加载，输出提示信息
+    utils.outputMsg("=" * 60)
+    utils.outputMsg(f"{bl_info['name']} v{'.'.join(map(str, bl_info['version']))}")
+    utils.outputMsg(f"{bl_info['description']}")
+    utils.outputMsg(f"{bl_info['doc_url']}")
+
     # 记录系统信息
     aca_logging.log_system_info(logger)
     
@@ -75,12 +80,8 @@ def register():
             import os
             os.system("chcp 65001")  # 65001 = UTF-8编码
 
-    # 260225 插件加载完成后，输出提示信息
-    print("=" * 60)
-    utils.outputMsg(f"{bl_info['name']} v{'.'.join(map(str, bl_info['version']))} 已成功加载")
-    print(f"{bl_info['description']}")
-    print(f"{bl_info['doc_url']}")
-    print("=" * 60)
+    # 插件加载完成
+    utils.outputMsg("=" * 60)
     
     return
     

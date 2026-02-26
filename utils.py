@@ -911,16 +911,17 @@ def fastRun(func):
 
 # 格式化输出内容
 def outputMsg(msg:str):
-    # 打印到python console中
-    # 拼接毫秒部分
-    timestamp = time.time()
-    integer_part = int(timestamp)
-    milliseconds = int((timestamp - integer_part) * 100)
-    formatted_time = time.strftime("%H:%M:%S", time.localtime(integer_part))
-    formatted_time_with_ms = f"{formatted_time}.{milliseconds:02d}"
-    #stime = time.strftime("%H:%M:%S", time.localtime())
-    strout = "ACA[" + formatted_time_with_ms + "]: " + msg
-    print(strout)
+    # 260226 信息全部通过logger输出到console控制台中
+    # # 打印到python console中
+    # # 拼接毫秒部分
+    # timestamp = time.time()
+    # integer_part = int(timestamp)
+    # milliseconds = int((timestamp - integer_part) * 100)
+    # formatted_time = time.strftime("%H:%M:%S", time.localtime(integer_part))
+    # formatted_time_with_ms = f"{formatted_time}.{milliseconds:02d}"
+    # #stime = time.strftime("%H:%M:%S", time.localtime())
+    # strout = "ACA[" + formatted_time_with_ms + "]: " + msg
+    # print(strout)
 
     # 输出到日志文件中
     logger = logging.getLogger('ACA')

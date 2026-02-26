@@ -107,16 +107,16 @@ def init_logger(
     
     # 日志格式
     formatter = logging.Formatter(
-        fmt='%(asctime)s [%(levelname)s] : %(message)s',
-        datefmt='%y/%m/%d %H:%M:%S',
+        fmt='[ACA/%(levelname)s]%(asctime)s.%(msecs)03d: %(message)s',
+        datefmt='%H:%M:%S',
     )
     
     # 添加控制台日志处理器
     console_handler = logging.StreamHandler()
     console_handler.setLevel(log_level)
     console_handler.setFormatter(formatter)
-    # 260225 日志只写入日志文件，不再重复打印到控制台
-    # logger.addHandler(console_handler)
+
+    logger.addHandler(console_handler)
     
     # 添加文件日志处理器
     if log_path is None:
@@ -202,9 +202,7 @@ def log_system_info(logger: logging.Logger = None) -> None:
     
     import platform
     
-    logger.info("=" * 50)
-    logger.info("ACA Builder 日志系统启动")
-    logger.info(f"操作系统: {platform.system()} {platform.release()}")
-    logger.info(f"Python 版本: {platform.python_version()}")
-    logger.info(f"Blender 版本: {bpy.app.version_string}")
-    logger.info("=" * 50)
+    logger.debug("ACA Builder 日志系统启动")
+    logger.info(f"OS: {platform.system()} {platform.release()}")
+    logger.info(f"Blender: {bpy.app.version_string}")
+    logger.debug(f"Python: {platform.python_version()}")

@@ -107,7 +107,7 @@ def init_logger(
     
     # 日志格式
     formatter = logging.Formatter(
-        fmt='[ACA/%(levelname)s]%(asctime)s.%(msecs)03d: %(message)s',
+        fmt='%(asctime)s.%(msecs)03d [ACA]: %(message)s',
         datefmt='%H:%M:%S',
     )
     

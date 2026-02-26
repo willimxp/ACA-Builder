@@ -43,14 +43,40 @@ class ACA_PT_basic(bpy.types.Panel):
         layout = self.layout
         
         # 0、检测运行版本，必须至少在Blender 4.2.0以上
-        if bpy.app.version < (4,2,0):
+        # 260226 最低版本限制到5.0.0
+        if bpy.app.version < (5,0,0):
             row = layout.row()
-            row.label(text='本插件无法运行在V%s.%s.%s' % (bpy.app.version[0],bpy.app.version[1],bpy.app.version[2]))
+            row.label(text='本插件无法运行在V%s.%s.%s' % (bpy.app.version[0],bpy.app.version[1],bpy.app.version[2]),icon='INFO')
             row = layout.row()
-            row.label(text='请安装Blender V4.2.0以上')
+            row.label(text='请安装Blender V5.0.0以上')
             row = layout.row()
-            op = row.operator("wm.url_open",icon='URL',text='下载Blender')
+            op = row.operator("wm.url_open",
+                              icon='URL',
+                              text='下载Blender最新版本',
+                              depress=True)
             op.url = 'https://www.blender.org/download/'
+            return
+        
+        # 260226 验证素材库是否已经配置
+        # 是否在插件属性中配置？
+        preferences = bpy.context.preferences
+        addon_main_name = __name__.split('.')[0]
+        addon_prefs = preferences.addons[addon_main_name].preferences
+        filepath = addon_prefs.filepath
+        # 是否在插件目录中放置？
+        import pathlib
+        USER = pathlib.Path(bpy.utils.resource_path('USER'))
+        srcPath = USER / "scripts/addons/ACA Builder/template/acaAssets.blend3"
+        # 如果以上两个位置都未找到，提示用户配置
+        import os
+        if not os.path.exists(filepath) and not os.path.exists(srcPath):
+            row = layout.row()
+            row.label(text="欢迎使用ACA筑韵古建插件")
+            row = layout.row()
+            row.label(text="请关联素材库(acaAssets.blend)路径：",icon='INFO')
+            row = layout.row()
+            row.operator(
+            "aca.link_assets",icon='COLLECTION_COLOR_02')
             return
         
         # 1、生成新建筑，调用独立的下拉选择对话框
@@ -1538,7 +1564,7 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
 # 面板可见性的通用验证
 def genericPoll(self,context:bpy.types.Context):
     # 版本验证
-    if bpy.app.version < (4,2,0): return False
+    if bpy.app.version < (5,0,0): return False
 
     # 运行状态验证
     if not build.isFinished: return False

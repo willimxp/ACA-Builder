@@ -2412,8 +2412,12 @@ def extend_bezier_curve_endpoint(curve_obj, extension_length):
     new_point = bpoints[-1]
     
     new_point.co = new_point_co
-    new_point.handle_left = last_point.co
-    last_point.handle_right = new_point.co
+    # 260226 发现延长的大连檐的曲线handle到了原点
+    # 即last_point.co此时已经为(0,0,0)
+    # 所以修改新加的点不做左右handle，都放在new_point_co位置
+    # new_point.handle_left = last_point.co
+    new_point.handle_left = new_point_co
+    new_point.handle_right = new_point_co
     new_point.tilt = last_point.tilt
 
 def extend_poly_curve_startpoint(curve_obj, extension_length):

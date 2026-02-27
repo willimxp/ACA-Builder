@@ -2415,6 +2415,9 @@ def extend_bezier_curve_endpoint(curve_obj, extension_length):
     # 260226 发现延长的大连檐的曲线handle到了原点
     # 即last_point.co此时已经为(0,0,0)
     # 所以修改新加的点不做左右handle，都放在new_point_co位置
+    # 260227 补充说明，这里的last_point.co在bpoints.add后变成了悬空引用
+    # 在windows上可能没有暴露该问题，在macos上凸显，甚至引起blender崩溃
+    # 详情参考doc/案例分析/陷阱分析：修改翼角大连檐曲线延伸时，添加点集合导致引用失效.md
     # new_point.handle_left = last_point.co
     new_point.handle_left = new_point_co
     new_point.handle_right = new_point_co

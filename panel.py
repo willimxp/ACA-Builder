@@ -66,7 +66,7 @@ class ACA_PT_basic(bpy.types.Panel):
         # 是否在插件目录中放置？
         import pathlib
         USER = pathlib.Path(bpy.utils.resource_path('USER'))
-        srcPath = USER / "scripts/addons/ACA Builder/template/acaAssets.blend3"
+        srcPath = USER / "scripts/addons/ACA Builder/template/acaAssets.blend"
         # 如果以上两个位置都未找到，提示用户配置
         import os
         if not os.path.exists(filepath) and not os.path.exists(srcPath):

@@ -7,6 +7,7 @@ import bpy
 from functools import partial
 import time 
 from . import data
+from .locale.i18n import T
 
 from .const import ACA_Consts as con
 from . import utils
@@ -1151,14 +1152,14 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
     bl_idname = __name__.split('.')[0]
 
     filepath: bpy.props.StringProperty(
-        name="素材库路径",
+        name="Material Library Path",
         subtype='FILE_PATH',
     )# type: ignore
 
     use_bevel : bpy.props.BoolProperty(
             default = True,
-            name = "是否使用倒角",
-            description = "取消后，不再使用倒角，直接生成直角构件",
+            name = "Use Bevel",
+            description = "Disable to generate right-angle components without bevels",
         ) # type: ignore
 
     # 260210 Windows CLI中文乱码矫正选项
@@ -1187,29 +1188,40 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
         description="自动归档旧日志文件，防止日志文件过大",
     ) # type: ignore
 
+    # 多语言设置
+    language: bpy.props.EnumProperty(
+        name="语言 / Language",
+        description="选择显示语言 / Select display language",
+        items=[
+            ('FOLLOW', '跟随系统 (Follow System)', '跟随Blender系统语言设置'),
+            ('zh_HANS', '简体中文 (Simplified Chinese)', '简体中文'),
+            ('en_US', 'English (English)', 'English'),
+        ],
+        default='FOLLOW',
+    ) # type: ignore
+
     def draw(self, context):
         import platform
         layout = self.layout
-        row = layout.row()
+
+        # 关联素材库
+        box = layout.box()
+        row = box.row()
         filepath = self.filepath
         if filepath == '':
-            row.label(text="请设置acaAssets.blend文件的路径:")
+            row.label(text=T("Please set acaAssets.blend path:"),icon='LINKED')
         else:
-            row.label(text=self.filepath)
-        row = layout.row()
+            row.label(text=self.filepath,icon='LINKED')
+        row = box.row()
         row.operator(
-            "aca.link_assets",icon='COLLECTION_COLOR_02')
+            "aca.link_assets")
         
-        row = layout.row()
-        row.prop(self,'use_bevel')
-        
-        # 260210 Windows CLI中文乱码矫正选项：仅在Windows系统上可用
-        row = layout.row()
-        is_windows = platform.system() == "Windows"
-        if not is_windows:
-            row.enabled = False
-            self.fix_windows_cli_encoding = False
-        row.prop(self,'fix_windows_cli_encoding')
+        # 260226 多语言设置
+        layout.separator()
+        box = layout.box()
+        box.label(text="语言设置 / Language:", icon='WORLD')
+        row = box.row()
+        row.prop(self, 'language')
         
         # 260210 日志配置选项
         layout.separator()
@@ -1219,7 +1231,19 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
         row.prop(self, 'log_level')
         row = box.row()
         row.prop(self, 'use_log_rotation')
-    
+
+        # 使用倒角
+        row = layout.row()
+        row.prop(self,'use_bevel', text=T("Use Bevel"))
+        
+        # 260210 Windows CLI中文乱码矫正选项：仅在Windows系统上可用
+        row = layout.row()
+        is_windows = platform.system() == "Windows"
+        if not is_windows:
+            row.enabled = False
+            self.fix_windows_cli_encoding = False
+        row.prop(self,'fix_windows_cli_encoding')
+
 # 关联素材库
 class ACA_OT_LINK_ASSETS(bpy.types.Operator):
     bl_idname="aca.link_assets"

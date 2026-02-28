@@ -10,6 +10,7 @@ from .data import ACA_data_obj as acaData
 from .const import ACA_Consts as con
 from . import utils
 from . import build
+from .locale.i18n import T
 
 # 营造向导面板
 class ACA_PT_basic(bpy.types.Panel):
@@ -46,13 +47,13 @@ class ACA_PT_basic(bpy.types.Panel):
         # 260226 最低版本限制到5.0.0
         if bpy.app.version < (5,0,0):
             row = layout.row()
-            row.label(text='本插件无法运行在V%s.%s.%s' % (bpy.app.version[0],bpy.app.version[1],bpy.app.version[2]),icon='INFO')
+            row.label(text=T('This addon cannot run on V%s.%s.%s') % (bpy.app.version[0],bpy.app.version[1],bpy.app.version[2]),icon='INFO')
             row = layout.row()
-            row.label(text='请安装Blender V5.0.0以上')
+            row.label(text=T('Please install Blender V5.0.0 or later'))
             row = layout.row()
             op = row.operator("wm.url_open",
                               icon='URL',
-                              text='下载Blender最新版本',
+                              text=T('Download Blender Latest Version'),
                               depress=True)
             op.url = 'https://www.blender.org/download/'
             return
@@ -71,9 +72,9 @@ class ACA_PT_basic(bpy.types.Panel):
         import os
         if not os.path.exists(filepath) and not os.path.exists(srcPath):
             row = layout.row()
-            row.label(text="欢迎使用ACA筑韵古建插件")
+            row.label(text=T("Welcome to ACA Builder"))
             row = layout.row()
-            row.label(text="请关联素材库(acaAssets.blend)路径：",icon='INFO')
+            row.label(text=T("Please set acaAssets.blend path:"),icon='INFO')
             row = layout.row()
             row.operator(
             "aca.link_assets",icon='COLLECTION_COLOR_02')
@@ -85,13 +86,13 @@ class ACA_PT_basic(bpy.types.Panel):
             "aca.select_template_dialog",
             icon='SEQUENCE',
             depress=True,
-            text='从模板生成新建筑'
+            text=T('Build New')
             )
         
         # 2、运行中提示
         if not build.isFinished:
             row = layout.row()
-            row.label(text='生成中：需要20~90秒，请耐心等待。',icon='INFO')
+            row.label(text=T('Building... Please wait 20~90 seconds.'),icon='INFO')
             row = layout.row()
             row.progress(
                 type="BAR",
@@ -114,9 +115,9 @@ class ACA_PT_basic(bpy.types.Panel):
             if buildingObj == None: 
                 isShowQS = True
         if isShowQS:
-            layout.label(text='Quick Start :')
-            layout.label(text='选择一个模板，生成古建筑',icon='KEYTYPE_JITTER_VEC')
-            layout.label(text='修改参数，定制你的样式',icon='KEYTYPE_MOVING_HOLD_VEC')
+            layout.label(text=T('Quick Start :'))
+            layout.label(text=T('Select a template to generate ancient architecture'),icon='KEYTYPE_JITTER_VEC')
+            layout.label(text=T('Modify parameters to customize your style'),icon='KEYTYPE_MOVING_HOLD_VEC')
             # 不再继续显示后续的设置面板
             return
         
@@ -157,26 +158,26 @@ class ACA_PT_basic(bpy.types.Panel):
         btnSaveTemplate = toolBar.column(align=True)
         btnSaveTemplate.operator(
             "aca.save_template",icon='FILE_TICK',
-            text='保存样式')
+            text=T('Save Style'))
         # 更新建筑
         btnUpdate = toolBar.column(align=True)
         btnUpdate.operator(
             "aca.update_building",
-            depress=True,text='更新建筑',
+            depress=True,text=T('Update Building'),
             icon='FILE_REFRESH',
         )              
         # 删除建筑
         btnDelete = toolBar.column(align=True)
         btnDelete.operator(
             "aca.del_building",icon='TRASH',
-            text='删除建筑'
+            text=T('Delete Building')
         ) 
         # 是否修改参数时，自动触发更新
         btnRefresh = toolBar.column(align=True)
         if scnData.is_auto_rebuild:
-            text = '暂停刷新'
+            text = T('Pause Refresh')
         else:
-            text = '自动刷新'
+            text = T('Auto Refresh')
         btnRefresh.prop(
             data=bpy.context.scene.ACA_data,
             property='is_auto_rebuild',
@@ -205,7 +206,7 @@ class ACA_PT_basic(bpy.types.Panel):
         btnJoin = toolBar.column(align=True)
         isJoined = (bData.aca_type == \
                     con.ACA_TYPE_BUILDING_JOINED)
-        btnJoinName = '取消合并' if isJoined else '合并'
+        btnJoinName = T('Unjoin') if isJoined else T('Join')
         op = btnJoin.operator("aca.join",icon='PACKAGE',
                          text=btnJoinName,
                          depress=isJoined)
@@ -242,14 +243,14 @@ class ACA_PT_basic(bpy.types.Panel):
             buttonX_p = toolBar.column(align=True)
             op1 = buttonX_p.operator("aca.section",
                         depress=(currentPlan=='X+'),
-                        text='侧剖',)
+                        text=T('Side Section'),)
             op1.sectionPlan = 'X+'
             # Y-
             col = toolBar.column(align=True)
             op = col.operator(
                 "aca.section",
                 depress=(currentPlan=='Y-'),
-                text='正剖')
+                text=T('Front Section'))
             op.sectionPlan = 'Y-'  
             # # 第二行 ------------------------------
             # toolBar = toolBox.grid_flow(columns=4, align=True)
@@ -258,21 +259,21 @@ class ACA_PT_basic(bpy.types.Panel):
             op = btnSectionA.operator(
                 "aca.section",
                 depress=(currentPlan=='A'),
-                text='透视A')
+                text=T('Persp A'))
             op.sectionPlan = 'A'  
             # 透视B
             btnSectionB = toolBar.column(align=True)
             op = btnSectionB.operator(
                 "aca.section",
                 depress=(currentPlan=='B'),
-                text='透视B')
+                text=T('Persp B'))
             op.sectionPlan = 'B' 
             # 透视C
             btnSectionC = toolBar.column(align=True)
             op = btnSectionC.operator(
                 "aca.section",
                 depress=(currentPlan=='C'),
-                text='透视C')
+                text=T('Persp C'))
             op.sectionPlan = 'C' 
 
         ###################################################
@@ -287,7 +288,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnMultiFloor1.operator(
                         "aca.multi_floor_add",
                         icon='AREA_JOIN_UP',
-                        text="添加楼阁",
+                        text=T("Add Pavilion"),
                         # depress=True,
                         )
         # 添加回廊
@@ -295,7 +296,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnAddLoggia.operator(
                         "aca.add_loggia",
                         icon='OBJECT_HIDDEN',
-                        text="添加周围廊") 
+                        text=T("Add Loggia")) 
 
         # 第2行 ------------------------------
         toolBox = box.column(align=True)
@@ -305,7 +306,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnMultiFloor1.operator(
                         "aca.splice_building",
                         icon='AUTOMERGE_ON',
-                        text="拼接建筑",
+                        text=T("Splice Building"),
                         # depress=True,
                         )   
         # 建筑集成
@@ -313,7 +314,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnMultiFloor1.operator(
                         "aca.combo_building",
                         icon='COLLECTION_NEW',
-                        text="组合建筑",
+                        text=T("Combo Building"),
                         # depress=True,
                         ) 
 
@@ -361,7 +362,7 @@ class ACA_PT_basic(bpy.types.Panel):
             opEmpty = btnEmpty.operator(
                             "aca.loggia_extend",
                             #icon='TRIA_LEFT',
-                            text="回廊",)   
+                            text=T("Loggia"),)   
             btnEmpty.enabled = False
             # 回廊延伸-东
             btnLoggiaEast = toolBar.column(align=True)
@@ -495,9 +496,9 @@ class ACA_PT_props(bpy.types.Panel):
             if buildingObj == None: 
                 # 如果不属于建筑构件，提示，并隐藏所有子面板
                 row = layout.row()
-                row.label(text='没有设置项',icon='INFO')
+                row.label(text=T('No Settings'),icon='INFO')
                 row = layout.row()
-                row.label(text='请先选择一个或多个建筑对象')
+                row.label(text=T('Please select one or more building objects'))
                 return 
             else:
                 # 斗口值

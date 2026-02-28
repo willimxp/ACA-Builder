@@ -7,6 +7,7 @@ from . import panel
 from . import operators
 from . import data
 from . import utils
+from .locale import i18n
 from .tools import auto_register
 from .tools import aca_logging
 import logging
@@ -33,6 +34,9 @@ classes = auto_register.auto_register_classes(data, panel, operators)
 # print(auto_register.get_registration_info(classes))
 
 def register():   
+    # 注册多语言
+    i18n.register()
+
     # 注入类
     for cls in classes:
         bpy.utils.register_class(cls)
@@ -89,6 +93,9 @@ def unregister():
     # 销毁类
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
+    
+    # 销毁多语言
+    i18n.unregister()
     
     # 销毁自定义属性
     data.delprop()

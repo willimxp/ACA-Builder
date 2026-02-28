@@ -36,6 +36,9 @@ classes = auto_register.auto_register_classes(data, panel, operators)
 def register():   
     # 注册多语言
     i18n.register()
+    # 调试多语言：手工设置当前语言
+    # bpy.context.preferences.view.language = 'zh_HANS'
+    # bpy.context.preferences.view.language = 'en_US'
 
     # 注入类
     for cls in classes:

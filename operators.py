@@ -21,7 +21,7 @@ class ACA_OT_focusBuilding(bpy.types.Operator):
     bl_idname="aca.focus_building"
     bl_label = ""
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '聚焦建筑根节点'
+    bl_description = T('Focus on the building root node')
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -51,7 +51,7 @@ class ACA_OT_add_building(bpy.types.Operator):
     bl_idname="aca.add_newbuilding"
     bl_label = "添加新建筑"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '根据选择的样式，自动生成建筑的各个构件'
+    bl_description = T('Generate building components based on selected style')
 
     def execute(self, context):  
         timeStart = time.time()
@@ -83,7 +83,7 @@ class ACA_OT_update_building(bpy.types.Operator):
     bl_idname="aca.update_building"
     bl_label = "更新建筑"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '根据参数的修改，重新生成建筑'
+    bl_description = T('Regenerate building based on parameters')
 
     # 外部传入的对象
     buildingName: bpy.props.StringProperty(
@@ -128,7 +128,7 @@ class ACA_OT_del_building(bpy.types.Operator):
     bl_idname="aca.del_building"
     bl_label = "删除建筑"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '删除当前建筑'
+    bl_description = T('Delete current building')
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -149,7 +149,7 @@ class ACA_OT_reset_floor(bpy.types.Operator):
     bl_idname="aca.reset_floor"
     bl_label = "重设柱网"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '重新生成被减柱的柱子，但也会丢失所有的额枋、隔扇、槛墙等'
+    bl_description = T('Regenerate pillars, will lose all beams, walls, windows, etc.')
 
     # 外部传入的对象
     buildingName: bpy.props.StringProperty(
@@ -212,7 +212,7 @@ class ACA_OT_reset_floor(bpy.types.Operator):
 class ACA_OT_set_pillar(bpy.types.Operator):
     bl_idname="aca.set_pillar"
     bl_label = "垂花柱"
-    bl_description = "设置垂花柱（先选择1根以上的柱子）"
+    bl_description = T('Set pillar style (Select 1+ pillars first)')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -233,7 +233,7 @@ class ACA_OT_set_pillar(bpy.types.Operator):
 class ACA_OT_del_pillar(bpy.types.Operator):
     bl_idname="aca.del_pillar"
     bl_label = "减柱"
-    bl_description = "删除柱子（先选择1根以上的柱子）"
+    bl_description = T('Delete pillars (Select 1+ pillars first)')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -276,7 +276,7 @@ class ACA_OT_del_pillar(bpy.types.Operator):
 class ACA_OT_add_step(bpy.types.Operator):
     bl_idname="aca.add_step"
     bl_label = "添加踏跺"
-    bl_description = "在柱间添加踏跺（先选择2根以上的柱子）"
+    bl_description = T('Add step between pillars (Select 2+ pillars first)')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -308,7 +308,7 @@ class ACA_OT_add_step(bpy.types.Operator):
 class ACA_OT_del_step(bpy.types.Operator):
     bl_idname="aca.del_step"
     bl_label = "删除踏跺"
-    bl_description = "在柱间删除踏跺（先选择1个以上的踏跺）"
+    bl_description = T('Delete steps (Select 1+ steps first)')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -345,7 +345,7 @@ class ACA_OT_reset_wall_layout(bpy.types.Operator):
     bl_idname="aca.reset_wall_layout"
     bl_label = "更新所有墙体"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = "批量生成各个墙体"
+    bl_description = T('Batch generate all walls')
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -366,7 +366,7 @@ class ACA_OT_reset_wall_layout(bpy.types.Operator):
 class ACA_OT_add_wall(bpy.types.Operator):
     bl_idname="aca.add_wall"
     bl_label = "加墙"
-    bl_description = "在柱间加墙（先选择2根以上的柱子）"
+    bl_description = T('Add wall between pillars (Select 2+ pillars first)')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -388,7 +388,7 @@ class ACA_OT_add_wall(bpy.types.Operator):
 class ACA_OT_add_door(bpy.types.Operator):
     bl_idname="aca.add_door"
     bl_label = "隔扇"
-    bl_description = "在柱间加隔扇（先选择2根以上的柱子）"
+    bl_description = T('Add door between pillars (Select 2+ pillars first)')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -410,7 +410,7 @@ class ACA_OT_add_door(bpy.types.Operator):
 class ACA_OT_add_window(bpy.types.Operator):
     bl_idname="aca.add_window"
     bl_label = "槛窗"
-    bl_description = "在柱间加槛窗（先选择2根以上的柱子）"
+    bl_description = T('Add window between pillars (Select 2+ pillars first)')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -432,7 +432,7 @@ class ACA_OT_add_window(bpy.types.Operator):
 class ACA_OT_del_wall(bpy.types.Operator):
     bl_idname="aca.del_wall"
     bl_label = "删除"
-    bl_description = "删除柱之间的额枋、槛墙、槛窗、隔扇等"
+    bl_description = T('Delete walls, windows, doors between pillars')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -486,7 +486,7 @@ class ACA_OT_del_wall(bpy.types.Operator):
 class ACA_OT_add_maindoor(bpy.types.Operator):
     bl_idname="aca.add_maindoor"
     bl_label = "板门"
-    bl_description = "在柱间加板门（先选择2根以上的柱子）"
+    bl_description = T('Add main door between pillars (Select 2+ pillars first)')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -508,7 +508,7 @@ class ACA_OT_add_maindoor(bpy.types.Operator):
 class ACA_OT_add_barwindow(bpy.types.Operator):
     bl_idname="aca.add_barwindow"
     bl_label = "直棂窗"
-    bl_description = "在柱间加直棂窗（先选择2根以上的柱子）"
+    bl_description = T('Add bar window between pillars (Select 2+ pillars first)')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -530,7 +530,7 @@ class ACA_OT_add_barwindow(bpy.types.Operator):
 class ACA_OT_add_flipwindow(bpy.types.Operator):
     bl_idname="aca.add_flipwindow"
     bl_label = "支摘窗"
-    bl_description = "在柱间加支摘窗（先选择2根以上的柱子）"
+    bl_description = T('Add flip window between pillars (Select 2+ pillars first)')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -552,7 +552,7 @@ class ACA_OT_add_flipwindow(bpy.types.Operator):
 class ACA_OT_add_railing(bpy.types.Operator):
     bl_idname="aca.add_railing"
     bl_label = "栏杆"
-    bl_description = "在柱间加栏杆（先选择2根以上的柱子）"
+    bl_description = T('Add railing between pillars (Select 2+ pillars first)')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -574,7 +574,7 @@ class ACA_OT_add_railing(bpy.types.Operator):
 class ACA_OT_add_bench(bpy.types.Operator):
     bl_idname="aca.add_bench"
     bl_label = "坐凳"
-    bl_description = "在柱间加坐凳（先选择2根以上的柱子）"
+    bl_description = T('Add bench between pillars (Select 2+ pillars first)')
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -598,7 +598,7 @@ class ACA_OT_build_dougong(bpy.types.Operator):
     bl_idname="aca.build_dougong"
     bl_label = "斗栱营造"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = "批量生成所有的斗栱"
+    bl_description = T('Batch generate all dougong')
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -620,7 +620,7 @@ class ACA_OT_build_roof(bpy.types.Operator):
     bl_idname="aca.build_roof"
     bl_label = "生成屋顶"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = "重新生成屋顶的梁架、椽架、瓦作"
+    bl_description = T('Regenerate roof structure and tiles')
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -656,7 +656,7 @@ class ACA_OT_default_dk(bpy.types.Operator):
     bl_idname="aca.default_dk"
     bl_label = "计算斗口推荐值"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = "根据柱高、明间宽度，计算最合适的斗口值"
+    bl_description = T('Calculate best Doukou based on pillar height and room width')
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -681,7 +681,7 @@ class ACA_OT_default_dk(bpy.types.Operator):
 class ACA_OT_save_template(bpy.types.Operator):
     bl_idname="aca.save_template"
     bl_label = "保存样式修改"
-    bl_description = '将当前选中的建筑参数保存为样式，以便重复生成'
+    bl_description = T('Save current building parameters as template')
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -758,7 +758,7 @@ class ACA_OT_save_template(bpy.types.Operator):
 class ACA_OT_del_template(bpy.types.Operator):
     bl_idname="aca.del_template"
     bl_label = "删除样式"
-    bl_description = '从模板配置文件中删除当前样式'
+    bl_description = T('Delete current style from template file')
 
     @classmethod
     def poll(cls, context):
@@ -823,7 +823,7 @@ class ACA_OT_del_template(bpy.types.Operator):
 # 生成院墙
 class ACA_OT_build_yardwall(bpy.types.Operator):
     bl_idname="aca.build_yardwall"
-    bl_description = '生成外墙'
+    bl_description = T('Generate yard wall')
     bl_label = "生成外墙"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -851,7 +851,7 @@ class ACA_OT_default_ludingRafterSpan(bpy.types.Operator):
     bl_idname="aca.default_luding_rafterspan"
     bl_label = "默认盝顶步架"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '步架推荐值，自动获取尽间开间尺寸'
+    bl_description = T('Recommended rafter span, automatically get end room width')
 
     def execute(self, context):  
         # 盝顶步架默认取面阔的尽间宽度
@@ -959,7 +959,7 @@ class ACA_OT_JOIN(bpy.types.Operator):
     bl_idname="aca.join"
     bl_label = "合并整体"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '将所有的建筑构件合并为一个整体，便于做导出等操作'
+    bl_description = T('Join all components into one object')
 
     # 是否分层合并
     useLayer: bpy.props.BoolProperty(
@@ -995,7 +995,7 @@ class ACA_OT_EXPORT_FBX(bpy.types.Operator):
     bl_idname="aca.export_fbx"
     bl_label = "导出FBX"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '导出为FBX模型，可用于D5渲染器导入'
+    bl_description = T('Export as FBX, for D5 Render')
     
     filepath: bpy.props.StringProperty(
         name="File Path",
@@ -1055,7 +1055,7 @@ class ACA_OT_EXPORT_GLB(bpy.types.Operator):
     bl_idname="aca.export_glb"
     bl_label = "导出GLB"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '导出为GLB模型，推荐UE5导入。'
+    bl_description = T('Export as GLB, for UE5')
 
     filepath: bpy.props.StringProperty(
         subtype="FILE_PATH")# type: ignore
@@ -1250,7 +1250,7 @@ class ACA_OT_LINK_ASSETS(bpy.types.Operator):
     bl_idname="aca.link_assets"
     bl_label = "关联素材库"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '关联acaAssets.blend素材库'
+    bl_description = T('Link acaAssets.blend material library')
 
     filepath: bpy.props.StringProperty(
         subtype="FILE_PATH")# type: ignore
@@ -1313,7 +1313,7 @@ class ACA_UL_Template_Items(bpy.types.UIList):
 # 选择生成模板
 class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
     bl_idname = "aca.select_template_dialog"
-    bl_description = '根据模板营造新建筑'
+    bl_description = T('Build new building based on template')
     bl_options = {'REGISTER', 'UNDO'}
     bl_label = "根据模板营造新建筑"
  
@@ -1403,7 +1403,7 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
 # 添加剖视图
 class ACA_OT_SECTION(bpy.types.Operator):
     bl_idname="aca.section"
-    bl_description = '添加剖视图'
+    bl_description = T('Add section view')
     bl_label = "添加剖视图"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -1429,7 +1429,7 @@ class ACA_OT_TERRACE_DEL(bpy.types.Operator):
     bl_idname="aca.terrace_del"
     bl_label = "删除月台"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '删除月台（请先选择月台）'
+    bl_description = T('Delete terrace (Select terrace first)')
 
     def execute(self, context): 
         timeStart = time.time()
@@ -1456,7 +1456,7 @@ class ACA_OT_TERRACE_ADD(bpy.types.Operator):
     bl_idname="aca.terrace_add"
     bl_label = "添加月台"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '添加月台（请先选择台基）'
+    bl_description = T('Add terrace (Select platform first)')
 
     def execute(self, context): 
         timeStart = time.time()
@@ -1483,7 +1483,7 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     bl_idname="aca.multi_floor_add"
     bl_label = "添加楼阁"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '基于一个单体建筑，向上垒叠一层或多层楼阁'
+    bl_description = T('Stack one or more pavilion floors on top of a single building')
     
     # 弹出参数输入框
     def invoke(self, context, event):
@@ -1621,7 +1621,7 @@ class ACA_OT_ADD_LOGGIA(bpy.types.Operator):
     bl_idname="aca.add_loggia"
     bl_label = "添加周围廊"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '基于当前单体建筑的柱网，快速添加一圈周围廊'
+    bl_description = T('Quickly add a surrounding loggia based on current building pillar net')
 
     # 参数
     width: bpy.props.FloatProperty(
@@ -1701,7 +1701,7 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
     bl_idname="aca.splice_building"
     bl_label = "拼接建筑"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '将多个建筑重叠的瓦面、柱网等进行裁剪拼接，请将抱厦做为活动的选择项(最后选择)'
+    bl_description = T('Clip and splice overlapping tiles/pillars. Select annex last (as active object)')
     
     def execute(self, context): 
         # 开启进度条
@@ -1764,7 +1764,7 @@ class ACA_OT_LOGGIA_EXTEND(bpy.types.Operator):
     bl_idname="aca.loggia_extend"
     bl_label = "回廊延伸"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '回廊延伸'
+    bl_description = T('Loggia extend')
 
     # 延伸方向
     dir: bpy.props.StringProperty(
@@ -1796,7 +1796,7 @@ class ACA_OT_COMBO_BUILDING(bpy.types.Operator):
     bl_idname="aca.combo_building"
     bl_label = "组合建筑"
     bl_options = {'REGISTER', 'UNDO'}
-    bl_description = '将多个单体建筑组合，可以保存在一个模板中，并可以一同更新'
+    bl_description = T('Combine multiple buildings, save in one template and update together')
     
     def execute(self, context): 
         timeStart = time.time()

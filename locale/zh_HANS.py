@@ -216,6 +216,19 @@ data = {
         ("*", "Mat Paint CCB"): "子角梁",
         ("*", "Mat Paint Door"): "裙板",
 
+        ("*", "Focus on the building root node"): "聚焦建筑根节点",
+        ("*", "Link acaAssets.blend material library"): "关联acaAssets.blend素材库",
+        ("*", "Build new building based on template"): "根据模板营造新建筑",
+        ("*", "Add section view"): "添加剖视图",
+        ("*", "Delete terrace (Select terrace first)"): "删除月台（请先选择月台）",
+        ("*", "Add terrace (Select platform first)"): "添加月台（请先选择台基）",
+        ("*", "Stack one or more pavilion floors on top of a single building"): "基于一个单体建筑，向上垒叠一层或多层楼阁",
+        ("*", "Quickly add a surrounding loggia based on current building pillar net"): "基于当前单体建筑的柱网，快速添加一圈周围廊",
+        ("*", "Clip and splice overlapping tiles/pillars. Select annex last (as active object)"): "将多个建筑重叠的瓦面、柱网等进行裁剪拼接，请将抱厦做为活动的选择项(最后选择)",
+        ("*", "Loggia extend"): "回廊延伸",
+        ("*", "Combine multiple buildings, save in one template and update together"): "将多个单体建筑组合，可以保存在一个模板中，并可以一同更新",
+        ("*", "Generate yard wall"): "生成外墙",
+
         # operators.py
         ("*", "Material Library Path"): "素材库路径",
         ("*", "Use Bevel"): "是否使用倒角",

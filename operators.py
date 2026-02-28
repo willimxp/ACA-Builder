@@ -823,7 +823,8 @@ class ACA_OT_del_template(bpy.types.Operator):
 # 生成院墙
 class ACA_OT_build_yardwall(bpy.types.Operator):
     bl_idname="aca.build_yardwall"
-    bl_label = "生成院墙"
+    bl_description = '生成外墙'
+    bl_label = "生成外墙"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -1312,6 +1313,7 @@ class ACA_UL_Template_Items(bpy.types.UIList):
 # 选择生成模板
 class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
     bl_idname = "aca.select_template_dialog"
+    bl_description = '根据模板营造新建筑'
     bl_options = {'REGISTER', 'UNDO'}
     bl_label = "根据模板营造新建筑"
  
@@ -1401,6 +1403,7 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
 # 添加剖视图
 class ACA_OT_SECTION(bpy.types.Operator):
     bl_idname="aca.section"
+    bl_description = '添加剖视图'
     bl_label = "添加剖视图"
     bl_options = {'REGISTER', 'UNDO'}
 

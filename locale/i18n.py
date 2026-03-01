@@ -18,7 +18,9 @@ def register():
     """向Blender注册翻译数据"""
     load_translations()
     try:
-        bpy.app.translations.register(__name__, translations_dict)
+        # 使用主包名注册，以便Blender能自动识别UI翻译
+        package_name = __name__.split('.')[0]
+        bpy.app.translations.register(package_name, translations_dict)
     except ValueError:
         # 已注册，忽略
         pass
@@ -26,7 +28,8 @@ def register():
 def unregister():
     """从Blender注销翻译数据"""
     try:
-        bpy.app.translations.unregister(__name__)
+        package_name = __name__.split('.')[0]
+        bpy.app.translations.unregister(package_name)
     except ValueError:
         # 已注销，忽略
         pass
@@ -55,7 +58,8 @@ def T(msg_id, context="*"):
     # 默认行为：如果不需要或未找到翻译，则返回原消息ID
     
     prefs = get_preferences()
-    lang_pref = 'FOLLOW' # 默认跟随系统
+    from ..const import ACA_Consts as con
+    lang_pref =  con.DEFAULT_LANGUAGE # 默认语言选项
     
     if prefs:
         # 假设属性名为 'language'
@@ -93,3 +97,6 @@ def T(msg_id, context="*"):
         # 委托给 Blender 的翻译系统
         # 这将使用当前 Blender 的语言设置
         return bpy.app.translations.pgettext(msg_id, context)
+
+# 模块导入时自动加载翻译字典，确保在register之前T()函数可用
+load_translations()

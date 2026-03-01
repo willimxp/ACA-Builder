@@ -86,7 +86,7 @@ class ACA_PT_basic(bpy.types.Panel):
             "aca.select_template_dialog",
             icon='SEQUENCE',
             depress=True,
-            text=T('Build by Template')
+            text=T('Build From Template')
             )
         
         # 2、运行中提示

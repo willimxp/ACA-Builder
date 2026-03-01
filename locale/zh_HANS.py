@@ -242,7 +242,7 @@ data = {
         ("*", "Please install Blender V5.0.0 or later"): "请安装Blender V5.0.0以上",
         ("*", "Download Blender Latest Version"): "下载Blender最新版本",
         ("*", "Welcome to ACA Builder"): "欢迎使用ACA筑韵古建插件",
-        ("*", "Build by Template"): "从模板生成新建筑",
+        ("*", "Build From Template"): "从模板生成新建筑",
         ("*", "Building... Please wait 20~90 seconds."): "生成中：需要20~90秒，请耐心等待。",
         ("*", "Quick Start :"): "快速开始：",
         ("*", "Select a template"): "选择一个模板，生成古建筑",

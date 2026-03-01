@@ -1198,7 +1198,7 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
             ('zh_HANS', '简体中文 (Simplified Chinese)', '简体中文'),
             ('en_US', 'English (English)', 'English'),
         ],
-        default='FOLLOW',
+        default = con.DEFAULT_LANGUAGE,
     ) # type: ignore
 
     def draw(self, context):

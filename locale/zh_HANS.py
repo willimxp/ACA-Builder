@@ -16,7 +16,7 @@ data = {
         ("*", "Add Pingzuo"): "添加平坐",
         ("*", "Pingzuo Taper"): "平坐收分",
         ("*", "Add Mideave"): "添加腰檐",
-        ("*", "Add Railing"): "栏杆",
+        ("*", "Add Railing"): "添加栏杆",
         ("*", "Add Loggia"): "添加回廊",
         ("*", "Loggia Width"): "回廊宽度",
         ("*", "Lower Pingzuo"): "下出平坐",

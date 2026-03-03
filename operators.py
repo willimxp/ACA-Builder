@@ -4,99 +4,17 @@
 #   构建逻辑类
 
 import bpy
-from functools import partial
 import time 
+from functools import partial
 from . import data
-from .locale.i18n import T
-from .tools import auto_register
-
-from .const import ACA_Consts as con
 from . import utils
 from . import build
 from . import buildWall
 from . import buildFloor
 from . import buildDougong
-
-def update_language(self, context):
-    """
-    更新语言设置时的回调函数
-    重新加载相关模块以更新静态UI文本
-    """
-    import importlib
-    import sys
-    from . import panel, operators
-    from .locale import i18n
-    
-    # print(f"ACA Builder: Switching language to {self.language}...")
-    
-    # 0. 提前设置i18n模块的语言，避免在重载期间因上下文丢失导致获取偏好设置失败
-    i18n.set_language(self.language)
-
-    # 1. 获取包名和主模块
-    package_name = __name__.split('.')[0]
-    if package_name in sys.modules:
-        init_module = sys.modules[package_name]
-        
-        # 2. 注销所有类
-        if hasattr(init_module, 'classes'):
-            for cls in reversed(init_module.classes):
-                try:
-                    bpy.utils.unregister_class(cls)
-                except Exception as e:
-                    # 忽略注销错误，可能是因为类已经被注销
-                    pass
-    
-    # 3. 清除自定义属性
-    try:
-        data.delprop()
-    except Exception as e:
-        print(f"delprop error: {e}")
-
-    # 4. 重新加载模块
-    # 注意：必须按照依赖顺序重新加载
-    try:
-        importlib.reload(data)
-        importlib.reload(panel)
-        # reload(operators) 会导致当前运行的代码上下文失效，但在回调中通常是可以接受的
-        # 因为Blender会在回调结束后使用新的类定义
-        importlib.reload(operators)
-    except Exception as e:
-        print(f"Reload modules error: {e}")
-        return
-
-    # 5. 重新发现并注册类
-    # 使用重新加载后的模块
-    try:
-        new_classes = auto_register.auto_register_classes(data, panel, operators)
-        
-        for cls in new_classes:
-            try:
-                bpy.utils.register_class(cls)
-            except ValueError:
-                # 类可能已经注册
-                pass
-            except Exception as e:
-                print(f"Register class {cls.__name__} error: {e}")
-        
-        # 6. 更新主模块的类列表，以便下次可以正确注销
-        if package_name in sys.modules:
-            sys.modules[package_name].classes = new_classes
-            
-        # 7. 重新初始化属性
-        data.initprop()
-        
-        # 8. 刷新界面
-        for window in context.window_manager.windows:
-            for area in window.screen.areas:
-                area.tag_redraw()
-                
-        # print("ACA Builder: Language update completed.")
-        
-    except Exception as e:
-        print(f"Update language failed: {e}")
-        import traceback
-        traceback.print_exc()
-
+from .const import ACA_Consts as con
+from .locale import i18n
+from .locale.i18n import T
 
 # 根据当前选中的对象，聚焦建筑根节点
 class ACA_OT_focusBuilding(bpy.types.Operator):
@@ -1281,7 +1199,7 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
             ('en_US', 'English (English)', 'English'),
         ],
         default = con.DEFAULT_LANGUAGE,
-        update = update_language,
+        update = i18n.update_language,
     ) # type: ignore
 
     def draw(self, context):

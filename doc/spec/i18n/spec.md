@@ -39,18 +39,38 @@
         - 如果系统**不是**中文，则在已加载的字典中进行手动查找。
     - 如果是 "en_US"（英文）: 返回原始 `msg_id`（假设源代码使用英文编写）。
 
-### 4. 用户偏好设置
+### 4. 动态语言切换 (`update_language`)
+- **位置**: `locale/i18n.py`
+- **功能**: 处理语言切换时的模块重载与UI刷新。
+- **行为**:
+  1. 提前设置 `i18n` 模块的语言状态。
+  2. 卸载现有类和属性。
+  3. 依次重载 `data`, `panel`, `operators` 模块以刷新静态字段翻译。
+  4. 重新注册类和属性。
+  5. 刷新所有界面区域。
+
+### 5. 初始化流程优化
+- **位置**: `__init__.py` 的 `register()` 函数。
+- **逻辑**:
+  1. 注册所有类与属性。
+  2. 初始化日志系统。
+  3. 注册多语言支持 (`i18n.register()`)。
+  4. **仅当**用户偏好语言为 `zh_HANS` 时，调用 `i18n.update_language()` 主动触发一次重建流程，确保静态字段正确显示中文。
+  5. 其他情况（`en_US` 或 `FOLLOW`）不进行额外重建，减少启动开销。
+
+### 6. 用户偏好设置
 - **位置**: `operators.py` 中的 `ACA_OT_Preferences`。
 - **选项**:
     - `FOLLOW`: 跟随系统 (默认)
     - `zh_HANS`: 简体中文
     - `en_US`: English
+- **回调**: `update` 属性绑定到 `i18n.update_language`。
 
 ## 需要创建/修改的文件
-1.  `locale/i18n.py` (新建)
-2.  `locale/zh_HANS.py` (新建)
-3.  `operators.py` (修改 `ACA_OT_Preferences`)
-4.  `__init__.py` (修改 `register` 和 `unregister`)
+1.  `locale/i18n.py` (新增 `update_language` 逻辑)
+2.  `locale/zh_HANS.py`
+3.  `operators.py` (引用 `i18n.update_language`)
+4.  `__init__.py` (优化 `register` 流程，调用 `i18n.update_language`)
 
 ## 字典结构示例
 ```python

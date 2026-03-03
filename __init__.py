@@ -33,20 +33,18 @@ classes = auto_register.auto_register_classes(data, panel, operators)
 # 可选：打印注册信息到控制台（调试用）
 # print(auto_register.get_registration_info(classes))
 
-def register():   
-    # 注册多语言
-    i18n.register()
-    # 调试多语言：手工设置当前语言
-    # bpy.context.preferences.view.language = 'zh_HANS'
-    # bpy.context.preferences.view.language = 'en_US'
-
+def register():       
+    ##############################################
+    # 1、初始化插件
     # 注入类
     for cls in classes:
         bpy.utils.register_class(cls)
 
     # 注册自定义属性
     data.initprop()
-    
+
+    ##############################################
+    # 2、初始化日志
     # 260210 从偏好设置读取日志配置并初始化日志记录器
     preferences = bpy.context.preferences
     addon_main_name = __name__.split('.')[0]
@@ -65,12 +63,25 @@ def register():
 
     # 记录系统信息
     aca_logging.log_system_info(logger)
+
+    ##############################################
+    # 3、初始化多语言
+    # 注册多语言
+    i18n.register()
+    # 如果偏好设置语言不是英文，重新加载类模块
+    # 以便强制刷新类中的静态中文资源
+    if addon_prefs.language != 'en_US':
+        try:
+            i18n.update_language(addon_prefs, bpy.context)
+        except Exception as e:
+            logger.warning(f"初始化中文资源失败: {e}")
     
     # 记录类注册信息
     logger.info(f"成功注册 {len(classes)} 个类")
     logger.debug("类注册详情：")
     logger.debug(auto_register.get_registration_info(classes))
-
+    ##############################################
+    # 4、其他初始化
     # 250311 发现在中文版中UV贴图异常
     # 最终发现是该选项会导致生成的'UVMap'变成'UV贴图'
     # 禁用语言-翻译-新建数据

@@ -236,7 +236,7 @@ data = {
         ("*", "Please set acaAssets.blend path:"): "请设置acaAssets.blend文件的路径:",
 
         # panel.py
-        ("*", "ACA Builder"): "筑韵古建",
+        ("*", "ACA Builder"): "ACA Builder",
         ("PanelHeader", "ACA Builder"): "ACA筑韵古建",
         ("*", "This addon cannot run on V%s.%s.%s"): "本插件无法运行在V%s.%s.%s",
         ("*", "Please install Blender V5.0.0 or later"): "请安装Blender V5.0.0以上",

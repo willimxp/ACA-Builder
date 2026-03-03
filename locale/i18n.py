@@ -9,6 +9,31 @@ from . import zh_HANS
 # 全局翻译字典
 translations_dict = {}
 
+# 缓存当前语言设置，避免在模块重载期间上下文丢失
+_current_language = None
+
+def set_language(lang):
+    """设置当前语言（由偏好设置更新回调调用）"""
+    global _current_language
+    _current_language = lang
+
+def get_language():
+    """获取当前语言设置"""
+    global _current_language
+    
+    # 1. 优先使用缓存的语言设置
+    if _current_language:
+        return _current_language
+        
+    # 2. 尝试从偏好设置获取
+    prefs = get_preferences()
+    if prefs and hasattr(prefs, 'language'):
+        return prefs.language
+        
+    # 3. 返回默认值
+    from ..const import ACA_Consts as con
+    return con.DEFAULT_LANGUAGE
+
 def load_translations():
     """从字典文件加载翻译数据"""
     global translations_dict
@@ -57,15 +82,8 @@ def T(msg_id, context="*"):
     """
     # 默认行为：如果不需要或未找到翻译，则返回原消息ID
     
-    prefs = get_preferences()
-    from ..const import ACA_Consts as con
-    lang_pref =  con.DEFAULT_LANGUAGE # 默认语言选项
+    lang_pref = get_language()
     
-    if prefs:
-        # 假设属性名为 'language'
-        if hasattr(prefs, 'language'):
-            lang_pref = prefs.language
-            
     if lang_pref == 'en_US':
         # 返回原始英文
         return msg_id

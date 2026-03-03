@@ -20,7 +20,7 @@ class ACA_PT_basic(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示 
     
     # 自定义属性
-    bl_category = T("ACA Builder")  # 标签页名称
+    bl_category = "ACA筑韵古建"      # 标签页名称
     bl_label = ""                   # 面板名称，在draw_header中写入版本号
 
     def draw_header(self,context):
@@ -153,12 +153,14 @@ class ACA_PT_basic(bpy.types.Panel):
         
         #----------------------------
         toolBox = box.row(align=True) 
-        toolBar = toolBox.grid_flow(columns=2, align=True)
+        toolBar = toolBox.grid_flow(columns=2, 
+                                    align=True,
+                                    even_columns=True)
         # 保存模板
         btnSaveTemplate = toolBar.column(align=True)
         btnSaveTemplate.operator(
             "aca.save_template",icon='FILE_TICK',
-            text=T('Save Style'))
+            text=T('Save Template'))
         # 更新建筑
         btnUpdate = toolBar.column(align=True)
         btnUpdate.operator(
@@ -201,7 +203,9 @@ class ACA_PT_basic(bpy.types.Panel):
         # 合并/导出 ------------------------------
         toolBox = box.column(align=True)
         # 第一行 ------------------------------
-        toolBar = toolBox.grid_flow(columns=3, align=True)
+        toolBar = toolBox.grid_flow(columns=3, 
+                                    align=True,
+                                    even_columns=True)
         # 合并整体
         btnJoin = toolBar.column(align=True)
         isJoined = (bData.aca_type == \
@@ -238,19 +242,21 @@ class ACA_PT_basic(bpy.types.Panel):
             if 'sectionPlan' in bData:     
                 currentPlan = bData['sectionPlan']
             # 第一行 ------------------------------
-            toolBar = toolBox.grid_flow(columns=5, align=True)
+            toolBar = toolBox.grid_flow(columns=5, 
+                                        align=True,
+                                        even_columns=True)
             # X+
             buttonX_p = toolBar.column(align=True)
             op1 = buttonX_p.operator("aca.section",
                         depress=(currentPlan=='X+'),
-                        text=T('Side Section'),)
+                        text=T('Side'),)
             op1.sectionPlan = 'X+'
             # Y-
             col = toolBar.column(align=True)
             op = col.operator(
                 "aca.section",
                 depress=(currentPlan=='Y-'),
-                text=T('Front Section'))
+                text=T('Front'))
             op.sectionPlan = 'Y-'  
             # # 第二行 ------------------------------
             # toolBar = toolBox.grid_flow(columns=4, align=True)
@@ -259,21 +265,21 @@ class ACA_PT_basic(bpy.types.Panel):
             op = btnSectionA.operator(
                 "aca.section",
                 depress=(currentPlan=='A'),
-                text=T('Persp A'))
+                text=T('Sec-A'))
             op.sectionPlan = 'A'  
             # 透视B
             btnSectionB = toolBar.column(align=True)
             op = btnSectionB.operator(
                 "aca.section",
                 depress=(currentPlan=='B'),
-                text=T('Persp B'))
+                text=T('Sec-B'))
             op.sectionPlan = 'B' 
             # 透视C
             btnSectionC = toolBar.column(align=True)
             op = btnSectionC.operator(
                 "aca.section",
                 depress=(currentPlan=='C'),
-                text=T('Persp C'))
+                text=T('Sec-C'))
             op.sectionPlan = 'C' 
 
         ###################################################
@@ -282,7 +288,9 @@ class ACA_PT_basic(bpy.types.Panel):
 
         # 第1行 ------------------------------
         toolBox = box.column(align=True)
-        toolBar = toolBox.grid_flow(columns=2, align=True,even_columns=True)
+        toolBar = toolBox.grid_flow(columns=2, 
+                                    align=True,
+                                    even_columns=True)
         # 添加楼阁
         btnMultiFloor1 = toolBar.column(align=True)
         op = btnMultiFloor1.operator(
@@ -300,7 +308,9 @@ class ACA_PT_basic(bpy.types.Panel):
 
         # 第2行 ------------------------------
         toolBox = box.column(align=True)
-        toolBar = toolBox.grid_flow(columns=2, align=True)
+        toolBar = toolBox.grid_flow(columns=2, 
+                                    align=True,
+                                    even_columns=True)
         # 添加抱厦
         btnMultiFloor1 = toolBar.column(align=True)
         op = btnMultiFloor1.operator(
@@ -326,7 +336,9 @@ class ACA_PT_basic(bpy.types.Panel):
             box = layout.box() 
             # 第3.1行 ------------------------------
             toolBoxLoggia = box.column(align=True)
-            toolBar = toolBoxLoggia.grid_flow(columns=3, align=True)
+            toolBar = toolBoxLoggia.grid_flow(columns=3, 
+                                            align=True,
+                                            even_columns=True)
             # 回廊延伸-西北
             btnLoggiaNW = toolBar.column(align=True)
             opLoggiaNW = btnLoggiaNW.operator(
@@ -349,7 +361,9 @@ class ACA_PT_basic(bpy.types.Panel):
                             text="◥",)    
             opLoggiaNE.dir = 'NE'
             # 第3.2行 ------------------------------
-            toolBar = toolBoxLoggia.grid_flow(columns=3, align=True)
+            toolBar = toolBoxLoggia.grid_flow(columns=3, 
+                                    align=True,
+                                    even_columns=True)
             # 回廊延伸-西
             btnLoggiaWest = toolBar.column(align=True)
             opLoggiaWest = btnLoggiaWest.operator(
@@ -372,7 +386,9 @@ class ACA_PT_basic(bpy.types.Panel):
                             text="▶",)    
             opLoggiaEast.dir = 'E'
             # 第3.3行 ------------------------------
-            toolBar = toolBoxLoggia.grid_flow(columns=3, align=True)
+            toolBar = toolBoxLoggia.grid_flow(columns=3, 
+                                            align=True,
+                                            even_columns=True)
             # 回廊延伸-西南
             btnLoggiaSW = toolBar.column(align=True)
             opLoggiaSW = btnLoggiaSW.operator(
@@ -479,7 +495,7 @@ class ACA_PT_props(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = T("ACA Builder")  # 标签页名称
+    bl_category = "ACA筑韵古建"      # 标签页名称
     bl_label = T("Room Properties") # 面板名称，显示为可折叠的箭头后
 
     @classmethod 
@@ -520,7 +536,7 @@ class ACA_PT_platform(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = T("ACA Builder")      # 标签页名称
+    bl_category = "ACA筑韵古建"          # 标签页名称
     bl_label = ""                       # 面板名称，已替换为draw_header实现
     bl_parent_id = "ACA_PT_props"       # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
@@ -582,7 +598,9 @@ class ACA_PT_platform(bpy.types.Panel):
             toolbox = box.column(align=True)
 
             # 添加踏跺、删除踏跺            
-            group = toolbox.grid_flow(columns=2, align=True)
+            group = toolbox.grid_flow(columns=2, 
+                                    align=True,
+                                    even_columns=True)
             btnAddTaduo = group.column(align=True)
             btnAddTaduo.operator(operator='aca.add_step',
                          text=T("Add Step"),
@@ -609,7 +627,7 @@ class ACA_PT_platform(bpy.types.Panel):
             # 3、月台工具箱 -----------------
             toolbox = box.column(align=True)
             # 添加月台、删除月台
-            group = toolbox.grid_flow(columns=2, align=True)
+            group = toolbox.grid_flow(columns=1, align=True)
             if not bData.use_terrace:
                 btnAddTerrace = group.column(align=True)
                 btnAddTerrace.operator(operator='aca.terrace_add',
@@ -643,7 +661,7 @@ class ACA_PT_pillars(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = T("ACA Builder")      # 标签页名称
+    bl_category = "ACA筑韵古建"          # 标签页名称
     bl_label = ""                       # 面板名称，已替换为draw_header实现
     bl_parent_id = "ACA_PT_props"       # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
@@ -711,7 +729,7 @@ class ACA_PT_pillars(bpy.types.Panel):
             grid.prop(bData, "pillar_height") 
             # 柱径   
             grid.prop(bData, "pillar_diameter")  
-            grid = col.grid_flow(columns=2, align=True)
+            grid = col.grid_flow(columns=1, align=True)
             
             
             # toolBar = box.column(align=True)
@@ -739,7 +757,9 @@ class ACA_PT_pillars(bpy.types.Panel):
                     icon='KEYTYPE_MOVING_HOLD_VEC')
                 
                 # 第1行 ------------------
-                toolBar = toolBox.grid_flow(columns=2, align=True)
+                toolBar = toolBox.grid_flow(columns=2, 
+                                            align=True,
+                                            even_columns=True)
                 # 按钮:减柱
                 col = toolBar.column(align=True)
                 col.operator(
@@ -763,7 +783,7 @@ class ACA_PT_pillars(bpy.types.Panel):
                     text=T("Lift Axis"))  
 
                 # 第2行 ------------------
-                toolBar = toolBox.grid_flow(columns=2, align=True)
+                toolBar = toolBox.grid_flow(columns=1, align=True)
                 # 按钮:重设柱网
                 col = toolBar.column(align=True)
                 col.operator(
@@ -778,7 +798,7 @@ class ACA_PT_wall(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = T("ACA Builder")      # 标签页名称
+    bl_category = "ACA筑韵古建"          # 标签页名称
     bl_label = ""                       # 面板名称，已替换为draw_header实现
     bl_parent_id = "ACA_PT_props"       # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
@@ -847,7 +867,9 @@ class ACA_PT_wall(bpy.types.Panel):
             toolBox = box.column(align=True)
 
             # 第1行 ------------------------------
-            toolBar = toolBox.grid_flow(columns=2, align=True)
+            toolBar = toolBox.grid_flow(columns=2, 
+                                    align=True,
+                                    even_columns=True)
             # 按钮：加板门
             buttonMaindoor = toolBar.column(align=True)
             buttonMaindoor.operator(
@@ -858,7 +880,9 @@ class ACA_PT_wall(bpy.types.Panel):
                 "aca.add_barwindow",icon='FILE_VOLUME',text=T("Bar Window"))
             
             # 第2行 ------------------------------
-            toolBar = toolBox.grid_flow(columns=2, align=True)
+            toolBar = toolBox.grid_flow(columns=2, 
+                                    align=True,
+                                    even_columns=True)
             # 按钮：加门
             buttonDoor = toolBar.column(align=True)
             buttonDoor.operator(
@@ -869,7 +893,9 @@ class ACA_PT_wall(bpy.types.Panel):
                 "aca.add_window",icon='MOD_LATTICE',text=T("Window"))
 
             # 第3行 ------------------------------
-            toolBar = toolBox.grid_flow(columns=2, align=True)
+            toolBar = toolBox.grid_flow(columns=2, 
+                                    align=True,
+                                    even_columns=True)
             # 按钮：加墙
             buttonWall = toolBar.column(align=True)
             buttonWall.operator(
@@ -880,7 +906,9 @@ class ACA_PT_wall(bpy.types.Panel):
                 "aca.add_flipwindow",icon='LIGHT_AREA',text=T("Flip Window"))
             
             # 第4行 ------------------------------
-            toolBar = toolBox.grid_flow(columns=2, align=True)
+            toolBar = toolBox.grid_flow(columns=2, 
+                                    align=True,
+                                    even_columns=True)
             # 按钮：加栏杆
             buttonRailing = toolBar.column(align=True)
             buttonRailing.operator(
@@ -1044,7 +1072,7 @@ class ACA_PT_roof_props(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = T("ACA Builder")  # 标签页名称
+    bl_category = "ACA筑韵古建"      # 标签页名称
     bl_label = T("Roof Properties") # 面板名称，显示为可折叠的箭头后
 
     @classmethod 
@@ -1068,7 +1096,9 @@ class ACA_PT_roof_props(bpy.types.Panel):
             else:
                 box = layout.box()
                 toolBox = box.column(align=True)  
-                toolBar = toolBox.grid_flow(columns=2, align=True)
+                toolBar = toolBox.grid_flow(columns=2, 
+                                        align=True,
+                                        even_columns=True)
 
                 # 屋顶样式
                 droplistRoofstyle = toolBar.column(align=True)
@@ -1091,7 +1121,7 @@ class ACA_PT_dougong(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = T("ACA Builder")      # 标签页名称
+    bl_category = "ACA筑韵古建"          # 标签页名称
     bl_label = ""                       # 面板名称，已替换为draw_header实现
     bl_parent_id = "ACA_PT_roof_props"  # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
@@ -1128,7 +1158,9 @@ class ACA_PT_dougong(bpy.types.Panel):
             box = layout.box()
             toolBox = box.column(align=True)
             toolBar = toolBox.grid_flow(
-                align=True,columns=2)
+                        columns=2,
+                        align=True,
+                        even_columns=True)
             # 是否使用斗栱
             if bData.use_dg:
                 checkbox_icon = 'CHECKBOX_HLT'
@@ -1190,7 +1222,7 @@ class ACA_PT_beam(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = T("ACA Builder")      # 标签页名称
+    bl_category = "ACA筑韵古建"          # 标签页名称
     bl_parent_id = "ACA_PT_roof_props"  # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
     bl_label = ""                       # 面板名称，已替换为draw_header实现
@@ -1310,7 +1342,7 @@ class ACA_PT_rafter(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = T("ACA Builder")       # 标签页名称
+    bl_category = "ACA筑韵古建"          # 标签页名称
     bl_parent_id = "ACA_PT_roof_props"  # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
     bl_label = ""                       # 面板名称，已替换为draw_header实现
@@ -1362,7 +1394,9 @@ class ACA_PT_rafter(bpy.types.Panel):
                 bData, "liangtou",text=T('Liangtou Position'))
 
             toolBar = toolBox.grid_flow(
-                align=True,columns=2)
+                        columns=2,
+                        align=True,
+                        even_columns=True)
             # 是否使用飞椽
             if bData.use_flyrafter:
                 checkbox_icon = 'CHECKBOX_HLT'
@@ -1422,7 +1456,7 @@ class ACA_PT_tiles(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = T("ACA Builder")       # 标签页名称
+    bl_category = "ACA筑韵古建"          # 标签页名称
     bl_parent_id = "ACA_PT_roof_props"  # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
     bl_label = ""                       # 面板名称，已替换为draw_header实现
@@ -1480,9 +1514,9 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = T("ACA Builder")   # 标签页名称
-    bl_label = T("Yard Wall Properties")            # 面板名称，显示为可折叠的箭头后
-    bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
+    bl_category = "ACA筑韵古建"               # 标签页名称
+    bl_label = T("Yard Wall Properties")     # 面板名称
+    bl_options = {"DEFAULT_CLOSED"}          # 默认折叠
     
     @classmethod 
     def poll(self, context):

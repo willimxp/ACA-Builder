@@ -1309,7 +1309,8 @@ class ACA_UL_Template_Items(bpy.types.UIList):
     def draw_item(self, context, layout, data, 
                   item, icon, active_data, active_propname, index):
         row = layout.row()
-        row.label(text=item.name,icon='KEYTYPE_GENERATED_VEC')
+        # 仅翻译模板名称的显示文本，不改变内部template_name键值
+        row.label(text=T(item.name,"TemplateName"),icon='KEYTYPE_GENERATED_VEC')
 
 # 选择生成模板
 class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):

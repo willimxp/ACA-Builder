@@ -12,6 +12,41 @@ translations_dict = {}
 # 缓存当前语言设置，避免在模块重载期间上下文丢失
 _current_language = None
 
+def _translate_en2zh(msg_id, context="*"):
+    """使用字典正向翻译（英文 -> 中文）"""
+    # 验证字典是否包含中文翻译
+    if "zh_HANS" not in translations_dict:
+        return None
+    zh_map = translations_dict["zh_HANS"]
+
+    # 优先根据上下文查找
+    key = (context, msg_id)
+    if key in zh_map:
+        return zh_map[key]
+
+    # 若上下文未找到，尝试通用上下文
+    key = ("*", msg_id)
+    if key in zh_map:
+        return zh_map[key]
+
+    return None
+
+def _translate_zh2en(msg_id, context="*"):
+    """使用字典反向翻译（中文 -> 英文）"""
+    # 验证字典是否包含中文翻译  
+    if "zh_HANS" not in translations_dict:
+        return None
+    zh_map = translations_dict["zh_HANS"]
+
+    # 遍历字典，查找匹配的中文翻译
+    for (ctx, src_text), translated_text in zh_map.items():
+        if translated_text != msg_id:
+            continue
+        if ctx == context:
+            return src_text
+
+    return None
+
 def set_language(lang):
     """设置当前语言（由偏好设置更新回调调用）"""
     global _current_language
@@ -165,9 +200,17 @@ def T(msg_id, context="*"):
     # 默认行为：如果不需要或未找到翻译，则返回原消息ID
     
     lang_pref = get_language()
+    # 若设置为跟随系统，返回Blender环境的当前语言
+    if lang_pref == 'FOLLOW':
+        lang_pref = bpy.context.preferences.view.language
     
     if lang_pref == 'en_US':
-        # 返回原始英文
+        # en_US下默认直接返回原文
+        # 对 template_name 做一次反向查询：中文内部键 -> 英文显示名
+        if context == "TemplateName":
+            reverse_text = _translate_zh2en(msg_id, context)
+            if reverse_text is not None:
+                return reverse_text
         return msg_id
         
     elif lang_pref == 'zh_HANS':
@@ -178,16 +221,9 @@ def T(msg_id, context="*"):
         # 但为了确保效果，我们优先在自己的字典中查找。
         
         # 手动在字典中查找
-        if "zh_HANS" in translations_dict:
-            # 优先尝试特定上下文
-            key = (context, msg_id)
-            if key in translations_dict["zh_HANS"]:
-                return translations_dict["zh_HANS"][key]
-            
-            # 尝试通配符上下文
-            key = ("*", msg_id)
-            if key in translations_dict["zh_HANS"]:
-                return translations_dict["zh_HANS"][key]
+        translated_text = _translate_en2zh(msg_id, context)
+        if translated_text is not None:
+            return translated_text
                 
         # 如果字典中未找到，回退到 pgettext（可能是 Blender 内置字符串？）
         # 或者直接返回 msg_id

@@ -11,6 +11,8 @@ from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
 from . import utils
 import bpy.utils.previews
+from .locale import i18n
+from .locale.i18n import T
 
 
 xmlFileName = 'template.xml'
@@ -894,8 +896,9 @@ def getThumbEnum(self, context):
 
             # 如果找到则添加到Enum列表
             if thumbName == templateName:
+                displayName = T(thumbName,"TemplateName")
                 items.append(_make_item(
-                    thumbName, thumbName, thumbName, 
+                    thumbName, displayName, displayName, 
                     iconId, thumbIndex))
                 isFindThumb = True
                 thumbIndex += 1
@@ -905,9 +908,10 @@ def getThumbEnum(self, context):
         if not isFindThumb:
             thumb = pcoll.get('nopreview.png')
             iconId = thumb.icon_id if thumb else 0
-
+            
+            displayName = T(thumbName,"TemplateName")
             items.append(_make_item(
-                templateName, templateName, templateName, 
+                thumbName, displayName, displayName, 
                 iconId, thumbIndex))
             thumbIndex += 1
             
@@ -952,8 +956,9 @@ def getPavilionEnum(self, context):
 
             # 如果找到则添加到Enum列表
             if thumbName == pavilionName:
+                displayName = T(thumbName,"TemplateName")
                 items.append(_make_item(
-                    thumbName, thumbName, thumbName, 
+                    thumbName, displayName, displayName, 
                     iconId, thumbIndex))
                 isFindThumb = True
                 thumbIndex += 1
@@ -964,8 +969,9 @@ def getPavilionEnum(self, context):
             thumb = pcoll.get('nopreview.png')
             iconId = thumb.icon_id if thumb else 0
 
+            displayName = T(pavilionName,"TemplateName")
             items.append(_make_item(
-                pavilionName, pavilionName, pavilionName, 
+                pavilionName, displayName, displayName, 
                 iconId, thumbIndex))
             thumbIndex += 1
             

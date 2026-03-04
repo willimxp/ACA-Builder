@@ -654,7 +654,7 @@ class ACA_OT_build_roof(bpy.types.Operator):
 # 计算斗口推荐值
 class ACA_OT_default_dk(bpy.types.Operator):
     bl_idname="aca.default_dk"
-    bl_label = "计算斗口推荐值"
+    bl_label = T("Calculate Recommended Doukou")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = T('Calculate best Doukou based on pillar height and room width')
 

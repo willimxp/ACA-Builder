@@ -357,7 +357,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             max=0.16,
             step=0.01,
             precision=3,
-            description=T("Module Scale (0.016~0.16)"),
+            description=T("Doukou, Module Scale (0.016~0.16), mortise of cap block"),
             update=dc.update_dk
         ) # type: ignore
     is_showPlatform: bpy.props.BoolProperty(
@@ -434,68 +434,68 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             precision=3,
         )# type: ignore
     x_rooms : bpy.props.IntProperty(
-            name = T("Rooms X"),
+            name = T("Width Bays"),
             min = 1, 
             # max = 11,
             step = 2,
             update=dc.reset_building,
-            description=T("Odd Number (1~11)"),
+            description=T("Bays along the width, Odd Number (1~11)"),
         )# type: ignore
     x_1 : bpy.props.FloatProperty(
-            name = T("Room Width 1"),
+            name = T("Bay Width 1"),
             min = 0, 
             precision=3,
             update=dc.update_building,
-            description=T("Width of Room 1"),
+            description=T("Center bay width, generally use 7 sets of Dougong, greater than pillar height"),
         )# type: ignore
     x_2 : bpy.props.FloatProperty(
-            name = T("Room Width 2"),
+            name = T("Bay Width 2"),
             min = 0, 
             precision=3,
             update=dc.update_building,
-            description=T("Width of Room 2"),
+            description=T("Secondary bay width, generally use 6 sets of Dougong"),
         )# type: ignore
     x_3 : bpy.props.FloatProperty(
-            name = T("Room Width 3"),
+            name = T("Bay Width 3"),
             min = 0, 
             precision=3,
             update=dc.update_building,
-            description=T("Width of Room 3"),
+            description=T("End bay width, can be same as secondary bay width"),
         )# type: ignore
     x_4 : bpy.props.FloatProperty(
-            name = T("Room Width 4"),
+            name = T("Bay Width 4"),
             min = 0, 
             precision=3,
             update=dc.update_building,
-            description=T("Width of Room 4"),
+            description=T("Very end bay width, generally use 2 sets of Dougong"),
         )# type: ignore
     y_rooms : bpy.props.IntProperty(
-            name = T("Rooms Y"),
+            name = T("Depth Bays"),
             #max = 5,
             min = 1, 
             update=dc.reset_building,
-            description=T("Even Number Allowed"),
+            description=T("Bays along the depth, Even Number Allowed"),
         )# type: ignore
     y_1 : bpy.props.FloatProperty(
-            name = T("Room Depth 1"),
+            name = T("Bay Depth 1"),
             min = 0, 
             precision=3,
             update=dc.update_building,
-            description=T("Depth of Room 1"),
+            description=T("Center bay width along the depth"),
         )# type: ignore
     y_2 : bpy.props.FloatProperty(
-            name = T("Room Depth 2"),
+            name = T("Bay Depth 2"),
             min = 0, 
             precision=3,
             update=dc.update_building,
-            description=T("Depth of Room 2"),
+            description=T("Secondary bay width along the depth"),
         )# type: ignore
     y_3 : bpy.props.FloatProperty(
-            name = T("Room Depth 3"),
+            name = T("Bay Depth 3"),
             min = 0, 
             precision=3,
             update=dc.update_building,
-            description=T("Depth of Room 3"),
+            description=T("End bay width along the depth"),
         )# type: ignore
     
     # 柱子属性
@@ -508,7 +508,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min = 0.01, 
             precision=3,
             update=dc.update_pillarHeight,
-            description=T("Height of Eave Pillar"),
+            description=T("Height of Eave Pillar, generally use 57-60 Doukou or 8/10 pillar height"),
         )# type: ignore
     pillar_diameter : bpy.props.FloatProperty(
             name = T("Pillar Diameter"),
@@ -517,7 +517,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             precision=3,
             # update=dc.update_pillar
             update=dc.update_building,
-            description=T("Diameter of Eave Pillar"),
+            description=T("Diameter of Eave Pillar, generally use 6 Doukou or 1/10 pillar height"),
         )# type: ignore
     use_smallfang: bpy.props.BoolProperty(
             default=False,

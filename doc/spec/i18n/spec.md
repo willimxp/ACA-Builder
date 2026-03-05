@@ -1,84 +1,76 @@
 # ACA Builder 多语言支持规格说明书
 
 ## 目标
-为 ACA Builder 插件实现多语言支持 (i18n)，允许用户在英文和简体中文之间切换（未来可扩展其他语言）。系统应支持上下文感知的翻译和全局匹配。
+为 ACA Builder 插件实现多语言支持 (i18n)，允许用户在英文和简体中文之间切换。系统支持上下文感知的翻译、全局匹配以及特定资源的双向翻译。
 
 ## 架构
 
 ### 模块结构
-- 创建一个新的包 `locale/` 来存放翻译逻辑和数据。
-- `locale/i18n.py`: 负责注册、加载字典和翻译查找的核心逻辑。
-- `locale/zh_HANS.py`: 包含英文到中文映射关系的字典文件。
+- **包路径**: `locale/`
+- `locale/i18n.py`: 核心逻辑模块。负责加载字典、注册翻译、语言设置缓存、正向/反向查找逻辑以及动态切换时的 UI 刷新。
+- `locale/zh_HANS.py`: 字典数据模块。包含所有翻译条目，采用 `(context, msg_id): translated_text` 的结构。
 
-### 集成
-- 修改 `__init__.py` 以在启动时注册翻译模块。
-- 修改 `operators.py`（具体为 `ACA_OT_Preferences`）以添加语言选择设置。
-- 暴露一个 `T(msg_id, context=None)` 函数，供开发者用于包装需要翻译的字符串。
+### 集成方式
+- **全局函数**: 暴露 `T(msg_id, context="*")` 作为翻译入口。
+- **静态字段**: 对于 `bpy.props` 的 `name` 和 `description` 属性，通过 `T()` 包装以支持动态刷新。
+- **EnumProperty**: 枚举项的显示文本通过 `T()` 包装，内部键（Identifier）保持不变以确保逻辑兼容。
+- **资产资源**: 对于来自 XML（如 `template.xml`, `assetsIndex.xml`）的中文键值，通过特定上下文（`template`, `assetsIndex`）实现 `en_US` 模式下的反向翻译。
 
 ## 功能特性
 
-### 1. 字典管理
-- **文件**: `locale/zh_HANS.py`
-- **格式**: Python 字典，键为 `(context, msg_id)` 或 `("*", msg_id)`，值为翻译后的字符串。
-- **扩展性**: 支持未来添加更多语言的字典文件。
+### 1. 字典管理与上下文
+- **上下文规范**:
+    - `"*"`: 通用上下文。
+    - `"template"`: 对应 `template.xml` 中的模板名称。
+    - `"assetsIndex"`: 对应 `assetsIndex.xml` 中的资产样式（如斗栱样式）。
+- **映射规则**: 源代码通常使用英文作为 `msg_id`。对于 XML 资源，内部键为中文，翻译字典中则以英文作为 `msg_id`，中文作为翻译值，以实现双向映射。
 
-### 2. 注册
-- **文件**: `locale/i18n.py`
-- **逻辑**: 
-    - 从 `zh_HANS.py` 加载字典。
-    - 使用 `bpy.app.translations.register(__name__, translations_dict)` 进行注册。
-    - 处理注销逻辑。
-
-### 3. 翻译函数 `T()`
+### 2. 翻译函数 `T()` 查找逻辑
 - **签名**: `T(msg_id, context="*")`
-- **行为**:
-    - 检查用户的语言偏好设置。
-    - 如果是 "Follow System"（跟随系统）: 委托给 `bpy.app.translations.pgettext(msg_id, context)`。
-    - 如果是 "zh_HANS"（简体中文）: 
-        - 如果系统本身是中文，`pgettext` 可以工作。
-        - 如果系统**不是**中文，则在已加载的字典中进行手动查找。
-    - 如果是 "en_US"（英文）: 返回原始 `msg_id`（假设源代码使用英文编写）。
+- **分发行为**:
+    1. **获取语言偏好**: 检查插件偏好设置中的 `language`。
+    2. **en_US (英文)**: 
+        - 若上下文为 `"template"` 或 `"assetsIndex"`，执行**反向查找**（通过中文翻译值找英文 `msg_id`），以便在英文界面显示英文名称。
+        - 其他情况直接返回原始 `msg_id`。
+    3. **zh_HANS (简体中文)**: 
+        - 优先在手动字典中执行**正向查找**。
+        - 若未命中，回退到 `bpy.app.translations.pgettext`。
+    4. **FOLLOW (跟随系统)**: 
+        - 委托给 `bpy.app.translations.pgettext(msg_id, context)`。
 
-### 4. 动态语言切换 (`update_language`)
-- **位置**: `locale/i18n.py`
-- **功能**: 处理语言切换时的模块重载与UI刷新。
-- **行为**:
-  1. 提前设置 `i18n` 模块的语言状态。
-  2. 卸载现有类和属性。
-  3. 依次重载 `data`, `panel`, `operators` 模块以刷新静态字段翻译。
-  4. 重新注册类和属性。
-  5. 刷新所有界面区域。
+### 3. 动态语言切换 (`update_language`)
+- **触发机制**: 偏好设置中 `language` 属性的 `update` 回调。
+- **处理流程**:
+    1. 设置全局语言缓存。
+    2. 注销当前插件的所有类和自定义属性（`data.delprop()`）。
+    3. 依次执行 `importlib.reload()`：重新加载 `data`, `panel`, `operators` 模块，从而触发静态字段中的 `T()` 重新计算。
+    4. 重新发现并注册所有类。
+    5. 重新初始化自定义属性（`data.initprop()`）。
+    6. 强制刷新所有区域的 UI 绘制。
 
-### 5. 初始化流程优化
-- **位置**: `__init__.py` 的 `register()` 函数。
-- **逻辑**:
-  1. 注册所有类与属性。
-  2. 初始化日志系统。
-  3. 注册多语言支持 (`i18n.register()`)。
-  4. **仅当**用户偏好语言为 `zh_HANS` 时，调用 `i18n.update_language()` 主动触发一次重建流程，确保静态字段正确显示中文。
-  5. 其他情况（`en_US` 或 `FOLLOW`）不进行额外重建，减少启动开销。
-
-### 6. 用户偏好设置
-- **位置**: `operators.py` 中的 `ACA_OT_Preferences`。
-- **选项**:
-    - `FOLLOW`: 跟随系统 (默认)
-    - `zh_HANS`: 简体中文
-    - `en_US`: English
-- **回调**: `update` 属性绑定到 `i18n.update_language`。
-
-## 需要创建/修改的文件
-1.  `locale/i18n.py` (新增 `update_language` 逻辑)
-2.  `locale/zh_HANS.py`
-3.  `operators.py` (引用 `i18n.update_language`)
-4.  `__init__.py` (优化 `register` 流程，调用 `i18n.update_language`)
+### 4. 启动性能优化
+- **位置**: `__init__.py` 的 `register()`。
+- **策略**: 仅当用户显式将语言设置为 `zh_HANS` 时，才在启动期间触发一次 `update_language` 流程，确保界面静态文本正确汉化。对于默认情况，避免不必要的模块重载。
 
 ## 字典结构示例
+
 ```python
 # locale/zh_HANS.py
 data = {
     "zh_HANS": {
-        ("*", "Hello"): "你好",
-        ("Operator", "Hello"): "您好",
+        # 通用条目
+        ("*", "Paint Style"): "彩画风格",
+        
+        # 资源条目 (支持反向翻译)
+        ("template", "3-Bay Hip Roof"): "三间庑殿",
+        ("assetsIndex", "Doukou Single Ang"): "斗口单昂",
     }
 }
 ```
+
+## 相关文件
+1.  [i18n.py](file:///Volumes/XP.T9/Blender/ACA%20Builder/locale/i18n.py): 核心查找与刷新逻辑。
+2.  [zh_HANS.py](file:///Volumes/XP.T9/Blender/ACA%20Builder/locale/zh_HANS.py): 翻译字典。
+3.  [data.py](file:///Volumes/XP.T9/Blender/ACA%20Builder/data.py): 属性定义的国际化应用。
+4.  [operators.py](file:///Volumes/XP.T9/Blender/ACA%20Builder/operators.py): 偏好设置与 UI 逻辑。
+5.  [template.py](file:///Volumes/XP.T9/Blender/ACA%20Builder/template.py): 动态资源（如斗栱列表、模板列表）的翻译。

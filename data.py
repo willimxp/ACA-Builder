@@ -553,11 +553,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     paint_style : bpy.props.EnumProperty(
             name = T("Paint Style"),
             description = T("Switch Paint Style"),
+            # 枚举项仅国际化显示文本，内部值(0/1/2/3)保持不变
             items = [
-                ("0","清-和玺彩画",""),
-                ("1","酱油色",""),
-                ("2","白模",""),
-                ("3","红漆无彩画",""),
+                ("0",T("Qing Imperial Painting"),""),
+                ("1",T("Dark Brown"),""),
+                ("2",T("White Model"),""),
+                ("3",T("Red Paint (No Painting)"),""),
             ],
             update=dc.update_building,
             options = {"ANIMATABLE"}
@@ -633,17 +634,18 @@ class ACA_data_obj(bpy.types.PropertyGroup):
     # 屋顶属性
     roof_style : bpy.props.EnumProperty(
             name = T("Roof Style"),
+            # 枚举项仅国际化显示文本，内部值(0~9)保持不变
             items = [
                 ("0","",""),
-                ("1","庑殿顶",""),
-                ("2","歇山顶",""),
-                ("3","悬山顶",""),
-                ("4","硬山顶",""),
-                ('5',"盝顶",""),
-                ("6","悬山卷棚顶",""),
-                ('7',"硬山卷棚顶",""),
-                ('8','歇山卷棚顶',""),
-                ('9','平坐',""),
+                ("1",T("Hip Roof"),""),
+                ("2",T("Hip-and-Gable Roof"),""),
+                ("3",T("Overhanging-Gable Roof"),""),
+                ("4",T("Flush-Gable Roof"),""),
+                ('5',T("Pyramidal Roof"),""),
+                ("6",T("Overhanging-Gable Curved Roof"),""),
+                ('7',T("Flush-Gable Curved Roof"),""),
+                ('8',T("Hip-and-Gable Curved Roof"),""),
+                ('9',T("Pingzuo"),""),
             ],
             #update=dc.update_roof,
             update=dc.update_roofstyle,
@@ -743,11 +745,12 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore
     juzhe : bpy.props.EnumProperty(
             name = T("Juzhe Factor"),
+            # 枚举项仅国际化显示文本，内部值(0~3)保持不变
             items = [
-                ("0","   举折系数：默认","[0.5,0.7,0.8,0.9]"),
-                ("1","   举折系数：陡峭","[0.5,1,1.5,2]，慎用，一般用于亭子等建筑"),
-                ("2","   举折系数：平缓","[0.5,0.65,0.75,0.9]"),
-                ("3","   举折系数：按屋架高度推算","根据输入屋架高度，进行举折计算")
+                ("0",T("   Juzhe: Default"),T("[0.5,0.7,0.8,0.9]")),
+                ("1",T("   Juzhe: Steep"),T("[0.5,1,1.5,2], use with caution (usually for pavilions)")),
+                ("2",T("   Juzhe: Gentle"),T("[0.5,0.65,0.75,0.9]")),
+                ("3",T("   Juzhe: From Roof Height"),T("Calculate Juzhe based on the input roof height"))
             ],
             description=T("Curvature of Roof"),
             update=dc.update_juzhe,
@@ -779,22 +782,24 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         )# type: ignore
     tile_color : bpy.props.EnumProperty(
             name = T("Tile Color"),
+            # 枚举项仅国际化显示文本，内部值(0~4)保持不变
             items = [
-                ("0","黄琉璃",""),
-                ("1","绿琉璃",""),
-                ("2","灰琉璃",""),
-                ("3","蓝琉璃",""),
-                ("4","紫琉璃",""),
+                ("0",T("Yellow Glazed Tile"),""),
+                ("1",T("Green Glazed Tile"),""),
+                ("2",T("Gray Glazed Tile"),""),
+                ("3",T("Blue Glazed Tile"),""),
+                ("4",T("Purple Glazed Tile"),""),
             ],
         ) # type: ignore
     tile_alt_color : bpy.props.EnumProperty(
             name = T("Tile Alt Color"),
+            # 枚举项仅国际化显示文本，内部值(0~4)保持不变
             items = [
-                ("0","黄琉璃",""),
-                ("1","绿琉璃",""),
-                ("2","灰琉璃",""),
-                ("3","蓝琉璃",""),
-                ("4","紫琉璃",""),
+                ("0",T("Yellow Glazed Tile"),""),
+                ("1",T("Green Glazed Tile"),""),
+                ("2",T("Gray Glazed Tile"),""),
+                ("3",T("Blue Glazed Tile"),""),
+                ("4",T("Purple Glazed Tile"),""),
             ],
         ) # type: ignore
     tile_width : bpy.props.FloatProperty(

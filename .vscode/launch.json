@@ -2,10 +2,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "debugpy",
-            "request": "launch",
             "name": "Blender: Start",
-            "program": "${command:blender.start}"
+            "type": "debugpy", 
+            "request": "launch",
+            "program": "${command:blender.start}",
+            "justMyCode": true,
+            "subProcess": true  // 适配Blender子进程调试场景
         }
     ]
 }

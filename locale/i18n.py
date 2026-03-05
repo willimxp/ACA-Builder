@@ -206,8 +206,9 @@ def T(msg_id, context="*"):
     
     if lang_pref == 'en_US':
         # en_US下默认直接返回原文
-        # 对 template_name 做一次反向查询：中文内部键 -> 英文显示名
-        if context in ("TemplateName", "DougongStyle"):
+        # 从XML中定义的资源做一次反向查询：中文内部键 -> 英文显示名
+        # 保持template.xml，assetIndex.xml中的中文资源不变，英文版做反向翻译
+        if context in ("template", "assetsIndex"):
             reverse_text = _translate_zh2en(msg_id, context)
             if reverse_text is not None:
                 return reverse_text

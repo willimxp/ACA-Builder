@@ -101,8 +101,10 @@ def getDougongList():
             items = dgPillarNode.findall('item')
             for n,item in enumerate(items):
                 dgStyle = item.attrib['style']
+                # 斗栱名称国际化
+                displayName = T(dgStyle, "DougongStyle")
                 dougong_list.append(
-                    (str(n),dgStyle,dgStyle)
+                    (str(n), displayName, displayName)
                 )
             
     return dougong_list

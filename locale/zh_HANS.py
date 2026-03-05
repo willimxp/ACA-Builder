@@ -347,6 +347,14 @@ data = {
         ("*", "Gray Glazed Tile"): "灰琉璃",
         ("*", "Blue Glazed Tile"): "蓝琉璃",
         ("*", "Purple Glazed Tile"): "紫琉璃",
+        # template/assetsIndex.xml (dgStyle)
+        # 说明：英文作为msg_id，中文作为翻译值，供DougongStyle上下文双向映射
+        ("DougongStyle", "Yi Dou San Sheng"): "一斗三升",
+        ("DougongStyle", "Doukou Single Ang"): "斗口单昂",
+        ("DougongStyle", "Single Qiao Single Ang"): "单翘单昂",
+        ("DougongStyle", "Doukou Double Ang"): "斗口重昂",
+        ("DougongStyle", "Single Qiao Double Ang"): "单翘重昂",
+        ("DougongStyle", "Song Style 4-Puzuo"): "宋-四铺作",
 
         # panel.py
         ("*", "ACA Builder"): "ACA Builder",

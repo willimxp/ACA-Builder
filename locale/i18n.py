@@ -207,7 +207,7 @@ def T(msg_id, context="*"):
     if lang_pref == 'en_US':
         # en_US下默认直接返回原文
         # 对 template_name 做一次反向查询：中文内部键 -> 英文显示名
-        if context == "TemplateName":
+        if context in ("TemplateName", "DougongStyle"):
             reverse_text = _translate_zh2en(msg_id, context)
             if reverse_text is not None:
                 return reverse_text

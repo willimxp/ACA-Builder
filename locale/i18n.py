@@ -4,7 +4,7 @@
 #   多语言支持模块，提供动态翻译功能
 
 import bpy
-from . import zh_HANS
+from . import en_US
 
 # 全局翻译字典
 translations_dict = {}
@@ -12,38 +12,22 @@ translations_dict = {}
 # 缓存当前语言设置，避免在模块重载期间上下文丢失
 _current_language = None
 
-def _translate_en2zh(msg_id, context="*"):
-    """使用字典正向翻译（英文 -> 中文）"""
-    # 验证字典是否包含中文翻译
-    if "zh_HANS" not in translations_dict:
+def _translate_zh2en(msg_id, context="*"):
+    """使用字典正向翻译（中文 -> 英文）"""
+    # 验证字典是否包含英文翻译
+    if "en_US" not in translations_dict:
         return None
-    zh_map = translations_dict["zh_HANS"]
+    en_map = translations_dict["en_US"]
 
     # 优先根据上下文查找
     key = (context, msg_id)
-    if key in zh_map:
-        return zh_map[key]
+    if key in en_map:
+        return en_map[key]
 
     # 若上下文未找到，尝试通用上下文
     key = ("*", msg_id)
-    if key in zh_map:
-        return zh_map[key]
-
-    return None
-
-def _translate_zh2en(msg_id, context="*"):
-    """使用字典反向翻译（中文 -> 英文）"""
-    # 验证字典是否包含中文翻译  
-    if "zh_HANS" not in translations_dict:
-        return None
-    zh_map = translations_dict["zh_HANS"]
-
-    # 遍历字典，查找匹配的中文翻译
-    for (ctx, src_text), translated_text in zh_map.items():
-        if translated_text != msg_id:
-            continue
-        if ctx == context:
-            return src_text
+    if key in en_map:
+        return en_map[key]
 
     return None
 
@@ -72,7 +56,7 @@ def get_language():
 def load_translations():
     """从字典文件加载翻译数据"""
     global translations_dict
-    translations_dict.update(zh_HANS.data)
+    translations_dict.update(en_US.data)
 
 def register():
     """向Blender注册翻译数据"""
@@ -80,7 +64,7 @@ def register():
     try:
         # 使用主包名注册，以便Blender能自动识别UI翻译
         package_name = __name__.split('.')[0]
-        bpy.app.translations.register(package_name, translations_dict)
+        #bpy.app.translations.register(package_name, translations_dict)
     except ValueError:
         # 已注册，忽略
         pass
@@ -149,7 +133,7 @@ def update_language(self, context):
         importlib.reload(operators)
     except Exception as e:
         print(f"Reload modules error: {e}")
-        return False
+        return
 
     # 5. 重新发现并注册类
     # 使用重新加载后的模块
@@ -161,7 +145,7 @@ def update_language(self, context):
                 bpy.utils.register_class(cls)
             except ValueError:
                 # 类可能已经注册
-                pass
+                print(f"Register class {cls.__name__} error: {e}")
             except Exception as e:
                 print(f"Register class {cls.__name__} error: {e}")
         
@@ -178,13 +162,13 @@ def update_language(self, context):
                 area.tag_redraw()
                 
         # print("ACA Builder: Language update completed.")
-        return True
+        return
         
     except Exception as e:
         print(f"Update language failed: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        return
 
 def T(msg_id, context="*"):
     """
@@ -200,37 +184,26 @@ def T(msg_id, context="*"):
     # 默认行为：如果不需要或未找到翻译，则返回原消息ID
     
     lang_pref = get_language()
+
     # 若设置为跟随系统，返回Blender环境的当前语言
     if lang_pref == 'FOLLOW':
         lang_pref = bpy.context.preferences.view.language
     
     if lang_pref == 'en_US':
-        # en_US下默认直接返回原文
-        # 从XML中定义的资源做一次反向查询：中文内部键 -> 英文显示名
-        # 保持template.xml，assetIndex.xml中的中文资源不变，英文版做反向翻译
-        if context in ("template", "assetsIndex"):
-            reverse_text = _translate_zh2en(msg_id, context)
-            if reverse_text is not None:
-                return reverse_text
-        return msg_id
-        
-    elif lang_pref == 'zh_HANS':
-        # 强制中文翻译
-        # 如果系统语言已经是中文，pgettext 可以正常工作。
-        # 但如果要在英文系统上强制显示中文，我们需要手动查找字典。
-        # 虽然 bpy.app.translations.pgettext 通常遵循系统语言，
-        # 但为了确保效果，我们优先在自己的字典中查找。
+        # 强制英文翻译
+        # 如果系统语言是英文，pgettext 可以工作
+        # 但如果要在中文系统上强制显示英文，需要手动查找字典
         
         # 手动在字典中查找
-        translated_text = _translate_en2zh(msg_id, context)
+        translated_text = _translate_zh2en(msg_id, context)
         if translated_text is not None:
             return translated_text
-                
-        # 如果字典中未找到，回退到 pgettext（可能是 Blender 内置字符串？）
-        # 或者直接返回 msg_id
-        return bpy.app.translations.pgettext(msg_id, context)
         
-    else: # FOLLOW (默认)
+    elif lang_pref == 'zh_HANS':
+        # zh_HANS下默认直接返回原文 (因为源码现在是中文)
+        return msg_id
+        
+    else: # FOLLOW (默认)        
         # 委托给 Blender 的翻译系统
         # 这将使用当前 Blender 的语言设置
         return bpy.app.translations.pgettext(msg_id, context)

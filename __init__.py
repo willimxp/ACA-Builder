@@ -68,13 +68,13 @@ def register():
     # 3、初始化多语言
     # 注册多语言
     i18n.register()
-    # 如果偏好设置语言不是英文，重新加载类模块
-    # 以便强制刷新类中的静态中文资源
-    if addon_prefs.language != 'en_US':
+    # 如果偏好设置语言不是中文，重新加载类模块
+    # 以便强制刷新类中的静态文字资源
+    if addon_prefs.language != 'zh_HANS':
         try:
             i18n.update_language(addon_prefs, bpy.context)
         except Exception as e:
-            logger.warning(f"初始化中文资源失败: {e}")
+            logger.warning(f"Init language failed: {e}")
     
     # 记录类注册信息
     logger.info(f"成功注册 {len(classes)} 个类")

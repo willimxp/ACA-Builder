@@ -61,13 +61,18 @@ def load_translations():
 def register():
     """向Blender注册翻译数据"""
     load_translations()
-    try:
-        # 使用主包名注册，以便Blender能自动识别UI翻译
-        package_name = __name__.split('.')[0]
-        #bpy.app.translations.register(package_name, translations_dict)
-    except ValueError:
-        # 已注册，忽略
-        pass
+
+    # 260305 不使用Blender自动翻译，以免被劫持
+    # 根据用户在插件中设置的语言，由自定义的T()执行翻译
+    # 如果启用以下设置，会导致翻译被Blender劫持
+    # 如，Blender选择英文，插件偏好选择中文，此时插件会一直显示中文
+    # try:
+    #     # 使用主包名注册，以便Blender能自动识别UI翻译
+    #     package_name = __name__.split('.')[0]
+    #     bpy.app.translations.register(package_name, translations_dict)
+    # except ValueError:
+    #     # 已注册，忽略
+    #     pass
 
 def unregister():
     """从Blender注销翻译数据"""
@@ -182,7 +187,6 @@ def T(msg_id, context="*"):
         str: 翻译后的字符串
     """
     # 默认行为：如果不需要或未找到翻译，则返回原消息ID
-    
     lang_pref = get_language()
 
     # 若设置为跟随系统，返回Blender环境的当前语言

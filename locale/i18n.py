@@ -4,32 +4,14 @@
 #   多语言支持模块，提供动态翻译功能
 
 import bpy
-from . import en_US
+import os
+import gettext
 
-# 全局翻译字典
-translations_dict = {}
+# Global translation object for English
+_trans_en = None
 
 # 缓存当前语言设置，避免在模块重载期间上下文丢失
 _current_language = None
-
-def _translate_zh2en(msg_id, context="*"):
-    """使用字典正向翻译（中文 -> 英文）"""
-    # 验证字典是否包含英文翻译
-    if "en_US" not in translations_dict:
-        return None
-    en_map = translations_dict["en_US"]
-
-    # 优先根据上下文查找
-    key = (context, msg_id)
-    if key in en_map:
-        return en_map[key]
-
-    # 若上下文未找到，尝试通用上下文
-    key = ("*", msg_id)
-    if key in en_map:
-        return en_map[key]
-
-    return None
 
 def set_language(lang):
     """设置当前语言（由偏好设置更新回调调用）"""
@@ -54,34 +36,46 @@ def get_language():
     return con.DEFAULT_LANGUAGE
 
 def load_translations():
-    """从字典文件加载翻译数据"""
-    global translations_dict
-    translations_dict.update(en_US.data)
+    """从.mo文件加载翻译数据"""
+    global _trans_en
+
+    # Load English translations
+    locale_dir = os.path.dirname(__file__)
+    try:
+        # 生产用，应用gettext的缓存机制
+        # looks for locale_dir/en_US/LC_MESSAGES/aca_builder.mo
+        # _trans_en = gettext.translation(domain='aca_builder', 
+        #                         localedir=locale_dir, 
+        #                         languages=['en_US'])
+        
+        # 调试用，实时重载.mo文件
+        # gettext.translation caches the result, so we manually find and load the file
+        # to ensure we get the latest version if the .mo file has been updated.
+        mo_file = gettext.find('aca_builder', localedir=locale_dir, languages=['en_US'])
+        if mo_file:
+            with open(mo_file, 'rb') as fp:
+                _trans_en = gettext.GNUTranslations(fp)
+        else:
+            # Fallback (though likely won't find it if find failed)
+            _trans_en = gettext.translation(domain='aca_builder', 
+                                    localedir=locale_dir, 
+                                    languages=['en_US'])
+
+    except FileNotFoundError:
+        print("ACA Builder: en_US translation file not found.")
+        _trans_en = None
+    except Exception as e:
+        print(f"ACA Builder: Failed to load translations: {e}")
+        _trans_en = None
 
 def register():
     """向Blender注册翻译数据"""
+    # 重新加载翻译
     load_translations()
-
-    # 260305 不使用Blender自动翻译，以免被劫持
-    # 根据用户在插件中设置的语言，由自定义的T()执行翻译
-    # 如果启用以下设置，会导致翻译被Blender劫持
-    # 如，Blender选择英文，插件偏好选择中文，此时插件会一直显示中文
-    # try:
-    #     # 使用主包名注册，以便Blender能自动识别UI翻译
-    #     package_name = __name__.split('.')[0]
-    #     bpy.app.translations.register(package_name, translations_dict)
-    # except ValueError:
-    #     # 已注册，忽略
-    #     pass
 
 def unregister():
     """从Blender注销翻译数据"""
-    try:
-        package_name = __name__.split('.')[0]
-        bpy.app.translations.unregister(package_name)
-    except ValueError:
-        # 已注销，忽略
-        pass
+    pass
 
 def get_preferences():
     """获取插件偏好设置"""
@@ -195,22 +189,37 @@ def T(msg_id, context="*"):
     
     if lang_pref == 'en_US':
         # 强制英文翻译
-        # 如果系统语言是英文，pgettext 可以工作
-        # 但如果要在中文系统上强制显示英文，需要手动查找字典
-        
-        # 手动在字典中查找
-        translated_text = _translate_zh2en(msg_id, context)
-        if translated_text is not None:
-            return translated_text
+        # 使用gettext加载的.mo文件
+        if _trans_en:
+            # 尝试使用指定上下文翻译
+            # pgettext(context, msg_id)
+            res = _trans_en.pgettext(context, msg_id)
+            
+            # 如果翻译结果与原文相同，且上下文不是通用上下文，尝试使用通用上下文查找
+            if res == msg_id and context != "*":
+                res = _trans_en.pgettext("*", msg_id)
+                
+            return res
+        return msg_id
         
     elif lang_pref == 'zh_HANS':
         # zh_HANS下默认直接返回原文 (因为源码现在是中文)
         return msg_id
         
-    else: # FOLLOW (默认)        
-        # 委托给 Blender 的翻译系统
-        # 这将使用当前 Blender 的语言设置
-        return bpy.app.translations.pgettext(msg_id, context)
+    else: # FOLLOW (默认)
+        # 跟随Blender语言设置
+        sys_lang = bpy.context.preferences.view.language
+        if sys_lang == 'en_US' or sys_lang.startswith('en_'):
+            # 使用英文翻译
+            if _trans_en:
+                res = _trans_en.pgettext(context, msg_id)
+                if res == msg_id and context != "*":
+                    res = _trans_en.pgettext("*", msg_id)
+                return res
+            return msg_id
+        else:
+            # 默认为中文（原文）
+            return msg_id
 
 # 模块导入时自动加载翻译字典，确保在register之前T()函数可用
 load_translations()

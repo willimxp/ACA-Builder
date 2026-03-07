@@ -11,9 +11,9 @@
 - `locale/zh_HANS.py`: 字典数据模块。包含所有翻译条目，采用 `(context, msg_id): translated_text` 的结构。
 
 ### 集成方式
-- **全局函数**: 暴露 `T(msg_id, context="*")` 作为翻译入口。
-- **静态字段**: 对于 `bpy.props` 的 `name` 和 `description` 属性，通过 `T()` 包装以支持动态刷新。
-- **EnumProperty**: 枚举项的显示文本通过 `T()` 包装，内部键（Identifier）保持不变以确保逻辑兼容。
+- **全局函数**: 暴露 `_(msg_id, context="*")` 作为翻译入口。
+- **静态字段**: 对于 `bpy.props` 的 `name` 和 `description` 属性，通过 `_()` 包装以支持动态刷新。
+- **EnumProperty**: 枚举项的显示文本通过 `_()` 包装，内部键（Identifier）保持不变以确保逻辑兼容。
 - **资产资源**: 对于来自 XML（如 `template.xml`, `assetsIndex.xml`）的中文键值，通过特定上下文（`template`, `assetsIndex`）实现 `en_US` 模式下的反向翻译。
 
 ## 功能特性
@@ -25,8 +25,8 @@
     - `"assetsIndex"`: 对应 `assetsIndex.xml` 中的资产样式（如斗栱样式）。
 - **映射规则**: 源代码通常使用英文作为 `msg_id`。对于 XML 资源，内部键为中文，翻译字典中则以英文作为 `msg_id`，中文作为翻译值，以实现双向映射。
 
-### 2. 翻译函数 `T()` 查找逻辑
-- **签名**: `T(msg_id, context="*")`
+### 2. 翻译函数 `_()` 查找逻辑
+- **签名**: `_(msg_id, context="*")`
 - **分发行为**:
     1. **获取语言偏好**: 检查插件偏好设置中的 `language`。
     2. **en_US (英文)**: 
@@ -43,7 +43,7 @@
 - **处理流程**:
     1. 设置全局语言缓存。
     2. 注销当前插件的所有类和自定义属性（`data.delprop()`）。
-    3. 依次执行 `importlib.reload()`：重新加载 `data`, `panel`, `operators` 模块，从而触发静态字段中的 `T()` 重新计算。
+    3. 依次执行 `importlib.reload()`：重新加载 `data`, `panel`, `operators` 模块，从而触发静态字段中的 `_()` 重新计算。
     4. 重新发现并注册所有类。
     5. 重新初始化自定义属性（`data.initprop()`）。
     6. 强制刷新所有区域的 UI 绘制。

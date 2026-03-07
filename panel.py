@@ -10,7 +10,7 @@ from .data import ACA_data_obj as acaData
 from .const import ACA_Consts as con
 from . import utils
 from . import build
-from .locale.i18n import T
+from .locale.i18n import _
 
 # 营造向导面板
 class ACA_PT_basic(bpy.types.Panel):
@@ -32,7 +32,7 @@ class ACA_PT_basic(bpy.types.Panel):
         
         layout = self.layout
         row = layout.row()
-        row.label(text=T('ACA筑韵古建') + ver)
+        row.label(text=_('ACA筑韵古建') + ver)
 
     def draw_header_preset(self,context):
         layout = self.layout
@@ -47,13 +47,13 @@ class ACA_PT_basic(bpy.types.Panel):
         # 260226 最低版本限制到5.0.0
         if bpy.app.version < (5,0,0):
             row = layout.row()
-            row.label(text=T('本插件无法运行在V%s.%s.%s') % (bpy.app.version[0],bpy.app.version[1],bpy.app.version[2]),icon='INFO')
+            row.label(text=_('本插件无法运行在V%s.%s.%s') % (bpy.app.version[0],bpy.app.version[1],bpy.app.version[2]),icon='INFO')
             row = layout.row()
-            row.label(text=T('请安装Blender V5.0.0以上'))
+            row.label(text=_('请安装Blender V5.0.0以上'))
             row = layout.row()
             op = row.operator("wm.url_open",
                               icon='URL',
-                              text=T('下载Blender最新版本'),
+                              text=_('下载Blender最新版本'),
                               depress=True)
             op.url = 'https://www.blender.org/download/'
             return
@@ -72,9 +72,9 @@ class ACA_PT_basic(bpy.types.Panel):
         import os
         if not os.path.exists(filepath) and not os.path.exists(srcPath):
             row = layout.row()
-            row.label(text=T("欢迎使用ACA筑韵古建插件"))
+            row.label(text=_("欢迎使用ACA筑韵古建插件"))
             row = layout.row()
-            row.label(text=T("请设置acaAssets.blend文件的路径:"),icon='INFO')
+            row.label(text=_("请设置acaAssets.blend文件的路径:"),icon='INFO')
             row = layout.row()
             row.operator(
             "aca.link_assets",icon='COLLECTION_COLOR_02')
@@ -86,13 +86,13 @@ class ACA_PT_basic(bpy.types.Panel):
             "aca.select_template_dialog",
             icon='SEQUENCE',
             depress=True,
-            text=T('从模板生成新建筑')
+            text=_('从模板生成新建筑')
             )
         
         # 2、运行中提示
         if not build.isFinished:
             row = layout.row()
-            row.label(text=T('生成中：需要20~90秒，请耐心等待。'),icon='INFO')
+            row.label(text=_('生成中：需要20~90秒，请耐心等待。'),icon='INFO')
             row = layout.row()
             row.progress(
                 type="BAR",
@@ -115,9 +115,9 @@ class ACA_PT_basic(bpy.types.Panel):
             if buildingObj == None: 
                 isShowQS = True
         if isShowQS:
-            layout.label(text=T('快速开始：'))
-            layout.label(text=T('选择一个模板，生成古建筑'),icon='KEYTYPE_JITTER_VEC')
-            layout.label(text=T('修改参数，定制你的样式'),icon='KEYTYPE_MOVING_HOLD_VEC')
+            layout.label(text=_('快速开始：'))
+            layout.label(text=_('选择一个模板，生成古建筑'),icon='KEYTYPE_JITTER_VEC')
+            layout.label(text=_('修改参数，定制你的样式'),icon='KEYTYPE_MOVING_HOLD_VEC')
             # 不再继续显示后续的设置面板
             return
         
@@ -160,26 +160,26 @@ class ACA_PT_basic(bpy.types.Panel):
         btnSaveTemplate = toolBar.column(align=True)
         btnSaveTemplate.operator(
             "aca.save_template",icon='FILE_TICK',
-            text=T('保存样式'))
+            text=_('保存样式'))
         # 更新建筑
         btnUpdate = toolBar.column(align=True)
         btnUpdate.operator(
             "aca.update_building",
-            depress=True,text=T('更新建筑'),
+            depress=True,text=_('更新建筑'),
             icon='FILE_REFRESH',
         )              
         # 删除建筑
         btnDelete = toolBar.column(align=True)
         btnDelete.operator(
             "aca.del_building",icon='TRASH',
-            text=T('删除建筑')
+            text=_('删除建筑')
         ) 
         # 是否修改参数时，自动触发更新
         btnRefresh = toolBar.column(align=True)
         if scnData.is_auto_rebuild:
-            text = T('暂停刷新')
+            text = _('暂停刷新')
         else:
-            text = T('自动刷新')
+            text = _('自动刷新')
         btnRefresh.prop(
             data=bpy.context.scene.ACA_data,
             property='is_auto_rebuild',
@@ -210,7 +210,7 @@ class ACA_PT_basic(bpy.types.Panel):
         btnJoin = toolBar.column(align=True)
         isJoined = (bData.aca_type == \
                     con.ACA_TYPE_BUILDING_JOINED)
-        btnJoinName = T('取消合并') if isJoined else T('合并')
+        btnJoinName = _('取消合并') if isJoined else _('合并')
         op = btnJoin.operator("aca.join",icon='PACKAGE',
                          text=btnJoinName,
                          depress=isJoined)
@@ -249,14 +249,14 @@ class ACA_PT_basic(bpy.types.Panel):
             buttonX_p = toolBar.column(align=True)
             op1 = buttonX_p.operator("aca.section",
                         depress=(currentPlan=='X+'),
-                        text=T('侧剖'),)
+                        text=_('侧剖'),)
             op1.sectionPlan = 'X+'
             # Y-
             col = toolBar.column(align=True)
             op = col.operator(
                 "aca.section",
                 depress=(currentPlan=='Y-'),
-                text=T('正剖'))
+                text=_('正剖'))
             op.sectionPlan = 'Y-'  
             # # 第二行 ------------------------------
             # toolBar = toolBox.grid_flow(columns=4, align=True)
@@ -265,21 +265,21 @@ class ACA_PT_basic(bpy.types.Panel):
             op = btnSectionA.operator(
                 "aca.section",
                 depress=(currentPlan=='A'),
-                text=T('透视A'))
+                text=_('透视A'))
             op.sectionPlan = 'A'  
             # 透视B
             btnSectionB = toolBar.column(align=True)
             op = btnSectionB.operator(
                 "aca.section",
                 depress=(currentPlan=='B'),
-                text=T('透视B'))
+                text=_('透视B'))
             op.sectionPlan = 'B' 
             # 透视C
             btnSectionC = toolBar.column(align=True)
             op = btnSectionC.operator(
                 "aca.section",
                 depress=(currentPlan=='C'),
-                text=T('透视C'))
+                text=_('透视C'))
             op.sectionPlan = 'C' 
 
         ###################################################
@@ -296,7 +296,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnMultiFloor1.operator(
                         "aca.multi_floor_add",
                         icon='AREA_JOIN_UP',
-                        text=T("添加楼阁"),
+                        text=_("添加楼阁"),
                         # depress=True,
                         )
         # 添加回廊
@@ -304,7 +304,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnAddLoggia.operator(
                         "aca.add_loggia",
                         icon='OBJECT_HIDDEN',
-                        text=T("添加周围廊")) 
+                        text=_("添加周围廊")) 
 
         # 第2行 ------------------------------
         toolBox = box.column(align=True)
@@ -316,7 +316,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnMultiFloor1.operator(
                         "aca.splice_building",
                         icon='AUTOMERGE_ON',
-                        text=T("拼接建筑"),
+                        text=_("拼接建筑"),
                         # depress=True,
                         )   
         # 建筑集成
@@ -324,7 +324,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnMultiFloor1.operator(
                         "aca.combo_building",
                         icon='COLLECTION_NEW',
-                        text=T("组合建筑"),
+                        text=_("组合建筑"),
                         # depress=True,
                         ) 
 
@@ -376,7 +376,7 @@ class ACA_PT_basic(bpy.types.Panel):
             opEmpty = btnEmpty.operator(
                             "aca.loggia_extend",
                             #icon='TRIA_LEFT',
-                            text=T("回廊"),)   
+                            text=_("回廊"),)   
             btnEmpty.enabled = False
             # 回廊延伸-东
             btnLoggiaEast = toolBar.column(align=True)
@@ -496,7 +496,7 @@ class ACA_PT_props(bpy.types.Panel):
     
     # 自定义属性
     bl_category = "ACA筑韵古建"      # 标签页名称
-    bl_label = T("屋身参数") # 面板名称，显示为可折叠的箭头后
+    bl_label = _("屋身参数") # 面板名称，显示为可折叠的箭头后
 
     @classmethod 
     def poll(self, context):
@@ -512,9 +512,9 @@ class ACA_PT_props(bpy.types.Panel):
             if buildingObj == None: 
                 # 如果不属于建筑构件，提示，并隐藏所有子面板
                 row = layout.row()
-                row.label(text=T('没有设置项'),icon='INFO')
+                row.label(text=_('没有设置项'),icon='INFO')
                 row = layout.row()
-                row.label(text=T('请先选择一个或多个建筑对象'))
+                row.label(text=_('请先选择一个或多个建筑对象'))
                 return 
             else:
                 # 斗口值
@@ -559,7 +559,7 @@ class ACA_PT_platform(bpy.types.Panel):
         else:
             mData = bData
 
-        row.prop(mData, "is_showPlatform",text=T("台基属性"))
+        row.prop(mData, "is_showPlatform",text=_("台基属性"))
         if mData.aca_type not in (con.ACA_TYPE_BUILDING,
                                 con.ACA_TYPE_COMBO,):
             layout.enabled = False
@@ -603,18 +603,18 @@ class ACA_PT_platform(bpy.types.Panel):
                                     even_columns=True)
             btnAddTaduo = group.column(align=True)
             btnAddTaduo.operator(operator='aca.add_step',
-                         text=T("添加踏跺"),
+                         text=_("添加踏跺"),
                          icon='PACKAGE')
             btnDelTaduo = group.column(align=True)
             btnDelTaduo.operator(operator='aca.del_step',
-                         text=T("删除踏跺"),
+                         text=_("删除踏跺"),
                          icon='TRASH')
             # 踏跺参数
             stepData = utils.getContextData(
                 con.ACA_TYPE_STEP)
             if stepData is not None:
                 group = toolbox.grid_flow(columns=1, align=True)
-                group.prop(stepData, "width",text=T("踏跺宽度"))
+                group.prop(stepData, "width",text=_("踏跺宽度"))
 
             # 添加踏跺，至少应选择两根柱子
             if objData.aca_type != con.ACA_TYPE_PILLAR \
@@ -631,7 +631,7 @@ class ACA_PT_platform(bpy.types.Panel):
             if not bData.use_terrace:
                 btnAddTerrace = group.column(align=True)
                 btnAddTerrace.operator(operator='aca.terrace_add',
-                            text=T("添加月台"),
+                            text=_("添加月台"),
                             icon='ALIGN_BOTTOM')
                 # 添加月台，必须选中主体建筑的台基
                 # if (bData.combo_type != con.COMBO_MAIN
@@ -642,7 +642,7 @@ class ACA_PT_platform(bpy.types.Panel):
             else:
                 btnDelTerrace = group.column(align=True)
                 btnDelTerrace.operator(operator='aca.terrace_del',
-                            text=T("删除月台"),
+                            text=_("删除月台"),
                             depress=True,
                             icon='ALIGN_BOTTOM')
                 # 删除月台，必须选中月台
@@ -675,7 +675,7 @@ class ACA_PT_pillars(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
-        row.prop(bData, "is_showPillars",text=T('柱网属性'))
+        row.prop(bData, "is_showPillars",text=_('柱网属性'))
         if bData.aca_type not in (con.ACA_TYPE_BUILDING,
                                 con.ACA_TYPE_COMBO,):
             layout.enabled = False
@@ -764,7 +764,7 @@ class ACA_PT_pillars(bpy.types.Panel):
                 col = toolBar.column(align=True)
                 col.operator(
                     "aca.del_pillar",icon='X',
-                    depress=True,text=T("减柱"))  
+                    depress=True,text=_("减柱"))  
                 if objData.aca_type != con.ACA_TYPE_PILLAR:
                     col.enabled=False
                 
@@ -780,7 +780,7 @@ class ACA_PT_pillars(bpy.types.Panel):
                     "aca.set_pillar",
                     icon=checkbox_icon,
                     depress=depress,
-                    text=T("垂花柱"))  
+                    text=_("垂花柱"))  
 
                 # 第2行 ------------------
                 toolBar = toolBox.grid_flow(columns=1, align=True)
@@ -788,7 +788,7 @@ class ACA_PT_pillars(bpy.types.Panel):
                 col = toolBar.column(align=True)
                 col.operator(
                     "aca.reset_floor",icon='FILE_REFRESH',
-                    depress=False,text=T("重设")) 
+                    depress=False,text=_("重设")) 
                 
 # “装修属性”子面板
 class ACA_PT_wall(bpy.types.Panel):
@@ -813,7 +813,7 @@ class ACA_PT_wall(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
-        row.prop(bData, "is_showWalls",text=T('装修属性'))
+        row.prop(bData, "is_showWalls",text=_('装修属性'))
 
         if bData.aca_type not in (con.ACA_TYPE_BUILDING,
                                       con.ACA_TYPE_COMBO,):
@@ -860,7 +860,7 @@ class ACA_PT_wall(bpy.types.Panel):
                 checkbox_icon = 'CHECKBOX_DEHLT'
             checkboxFang.prop(
                 bData, "use_smallfang",
-                toggle=1,text=T("使用小额枋"),
+                toggle=1,text=_("使用小额枋"),
                 icon=checkbox_icon) 
 
             # 工具栏：加枋、加墙、加门、加窗、删除
@@ -873,11 +873,11 @@ class ACA_PT_wall(bpy.types.Panel):
             # 按钮：加板门
             buttonMaindoor = toolBar.column(align=True)
             buttonMaindoor.operator(
-                "aca.add_maindoor",icon='SPLIT_VERTICAL',text=T("板  门"))
+                "aca.add_maindoor",icon='SPLIT_VERTICAL',text=_("板  门"))
             # 按钮：加直棂窗
             buttonBarwindow = toolBar.column(align=True)
             buttonBarwindow.operator(
-                "aca.add_barwindow",icon='FILE_VOLUME',text=T("直棂窗"))
+                "aca.add_barwindow",icon='FILE_VOLUME',text=_("直棂窗"))
             
             # 第2行 ------------------------------
             toolBar = toolBox.grid_flow(columns=2, 
@@ -886,11 +886,11 @@ class ACA_PT_wall(bpy.types.Panel):
             # 按钮：加门
             buttonDoor = toolBar.column(align=True)
             buttonDoor.operator(
-                "aca.add_door",icon='MOD_TRIANGULATE',text=T("隔扇门"))
+                "aca.add_door",icon='MOD_TRIANGULATE',text=_("隔扇门"))
             # 按钮：加槛窗
             buttonWin = toolBar.column(align=True)
             buttonWin.operator(
-                "aca.add_window",icon='MOD_LATTICE',text=T("隔扇窗"))
+                "aca.add_window",icon='MOD_LATTICE',text=_("隔扇窗"))
 
             # 第3行 ------------------------------
             toolBar = toolBox.grid_flow(columns=2, 
@@ -899,11 +899,11 @@ class ACA_PT_wall(bpy.types.Panel):
             # 按钮：加墙
             buttonWall = toolBar.column(align=True)
             buttonWall.operator(
-                "aca.add_wall",icon='MOD_BUILD',text=T("墙  体"))
+                "aca.add_wall",icon='MOD_BUILD',text=_("墙  体"))
             # 按钮：加支摘窗
             buttonFlipWin = toolBar.column(align=True)
             buttonFlipWin.operator(
-                "aca.add_flipwindow",icon='LIGHT_AREA',text=T("支摘窗"))
+                "aca.add_flipwindow",icon='LIGHT_AREA',text=_("支摘窗"))
             
             # 第4行 ------------------------------
             toolBar = toolBox.grid_flow(columns=2, 
@@ -912,11 +912,11 @@ class ACA_PT_wall(bpy.types.Panel):
             # 按钮：加栏杆
             buttonRailing = toolBar.column(align=True)
             buttonRailing.operator(
-                "aca.add_railing",icon='COLLAPSEMENU',text=T("栏  杆"))
+                "aca.add_railing",icon='COLLAPSEMENU',text=_("栏  杆"))
             # 按钮：加坐凳
             buttonBench = toolBar.column(align=True)
             buttonBench.operator(
-                "aca.add_bench",icon='COLLAPSEMENU',text=T("坐  凳"))
+                "aca.add_bench",icon='COLLAPSEMENU',text=_("坐  凳"))
             
             # 第5行 ------------------------------
             # 通栏宽度按钮
@@ -924,7 +924,7 @@ class ACA_PT_wall(bpy.types.Panel):
             # 按钮：删除
             buttonDel = toolBar.column(align=True)
             buttonDel.operator(
-                "aca.del_wall",icon='TRASH',text=T("删除"),depress=True)
+                "aca.del_wall",icon='TRASH',text=_("删除"),depress=True)
             
             # 工具可用性判断
             # 至少应选择两根柱子
@@ -1034,11 +1034,11 @@ class ACA_PT_wall(bpy.types.Panel):
                 # 隔扇数量
                 inputDoorNum = toolBar.column(align=True)
                 inputDoorNum.prop(
-                    contextData, "door_num",text=T('隔扇数量'))
+                    contextData, "door_num",text=_('隔扇数量'))
                 # 抹头数量
                 inputGapNum = toolBar.column(align=True)
                 inputGapNum.prop(
-                    contextData, "gap_num",text=T('抹头数量'))   
+                    contextData, "gap_num",text=_('抹头数量'))   
                 
             # 5、板门属性         
             if oData.aca_type == con.ACA_WALLTYPE_MAINDOOR:
@@ -1048,7 +1048,7 @@ class ACA_PT_wall(bpy.types.Panel):
                 # 板门数量
                 inputDoorNum = toolBar.column(align=True)
                 inputDoorNum.prop(
-                    contextData, "door_num",text=T('板门数量'))
+                    contextData, "door_num",text=_('板门数量'))
                 # 门钉数量
                 inputDingNum = toolBar.column(align=True)
                 inputDingNum.prop(
@@ -1060,7 +1060,7 @@ class ACA_PT_wall(bpy.types.Panel):
                 # 栏杆开口
                 inputRailingGap = toolBar.column(align=True)
                 inputRailingGap.prop(
-                    contextData, "gap",text=T("开口比例"))
+                    contextData, "gap",text=_("开口比例"))
         
         return
 
@@ -1073,7 +1073,7 @@ class ACA_PT_roof_props(bpy.types.Panel):
     
     # 自定义属性
     bl_category = "ACA筑韵古建"      # 标签页名称
-    bl_label = T("屋顶参数") # 面板名称，显示为可折叠的箭头后
+    bl_label = _("屋顶参数") # 面板名称，显示为可折叠的箭头后
 
     @classmethod 
     def poll(self, context):
@@ -1089,9 +1089,9 @@ class ACA_PT_roof_props(bpy.types.Panel):
             if buildingObj == None: 
                 # 如果不属于建筑构件，提示，并隐藏所有子面板
                 row = layout.row()
-                row.label(text=T('没有设置项'),icon='INFO')
+                row.label(text=_('没有设置项'),icon='INFO')
                 row = layout.row()
-                row.label(text=T('请先选择一个或多个建筑对象'))
+                row.label(text=_('请先选择一个或多个建筑对象'))
                 return
             else:
                 box = layout.box()
@@ -1109,7 +1109,7 @@ class ACA_PT_roof_props(bpy.types.Panel):
                 buttonBuildroof = toolBar.column(align=True)
                 buttonBuildroof.operator(
                     "aca.build_roof",icon='FILE_REFRESH',
-                    text=T('更新屋顶'),depress=True)
+                    text=_('更新屋顶'),depress=True)
                     
                     
 
@@ -1136,7 +1136,7 @@ class ACA_PT_dougong(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
-        row.prop(bData, "is_showDougong",text=T('斗栱属性'))
+        row.prop(bData, "is_showDougong",text=_('斗栱属性'))
         if bData.aca_type not in (con.ACA_TYPE_BUILDING,
                                       con.ACA_TYPE_COMBO,):
             layout.enabled = False
@@ -1185,26 +1185,26 @@ class ACA_PT_dougong(bpy.types.Panel):
             inputDgStyle = toolBar.column(align=True)
             inputDgStyle.prop(
                 bData, "dg_style",
-                text=T('斗栱类型')) 
+                text=_('斗栱类型')) 
             inputDkScale = toolBar.column(align=True)
             inputDkScale.prop(
                 bData, "dk_scale",
-                text=T('斗栱放大')) 
+                text=_('斗栱放大')) 
             inputDgextend = toolBar.column(align=True)
             inputDgextend.prop(
                 bData, "dg_extend",
-                text=T('斗栱出跳')) 
+                text=_('斗栱出跳')) 
             inputDgextend.enabled =False
             # # 斗栱高度
             # inputDgheight = toolBar.column(align=True)
             # inputDgheight.prop(
             #     bData, "dg_height",
-            #     text=T('斗栱高度')) 
+            #     text=_('斗栱高度')) 
             # 斗栱间距
             inputDggap = toolBar.column(align=True)
             inputDggap.prop(
                 bData, "dg_gap",
-                text=T('斗栱间距')) 
+                text=_('斗栱间距')) 
             
             if not bData.use_dg:
                 inputDgStyle.enabled = False
@@ -1237,7 +1237,7 @@ class ACA_PT_beam(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
-        row.prop(bData, "is_showBeam",text=T('梁架属性'))
+        row.prop(bData, "is_showBeam",text=_('梁架属性'))
         if bData.aca_type not in (con.ACA_TYPE_BUILDING,
                                       con.ACA_TYPE_COMBO,):
             layout.enabled = False
@@ -1279,7 +1279,7 @@ class ACA_PT_beam(bpy.types.Panel):
             inputRaftercount = toolBar.column(align=True)
             inputRaftercount.prop(
                 bData, "rafter_count",
-                text=T('步架数量'))
+                text=_('步架数量'))
             # 做廊步架
             inputJujia= toolBar.column(align=True)
             if bData.y_rooms >= 3:
@@ -1290,7 +1290,7 @@ class ACA_PT_beam(bpy.types.Panel):
                 #checkUseHallway = box.column(align=True)
                 inputJujia.prop(
                     bData, "use_hallway",
-                    text=T('廊间举架做法'),
+                    text=_('廊间举架做法'),
                     toggle=True,
                     icon=checkbox_icon) 
                 
@@ -1300,18 +1300,18 @@ class ACA_PT_beam(bpy.types.Panel):
             # 推山
             inputTuishan = toolBar.column(align=True)
             inputTuishan.prop(
-                bData, "tuishan",text=T('庑殿推山系数'),slider=True)
+                bData, "tuishan",text=_('庑殿推山系数'),slider=True)
             # 收山
             inputShoushan = toolBar.column(align=True)
             inputShoushan.prop(
-                bData, "shoushan",text=T('歇山收山尺寸'))
+                bData, "shoushan",text=_('歇山收山尺寸'))
             
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)
             # 盝顶步架宽度
             inputLudingBujia = toolBar.column(align=True)
             inputLudingBujia.prop(
-                bData, "luding_rafterspan",text=T('盝顶檐步架宽'))
+                bData, "luding_rafterspan",text=_('盝顶檐步架宽'))
             buttonDefaultLDBJ = toolBar.column(align=True)
             buttonDefaultLDBJ.operator(
                 operator='aca.default_luding_rafterspan',
@@ -1357,7 +1357,7 @@ class ACA_PT_rafter(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
-        row.prop(bData, "is_showRafter",text=T('椽架属性'))
+        row.prop(bData, "is_showRafter",text=_('椽架属性'))
         if bData.aca_type not in (con.ACA_TYPE_BUILDING,
                                       con.ACA_TYPE_COMBO,):
             layout.enabled = False
@@ -1383,15 +1383,15 @@ class ACA_PT_rafter(bpy.types.Panel):
             # 出冲
             inputChong = toolBar.column(align=True)
             inputChong.prop(
-                bData, "chong",text=T('出冲(椽径)')) 
+                bData, "chong",text=_('出冲(椽径)')) 
             # 起翘
             inputQiao = toolBar.column(align=True)
             inputQiao.prop(
-                bData, "qiqiao",text=T('起翘(椽径)'))
+                bData, "qiqiao",text=_('起翘(椽径)'))
             # 梁头系数
             inputLiangtou = toolBar.column(align=True)
             inputLiangtou.prop(
-                bData, "liangtou",text=T('梁头系数'))
+                bData, "liangtou",text=_('梁头系数'))
 
             toolBar = toolBox.grid_flow(
                         columns=2,
@@ -1405,7 +1405,7 @@ class ACA_PT_rafter(bpy.types.Panel):
             checkboxUseflyrafter = toolBar.column(align=True)
             checkboxUseflyrafter.prop(
                 bData, "use_flyrafter",
-                text=T('使用飞椽'),toggle=True,
+                text=_('使用飞椽'),toggle=True,
                 icon=checkbox_icon) 
             # 庑殿、歇山不可以不做飞椽
             if bData.roof_style in (
@@ -1445,7 +1445,7 @@ class ACA_PT_rafter(bpy.types.Panel):
             checkboxUsePie = toolBar.column(align=True)
             checkboxUsePie.prop(
                 bData, "use_pie",
-                text=T('撇向处理'),toggle=True,
+                text=_('撇向处理'),toggle=True,
                 icon=checkbox_icon) 
 
 # “瓦作属性”子面板
@@ -1471,7 +1471,7 @@ class ACA_PT_tiles(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         buildingObj,bData,objData = utils.getRoot(context.object)
-        row.prop(bData, "is_showTiles",text=T('瓦作属性'))
+        row.prop(bData, "is_showTiles",text=_('瓦作属性'))
         if bData.aca_type not in (con.ACA_TYPE_BUILDING,
                                       con.ACA_TYPE_COMBO,):
             layout.enabled = False
@@ -1515,7 +1515,7 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
     
     # 自定义属性
     bl_category = "ACA筑韵古建"               # 标签页名称
-    bl_label = T("院墙参数")     # 面板名称
+    bl_label = _("院墙参数")     # 面板名称
     bl_options = {"DEFAULT_CLOSED"}          # 默认折叠
     
     @classmethod 
@@ -1540,9 +1540,9 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
             if buildingObj == None: 
                 # 如果不属于建筑构件，提示，并隐藏所有子面板
                 row = layout.row()
-                row.label(text=T('没有设置项'),icon='INFO')
+                row.label(text=_('没有设置项'),icon='INFO')
                 row = layout.row()
-                row.label(text=T('请先选择一个或多个建筑对象'))
+                row.label(text=_('请先选择一个或多个建筑对象'))
                 return
             else:
                 # 院墙属性
@@ -1560,33 +1560,33 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
                 checkbox4sides.prop(bData,
                     'is_4_sides',
                     toggle=True,
-                    text=T('四面环绕'),
+                    text=_('四面环绕'),
                     icon=checkbox_icon)
                 # 院墙进深
                 inputYardDepth = toolBar.column(align=True)
                 inputYardDepth.prop(bData,'yard_depth',
-                    text=T('院墙进深'))
+                    text=_('院墙进深'))
                 if not bData.is_4_sides:
                     inputYardDepth.enabled = False
                 # 院墙面阔
                 inputYardWidth = toolBar.column(align=True)
                 inputYardWidth.prop(bData,'yard_width',
-                    text=T('院墙面阔'))
+                    text=_('院墙面阔'))
                 # 院墙高度
                 inputYardwallHeight = toolBar.column(align=True)
                 inputYardwallHeight.prop(bData,
                     'yardwall_height',
-                    text=T('院墙高度'))
+                    text=_('院墙高度'))
                 # 院墙厚度
                 inputYardwallDepth = toolBar.column(align=True)
                 inputYardwallDepth.prop(bData,
                     'yardwall_depth',
-                    text=T('院墙厚度'))
+                    text=_('院墙厚度'))
                 # 帽瓦斜率
                 inputYardtileAngle = toolBar.column(align=True)
                 inputYardtileAngle.prop(bData,
                     'yardwall_angle',
-                    text=T('帽瓦斜率'))
+                    text=_('帽瓦斜率'))
                 
                 
                 buttionBuildYardwall = box.row()
@@ -1594,7 +1594,7 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
                     'aca.build_yardwall',
                     icon='PLAY',
                     depress=True,
-                    text=T('重新生成院墙'))
+                    text=_('重新生成院墙'))
                 
 # 面板可见性的通用验证
 def genericPoll(self,context:bpy.types.Context):

@@ -9,7 +9,7 @@ import gettext
 
 # 英文翻译器
 # 在load_translations()中初始化
-# 在T()中被调用以获取翻译
+# 在_()中被调用以获取翻译
 _trans_en = None
 
 # 缓存当前语言设置，避免在模块重载期间上下文丢失
@@ -171,7 +171,7 @@ def get_preferences():
     except (AttributeError, KeyError):
         return None
 
-def T(msg_id, context="*"):
+def _(msg_id, context="*"):
     """
     根据用户偏好翻译消息ID
     
@@ -207,5 +207,5 @@ def T(msg_id, context="*"):
         # zh_HANS下默认直接返回原文 (因为源码现在是中文)
         return msg_id
 
-# 模块导入时自动加载翻译字典，确保在register之前T()函数可用
+# 模块导入时自动加载翻译字典，确保在register之前_()函数可用
 load_translations()

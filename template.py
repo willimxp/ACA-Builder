@@ -12,7 +12,7 @@ from .data import ACA_data_template as tmpData
 from . import utils
 import bpy.utils.previews
 from .locale import i18n
-from .locale.i18n import T
+from .locale.i18n import _
 
 
 xmlFileName = 'template.xml'
@@ -102,7 +102,7 @@ def getDougongList():
             for n,item in enumerate(items):
                 dgStyle = item.attrib['style']
                 # 斗栱名称国际化
-                displayName = T(dgStyle, "assetsIndex")
+                displayName = _(dgStyle, "assetsIndex")
                 dougong_list.append(
                     (str(n), displayName, displayName)
                 )
@@ -898,7 +898,7 @@ def getThumbEnum(self, context):
 
             # 如果找到则添加到Enum列表
             if thumbName == templateName:
-                displayName = T(thumbName,"template")
+                displayName = _(thumbName,"template")
                 items.append(_make_item(
                     thumbName, displayName, displayName, 
                     iconId, thumbIndex))
@@ -911,7 +911,7 @@ def getThumbEnum(self, context):
             thumb = pcoll.get('nopreview.png')
             iconId = thumb.icon_id if thumb else 0
             
-            displayName = T(thumbName,"template")
+            displayName = _(thumbName,"template")
             items.append(_make_item(
                 thumbName, displayName, displayName, 
                 iconId, thumbIndex))
@@ -958,7 +958,7 @@ def getPavilionEnum(self, context):
 
             # 如果找到则添加到Enum列表
             if thumbName == pavilionName:
-                displayName = T(thumbName,"template")
+                displayName = _(thumbName,"template")
                 items.append(_make_item(
                     thumbName, displayName, displayName, 
                     iconId, thumbIndex))
@@ -971,7 +971,7 @@ def getPavilionEnum(self, context):
             thumb = pcoll.get('nopreview.png')
             iconId = thumb.icon_id if thumb else 0
 
-            displayName = T(pavilionName,"template")
+            displayName = _(pavilionName,"template")
             items.append(_make_item(
                 pavilionName, displayName, displayName, 
                 iconId, thumbIndex))

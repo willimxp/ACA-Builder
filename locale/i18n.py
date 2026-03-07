@@ -7,7 +7,9 @@ import bpy
 import os
 import gettext
 
-# Global translation object for English
+# 英文翻译器
+# 在load_translations()中初始化
+# 在T()中被调用以获取翻译
 _trans_en = None
 
 # 缓存当前语言设置，避免在模块重载期间上下文丢失
@@ -35,58 +37,6 @@ def get_language():
     from ..const import ACA_Consts as con
     return con.DEFAULT_LANGUAGE
 
-def load_translations():
-    """从.mo文件加载翻译数据"""
-    global _trans_en
-
-    # Load English translations
-    locale_dir = os.path.dirname(__file__)
-    try:
-        # 生产用，应用gettext的缓存机制
-        # looks for locale_dir/en_US/LC_MESSAGES/aca_builder.mo
-        # _trans_en = gettext.translation(domain='aca_builder', 
-        #                         localedir=locale_dir, 
-        #                         languages=['en_US'])
-        
-        # 调试用，实时重载.mo文件
-        # gettext.translation caches the result, so we manually find and load the file
-        # to ensure we get the latest version if the .mo file has been updated.
-        mo_file = gettext.find('aca_builder', localedir=locale_dir, languages=['en_US'])
-        if mo_file:
-            with open(mo_file, 'rb') as fp:
-                _trans_en = gettext.GNUTranslations(fp)
-        else:
-            # Fallback (though likely won't find it if find failed)
-            _trans_en = gettext.translation(domain='aca_builder', 
-                                    localedir=locale_dir, 
-                                    languages=['en_US'])
-
-    except FileNotFoundError:
-        print("ACA Builder: en_US translation file not found.")
-        _trans_en = None
-    except Exception as e:
-        print(f"ACA Builder: Failed to load translations: {e}")
-        _trans_en = None
-
-def register():
-    """向Blender注册翻译数据"""
-    # 重新加载翻译
-    load_translations()
-
-def unregister():
-    """从Blender注销翻译数据"""
-    pass
-
-def get_preferences():
-    """获取插件偏好设置"""
-    # 假设插件名称即为包名
-    package = __name__.split('.')[0]
-    try:
-        preferences = bpy.context.preferences.addons[package].preferences
-        return preferences
-    except (AttributeError, KeyError):
-        return None
-    
 def update_language(self, context):
     """
     更新语言设置时的回调函数
@@ -169,6 +119,58 @@ def update_language(self, context):
         traceback.print_exc()
         return
 
+def load_translations():
+    """从.po/.mo文件加载翻译数据"""
+    global _trans_en
+
+    # Load English translations
+    locale_dir = os.path.dirname(__file__)
+    try:
+        # 生产用，应用gettext的缓存机制
+        # looks for locale_dir/en_US/LC_MESSAGES/aca_builder.mo
+        # _trans_en = gettext.translation(domain='aca_builder', 
+        #                         localedir=locale_dir, 
+        #                         languages=['en_US'])
+        
+        # 调试用，实时重载.mo文件
+        # gettext.translation caches the result, so we manually find and load the file
+        # to ensure we get the latest version if the .mo file has been updated.
+        mo_file = gettext.find('aca_builder', localedir=locale_dir, languages=['en_US'])
+        if mo_file:
+            with open(mo_file, 'rb') as fp:
+                _trans_en = gettext.GNUTranslations(fp)
+        else:
+            # Fallback (though likely won't find it if find failed)
+            _trans_en = gettext.translation(domain='aca_builder', 
+                                    localedir=locale_dir, 
+                                    languages=['en_US'])
+
+    except FileNotFoundError:
+        print("ACA Builder: en_US translation file not found.")
+        _trans_en = None
+    except Exception as e:
+        print(f"ACA Builder: Failed to load translations: {e}")
+        _trans_en = None
+
+def register():
+    """向Blender注册翻译数据"""
+    # 重新加载翻译
+    load_translations()
+
+def unregister():
+    """从Blender注销翻译数据"""
+    pass
+
+def get_preferences():
+    """获取插件偏好设置"""
+    # 假设插件名称即为包名
+    package = __name__.split('.')[0]
+    try:
+        preferences = bpy.context.preferences.addons[package].preferences
+        return preferences
+    except (AttributeError, KeyError):
+        return None
+
 def T(msg_id, context="*"):
     """
     根据用户偏好翻译消息ID
@@ -201,25 +203,9 @@ def T(msg_id, context="*"):
                 
             return res
         return msg_id
-        
-    elif lang_pref == 'zh_HANS':
+    else:
         # zh_HANS下默认直接返回原文 (因为源码现在是中文)
         return msg_id
-        
-    else: # FOLLOW (默认)
-        # 跟随Blender语言设置
-        sys_lang = bpy.context.preferences.view.language
-        if sys_lang == 'en_US' or sys_lang.startswith('en_'):
-            # 使用英文翻译
-            if _trans_en:
-                res = _trans_en.pgettext(context, msg_id)
-                if res == msg_id and context != "*":
-                    res = _trans_en.pgettext("*", msg_id)
-                return res
-            return msg_id
-        else:
-            # 默认为中文（原文）
-            return msg_id
 
 # 模块导入时自动加载翻译字典，确保在register之前T()函数可用
 load_translations()

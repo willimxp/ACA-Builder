@@ -156,7 +156,7 @@ class ACA_data_scene(bpy.types.PropertyGroup):
     templateItem : bpy.props.CollectionProperty(
         type=TemplateListItem)# type: ignore
     templateIndex: bpy.props.IntProperty(
-            name=T("Active List Index"),
+            name="Active List Index",
             default=0, 
             update=dc.updateSelectedThumb,
         )# type: ignore 
@@ -292,11 +292,11 @@ class ACA_id_list(bpy.types.PropertyGroup):
 class ACA_data_postProcess(bpy.types.PropertyGroup):
     # 操作类型：如，建筑拼接union
     action:bpy.props.StringProperty(
-            name = T('Action'),
+            name = 'Action',
         ) # type: ignore
     # 操作参数：将多个操作参数拼接成字串，如，"from=building1,to=building2"
     parameter:bpy.props.StringProperty(
-            name = T('Parameter'),
+            name = 'Parameter',
         ) # type: ignore
 
 #### 4.3 建筑主数据 (Building Main Data)

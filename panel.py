@@ -304,7 +304,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnAddLoggia.operator(
                         "aca.add_loggia",
                         icon='OBJECT_HIDDEN',
-                        text=T("添加回廊")) 
+                        text=T("添加周围廊")) 
 
         # 第2行 ------------------------------
         toolBox = box.column(align=True)
@@ -788,7 +788,7 @@ class ACA_PT_pillars(bpy.types.Panel):
                 col = toolBar.column(align=True)
                 col.operator(
                     "aca.reset_floor",icon='FILE_REFRESH',
-                    depress=False,text=T("重设柱网")) 
+                    depress=False,text=T("重设")) 
                 
 # “装修属性”子面板
 class ACA_PT_wall(bpy.types.Panel):
@@ -873,7 +873,7 @@ class ACA_PT_wall(bpy.types.Panel):
             # 按钮：加板门
             buttonMaindoor = toolBar.column(align=True)
             buttonMaindoor.operator(
-                "aca.add_maindoor",icon='SPLIT_VERTICAL',text=T("板门"))
+                "aca.add_maindoor",icon='SPLIT_VERTICAL',text=T("板  门"))
             # 按钮：加直棂窗
             buttonBarwindow = toolBar.column(align=True)
             buttonBarwindow.operator(
@@ -886,11 +886,11 @@ class ACA_PT_wall(bpy.types.Panel):
             # 按钮：加门
             buttonDoor = toolBar.column(align=True)
             buttonDoor.operator(
-                "aca.add_door",icon='MOD_TRIANGULATE',text=T("隔扇"))
+                "aca.add_door",icon='MOD_TRIANGULATE',text=T("隔扇门"))
             # 按钮：加槛窗
             buttonWin = toolBar.column(align=True)
             buttonWin.operator(
-                "aca.add_window",icon='MOD_LATTICE',text=T("槛窗"))
+                "aca.add_window",icon='MOD_LATTICE',text=T("隔扇窗"))
 
             # 第3行 ------------------------------
             toolBar = toolBox.grid_flow(columns=2, 
@@ -899,7 +899,7 @@ class ACA_PT_wall(bpy.types.Panel):
             # 按钮：加墙
             buttonWall = toolBar.column(align=True)
             buttonWall.operator(
-                "aca.add_wall",icon='MOD_BUILD',text=T("墙体"))
+                "aca.add_wall",icon='MOD_BUILD',text=T("墙  体"))
             # 按钮：加支摘窗
             buttonFlipWin = toolBar.column(align=True)
             buttonFlipWin.operator(
@@ -912,11 +912,11 @@ class ACA_PT_wall(bpy.types.Panel):
             # 按钮：加栏杆
             buttonRailing = toolBar.column(align=True)
             buttonRailing.operator(
-                "aca.add_railing",icon='COLLAPSEMENU',text=T("栏杆"))
+                "aca.add_railing",icon='COLLAPSEMENU',text=T("栏  杆"))
             # 按钮：加坐凳
             buttonBench = toolBar.column(align=True)
             buttonBench.operator(
-                "aca.add_bench",icon='COLLAPSEMENU',text=T("坐凳"))
+                "aca.add_bench",icon='COLLAPSEMENU',text=T("坐  凳"))
             
             # 第5行 ------------------------------
             # 通栏宽度按钮
@@ -1109,7 +1109,7 @@ class ACA_PT_roof_props(bpy.types.Panel):
                 buttonBuildroof = toolBar.column(align=True)
                 buttonBuildroof.operator(
                     "aca.build_roof",icon='FILE_REFRESH',
-                    text=T('生成屋顶'),depress=True)
+                    text=T('更新屋顶'),depress=True)
                     
                     
 
@@ -1189,11 +1189,11 @@ class ACA_PT_dougong(bpy.types.Panel):
             inputDkScale = toolBar.column(align=True)
             inputDkScale.prop(
                 bData, "dk_scale",
-                text=T('斗栱缩放')) 
+                text=T('斗栱放大')) 
             inputDgextend = toolBar.column(align=True)
             inputDgextend.prop(
                 bData, "dg_extend",
-                text=T('斗栱挑檐')) 
+                text=T('斗栱出跳')) 
             inputDgextend.enabled =False
             # # 斗栱高度
             # inputDgheight = toolBar.column(align=True)
@@ -1290,7 +1290,7 @@ class ACA_PT_beam(bpy.types.Panel):
                 #checkUseHallway = box.column(align=True)
                 inputJujia.prop(
                     bData, "use_hallway",
-                    text=T('做廊步架'),
+                    text=T('廊间举架做法'),
                     toggle=True,
                     icon=checkbox_icon) 
                 
@@ -1300,11 +1300,11 @@ class ACA_PT_beam(bpy.types.Panel):
             # 推山
             inputTuishan = toolBar.column(align=True)
             inputTuishan.prop(
-                bData, "tuishan",text=T('推山系数'),slider=True)
+                bData, "tuishan",text=T('庑殿推山系数'),slider=True)
             # 收山
             inputShoushan = toolBar.column(align=True)
             inputShoushan.prop(
-                bData, "shoushan",text=T('收山尺寸'))
+                bData, "shoushan",text=T('歇山收山尺寸'))
             
             toolBar = toolBox.grid_flow(
                 align=True,columns=2)
@@ -1383,15 +1383,15 @@ class ACA_PT_rafter(bpy.types.Panel):
             # 出冲
             inputChong = toolBar.column(align=True)
             inputChong.prop(
-                bData, "chong",text=T('出冲(椽径倍数)')) 
+                bData, "chong",text=T('出冲(椽径)')) 
             # 起翘
             inputQiao = toolBar.column(align=True)
             inputQiao.prop(
-                bData, "qiqiao",text=T('起翘(椽径倍数)'))
+                bData, "qiqiao",text=T('起翘(椽径)'))
             # 梁头系数
             inputLiangtou = toolBar.column(align=True)
             inputLiangtou.prop(
-                bData, "liangtou",text=T('梁头位置'))
+                bData, "liangtou",text=T('梁头系数'))
 
             toolBar = toolBox.grid_flow(
                         columns=2,
@@ -1445,7 +1445,7 @@ class ACA_PT_rafter(bpy.types.Panel):
             checkboxUsePie = toolBar.column(align=True)
             checkboxUsePie.prop(
                 bData, "use_pie",
-                text=T('使用撇'),toggle=True,
+                text=T('撇向处理'),toggle=True,
                 icon=checkbox_icon) 
 
 # “瓦作属性”子面板
@@ -1560,18 +1560,18 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
                 checkbox4sides.prop(bData,
                     'is_4_sides',
                     toggle=True,
-                    text=T('是否做四面墙'),
+                    text=T('四面环绕'),
                     icon=checkbox_icon)
                 # 院墙进深
                 inputYardDepth = toolBar.column(align=True)
                 inputYardDepth.prop(bData,'yard_depth',
-                    text=T('庭院进深'))
+                    text=T('院墙进深'))
                 if not bData.is_4_sides:
                     inputYardDepth.enabled = False
                 # 院墙面阔
                 inputYardWidth = toolBar.column(align=True)
                 inputYardWidth.prop(bData,'yard_width',
-                    text=T('庭院面阔'))
+                    text=T('院墙面阔'))
                 # 院墙高度
                 inputYardwallHeight = toolBar.column(align=True)
                 inputYardwallHeight.prop(bData,
@@ -1586,7 +1586,7 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
                 inputYardtileAngle = toolBar.column(align=True)
                 inputYardtileAngle.prop(bData,
                     'yardwall_angle',
-                    text=T('院墙帽瓦斜率'))
+                    text=T('帽瓦斜率'))
                 
                 
                 buttionBuildYardwall = box.row()
@@ -1594,7 +1594,7 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
                     'aca.build_yardwall',
                     icon='PLAY',
                     depress=True,
-                    text=T('生成院墙'))
+                    text=T('重新生成院墙'))
                 
 # 面板可见性的通用验证
 def genericPoll(self,context:bpy.types.Context):

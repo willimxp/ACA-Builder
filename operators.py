@@ -823,8 +823,8 @@ class ACA_OT_del_template(bpy.types.Operator):
 # 生成院墙
 class ACA_OT_build_yardwall(bpy.types.Operator):
     bl_idname="aca.build_yardwall"
-    bl_description = T('生成外墙')
-    bl_label = "生成外墙"
+    bl_description = T('生成院墙')
+    bl_label = T("生成院墙")
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -1153,21 +1153,21 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
     bl_idname = __name__.split('.')[0]
 
     filepath: bpy.props.StringProperty(
-        name="Material Library Path",
+        name=T("素材库路径"),
         subtype='FILE_PATH',
     )# type: ignore
 
     use_bevel : bpy.props.BoolProperty(
             default = True,
-            name = "Use Bevel",
-            description = "Disable to generate right-angle components without bevels",
+            name = T("是否使用倒角"),
+            description = T("取消后，不再使用倒角，直接生成直角构件"),
         ) # type: ignore
 
     # 260210 Windows CLI中文乱码矫正选项
     fix_windows_cli_encoding : bpy.props.BoolProperty(
             default = True,
-            name = "Windows CLI中文乱码矫正",
-            description = "在Windows系统上自动设置UTF-8编码以解决中文乱码问题（仅Windows有效）",
+            name = T("Windows CLI中文乱码矫正"),
+            description = T("在Windows系统上自动设置UTF-8编码以解决中文乱码问题（仅Windows有效）"),
         ) # type: ignore
     
     # 260210 日志配置选项
@@ -1228,7 +1228,7 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
         # 260210 日志配置选项
         layout.separator()
         box = layout.box()
-        box.label(text="日志设置:", icon='TEXT')
+        box.label(text=T("日志设置:"), icon='TEXT')
         row = box.row()
         row.prop(self, 'log_level')
         row = box.row()
@@ -1236,7 +1236,7 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
 
         # 使用倒角
         row = layout.row()
-        row.prop(self,'use_bevel', text=T("是否使用倒角"))
+        row.prop(self,'use_bevel')
         
         # 260210 Windows CLI中文乱码矫正选项：仅在Windows系统上可用
         row = layout.row()
@@ -1249,7 +1249,7 @@ class ACA_OT_Preferences(bpy.types.AddonPreferences):
 # 关联素材库
 class ACA_OT_LINK_ASSETS(bpy.types.Operator):
     bl_idname="aca.link_assets"
-    bl_label = "关联素材库"
+    bl_label = T("关联素材库")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = T('关联acaAssets.blend素材库')
 
@@ -1317,7 +1317,7 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
     bl_idname = "aca.select_template_dialog"
     bl_description = T('根据模板营造新建筑')
     bl_options = {'REGISTER', 'UNDO'}
-    bl_label = "根据模板营造新建筑"
+    bl_label = T("根据模板营造新建筑")
  
     from bpy.props import StringProperty, BoolProperty
     message: StringProperty()               # type: ignore 
@@ -1406,7 +1406,7 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
 class ACA_OT_SECTION(bpy.types.Operator):
     bl_idname="aca.section"
     bl_description = T('添加剖视图')
-    bl_label = "添加剖视图"
+    bl_label = T("添加剖视图")
     bl_options = {'REGISTER', 'UNDO'}
 
     # 参数：剖视方案
@@ -1429,7 +1429,7 @@ class ACA_OT_SECTION(bpy.types.Operator):
 # 删除月台
 class ACA_OT_TERRACE_DEL(bpy.types.Operator):
     bl_idname="aca.terrace_del"
-    bl_label = "删除月台"
+    bl_label = T("删除月台")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = T('删除月台（请先选择月台）')
 
@@ -1456,7 +1456,7 @@ class ACA_OT_TERRACE_DEL(bpy.types.Operator):
 # 添加月台
 class ACA_OT_TERRACE_ADD(bpy.types.Operator):
     bl_idname="aca.terrace_add"
-    bl_label = "添加月台"
+    bl_label = T("添加月台")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = T('添加月台（请先选择台基）')
 
@@ -1483,7 +1483,7 @@ class ACA_OT_TERRACE_ADD(bpy.types.Operator):
 # 添加重楼
 class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
     bl_idname="aca.multi_floor_add"
-    bl_label = "添加楼阁"
+    bl_label = T("添加楼阁")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = T('基于一个单体建筑，向上垒叠一层或多层楼阁')
     
@@ -1621,7 +1621,7 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
 # 添加回廊
 class ACA_OT_ADD_LOGGIA(bpy.types.Operator):
     bl_idname="aca.add_loggia"
-    bl_label = "添加周围廊"
+    bl_label = T("添加周围廊")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = T('基于当前单体建筑的柱网，快速添加一圈周围廊')
 
@@ -1701,7 +1701,7 @@ class ACA_OT_ADD_LOGGIA(bpy.types.Operator):
 # 添加抱厦
 class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
     bl_idname="aca.splice_building"
-    bl_label = "拼接建筑"
+    bl_label = T("拼接建筑")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = T('将多个建筑重叠的瓦面、柱网等进行裁剪拼接，请将抱厦做为活动的选择项(最后选择)')
     
@@ -1764,7 +1764,7 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
 # 回廊延伸
 class ACA_OT_LOGGIA_EXTEND(bpy.types.Operator):
     bl_idname="aca.loggia_extend"
-    bl_label = "回廊延伸"
+    bl_label = T("回廊延伸")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = T('回廊延伸')
 
@@ -1796,7 +1796,7 @@ class ACA_OT_LOGGIA_EXTEND(bpy.types.Operator):
 # 添加抱厦
 class ACA_OT_COMBO_BUILDING(bpy.types.Operator):
     bl_idname="aca.combo_building"
-    bl_label = "组合建筑"
+    bl_label = T("组合建筑")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = T('将多个单体建筑组合，可以保存在一个模板中，并可以一同更新')
     

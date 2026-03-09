@@ -6,6 +6,7 @@
 import bpy
 import os
 import gettext
+from .. import utils
 
 # 英文翻译器
 # 在load_translations()中初始化
@@ -31,11 +32,13 @@ def get_language():
     # 2. 尝试从偏好设置获取
     prefs = get_preferences()
     if prefs and hasattr(prefs, 'language'):
-        return prefs.language
+        _current_language = prefs.language
+        return _current_language
         
     # 3. 返回默认值
     from ..const import ACA_Consts as con
-    return con.DEFAULT_LANGUAGE
+    _current_language = con.DEFAULT_LANGUAGE
+    return _current_language
 
 def update_language(self, context):
     """
@@ -120,36 +123,59 @@ def update_language(self, context):
         return
 
 def load_translations():
-    """从.po/.mo文件加载翻译数据"""
+    """
+    从.mo文件加载翻译数据
+    
+    调试状态(DEBUG): 手动加载.mo文件，绕过缓存，实时重载
+    生产状态: 使用gettext.translation()，利用缓存机制
+    """
     global _trans_en
 
     # Load English translations
     locale_dir = os.path.dirname(__file__)
-    try:
-        # 生产用，应用gettext的缓存机制
-        # looks for locale_dir/en_US/LC_MESSAGES/aca_builder.mo
-        # _trans_en = gettext.translation(domain='aca_builder', 
-        #                         localedir=locale_dir, 
-        #                         languages=['en_US'])
-        
-        # 调试用，实时重载.mo文件
-        # gettext.translation caches the result, so we manually find and load the file
-        # to ensure we get the latest version if the .mo file has been updated.
-        mo_file = gettext.find('aca_builder', localedir=locale_dir, languages=['en_US'])
-        if mo_file:
-            with open(mo_file, 'rb') as fp:
-                _trans_en = gettext.GNUTranslations(fp)
-        else:
-            # Fallback (though likely won't find it if find failed)
-            _trans_en = gettext.translation(domain='aca_builder', 
-                                    localedir=locale_dir, 
-                                    languages=['en_US'])
+    translations = []
+    is_debug = utils.is_debug()
+    
+    # 需要加载的翻译文件列表
+    domains = ['aca_builder', 'aca_xml']
+    
+    for domain in domains:
+        try:
+            if is_debug:
+                # 调试用，实时重载.mo文件
+                # gettext.translation caches the result, so we manually find and load the file
+                # to ensure we get the latest version if the .mo file has been updated.
+                mo_file = gettext.find(domain, localedir=locale_dir, languages=['en_US'])
+                if mo_file:
+                    with open(mo_file, 'rb') as fp:
+                        translations.append(gettext.GNUTranslations(fp))
+                else:
+                    # Fallback (though likely won't find it if find failed)
+                    translations.append(gettext.translation(domain=domain, 
+                                            localedir=locale_dir, 
+                                            languages=['en_US']))
+            else:
+                # 生产用，应用gettext的缓存机制
+                # looks for locale_dir/en_US/LC_MESSAGES/{domain}.mo
+                translations.append(gettext.translation(domain=domain, 
+                                        localedir=locale_dir, 
+                                        languages=['en_US']))
 
-    except FileNotFoundError:
-        print("ACA Builder: en_US translation file not found.")
-        _trans_en = None
-    except Exception as e:
-        print(f"ACA Builder: Failed to load translations: {e}")
+        except FileNotFoundError:
+            print(f"ACA Builder: {domain} translation file not found.")
+        except Exception as e:
+            print(f"ACA Builder: Failed to load {domain} translations: {e}")
+    
+    # 合并多个翻译文件
+    if translations:
+        if len(translations) == 1:
+            _trans_en = translations[0]
+        else:
+            # 使用第一个翻译作为基础，添加其他翻译
+            _trans_en = translations[0]
+            for trans in translations[1:]:
+                _trans_en.add_fallback(trans)
+    else:
         _trans_en = None
 
 def register():
@@ -171,7 +197,7 @@ def get_preferences():
     except (AttributeError, KeyError):
         return None
 
-def _(msg_id, context="*"):
+def _(msg_id, context=None):
     """
     根据用户偏好翻译消息ID
     
@@ -190,17 +216,21 @@ def _(msg_id, context="*"):
         lang_pref = bpy.context.preferences.view.language
     
     if lang_pref == 'en_US':
-        # 强制英文翻译
-        # 使用gettext加载的.mo文件
+        # 英文翻译
         if _trans_en:
-            # 尝试使用指定上下文翻译
-            # pgettext(context, msg_id)
-            res = _trans_en.pgettext(context, msg_id)
+            # 未指定上下文，直接使用gettext翻译
+            if context is None:
+                res = _trans_en.gettext(msg_id)
             
-            # 如果翻译结果与原文相同，且上下文不是通用上下文，尝试使用通用上下文查找
-            if res == msg_id and context != "*":
-                res = _trans_en.pgettext("*", msg_id)
+            # 使用指定上下文，调用pgettext翻译
+            else:
+                res = _trans_en.pgettext(context, msg_id)
                 
+            # 如果翻译失败，尝试使用"*"通用上下文查找
+            # Blender原生字典会将默认使用"*"为上下文，目前使用python原生gettext实际不会需要
+            if res == msg_id:
+                res = _trans_en.pgettext("*", msg_id)
+
             return res
         return msg_id
     else:

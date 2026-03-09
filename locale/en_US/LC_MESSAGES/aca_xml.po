@@ -1,0 +1,383 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ACA Builder\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2026-03-09 12:58+0800\n"
+"Last-Translator: Auto Generated <noreply@example.com>\n"
+"Language-Team: English <en@li.org>\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
+"X-Poedit-KeywordsList: T\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SearchPath-0: .\n"
+
+msgctxt "assetsIndex"
+msgid "一斗三升"
+msgstr "One-Dou Three-Sheng"
+
+msgctxt "assetsIndex"
+msgid "单翘单昂"
+msgstr "Single Qiao Single Ang"
+
+msgctxt "assetsIndex"
+msgid "单翘重昂"
+msgstr "Single Qiao Double Ang"
+
+msgctxt "assetsIndex"
+msgid "宋-四铺作"
+msgstr "Song Style 4-Puzuo"
+
+msgctxt "assetsIndex"
+msgid "斗口单昂"
+msgstr "Doukou Single Ang"
+
+msgctxt "assetsIndex"
+msgid "斗口重昂"
+msgstr "Doukou Double Ang"
+
+msgctxt "template"
+msgid "0-重檐"
+msgstr "0-Double Eave"
+
+msgctxt "template"
+msgid "1-简单重楼"
+msgstr "1-Simple Multi-Floor"
+
+msgctxt "template"
+msgid "2-重楼+平坐"
+msgstr "2-Multi-Floor + Pingzuo"
+
+msgctxt "template"
+msgid "3-重楼+腰檐"
+msgstr "3-Multi-Floor + Mid-Eave"
+
+msgctxt "template"
+msgid "4-重楼+腰檐+平坐(无栏杆)"
+msgstr "4-Multi-Floor + Mid-Eave + Pingzuo (No Railing)"
+
+msgctxt "template"
+msgid "5-重楼+腰檐+平坐(有栏杆)"
+msgstr "5-Multi-Floor + Mid-Eave + Pingzuo (With Railing)"
+
+msgctxt "template"
+msgid "6-重楼+腰檐+回廊"
+msgstr "6-Multi-Floor + Mid-Eave + Loggia"
+
+msgctxt "template"
+msgid "7-下出平坐"
+msgstr "7-Lower Pingzuo"
+
+msgctxt "template"
+msgid "一卷"
+msgstr "Single Gallery"
+
+msgctxt "template"
+msgid "一殿"
+msgstr "Single Hall"
+
+msgctxt "template"
+msgid "一殿一卷垂花门"
+msgstr "Single Hall + Single Gallery Gateway"
+
+msgctxt "template"
+msgid "七间歇山周围廊"
+msgstr "7-Bay Hip-and-Gable with Surrounding Corridor"
+
+msgctxt "template"
+msgid "七间重檐歇山"
+msgstr "7-Bay Double-Eave Hip-and-Gable"
+
+msgctxt "template"
+msgid "七间重檐歇山.上檐"
+msgstr "7-Bay Double-Eave Hip-and-Gable.Upper Eave"
+
+msgctxt "template"
+msgid "七间重檐歇山.下檐"
+msgstr "7-Bay Double-Eave Hip-and-Gable.Lower Eave"
+
+msgctxt "template"
+msgid "三卷勾连搭"
+msgstr "Triple Interconnected Roof"
+
+msgctxt "template"
+msgid "三间庑殿"
+msgstr "3-Bay Hip Roof"
+
+msgctxt "template"
+msgid "三间庑殿.月台"
+msgstr "3-Bay Hip Roof.Terrace"
+
+msgctxt "template"
+msgid "三间庑殿带月台"
+msgstr "3-Bay Hip Roof with Terrace"
+
+msgctxt "template"
+msgid "三间悬山"
+msgstr "3-Bay Overhanging-Gable"
+
+msgctxt "template"
+msgid "上檐"
+msgstr "Upper Eave"
+
+msgctxt "template"
+msgid "下檐"
+msgstr "Lower Eave"
+
+msgctxt "template"
+msgid "东西抱厦"
+msgstr "East-West Annex"
+
+msgctxt "template"
+msgid "主建筑"
+msgstr "Main Building"
+
+msgctxt "template"
+msgid "九间庑殿周围廊"
+msgstr "9-Bay Hip Roof with Surrounding Corridor"
+
+msgctxt "template"
+msgid "五间悬山前出廊"
+msgstr "5-Bay Overhanging-Gable with Front Corridor"
+
+msgctxt "template"
+msgid "五间歇山"
+msgstr "5-Bay Hip-and-Gable"
+
+msgctxt "template"
+msgid "五间歇山前后廊"
+msgstr "5-Bay Hip-and-Gable with Front/Rear Corridor"
+
+msgctxt "template"
+msgid "亭子"
+msgstr "Pavilion"
+
+msgctxt "template"
+msgid "亭子-重檐"
+msgstr "Pavilion-Double Eave"
+
+msgctxt "template"
+msgid "亭子.重檐"
+msgstr "Pavilion.Double Eave"
+
+msgctxt "template"
+msgid "前殿"
+msgstr "Front Hall"
+
+msgctxt "template"
+msgid "勾连搭.中殿"
+msgstr "Interconnected Roof.Middle Hall"
+
+msgctxt "template"
+msgid "勾连搭.前殿"
+msgstr "Interconnected Roof.Front Hall"
+
+msgctxt "template"
+msgid "勾连搭.后殿"
+msgstr "Interconnected Roof.Rear Hall"
+
+msgctxt "template"
+msgid "十字歇山"
+msgstr "Cross Hip-and-Gable"
+
+msgctxt "template"
+msgid "十字歇山.X"
+msgstr "Cross Hip-and-Gable.X"
+
+msgctxt "template"
+msgid "十字歇山.Y"
+msgstr "Cross Hip-and-Gable.Y"
+
+msgctxt "template"
+msgid "十字歇山.屋身"
+msgstr "Cross Hip-and-Gable.Main Body"
+
+msgctxt "template"
+msgid "单排柱垂花门"
+msgstr "Single-Row Pillar Chuihua Gateway"
+
+msgctxt "template"
+msgid "南北抱厦"
+msgstr "North-South Annex"
+
+msgctxt "template"
+msgid "后殿"
+msgstr "Rear Hall"
+
+msgctxt "template"
+msgid "四出抱厦"
+msgstr "Four-Side Annex"
+
+msgctxt "template"
+msgid "回廊"
+msgstr "Surrounding Corridor"
+
+msgctxt "template"
+msgid "垂花柱"
+msgstr "Chuihua Pillars"
+
+msgctxt "template"
+msgid "塔"
+msgstr "Tower"
+
+msgctxt "template"
+msgid "塔.平坐"
+msgstr "Tower.Pingzuo"
+
+msgctxt "template"
+msgid "塔.平坐.001"
+msgstr "Tower.Pingzuo.001"
+
+msgctxt "template"
+msgid "塔.平坐.002"
+msgstr "Tower.Pingzuo.002"
+
+msgctxt "template"
+msgid "塔.重楼"
+msgstr "Tower.Upper Floor"
+
+msgctxt "template"
+msgid "塔.重楼.001"
+msgstr "Tower.Upper Floor.001"
+
+msgctxt "template"
+msgid "塔.重楼.002"
+msgstr "Tower.Upper Floor.002"
+
+msgctxt "template"
+msgid "塔.重檐"
+msgstr "Tower.Double Eave"
+
+msgctxt "template"
+msgid "工字顶组合"
+msgstr "I-Shaped Roof Complex"
+
+msgctxt "template"
+msgid "平行式抱厦"
+msgstr "Parallel Annex"
+
+msgctxt "template"
+msgid "廊罩式垂花门"
+msgstr "Corridor-Canopy Chuihua Gateway"
+
+msgctxt "template"
+msgid "柱网"
+msgstr "Pillar Grid"
+
+msgctxt "template"
+msgid "楼阁示例-A"
+msgstr "Pavilion Example-A"
+
+msgctxt "template"
+msgid "楼阁示例-B"
+msgstr "Pavilion Example-B"
+
+msgctxt "template"
+msgid "楼阁示例-C"
+msgstr "Pavilion Example-C"
+
+msgctxt "template"
+msgid "楼阁示例-D"
+msgstr "Pavilion Example-D"
+
+msgctxt "template"
+msgid "楼阁示例-塔"
+msgstr "Pavilion Example-Tower"
+
+msgctxt "template"
+msgid "楼阁示例A"
+msgstr "Pavilion Example A"
+
+msgctxt "template"
+msgid "楼阁示例A.月台"
+msgstr "Pavilion Example A.Terrace"
+
+msgctxt "template"
+msgid "楼阁示例A.重楼"
+msgstr "Pavilion Example A.Upper Floor"
+
+msgctxt "template"
+msgid "楼阁示例B"
+msgstr "Pavilion Example B"
+
+msgctxt "template"
+msgid "楼阁示例B.平坐"
+msgstr "Pavilion Example B.Pingzuo"
+
+msgctxt "template"
+msgid "楼阁示例B.重楼"
+msgstr "Pavilion Example B.Upper Floor"
+
+msgctxt "template"
+msgid "楼阁示例B.重檐"
+msgstr "Pavilion Example B.Double Eave"
+
+msgctxt "template"
+msgid "楼阁示例C"
+msgstr "Pavilion Example C"
+
+msgctxt "template"
+msgid "楼阁示例C.平坐"
+msgstr "Pavilion Example C.Pingzuo"
+
+msgctxt "template"
+msgid "楼阁示例C.重楼"
+msgstr "Pavilion Example C.Upper Floor"
+
+msgctxt "template"
+msgid "楼阁示例C.重檐"
+msgstr "Pavilion Example C.Double Eave"
+
+msgctxt "template"
+msgid "楼阁示例D"
+msgstr "Pavilion Example D"
+
+msgctxt "template"
+msgid "楼阁示例D.平坐"
+msgstr "Pavilion Example D.Pingzuo"
+
+msgctxt "template"
+msgid "楼阁示例D.重楼"
+msgstr "Pavilion Example D.Upper Floor"
+
+msgctxt "template"
+msgid "楼阁示例D.重楼.001"
+msgstr "Pavilion Example D.Upper Floor.001"
+
+msgctxt "template"
+msgid "楼阁示例D.重檐"
+msgstr "Pavilion Example D.Double Eave"
+
+msgctxt "template"
+msgid "歇山仿宋四铺作"
+msgstr "Hip-and-Gable (Song Style Four-Puzuo)"
+
+msgctxt "template"
+msgid "歇山抱厦"
+msgstr "Hip-and-Gable Annex"
+
+msgctxt "template"
+msgid "硬山卷棚"
+msgstr "Flush-Gable with Curved Roof"
+
+msgctxt "template"
+msgid "硬山建筑"
+msgstr "Flush-Gable Building"
+
+msgctxt "template"
+msgid "空柱网"
+msgstr "Empty Pillar Grid"
+
+msgctxt "template"
+msgid "穿廊"
+msgstr "Connecting Corridor"
+
+msgctxt "template"
+msgid "院墙.单面"
+msgstr "Yard Wall.Single-Sided"
+
+msgctxt "template"
+msgid "院墙.四面环绕"
+msgstr "Yard Wall.Four-Sided Enclosure"

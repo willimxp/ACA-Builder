@@ -242,15 +242,16 @@ def _(msg_id, context=None):
 load_translations()
 
 # 260310 多语言设置
+# 被panel.ACA_OT_Preferences使用
 class I18nPrefsMixin:
     # 多语言设置
     language: bpy.props.EnumProperty(
-        name=_("语言 / Language"),
-        description=_("选择显示语言 / Select display language"),
+        name="语言 / Language",
+        description="选择显示语言 / Select display language",
         items=[
-            ('FOLLOW', _('跟随系统 (Follow System)'), _('跟随Blender系统语言设置')),
-            ('zh_HANS', _('简体中文 (Simplified Chinese)'), _('简体中文')),
-            ('en_US', 'English (English)', 'English'),
+            ('FOLLOW', '跟随系统 (Follow System)', 'Follow Blender system language setting'),
+            ('zh_HANS', '简体中文 (Simplified Chinese)', '简体中文'),
+            ('en_US', 'English', 'English'),
         ],
         default=const.ACA_Consts.DEFAULT_LANGUAGE,
         update=update_language,
@@ -259,6 +260,6 @@ class I18nPrefsMixin:
     def draw_i18n_prefs(self, layout):
         # 260226 多语言设置
         box = layout.box()
-        box.label(text=_("语言设置 / Language:"), icon='WORLD')
+        box.label(text="语言设置 / Language:", icon='WORLD')
         row = box.row()
         row.prop(self, 'language')

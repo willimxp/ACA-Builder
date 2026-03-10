@@ -481,21 +481,21 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             min = 0, 
             precision=3,
             update=dc.update_building,
-            description=_("需综合考虑步架进行设计"),
+            description=_("明间深度，需综合考虑步架进行设计"),
         )# type: ignore
     y_2 : bpy.props.FloatProperty(
             name = _("次间深度"),
             min = 0, 
             precision=3,
             update=dc.update_building,
-            description=_("需综合考虑步架进行设计"),
+            description=_("次间深度，需综合考虑步架进行设计"),
         )# type: ignore
     y_3 : bpy.props.FloatProperty(
             name = _("梢间深度"),
             min = 0, 
             precision=3,
             update=dc.update_building,
-            description=_("需综合考虑步架进行设计"),
+            description=_("梢间深度，需综合考虑步架进行设计"),
         )# type: ignore
     
     # 柱子属性

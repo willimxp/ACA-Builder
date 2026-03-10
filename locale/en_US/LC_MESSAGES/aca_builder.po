@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ACA Builder\n"
-"POT-Creation-Date: 2026-03-09 10:34+0800\n"
-"PO-Revision-Date: 2026-03-09 11:20+0800\n"
+"POT-Creation-Date: 2026-03-10 12:51+0800\n"
+"PO-Revision-Date: 2026-03-10 13:46+0800\n"
 "Last-Translator: Auto Generated <noreply@example.com>\n"
 "Language-Team: English <en@li.org>\n"
 "Language: en_US\n"
@@ -94,7 +94,7 @@ msgstr "Select Pavilion Style"
 msgid "楼阁设置"
 msgstr "Pavilion Settings"
 
-#: data.py:186 panel.py:617
+#: data.py:186 panel.py:668
 msgid "踏跺宽度"
 msgstr "Step Width"
 
@@ -142,7 +142,7 @@ msgstr "Top Window Height"
 msgid "横披窗（棂心）的高度，输入0则不做横披窗"
 msgstr "Height of Top Window (0 for None)"
 
-#: data.py:256 panel.py:1051
+#: data.py:256 panel.py:1102
 msgid "板门数量"
 msgstr "Door Number"
 
@@ -158,7 +158,7 @@ msgstr "Door Nail Number"
 msgid "门钉的路数，最大9路，取0时不做门钉"
 msgstr "Number of Door Nails (0~9)"
 
-#: data.py:272 panel.py:1037
+#: data.py:272 panel.py:1088
 msgid "隔扇数量"
 msgstr "Geshan Number"
 
@@ -166,7 +166,7 @@ msgstr "Geshan Number"
 msgid "一般做4扇隔扇"
 msgstr "Number of Geshan (2~6)"
 
-#: data.py:278 panel.py:1041
+#: data.py:278 panel.py:1092
 msgid "抹头数量"
 msgstr "Motou Number"
 
@@ -343,17 +343,25 @@ msgstr "Bays along the depth, Even Number Allowed"
 msgid "明间深度"
 msgstr "Bay Depth 1"
 
-#: data.py:484 data.py:491 data.py:498
-msgid "需综合考虑步架进行设计"
-msgstr "End bay width along the depth"
+#: data.py:484
+msgid "明间深度，需综合考虑步架进行设计"
+msgstr "Center bay width along the depth"
 
 #: data.py:487
 msgid "次间深度"
 msgstr "Bay Depth 2"
 
+#: data.py:491
+msgid "次间深度，需综合考虑步架进行设计"
+msgstr "Secondary bay width along the depth"
+
 #: data.py:494
 msgid "梢间深度"
 msgstr "Bay Depth 3"
+
+#: data.py:498
+msgid "梢间深度，需综合考虑步架进行设计"
+msgstr "End bay width along the depth"
 
 #: data.py:503
 msgid "保存的柱网列表"
@@ -382,7 +390,8 @@ msgstr "Double Efang"
 
 #: data.py:526
 msgid "同时使用大额枋、由额垫板、小额枋的三件套连接两根柱"
-msgstr "Use Big/Small Efang"
+msgstr ""
+"If use small e’fang,  big e’fang and small e’fang will be employed together"
 
 #: data.py:529
 msgid "插柱深度"
@@ -422,7 +431,7 @@ msgstr "Switch Paint Style"
 
 #: data.py:558
 msgid "清-和玺彩画"
-msgstr "Qing Imperial Painting"
+msgstr "Qing Colored Painting"
 
 #: data.py:559
 msgid "酱油色"
@@ -434,7 +443,7 @@ msgstr "White Model"
 
 #: data.py:561
 msgid "红漆无彩画"
-msgstr "Red Paint (No Painting)"
+msgstr "Simple Red Paint"
 
 #: data.py:568
 msgid "使用平坐栏杆"
@@ -460,7 +469,7 @@ msgstr "Use Pingbanfang"
 msgid "在柱头和斗栱之间的一层垫板，明清式建筑一般都会使用"
 msgstr "Board between Pillar and Dougong"
 
-#: data.py:587 panel.py:1188
+#: data.py:587 panel.py:1239
 msgid "斗栱类型"
 msgstr "Dougong Style"
 
@@ -490,9 +499,10 @@ msgstr "Doukou Scale"
 
 #: data.py:613
 msgid "为了模仿唐宋建筑风格，可以放大斗栱"
-msgstr "Scale of Dougong Gap"
+msgstr ""
+"Scale of Dougong size. To imitate the style of the Tang and Song dynasties."
 
-#: data.py:621 panel.py:1207
+#: data.py:621 panel.py:1258
 msgid "斗栱间距"
 msgstr "Dougong Gap"
 
@@ -530,7 +540,7 @@ msgstr "Flush-Gable Roof"
 
 #: data.py:644
 msgid "盝顶"
-msgstr "Pyramidal Roof"
+msgstr "Truncated-Hip Roof"
 
 #: data.py:645
 msgid "悬山卷棚顶"
@@ -568,7 +578,7 @@ msgstr "Use Hallway"
 msgid "在前后廊和周围廊做法时，升高金柱到下金桁高度"
 msgstr "Raise Gold Pillar for Hallway"
 
-#: data.py:667 panel.py:1282
+#: data.py:667 panel.py:1333
 msgid "步架数量"
 msgstr "Rafter Count"
 
@@ -576,7 +586,7 @@ msgstr "Rafter Count"
 msgid "以通进深除以22斗口来估算，过大过小会有很多潜在问题"
 msgstr "Number of Rafters (2~9)"
 
-#: data.py:675 panel.py:1408
+#: data.py:675 panel.py:1459
 msgid "使用飞椽"
 msgstr "Use Fly Rafter"
 
@@ -610,11 +620,11 @@ msgstr "Chong (Usually 3)"
 
 #: data.py:700
 msgid "使用撇"
-msgstr "Use Pie"
+msgstr "Use Bevel Treatment"
 
 #: data.py:703
 msgid "翼角翘飞椽可以选择是否做官式的撇向做法，起翘夸张的非官式做法建议关闭"
-msgstr "Use Pie for Eave"
+msgstr "Use Bevel Treatment for Fly Rafter"
 
 #: data.py:706
 msgid "生起(椽径倍数)"
@@ -622,11 +632,11 @@ msgstr "Shengqi (Rafter Diameter)"
 
 #: data.py:711
 msgid "梁头位置"
-msgstr "Liangtou Position"
+msgstr "Angle Beam End Position"
 
 #: data.py:717
 msgid "老梁头压挑檐桁的尺度，建议在0.5左右，可根据起翘形态适当调整"
-msgstr "Position of Liangtou (0.0~1.0)"
+msgstr "Position of Angle Beam End (0.0~1.0)"
 
 #: data.py:720
 msgid "推山系数"
@@ -646,7 +656,7 @@ msgid ""
 "架"
 msgstr "Size of Shoushan (0~2)"
 
-#: data.py:738 panel.py:1314
+#: data.py:738 panel.py:1365
 msgid "盝顶檐步架宽"
 msgstr "Luding Eave Span"
 
@@ -756,7 +766,7 @@ msgstr "Tile Length"
 
 #: data.py:824
 msgid "跑兽数量"
-msgstr "Paoshou Count"
+msgstr "Ridge-Animal Count"
 
 #: data.py:829
 msgid "包括骑鸡仙人的数量"
@@ -786,7 +796,7 @@ msgstr "Yard Depth"
 msgid "仅在四面合围墙体时设置"
 msgstr "Depth of Yard (4 Sides Only)"
 
-#: data.py:855 panel.py:1579
+#: data.py:855 panel.py:1630
 msgid "院墙高度"
 msgstr "Yard Wall Height"
 
@@ -794,7 +804,7 @@ msgstr "Yard Wall Height"
 msgid "院墙高度，不含帽瓦"
 msgstr "Height of Wall (No Cap)"
 
-#: data.py:863 panel.py:1584
+#: data.py:863 panel.py:1635
 msgid "院墙厚度"
 msgstr "Yard Wall Depth"
 
@@ -1134,489 +1144,549 @@ msgstr "Railing Vase"
 msgid "悬鱼"
 msgstr "Suspended Fish"
 
-#: operators.py:24
+#: operators.py:23
 msgid "聚焦建筑根节点"
 msgstr "Focus Building Root"
 
-#: operators.py:54
+#: operators.py:53
 msgid "根据选择的样式，自动生成建筑的各个构件"
 msgstr "Generate building components based on selected style"
 
-#: operators.py:86
+#: operators.py:85
 msgid "根据参数的修改，重新生成建筑"
 msgstr "Regenerate building based on parameters"
 
-#: operators.py:131
+#: operators.py:130
 msgid "删除当前建筑"
 msgstr "Delete current building"
 
-#: operators.py:152
+#: operators.py:151
 msgid "重新生成被减柱的柱子，但也会丢失所有的额枋、隔扇、槛墙等"
 msgstr "Regenerate pillars, will lose all beams, walls, windows, etc."
 
-#: operators.py:215
+#: operators.py:214
 msgid "设置垂花柱（先选择1根以上的柱子）"
 msgstr "Set Hanging Pillar (Select 1+ pillars first)"
 
-#: operators.py:236
+#: operators.py:235
 msgid "删除柱子（先选择1根以上的柱子）"
 msgstr "Delete pillars (Select 1+ pillars first)"
 
-#: operators.py:279
+#: operators.py:278
 msgid "在柱间添加踏跺（先选择2根以上的柱子）"
 msgstr "Add step between pillars (Select 2+ pillars first)"
 
-#: operators.py:311
+#: operators.py:310
 msgid "在柱间删除踏跺（先选择1个以上的踏跺）"
 msgstr "Delete steps (Select 1+ steps first)"
 
-#: operators.py:348
+#: operators.py:347
 msgid "批量生成各个墙体"
 msgstr "Batch generate all walls"
 
-#: operators.py:369
+#: operators.py:368
 msgid "在柱间加墙（先选择2根以上的柱子）"
-msgstr "Add wall between pillars (Select 2+ pillars first)"
+msgstr "Add solid wall between pillars (Select 2+ pillars first)"
 
-#: operators.py:391
+#: operators.py:390
 msgid "在柱间加隔扇（先选择2根以上的柱子）"
-msgstr "Add door between pillars (Select 2+ pillars first)"
+msgstr "Add lattice door between pillars (Select 2+ pillars first)"
 
-#: operators.py:413
+#: operators.py:412
 msgid "在柱间加槛窗（先选择2根以上的柱子）"
-msgstr "Add window between pillars (Select 2+ pillars first)"
+msgstr "Add lattice window between pillars (Select 2+ pillars first)"
 
-#: operators.py:435
+#: operators.py:434
 msgid "删除柱之间的额枋、槛墙、槛窗、隔扇等"
 msgstr "Delete walls, windows, doors between pillars"
 
-#: operators.py:489
+#: operators.py:488
 msgid "在柱间加板门（先选择2根以上的柱子）"
-msgstr "Add main door between pillars (Select 2+ pillars first)"
+msgstr "Add plank door between pillars (Select 2+ pillars first)"
 
-#: operators.py:511
+#: operators.py:510
 msgid "在柱间加直棂窗（先选择2根以上的柱子）"
 msgstr "Add bar window between pillars (Select 2+ pillars first)"
 
-#: operators.py:533
+#: operators.py:532
 msgid "在柱间加支摘窗（先选择2根以上的柱子）"
 msgstr "Add flip window between pillars (Select 2+ pillars first)"
 
-#: operators.py:555
+#: operators.py:554
 msgid "在柱间加栏杆（先选择2根以上的柱子）"
-msgstr "Add railing between pillars (Select 2+ pillars first)"
+msgstr "Add hand railing between pillars (Select 2+ pillars first)"
 
-#: operators.py:577
+#: operators.py:576
 msgid "在柱间加坐凳（先选择2根以上的柱子）"
-msgstr "Add bench between pillars (Select 2+ pillars first)"
+msgstr "Add railing bench between pillars (Select 2+ pillars first)"
 
-#: operators.py:601
+#: operators.py:600
 msgid "批量生成所有的斗栱"
 msgstr "Batch generate all dougong"
 
-#: operators.py:623
+#: operators.py:622
 msgid "重新生成屋顶的梁架、椽架、瓦作"
 msgstr "Regenerate roof structure and tiles"
 
-#: operators.py:657
+#: operators.py:656
 msgid "计算斗口推荐值"
 msgstr "Calculate Recommended Doukou"
 
-#: operators.py:659
+#: operators.py:658
 msgid "根据柱高、明间宽度，计算最合适的斗口值"
 msgstr "Calculate best Doukou based on pillar height and room width"
 
-#: operators.py:684
+#: operators.py:683
 msgid "将当前选中的建筑参数保存为样式，以便重复生成"
 msgstr "Save current building parameters as template"
 
-#: operators.py:761
+#: operators.py:760
 msgid "从模板配置文件中删除当前样式"
 msgstr "Delete current style from template file"
 
-#: operators.py:826 operators.py:827
+#: operators.py:825 operators.py:826
 msgid "生成院墙"
 msgstr "Build Yard Wall"
 
-#: operators.py:854
+#: operators.py:853
 msgid "步架推荐值，自动获取尽间开间尺寸"
 msgstr "Recommended value, automatically get end room width"
 
-#: operators.py:962
+#: operators.py:961
 msgid "将所有的建筑构件合并为一个整体，便于做导出等操作"
 msgstr "Join all components into one object"
 
-#: operators.py:998
+#: operators.py:997
 msgid "导出为FBX模型，可用于D5渲染器导入"
 msgstr "Export as FBX, for D5 Render"
 
-#: operators.py:1058
+#: operators.py:1057
 msgid "导出为GLB模型，推荐UE5导入。"
 msgstr "Export as GLB, for UE5"
 
-#: operators.py:1156
-msgid "素材库路径"
-msgstr "Material Library Path"
-
-#: operators.py:1162
-msgid "是否使用倒角"
-msgstr "Use Bevel"
-
-#: operators.py:1163
-msgid "取消后，不再使用倒角，直接生成直角构件"
-msgstr "Disable to generate right-angle components without bevels"
-
-#: operators.py:1169
-msgid "Windows CLI中文乱码矫正"
-msgstr "Windows CLI Encoding Fix"
-
-#: operators.py:1170
-msgid "在Windows系统上自动设置UTF-8编码以解决中文乱码问题（仅Windows有效）"
-msgstr "Auto set UTF-8 encoding on Windows (Windows only)"
-
-#: operators.py:1214 panel.py:77
-msgid "请设置acaAssets.blend文件的路径:"
-msgstr "Please set acaAssets.blend path:"
-
-#: operators.py:1231
-msgid "日志设置:"
-msgstr "Log Settings"
-
-#: operators.py:1252
+#: operators.py:1151
 msgid "关联素材库"
-msgstr ""
+msgstr "Link Assets Library"
 
-#: operators.py:1254
+#: operators.py:1153
 msgid "关联acaAssets.blend素材库"
 msgstr "Link acaAssets.blend material library"
 
-#: operators.py:1318 operators.py:1320
+#: operators.py:1217 operators.py:1219
 msgid "根据模板营造新建筑"
 msgstr "Build new building based on template"
 
-#: operators.py:1408 operators.py:1409
+#: operators.py:1307 operators.py:1308
 msgid "添加剖视图"
 msgstr "Add section view"
 
-#: operators.py:1432 panel.py:645
+#: operators.py:1331 panel.py:696
 msgid "删除月台"
 msgstr "Delete Terrace"
 
-#: operators.py:1434
+#: operators.py:1333
 msgid "删除月台（请先选择月台）"
 msgstr "Delete terrace (Select terrace first)"
 
-#: operators.py:1459 panel.py:634
+#: operators.py:1358 panel.py:685
 msgid "添加月台"
 msgstr "Add Terrace"
 
-#: operators.py:1461
+#: operators.py:1360
 msgid "添加月台（请先选择台基）"
 msgstr "Add terrace (Select platform first)"
 
-#: operators.py:1486 panel.py:299
+#: operators.py:1385 panel.py:350
 msgid "添加楼阁"
 msgstr "Add Pavilion"
 
-#: operators.py:1488
+#: operators.py:1387
 msgid "基于一个单体建筑，向上垒叠一层或多层楼阁"
 msgstr "Stack one or more pavilion floors on top of a single building"
 
-#: operators.py:1624 panel.py:307
+#: operators.py:1523 panel.py:358
 msgid "添加周围廊"
-msgstr ""
+msgstr "Add Loggia"
 
-#: operators.py:1626
+#: operators.py:1525
 msgid "基于当前单体建筑的柱网，快速添加一圈周围廊"
 msgstr "Quickly add a surrounding loggia based on current building pillar net"
 
-#: operators.py:1704 panel.py:319
+#: operators.py:1603 panel.py:370
 msgid "拼接建筑"
 msgstr "Splice Building"
 
-#: operators.py:1706
+#: operators.py:1605
 msgid ""
 "将多个建筑重叠的瓦面、柱网等进行裁剪拼接，请将抱厦做为活动的选择项(最后选择)"
 msgstr ""
 "Clip and splice overlapping tiles/pillars. Select annex last (as active "
 "object)"
 
-#: operators.py:1767 operators.py:1769
+#: operators.py:1666 operators.py:1668
 msgid "回廊延伸"
 msgstr "Loggia extend"
 
-#: operators.py:1799 panel.py:327
+#: operators.py:1698 panel.py:378
 msgid "组合建筑"
 msgstr "Combo Building"
 
-#: operators.py:1801
+#: operators.py:1700
 msgid "将多个单体建筑组合，可以保存在一个模板中，并可以一同更新"
 msgstr "Combine multiple buildings, save in one template and update together"
 
-#: panel.py:35
-msgid "ACA筑韵古建"
-msgstr "ACA Builder"
+#: panel.py:31
+msgid "是否使用倒角"
+msgstr "Use Bevel"
 
-#: panel.py:50
+#: panel.py:32
+msgid "取消后，不再使用倒角，直接生成直角构件"
+msgstr "Disable to generate right-angle components without bevels"
+
+#: panel.py:38
+msgid "Windows CLI中文乱码矫正"
+msgstr "Windows CLI Encoding Fix"
+
+#: panel.py:39
+msgid "在Windows系统上自动设置UTF-8编码以解决中文乱码问题（仅Windows有效）"
+msgstr "Auto set UTF-8 encoding on Windows (Windows only)"
+
+#: panel.py:86
+msgid "ACA筑韵古建"
+msgstr "ACA筑韵古建"
+
+#: panel.py:101
 #, python-format
 msgid "本插件无法运行在V%s.%s.%s"
 msgstr "This addon cannot run on V%s.%s.%s"
 
-#: panel.py:52
+#: panel.py:103
 msgid "请安装Blender V5.0.0以上"
 msgstr "Please install Blender V5.0.0 or later"
 
-#: panel.py:56
+#: panel.py:107
 msgid "下载Blender最新版本"
 msgstr "Download Blender Latest Version"
 
-#: panel.py:75
+#: panel.py:126
 msgid "欢迎使用ACA筑韵古建插件"
 msgstr "Welcome to ACA Builder"
 
-#: panel.py:89
-msgid "从模板生成新建筑"
-msgstr "Build From Template - test888"
+#: panel.py:128 template.py:30
+msgid "请设置acaAssets.blend文件的路径:"
+msgstr "Please set acaAssets.blend path:"
 
-#: panel.py:95
+#: panel.py:140
+msgid "从模板生成新建筑"
+msgstr "Build From Template"
+
+#: panel.py:146
 msgid "生成中：需要20~90秒，请耐心等待。"
 msgstr "Building... Please wait 20~90 seconds."
 
-#: panel.py:118
+#: panel.py:169
 msgid "快速开始："
 msgstr "Quick Start :"
 
-#: panel.py:119
+#: panel.py:170
 msgid "选择一个模板，生成古建筑"
-msgstr "Select a template to generate ancient architecture"
+msgstr "Select a template and Build"
 
-#: panel.py:120
+#: panel.py:171
 msgid "修改参数，定制你的样式"
-msgstr "Modify parameters to customize your style"
+msgstr "Modify parameters to customize"
 
-#: panel.py:163
+#: panel.py:214
 msgid "保存样式"
 msgstr "Save Template"
 
-#: panel.py:168
+#: panel.py:219
 msgid "更新建筑"
 msgstr "Update Building"
 
-#: panel.py:175
+#: panel.py:226
 msgid "删除建筑"
 msgstr "Delete Building"
 
-#: panel.py:180
+#: panel.py:231
 msgid "暂停刷新"
 msgstr "Pause Refresh"
 
-#: panel.py:182
+#: panel.py:233
 msgid "自动刷新"
 msgstr "Auto Refresh"
 
-#: panel.py:213
+#: panel.py:264
 msgid "取消合并"
 msgstr "Unjoin"
 
-#: panel.py:213
+#: panel.py:264
 msgid "合并"
 msgstr "Join"
 
-#: panel.py:252
+#: panel.py:303
 msgid "侧剖"
 msgstr "Side"
 
-#: panel.py:259
+#: panel.py:310
 msgid "正剖"
 msgstr "Front"
 
-#: panel.py:268
+#: panel.py:319
 msgid "透视A"
 msgstr "Sec-A"
 
-#: panel.py:275
+#: panel.py:326
 msgid "透视B"
 msgstr "Sec-B"
 
-#: panel.py:282
+#: panel.py:333
 msgid "透视C"
 msgstr "Sec-C"
 
-#: panel.py:379
+#: panel.py:430
 msgid "回廊"
 msgstr "Loggia"
 
-#: panel.py:499
+#: panel.py:550
 msgid "屋身参数"
-msgstr "Body Props"
+msgstr "Room Props"
 
-#: panel.py:515 panel.py:1092 panel.py:1543
+#: panel.py:566 panel.py:1143 panel.py:1594
 msgid "没有设置项"
 msgstr "No Settings"
 
-#: panel.py:517 panel.py:1094 panel.py:1545
+#: panel.py:568 panel.py:1145 panel.py:1596
 msgid "请先选择一个或多个建筑对象"
 msgstr "Please select one or more building objects"
 
-#: panel.py:562
+#: panel.py:613
 msgid "台基属性"
 msgstr "Platform Properties"
 
-#: panel.py:606
+#: panel.py:657
 msgid "添加踏跺"
 msgstr "Add Step"
 
-#: panel.py:610
+#: panel.py:661
 msgid "删除踏跺"
 msgstr "Delete Step"
 
-#: panel.py:678
+#: panel.py:729
 msgid "柱网属性"
 msgstr "Pillar Properties"
 
-#: panel.py:767
+#: panel.py:818
 msgid "减柱"
 msgstr "Delete Pillar"
 
-#: panel.py:783
+#: panel.py:834
 msgid "垂花柱"
 msgstr "Hanging Piller"
 
-#: panel.py:791
+#: panel.py:842
 msgid "重设"
 msgstr "Reset Floor"
 
-#: panel.py:816
+#: panel.py:867
 msgid "装修属性"
 msgstr "Wall Properties"
 
-#: panel.py:863
+#: panel.py:914
 msgid "使用小额枋"
-msgstr "Use Small Fang"
-
-#: panel.py:876
-msgid "板  门"
-msgstr ""
-
-#: panel.py:880
-msgid "直棂窗"
-msgstr "Add Bar Window"
-
-#: panel.py:889
-msgid "隔扇门"
-msgstr "Add Door"
-
-#: panel.py:893
-msgid "隔扇窗"
-msgstr "Add Door"
-
-#: panel.py:902
-msgid "墙  体"
-msgstr ""
-
-#: panel.py:906
-msgid "支摘窗"
-msgstr "Add Flip Window"
-
-#: panel.py:915
-msgid "栏  杆"
-msgstr ""
-
-#: panel.py:919
-msgid "坐  凳"
-msgstr ""
+msgstr "Use Small E’fang"
 
 #: panel.py:927
+msgid "板  门"
+msgstr "Plank Door"
+
+#: panel.py:931
+msgid "直棂窗"
+msgstr "Bar Window"
+
+#: panel.py:940
+msgid "隔扇门"
+msgstr "Lattice Door"
+
+#: panel.py:944
+msgid "隔扇窗"
+msgstr "Lattice Window"
+
+#: panel.py:953
+msgid "墙  体"
+msgstr "Solid Wall"
+
+#: panel.py:957
+msgid "支摘窗"
+msgstr "Flip Window"
+
+#: panel.py:966
+msgid "栏  杆"
+msgstr "Hand Railing"
+
+#: panel.py:970
+msgid "坐  凳"
+msgstr "Railing Bench"
+
+#: panel.py:978
 msgid "删除"
 msgstr "Delete Wall/Component"
 
-#: panel.py:1063
+#: panel.py:1114
 msgid "开口比例"
 msgstr "Railing Gap Ratio"
 
-#: panel.py:1076
+#: panel.py:1127
 msgid "屋顶参数"
 msgstr "Roof Properties"
 
-#: panel.py:1112
+#: panel.py:1163
 msgid "更新屋顶"
-msgstr ""
+msgstr "Update Roof"
 
-#: panel.py:1139
+#: panel.py:1190
 msgid "斗栱属性"
 msgstr "Dougong Properties"
 
-#: panel.py:1192
+#: panel.py:1243
 msgid "斗栱放大"
-msgstr ""
+msgstr "Dougong Scaling"
 
-#: panel.py:1196
+#: panel.py:1247
 msgid "斗栱出跳"
-msgstr ""
+msgstr "Dougong Projection"
 
-#: panel.py:1240
+#: panel.py:1291
 msgid "梁架属性"
 msgstr "Beam Properties"
 
-#: panel.py:1293
+#: panel.py:1344
 msgid "廊间举架做法"
-msgstr ""
+msgstr "Raising method for corridor roof"
 
-#: panel.py:1303
+#: panel.py:1354
 msgid "庑殿推山系数"
 msgstr "Tuishan Factor"
 
-#: panel.py:1307
+#: panel.py:1358
 msgid "歇山收山尺寸"
 msgstr "Shoushan Size"
 
-#: panel.py:1360
+#: panel.py:1411
 msgid "椽架属性"
 msgstr "Rafter Properties"
 
-#: panel.py:1386
+#: panel.py:1437
 msgid "出冲(椽径)"
 msgstr "Chong (Rafter Diameter)"
 
-#: panel.py:1390
+#: panel.py:1441
 msgid "起翘(椽径)"
 msgstr "Qiqiao (Rafter Diameter)"
 
-#: panel.py:1394
+#: panel.py:1445
 msgid "梁头系数"
-msgstr ""
+msgstr "Angle Beam End Ratio"
 
-#: panel.py:1448
+#: panel.py:1499
 msgid "撇向处理"
-msgstr ""
+msgstr "Bevel Treatment"
 
-#: panel.py:1474
+#: panel.py:1525
 msgid "瓦作属性"
 msgstr "Tile Properties"
 
-#: panel.py:1518
+#: panel.py:1569
 msgid "院墙参数"
 msgstr "Yard Wall Properties"
 
-#: panel.py:1563
+#: panel.py:1614
 msgid "四面环绕"
-msgstr "Yard Wall.Four-Sided Enclosure"
+msgstr "Four-Sided Enclosure"
 
-#: panel.py:1568
+#: panel.py:1619
 msgid "院墙进深"
-msgstr ""
+msgstr "Depth of Courtyard"
 
-#: panel.py:1574
+#: panel.py:1625
 msgid "院墙面阔"
-msgstr ""
+msgstr "Width of Courtyard"
 
-#: panel.py:1589
+#: panel.py:1640
 msgid "帽瓦斜率"
-msgstr "Yard Wall Angle"
+msgstr "Wall Tile Angle"
 
-#: panel.py:1597
+#: panel.py:1648
 msgid "重新生成院墙"
-msgstr "Build Yard Wall"
+msgstr "Update Yard Wall"
+
+#: template.py:20
+msgid "素材库路径"
+msgstr "Material Library Path"
+
+#: tools/aca_logging.py:215
+msgid "日志级别"
+msgstr "Log Level"
+
+#: tools/aca_logging.py:216
+msgid "设置日志记录的详细程度，DEBUG级别会记录更多信息但可能影响性能"
+msgstr "Set log verbosity"
+
+#: tools/aca_logging.py:218
+msgid "调试 (Debug)"
+msgstr "Debug"
+
+#: tools/aca_logging.py:218
+msgid "详细的调试信息"
+msgstr "Detailed debug info"
+
+#: tools/aca_logging.py:219
+msgid "信息 (Info)"
+msgstr "Info"
+
+#: tools/aca_logging.py:219
+msgid "一般信息"
+msgstr "General info"
+
+#: tools/aca_logging.py:220
+msgid "警告 (Warning)"
+msgstr "Warning"
+
+#: tools/aca_logging.py:220
+msgid "警告信息"
+msgstr "Warning info"
+
+#: tools/aca_logging.py:221
+msgid "错误 (Error)"
+msgstr "Error"
+
+#: tools/aca_logging.py:221
+msgid "错误信息"
+msgstr "Error info"
+
+#: tools/aca_logging.py:228
+msgid "启用日志轮转"
+msgstr "Enable Log Rotation"
+
+#: tools/aca_logging.py:229
+msgid "自动归档旧日志文件，防止日志文件过大"
+msgstr "Archive old logs to prevent large files"
+
+#: tools/aca_logging.py:235
+msgid "日志设置:"
+msgstr "Log Settings"
+
+#, fuzzy
+#~| msgctxt "*"
+#~| msgid "语言设置 / Language:"
+#~ msgid "语言 / Language"
+#~ msgstr "Language Settings"
+
+#, fuzzy
+#~| msgctxt "*"
+#~| msgid "语言设置 / Language:"
+#~ msgid "语言设置 / Language:"
+#~ msgstr "Language Settings"
 
 #~ msgctxt "*"
 #~ msgid "%s-建筑已删除！"
@@ -1655,10 +1725,6 @@ msgstr "Build Yard Wall"
 #~ msgstr "[%s] Template saved successfully"
 
 #~ msgctxt "*"
-#~ msgid "一般信息"
-#~ msgstr "General info"
-
-#~ msgctxt "*"
 #~ msgid "从模板样式新建完成！|建筑样式：【%s】 |运行时间：【%.1f秒】"
 #~ msgstr "Build from template finished!|Style: [%s] |Time: [%.1f s]"
 
@@ -1669,10 +1735,6 @@ msgstr "Build Yard Wall"
 #~ msgctxt "*"
 #~ msgid "保存样式修改"
 #~ msgstr "Save Template Style"
-
-#~ msgctxt "*"
-#~ msgid "信息 (Info)"
-#~ msgstr "Info"
 
 #~ msgctxt "*"
 #~ msgid "减柱做为配置参数可以保存在模板样式中"
@@ -1697,10 +1759,6 @@ msgstr "Build Yard Wall"
 #~ msgctxt "*"
 #~ msgid "合并整体"
 #~ msgstr "Join Building"
-
-#~ msgctxt "*"
-#~ msgid "启用日志轮转"
-#~ msgstr "Enable Log Rotation"
 
 #~ msgctxt "*"
 #~ msgid "坐凳"
@@ -1823,10 +1881,6 @@ msgstr "Build Yard Wall"
 #~ msgstr "None"
 
 #~ msgctxt "*"
-#~ msgid "日志级别"
-#~ msgstr "Log Level"
-
-#~ msgctxt "*"
 #~ msgid "是否分层合并"
 #~ msgstr "Use Layer Join"
 
@@ -1888,32 +1942,8 @@ msgstr "Build Yard Wall"
 #~ msgstr "Confirm delete [%s]?"
 
 #~ msgctxt "*"
-#~ msgid "自动归档旧日志文件，防止日志文件过大"
-#~ msgstr "Archive old logs to prevent large files"
-
-#~ msgctxt "*"
 #~ msgid "行龙"
 #~ msgstr "Running Dragon"
-
-#~ msgctxt "*"
-#~ msgid "警告 (Warning)"
-#~ msgstr "Warning"
-
-#~ msgctxt "*"
-#~ msgid "警告信息"
-#~ msgstr "Warning info"
-
-#~ msgctxt "*"
-#~ msgid "设置日志记录的详细程度，DEBUG级别会记录更多信息但可能影响性能"
-#~ msgstr "Set log verbosity"
-
-#~ msgctxt "*"
-#~ msgid "详细的调试信息"
-#~ msgstr "Detailed debug info"
-
-#~ msgctxt "*"
-#~ msgid "语言设置 / Language:"
-#~ msgstr "Language Settings"
 
 #~ msgctxt "*"
 #~ msgid "请注意，柱网数据将重新生成。"
@@ -1932,20 +1962,8 @@ msgstr "Build Yard Wall"
 #~ msgstr "Please select steps to delete"
 
 #~ msgctxt "*"
-#~ msgid "调试 (Debug)"
-#~ msgstr "Debug"
-
-#~ msgctxt "*"
 #~ msgid "重新生成屋顶完成！|建筑样式：【%s】 |运行时间：【%.1f秒】"
 #~ msgstr "Roof regenerated!|Style: [%s] |Time: [%.1f s]"
-
-#~ msgctxt "*"
-#~ msgid "错误 (Error)"
-#~ msgstr "Error"
-
-#~ msgctxt "*"
-#~ msgid "错误信息"
-#~ msgstr "Error info"
 
 #~ msgctxt "*"
 #~ msgid "面阔间数不能为偶数"

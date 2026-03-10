@@ -13,7 +13,6 @@ from . import buildWall
 from . import buildFloor
 from . import buildDougong
 from .const import ACA_Consts as con
-from .locale import i18n
 from .locale.i18n import _
 
 # 根据当前选中的对象，聚焦建筑根节点
@@ -1145,106 +1144,6 @@ class ACA_OT_test(bpy.types.Operator):
         utils.addCube('testing')
 
         return {'FINISHED'}
-
-# 插件设置
-class ACA_OT_Preferences(bpy.types.AddonPreferences):
-    # This must match the add-on name, use `__package__`
-    # when defining this for add-on extensions or a sub-module of a python package.
-    bl_idname = __name__.split('.')[0]
-
-    filepath: bpy.props.StringProperty(
-        name=_("素材库路径"),
-        subtype='FILE_PATH',
-    )# type: ignore
-
-    use_bevel : bpy.props.BoolProperty(
-            default = True,
-            name = _("是否使用倒角"),
-            description = _("取消后，不再使用倒角，直接生成直角构件"),
-        ) # type: ignore
-
-    # 260210 Windows CLI中文乱码矫正选项
-    fix_windows_cli_encoding : bpy.props.BoolProperty(
-            default = True,
-            name = _("Windows CLI中文乱码矫正"),
-            description = _("在Windows系统上自动设置UTF-8编码以解决中文乱码问题（仅Windows有效）"),
-        ) # type: ignore
-    
-    # 260210 日志配置选项
-    log_level: bpy.props.EnumProperty(
-        name="日志级别",
-        description="设置日志记录的详细程度，DEBUG级别会记录更多信息但可能影响性能",
-        items=[
-            ('DEBUG', '调试 (Debug)', '详细的调试信息'),
-            ('INFO', '信息 (Info)', '一般信息'),
-            ('WARNING', '警告 (Warning)', '警告信息'),
-            ('ERROR', '错误 (Error)', '错误信息'),
-        ],
-        default='INFO',
-    ) # type: ignore
-    
-    use_log_rotation: bpy.props.BoolProperty(
-        default=True,
-        name="启用日志轮转",
-        description="自动归档旧日志文件，防止日志文件过大",
-    ) # type: ignore
-
-    # 多语言设置
-    language: bpy.props.EnumProperty(
-        name="语言 / Language",
-        description="选择显示语言 / Select display language",
-        items=[
-            ('FOLLOW', '跟随系统 (Follow System)', '跟随Blender系统语言设置'),
-            ('zh_HANS', '简体中文 (Simplified Chinese)', '简体中文'),
-            ('en_US', 'English (English)', 'English'),
-        ],
-        default = con.DEFAULT_LANGUAGE,
-        update = i18n.update_language,
-    ) # type: ignore
-
-    def draw(self, context):
-        import platform
-        layout = self.layout
-
-        # 关联素材库
-        box = layout.box()
-        row = box.row()
-        filepath = self.filepath
-        if filepath == '':
-            row.label(text=_("请设置acaAssets.blend文件的路径:"),icon='LINKED')
-        else:
-            row.label(text=self.filepath,icon='LINKED')
-        row = box.row()
-        row.operator(
-            "aca.link_assets")
-        
-        # 260226 多语言设置
-        layout.separator()
-        box = layout.box()
-        box.label(text="语言设置 / Language:", icon='WORLD')
-        row = box.row()
-        row.prop(self, 'language')
-        
-        # 260210 日志配置选项
-        layout.separator()
-        box = layout.box()
-        box.label(text=_("日志设置:"), icon='TEXT')
-        row = box.row()
-        row.prop(self, 'log_level')
-        row = box.row()
-        row.prop(self, 'use_log_rotation')
-
-        # 使用倒角
-        row = layout.row()
-        row.prop(self,'use_bevel')
-        
-        # 260210 Windows CLI中文乱码矫正选项：仅在Windows系统上可用
-        row = layout.row()
-        is_windows = platform.system() == "Windows"
-        if not is_windows:
-            row.enabled = False
-            self.fix_windows_cli_encoding = False
-        row.prop(self,'fix_windows_cli_encoding')
 
 # 关联素材库
 class ACA_OT_LINK_ASSETS(bpy.types.Operator):

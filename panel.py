@@ -5,12 +5,63 @@
 
 import bpy
 import math
+import platform
 from . import data
 from .data import ACA_data_obj as acaData
 from .const import ACA_Consts as con
 from . import utils
 from . import build
 from .locale.i18n import _
+from .locale.i18n import I18nPrefsMixin
+from .tools.aca_logging import LoggerPrefsMixin
+from .template import AssetPrefsMixin
+
+# 插件偏好设置，其中的日志、多语言、素材库配置解耦到各自的Mixin类中
+class ACA_OT_Preferences(
+    bpy.types.AddonPreferences,
+    LoggerPrefsMixin,
+    I18nPrefsMixin,
+    AssetPrefsMixin,
+):
+    bl_idname = __name__.split('.')[0]
+
+    # 是否使用倒角
+    use_bevel: bpy.props.BoolProperty(
+        default=True,
+        name=_("是否使用倒角"),
+        description=_("取消后，不再使用倒角，直接生成直角构件"),
+    ) # type: ignore
+
+    # 260210 Windows CLI中文乱码矫正选项
+    fix_windows_cli_encoding: bpy.props.BoolProperty(
+        default=True,
+        name=_("Windows CLI中文乱码矫正"),
+        description=_("在Windows系统上自动设置UTF-8编码以解决中文乱码问题（仅Windows有效）"),
+    ) # type: ignore
+
+    def draw(self, context):
+        layout = self.layout
+
+        # 260310 素材库设置
+        self.draw_asset_prefs(layout)
+
+        # 260226 多语言设置
+        self.draw_i18n_prefs(layout)
+
+        # 260210 日志配置选项
+        self.draw_logger_prefs(layout)
+
+        # 使用倒角
+        row = layout.row()
+        row.prop(self, 'use_bevel')
+
+        # 260210 Windows CLI中文乱码矫正选项：仅在Windows系统上可用
+        row = layout.row()
+        is_windows = platform.system() == "Windows"
+        if not is_windows:
+            row.enabled = False
+            self.fix_windows_cli_encoding = False
+        row.prop(self, 'fix_windows_cli_encoding')
 
 # 营造向导面板
 class ACA_PT_basic(bpy.types.Panel):

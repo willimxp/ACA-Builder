@@ -11,8 +11,27 @@ from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
 from . import utils
 import bpy.utils.previews
-from .locale import i18n
 from .locale.i18n import _
+
+
+class AssetPrefsMixin:
+    # 素材库路径
+    filepath: bpy.props.StringProperty(
+        name=_("素材库路径"),
+        subtype='FILE_PATH',
+    ) # type: ignore
+
+    def draw_asset_prefs(self, layout):
+        # 关联素材库
+        box = layout.box()
+        row = box.row()
+        filepath = self.filepath
+        if filepath == '':
+            row.label(text=_("请设置acaAssets.blend文件的路径:"), icon='LINKED')
+        else:
+            row.label(text=self.filepath, icon='LINKED')
+        row = box.row()
+        row.operator("aca.link_assets")
 
 
 xmlFileName = 'template.xml'

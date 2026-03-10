@@ -9,7 +9,6 @@ from . import panel
 from . import operators
 from . import data
 from . import utils
-from . import const
 from .locale import i18n
 from .locale.i18n import _
 from .tools import auto_register
@@ -29,103 +28,6 @@ bl_info = {
     "category" : "Add Mesh"
 }
 
-# 插件设置 - 单独注册以避免语言切换时重载导致的问题
-class ACA_OT_Preferences(bpy.types.AddonPreferences):
-    bl_idname = __name__.split('.')[0]
-
-    filepath: bpy.props.StringProperty(
-        name=_("素材库路径"),
-        subtype='FILE_PATH',
-    ) # type: ignore
-
-    use_bevel : bpy.props.BoolProperty(
-            default = True,
-            name = _("是否使用倒角"),
-            description = _("取消后，不再使用倒角，直接生成直角构件"),
-        ) # type: ignore
-
-    # 260210 Windows CLI中文乱码矫正选项
-    fix_windows_cli_encoding : bpy.props.BoolProperty(
-            default = True,
-            name = _("Windows CLI中文乱码矫正"),
-            description = _("在Windows系统上自动设置UTF-8编码以解决中文乱码问题（仅Windows有效）"),
-        ) # type: ignore
-    
-    # 260210 日志配置选项
-    log_level: bpy.props.EnumProperty(
-        name=_("日志级别"),
-        description=_("设置日志记录的详细程度，DEBUG级别会记录更多信息但可能影响性能"),
-        items=[
-            ('DEBUG', _('调试 (Debug)'), _('详细的调试信息')),
-            ('INFO', _('信息 (Info)'), _('一般信息')),
-            ('WARNING', _('警告 (Warning)'), _('警告信息')),
-            ('ERROR', _('错误 (Error)'), _('错误信息')),
-        ],
-        default='INFO',
-    ) # type: ignore
-    
-    use_log_rotation: bpy.props.BoolProperty(
-        default=True,
-        name=_("启用日志轮转"),
-        description=_("自动归档旧日志文件，防止日志文件过大"),
-    ) # type: ignore
-
-    # 多语言设置
-    language: bpy.props.EnumProperty(
-        name=_("语言 / Language"),
-        description=_("选择显示语言 / Select display language"),
-        items=[
-            ('FOLLOW', _('跟随系统 (Follow System)'), _('跟随Blender系统语言设置')),
-            ('zh_HANS', _('简体中文 (Simplified Chinese)'), _('简体中文')),
-            ('en_US', 'English (English)', 'English'),
-        ],
-        default = const.ACA_Consts.DEFAULT_LANGUAGE,
-        update = i18n.update_language,
-    ) # type: ignore
-
-    def draw(self, context):
-        layout = self.layout
-
-        # 关联素材库
-        box = layout.box()
-        row = box.row()
-        filepath = self.filepath
-        if filepath == '':
-            row.label(text=_("请设置acaAssets.blend文件的路径:"),icon='LINKED')
-        else:
-            row.label(text=self.filepath,icon='LINKED')
-        row = box.row()
-        row.operator(
-            "aca.link_assets")
-        
-        # 260226 多语言设置
-        layout.separator()
-        box = layout.box()
-        box.label(text=_("语言设置 / Language:"), icon='WORLD')
-        row = box.row()
-        row.prop(self, 'language')
-        
-        # 260210 日志配置选项
-        layout.separator()
-        box = layout.box()
-        box.label(text=_("日志设置:"), icon='TEXT')
-        row = box.row()
-        row.prop(self, 'log_level')
-        row = box.row()
-        row.prop(self, 'use_log_rotation')
-
-        # 使用倒角
-        row = layout.row()
-        row.prop(self,'use_bevel')
-        
-        # 260210 Windows CLI中文乱码矫正选项：仅在Windows系统上可用
-        row = layout.row()
-        is_windows = platform.system() == "Windows"
-        if not is_windows:
-            row.enabled = False
-            self.fix_windows_cli_encoding = False
-        row.prop(self,'fix_windows_cli_encoding')
-
 # 自动从模块中发现并注册所有Blender类
 # 这样新增类时无需手动添加到这个列表中
 classes = auto_register.auto_register_classes(data, panel, operators)
@@ -134,10 +36,6 @@ classes = auto_register.auto_register_classes(data, panel, operators)
 # print(auto_register.get_registration_info(classes))
 
 def register():       
-    # ##############################################
-    # 0、注册插件设置（单独注册，避免语言切换时被重载）
-    bpy.utils.register_class(ACA_OT_Preferences)
-
     ##############################################
     # 1、初始化插件
     # 注入类
@@ -206,9 +104,6 @@ def register():
     return
     
 def unregister():
-    # 销毁插件设置（单独注销）
-    bpy.utils.unregister_class(ACA_OT_Preferences)
-
     # 销毁类
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

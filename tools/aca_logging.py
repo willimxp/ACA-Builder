@@ -7,6 +7,7 @@ import logging
 import pathlib
 import bpy
 from logging.handlers import RotatingFileHandler
+from ..locale.i18n import _
 
 # 日志模块常量
 LOGGER_NAME = "ACA"
@@ -206,3 +207,33 @@ def log_system_info(logger: logging.Logger = None) -> None:
     logger.info(f"OS: {platform.system()} {platform.release()}")
     logger.info(f"Blender: {bpy.app.version_string}")
     logger.debug(f"Python: {platform.python_version()}")
+
+# 260310 日志配置选项
+class LoggerPrefsMixin:
+    # 260210 日志配置选项
+    log_level: bpy.props.EnumProperty(
+        name=_("日志级别"),
+        description=_("设置日志记录的详细程度，DEBUG级别会记录更多信息但可能影响性能"),
+        items=[
+            ('DEBUG', _('调试 (Debug)'), _('详细的调试信息')),
+            ('INFO', _('信息 (Info)'), _('一般信息')),
+            ('WARNING', _('警告 (Warning)'), _('警告信息')),
+            ('ERROR', _('错误 (Error)'), _('错误信息')),
+        ],
+        default='INFO',
+    ) # type: ignore
+
+    use_log_rotation: bpy.props.BoolProperty(
+        default=True,
+        name=_("启用日志轮转"),
+        description=_("自动归档旧日志文件，防止日志文件过大"),
+    ) # type: ignore
+
+    def draw_logger_prefs(self, layout):
+        # 260210 日志配置选项
+        box = layout.box()
+        box.label(text=_("日志设置:"), icon='TEXT')
+        row = box.row()
+        row.prop(self, 'log_level')
+        row = box.row()
+        row.prop(self, 'use_log_rotation')

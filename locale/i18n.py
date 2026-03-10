@@ -7,6 +7,7 @@ import bpy
 import os
 import gettext
 from .. import utils
+from .. import const
 
 # 英文翻译器
 # 在load_translations()中初始化
@@ -239,3 +240,25 @@ def _(msg_id, context=None):
 
 # 模块导入时自动加载翻译字典，确保在register之前_()函数可用
 load_translations()
+
+# 260310 多语言设置
+class I18nPrefsMixin:
+    # 多语言设置
+    language: bpy.props.EnumProperty(
+        name=_("语言 / Language"),
+        description=_("选择显示语言 / Select display language"),
+        items=[
+            ('FOLLOW', _('跟随系统 (Follow System)'), _('跟随Blender系统语言设置')),
+            ('zh_HANS', _('简体中文 (Simplified Chinese)'), _('简体中文')),
+            ('en_US', 'English (English)', 'English'),
+        ],
+        default=const.ACA_Consts.DEFAULT_LANGUAGE,
+        update=update_language,
+    ) # type: ignore
+
+    def draw_i18n_prefs(self, layout):
+        # 260226 多语言设置
+        box = layout.box()
+        box.label(text=_("语言设置 / Language:"), icon='WORLD')
+        row = box.row()
+        row.prop(self, 'language')

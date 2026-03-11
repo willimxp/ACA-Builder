@@ -1,10 +1,13 @@
 __pycache__/
 *.pyc
+._*
 
 # 隐藏文件和目录 (macOS/Linux)
 .*
 !/.gitignore
 !/.github/
+!/.trae/
+/.trae/documents/
 
 # macOS 系统文件
 .DS_Store
@@ -36,7 +39,7 @@ template/._栱垫板导出@2x.png
 template/火焰三宝珠@2x.png
 template/._火焰三宝珠@2x.png
 .vscode/settings.json
-._
+
 减面.xlsx
 ~$减面.xlsx
 buildRoof.py.baiduyun.uploading.cfg

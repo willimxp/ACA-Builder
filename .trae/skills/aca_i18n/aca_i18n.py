@@ -314,7 +314,7 @@ class ACAI18nSkill:
     def _extract_chinese_from_string(self, line: str, line_num: int) -> List[Tuple[int, str]]:
         """从普通字符串中提取中文"""
         chinese_texts = []
-        
+
         # 检查该行是否已经被_()包裹
         if '_(' in line:
             # 使用AST或正则检查是否有 _() 包裹的中文文本
@@ -325,34 +325,68 @@ class ACAI18nSkill:
                 chinese_pattern = re.compile(r'[\u4e00-\u9fa5]+')
                 if chinese_pattern.search(content):
                     return []  # 已有_()包裹，不重复处理
+
+        # 检查是否是独立的字符串语句（只有字符串，没有赋值或其他操作）
+        # 例如：'''中文''' 或 _("中文") 这种单独一行的语句应该跳过
+        stripped = line.strip()
+        # 匹配独立的字符串语句：只有字符串和可能的空白
+        standalone_string_pattern = re.compile(r'^(\s*)(\'\'\'[\s\S]*?\'\'\'|"""[\s\S]*?"""|[\'"][^\'"]*?[\'"])\s*$')
+        # 或者匹配 _() 包裹的独立字符串语句
+        standalone_underscore_pattern = re.compile(r'^(\s*)_\(\s*(\'\'\'[\s\S]*?\'\'\'|"""[\s\S]*?"""|[\'"][^\'"]*?[\'"])\s*\)\s*$')
+        
+        if standalone_string_pattern.match(stripped) or standalone_underscore_pattern.match(stripped):
+            return []  # 独立的字符串语句，跳过
         
         # 匹配字符串
         string_pattern = re.compile(r'("""|"|\')(.*?)("""|"|\')')
         matches = string_pattern.finditer(line)
-        
+
         for match in matches:
             content = match.group(2)
             # 提取中文
             chinese_pattern = re.compile(r'[\u4e00-\u9fa5]+')
             if chinese_pattern.search(content):
                 chinese_texts.append((line_num, content))
-        
+
         return chinese_texts
     
     def _wrap_chinese_with_translate(self, line: str, chinese_texts: List[Tuple[int, str]]) -> str:
         """用_()函数包装中文文本"""
         new_line = line
         
-        # 从后往前替换，避免影响位置
-        for _, text in reversed(chinese_texts):
-            # 匹配包含该文本的字符串
-            string_pattern = re.compile(r'(["\'])(.*?' + re.escape(text) + r'.*?)\1')
-            match = string_pattern.search(new_line)
+        # 按位置从后往前替换，避免影响位置
+        # 先收集所有需要替换的位置信息
+        replacements = []
+        
+        for line_num, text in chinese_texts:
+            # 精确匹配单个字符串中的中文
+            # 使用更精确的正则：匹配被引号包裹的完整字符串，且该字符串包含中文
+            # 处理单引号和双引号，以及三引号字符串
+            # 注意：三引号需要使用 [\s\S]*? 来匹配任意字符（包括换行）
+            escaped_text = re.escape(text)
+            patterns = [
+                (r"f?'''([\s\S]*?''')", r"'''"),  # 三单引号
+                (r'f?"""([\s\S]*?""")', r'"""'),  # 三双引号
+                (r"f?'([^']*" + escaped_text + r"[^']*)'", r"'"),  # 单引号
+                (r'f?"([^"]*' + escaped_text + r'[^"]*)"', r'"'),  # 双引号
+            ]
             
-            if match:
-                old_str = match.group(0)
-                new_str = f'_({old_str})'
-                new_line = new_line.replace(old_str, new_str)
+            for pattern, quote in patterns:
+                regex = re.compile(pattern)
+                for match in regex.finditer(new_line):
+                    full_match = match.group(0)
+                    # 检查是否已经被_()包裹
+                    if not full_match.startswith('_('):
+                        # 检查匹配的内容是否包含目标文本
+                        captured = match.group(1)
+                        if text in captured:
+                            old_str = match.group(0)
+                            new_str = f'_({old_str})'
+                            replacements.append((old_str, new_str))
+        
+        # 从后往前替换，避免位置偏移
+        for old_str, new_str in reversed(replacements):
+            new_line = new_line.replace(old_str, new_str, 1)
         
         return new_line
     

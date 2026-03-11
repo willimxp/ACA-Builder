@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ACA Builder\n"
 "POT-Creation-Date: 2026-03-10 12:51+0800\n"
-"PO-Revision-Date: 2026-03-11 21:20+0800\n"
+"PO-Revision-Date: 2026-03-11 22:17+0800\n"
 "Last-Translator: Auto Generated <noreply@example.com>\n"
 "Language-Team: English <en@li.org>\n"
 "Language: en_US\n"
@@ -1998,6 +1998,330 @@ msgstr "Jiaobei"
 #: buildBeam.py:1767
 msgid "盖板"
 msgstr "Cover Plate"
+
+#: buildCombo.py:46
+msgid "__addComboLevel失败，已经为组合建筑。"
+msgstr "__addComboLevel failed, already a combo building."
+
+#: buildCombo.py:52
+msgid "建筑组合"
+msgstr "Building Combination"
+
+#: buildCombo.py:75
+msgid "添加组合根节点..."
+msgstr "Adding combo root node..."
+
+#: buildCombo.py:85
+msgid "删除组合建筑失败，不是组合建筑。"
+msgstr "Failed to delete combo building, not a combo building."
+
+#: buildCombo.py:90
+msgid "删除组合建筑失败，不止一个建筑存在。"
+msgstr "Failed to delete combo building, more than one building exists."
+
+#: buildCombo.py:140
+msgid "后处理异常：参数中不是期望的两个id"
+msgstr "Post-processing exception: parameters do not contain expected two ids"
+
+#: buildCombo.py:153
+msgid "后处理异常：无法匹配建筑spliceid"
+msgstr "Post-processing exception: unable to match building spliceid"
+
+#: buildCombo.py:162
+msgid "无法识别的后处理类型"
+msgstr "Unrecognized post-processing type"
+
+#: buildCombo.py:171
+msgid "开始更新......"
+msgstr "Starting update......"
+
+#: buildCombo.py:452
+msgid "已经有一个月台，不能再生成新的月台"
+msgstr "There is already a terrace, cannot generate another one"
+
+#: buildCombo.py:457
+msgid ".月台"
+msgstr ".Terrace"
+
+#: buildCombo.py:467
+msgid "添加月台子建筑..."
+msgstr "Adding terrace ..."
+
+#: buildCombo.py:760
+msgid "只有主体建筑可以做重楼，月台无法做重楼"
+msgstr "Only main building can have double story, terrace cannot"
+
+#: buildCombo.py:769
+msgid "暂时只用庑殿、歇山屋顶样式支持添加重楼"
+msgstr "Currently only Hip Roof and Hip-and-Gable Roof styles support adding double story"
+
+#: buildCombo.py:776
+msgid "当前建筑尚未生成屋顶，请先设置完成屋顶参数"
+msgstr "Current building has not generated roof yet, please set roof parameters first"
+
+#: buildCombo.py:781
+msgid "无法在平座层上做重檐或披檐，请选择其他楼层"
+msgstr "Cannot add double eave on balcony layer, please select another floor"
+
+#: buildCombo.py:795
+msgid "收分验证失败：斗栱出跳与重檐收分合计至少应3斗口，请更换斗栱，或增加收分"
+msgstr "Verification failed: Dougong extension and Pavilion Taper should total at least 3 Doukou, please change Dougong or increase Pavilion Taper"
+
+#: buildCombo.py:805
+msgid "面阔尽间当前[%s],应大于[%s]"
+msgstr "Very End Bay width is currently [%s], should be greater than [%s]"
+
+#: buildCombo.py:807
+msgid "面阔梢间当前[%s],应大于[%s]"
+msgstr "End Bay width is currently [%s], should be greater than [%s]"
+
+#: buildCombo.py:815
+msgid "进深梢间当前[%s],应大于[%s]"
+msgstr "End bay depth is currently [%s], should be greater than [%s]"
+
+#: buildCombo.py:817
+msgid "进深次间当前[%s],应大于[%s]"
+msgstr "Second bay depth is  currently [%s], should be greater than [%s]"
+
+#: buildCombo.py:819
+msgid "进深明间当前[%s],应大于[%s]"
+msgstr "Center bay depth is currently [%s], should be greater than [%s]"
+
+#: buildCombo.py:824
+msgid "收分验证失败：%s（注意：如果下层已经有回廊，建议不要使用方案\"6-重楼+腰檐+回廊\"，可以尝试使用方案\"4-重楼+腰檐+平坐(无栏杆)\"）"
+msgstr "Shrinkage verification failed: %s (Note: If lower floor already has corridor, suggest not using scheme \"6-Double Story+Waist Eave+Corridor\", can try scheme \"4-Double Story+Waist Eave+Balcony(No Railing)\")"
+
+#: buildCombo.py:832
+msgid "添加重楼子建筑..."
+msgstr "Adding double story sub-building..."
+
+#: buildCombo.py:851
+msgid "素平柱础"
+msgstr "Plain Column Base"
+
+#: buildCombo.py:852
+msgid "柱顶石"
+msgstr "Column Top Stone"
+
+#: buildCombo.py:997
+msgid ".平坐"
+msgstr ".Balcony"
+
+#: buildCombo.py:1055
+msgid ".重楼"
+msgstr ".Double Story"
+
+#: buildCombo.py:1057
+msgid ".重檐"
+msgstr ".Double Eave"
+
+#: buildCombo.py:1193
+msgid "重新计算楼阁高度..."
+msgstr "Recalculating pavilion height..."
+
+#: buildCombo.py:1389
+msgid "楼阁收分失败：尽间尺寸请至少加大%s"
+msgstr "Pavilion Taper failed: End bay width should be increased by at least %s"
+
+#: buildCombo.py:1395
+msgid "楼阁收分失败：梢间尺寸当前%s，需大于收分%s"
+msgstr "Pavilion Taper failed: End bay width is currently %s, should be greater than shrinkage %s"
+
+#: buildCombo.py:1401
+msgid "楼阁收分失败：次间尺寸当前%s，需大于收分%s"
+msgstr "Pavilion Taper failed: Second bay width is currently %s, should be greater than shrinkage %s"
+
+#: buildCombo.py:1407
+msgid "楼阁收分失败：明间尺寸当前%s，需大于收分%s"
+msgstr "Pavilion Taper failed: Center bay width is currently %s, should be greater than shrinkage %s"
+
+#: buildCombo.py:1410
+msgid "楼阁收分失败，未知原因"
+msgstr "Pavilion Taper failed, unknown reason"
+
+#: buildCombo.py:1419
+msgid "楼阁收分失败：进深梢间尺寸当前%s，需大于收分%s"
+msgstr "Pavilion Taper failed: End bay depth is currently %s, should be greater than shrinkage %s"
+
+#: buildCombo.py:1425
+msgid "楼阁收分失败：进深次间应至少增加%s"
+msgstr "Pavilion Taper failed: Second bay depth should increase by at least %s"
+
+#: buildCombo.py:1431
+msgid "楼阁收分失败：进深明间尺寸应增加%s"
+msgstr "Pavilion Taper failed: Center bay depth should increase by %s"
+
+#: buildCombo.py:1437
+msgid "楼阁收分失败：进深明间尺寸当前%s，需大于2倍收分%s"
+msgstr "Pavilion Taper failed: Center bay depth is currently %s, should be greater than 2x shrinkage %s"
+
+#: buildCombo.py:1503
+msgid "建筑已在同一个集合中，不再做集成"
+msgstr "Building is already in the same collection, no integration needed"
+
+#: buildDoor.py:53
+msgid "仔边"
+msgstr "Sub-frame"
+
+#: buildDoor.py:158
+msgid "抹头"
+msgstr "Top Rail"
+
+#: buildDoor.py:159
+msgid "绦环"
+msgstr "Decorative Ring"
+
+#: buildDoor.py:160
+msgid "扇心"
+msgstr "Window Lattice"
+
+#: buildDoor.py:269
+msgid "边梃"
+msgstr "Side Stile"
+
+#: buildDoor.py:316
+msgid "门轴"
+msgstr "Door Pivot"
+
+#: buildDoor.py:343
+msgid "构建隔扇时无法判断是否使用槛墙"
+msgstr "Cannot determine whether to use sill-wall when building lattice window"
+
+#: buildDoor.py:353
+msgid "无法找到geshanData:%s"
+msgstr "Cannot find geshangData: %s"
+
+#: buildDoor.py:470
+msgid "风槛"
+msgstr "Wind Sill"
+
+#: buildDoor.py:489
+msgid "榻板"
+msgstr "Platform Board"
+
+#: buildDoor.py:506
+msgid "槛墙"
+msgstr "Sill Wall"
+
+#: buildDoor.py:563
+msgid "无法构建子对象，未知的wallType：%s"
+msgstr "Cannot build sub-object, unknown wallType: %s"
+
+#: buildDoor.py:596
+msgid "无法找到childData:%s"
+msgstr "Cannot find childData: %s"
+
+#: buildDoor.py:701
+msgid "下槛"
+msgstr "Lower Sill"
+
+#: buildDoor.py:720
+msgid "中槛"
+msgstr "Middle Sill"
+
+#: buildDoor.py:745
+msgid "上槛"
+msgstr "Top Sill"
+
+#: buildDoor.py:771
+msgid "门框"
+msgstr "Door Frame"
+
+#: buildDoor.py:807
+msgid "下抱框"
+msgstr "Bottom Holding Frame"
+
+#: buildDoor.py:847
+msgid "上抱框"
+msgstr "Top Holding Frame"
+
+#: buildDoor.py:888
+msgid "余塞板"
+msgstr "Fill Panel"
+
+#: buildDoor.py:925
+msgid "腰枋"
+msgstr "Waist Fang"
+
+#: buildDoor.py:964
+msgid "迎风板"
+msgstr "Windward Panel"
+
+#: buildDoor.py:1005
+msgid "横披间框"
+msgstr "Horizontal Frame"
+
+#: buildDoor.py:1056
+msgid "走马板"
+msgstr "Horse Board"
+
+#: buildDoor.py:1081
+msgid "门枕"
+msgstr "Door Sill Stone "
+
+#: buildDoor.py:1116
+msgid "门楹"
+msgstr "Door Post"
+
+#: buildDoor.py:1145
+msgid "上窗楹"
+msgstr "Upper Window Post"
+
+#: buildDoor.py:1168
+msgid "下窗楹"
+msgstr "Lower Window Post"
+
+#: buildDoor.py:1218
+msgid "间框"
+msgstr "Section Frame"
+
+#: buildDoor.py:1237
+msgid "槛框"
+msgstr "Sill Frame"
+
+#: buildDoor.py:1276
+msgid "无法找到maindoorData:%s"
+msgstr "Cannot find maindoorData: %s"
+
+#: buildDoor.py:1310
+msgid "门扇"
+msgstr "Door Leaf"
+
+#: buildDoor.py:1367
+msgid "门边"
+msgstr "Door Edge"
+
+#: buildDoor.py:1470
+msgid "板门门扇"
+msgstr "Board Door Leaf"
+
+#: buildDoor.py:1553
+msgid "隔扇"
+msgstr "Lattice Window"
+
+#: buildDoor.py:1663
+msgid "直棂条"
+msgstr "Vertical Mullion"
+
+#: buildDougong.py:72
+msgid "平板枋"
+msgstr "Flat Board Fang"
+
+#: buildDougong.py:100
+msgid "平板枋.山面"
+msgstr "Flat Board Fang.Side"
+
+#: buildDougong.py:228
+msgid "挑檐枋"
+msgstr "Eave Fang"
+
+#: buildDougong.py:522
+msgid "山墙斗栱裁剪"
+msgstr "Gable Wall Dougong Trim"
+
+#: buildDougong.py:693
+msgid "排布斗栱异常，输入的不是建筑根节点"
+msgstr "Dougong layout exception, input is not building root node"
 
 #, fuzzy
 #~| msgctxt "*"

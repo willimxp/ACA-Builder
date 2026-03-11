@@ -2,6 +2,7 @@
 # 所属插件：ACA Builder
 # 功能概述：
 #   斗栱的营造
+from .locale.i18n import _
 import bpy
 import math
 from mathutils import Vector
@@ -68,7 +69,7 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
         con.PINGBANFANG_H*dk
     )
     pingbanfangObj = utils.addCube(
-            name="平板枋",
+            name=_("平板枋"),
             location=loc,
             dimension=dimensions,
             parent=dgrootObj,
@@ -96,7 +97,7 @@ def __buildPingbanFang(dgrootObj:bpy.types.Object):
         con.PINGBANFANG_H*dk
     )
     pingbanfangObj = utils.addCube(
-            name="平板枋.山面",
+            name=_("平板枋.山面"),
             location=loc,
             dimension=dimensions,
             rotation=(0,0,math.radians(90)),
@@ -224,7 +225,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         use_axis=(False,True,False)
     )
     # 设置材质
-    if '挑檐枋' in fangSourceObj.name:
+    if _('挑檐枋') in fangSourceObj.name:
         # 设置工王云
         mat.paint(fangCopy,con.M_FANG_TIAOYAN,
                    override=True)
@@ -262,7 +263,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
             use_axis=(True,False,False)
         )
         # 设置材质
-        if '挑檐枋' in fangSourceObj.name:
+        if _('挑檐枋') in fangSourceObj.name:
             # 设置工王云
             mat.paint(fangCopy,con.M_FANG_TIAOYAN,
                    override=True)
@@ -353,7 +354,7 @@ def __buildDGFangbyRoom(
         )
         # 栱垫板材质
         # 务必放在最后操作，该方法会删除原有的垫拱板，替换为新的mesh
-        if '栱垫板' in fangSourceObj.name:
+        if _('栱垫板') in fangSourceObj.name:
             if bData.dg_extend == 0 :
                 # 一斗三升使用小号的栱垫板，只有一层正心瓜栱
                 mat.paint(fangCopy,con.M_BOARD_DG_S,
@@ -366,7 +367,7 @@ def __buildDGFangbyRoom(
     return
 
 # 放置柱头斗栱
-def __buildPillarDG(name = '柱头斗栱',
+def __buildPillarDG(name = _('柱头斗栱'),
                     location = (0,0,0),
                     scale = (1,1,1),
                     rotation = (0,0,0),
@@ -462,7 +463,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
         for n in range(len(dgCornerArray)) :
             dgCornerCopy:bpy.types.Object = utils.copyObject(
                 sourceObj = dgSource,
-                name = "转角斗栱",
+                name = _("转角斗栱"),
                 location = dgCornerArray[n],
                 parentObj = dgrootObj,
                 scale= bData.dg_scale,
@@ -518,14 +519,14 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 con.ROOF_YINGSHAN,
                 con.ROOF_YINGSHAN_JUANPENG,)
                 and n in (0,len(net_x)-1)):
-                    boolCube = bpy.data.objects.get('山墙斗栱裁剪')
+                    boolCube = bpy.data.objects.get(_('山墙斗栱裁剪'))
                     if boolCube is None:
                         # 保险数
                         buildingH = 20*dk
                         buildingH += bData.dg_height * bData.dg_scale[0]
                         boolY = 30*dk
                         boolCube = utils.addCube(
-                            name='山墙斗栱裁剪',
+                            name=_('山墙斗栱裁剪'),
                             location=(0,0,buildingH/2),
                             dimension=(bData.x_total,
                                     bData.y_total+boolY*2,
@@ -611,7 +612,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
                 # 摆放斗栱
                 dgFillCopy:bpy.types.Object = utils.copySimplyObject(
                     sourceObj = dgFillSource,
-                    name = "补间斗栱",
+                    name = _("补间斗栱"),
                     location=(net_x[n] + dougong_span * m,
                                 net_y[-1],dgZ),
                     scale= bData.dg_scale,            
@@ -665,7 +666,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
 
                     dgFillCopy:bpy.types.Object = utils.copySimplyObject(
                         sourceObj = dgFillSource,
-                        name = "补间斗栱",
+                        name = _("补间斗栱"),
                         location=(net_x[0],
                             net_y[n] + dougong_span * m,dgZ),
                         scale= bData.dg_scale,
@@ -689,7 +690,7 @@ def buildDougong(buildingObj:bpy.types.Object):
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     if bData.aca_type != con.ACA_TYPE_BUILDING:
-        raise Exception("排布斗栱异常，输入的不是建筑根节点")
+        raise Exception(_("排布斗栱异常，输入的不是建筑根节点"))
         return
 
     # 如果不使用斗栱，以下直接跳过
@@ -714,7 +715,7 @@ def buildDougong(buildingObj:bpy.types.Object):
 
     # 循环处理各个连接件
     for fangObj in dgSource.children:
-        if '栱垫板' in fangObj.name:
+        if _('栱垫板') in fangObj.name:
             __buildDGFangbyRoom(dgrootObj,fangObj)
         else:
             __buildDGFangbyBuilding(dgrootObj,fangObj)

@@ -2,6 +2,7 @@
 # 所属插件：ACA Builder
 # 功能概述：
 #   组合建筑的营造
+from .locale.i18n import _
 import bpy
 from mathutils import Vector
 from typing import List
@@ -42,13 +43,13 @@ def __addComboLevel(buildingObj:bpy.types.Object):
     buildingObj,bData,objData = utils.getRoot(buildingObj)
     comboObj = utils.getComboRoot(buildingObj)
     if comboObj is not None:
-        raise Exception("__addComboLevel失败，已经为组合建筑。")
+        raise Exception(_("__addComboLevel失败，已经为组合建筑。"))
         
     # ACA根目录
     rootColl = utils.setCollection(con.COLL_NAME_ROOT,
                         isRoot=True,colorTag=2)
     # 添加combo根节点
-    comboObj = __addComboRoot('建筑组合',
+    comboObj = __addComboRoot(_('建筑组合'),
                               location = buildingObj.location)
 
     # 更改对象父节点
@@ -71,7 +72,7 @@ def __addComboLevel(buildingObj:bpy.types.Object):
 
     # 数据上传到comboRoot
     # 放在层级结构生成后再处理数据，否则可能找不到combo节点
-    utils.outputMsg("添加组合根节点...")
+    utils.outputMsg(_("添加组合根节点..."))
     __uploadData(fromBuilding=buildingObj)
 
     return comboObj
@@ -81,12 +82,12 @@ def __delComboLevel(comboObj:bpy.types.Object):
     # 输入验证
     comboObj = utils.getComboRoot(comboObj)
     if comboObj is None:
-        utils.outputMsg("删除组合建筑失败，不是组合建筑。")
+        utils.outputMsg(_("删除组合建筑失败，不是组合建筑。"))
         return
     
     # 是否只剩一个建筑？
     if len(comboObj.children) > 1:
-        utils.outputMsg("删除组合建筑失败，不止一个建筑存在。")
+        utils.outputMsg(_("删除组合建筑失败，不止一个建筑存在。"))
         return
     
     # 更改目录级别
@@ -136,7 +137,7 @@ def buildCombo(
             paraList = pp.parameter.split('#')
             # 验证拼接只能有2个参数
             if len(paraList) != 2:
-                utils.outputMsg("后处理异常：参数中不是期望的两个id")
+                utils.outputMsg(_("后处理异常：参数中不是期望的两个id"))
                 continue
 
             # 根据spliceid查找建筑
@@ -149,7 +150,7 @@ def buildCombo(
                 if obj.ACA_data.splice_id == paraList[1]:
                     toBuilding = obj
             if fromBuilding is None or toBuilding is None:
-                utils.outputMsg("后处理异常：无法匹配建筑spliceid")
+                utils.outputMsg(_("后处理异常：无法匹配建筑spliceid"))
                 continue
             
             # 执行拼接
@@ -158,7 +159,7 @@ def buildCombo(
                 fromBuilding=fromBuilding,
                 toBuilding=toBuilding)
         else:
-            utils.outputMsg("无法识别的后处理类型")
+            utils.outputMsg(_("无法识别的后处理类型"))
 
     return {'FINISHED'}
 
@@ -167,7 +168,7 @@ def updateCombo(buildingObj:bpy.types.Object,
                 reloadAssets=False,
                 resetFloor=False,
                 resetRoof=False,):
-    utils.outputMsg("开始更新......")
+    utils.outputMsg(_("开始更新......"))
 
     # 251217 添加清除拼接
     from . import buildSplice
@@ -448,12 +449,12 @@ def addTerrace(buildingObj:bpy.types.Object):
     terraceRoot = utils.getComboChild(
         buildingObj,con.COMBO_TERRACE)
     if terraceRoot is not None:
-        utils.popMessageBox("已经有一个月台，不能再生成新的月台")
+        utils.popMessageBox(_("已经有一个月台，不能再生成新的月台"))
         return {'CANCELLED'}
 
     # 构建月台子节点
     terraceRoot = buildFloor.__addBuildingRoot(
-        templateName = buildingObj.ACA_data.template_name + '.月台',
+        templateName = buildingObj.ACA_data.template_name + _('.月台'),
         comboObj = comboObj
     ) 
     # 务必及时标注combo_type,后续的数据同步和数据设置时都要判断主建筑
@@ -463,7 +464,7 @@ def addTerrace(buildingObj:bpy.types.Object):
     
     # 2、构造月台数据集 --------------------------
     # 从Combo根节点继承数据
-    utils.outputMsg("添加月台子建筑...")
+    utils.outputMsg(_("添加月台子建筑..."))
     # __downloadData(toBuilding=terraceRoot)
     # 设置月台逻辑数据
     __setTerraceData(parentObj=buildingObj,
@@ -643,21 +644,21 @@ def set_multiFloor_plan(self, context:bpy.types.Context):
     scnData.pavilionItem.clear()
     # 添加列表
     item = scnData.pavilionItem.add()
-    item.name = '0-重檐'
+    item.name = _('0-重檐')
     item = scnData.pavilionItem.add()
-    item.name = '1-简单重楼'
+    item.name = _('1-简单重楼')
     item = scnData.pavilionItem.add()
-    item.name = '2-重楼+平坐'
+    item.name = _('2-重楼+平坐')
     item = scnData.pavilionItem.add()
-    item.name = '3-重楼+腰檐'
+    item.name = _('3-重楼+腰檐')
     item = scnData.pavilionItem.add()
-    item.name = '4-重楼+腰檐+平坐(无栏杆)'
+    item.name = _('4-重楼+腰檐+平坐(无栏杆)')
     item = scnData.pavilionItem.add()
-    item.name = '5-重楼+腰檐+平坐(有栏杆)'
+    item.name = _('5-重楼+腰檐+平坐(有栏杆)')
     item = scnData.pavilionItem.add()
-    item.name = '6-重楼+腰檐+回廊'
+    item.name = _('6-重楼+腰檐+回廊')
     item = scnData.pavilionItem.add()
-    item.name = '7-下出平坐'
+    item.name = _('7-下出平坐')
     
     pavilionIndex = scnData.pavilionIndex
     setting = scnData.pavilionSetting
@@ -756,7 +757,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
                                 con.COMBO_MAIN,
                                 con.COMBO_DOUBLE_EAVE,
                                 con.COMBO_PINGZUO):
-        utils.popMessageBox("只有主体建筑可以做重楼，月台无法做重楼")
+        utils.popMessageBox(_("只有主体建筑可以做重楼，月台无法做重楼"))
         return {'CANCELLED'}
 
     # 验证屋顶样式
@@ -765,19 +766,19 @@ def addMultiFloor(baseFloor:bpy.types.Object,
                 con.ROOF_WUDIAN,
                 con.ROOF_XIESHAN,
                 con.ROOF_XIESHAN_JUANPENG,):
-        utils.popMessageBox("暂时只用庑殿、歇山屋顶样式支持添加重楼")
+        utils.popMessageBox(_("暂时只用庑殿、歇山屋顶样式支持添加重楼"))
         return {'CANCELLED'}
 
     # 避免类似直接从空柱网模板开始做阁楼的异常做法
     if bData.combo_type != con.COMBO_PINGZUO:
         tileRoot = utils.getAcaChild(baseFloor,con.ACA_TYPE_TILE_ROOT)
         if tileRoot==None:
-            utils.popMessageBox("当前建筑尚未生成屋顶，请先设置完成屋顶参数")
+            utils.popMessageBox(_("当前建筑尚未生成屋顶，请先设置完成屋顶参数"))
             return {'CANCELLED'}
     
     # 避免直接在平坐上做重檐
     if bData.combo_type == con.COMBO_PINGZUO and use_mideave:
-        utils.popMessageBox("无法在平座层上做重檐或披檐，请选择其他楼层")
+        utils.popMessageBox(_("无法在平座层上做重檐或披檐，请选择其他楼层"))
         return {'CANCELLED'}
         
     # 保护避免0的异常
@@ -791,7 +792,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
             eave_ex += bData.dg_extend
         
         if eave_ex < 3* bData.DK:
-            utils.popMessageBox("收分验证失败：斗栱出跳与重檐收分合计至少应3斗口，请更换斗栱，或增加收分")
+            utils.popMessageBox(_("收分验证失败：斗栱出跳与重檐收分合计至少应3斗口，请更换斗栱，或增加收分"))
             return {'CANCELLED'}
 
     # 验证回廊做法的开间尺寸，避免楼阁5出现异常
@@ -801,26 +802,26 @@ def addMultiFloor(baseFloor:bpy.types.Object,
 
         # 面阔验证
         if bData.x_rooms >= 7 and bData.x_4 < room_min:
-            msg = f'面阔尽间当前[{round(bData.x_4,3)}],应大于[{room_min}]'
+            msg = _("面阔尽间当前[%s],应大于[%s]" % (round(bData.x_4,3), room_min))
         elif bData.x_rooms == 5 and bData.x_3 < room_min:
-            msg = f'面阔梢间当前[{round(bData.x_3,3)}],应大于[{room_min}]'
+            msg = _("面阔梢间当前[%s],应大于[%s]" % (round(bData.x_3,3), room_min))
         elif bData.x_rooms == 3 and bData.x_2 < room_min:
-            msg = f'面阔梢间当前[{round(bData.x_2,3)}],应大于[{room_min}]'
+            msg = _("面阔梢间当前[%s],应大于[%s]" % (round(bData.x_2,3), room_min))
         elif bData.x_rooms == 1 and bData.x_1 < room_min*2:
-            msg = f'面阔梢间当前[{round(bData.x_1,3)}],应大于[{room_min*2}]'
+            msg = _("面阔梢间当前[%s],应大于[%s]" % (round(bData.x_1,3), room_min*2))
 
         # 进深验证
         if bData.y_rooms >= 5 and bData.y_3 < room_min:
-            msg = f'进深梢间当前[{round(bData.y_3,3)}],应大于[{room_min}]'
+            msg = _("进深梢间当前[%s],应大于[%s]" % (round(bData.y_3,3), room_min))
         elif bData.y_rooms in {3,4} and bData.y_2 < room_min: 
-            msg = f'进深次间当前[{round(bData.y_2,3)}],应大于[{room_min}]'
+            msg = _("进深次间当前[%s],应大于[%s]" % (round(bData.y_2,3), room_min))
         elif bData.y_rooms == 2 and bData.y_1 < room_min: 
-            msg = f'进深明间当前[{round(bData.y_1,3)}],应大于[{room_min}]'
+            msg = _("进深明间当前[%s],应大于[%s]" % (round(bData.y_1,3), room_min))
         elif bData.y_rooms == 1 and bData.y_1 < room_min*2: 
-            msg = f'进深明间当前[{round(bData.y_1,3)}],应大于[{room_min*2}]'
+            msg = _("进深明间当前[%s],应大于[%s]" % (round(bData.y_1,3), room_min*2))
         
         if msg != '':
-            utils.popMessageBox(f"收分验证失败：{msg}（注意：如果下层已经有回廊，建议不要使用方案“6-重楼+腰檐+回廊”，可以尝试使用方案“4-重楼+腰檐+平坐(无栏杆)”）")
+            utils.popMessageBox(_("收分验证失败：%s（注意：如果下层已经有回廊，建议不要使用方案“6-重楼+腰檐+回廊”，可以尝试使用方案“4-重楼+腰檐+平坐(无栏杆)”）" % (msg)))
             return {'CANCELLED'}
 
     # 1、数据准备 --------------------
@@ -828,7 +829,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     from . import build
     build.isFinished = False
     build.progress = 0
-    utils.outputMsg("添加重楼子建筑...")
+    utils.outputMsg(_("添加重楼子建筑..."))
     # 暂时排除目录下的其他建筑，以加快执行速度
     build.__excludeOther(keepObj=baseFloor)
     
@@ -847,8 +848,8 @@ def addMultiFloor(baseFloor:bpy.types.Object,
         bData['is_showPlatform'] = False
         bData['platform_height'] = 0
         # 删除柱础
-        utils.deleteByName(baseFloor,name='素平柱础')
-        utils.deleteByName(baseFloor,name='柱顶石')
+        utils.deleteByName(baseFloor,name=_('素平柱础'))
+        utils.deleteByName(baseFloor,name=_('柱顶石'))
     # 上出平坐或重楼，重设屋顶样式
     else:
         # 梁架强制不做廊间举架
@@ -993,7 +994,7 @@ def __addPingzuo(baseFloor:bpy.types.Object,
 
     # 1、添加平坐子节点
     comboObj = utils.getComboRoot(baseFloor)
-    pingzuoName = bData.template_name + '.平坐'
+    pingzuoName = bData.template_name + _('.平坐')
     pingzuo = buildFloor.__addBuildingRoot(
         templateName = pingzuoName,
         comboObj = comboObj
@@ -1051,9 +1052,9 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
     # 1、添加重楼子节点
     comboRootObj = utils.getComboRoot(lowerFloor)
     if use_floor:
-        upperfloorName = '.重楼'
+        upperfloorName = _('.重楼')
     else:
-        upperfloorName = '.重檐'
+        upperfloorName = _('.重檐')
     upperfloor = buildFloor.__addBuildingRoot(
         templateName = bData.template_name + upperfloorName,
         comboObj = comboRootObj
@@ -1189,7 +1190,7 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
 
 # 更新combo中的所有建筑高度
 def __updateFloorLoc(contextObj:bpy.types.Object):
-    utils.outputMsg("重新计算楼阁高度...")
+    utils.outputMsg(_("重新计算楼阁高度..."))
     # 查找combo根节点
     comboRoot = utils.getComboRoot(contextObj)
 
@@ -1385,28 +1386,28 @@ def __setTaperData(mData,taper):
             mData['x_4'] -= xTaper
         else:
             raise Exception(
-                f"楼阁收分失败：尽间尺寸请至少加大{round(xTaper-mData.x_4,3)}")
+                _("楼阁收分失败：尽间尺寸请至少加大%s" % (round(xTaper-mData.x_4,3))))
     elif mData.x_rooms == 5:
         if mData['x_3'] > xTaper:
             mData['x_3'] -= xTaper
         else:
             raise Exception(
-                f"楼阁收分失败：梢间尺寸当前{round(mData.x_3),3}，需大于收分{round(xTaper,3)}")
+                _("楼阁收分失败：梢间尺寸当前%s，需大于收分%s" % (round(mData.x_3),3, round(xTaper,3))))
     elif mData.x_rooms == 3:
         if mData['x_2'] > xTaper:
             mData['x_2'] -= xTaper
         else:
             raise Exception(
-                f"楼阁收分失败：次间尺寸当前{round(mData.x_2,3)}，需大于收分{round(xTaper,3)}")
+                _("楼阁收分失败：次间尺寸当前%s，需大于收分%s" % (round(mData.x_2,3), round(xTaper,3))))
     elif mData.x_rooms == 1:
         if mData['x_1']/2 > xTaper:
             mData['x_1'] -= xTaper*2
         else:
             raise Exception(
-                f"楼阁收分失败：明间尺寸当前{round(mData.x_1,3)}，需大于收分{round(xTaper,3)}")
+                _("楼阁收分失败：明间尺寸当前%s，需大于收分%s" % (round(mData.x_1,3), round(xTaper,3))))
     else:
         raise Exception(
-                f"楼阁收分失败，未知原因")
+                _("楼阁收分失败，未知原因"))
     
     # 进深收分
     yTaper = taper
@@ -1415,28 +1416,28 @@ def __setTaperData(mData,taper):
             mData['y_3'] -= yTaper
         else:
             raise Exception(
-                f"楼阁收分失败：进深梢间尺寸当前{round(mData.y_3,3)}，需大于收分{round(yTaper,3)}")
+                _("楼阁收分失败：进深梢间尺寸当前%s，需大于收分%s" % (round(mData.y_3,3), round(yTaper,3))))
     elif mData.y_rooms in (3,4):
         if mData['y_2'] > yTaper:
             mData['y_2'] -= yTaper
         else:
             raise Exception(
-                f"楼阁收分失败：进深次间应至少增加{round(yTaper-mData.y_2,3)}")
+                _("楼阁收分失败：进深次间应至少增加%s" % (round(yTaper-mData.y_2,3))))
     elif mData.y_rooms == 2:
         if mData['y_1'] > yTaper:
             mData['y_1'] -= yTaper
         else:
             raise Exception(
-                f"楼阁收分失败：进深明间尺寸应增加{round(yTaper -mData.y_1,3)}")
+                _("楼阁收分失败：进深明间尺寸应增加%s" % (round(yTaper -mData.y_1,3))))
     elif mData.y_rooms == 1:
         if mData['y_1'] > yTaper*2:
             mData['y_1'] -= yTaper*2
         else:
             raise Exception(
-                f"楼阁收分失败：进深明间尺寸当前{round(mData.y_1,3)}，需大于2倍收分{round(yTaper*2,3)}")
+                _("楼阁收分失败：进深明间尺寸当前%s，需大于2倍收分%s" % (round(mData.y_1,3), round(yTaper*2,3))))
     else:
         raise Exception(
-                f"楼阁收分失败，未知原因")
+                _("楼阁收分失败，未知原因"))
     
     return
 
@@ -1499,7 +1500,7 @@ def addCombo(buildingList:List[bpy.types.Object]):
 
     # 验证是否已经集成，不再重复集成
     if len(comboList) == 1 and isAllComboChild:
-        print("建筑已在同一个集合中，不再做集成")
+        print(_("建筑已在同一个集合中，不再做集成"))
         return {'CANCELLED'},comboList[0]
     
     # 新建一个combo
@@ -1509,7 +1510,7 @@ def addCombo(buildingList:List[bpy.types.Object]):
     fromBuilding = buildingList[0]
     # 251210 可以用translation直接获取全局坐标
     fromLoc = fromBuilding.matrix_world.translation
-    comboNewObj = __addComboRoot(templateName='建筑组合',
+    comboNewObj = __addComboRoot(templateName=_('建筑组合'),
                                  location=fromLoc)
     comboNewColl = comboNewObj.users_collection[0]
 

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ACA Builder\n"
 "POT-Creation-Date: 2026-03-10 12:51+0800\n"
-"PO-Revision-Date: 2026-03-11 16:55+0800\n"
+"PO-Revision-Date: 2026-03-11 21:20+0800\n"
 "Last-Translator: Auto Generated <noreply@example.com>\n"
 "Language-Team: English <en@li.org>\n"
 "Language: en_US\n"
@@ -1822,6 +1822,182 @@ msgstr "Eaves A Clipping"
 #: build.py:3444
 msgid "出檐B裁剪"
 msgstr "Eaves B Clipping"
+
+#: buildBalcony.py:79
+msgid "楼板"
+msgstr "Floor slab"
+
+#: buildBalcony.py:96
+msgid "挂檐板.前后檐"
+msgstr "Eave board (front and back)"
+
+#: buildBalcony.py:118
+msgid "挂檐板.两山"
+msgstr "Eave board (two sides)"
+
+#: buildBalcony.py:154
+msgid "地栿.前后檐"
+msgstr "Difu beam (front and back)"
+
+#: buildBalcony.py:179
+msgid "地栿.两山"
+msgstr "Difu beam (two sides)"
+
+#: buildBalcony.py:321
+msgid "栏杆.%s"
+msgstr "Railing.%s"
+
+#: buildBalcony.py:381
+msgid "望柱.%s"
+msgstr "Baluster.%s"
+
+#: buildBalcony.py:410
+msgid "桪杖扶手.%s"
+msgstr "Handrail.%s"
+
+#: buildBalcony.py:434
+msgid "折柱.%s.%s"
+msgstr "column.%s.%s"
+
+#: buildBalcony.py:454
+msgid "净瓶.%s"
+msgstr "Vase.%s"
+
+#: buildBalcony.py:499
+msgid "地栿.%s"
+msgstr "Difu.%s"
+
+#: buildBalcony.py:527
+msgid "牙子板.%s.%s"
+msgstr "Yazi.%s.%s"
+
+#: buildBalcony.py:543
+msgid "下枋.%s"
+msgstr "Lower-fang.%s"
+
+#: buildBalcony.py:571
+msgid "绦环板.%s.%s"
+msgstr "Taohuan.%s.%s"
+
+#: buildBalcony.py:587
+msgid "中枋.%s"
+msgstr "Middle-fang.%s"
+
+#: buildBalcony.py:630
+msgid "没有斗栱，无法营造平坐"
+msgstr "No Dougong, cannot build balcony"
+
+#: buildBalcony.py:658
+msgid "未找到建筑根节点或设计数据"
+msgstr "Building root node or design data not found"
+
+#: buildBalcony.py:670
+msgid "无法找到railingData:%s"
+msgstr "Cannot find railingData: %s"
+
+#: buildBalcony.py:675
+msgid "此位置无法做栏杆/坐凳，已跳过%s"
+msgstr "Cannot build railing/bench at this location, skipped %s"
+
+#: buildBalcony.py:688
+msgid "栏杆开口过大，已自动设置到最大值"
+msgstr "Railing gap too large, automatically set to maximum value"
+
+#: buildBalcony.py:754
+msgid "坐凳面"
+msgstr "Bench surface"
+
+#: buildBalcony.py:821
+msgid "牙子仔边"
+msgstr "Yazi edge"
+
+#: buildBalcony.py:884
+msgid "楣子仔边"
+msgstr "Meizi edge"
+
+#: buildBeam.py:237
+msgid "请留意：一般屋顶椽架数量应该为偶数（卷棚为奇数），所以，椽架数量自动减少了一椽架"
+msgstr "Note: Generally, Rafter-Count should be even (odd for hip-and-gable), so Rafter-Count has been automatically reduced by one"
+
+#: buildBeam.py:352
+msgid "挑檐桁"
+msgstr "Eave Purlin"
+
+#: buildBeam.py:410
+msgid "正心桁"
+msgstr "Central Purlin"
+
+#: buildBeam.py:419
+msgid "承椽枋-前后"
+msgstr "Rafter Supporting Fang (Front/Back)"
+
+#: buildBeam.py:437
+msgid "桁-前后"
+msgstr "Purlin (Front/Back)"
+
+#: buildBeam.py:472
+msgid "伏脊木"
+msgstr "Fujimu"
+
+#: buildBeam.py:504
+msgid "桁垫板"
+msgstr "Purlin Plate"
+
+#: buildBeam.py:558
+msgid "金/脊枋"
+msgstr "Jin Fang/Ji Fang"
+
+#: buildBeam.py:636
+msgid "承椽枋-两山"
+msgstr "Rafter Supporting Fang (Sides)"
+
+#: buildBeam.py:655
+msgid "桁-两山"
+msgstr "Purlin (Sides)"
+
+#: buildBeam.py:704
+msgid "垫板"
+msgstr "Board"
+
+#: buildBeam.py:762
+msgid "桁架"
+msgstr "Truss"
+
+#: buildBeam.py:890
+msgid "趴梁"
+msgstr "Resting Beam"
+
+#: buildBeam.py:1052
+msgid "坨橔"
+msgstr "Hump"
+
+#: buildBeam.py:1071
+msgid "太平梁"
+msgstr "Safe Beam"
+
+#: buildBeam.py:1266
+msgid "梁"
+msgstr "Beam"
+
+#: buildBeam.py:1307
+msgid "踩步金"
+msgstr "Caibu Jin"
+
+#: buildBeam.py:1466
+msgid "蜀柱"
+msgstr "Short Column"
+
+#: buildBeam.py:1534
+msgid "梁架"
+msgstr "Beam Frame"
+
+#: buildBeam.py:1690
+msgid "角背"
+msgstr "Jiaobei"
+
+#: buildBeam.py:1767
+msgid "盖板"
+msgstr "Cover Plate"
 
 #, fuzzy
 #~| msgctxt "*"

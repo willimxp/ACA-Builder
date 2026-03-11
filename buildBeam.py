@@ -2,6 +2,7 @@
 # 所属插件：ACA Builder
 # 功能概述：
 #   梁架的营造
+from .locale.i18n import _
 import bpy
 import bmesh
 import math
@@ -233,7 +234,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
         if rafterCount%2 != 0:
             rafterCount -= 1
             # 异常的奇变偶，给出提出
-            utils.outputMsg("请留意：一般屋顶椽架数量应该为偶数（卷棚为奇数），所以，椽架数量自动减少了一椽架")
+            utils.outputMsg(_("请留意：一般屋顶椽架数量应该为偶数（卷棚为奇数），所以，椽架数量自动减少了一椽架"))
     for n in range(int(rafterCount/2)):
         # 1、计算每层步架的进深----------------
         # 20241123 根据尖山、卷棚、盝顶、是否做廊步架等计算每个步架长度
@@ -348,7 +349,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
         tiaoyanhengObj = __buildYanHeng(
                         beamRootObj,
                         purlin_cross=purlin_pos[0],
-                        purlin_name='挑檐桁')
+                        purlin_name=_('挑檐桁'))
         purlinFrameList.append(tiaoyanhengObj)
         # 删除挑檐桁数据
         del purlin_pos[0]
@@ -406,7 +407,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             zhengxinhengObj = __buildYanHeng(
                             beamRootObj,
                             purlin_cross=purlin_pos[0],
-                            purlin_name='正心桁')
+                            purlin_name=_('正心桁'))
             purlinFrameList.append(zhengxinhengObj)
         else:
             # 3、创建桁对象
@@ -415,7 +416,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
             if (n == len(purlin_pos)-1 and 
                 bData.roof_style == con.ROOF_LUDING) :
                 hengFB = utils.addCube(
-                    name = '承椽枋-前后',
+                    name = _('承椽枋-前后'),
                     location= loc,
                     dimension= (purlin_length_x,
                                 con.EFANG_LARGE_Y*dk,
@@ -433,7 +434,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                         radius = purlin_r, 
                         depth = purlin_length_x,
                         location = loc, 
-                        name = "桁-前后",
+                        name = _("桁-前后"),
                         root_obj = beamRootObj
                     )
             purlinFrameList.append(hengFB)
@@ -468,7 +469,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                         radius = con.FUJIMU_D/2*dk, 
                         depth = purlin_length_x,
                         location = (0,0,loc_z), 
-                        name = "伏脊木",
+                        name = _("伏脊木"),
                         root_obj = beamRootObj,
                         edge_num =6
                     )
@@ -500,7 +501,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 board_h*dk)
             # 创建桁垫板
             dianbanObj = utils.addCube(
-                name="桁垫板",
+                name=_("桁垫板"),
                 location=loc,
                 dimension=dim,
                 parent=beamRootObj,
@@ -554,7 +555,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 con.HENGFANG_Y*dk,
                 con.HENGFANG_H*dk)
             hengfangObj = utils.addCube(
-                name="金/脊枋",
+                name=_("金/脊枋"),
                 location=loc,
                 dimension=dim,
                 parent=beamRootObj,
@@ -632,7 +633,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                 if (n == len(purlin_pos)-1 and 
                     bData.roof_style == con.ROOF_LUDING) :
                     hengLR = utils.addCube(
-                        name = '承椽枋-两山',
+                        name = _('承椽枋-两山'),
                         location= (pCross.x,0,pCross.z),
                         dimension= (con.EFANG_LARGE_Y*dk,
                                     purlin_length_y,
@@ -651,7 +652,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                             depth = purlin_length_y,
                             location = (pCross.x,0,pCross.z), 
                             rotation=Vector((0, 0, math.radians(90))), 
-                            name = "桁-两山",
+                            name = _("桁-两山"),
                             root_obj = beamRootObj
                         )
                 purlinFrameList.append(hengLR)
@@ -700,7 +701,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     con.BOARD_HENG_Y*dk,
                     board_h*dk)
                 dianbanObj = utils.addCube(
-                    name="垫板",
+                    name=_("垫板"),
                     location=loc,
                     dimension=dim,
                     rotation=Vector((0, 0, math.radians(90))),
@@ -732,7 +733,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
                     con.HENGFANG_Y*dk,
                     con.HENGFANG_H*dk)
                 hengfangObj = utils.addCube(
-                    name="金/脊枋",
+                    name=_("金/脊枋"),
                     location=loc,
                     rotation=Vector((0, 0, math.radians(90))),
                     dimension=dim,
@@ -758,7 +759,7 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
     for obj in purlinFrameList:
         mat.paint(obj,con.M_BEAM_NOPAINT)
     # 合并桁对象
-    purlinFrameObj = utils.joinObjects(purlinFrameList,'桁架')      
+    purlinFrameObj = utils.joinObjects(purlinFrameList,_('桁架'))      
     return
 
 # 檐桁为了便于彩画贴图，按开间逐一生成
@@ -886,7 +887,7 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
     return yanhengObj
 
 # 绘制趴梁造型
-def __drawGabelBeam(name='趴梁',
+def __drawGabelBeam(name=_('趴梁'),
             location=(0,0,0),
             rotation=(0,0,0),
             dimension=(1,1,1),
@@ -1016,7 +1017,7 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
         # 3、创建趴梁
         if use_beam:
             gabelBeam = __drawGabelBeam(
-                name="趴梁",
+                name=_("趴梁"),
                 location=loc,
                 dimension=dim,
                 parent=beamRootObj,
@@ -1048,7 +1049,7 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
                 tuodunHeight
             ))
             tuodunObj = utils.addCube(
-                name='坨橔',
+                name=_('坨橔'),
                 location=tuodunLoc,
                 dimension=tuodunDim,
                 parent=beamRootObj,
@@ -1062,12 +1063,12 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
     
     # 合并趴梁
     gabelBeamJoined = utils.joinObjects(
-        gabelBeamList,'趴梁')
+        gabelBeamList,_('趴梁'))
     
     return gabelBeamJoined
 
 # 绘制太平梁造型
-def __drawSaftBeam(name='太平梁',
+def __drawSaftBeam(name=_('太平梁'),
             location=(0,0,0),
             rotation=(0,0,0),
             dimension=(1,1,1),
@@ -1151,7 +1152,7 @@ def __addSafeBeam(buildingObj,purlin_pos):
     ))
     # 3、创建太平梁
     safeBeam = __drawSaftBeam(
-        name="太平梁",
+        name=_("太平梁"),
         location=loc,
         dimension=dim,
         parent=beamRootObj,
@@ -1176,7 +1177,7 @@ def __addSafeBeam(buildingObj,purlin_pos):
         tuodunHeight
     ))
     tuodunObj = utils.addCube(
-        name='坨橔',
+        name=_('坨橔'),
         location=tuodunLoc,
         dimension=tuodunDim,
         parent=beamRootObj,
@@ -1192,7 +1193,7 @@ def __addSafeBeam(buildingObj,purlin_pos):
     )
 
     # 合并太平梁
-    safeBeamJoined = utils.joinObjects(saftBeamList,'太平梁')
+    safeBeamJoined = utils.joinObjects(saftBeamList,_('太平梁'))
 
     return safeBeamJoined
 
@@ -1262,7 +1263,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
             beam_x = net_x[x]
             beam_z = purlin_pos[n].z
             beam_l = purlin_pos[n].y*2 + con.HENG_COMMON_D*dk*2
-            beam_name = '梁'
+            beam_name = _('梁')
             use_beam = True
             
             # 有斗拱时，不做底层大梁（一般从桃尖梁后尾连做）
@@ -1303,7 +1304,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     beam_z = (purlin_pos[1].z 
                         + con.HENG_COMMON_D*dk/2)
                     beam_l = purlin_pos[1].y*2
-                    beam_name = '踩步金'
+                    beam_name = _('踩步金')
                 
                 # X坐标，位移到下金桁的X位置
                 # 251105 八架歇山过两椽，此时移动到上金桁X位置
@@ -1462,7 +1463,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
                     shuzhu_height
                 ))                
                 shuzhuCopyObj = utils.addCube(
-                    name="蜀柱",
+                    name=_("蜀柱"),
                     location=shuzhu_loc,
                     dimension=shuzhu_dimensions,
                     parent=beamRootObj,
@@ -1530,7 +1531,7 @@ def __buildBeam(buildingObj:bpy.types.Object,purlin_pos):
             mat.paint(beamobj,con.M_BEAM_NOPAINT)
         # 合并
         beamSetObj = utils.joinObjects(
-            beamObjects,newName='梁架')
+            beamObjects,newName=_('梁架'))
         # 倒角
         utils.addModifierBevel(beamSetObj,con.BEVEL_HIGH)
     else:
@@ -1564,7 +1565,7 @@ def __drawBeam(
         location:Vector,
         dimension:Vector,
         buildingObj:bpy.types.Object,
-        name='梁',
+        name=_('梁'),
         isFirst=False,  # 是否为首层梁
         ):
     # 载入数据
@@ -1686,7 +1687,7 @@ def __drawJiaobei(shuzhuObj:bpy.types.Object):
         (shuzhuObj.location.z-shuzhu_height/2
             + height/2))
     jiaobeiObj = utils.addCube(
-        name='角背',
+        name=_('角背'),
         location=loc,
         dimension=dim,
         parent=shuzhuObj.parent,
@@ -1763,7 +1764,7 @@ def __addLudingBorad(parent:bpy.types.Object,
     z = pCross.z+con.EFANG_LARGE_H*dk/2+ boardHeight/2
     # 生成实体
     board = utils.addCube(
-        name = '盖板',
+        name = _('盖板'),
         location= (x,y,z),
         dimension= dim,
         rotation=(0,0,rot),

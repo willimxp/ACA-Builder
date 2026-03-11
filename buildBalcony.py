@@ -2,6 +2,7 @@
 # 所属插件：ACA Builder
 # 功能概述：
 #   平坐的营造
+from .locale.i18n import _
 import bpy
 import bmesh
 import math
@@ -75,7 +76,7 @@ def __buildFloor(balconyRoot:bpy.types.Object):
     floorDim = Vector((floorX,floorY,floorZ))
     floorLoc = Vector((0,0,floorZ/2))
     floorObj = utils.addCube(
-        name='楼板',
+        name=_('楼板'),
         location=floorLoc,
         dimension=floorDim,
         parent=balconyRoot)
@@ -92,7 +93,7 @@ def __buildFloor(balconyRoot:bpy.types.Object):
                  floorY/2-eaveY*1.5,
                  - eaveH/2)
     eaveObjFB = utils.addCube(
-        name=f"挂檐板.前后檐",
+        name=_("挂檐板.前后檐"),
         dimension=eaveDim,
         location=eaveLoc,
         parent=balconyRoot
@@ -114,7 +115,7 @@ def __buildFloor(balconyRoot:bpy.types.Object):
                  0,
                  - eaveH/2)
     eaveObjLR = utils.addCube(
-        name=f"挂檐板.两山",
+        name=_("挂檐板.两山"),
         dimension=eaveDim,
         location=eaveLoc,
         parent=balconyRoot
@@ -150,7 +151,7 @@ def __buildFloor(balconyRoot:bpy.types.Object):
         difuZ = floorZ + difuHeight/2
         difuLoc = (0,difuY,difuZ)
         difuObjFB = utils.addCube(
-            name=f"地栿.前后檐",
+            name=_("地栿.前后檐"),
             dimension=difuDim,
             location=difuLoc,
             parent=balconyRoot
@@ -175,7 +176,7 @@ def __buildFloor(balconyRoot:bpy.types.Object):
         difuZ = floorZ + difuHeight/2
         difuLoc = (difuX,0,difuZ)
         difuObjLR = utils.addCube(
-            name=f"地栿.两山",
+            name=_("地栿.两山"),
             dimension=difuDim,
             location=difuLoc,
             parent=balconyRoot
@@ -193,7 +194,7 @@ def __buildFloor(balconyRoot:bpy.types.Object):
     # 合并
     floorJoined = utils.joinObjects(
         [floorObj,eaveObjFB,eaveObjLR],
-        newName='楼板')
+        newName=_('楼板'))
     # 导角
     utils.addModifierBevel(floorJoined,con.BEVEL_LOW)
     return floorObj
@@ -317,7 +318,7 @@ def __buildRailing(parentObj:bpy.types.Object,
 
     # 各开间根节点，在两根柱子之间居中
     railingRoot = utils.addEmpty(
-        name=f"栏杆.{proxy['id']}",
+        name=_("栏杆.%s" % (proxy['id'])),
         location=proxy['location'],
         rotation=proxy['rotation'],
         parent=parentObj,
@@ -377,7 +378,7 @@ def __buildRailing(parentObj:bpy.types.Object,
                  0,0)
     pillarObj = utils.copyObject(
         sourceObj=aData.railing_pillar,
-        name=f"望柱.{proxy['id']}",
+        name=_("望柱.%s" % (proxy['id'])),
         dimensions=pillarDim,
         location=pillarLoc,
         parentObj=railingRoot,
@@ -406,7 +407,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     handrailDim = (handrailWidth,handrailDepth,handrailHeight)
     handrailLoc = (proxyX,0,con.HANDRAIL_Z)
     handrailObj = utils.addCube(
-        name=f"桪杖扶手.{proxy['id']}",
+        name=_("桪杖扶手.%s" % (proxy['id'])),
         dimension=handrailDim,
         location=handrailLoc,
         parent=railingRoot
@@ -430,7 +431,7 @@ def __buildRailing(parentObj:bpy.types.Object,
         zzLoc = (zzX,    # 依次排列
                  0,zzHeight/2)
         zzObj = utils.addCube(
-            name=f"折柱.{proxy['id']}.{n}",
+            name=_("折柱.%s.%s" % (proxy['id'], n)),
             dimension=zzDim,
             location=zzLoc,
             parent=railingRoot
@@ -450,7 +451,7 @@ def __buildRailing(parentObj:bpy.types.Object,
         vaseLoc = (zzX,0,vaseZ)
         vaseObj = utils.copyObject(
                 sourceObj=aData.railing_vase,
-                name=f"净瓶.{proxy['id']}",
+                name=_("净瓶.%s" % (proxy['id'])),
                 location=vaseLoc,
                 parentObj=railingRoot,
                 singleUser=True,
@@ -495,7 +496,7 @@ def __buildRailing(parentObj:bpy.types.Object,
         difuDim = (difuWidth,difuDepth,difuHeight)
         difuLoc = (proxyX,0,difuHeight/2)
         difuObj = utils.addCube(
-            name=f"地栿.{proxy['id']}",
+            name=_("地栿.%s" % (proxy['id'])),
             dimension=difuDim,
             location=difuLoc,
             parent=railingRoot
@@ -523,7 +524,7 @@ def __buildRailing(parentObj:bpy.types.Object,
                    0,
                    sumZ + yaziHeight/2)
         yaziObj = utils.addCube(
-            name=f"牙子板.{proxy['id']}.{n}",
+            name=_("牙子板.%s.%s" % (proxy['id'], n)),
             dimension=yaziDim,
             location=yaziLoc,
             parent=railingRoot
@@ -539,7 +540,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     downFangDim = (downFangWidth,downFangDepth,downFangHeight)
     downFangLoc = (proxyX,0,sumZ + downFangHeight/2)
     downFangObj = utils.addCube(
-        name=f"下枋.{proxy['id']}",
+        name=_("下枋.%s" % (proxy['id'])),
         dimension=downFangDim,
         location=downFangLoc,
         parent=railingRoot
@@ -567,7 +568,7 @@ def __buildRailing(parentObj:bpy.types.Object,
                    0,
                    sumZ + taohuanHeight/2)
         taohuanObj = utils.addCube(
-            name=f"绦环板.{proxy['id']}.{n}",
+            name=_("绦环板.%s.%s" % (proxy['id'], n)),
             dimension=taohuanDim,
             location=taohuanLoc,
             parent=railingRoot
@@ -583,7 +584,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     midFangDim = (midFangWidth,midFangDepth,midFangHeight)
     midFangLoc = (proxyX,0,sumZ + midFangHeight/2)
     midFangObj = utils.addCube(
-        name=f"中枋.{proxy['id']}",
+        name=_("中枋.%s" % (proxy['id'])),
         dimension=midFangDim,
         location=midFangLoc,
         parent=railingRoot
@@ -601,7 +602,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     
     # 合并对象
     railingObj = utils.joinObjects(
-        objList=railingParts,newName='栏杆')
+        objList=railingParts,newName=_('栏杆'))
     
     # 开口栏杆左右镜像
     if useGap:
@@ -626,7 +627,7 @@ def buildBalcony(buildingObj:bpy.types.Object):
     bData:acaData = buildingObj.ACA_data
     dk = bData.DK
     if not bData.use_dg:
-        raise Exception("没有斗栱，无法营造平坐")
+        raise Exception(_("没有斗栱，无法营造平坐"))
     
     # 添加平座层根节点
     balconyRoot = __addBalconyRoot(buildingObj)
@@ -654,7 +655,7 @@ def addRailing(wallProxy:bpy.types.Object):
     buildingObj,bData,wData = utils.getRoot(wallProxy)
     if buildingObj == None:
         raise Exception(
-            "未找到建筑根节点或设计数据")
+            _("未找到建筑根节点或设计数据"))
         return
     dk = bData.DK
     
@@ -666,12 +667,12 @@ def addRailing(wallProxy:bpy.types.Object):
         obj_id=railingID
     )
     if railingData is None:
-        raise Exception(f"无法找到railingData:{railingID}")
+        raise Exception(_("无法找到railingData:%s" % (railingID)))
     
     # 栏杆长度，只能做在两个柱间
     railingLen = wallProxy.dimensions.x - bData.pillar_diameter
     if railingLen <= 0:
-        utils.outputMsg(f"此位置无法做栏杆/坐凳，已跳过{wallProxy.name}")
+        utils.outputMsg(_("此位置无法做栏杆/坐凳，已跳过%s" % (wallProxy.name)))
         return
     
     # 开口的最大值控制
@@ -684,7 +685,7 @@ def addRailing(wallProxy:bpy.types.Object):
         gapMax_rate =  gapMax/railingLen
         if railingData.gap > gapMax_rate:
             railingData['gap'] = gapMax_rate
-            print("栏杆开口过大，已自动设置到最大值")
+            print(_("栏杆开口过大，已自动设置到最大值"))
     
     # 创建proxyData
     proxy = {}
@@ -750,7 +751,7 @@ def __buildBench(parentObj:bpy.types.Object,
     benchFace:bpy.types.Object = utils.drawHexagon(
         faceDim,
         faceLoc,
-        name='坐凳面',
+        name=_('坐凳面'),
         parent=parentObj
         )
     # 如果开口，做裁剪
@@ -817,7 +818,7 @@ def __buildBench(parentObj:bpy.types.Object,
         location=(yaziX,0,yaziZ)
     )
     zibianObj = bpy.context.object
-    zibianObj.name = '牙子仔边'
+    zibianObj.name = _('牙子仔边')
     zibianObj.parent = parentObj
     # 三维的scale转为plane二维的scale
     zibianObj.rotation_euler.x = math.radians(90)
@@ -880,7 +881,7 @@ def __buildBench(parentObj:bpy.types.Object,
         location=(meiziX,0,meiziZ)
     )
     meizibianObj = bpy.context.object
-    meizibianObj.name = '楣子仔边'
+    meizibianObj.name = _('楣子仔边')
     meizibianObj.parent = parentObj
     # 三维的scale转为plane二维的scale
     meizibianObj.rotation_euler.x = math.radians(90)
@@ -923,7 +924,7 @@ def __buildBench(parentObj:bpy.types.Object,
     benchParts.append(meizishanxinObj)
 
     # 合并构件
-    benchObj = utils.joinObjects(benchParts,'坐凳')
+    benchObj = utils.joinObjects(benchParts,_('坐凳'))
 
     # 如果开口，做左右镜像
     if useGap:

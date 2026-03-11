@@ -1,14 +1,18 @@
 {
   "name": "aca_i18n",
-  "description": "自动处理ACA插件的i18n国际化，包括提取中文文本、代码预处理、自动调用_()翻译函数，生成PO文件、编译MO文件等",
+  "description": "ACA插件国际化技能。处理Python文件，提取中文文本并自动调用_()翻译函数，生成和更新PO文件，编译MO文件。",
   "parameters": [
     {
       "name": "file",
       "type": "string",
-      "description": "需要处理的python文件路径",
+      "description": "需要处理的Python文件绝对路径",
       "required": true
     }
   ],
   "entry_point": "aca_i18n.py",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "scripts": {
+    "process": "python3 \"/Volumes/XP.T9/Blender/ACA Builder/.trae/skills/aca_i18n/aca_i18n.py\" \"$1\"",
+    "update": "python3 \"/Volumes/XP.T9/Blender/ACA Builder/.trae/skills/aca_i18n/update_translations.py\" \"$1\""
+  }
 }

@@ -21,32 +21,47 @@ class ACAI18nSkill:
     def process_file(self, file_path: str) -> bool:
         """处理单个Python文件"""
         try:
-            # 1. 代码预处理
             chinese_texts = self._preprocess_code(file_path)
             
             if not chinese_texts:
                 print(f"文件 {file_path} 中没有发现中文文本")
                 return True
             
-            # 2. 更新PO文件
-            self._update_po_file(file_path, chinese_texts)
-            
-            # 3. 提取需要翻译的内容并提示agent
-            fuzzy_entries = self._extract_fuzzy_entries()
-            if fuzzy_entries:
-                print("\n需要翻译的内容:")
-                for msgid in fuzzy_entries:
-                    print(f"- {msgid}")
-                print("\n请将上述内容翻译为英文，然后使用update_translations方法更新翻译结果")
-            else:
-                print("没有需要翻译的内容")
-                # 4. 编译MO文件
-                self._compile_mo_file()
+            output_path = self._export_to_json(file_path, chinese_texts)
+            if output_path:
+                print(f"\n已导出 {len(chinese_texts)} 条待翻译条目到: {output_path}")
+                print("请翻译JSON中的内容，然后使用以下命令更新PO文件并编译MO:")
+                print(f'python3 "/Volumes/XP.T9/Blender/ACA Builder/.trae/skills/aca_i18n/update_translations.py" "{output_path}"')
             
             return True
         except Exception as e:
             print(f"处理文件 {file_path} 时出错: {e}")
             return False
+    
+    def _export_to_json(self, file_path: str, chinese_texts: List[Tuple[int, str]]) -> str:
+        """将中文文本导出到JSON文件"""
+        skill_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(skill_dir)))
+        output_dir = os.path.join(project_root, 'locale', 'en_US', 'LC_MESSAGES')
+        os.makedirs(output_dir, exist_ok=True)
+        
+        output_path = os.path.join(output_dir, 'translations_to_translate.json')
+        
+        unique_texts = []
+        seen = set()
+        for line_num, text in chinese_texts:
+            if text not in seen:
+                unique_texts.append({"msgid": text, "file": os.path.basename(file_path), "line": line_num})
+                seen.add(text)
+        
+        export_data = {
+            "entries": {item["msgid"]: {"translation": "", "file": item["file"], "line": item["line"]} for item in unique_texts}
+        }
+        
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(export_data, f, ensure_ascii=False, indent=2)
+        
+        return output_path
     
     def _extract_fuzzy_entries(self) -> List[str]:
         """提取PO文件中标注为'fuzzy'的条目"""
@@ -121,6 +136,30 @@ class ACAI18nSkill:
         except Exception as e:
             print(f"更新翻译时出错: {e}")
             return False
+    
+    def export_translations_json(self, output_path: str = None) -> str:
+        """导出待翻译的条目到JSON文件"""
+        fuzzy_entries = self._extract_fuzzy_entries()
+        
+        if not fuzzy_entries:
+            print("没有待翻译的条目")
+            return None
+        
+        if output_path is None:
+            skill_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(skill_dir)))
+            output_path = os.path.join(project_root, 'locale', 'en_US', 'LC_MESSAGES', 'translations_to_translate.json')
+        
+        translations_dict = {msgid: "" for msgid in fuzzy_entries}
+        
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(translations_dict, f, ensure_ascii=False, indent=2)
+        
+        print(f"已导出 {len(fuzzy_entries)} 条待翻译条目到: {output_path}")
+        print("请填充翻译值后，使用以下命令更新PO文件:")
+        print(f'python3 "/Volumes/XP.T9/Blender/ACA Builder/.trae/skills/aca_i18n/update_translations.py" "$(cat {output_path})"')
+        
+        return output_path
     
     def _preprocess_code(self, file_path: str) -> List[Tuple[int, str]]:
         """预处理代码，提取中文文本并修改format字符串"""
@@ -398,11 +437,23 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='ACA Builder i18n国际化工具')
-    parser.add_argument('file', help='需要处理的Python文件路径')
+    parser.add_argument('file', nargs='?', help='需要处理的Python文件路径')
+    parser.add_argument('--export', '-e', action='store_true', help='导出待翻译的JSON文件')
+    parser.add_argument('--output', '-o', help='导出JSON文件的路径')
     
     args = parser.parse_args()
     
     skill = ACAI18nSkill()
+    
+    if args.export:
+        output_path = skill.export_translations_json(args.output)
+        if output_path:
+            print(f"导出成功: {output_path}")
+        return
+    
+    if not args.file:
+        parser.error("需要指定Python文件路径，或使用 --export 导出待翻译条目")
+    
     success = skill.process_file(args.file)
     
     if success:

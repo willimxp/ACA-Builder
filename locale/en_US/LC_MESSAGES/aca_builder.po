@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ACA Builder\n"
 "POT-Creation-Date: 2026-03-10 12:51+0800\n"
-"PO-Revision-Date: 2026-03-10 13:46+0800\n"
+"PO-Revision-Date: 2026-03-11 16:55+0800\n"
 "Last-Translator: Auto Generated <noreply@example.com>\n"
 "Language-Team: English <en@li.org>\n"
 "Language: en_US\n"
@@ -304,8 +304,7 @@ msgstr "Bay Width 1"
 
 #: data.py:449
 msgid "常取7攒斗栱，且一般柱不越间广（柱高小于明间宽度）"
-msgstr ""
-"Center bay width, generally use 7 sets of Dougong, greater than pillar height"
+msgstr "Center bay width, generally use 7 sets of Dougong, greater than pillar height"
 
 #: data.py:452
 msgid "次间宽度"
@@ -373,8 +372,7 @@ msgstr "Pillar Height"
 
 #: data.py:511
 msgid "有斗拱的取57-60斗口，无斗拱的取面阔的8/10"
-msgstr ""
-"Height of Eave Pillar, generally use 57-60 Doukou or 8/10 pillar height"
+msgstr "Height of Eave Pillar, generally use 57-60 Doukou or 8/10 pillar height"
 
 #: data.py:514
 msgid "檐柱径"
@@ -390,8 +388,7 @@ msgstr "Double Efang"
 
 #: data.py:526
 msgid "同时使用大额枋、由额垫板、小额枋的三件套连接两根柱"
-msgstr ""
-"If use small e’fang,  big e’fang and small e’fang will be employed together"
+msgstr "If use small e’fang,  big e’fang and small e’fang will be employed together"
 
 #: data.py:529
 msgid "插柱深度"
@@ -499,8 +496,7 @@ msgstr "Doukou Scale"
 
 #: data.py:613
 msgid "为了模仿唐宋建筑风格，可以放大斗栱"
-msgstr ""
-"Scale of Dougong size. To imitate the style of the Tang and Song dynasties."
+msgstr "Scale of Dougong size. To imitate the style of the Tang and Song dynasties"
 
 #: data.py:621 panel.py:1258
 msgid "斗栱间距"
@@ -651,9 +647,7 @@ msgid "收山尺寸"
 msgstr "Shoushan Size"
 
 #: data.py:735
-msgid ""
-"歇山顶的山花板从檐檩中向内移动的距离(米)，一般为1檩径(4斗口)，最大不超过檐步"
-"架"
+msgid "歇山顶的山花板从檐檩中向内移动的距离(米)，一般为1檩径(4斗口)，最大不超过檐步架"
 msgstr "Size of Shoushan (0~2)"
 
 #: data.py:738 panel.py:1365
@@ -1162,7 +1156,7 @@ msgstr "Delete current building"
 
 #: operators.py:151
 msgid "重新生成被减柱的柱子，但也会丢失所有的额枋、隔扇、槛墙等"
-msgstr "Regenerate pillars, will lose all beams, walls, windows, etc."
+msgstr "Regenerate pillars, will lose all beams, walls, windows, etc"
 
 #: operators.py:214
 msgid "设置垂花柱（先选择1根以上的柱子）"
@@ -1262,7 +1256,7 @@ msgstr "Export as FBX, for D5 Render"
 
 #: operators.py:1057
 msgid "导出为GLB模型，推荐UE5导入。"
-msgstr "Export as GLB, for UE5"
+msgstr "Export as GLB, for UE5."
 
 #: operators.py:1151
 msgid "关联素材库"
@@ -1317,11 +1311,8 @@ msgid "拼接建筑"
 msgstr "Splice Building"
 
 #: operators.py:1605
-msgid ""
-"将多个建筑重叠的瓦面、柱网等进行裁剪拼接，请将抱厦做为活动的选择项(最后选择)"
-msgstr ""
-"Clip and splice overlapping tiles/pillars. Select annex last (as active "
-"object)"
+msgid "将多个建筑重叠的瓦面、柱网等进行裁剪拼接，请将抱厦做为活动的选择项(最后选择)"
+msgstr "Clip and splice overlapping tiles/pillars. Select annex last (as active object)"
 
 #: operators.py:1666 operators.py:1668
 msgid "回廊延伸"
@@ -1674,7 +1665,163 @@ msgstr "Archive old logs to prevent large files"
 
 #: tools/aca_logging.py:235
 msgid "日志设置:"
-msgstr "Log Settings"
+msgstr "Log Settings:"
+
+#: build.py:47
+msgid "无法创建该类型的建筑："
+msgstr "Cannot create this type of building: "
+
+#: build.py:216
+msgid "无法创建该类型的建筑,%s"
+msgstr "Cannot create this type of building, %s"
+
+#: build.py:243
+msgid "删除失败，未找到建筑未合并的本体"
+msgstr "Deletion failed, cannot find the original uncombined building"
+
+#: build.py:385
+msgid "合并失败，无法继续做剖视图"
+msgstr "Combine failed, cannot continue with section view"
+
+#: build.py:869
+msgid "%s没有需要合并的对象，继续..."
+msgstr "%s has no objects to combine, continuing..."
+
+#: build.py:982
+msgid "盝顶设置异常，斗栱出跳或盝顶檐步架宽太小。请使用有出跳的斗栱，或增加盝顶檐步架宽。"
+msgstr "Truncated-Hip Roof setting error, Dougong-projection or Rafter-Span is too small. Please use Dougong with projection, or increase Rafter-Span."
+
+#: build.py:988
+msgid "无法生成平坐，请启用斗栱，且斗栱应该有足够的出跳。"
+msgstr "Cannot generate pingzuo, please enable Dougong and ensure Dougong has sufficient projection."
+
+#: build.py:1013
+msgid "不止两个建筑"
+msgstr "More than two buildings"
+
+#: build.py:1026
+msgid "请选择需要组合的2个建筑"
+msgstr "Please select 2 buildings to combine"
+
+#: build.py:1041
+msgid "建筑不相交，无法进行组合"
+msgstr "Buildings do not intersect, cannot combine"
+
+#: build.py:1144
+msgid "无法处理的建筑合并"
+msgstr "Unhandled building combine"
+
+#: build.py:1218
+msgid "勾连搭"
+msgstr "Goulianda"
+
+#: build.py:1330
+msgid "平行抱厦-悬山-主建筑"
+msgstr "Parallel Overhanging Main-Building"
+
+#: build.py:1368
+msgid "平行抱厦-悬山-抱厦"
+msgstr "Parallel Overhanging Pavilion"
+
+#: build.py:1404
+msgid "平行抱厦-悬山-柱网"
+msgstr "Parallel Overhanging Pillar"
+
+#: build.py:1457
+msgid "平行抱厦-悬山-台基"
+msgstr "Parallel Overhanging Platform"
+
+#: build.py:1500
+msgid "无法找到主建筑瓦面"
+msgstr "Cannot find main building roof tiles"
+
+#: build.py:1574
+msgid "平行抱厦-歇山"
+msgstr "Parallel Hip-and-Gable"
+
+#: build.py:1646
+msgid "平行抱厦-歇山屋顶"
+msgstr "Parallel Hip-and-Gable Roof"
+
+#: build.py:1707
+msgid "平行抱厦-歇山-柱网"
+msgstr "Parallel Hip-and-Gable Pillar"
+
+#: build.py:1880
+msgid "丁字形抱厦"
+msgstr "T-Pavilion"
+
+#: build.py:2011
+msgid "未找到屋顶相交范围：from=%s,to=%s"
+msgstr "Roof intersection range not found: from=%s, to=%s"
+
+#: build.py:2167
+msgid "丁字抱厦"
+msgstr "T-Pavilion"
+
+#: build.py:2233
+msgid "丁字抱厦-柱网"
+msgstr "T-Pavilion Grid"
+
+#: build.py:2393
+msgid "只支持2坡顶"
+msgstr "Only 2-slope roof supported"
+
+#: build.py:2613
+msgid "屋顶相交"
+msgstr "Roof Intersection"
+
+#: build.py:2668
+msgid "无法获取正身坡线"
+msgstr "Cannot get main roof slope line"
+
+#: build.py:2687
+msgid "无法获取屋面"
+msgstr "Cannot get roof surface"
+
+#: build.py:2707
+msgid "建筑没有相交，未做任何裁剪"
+msgstr "Buildings do not intersect, no clipping applied"
+
+#: build.py:2728
+msgid "请选中建筑"
+msgstr "Please select a building"
+
+#: build.py:2744
+msgid "未能合并建筑"
+msgstr "Failed to combine buildings"
+
+#: build.py:2884
+msgid "回廊转角"
+msgstr "Corridor Corner"
+
+#: build.py:2976
+msgid "45度镜像"
+msgstr "45-degree Mirror"
+
+#: build.py:3001
+msgid "转角裁剪"
+msgstr "Corner Clipping"
+
+#: build.py:3051
+msgid "无法找到转角对象"
+msgstr "Cannot find corner object"
+
+#: build.py:3109
+msgid "丁字转角"
+msgstr "T-shaped Corner"
+
+#: build.py:3120
+msgid "丁字裁剪"
+msgstr "T-shaped Clipping"
+
+#: build.py:3346
+msgid "出檐A裁剪"
+msgstr "Eaves A Clipping"
+
+#: build.py:3444
+msgid "出檐B裁剪"
+msgstr "Eaves B Clipping"
 
 #, fuzzy
 #~| msgctxt "*"
@@ -1918,8 +2065,7 @@ msgstr "Log Settings"
 
 #~ msgctxt "*"
 #~ msgid "注意：建筑样式保存在模板文件中，删除后无法复原。"
-#~ msgstr ""
-#~ "Note: Style is saved in template file, cannot be restored after delete."
+#~ msgstr "Note: Style is saved in template file, cannot be restored after delete."
 
 #~ msgctxt "*"
 #~ msgid "测试"

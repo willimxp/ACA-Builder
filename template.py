@@ -140,13 +140,13 @@ def updateDougongData(buildingObj:bpy.types.Object,
     if bData.aca_type != con.ACA_TYPE_BUILDING:
         if bData.combo_type == con.COMBO_ROOT:
             # comboRoot节点无需更新斗栱数据
-            print("组合建筑根节点，无需更新斗栱数据")
+            print(_("组合建筑根节点，无需更新斗栱数据"))
             return
         if bData.aca_type == con.ACA_TYPE_YARDWALL:
-            print("院墙，无需更新斗栱数据")
+            print(_("院墙，无需更新斗栱数据"))
             return
         else:
-            raise Exception("更新斗栱数据异常，输入的不是建筑根节点")
+            raise Exception(_("更新斗栱数据异常，输入的不是建筑根节点"))
     dgrootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_DG_ROOT)
     if dgrootObj == None:       
@@ -208,7 +208,7 @@ def updateDougongData(buildingObj:bpy.types.Object,
                 or aData.dg_corner_source == None
                 # or aData.dg_balcony_pillar_source == None
                 ):
-            raise Exception("斗栱配置不完整，请检查")
+            raise Exception(_("斗栱配置不完整，请检查"))
     
     # 2、更新bData中的斗栱配置参数
     # 包括dg_height,dg_extend,dgScale
@@ -223,21 +223,21 @@ def updateDougongData(buildingObj:bpy.types.Object,
     dgObj = aData.dg_pillar_source
     # 防止无法载入斗栱时的崩溃
     if dgObj == None:
-        utils.outputMsg('无法读取斗栱挑高和出跳数据')
+        utils.outputMsg(_('无法读取斗栱挑高和出跳数据'))
         return
     if 'dgHeight' in dgObj:
         bData['dg_height'] = dgObj['dgHeight']*dgScale
     else:
-        utils.outputMsg("斗栱未定义默认高度")
+        utils.outputMsg(_("斗栱未定义默认高度"))
     if 'dgExtend' in dgObj:
         bData['dg_extend'] = dgObj['dgExtend']*dgScale
     else:
-        utils.outputMsg("斗栱未定义默认出跳")
+        utils.outputMsg(_("斗栱未定义默认出跳"))
     # 250831 新增斗栱是否与大梁连做
     if 'dgWithBeam' in dgObj:
         bData['dg_withbeam'] = dgObj['dgWithBeam']
     else:
-        utils.outputMsg("斗栱未定义默认出跳")
+        utils.outputMsg(_("斗栱未定义默认出跳"))
 
     # 250902 如果屋顶为平坐，且有平坐斗栱，覆盖dgHeight
     if (bData.roof_style == con.ROOF_BALCONY and 
@@ -314,19 +314,19 @@ def loadAssets(assetName : str,
         addon_prefs = preferences.addons[addon_main_name].preferences
         filepath = addon_prefs.filepath    
     if not os.path.exists(filepath):
-        raise FileNotFoundError(f"无法打开资产库，请确认已经按照使用手册，关联了acaAssets.blend文件。")   
+        raise FileNotFoundError(_("无法打开资产库，请确认已经按照使用手册，关联了acaAssets.blend文件。"))   
 
     # 简化做法，效率更高，但没有关联子对象
     try:
         with bpy.data.libraries.load(filepath,link=link) as (data_from, data_to):
             data_to.objects = [name for name in data_from.objects if name==assetName]
     except OSError:
-        raise Exception('无法打开资产库，请确认acaAssets.blend文件已经放入插件目录')
+        raise Exception(_('无法打开资产库，请确认acaAssets.blend文件已经放入插件目录'))
     # 验证找到的资产是否唯一
     if len(data_to.objects) == 0:
-        raise Exception(f"资产[{assetName}]载入失败，请检查是否关联最新版本的acaAssets.blend资产库。")
+        raise Exception(_("资产[%s]载入失败，请检查是否关联最新版本的acaAssets.blend资产库。" % (assetName)))
     if len(data_to.objects) > 1:
-        utils.outputMsg("无法定位唯一的资产:" + assetName)
+        utils.outputMsg(_("无法定位唯一的资产:") + assetName)
         return 
     
     sourceObj = data_to.objects[0]
@@ -399,7 +399,7 @@ def __loadDefaultData(buildingObj:bpy.types.Object):
 # aData绑定在Blender的Scene场景中，未做建筑间隔离
 # 在更新斗栱时，修改了aData中涉及斗栱的属性
 def loadAssetByBuilding(buildingObj:bpy.types.Object):
-    utils.outputMsg("重新载入素材库...")
+    utils.outputMsg(_("重新载入素材库..."))
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     aData : tmpData = bpy.context.scene.ACA_temp
@@ -524,7 +524,7 @@ def loadTemplate(buildingObj:bpy.types.Object):
     # 读取所有根节点模板
     templateNodeList = root.findall('template')
     if templateNodeList == None:
-        raise Exception("模板解析失败")
+        raise Exception(_("模板解析失败"))
         return
     
     # 查找是否有子模版
@@ -545,7 +545,7 @@ def loadTemplate(buildingObj:bpy.types.Object):
             root = templateNode
             templateNodeList = root.findall('template')
         else:
-            raise Exception(f"找不到父模板{parent.name}，无法载入子模版")
+            raise Exception(_("找不到父模板%s，无法载入子模版" % (parent.name)))
     
     # 在根层次中查找对应名称的那个模板
     for template in templateNodeList:
@@ -558,7 +558,7 @@ def loadTemplate(buildingObj:bpy.types.Object):
                 return
                     
     # 经过经过以上循环，没有符合条件的模板，抛出异常
-    raise Exception('无法载入模板')
+    raise Exception(_('无法载入模板'))
 
 # 保存带Combo的组合模板
 def saveTemplateWithCombo(buildingObj:bpy.types.Object):
@@ -574,7 +574,7 @@ def saveTemplateWithCombo(buildingObj:bpy.types.Object):
     
     # 验证是否为组合模板
     if bData.aca_type != con.ACA_TYPE_COMBO:
-        raise Exception("f保存模板失败，未知的建筑类型{bData.aca_type}")
+        raise Exception(_("保存模板失败，未知的建筑类型%s" % (bData.aca_type)))
         return {'CANCELLED'}
     comboObj = buildingObj
     
@@ -586,7 +586,7 @@ def saveTemplateWithCombo(buildingObj:bpy.types.Object):
     # 验证根节点
     templateNodeList = root.findall('template')
     if templateNodeList == None:
-        utils.outputMsg("模板解析失败")
+        utils.outputMsg(_("模板解析失败"))
         return
     
     # 遍历查找对应的combo节点
@@ -642,7 +642,7 @@ def __saveTemplate(buildingObj:bpy.types.Object):
     # 验证根节点
     templateNodeList = root.findall('template')
     if templateNodeList == None:
-        utils.outputMsg("模板解析失败")
+        utils.outputMsg(_("模板解析失败"))
         return
     
     # 查找是否有子模版
@@ -663,7 +663,7 @@ def __saveTemplate(buildingObj:bpy.types.Object):
             root = templateNode
             templateNodeList = root.findall('template')
         else:
-            raise Exception(f"找不到父模板{parent.name}，无法保存子模版")
+            raise Exception(_("找不到父模板%s，无法保存子模版" % (parent.name)))
             return
     
     # 遍历查找对应模板
@@ -763,7 +763,7 @@ def delTemplate(templateName):
     # 验证根节点
     templateNodeList = root.findall('template')
     if templateNodeList == None:
-        utils.outputMsg("模板解析失败")
+        utils.outputMsg(_("模板解析失败"))
         return
     
     # 遍历查找对应模板

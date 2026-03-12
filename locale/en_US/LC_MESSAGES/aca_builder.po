@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ACA Builder\n"
 "POT-Creation-Date: 2026-03-12 09:44+0800\n"
-"PO-Revision-Date: 2026-03-12 19:15+0800\n"
+"PO-Revision-Date: 2026-03-12 20:34+0800\n"
 "Last-Translator: Auto Generated <noreply@example.com>\n"
 "Language-Team: English <en@li.org>\n"
 "Language: en_US\n"
@@ -39,13 +39,12 @@ msgstr "%s has no objects to combine, continuing..."
 #: build.py:982
 msgid "盝顶设置异常，斗栱出跳或盝顶檐步架宽太小。请使用有出跳的斗栱，或增加盝顶檐步架宽。"
 msgstr ""
-"Truncated-Hip Roof setting error, Dougong-projection or Rafter-Span is too small. Please use "
-"Dougong with projection, or increase Rafter-Span."
+"Truncated-Hip Roof setting error, Dougong-projection or Rafter-Span is too small. Please use Dougong with projection, or "
+"increase Rafter-Span."
 
 #: build.py:988
 msgid "无法生成平坐，请启用斗栱，且斗栱应该有足够的出跳。"
-msgstr ""
-"Cannot generate pingzuo, please enable Dougong and ensure Dougong has sufficient projection."
+msgstr "Cannot generate pingzuo, please enable Dougong and ensure Dougong has sufficient projection."
 
 #: build.py:1013
 msgid "不止两个建筑"
@@ -254,8 +253,8 @@ msgstr "Railing"
 msgid "没有斗栱，无法营造平坐"
 msgstr "No Dougong, cannot build balcony"
 
-#: buildBalcony.py:658 buildDoor.py:531 buildDoor.py:578 buildDoor.py:1260 buildDoor.py:1503
-#: buildDoor.py:1569 buildDoor.py:1698 buildFloor.py:364
+#: buildBalcony.py:658 buildDoor.py:531 buildDoor.py:578 buildDoor.py:1260 buildDoor.py:1503 buildDoor.py:1569 buildDoor.py:1698
+#: buildFloor.py:364
 msgid "未找到建筑根节点或设计数据"
 msgstr "Building root node or design data not found"
 
@@ -292,8 +291,7 @@ msgstr "Bench"
 #: buildBeam.py:237
 msgid "请留意：一般屋顶椽架数量应该为偶数（卷棚为奇数），所以，椽架数量自动减少了一椽架"
 msgstr ""
-"Note: Generally, Rafter-Count should be even (odd for hip-and-gable), so Rafter-Count has been "
-"automatically reduced by one"
+"Note: Generally, Rafter-Count should be even (odd for hip-and-gable), so Rafter-Count has been automatically reduced by one"
 
 #: buildBeam.py:352
 msgid "挑檐桁"
@@ -474,8 +472,8 @@ msgstr "Cannot add double eave on balcony layer, please select another floor"
 #: buildCombo.py:795
 msgid "收分验证失败：斗栱出跳与重檐收分合计至少应3斗口，请更换斗栱，或增加收分"
 msgstr ""
-"Verification failed: Dougong extension and Pavilion Taper should total at least 3 Doukou, please "
-"change Dougong or increase Pavilion Taper"
+"Verification failed: Dougong extension and Pavilion Taper should total at least 3 Doukou, please change Dougong or increase "
+"Pavilion Taper"
 
 #: buildCombo.py:805
 #, python-format
@@ -505,12 +503,10 @@ msgstr "Center bay depth is currently [%s], should be greater than [%s]"
 #: buildCombo.py:824
 #, python-format
 msgid ""
-"收分验证失败：%s（注意：如果下层已经有回廊，建议不要使用方案“6-重楼+腰檐+回廊”，可以尝试使用方"
-"案“4-重楼+腰檐+平坐(无栏杆)”）"
+"收分验证失败：%s（注意：如果下层已经有回廊，建议不要使用方案“6-重楼+腰檐+回廊”，可以尝试使用方案“4-重楼+腰檐+平坐(无栏杆)”）"
 msgstr ""
-"Taper verification failed: %s (Note: If lower floor already has corridor, suggest not using "
-"scheme \"6-Double Story+Waist Eave+Corridor\", can try scheme \"4-Double Story+Waist "
-"Eave+Balcony(No Railing)\")"
+"Taper verification failed: %s (Note: If lower floor already has corridor, suggest not using scheme \"6-Double Story+Waist "
+"Eave+Corridor\", can try scheme \"4-Double Story+Waist Eave+Balcony(No Railing)\")"
 
 #: buildCombo.py:832 buildFloor.py:1613
 msgid "添加重楼子建筑..."
@@ -553,14 +549,12 @@ msgstr "Pavilion Taper failed: End bay width is currently %s, should be greater 
 #: buildCombo.py:1401
 #, python-format
 msgid "楼阁收分失败：次间尺寸当前%s，需大于收分%s"
-msgstr ""
-"Pavilion Taper failed: Second bay width is currently %s, should be greater than shrinkage %s"
+msgstr "Pavilion Taper failed: Second bay width is currently %s, should be greater than shrinkage %s"
 
 #: buildCombo.py:1407
 #, python-format
 msgid "楼阁收分失败：明间尺寸当前%s，需大于收分%s"
-msgstr ""
-"Pavilion Taper failed: Center bay width is currently %s, should be greater than shrinkage %s"
+msgstr "Pavilion Taper failed: Center bay width is currently %s, should be greater than shrinkage %s"
 
 #: buildCombo.py:1410 buildCombo.py:1440
 msgid "楼阁收分失败，未知原因"
@@ -584,8 +578,7 @@ msgstr "Pavilion Taper failed: Center bay depth should increase by %s"
 #: buildCombo.py:1437
 #, python-format
 msgid "楼阁收分失败：进深明间尺寸当前%s，需大于2倍收分%s"
-msgstr ""
-"Pavilion Taper failed: Center bay depth is currently %s, should be greater than 2x shrinkage %s"
+msgstr "Pavilion Taper failed: Center bay depth is currently %s, should be greater than 2x shrinkage %s"
 
 #: buildCombo.py:1503
 msgid "建筑已在同一个集合中，不再做集成"
@@ -869,13 +862,11 @@ msgstr "Updating building..."
 
 #: buildFloor.py:1563
 msgid "穿插枋拼接上檐柱网失败，该建筑没有做重檐"
-msgstr ""
-"Failed to connect Chuan Cha Fang to upper eave column network, building does not have double eaves"
+msgstr "Failed to connect Chuan Cha Fang to upper eave column network, building does not have double eaves"
 
 #: buildFloor.py:1570
 msgid "穿插枋拼接上檐柱网失败，未找到上檐柱网"
-msgstr ""
-"Failed to connect Chuan Cha Fang to upper eave column network, upper eave column network not found"
+msgstr "Failed to connect Chuan Cha Fang to upper eave column network, upper eave column network not found"
 
 #: buildFloor.py:1688
 #, python-format
@@ -3429,3 +3420,72 @@ msgstr "Building combine failed, multiple buildings to combine not found"
 #: operators.py:1735
 msgid "建筑集成完成 | 运行时间【%.1f秒】"
 msgstr "Building combine complete | Runtime [%.1f seconds]"
+
+#: template.py:143
+msgid "组合建筑根节点，无需更新斗栱数据"
+msgstr "Combo building root node, no need to update Dougong data"
+
+#: template.py:146
+msgid "院墙，无需更新斗栱数据"
+msgstr "Yard wall, no need to update Dougong data"
+
+#: template.py:149
+msgid "更新斗栱数据异常，输入的不是建筑根节点"
+msgstr "Error updating Dougong data, input is not a building root node"
+
+#: template.py:211
+msgid "斗栱配置不完整，请检查"
+msgstr "Dougong configuration incomplete, please check"
+
+#: template.py:226
+msgid "无法读取斗栱挑高和出跳数据"
+msgstr "Cannot read Dougong height and projection data"
+
+#: template.py:231
+msgid "斗栱未定义默认高度"
+msgstr "Dougong default height not defined"
+
+#: template.py:235
+msgid "斗栱未定义默认出跳"
+msgstr "Dougong default projection not defined"
+
+#: template.py:317
+msgid "无法打开资产库，请确认已经按照使用手册，关联了acaAssets.blend文件。"
+msgstr "Cannot open asset library, please confirm that you have linked the acaAssets.blend file according to the user manual."
+
+#: template.py:324
+msgid "无法打开资产库，请确认acaAssets.blend文件已经放入插件目录"
+msgstr "Cannot open asset library, please confirm acaAssets.blend file is in the addon directory"
+
+#: template.py:327
+msgid "资产[%s]载入失败，请检查是否关联最新版本的acaAssets.blend资产库。"
+msgstr "Failed to load asset [%s], please check if the latest version of acaAssets.blend asset library is linked."
+
+#: template.py:329
+msgid "无法定位唯一的资产:"
+msgstr "Cannot locate unique asset:"
+
+#: template.py:402
+msgid "重新载入素材库..."
+msgstr "Reloading asset library..."
+
+#: template.py:527
+msgid "模板解析失败"
+msgstr "Template parsing failed"
+
+#: template.py:548
+msgid "找不到父模板%s，无法载入子模版"
+msgstr "Cannot find parent template %s, cannot load child template"
+
+#: template.py:561
+msgid "无法载入模板"
+msgstr "Cannot load template"
+
+#: template.py:577
+msgid "保存模板失败，未知的建筑类型%s"
+msgstr "Failed to save template, unknown building type %s"
+
+#: template.py:666
+msgid "找不到父模板%s，无法保存子模版"
+msgstr "Cannot find parent template %s, cannot save child template"
+

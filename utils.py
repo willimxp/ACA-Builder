@@ -10,19 +10,9 @@ import logging
 import traceback
 from mathutils import Vector,Euler,Matrix,geometry
 import numpy as np
-import time
 from typing import List
-
 from . import data
 from .const import ACA_Consts as con
-
-def is_debug():
-    """
-    判断是否为调试状态
-    通过检查sys.gettrace()来判断
-    """
-    import sys
-    return sys.gettrace() is not None
 
 # 获取console窗口的context
 # 以便在console_print中override

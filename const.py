@@ -277,7 +277,6 @@ class ACA_Consts(object):
     PILLAR_HEAD_DEFAULT = 1             # 柱头贴图默认高度(素材库，贴图使用)
     PILLAR_HEIGHT_DEFAULT = 5           # 柱默认高度(素材库，贴图使用)
     PILLAR_STYLE_LIFT = 'lift'          # 垂花柱标识
-    DEFAULT_LANGUAGE = 'en_US'        # 默认语言 FOLLOW/zh_HANS/en_US
 
     # 瓦作类
     # 屋瓦灰背层高度，用于计算铺瓦的高度

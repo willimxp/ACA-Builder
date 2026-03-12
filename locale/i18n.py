@@ -6,8 +6,9 @@
 import bpy
 import os
 import gettext
-from .. import utils
-from .. import const
+
+# 默认语言 FOLLOW/zh_HANS/en_US
+DEFAULT_LANGUAGE = 'en_US'
 
 # 英文翻译器
 # 在load_translations()中初始化
@@ -24,7 +25,7 @@ def set_language(lang):
 
 def get_language():
     """获取当前语言设置"""
-    global _current_language
+    global _current_language, DEFAULT_LANGUAGE
     
     # 1. 优先使用缓存的语言设置
     if _current_language:
@@ -37,8 +38,7 @@ def get_language():
         return _current_language
         
     # 3. 返回默认值
-    from ..const import ACA_Consts as con
-    _current_language = con.DEFAULT_LANGUAGE
+    _current_language = DEFAULT_LANGUAGE
     return _current_language
 
 def update_language(self, context):
@@ -48,7 +48,7 @@ def update_language(self, context):
     """
     import importlib
     import sys
-    from .. import panel, operators, data
+    from .. import panel, operators, data, const
     from ..tools import auto_register
     
     # print(f"ACA Builder: Switching language to {self.language}...")
@@ -79,6 +79,7 @@ def update_language(self, context):
     # 4. 重新加载模块
     # 注意：必须按照依赖顺序重新加载
     try:
+        importlib.reload(const)
         importlib.reload(data)
         importlib.reload(panel)
         # reload(operators) 会导致当前运行的代码上下文失效，但在回调中通常是可以接受的
@@ -135,7 +136,10 @@ def load_translations():
     # Load English translations
     locale_dir = os.path.dirname(__file__)
     translations = []
-    is_debug = utils.is_debug()
+    
+    # 判断是否为调试状态
+    import sys
+    is_debug = sys.gettrace() is not None
     
     # 需要加载的翻译文件列表
     domains = ['aca_builder', 'aca_xml']
@@ -244,6 +248,7 @@ load_translations()
 # 260310 多语言设置
 # 被panel.ACA_OT_Preferences使用
 class I18nPrefsMixin:
+    global DEFAULT_LANGUAGE
     # 多语言设置
     language: bpy.props.EnumProperty(
         name="语言 / Language",
@@ -253,7 +258,7 @@ class I18nPrefsMixin:
             ('zh_HANS', '简体中文 (Simplified Chinese)', '简体中文'),
             ('en_US', 'English', 'English'),
         ],
-        default=const.ACA_Consts.DEFAULT_LANGUAGE,
+        default=DEFAULT_LANGUAGE,
         update=update_language,
     ) # type: ignore
 

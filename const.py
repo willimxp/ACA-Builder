@@ -4,25 +4,27 @@
 # 常数定义
 # 请务必注意，只读取该属性，不要修改属性
 
+from .locale.i18n import _
+
 class ACA_Consts(object):
     # 继承object类，提供了__setattr__等方法
     # https://www.jb51.net/article/274253.htm
 
     # 目录名称
-    COLL_NAME_ROOT = 'ACA筑韵古建'
-    COLL_NAME_ROOT_JOINED = 'ACA古建.合并'
-    COLL_NAME_BASE = '1-台基层'
-    COLL_NAME_PILLAR = '2-柱网层'
-    COLL_NAME_WALL = '3-装修层'
-    COLL_NAME_DOUGONG = '4-斗栱层'
-    COLL_NAME_BEAM = '5-梁架层'
-    COLL_NAME_RAFTER = '6-椽架层'
-    COLL_NAME_BOARD = '7-山花/望板'
-    COLL_NAME_TILE = '8-瓦作层'
-    COLL_NAME_BALCONY = '5-平坐层'
+    COLL_NAME_ROOT = _('ACA筑韵古建')
+    COLL_NAME_ROOT_JOINED = _('ACA古建.合并')
+    COLL_NAME_BASE = _('1-台基层')
+    COLL_NAME_PILLAR = _('2-柱网层')
+    COLL_NAME_WALL = _('3-装修层')
+    COLL_NAME_DOUGONG = _('4-斗栱层')
+    COLL_NAME_BEAM = _('5-梁架层')
+    COLL_NAME_RAFTER = _('6-椽架层')
+    COLL_NAME_BOARD = _('7-山花/望板')
+    COLL_NAME_TILE = _('8-瓦作层')
+    COLL_NAME_BALCONY = _('5-平坐层')
     
     # 系统参数
-    PLATFORM_NAME = '台基'                                           # 台基名称
+    PLATFORM_NAME = _('台基')                                           # 台基名称
     ACA_TYPE_COMBO = 'combo'                                        # ACA类型：combo根节点
     ACA_TYPE_BUILDING = 'building'                                  # ACA类型：建筑根节点
     ACA_TYPE_BUILDING_JOINED = 'joined'                             # ACA类型：已合并建筑

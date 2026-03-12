@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ACA Builder\n"
 "POT-Creation-Date: 2026-03-12 09:44+0800\n"
-"PO-Revision-Date: 2026-03-12 10:32+0800\n"
+"PO-Revision-Date: 2026-03-12 18:09+0800\n"
 "Last-Translator: Auto Generated <noreply@example.com>\n"
 "Language-Team: English <en@li.org>\n"
 "Language: en_US\n"
@@ -3059,3 +3059,47 @@ msgstr "East yard wall"
 #: buildYardWall.py:539
 msgid "完成墙体构造"
 msgstr "Wall construction completed"
+
+#: const.py:14
+msgid "ACA古建.合并"
+msgstr "ACA.Combined"
+
+#: const.py:15
+msgid "1-台基层"
+msgstr "1-Platform"
+
+#: const.py:16
+msgid "2-柱网层"
+msgstr "2-Pillars/Fangs"
+
+#: const.py:17
+msgid "3-装修层"
+msgstr "3-Walls/Windows"
+
+#: const.py:18
+msgid "4-斗栱层"
+msgstr "4-Dougong"
+
+#: const.py:19
+msgid "5-梁架层"
+msgstr "5-Beam Frame"
+
+#: const.py:20
+msgid "6-椽架层"
+msgstr "6-Rafter Frame"
+
+#: const.py:21
+msgid "7-山花/望板"
+msgstr "7-Gable/Sheathing"
+
+#: const.py:22
+msgid "8-瓦作层"
+msgstr "8-Tiles/Ridges"
+
+#: const.py:23
+msgid "5-平坐层"
+msgstr "5-Pingzuo"
+
+#: const.py:26
+msgid "台基"
+msgstr "Platform"

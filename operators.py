@@ -37,7 +37,7 @@ class ACA_OT_focusBuilding(bpy.types.Operator):
                     # 聚焦Combo
                     utils.focusObj(comboObj)                
         else:
-            self.report({'ERROR'},"找不到根节点")
+            self.report({'ERROR'},_("找不到根节点"))
 
         return {'FINISHED'}
 
@@ -48,7 +48,7 @@ class ACA_OT_focusBuilding(bpy.types.Operator):
 # 用户在场景中选择时，可自动回溯到该建筑
 class ACA_OT_add_building(bpy.types.Operator):
     bl_idname="aca.add_newbuilding"
-    bl_label = "添加新建筑"
+    bl_label = _("添加新建筑")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = _('根据选择的样式，自动生成建筑的各个构件')
 
@@ -69,7 +69,7 @@ class ACA_OT_add_building(bpy.types.Operator):
             templateName = templateList[templateIndex].name
 
             runTime = time.time() - timeStart
-            message = "从模板样式新建完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
+            message = _("从模板样式新建完成！|建筑样式：【%s】 |运行时间：【%.1f秒】") \
                         % (templateName,runTime)
         
         if message != '':
@@ -80,13 +80,13 @@ class ACA_OT_add_building(bpy.types.Operator):
 # 更新建筑
 class ACA_OT_update_building(bpy.types.Operator):
     bl_idname="aca.update_building"
-    bl_label = "更新建筑"
+    bl_label = _("更新建筑")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = _('根据参数的修改，重新生成建筑')
 
     # 外部传入的对象
     buildingName: bpy.props.StringProperty(
-        name="建筑名称",
+        name=_("建筑名称"),
         default=''
     ) # type: ignore
 
@@ -103,7 +103,7 @@ class ACA_OT_update_building(bpy.types.Operator):
             reloadAssets = False
         # 判断是否是ACA对象
         if buildingObj == None:
-            utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
+            utils.popMessageBox(_("此对象并非插件生成，或已经合并，无法操作。"))
             return {'FINISHED'}
 
         # 更新新建筑
@@ -116,7 +116,7 @@ class ACA_OT_update_building(bpy.types.Operator):
         # 结果提示
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
-            msg = "更新建筑完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
+            msg = _("更新建筑完成！|建筑样式：【%s】 |运行时间：【%.1f秒】") \
                         % (buildingObj.name,runTime)
             utils.outputMsg(msg)
             self.report({'INFO'},msg)
@@ -125,19 +125,19 @@ class ACA_OT_update_building(bpy.types.Operator):
 # 删除建筑
 class ACA_OT_del_building(bpy.types.Operator):
     bl_idname="aca.del_building"
-    bl_label = "删除建筑"
+    bl_label = _("删除建筑")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = _('删除当前建筑')
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj == None:
-            utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
+            utils.popMessageBox(_("此对象并非插件生成，或已经合并，无法操作。"))
             return {'FINISHED'}
         buildingName = buildingObj.name
         if buildingObj != None:
             build.delBuilding(buildingObj)
-            message = "%s-建筑已删除！" \
+            message = _("%s-建筑已删除！") \
                         % (buildingName)
             self.report({'INFO'},message)
 
@@ -146,13 +146,13 @@ class ACA_OT_del_building(bpy.types.Operator):
 # 重新生成柱网
 class ACA_OT_reset_floor(bpy.types.Operator):
     bl_idname="aca.reset_floor"
-    bl_label = "重设柱网"
+    bl_label = _("重设柱网")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = _('重新生成被减柱的柱子，但也会丢失所有的额枋、隔扇、槛墙等')
 
     # 外部传入的对象
     buildingName: bpy.props.StringProperty(
-        name="建筑名称",
+        name=_("建筑名称"),
         default=''
     ) # type: ignore
 
@@ -168,7 +168,7 @@ class ACA_OT_reset_floor(bpy.types.Operator):
         result = utils.fastRun(funproxy)
 
         if 'FINISHED' in result:
-            self.report({'INFO'},"已重新营造柱网！")
+            self.report({'INFO'},_("已重新营造柱网！"))
 
         return {'FINISHED'}
     
@@ -180,26 +180,26 @@ class ACA_OT_reset_floor(bpy.types.Operator):
         # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
         if bData.x_rooms % 2 == 0:
             # 不处理偶数面阔间数
-            utils.popMessageBox("面阔间数不能为偶数")
+            utils.popMessageBox(_("面阔间数不能为偶数"))
             # 用户取消操作时执行撤销
             bpy.ops.ed.undo()
             return {'CANCELLED'}
 
         return context.window_manager.invoke_props_dialog(
             operator = self,
-            title="ACA筑韵古建 addon for Blender",
+            title=_("ACA筑韵古建 addon for Blender"),
             width = 400,
             )
 
     def draw(self, context):
         row = self.layout.row()
         row.label(
-            text=("请注意，柱网数据将重新生成。"),
+            text=(_("请注意，柱网数据将重新生成。")),
             icon='ERROR'
             )
         row = self.layout.row()
         row.label(
-            text=("所有额枋、槛墙、槛窗、隔扇都会被删除！"),
+            text=(_("所有额枋、槛墙、槛窗、隔扇都会被删除！")),
             icon='BLANK1'
             )
     
@@ -210,7 +210,7 @@ class ACA_OT_reset_floor(bpy.types.Operator):
 # 设置垂花柱
 class ACA_OT_set_pillar(bpy.types.Operator):
     bl_idname="aca.set_pillar"
-    bl_label = "垂花柱"
+    bl_label = _("垂花柱")
     bl_description = _('设置垂花柱（先选择1根以上的柱子）')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -225,13 +225,13 @@ class ACA_OT_set_pillar(bpy.types.Operator):
                     pillarStyle=con.PILLAR_STYLE_LIFT)
         result = utils.fastRun(funproxy)
 
-        self.report({'INFO'},"已设置垂花柱")
+        self.report({'INFO'},_("已设置垂花柱"))
         return {'FINISHED'}
 
 # 减柱
 class ACA_OT_del_pillar(bpy.types.Operator):
     bl_idname="aca.del_pillar"
-    bl_label = "减柱"
+    bl_label = _("减柱")
     bl_description = _('删除柱子（先选择1根以上的柱子）')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -245,13 +245,13 @@ class ACA_OT_del_pillar(bpy.types.Operator):
                     pillars=pillars)
         result = utils.fastRun(funproxy)
 
-        self.report({'INFO'},"已删除柱子")
+        self.report({'INFO'},_("已删除柱子"))
         return {'FINISHED'}
 
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(
             self, 
-            title="ACA筑韵古建 addon for Blender",
+            title=_("ACA筑韵古建 addon for Blender"),
             width = 400,)
 
     def draw(self, context):
@@ -261,20 +261,20 @@ class ACA_OT_del_pillar(bpy.types.Operator):
         for pillar in pillars:
             pillarsName += pillar.name + '，'
         row.label(
-            text=("确定删除【" 
+            text=(_("确定删除【") 
                   + pillarsName[:-1]
-                  + "】吗？"),
+                  + _("】吗？")),
             icon='QUESTION'
             )
         row.label(
-            text=("减柱做为配置参数可以保存在模板样式中"),
+            text=(_("减柱做为配置参数可以保存在模板样式中")),
             icon='BLANK1'
             )
 
 # 添加踏跺
 class ACA_OT_add_step(bpy.types.Operator):
     bl_idname="aca.add_step"
-    bl_label = "添加踏跺"
+    bl_label = _("添加踏跺")
     bl_description = _('在柱间添加踏跺（先选择2根以上的柱子）')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -289,7 +289,7 @@ class ACA_OT_add_step(bpy.types.Operator):
                     == con.ACA_TYPE_PILLAR:
                     pillarNum += 1
         if pillarNum < 2:
-            utils.popMessageBox("请至少选择2根柱子")
+            utils.popMessageBox(_("请至少选择2根柱子"))
             return {'CANCELLED'}
         
         buildingObj,bData,oData = utils.getRoot(context.object)
@@ -299,14 +299,14 @@ class ACA_OT_add_step(bpy.types.Operator):
                 buildingObj=buildingObj,pillars=pillars)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已添加踏跺")
+                self.report({'INFO'},_("已添加踏跺"))
         
         return {'FINISHED'}
 
 # 删除踏跺
 class ACA_OT_del_step(bpy.types.Operator):
     bl_idname="aca.del_step"
-    bl_label = "删除踏跺"
+    bl_label = _("删除踏跺")
     bl_description = _('在柱间删除踏跺（先选择1个以上的踏跺）')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -324,7 +324,7 @@ class ACA_OT_del_step(bpy.types.Operator):
                     selected = True
         
         if not selected:
-            utils.popMessageBox("请选择需要删除的踏跺")
+            utils.popMessageBox(_("请选择需要删除的踏跺"))
             return {'CANCELLED'}
                 
         buildingObj,bData,oData = utils.getRoot(context.object)
@@ -334,7 +334,7 @@ class ACA_OT_del_step(bpy.types.Operator):
                 buildingObj=buildingObj,steps=steps)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已删除踏跺")
+                self.report({'INFO'},_("已删除踏跺"))
         
         return {'FINISHED'}
 
@@ -342,7 +342,7 @@ class ACA_OT_del_step(bpy.types.Operator):
 # 绑定在建筑面板的“墙体营造按钮上”
 class ACA_OT_reset_wall_layout(bpy.types.Operator):
     bl_idname="aca.reset_wall_layout"
-    bl_label = "更新所有墙体"
+    bl_label = _("更新所有墙体")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = _('批量生成各个墙体')
 
@@ -355,16 +355,16 @@ class ACA_OT_reset_wall_layout(bpy.types.Operator):
                 buildingObj=buildingObj)
             result = utils.fastRun(funproxy)
             if 'FINISHED' in result:
-                self.report({'INFO'},"墙体已更新！")
+                self.report({'INFO'},_("墙体已更新！"))
         else:
-            self.report({'ERROR'},"找不到根节点！")
+            self.report({'ERROR'},_("找不到根节点！"))
 
         return {'FINISHED'}
 
 # 单独生成一个墙体
 class ACA_OT_add_wall(bpy.types.Operator):
     bl_idname="aca.add_wall"
-    bl_label = "加墙"
+    bl_label = _("加墙")
     bl_description = _('在柱间加墙（先选择2根以上的柱子）')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -379,14 +379,14 @@ class ACA_OT_add_wall(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_WALL)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已添加墙体")
+                self.report({'INFO'},_("已添加墙体"))
 
         return {'FINISHED'}
     
 # 单独生成一个隔扇
 class ACA_OT_add_door(bpy.types.Operator):
     bl_idname="aca.add_door"
-    bl_label = "隔扇"
+    bl_label = _("隔扇")
     bl_description = _('在柱间加隔扇（先选择2根以上的柱子）')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -401,14 +401,14 @@ class ACA_OT_add_door(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_GESHAN)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已添加隔扇")
+                self.report({'INFO'},_("已添加隔扇"))
 
         return {'FINISHED'}
 
 # 单独生成一个槛窗
 class ACA_OT_add_window(bpy.types.Operator):
     bl_idname="aca.add_window"
-    bl_label = "槛窗"
+    bl_label = _("槛窗")
     bl_description = _('在柱间加槛窗（先选择2根以上的柱子）')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -423,14 +423,14 @@ class ACA_OT_add_window(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_WINDOW)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已添加槛窗")
+                self.report({'INFO'},_("已添加槛窗"))
 
         return {'FINISHED'}
     
 # 删除一个墙体
 class ACA_OT_del_wall(bpy.types.Operator):
     bl_idname="aca.del_wall"
-    bl_label = "删除"
+    bl_label = _("删除")
     bl_description = _('删除柱之间的额枋、槛墙、槛窗、隔扇等')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -451,7 +451,7 @@ class ACA_OT_del_wall(bpy.types.Operator):
                 buildingObj=buildingObj,
                 walls = context.selected_objects)
             utils.fastRun(funproxy)
-            self.report({'INFO'},"已删除隔断")
+            self.report({'INFO'},_("已删除隔断"))
         elif objData.aca_type in (
                 con.ACA_TYPE_FANG,
                 ):
@@ -460,9 +460,9 @@ class ACA_OT_del_wall(bpy.types.Operator):
                 buildingObj=buildingObj,
                 fangs = context.selected_objects)
             utils.fastRun(funproxy)
-            self.report({'INFO'},"已删除额枋。")
+            self.report({'INFO'},_("已删除额枋。"))
         else:
-            self.report({'INFO'},"没有可删除的对象")
+            self.report({'INFO'},_("没有可删除的对象"))
         return {'FINISHED'}
     
     # def invoke(self, context, event):
@@ -484,7 +484,7 @@ class ACA_OT_del_wall(bpy.types.Operator):
 # 单独生成一个板门
 class ACA_OT_add_maindoor(bpy.types.Operator):
     bl_idname="aca.add_maindoor"
-    bl_label = "板门"
+    bl_label = _("板门")
     bl_description = _('在柱间加板门（先选择2根以上的柱子）')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -499,14 +499,14 @@ class ACA_OT_add_maindoor(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_MAINDOOR)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已添加板门")
+                self.report({'INFO'},_("已添加板门"))
 
         return {'FINISHED'}
     
 # 单独生成一个直棂窗
 class ACA_OT_add_barwindow(bpy.types.Operator):
     bl_idname="aca.add_barwindow"
-    bl_label = "直棂窗"
+    bl_label = _("直棂窗")
     bl_description = _('在柱间加直棂窗（先选择2根以上的柱子）')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -521,14 +521,14 @@ class ACA_OT_add_barwindow(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_BARWINDOW)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已添加直棂窗")
+                self.report({'INFO'},_("已添加直棂窗"))
 
         return {'FINISHED'}
     
 # 单独生成一个支摘窗
 class ACA_OT_add_flipwindow(bpy.types.Operator):
     bl_idname="aca.add_flipwindow"
-    bl_label = "支摘窗"
+    bl_label = _("支摘窗")
     bl_description = _('在柱间加支摘窗（先选择2根以上的柱子）')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -543,14 +543,14 @@ class ACA_OT_add_flipwindow(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_FLIPWINDOW)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已添加支摘窗")
+                self.report({'INFO'},_("已添加支摘窗"))
 
         return {'FINISHED'}
     
 # 单独生成一副栏杆
 class ACA_OT_add_railing(bpy.types.Operator):
     bl_idname="aca.add_railing"
-    bl_label = "栏杆"
+    bl_label = _("栏杆")
     bl_description = _('在柱间加栏杆（先选择2根以上的柱子）')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -565,14 +565,14 @@ class ACA_OT_add_railing(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_RAILILNG)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已添加栏杆")
+                self.report({'INFO'},_("已添加栏杆"))
 
         return {'FINISHED'}
     
 # 单独生成一副坐凳
 class ACA_OT_add_bench(bpy.types.Operator):
     bl_idname="aca.add_bench"
-    bl_label = "坐凳"
+    bl_label = _("坐凳")
     bl_description = _('在柱间加坐凳（先选择2根以上的柱子）')
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -587,7 +587,7 @@ class ACA_OT_add_bench(bpy.types.Operator):
                 wallType=con.ACA_WALLTYPE_BENCH)
         result = utils.fastRun(funproxy)
         if 'FINISHED' in result:
-                self.report({'INFO'},"已添加坐凳")
+                self.report({'INFO'},_("已添加坐凳"))
 
         return {'FINISHED'}
 
@@ -595,7 +595,7 @@ class ACA_OT_add_bench(bpy.types.Operator):
 # 生成斗栱
 class ACA_OT_build_dougong(bpy.types.Operator):
     bl_idname="aca.build_dougong"
-    bl_label = "斗栱营造"
+    bl_label = _("斗栱营造")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = _('批量生成所有的斗栱')
 
@@ -608,23 +608,23 @@ class ACA_OT_build_dougong(bpy.types.Operator):
                 buildingObj=buildingObj)
             result = utils.fastRun(funproxy)
             if 'FINISHED' in result:
-                self.report({'INFO'},"斗栱已重新营造！")
+                self.report({'INFO'},_("斗栱已重新营造！"))
         else:
-            self.report({'ERROR'},"找不到根节点！")
+            self.report({'ERROR'},_("找不到根节点！"))
 
         return {'FINISHED'}
     
 # 生成屋顶，包括梁架、椽架、望板、角梁、屋瓦、屋脊等
 class ACA_OT_build_roof(bpy.types.Operator):
     bl_idname="aca.build_roof"
-    bl_label = "生成屋顶"
+    bl_label = _("生成屋顶")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = _('重新生成屋顶的梁架、椽架、瓦作')
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj == None:
-            utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
+            utils.popMessageBox(_("此对象并非插件生成，或已经合并，无法操作。"))
             return {'FINISHED'}
         buildingName = buildingObj.name
         timeStart = time.time()
@@ -641,7 +641,7 @@ class ACA_OT_build_roof(bpy.types.Operator):
         type = {'INFO'}
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
-            message = "重新生成屋顶完成！|建筑样式：【%s】 |运行时间：【%.1f秒】" \
+            message = _("重新生成屋顶完成！|建筑样式：【%s】 |运行时间：【%.1f秒】") \
                     % (buildingName,runTime)
         
         if message != '':
@@ -671,7 +671,7 @@ class ACA_OT_default_dk(bpy.types.Operator):
             #     buildingObj=buildingObj)
             # utils.fastRun(funproxy)
         else:
-            utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
+            utils.popMessageBox(_("此对象并非插件生成，或已经合并，无法操作。"))
             return {'FINISHED'}
 
         return {'FINISHED'}
@@ -679,13 +679,13 @@ class ACA_OT_default_dk(bpy.types.Operator):
 # 保存样式
 class ACA_OT_save_template(bpy.types.Operator):
     bl_idname="aca.save_template"
-    bl_label = "保存样式修改"
+    bl_label = _("保存样式修改")
     bl_description = _('将当前选中的建筑参数保存为样式，以便重复生成')
 
     def execute(self, context):  
         buildingObj,bData,objData = utils.getRoot(context.object)
         if buildingObj == None:
-            utils.popMessageBox("此对象并非插件生成，或已经合并，无法操作。")
+            utils.popMessageBox(_("此对象并非插件生成，或已经合并，无法操作。"))
             return {'FINISHED'}
         
         # 查找是否存在comboRoot
@@ -697,7 +697,7 @@ class ACA_OT_save_template(bpy.types.Operator):
         from . import template
         result = template.saveTemplateWithCombo(buildingObj)
         if 'FINISHED' in result:
-            msg = f"【{buildingObj.name}】模板样式保存成功"
+            msg = _("【%s】模板样式保存成功" % (buildingObj.name))
             self.report({'INFO'},msg)
             utils.popMessageBox(msg)
 
@@ -722,7 +722,7 @@ class ACA_OT_save_template(bpy.types.Operator):
                 # 提示用户是否覆盖模板
                 return context.window_manager.invoke_props_dialog(
                         operator = self,
-                        title="ACA筑韵古建 addon for Blender",
+                        title=_("ACA筑韵古建 addon for Blender"),
                         width = 400,
                         )
         # 检查通过，执行保存
@@ -739,24 +739,24 @@ class ACA_OT_save_template(bpy.types.Operator):
         buildingName = buildingObj.name
         row = self.layout.row()
         row.label(
-            text=(f"是否覆盖【{buildingName}】？"),
+            text=(_("是否覆盖【%s】？" % (buildingName))),
             icon='INFO'
             )
         row = self.layout.row()
         row.label(
-            text=("请注意，覆盖模板样式的操作无法取消！"),
+            text=(_("请注意，覆盖模板样式的操作无法取消！")),
             icon='BLANK1'
             )
         row = self.layout.row()
         row.label(
-            text=("你可以先修改名称，再重新保存。"),
+            text=(_("你可以先修改名称，再重新保存。")),
             icon='BLANK1'
             )
     
 # 删除模板
 class ACA_OT_del_template(bpy.types.Operator):
     bl_idname="aca.del_template"
-    bl_label = "删除样式"
+    bl_label = _("删除样式")
     bl_description = _('从模板配置文件中删除当前样式')
 
     @classmethod
@@ -785,7 +785,7 @@ class ACA_OT_del_template(bpy.types.Operator):
                 item = scnData.templateItem.add()
                 item.name = templateItemName
 
-            self.report({'INFO'},f"【{templateName}】样式已删除。")
+            self.report({'INFO'},_("【%s】样式已删除。" % (templateName)))
 
         return {'FINISHED'}
     
@@ -796,7 +796,7 @@ class ACA_OT_del_template(bpy.types.Operator):
         # https://docs.blender.org/api/current/bpy.types.WindowManager.html#bpy.types.WindowManager.invoke_props_dialog
         return context.window_manager.invoke_props_dialog(
             operator = self,
-            title="ACA筑韵古建 addon for Blender",      # 如果为空，自动取bl_label
+            title=_("ACA筑韵古建 addon for Blender"),      # 如果为空，自动取bl_label
             width = 400,
             )
 
@@ -809,14 +809,14 @@ class ACA_OT_del_template(bpy.types.Operator):
 
         row = self.layout
         row.label(
-            text=(f"确定删除【{templateName}】吗？"),
+            text=(_("确定删除【%s】吗？" % (templateName))),
             icon='QUESTION'
             )
         row.label(
-            text=("注意：建筑样式保存在模板文件中，删除后无法复原。")
+            text=(_("注意：建筑样式保存在模板文件中，删除后无法复原。"))
             )
         row.label(
-            text=("建议先备份插件目录中的template.xml。")
+            text=(_("建议先备份插件目录中的template.xml。"))
             )
 
 # 生成院墙
@@ -840,7 +840,7 @@ class ACA_OT_build_yardwall(bpy.types.Operator):
         if 'FINISHED' in result:
             timeEnd = time.time()
             self.report(
-                {'INFO'},"新院墙添加完成！(%.1f秒)" 
+                {'INFO'},_("新院墙添加完成！(%.1f秒)") 
                 % (timeEnd-timeStart))
         
 
@@ -848,7 +848,7 @@ class ACA_OT_build_yardwall(bpy.types.Operator):
 
 class ACA_OT_default_ludingRafterSpan(bpy.types.Operator):
     bl_idname="aca.default_luding_rafterspan"
-    bl_label = "默认盝顶步架"
+    bl_label = _("默认盝顶步架")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = _('步架推荐值，自动获取尽间开间尺寸')
 
@@ -901,7 +901,7 @@ class ACA_OT_Show_Message_Box(bpy.types.Operator):
         
         return context.window_manager.invoke_props_dialog(
             self, 
-            title="ACA筑韵古建 addon for Blender",
+            title=_("ACA筑韵古建 addon for Blender"),
             width = 400,)
  
     def draw(self, context):
@@ -925,7 +925,7 @@ class ACA_OT_Show_Message_Box(bpy.types.Operator):
 # 通过执行建造过程，分析性能数据
 class ACA_OT_PROFILE(bpy.types.Operator):
     bl_idname="aca.profile"
-    bl_label = "性能分析"
+    bl_label = _("性能分析")
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -956,13 +956,13 @@ class ACA_OT_PROFILE(bpy.types.Operator):
 
 class ACA_OT_JOIN(bpy.types.Operator):
     bl_idname="aca.join"
-    bl_label = "合并整体"
+    bl_label = _("合并整体")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = _('将所有的建筑构件合并为一个整体，便于做导出等操作')
 
     # 是否分层合并
     useLayer: bpy.props.BoolProperty(
-            name="是否分层合并",
+            name=_("是否分层合并"),
             default=False,
     )# type: ignore
 
@@ -972,7 +972,7 @@ class ACA_OT_JOIN(bpy.types.Operator):
         # 验证是否选中了建筑
         buildingObj,bData,objData = utils.getRoot(context.object)
         if not buildingObj:
-            self.report({'INFO'},'合并失败，请选择一个建筑。')
+            self.report({'INFO'},_('合并失败，请选择一个建筑。'))
             return {'CANCELLED'}
         
         funproxy = partial(
@@ -983,7 +983,7 @@ class ACA_OT_JOIN(bpy.types.Operator):
 
         timeEnd = time.time()
         self.report(
-            {'INFO'},"合并完成(%.1f秒)" 
+            {'INFO'},_("合并完成(%.1f秒)") 
             % (timeEnd-timeStart))
 
         return {'FINISHED'}
@@ -992,7 +992,7 @@ class ACA_OT_JOIN(bpy.types.Operator):
 # https://docs.blender.org/api/current/bpy.ops.export_scene.html#module-bpy.ops.export_scene
 class ACA_OT_EXPORT_FBX(bpy.types.Operator):
     bl_idname="aca.export_fbx"
-    bl_label = "导出FBX"
+    bl_label = _("导出FBX")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = _('导出为FBX模型，可用于D5渲染器导入')
     
@@ -1052,7 +1052,7 @@ class ACA_OT_EXPORT_FBX(bpy.types.Operator):
 # https://docs.blender.org/api/current/bpy.ops.export_scene.html#module-bpy.ops.export_scene
 class ACA_OT_EXPORT_GLB(bpy.types.Operator):
     bl_idname="aca.export_glb"
-    bl_label = "导出GLB"
+    bl_label = _("导出GLB")
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = _('导出为GLB模型，推荐UE5导入。')
 
@@ -1113,7 +1113,7 @@ class ACA_OT_EXPORT_GLB(bpy.types.Operator):
 # 测试
 class ACA_OT_test(bpy.types.Operator):
     bl_idname="aca.test"
-    bl_label = "测试"
+    bl_label = _("测试")
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):  
@@ -1168,23 +1168,23 @@ class ACA_OT_LINK_ASSETS(bpy.types.Operator):
         filepath = self.filepath
         # 检查路径是否为空
         if not filepath:
-            utils.popMessageBox("请选择一个文件")
+            utils.popMessageBox(_("请选择一个文件"))
             return {'CANCELLED'}
         # 检查是否为文件
         if not os.path.isfile(filepath):
-            utils.popMessageBox("选择的不是一个有效的文件")
+            utils.popMessageBox(_("选择的不是一个有效的文件"))
             return {'CANCELLED'}
         # 检查文件扩展名是否为 .blend
         if not filepath.lower().endswith('.blend'):
-            utils.popMessageBox(f"选择的文件 {filepath} 不是 .blend 文件")
+            utils.popMessageBox(_("选择的文件 %s 不是 .blend 文件" % (filepath)))
             return {'CANCELLED'}
         # 路径验证通过
         preferences = bpy.context.preferences
         addon_main_name = __name__.split('.')[0]
         addon_prefs = preferences.addons[addon_main_name].preferences
         addon_prefs.filepath = filepath
-        utils.popMessageBox("素材库路径设置成功")
-        utils.outputMsg(f"素材库路径已设置为 {filepath}")
+        utils.popMessageBox(_("素材库路径设置成功"))
+        utils.outputMsg(_("素材库路径已设置为 %s" % (filepath)))
 
         return {'FINISHED'}
     
@@ -1265,7 +1265,7 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(
             self, 
             width = 450,
-            confirm_text='生成')
+            confirm_text=_('生成'))
  
     def draw(self, context):
         scnData : data.ACA_data_scene = context.scene.ACA_data
@@ -1294,7 +1294,7 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
                                show_labels=True,
                                scale=10)
         # 删除按钮
-        col_right.operator("aca.del_template", icon='TRASH', text="删除模板")
+        col_right.operator("aca.del_template", icon='TRASH', text=_("删除模板"))
 
         # 鼠标定位
         if not self.restored and self.center:
@@ -1310,7 +1310,7 @@ class ACA_OT_SECTION(bpy.types.Operator):
 
     # 参数：剖视方案
     sectionPlan: bpy.props.StringProperty(
-        name="剖视方案",
+        name=_("剖视方案"),
         default="X+"
     ) # type: ignore
 
@@ -1347,7 +1347,7 @@ class ACA_OT_TERRACE_DEL(bpy.types.Operator):
         if 'FINISHED' in result:
             timeEnd = time.time()
             self.report(
-                {'INFO'},"月台删除(%.1f秒)" 
+                {'INFO'},_("月台删除(%.1f秒)") 
                 % (timeEnd-timeStart))
         
         return {'FINISHED'}
@@ -1374,7 +1374,7 @@ class ACA_OT_TERRACE_ADD(bpy.types.Operator):
         if 'FINISHED' in result:
             timeEnd = time.time()
             self.report(
-                {'INFO'},"月台添加(%.1f秒)" 
+                {'INFO'},_("月台添加(%.1f秒)") 
                 % (timeEnd-timeStart))
         
         return {'FINISHED'}
@@ -1511,7 +1511,7 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
 
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
-            msg = '添加重楼完成 | 运行时间【%.1f秒】' % runTime
+            msg = _('添加重楼完成 | 运行时间【%.1f秒】') % runTime
             self.report({'INFO'},msg)
             utils.popMessageBox(msg)
         
@@ -1526,18 +1526,18 @@ class ACA_OT_ADD_LOGGIA(bpy.types.Operator):
 
     # 参数
     width: bpy.props.FloatProperty(
-        name="回廊宽度",
+        name=_("回廊宽度"),
         default=1.0
     ) # type: ignore
     side:bpy.props.EnumProperty(
-            name = "回廊类型",
+            name = _("回廊类型"),
             items = [
-                ("0","周围廊",""),
-                ("1","前后廊",""),
+                ("0",_("周围廊"),""),
+                ("1",_("前后廊"),""),
             ],
         ) # type: ignore
     use_railing:bpy.props.BoolProperty(
-            name = "添加栏杆",
+            name = _("添加栏杆"),
             default=False,
         ) # type: ignore
 
@@ -1591,7 +1591,7 @@ class ACA_OT_ADD_LOGGIA(bpy.types.Operator):
 
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
-            msg = '添加回廊完成 | 运行时间【%.1f秒】' % runTime
+            msg = _('添加回廊完成 | 运行时间【%.1f秒】') % runTime
             self.report({'INFO'},msg)
             utils.popMessageBox(msg)
         
@@ -1609,7 +1609,7 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
         from . import build
         build.isFinished = False
         build.progress = 0
-        utils.outputMsg("拼接建筑：分析中...")
+        utils.outputMsg(_("拼接建筑：分析中..."))
 
         timeStart = time.time()
         
@@ -1626,7 +1626,7 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
             # 副建筑
             else:
                 if toBuilding is not None:
-                    utils.popMessageBox('不止两个建筑')
+                    utils.popMessageBox(_('不止两个建筑'))
                     # 关闭进度条
                     build.isFinished = True
                     return {'CANCELLED'}
@@ -1637,7 +1637,7 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
         if (not fromBuilding
             or not toBuilding
             or fromBuilding == toBuilding) :
-            utils.popMessageBox("请选择需要组合的2个建筑")
+            utils.popMessageBox(_("请选择需要组合的2个建筑"))
             # 关闭进度条
             build.isFinished = True
             return {'CANCELLED'}
@@ -1652,7 +1652,7 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
 
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
-            msg = '拼接建筑完成 | 运行时间【%.1f秒】' % runTime
+            msg = _('拼接建筑完成 | 运行时间【%.1f秒】') % runTime
             self.report({'INFO'},msg)
             # utils.popMessageBox(msg)
 
@@ -1669,7 +1669,7 @@ class ACA_OT_LOGGIA_EXTEND(bpy.types.Operator):
 
     # 延伸方向
     dir: bpy.props.StringProperty(
-        name="剖视方案",
+        name=_("剖视方案"),
         default="X+"
     ) # type: ignore
     
@@ -1686,7 +1686,7 @@ class ACA_OT_LOGGIA_EXTEND(bpy.types.Operator):
 
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
-            msg = '建筑拼接完成 | 运行时间【%.1f秒】' % runTime
+            msg = _('建筑拼接完成 | 运行时间【%.1f秒】') % runTime
             self.report({'INFO'},msg)
             # utils.popMessageBox(msg)
         
@@ -1720,7 +1720,7 @@ class ACA_OT_COMBO_BUILDING(bpy.types.Operator):
 
         # 确保至少选择了2个建筑
         if len(buildingList) < 2: 
-            print("建筑集成失败，未找到多个待集成的建筑")
+            print(_("建筑集成失败，未找到多个待集成的建筑"))
             return {'CANCELLED'}
         
         from . import buildCombo
@@ -1732,7 +1732,7 @@ class ACA_OT_COMBO_BUILDING(bpy.types.Operator):
 
         if 'FINISHED' in result:
             runTime = time.time() - timeStart
-            msg = '建筑集成完成 | 运行时间【%.1f秒】' % runTime
+            msg = _('建筑集成完成 | 运行时间【%.1f秒】') % runTime
             self.report({'INFO'},msg)
             # utils.popMessageBox(msg)
         

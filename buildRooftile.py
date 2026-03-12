@@ -685,7 +685,7 @@ def __drawTileGrid(
     # 而python中暂未找到在curve上均匀分配的API
     # 连接资产blender文件中的瓦面对象，直接放到“瓦作层”节点下
     tileGrid:bpy.types.Object = template.loadAssets(
-        "瓦面",tileRootObj,hide=False,link=False)
+        "TileGrid",tileRootObj,hide=False,link=False)
     # 瓦面要与辅助线重合，并上移一个大连檐高度
     tileGrid.location = TileCurve.location
     # 250116 瓦面上移一个筒瓦高，以便卷棚顶筒瓦能够紧密结合
@@ -695,11 +695,11 @@ def __drawTileGrid(
     gnMod:bpy.types.NodesModifier = \
         tileGrid.modifiers.get('GeometryNodes')
     # 几何节点修改器的传参比较特殊，封装了一个方法
-    utils.setGN_Input(gnMod,"正身瓦线",TileCurve)
-    utils.setGN_Input(gnMod,"檐口线",EaveCurve)
-    utils.setGN_Input(gnMod,"翼角瓦线",SideCurve)
-    utils.setGN_Input(gnMod,"瓦片列数",GridCols)
-    utils.setGN_Input(gnMod,"瓦片行数",tileRows)  
+    utils.setGN_Input(gnMod,"TileCurve",TileCurve)
+    utils.setGN_Input(gnMod,"EaveCurve",EaveCurve)
+    utils.setGN_Input(gnMod,"SideCurve",SideCurve)
+    utils.setGN_Input(gnMod,"GridCols",GridCols)
+    utils.setGN_Input(gnMod,"GridRows",tileRows)  
     # 应用GN modifier
     utils.applyAllModifer(tileGrid)      
     

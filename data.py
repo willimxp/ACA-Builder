@@ -903,6 +903,10 @@ class ACA_data_obj(bpy.types.PropertyGroup):
 # 全局共用的模板信息，各个建筑都进行引用
 # 包括资产库资产引用等    
 class ACA_data_template(bpy.types.PropertyGroup):
+    version:bpy.props.StringProperty(
+            name = _("版本号"),
+            default = "",
+        )# type: ignore 
     # 材质对象
     mat_override:bpy.props.PointerProperty(
             name = _("UVgrid"),

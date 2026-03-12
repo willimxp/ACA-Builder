@@ -5,6 +5,7 @@
 #   从data.py中分离出的逻辑代码
 #   260212 提取了自动重建开关的判断修饰符，让代码更加简洁
 
+from .locale.i18n import _
 import bpy
 from functools import partial, wraps
 from .const import ACA_Consts as con
@@ -64,7 +65,7 @@ def update_building(self, context:bpy.types.Context):
     if buildingObj != None:
         bpy.ops.aca.update_building(buildingName=buildingObj.name)
     else:
-        utils.popMessageBox("更新建筑失败")
+        utils.popMessageBox(_("更新建筑失败"))
     return
     
 # 更新建筑，但不重设柱网
@@ -86,7 +87,7 @@ def reset_building(self, context:bpy.types.Context):
         bpy.ops.aca.reset_floor('INVOKE_DEFAULT',
             buildingName = buildingObj.name)
     else:
-        utils.popMessageBox("重设柱网失败")
+        utils.popMessageBox(_("重设柱网失败"))
 
 # 更新院墙
 @check_auto_rebuild
@@ -100,7 +101,7 @@ def update_step(self, context:bpy.types.Context):
     buildingObj,bData,oData = utils.getRoot(context.object)
     # 确认选中了踏跺
     if oData.aca_type != con.ACA_TYPE_STEP:
-        utils.popMessageBox("当前活动对象不是踏跺")
+        utils.popMessageBox(_("当前活动对象不是踏跺"))
         return
     
     # 获取当前踏跺数据
@@ -147,7 +148,7 @@ def update_railing(self, context:bpy.types.Context):
     # 确认选中了栏杆
     if oData.aca_type not in (con.ACA_WALLTYPE_RAILILNG,
                               con.ACA_WALLTYPE_BENCH):
-        utils.popMessageBox("当前活动对象不是栏杆/坐凳")
+        utils.popMessageBox(_("当前活动对象不是栏杆/坐凳"))
         return
     
     # 所有选中的对象
@@ -164,7 +165,7 @@ def update_railing(self, context:bpy.types.Context):
         obj_id = railingID,
     )
     if currentRailingData is None:
-        raise Exception("无法获取railing_list中的{railingID}数据集")
+        raise Exception(_("无法获取railing_list中的%s数据集" % (railingID)))
     
     # 批量设置所有选中的对象
     for railingSelect in selected_objs:
@@ -181,7 +182,7 @@ def update_railing(self, context:bpy.types.Context):
             obj_id=selectedID,
         )
         if selectedRailingData is None:
-            raise Exception("无法获取railing_list中的{railingID}数据集")
+            raise Exception(_("无法获取railing_list中的%s数据集" % (railingID)))
         
         # 设置数据
         selectedRailingData['gap'] = currentRailingData.gap
@@ -555,7 +556,7 @@ def updateSelectedThumb(self,context):
     try:
         scene.image_browser_enum = tName
     except Exception as e:
-        utils.outputMsg(f"无法显示缩略图 {tName}") 
+        utils.outputMsg(_("无法显示缩略图 %s" % (tName))) 
     return
 
 def updateSelectedTemplate(self, context:bpy.types.Context):
@@ -575,7 +576,7 @@ def updateSelectedPavilionThumb(self,context):
     try:
         scene.pavilion_browser_enum = tName
     except Exception as e:
-        utils.outputMsg(f"无法显示缩略图 {tName}") 
+        utils.outputMsg(_("无法显示缩略图 %s" % (tName))) 
     
     # 更新默认参数
     from . import buildCombo

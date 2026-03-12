@@ -3103,3 +3103,27 @@ msgstr "5-Pingzuo"
 #: const.py:26
 msgid "台基"
 msgstr "Platform"
+#: data_callback.py:68
+msgid "更新建筑失败"
+msgstr "Failed to update building"
+
+#: data_callback.py:90
+msgid "重设柱网失败"
+msgstr "Failed to reset pillar grid"
+
+#: data_callback.py:104
+msgid "当前活动对象不是踏剁"
+msgstr "Current active object is not a step"
+
+#: data_callback.py:151
+msgid "当前活动对象不是栏杆/坐凳"
+msgstr "Current active object is not a railing/bench"
+
+#: data_callback.py:168
+msgid "无法获取railing_list中的%s数据集"
+msgstr "Cannot get dataset from railing_list: %s"
+
+#: data_callback.py:559
+msgid "无法显示缩略图 %s"
+msgstr "Cannot display thumbnail: %s"
+

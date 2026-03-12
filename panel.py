@@ -71,7 +71,7 @@ class ACA_PT_basic(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示 
     
     # 自定义属性
-    bl_category = "ACA筑韵古建"      # 标签页名称
+    bl_category = _("ACA筑韵古建")      # 标签页名称
     bl_label = ""                   # 面板名称，在draw_header中写入版本号
 
     def draw_header(self,context):
@@ -546,7 +546,7 @@ class ACA_PT_props(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "ACA筑韵古建"      # 标签页名称
+    bl_category = _("ACA筑韵古建")      # 标签页名称
     bl_label = _("屋身参数") # 面板名称，显示为可折叠的箭头后
 
     @classmethod 
@@ -587,7 +587,7 @@ class ACA_PT_platform(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "ACA筑韵古建"          # 标签页名称
+    bl_category = _("ACA筑韵古建")          # 标签页名称
     bl_label = ""                       # 面板名称，已替换为draw_header实现
     bl_parent_id = "ACA_PT_props"       # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
@@ -712,7 +712,7 @@ class ACA_PT_pillars(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "ACA筑韵古建"          # 标签页名称
+    bl_category = _("ACA筑韵古建")          # 标签页名称
     bl_label = ""                       # 面板名称，已替换为draw_header实现
     bl_parent_id = "ACA_PT_props"       # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
@@ -849,7 +849,7 @@ class ACA_PT_wall(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "ACA筑韵古建"          # 标签页名称
+    bl_category = _("ACA筑韵古建")          # 标签页名称
     bl_label = ""                       # 面板名称，已替换为draw_header实现
     bl_parent_id = "ACA_PT_props"       # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
@@ -1123,7 +1123,7 @@ class ACA_PT_roof_props(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "ACA筑韵古建"      # 标签页名称
+    bl_category = _("ACA筑韵古建")      # 标签页名称
     bl_label = _("屋顶参数") # 面板名称，显示为可折叠的箭头后
 
     @classmethod 
@@ -1172,7 +1172,7 @@ class ACA_PT_dougong(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "ACA筑韵古建"          # 标签页名称
+    bl_category = _("ACA筑韵古建")          # 标签页名称
     bl_label = ""                       # 面板名称，已替换为draw_header实现
     bl_parent_id = "ACA_PT_roof_props"  # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
@@ -1273,7 +1273,7 @@ class ACA_PT_beam(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "ACA筑韵古建"          # 标签页名称
+    bl_category = _("ACA筑韵古建")          # 标签页名称
     bl_parent_id = "ACA_PT_roof_props"  # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
     bl_label = ""                       # 面板名称，已替换为draw_header实现
@@ -1393,7 +1393,7 @@ class ACA_PT_rafter(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "ACA筑韵古建"          # 标签页名称
+    bl_category = _("ACA筑韵古建")          # 标签页名称
     bl_parent_id = "ACA_PT_roof_props"  # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
     bl_label = ""                       # 面板名称，已替换为draw_header实现
@@ -1507,7 +1507,7 @@ class ACA_PT_tiles(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "ACA筑韵古建"          # 标签页名称
+    bl_category = _("ACA筑韵古建")          # 标签页名称
     bl_parent_id = "ACA_PT_roof_props"  # 父面板
     bl_options = {"DEFAULT_CLOSED"}     # 默认折叠
     bl_label = ""                       # 面板名称，已替换为draw_header实现
@@ -1565,7 +1565,7 @@ class ACA_PT_yardwall_props(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'       # View_3D在viewport中显示
     
     # 自定义属性
-    bl_category = "ACA筑韵古建"               # 标签页名称
+    bl_category = _("ACA筑韵古建")               # 标签页名称
     bl_label = _("院墙参数")     # 面板名称
     bl_options = {"DEFAULT_CLOSED"}          # 默认折叠
     

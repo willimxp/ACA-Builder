@@ -3,6 +3,7 @@
 # 功能概述：
 #   建筑之间的拼接，包括勾连搭、抱厦、转角等操作
 
+from .locale.i18n import _
 import bpy
 import math
 import bmesh
@@ -46,7 +47,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
         buildingSpan = abs(fromLoc.y - toLoc.y)
         roofSpan = (bData.y_total+mData.y_total)/2+21*bData.DK
         if buildingSpan > roofSpan:
-            utils.popMessageBox("建筑不相交，无法进行组合")
+            utils.popMessageBox(_("建筑不相交，无法进行组合"))
             return {'CANCELLED'}
         # 确定勾连搭
         spliceType = 'goulianda'
@@ -62,7 +63,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
         buildingSpan = abs(fromLoc.y - toLoc.y)
         roofSpan = (bData.y_total+mData.y_total)/2+21*bData.DK
         if buildingSpan > roofSpan:
-            utils.popMessageBox("建筑不相交，无法进行组合")
+            utils.popMessageBox(_("建筑不相交，无法进行组合"))
             return {'CANCELLED'}
 
         # 设置面阔较小的为fromBuilding(抱厦)
@@ -130,7 +131,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
 
     # 无法判断拼接方式 ---------------------------------------
     if spliceType == None:
-        utils.popMessageBox("无法处理的建筑合并")
+        utils.popMessageBox(_("无法处理的建筑合并"))
         return {'CANCELLED'}
     
     # 2、预处理 ------------------------------------
@@ -151,28 +152,28 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
 
     # 3、执行拼接 -------------------------------------
     if spliceType == 'goulianda':
-        utils.outputMsg("拼接建筑：勾连搭...")
+        utils.outputMsg(_("拼接建筑：勾连搭..."))
         result = __unionGoulianda(
             fromBuilding,
             toBuilding,
             comboObj,
         )
     if spliceType == 'parallelXuanshan':
-        utils.outputMsg("拼接建筑：平行抱厦/悬山...")
+        utils.outputMsg(_("拼接建筑：平行抱厦/悬山..."))
         result = __unionParallelXuanshan(
             fromBuilding,
             toBuilding,
             comboObj,
         )
     if spliceType == 'parallelXieshan':
-        utils.outputMsg("拼接建筑：平行抱厦/歇山...")
+        utils.outputMsg(_("拼接建筑：平行抱厦/歇山..."))
         result = __unionParallelXieshan(
             fromBuilding,
             toBuilding,
             comboObj,
         )
     if spliceType == 'T_cross_FB':
-        utils.outputMsg("拼接建筑：丁字抱厦/前后檐...")
+        utils.outputMsg(_("拼接建筑：丁字抱厦/前后檐..."))
         result = __union_T_Cross(
             fromBuilding,
             toBuilding,
@@ -180,7 +181,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
             dir='Y'
         )
     if spliceType == 'T_cross_LR':
-        utils.outputMsg("拼接建筑：丁字抱厦/两山...")
+        utils.outputMsg(_("拼接建筑：丁字抱厦/两山..."))
         result = __union_T_Cross(
             fromBuilding,
             toBuilding,
@@ -188,7 +189,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
             dir='X'
         )
     if spliceType == 'X_cross':
-        utils.outputMsg("拼接建筑：十字相交...")
+        utils.outputMsg(_("拼接建筑：十字相交..."))
         result = __union_X_Cross(
             fromBuilding,
             toBuilding,
@@ -196,7 +197,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
         )
     
     if 'FINISHED' not in result:
-        utils.outputMsg("拼接建筑失败")
+        utils.outputMsg(_("拼接建筑失败"))
         # 关闭进度条
         return result
     
@@ -272,7 +273,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
     # 计算屋顶碰撞点
     crossPoint = __getRoofCrossPoint(fromBuilding,toBuilding)
     if 'CANCELLED' in crossPoint: 
-        print("未找到屋顶碰撞点，未裁剪屋顶")
+        print(_("未找到屋顶碰撞点，未裁剪屋顶"))
     else:
         # 将碰撞点转换到combo坐标系
         if comboObj:
@@ -292,7 +293,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
                 offset+crossPoint.y, # 碰撞点
                 buildingH/2)
         boolObj = utils.addCube(
-            name="勾连搭-屋顶" + con.BOOL_SUFFIX,
+            name=_("勾连搭-屋顶") + con.BOOL_SUFFIX,
             location=boolLoc,
             dimension=boolDim,
             parent=comboObj,
@@ -358,7 +359,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
                offset+crossPoint.y, # 碰撞点
                buildingH/2)
     boolObj = utils.addCube(
-        name="勾连搭-屋身" + con.BOOL_SUFFIX,
+        name=_("勾连搭-屋身") + con.BOOL_SUFFIX,
         location=boolLoc,
         dimension=boolDim,
         parent=comboObj,
@@ -390,7 +391,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue
         # 跳过板门（避免裁剪门槛石）
-        if '板门'  in obj.name : continue
+        if _('板门')  in obj.name : continue
         # 仅裁剪台基、柱网、装修
         collName = obj.users_collection[0].name
         if (con.COLL_NAME_BASE in collName 
@@ -416,7 +417,7 @@ def __getRoofCrossPoint(fromBuilding:bpy.types.Object,
             tileCurve,singleUser=True)
         utils.showObj(tileCurve_copy)
     else:
-        utils.outputMsg("无法获取正身坡线")
+        utils.outputMsg(_("无法获取正身坡线"))
         return {'CANCELLED'}
     # 副建筑瓦面
     tileGrid = utils.getAcaChild(
@@ -435,7 +436,7 @@ def __getRoofCrossPoint(fromBuilding:bpy.types.Object,
         )
         utils.applyAllModifer(tileGrid_copy)
     else:
-        utils.popMessageBox("无法获取屋面")
+        utils.popMessageBox(_("无法获取屋面"))
         return {'CANCELLED'}
 
     # 3、计算交点
@@ -455,7 +456,7 @@ def __getRoofCrossPoint(fromBuilding:bpy.types.Object,
             utils.delObject(tileCurve_copy)
             utils.delObject(tileGrid_copy)
             utils.delOrphan()
-            utils.popMessageBox("建筑没有相交，未做任何裁剪")
+            utils.popMessageBox(_("建筑没有相交，未做任何裁剪"))
             return {'CANCELLED'}
     # # 转换到局部坐标
     # crossPoint = fromBuilding.matrix_world.inverted() @ intersections[0]['location']
@@ -522,7 +523,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     boolZ = buildingH/2
 
     boolObj = utils.addCube(
-        name="平行抱厦-悬山-屋瓦-主建筑" + con.BOOL_SUFFIX ,
+        name=_("平行抱厦-悬山-屋瓦-主建筑") + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
         dimension=(boolWidth,boolDepth,boolHeight),
         parent=comboObj,
@@ -564,7 +565,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     boolZ = buildingH/2
     
     boolObj = utils.addCube(
-        name="平行抱厦-悬山-屋瓦-抱厦" + con.BOOL_SUFFIX ,
+        name=_("平行抱厦-悬山-屋瓦-抱厦") + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
         dimension=(boolWidth,boolDepth,boolHeight),
         parent=comboObj,
@@ -608,7 +609,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     loc = Vector((boolX,boolY,boolZ))
     loc = fromBuilding.matrix_local @ loc
     boolObj = utils.addCube(
-        name="平行抱厦-悬山-柱网" + con.BOOL_SUFFIX ,
+        name=_("平行抱厦-悬山-柱网") + con.BOOL_SUFFIX ,
         location=loc,
         dimension=(boolWidth,boolDepth,boolHeight),
         parent=comboObj,
@@ -632,7 +633,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
                 operation='DIFFERENCE',
             )
         # 裁剪后柱体normal异常，做平滑
-        if  '柱子' in obj.name:
+        if  _('柱子') in obj.name:
             utils.shaderSmooth(obj)
     fromChildren = utils.getChildrenHierarchy(fromBuilding)
     for obj in fromChildren:
@@ -650,7 +651,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
                 boolObj=boolObj,
                 operation='INTERSECT',
             )
-        if  '柱子' in obj.name:
+        if  _('柱子') in obj.name:
             # 裁剪后柱体normal异常，做平滑
             utils.shaderSmooth(obj)
     
@@ -678,7 +679,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     loc = Vector((boolX,boolY,boolZ))
     loc = fromBuilding.matrix_local @ loc
     boolObj = utils.addCube(
-        name="平行抱厦-悬山-台基" + con.BOOL_SUFFIX ,
+        name=_("平行抱厦-悬山-台基") + con.BOOL_SUFFIX ,
         location=loc,
         dimension=(boolWidth,boolDepth,boolHeight),
         parent=comboObj,
@@ -770,11 +771,11 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     # 以主建筑的瓦面为基础进行拉伸
     tileGrid = utils.getAcaChild(
         toBuilding,con.ACA_TYPE_TILE_GRID)
-    if not tileGrid: raise Exception('无法找到主建筑瓦面')
+    if not tileGrid: raise Exception(_('无法找到主建筑瓦面'))
     tileGrid_copy = utils.copySimplyObject(
         tileGrid,
         singleUser=True,
-        name='平行抱厦-悬山-山花板' + con.BOOL_SUFFIX
+        name=_('平行抱厦-悬山-山花板') + con.BOOL_SUFFIX
         )
     # 挂接到合并对象下
     tileGrid_copy.parent = comboObj
@@ -896,7 +897,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     boolY = offset + crossPoint.y # 碰撞点
     boolZ = buildingH/2
     boolObj = utils.addCube(
-        name="平行抱厦-歇山-屋瓦" + con.BOOL_SUFFIX ,
+        name=_("平行抱厦-歇山-屋瓦") + con.BOOL_SUFFIX ,
         location=(boolX,boolY,boolZ),
         dimension=(boolWidth,boolDepth,boolHeight),
         parent=comboObj,
@@ -968,7 +969,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     loc = Vector((boolX,boolY,boolZ))
     loc = fromBuilding.matrix_local @ loc
     boolObj = utils.addCube(
-        name="平行抱厦-歇山-柱网" + con.BOOL_SUFFIX ,
+        name=_("平行抱厦-歇山-柱网") + con.BOOL_SUFFIX ,
         location=loc,
         dimension=(boolWidth,boolDepth,boolHeight),
         parent=comboObj,
@@ -992,7 +993,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
                 operation='DIFFERENCE',
             )
         # 裁剪后柱体normal异常，做平滑
-        if '柱子' in obj.name:
+        if _('柱子') in obj.name:
             utils.shaderSmooth(obj)
 
     fromChildren = utils.getChildrenHierarchy(fromBuilding)
@@ -1012,7 +1013,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
                 operation='INTERSECT',
             )
         # 裁剪后柱体normal异常，做平滑
-        if '柱子' in obj.name:
+        if _('柱子') in obj.name:
             utils.shaderSmooth(obj)
     
     # 三、裁剪台基 --------------------------------
@@ -1038,7 +1039,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     loc = Vector((boolX,boolY,boolZ))
     loc = fromBuilding.matrix_local @ loc
     boolObj = utils.addCube(
-        name="平行抱厦-歇山-台基" + con.BOOL_SUFFIX ,
+        name=_("平行抱厦-歇山-台基") + con.BOOL_SUFFIX ,
         location=loc,
         dimension=(boolWidth,boolDepth,boolHeight),
         parent=comboObj,
@@ -1131,11 +1132,11 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
     # 以主建筑的瓦面为基础进行拉伸
     tileGrid = utils.getAcaChild(
         toBuilding,con.ACA_TYPE_TILE_GRID)
-    if not tileGrid: raise Exception('无法找到主建筑瓦面')
+    if not tileGrid: raise Exception(_('无法找到主建筑瓦面'))
     tileGrid_copy = utils.copySimplyObject(
         tileGrid,
         singleUser=True,
-        name='平行抱厦-歇山-山花板' + con.BOOL_SUFFIX)
+        name=_('平行抱厦-歇山-山花板') + con.BOOL_SUFFIX)
     # 挂接到合并对象下
     tileGrid_copy.parent = comboObj
     # 重新映射坐标系
@@ -1243,7 +1244,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
     fromRoof = utils.getAcaChild(
         fromBuilding,con.ACA_TYPE_TILE_GRID)
     if fromRoof is None:
-        utils.outputMsg("丁字抱厦拼接：无法找到抱厦瓦面")
+        utils.outputMsg(_("丁字抱厦拼接：无法找到抱厦瓦面"))
         return {'CANCELLED'}
     else:
         fromRoof_copy = utils.copySimplyObject(
@@ -1284,7 +1285,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
         gridType = con.ACA_TYPE_TILE_GRID_LR
     toRoof = utils.getAcaChild(toBuilding,gridType)
     if toRoof is None:
-        utils.outputMsg("丁字抱厦拼接：无法找到主建筑瓦面")
+        utils.outputMsg(_("丁字抱厦拼接：无法找到主建筑瓦面"))
         return {'CANCELLED'}
     else:
         toRoof_copy = utils.copySimplyObject(
@@ -1418,7 +1419,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
         intersections,curve = utils.mesh_mesh_intersection(
             fromRoof_copy, toRoof_copy,create_curve=True)
         if intersections == []:
-            utils.popMessageBox(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
+            utils.popMessageBox(_("未找到屋顶相交范围：from=%s,to=%s" % (fromBuilding.name, toBuilding.name)))
             return {'CANCELLED'}
     else:
         # print(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
@@ -1554,7 +1555,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
 
     # 4、合并为一个对象
     boolObj = utils.joinObjects(intersections,
-                      newName='丁字抱厦' + con.BOOL_SUFFIX ,)
+                      newName=_('丁字抱厦') + con.BOOL_SUFFIX ,)
     # 设置origin在几何中心
     utils.focusObj(boolObj)
     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
@@ -1631,7 +1632,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
     boolY = toBuilding.location.y
     boolZ = boolHeight/2
     boolObj = utils.addCube(
-        name="丁字抱厦-柱网" + con.BOOL_SUFFIX ,
+        name=_("丁字抱厦-柱网") + con.BOOL_SUFFIX ,
         location=(0,boolY,boolZ),
         dimension=(boolWidth,boolDepth,boolHeight),
         parent=comboObj,
@@ -1754,7 +1755,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
                 operation='INTERSECT',
             )
         # 裁剪后柱体normal异常，做平滑
-        if '柱子' in obj.name:
+        if _('柱子') in obj.name:
             utils.shaderSmooth(obj)
 
     fromChildren = utils.getChildrenHierarchy(fromBuilding)
@@ -1774,7 +1775,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
                 operation='DIFFERENCE',
             )
         # 裁剪后柱体normal异常，做平滑
-        if '柱子' in obj.name:
+        if _('柱子') in obj.name:
             utils.shaderSmooth(obj)
 
     # 回收临时屋面
@@ -1797,7 +1798,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
     fromRoof = utils.getAcaChild(
         fromBuilding,con.ACA_TYPE_TILE_GRID)
     if fromRoof is None:
-        utils.outputMsg("十字抱厦拼接：无法找到抱厦瓦面")
+        utils.outputMsg(_("十字抱厦拼接：无法找到抱厦瓦面"))
         return {'CANCELLED'}
     else:
         fromRoof_copy = utils.copySimplyObject(
@@ -1838,7 +1839,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
         gridType = con.ACA_TYPE_TILE_GRID_LR
     toRoof = utils.getAcaChild(toBuilding,gridType)
     if toRoof is None:
-        utils.outputMsg("十字抱厦拼接：无法找到主建筑瓦面")
+        utils.outputMsg(_("十字抱厦拼接：无法找到主建筑瓦面"))
         return {'CANCELLED'}
     else:
         toRoof_copyA = utils.copySimplyObject(
@@ -1917,7 +1918,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
             fromRoof_copy, toRoof_copyB,create_curve=True)
         intersections = intersectionsA + intersectionsB
         if intersections == []:
-            utils.popMessageBox(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
+            utils.popMessageBox(_("未找到屋顶相交范围：from=%s,to=%s" % (fromBuilding.name, toBuilding.name)))
             return {'CANCELLED'}
     else:
         # print(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
@@ -2058,7 +2059,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
 
     # 4、合并为一个对象
     boolObj = utils.joinObjects(intersections,
-                      newName='丁字抱厦' + con.BOOL_SUFFIX ,)
+                      newName=_('丁字抱厦') + con.BOOL_SUFFIX ,)
     # 设置origin在几何中心
     utils.focusObj(boolObj)
     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
@@ -2135,7 +2136,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
     boolY = toBuilding.location.y
     boolZ = boolHeight/2
     boolObj = utils.addCube(
-        name="丁字抱厦-柱网" + con.BOOL_SUFFIX ,
+        name=_("丁字抱厦-柱网") + con.BOOL_SUFFIX ,
         location=(0,boolY,boolZ),
         dimension=(boolWidth,boolDepth,boolHeight),
         parent=comboObj,
@@ -2258,7 +2259,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
                 operation='INTERSECT',
             )
         # 裁剪后柱体normal异常，做平滑
-        if '柱子' in obj.name:
+        if _('柱子') in obj.name:
             utils.shaderSmooth(obj)
 
     fromChildren = utils.getChildrenHierarchy(fromBuilding)
@@ -2278,7 +2279,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
                 operation='DIFFERENCE',
             )
         # 裁剪后柱体normal异常，做平滑
-        if '柱子' in obj.name:
+        if _('柱子') in obj.name:
             utils.shaderSmooth(obj)
 
     # 回收临时屋面
@@ -2294,13 +2295,13 @@ def undoSplice(buildingObj:bpy.types.Object):
     # 验证buildingObj
     buildingObj,bData,oData = utils.getRoot(buildingObj)
     if buildingObj is None:
-        print("取消拼接：无法识别的建筑")
+        print(_("取消拼接：无法识别的建筑"))
         return
     
     # 找到combo
     comboObj = utils.getComboRoot(buildingObj)
     if comboObj is None:
-        print("取消拼接：无法找到combo根节点")
+        print(_("取消拼接：无法找到combo根节点"))
         return
     
     # 找到相关建筑
@@ -2324,7 +2325,7 @@ def undoSplice(buildingObj:bpy.types.Object):
             removeSplice.append(i)
     # 验证是否存在需要清除的拼接
     if spliceBuildingIDs == []:
-        print("没有需要清除的拼接操作")
+        print(_("没有需要清除的拼接操作"))
         return
 
     # 删除对应的记录(从后向前删除)

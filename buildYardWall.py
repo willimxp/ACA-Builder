@@ -3,6 +3,7 @@
 # 功能概述：
 #   院墙的营造
 
+from .locale.i18n import _
 import bpy
 from mathutils import Vector
 import math
@@ -35,7 +36,7 @@ def __arrayTile(
         sourceObj:bpy.types.Object,
         arrayLength,
         arrayWidth=None,
-        name='瓦顶',
+        name=_('瓦顶'),
         location=(0,0,0),
         rotation=(0,0,0),
     ):
@@ -73,7 +74,7 @@ def __arrayTile(
 
     # 横向平铺
     modArray:bpy.types.ArrayModifier = \
-        tileObj.modifiers.new('横向平铺','ARRAY')
+        tileObj.modifiers.new(_('横向平铺'),'ARRAY')
     modArray.use_relative_offset = False
     modArray.use_constant_offset = True
     modArray.constant_offset_displace = (colWidth,0,0)
@@ -82,7 +83,7 @@ def __arrayTile(
     # 纵向平铺
     if arrayWidth != None:
         modArray:bpy.types.ArrayModifier = \
-            tileObj.modifiers.new('纵向平铺','ARRAY')
+            tileObj.modifiers.new(_('纵向平铺'),'ARRAY')
         modArray.use_relative_offset = False
         modArray.use_constant_offset = True
         modArray.constant_offset_displace = (0,rowHeight,0)
@@ -107,7 +108,7 @@ def buildSingleWall(
         tileAngle,
         use_cut=False,
         ):
-    utils.outputMsg("开始墙体筑造...")
+    utils.outputMsg(_("开始墙体筑造..."))
     # 载入数据
     buildingObj = wallProxy.parent
     bData:acaData = buildingObj.ACA_data
@@ -127,7 +128,7 @@ def buildSingleWall(
     # 1、创建下碱对象
     height = wallHeight * con.WALL_BOTTOM_RATE
     bottomObj = utils.addCube(
-        name='下碱',
+        name=_('下碱'),
         dimension=(wallLength,
                wallDepth,
                height),
@@ -139,7 +140,7 @@ def buildSingleWall(
 
     # 2、创建上身对象
     bodyObj = utils.addCube(
-        name='上身',
+        name=_('上身'),
         dimension=(wallLength-bodyShrink*2,
                wallDepth-bodyShrink*2,
                wallHeight-bodyShrink*2),
@@ -172,7 +173,7 @@ def buildSingleWall(
     
     # 3.1、滴水
     dishuiObj = __arrayTile(
-        name = '滴水',
+        name = _('滴水'),
         sourceObj=aData.dripTile_source,
         location=(-wallLength/2+colWidth/2,
                   -wallDepth/2,
@@ -184,7 +185,7 @@ def buildSingleWall(
 
     # 3.2、瓦当
     wadangObj = __arrayTile(
-        name = '瓦当',
+        name = _('瓦当'),
         sourceObj=aData.eaveTile_source,
         location=(-wallLength/2,
                   -wallDepth/2
@@ -196,7 +197,7 @@ def buildSingleWall(
 
     # 3.3、板瓦
     banwaObj = __arrayTile(
-        name = '板瓦',
+        name = _('板瓦'),
         sourceObj=aData.flatTile_source,
         location=(-wallLength/2+colWidth/2,
                   -wallDepth/2,
@@ -209,7 +210,7 @@ def buildSingleWall(
 
     # 3.4、筒瓦
     tongwaObj = __arrayTile(
-        name = '筒瓦',
+        name = _('筒瓦'),
         sourceObj=aData.circularTile_source,
         location=(-wallLength/2,
                   -wallDepth/2,
@@ -223,7 +224,7 @@ def buildSingleWall(
     # 4、端头做博缝板
     bofengObj = utils.copyObject(
         sourceObj=aData.bofeng_source,
-        name="博缝板",
+        name=_("博缝板"),
         parentObj=wallProxy,
         location=(-wallLength/2+bodyShrink,
                   -wallDepth/2-con.EAVETILE_EX*dk*2,
@@ -256,7 +257,7 @@ def buildSingleWall(
     # 导入正脊
     ridgeObj = utils.copyObject(
         sourceObj=aData.ridgeFront_source,
-        name="正脊",
+        name=_("正脊"),
         parentObj=wallProxy,
         singleUser=True)
     # 应用模板中的bevel，以免再调整斗口后出现bevel破裂
@@ -291,7 +292,7 @@ def buildSingleWall(
     # 6、墙檐
     walleaveObj = utils.copyObject(
         sourceObj=aData.walleave,
-        name="墙檐",
+        name=_("墙檐"),
         parentObj=wallProxy,
         singleUser=True)
     walleaveWidth = walleaveObj.dimensions.x
@@ -422,13 +423,13 @@ def buildYardWall(buildingObj:bpy.types.Object,
 
     # 新建还是刷新？
     if buildingObj == None:
-        utils.outputMsg("创建新建筑...")
+        utils.outputMsg(_("创建新建筑..."))
         # 添加建筑根节点，同时载入模板
         buildingObj = __addBuildingRoot(templateName)
         # 在buldingObj上绑定模板bData和资产库aData
         template.loadTemplate(buildingObj)
     else:
-        utils.outputMsg("更新建筑...")
+        utils.outputMsg(_("更新建筑..."))
         # 简单粗暴的全部删除
         utils.deleteHierarchy(buildingObj)
         if reloadAssets:
@@ -467,7 +468,7 @@ def buildYardWall(buildingObj:bpy.types.Object,
                     wallHeight)),
             'loc': (0,0,wallHeight/2),
             'rot': (0,0,0),
-            'name': '院墙',
+            'name': _('院墙'),
         }
         wallGroup.append(wallItem)
         # 四角不做剪切
@@ -480,7 +481,7 @@ def buildYardWall(buildingObj:bpy.types.Object,
                     wallHeight)),
             'loc': (0,-yardDepth/2,wallHeight/2),
             'rot': (0,0,0),
-            'name': '南院墙',
+            'name': _('南院墙'),
         }
         wallGroup.append(wallItem)
         # 北墙
@@ -490,7 +491,7 @@ def buildYardWall(buildingObj:bpy.types.Object,
                     wallHeight)),
             'loc': (0,yardDepth/2,wallHeight/2),
             'rot': (0,0,math.radians(180)),
-            'name': '北院墙',
+            'name': _('北院墙'),
         }
         wallGroup.append(wallItem)
         # 西墙
@@ -500,7 +501,7 @@ def buildYardWall(buildingObj:bpy.types.Object,
                     wallHeight)),
             'loc': (-yardWidth/2,0,wallHeight/2),
             'rot': (0,0,math.radians(270)),
-            'name': '西院墙',
+            'name': _('西院墙'),
         }
         wallGroup.append(wallItem)
         # 东墙
@@ -510,7 +511,7 @@ def buildYardWall(buildingObj:bpy.types.Object,
                     wallHeight)),
             'loc': (yardWidth/2,0,wallHeight/2),
             'rot': (0,0,math.radians(90)),
-            'name': '东院墙',
+            'name': _('东院墙'),
         }
         wallGroup.append(wallItem)
 
@@ -535,6 +536,6 @@ def buildYardWall(buildingObj:bpy.types.Object,
             )
 
     utils.focusObj(buildingObj)
-    utils.outputMsg("完成墙体构造")
+    utils.outputMsg(_("完成墙体构造"))
 
     return {'FINISHED'}

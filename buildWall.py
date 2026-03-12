@@ -2,6 +2,7 @@
 # 所属插件：ACA Builder
 # 功能概述：
 #   装修布局树状结构的营造
+from .locale.i18n import _
 import bpy
 import bmesh
 from mathutils import Vector
@@ -53,25 +54,25 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     # 对象命名
     wallType = setting[0]
     if wallType == con.ACA_WALLTYPE_WALL:
-        wallName = '墙体'
+        wallName = _('墙体')
     elif wallType == con.ACA_WALLTYPE_WINDOW:
-        wallName = '槛窗'
+        wallName = _('槛窗')
     elif wallType == con.ACA_WALLTYPE_GESHAN:
-        wallName = '隔扇'
+        wallName = _('隔扇')
     elif wallType == con.ACA_WALLTYPE_BARWINDOW:
-        wallName = '直棂窗'
+        wallName = _('直棂窗')
     elif wallType == con.ACA_WALLTYPE_MAINDOOR:
-        wallName = '板门'
+        wallName = _('板门')
     elif wallType == con.ACA_WALLTYPE_FLIPWINDOW:
-        wallName = '支摘窗'
+        wallName = _('支摘窗')
     elif wallType == con.ACA_WALLTYPE_RAILILNG:
-        wallName = '栏杆'
+        wallName = _('栏杆')
     elif wallType == con.ACA_WALLTYPE_BENCH:
-        wallName = '坐凳'
+        wallName = _('坐凳')
     elif wallType == con.ACA_WALLTYPE_QUETI:
-        wallName = '雀替'
+        wallName = _('雀替')
     else:
-        raise Exception(f"无法生成wallproxy，walltype：{wallType}")
+        raise Exception(_("无法生成wallproxy，walltype：%s" % (wallType)))
     wallName = "%s.%s#%s" % (wallName,setting[1],setting[2])
 
     # 获取实际柱高   
@@ -174,7 +175,7 @@ def __drawWall(wallProxy:bpy.types.Object):
         obj_id=wallID
     )
     if wallData is None:
-        raise Exception(f"无法找到geshanData:{wallID}")
+        raise Exception(_("无法找到geshanData:%s" % (wallID)))
     
     # 预留走马板高度
     if wallData.wall_span > 0:
@@ -192,7 +193,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     #heightOffset = 0.02
     heightOffset = 0
     bottomObj = utils.drawHexagon(
-        name='下碱',
+        name=_('下碱'),
         dimensions=Vector((wallLength,
                wallDepth+bodyShrink*2,
                height)),
@@ -207,7 +208,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 2、创建上身对象
     extrudeHeight = wallHeight/10
     bodyObj = utils.drawHexagon(
-        name='墙体',
+        name=_('墙体'),
         dimensions=Vector((wallLength-bodyShrink*2,
                wallDepth,
                wallHeight-extrudeHeight)),
@@ -251,7 +252,7 @@ def __drawWall(wallProxy:bpy.types.Object):
     # 针对重檐，装修不一定做到柱头，用走马板填充
     if wallData.wall_span != 0 :
         wallHeadBoard = utils.addCube(
-                name = "走马板",
+                name = _("走马板"),
                 location=(0,0,
                     (wallHeight/2 
                      + extrudeHeight/2
@@ -265,7 +266,7 @@ def __drawWall(wallProxy:bpy.types.Object):
         mat.paint(wallHeadBoard,con.M_BOARD_WALLHEAD)
 
         # 合并
-        wallObj = utils.joinObjects([bodyObj,wallHeadBoard],'墙体')
+        wallObj = utils.joinObjects([bodyObj,wallHeadBoard],_('墙体'))
     # 没有走马板时，直接返回布尔合并后的墙体
     else:
         wallObj = bodyObj
@@ -342,7 +343,7 @@ def __buildWall(buildingObj:bpy.types.Object,
     elif wallType == con.ACA_WALLTYPE_QUETI:
         wallObj = buildFloor.addQueti(wallproxy)
     else:
-        raise Exception(f"无法生成墙体类型:{wallType}")
+        raise Exception(_("无法生成墙体类型:%s" % (wallType)))
     
     # 250916 可能因为开间太小等原因，没有成功创建装修，则跳过继续
     if wallObj == None:
@@ -392,7 +393,7 @@ def addWall(buildingObj:bpy.types.Object,
                 == con.ACA_TYPE_PILLAR:
                 pillarNum += 1
     if pillarNum < 2:
-        utils.popMessageBox("请至少选择2根柱子")
+        utils.popMessageBox(_("请至少选择2根柱子"))
         return
 
     # 构造wallID
@@ -426,7 +427,7 @@ def addWall(buildingObj:bpy.types.Object,
             wallID_alt = pTo.ACA_data['pillarID'].split('#')[0] \
                     + '#' + pFrom.ACA_data['pillarID'].split('#')[0] 
             if wallID in wallSetting or wallID_alt in wallSetting:
-                utils.popMessageBox(f"无法添加{wallID}，该位置已经存在装修，wallSetting：{wallSetting}")
+                utils.popMessageBox(_("无法添加%s，该位置已经存在装修，wallSetting：%s" % (wallID, wallSetting)))
                 continue
 
             # 构造ID
@@ -476,7 +477,7 @@ def addWall(buildingObj:bpy.types.Object,
     if wallObj != None:
         utils.focusObj(wallObj)
     else:
-        utils.outputMsg(f"无墙体需要生成")
+        utils.outputMsg(_("无墙体需要生成"))
 
     return {'FINISHED'}
 
@@ -641,7 +642,7 @@ def __delQuetiFromAdd(wallAdd:bpy.types.Object):
                 bData.wall_list.remove(i)
         
         # 删除实体
-        quetiName = f"雀替.{quetiID.split('#',1)[1]}"
+        quetiName = _("雀替.%s" % (quetiID.split('#',1)[1]))
         utils.deleteByName(parent_obj=buildingObj,
                            del_parent=False,
                            name=quetiName)
@@ -661,7 +662,7 @@ def buildWallLayout(buildingObj:bpy.types.Object):
     # 250916 楼阁平坐层的构造中，跳过所有的墙体装修的营造
     if bData.combo_type in (con.COMBO_PINGZUO,
                             con.COMBO_DOUBLE_EAVE):
-        print("ACA：平坐层和重檐层不做装修，已跳过！")
+        print(_("ACA：平坐层和重檐层不做装修，已跳过！"))
         return {'CANCELLED'}
 
     # 锁定操作目录
@@ -695,7 +696,7 @@ def buildWallLayout(buildingObj:bpy.types.Object):
             # 如果栏杆不开口，则不做这个栏杆
             # 开口栏杆不受影响，继续做
             if railing.gap == 0:
-                print(f"{railing.id}栏杆添加跳过，该位置已经有踏跺")
+                print(_("%s栏杆添加跳过，该位置已经有踏跺" % (railing.id)))
                 continue
 
         __buildWall(buildingObj,railing.id)

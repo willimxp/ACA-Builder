@@ -2,6 +2,7 @@
 # 所属插件：ACA Builder
 # 功能概述：
 #   对象展UV和贴材质
+from .locale.i18n import _
 import bpy
 import bmesh
 import math
@@ -113,7 +114,7 @@ def UvUnwrap(object:bpy.types.Object,
     faceCount= len(bm.faces)
     bm.free()
     if faceCount == 0 : 
-        utils.outputMsg("展UV异常，该对象不存在几何面")
+        utils.outputMsg(_("展UV异常，该对象不存在几何面"))
         return
 
     # 仅针对活跃材质active material
@@ -953,8 +954,8 @@ def __setFangMat(fangObj:bpy.types.Object,
              scaleToBounds=True)
 
     # 设置槫头坐龙
-    if (fangObj.name.startswith('挑檐桁')
-        or fangObj.name.startswith('正心桁')):
+    if (fangObj.name.startswith(_('挑檐桁'))
+        or fangObj.name.startswith(_('正心桁'))):
         __setTuanHead(fangObj)
     
     return fangObj

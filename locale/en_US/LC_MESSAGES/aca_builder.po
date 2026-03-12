@@ -3489,3 +3489,7 @@ msgstr "Failed to save template, unknown building type %s"
 msgid "找不到父模板%s，无法保存子模版"
 msgstr "Cannot find parent template %s, cannot save child template"
 
+#: texture.py:117
+msgid "展UV异常，该对象不存在几何面"
+msgstr "UV unwrapping exception, the object has no geometric faces"
+

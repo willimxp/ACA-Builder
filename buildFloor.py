@@ -2,6 +2,7 @@
 # 所属插件：ACA Builder
 # 功能概述：
 #   柱子的营造
+from .locale.i18n import _
 import bpy
 from mathutils import Vector
 from functools import partial
@@ -226,7 +227,7 @@ def __drawBWQ(fangObj:bpy.types.Object,
     # 添加霸王拳，以大额枋为父对象，继承位置和旋转
     bawangquanObj = utils.copyObject(
         sourceObj=aData.bawangquan_source,
-        name='霸王拳',parentObj=fangObj,
+        name=_('霸王拳'),parentObj=fangObj,
         location=(bwqX,0,con.EFANG_LARGE_H * dk/2),
         rotation=(0,0,rotZ),
         singleUser=True
@@ -360,7 +361,7 @@ def addQueti(wallproxy:bpy.types.Object):
     buildingObj,bData,wData = utils.getRoot(wallproxy)
     if buildingObj == None:
         raise Exception(
-            "未找到建筑根节点或设计数据")
+            _("未找到建筑根节点或设计数据"))
     dk = bData.DK
 
     # 清理之前的子对象
@@ -389,7 +390,7 @@ def addQueti(wallproxy:bpy.types.Object):
     # 雀替对象在blender中用Geometry Nodes预先进行了自动拼装
     quetiObj = utils.copyObject(
         sourceObj=aData.queti_source,
-        name='雀替',
+        name=_('雀替'),
         parentObj=wallproxy,
         location=(0,0,zoffset),
         singleUser=True
@@ -423,7 +424,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
     aData:tmpData = bpy.context.scene.ACA_temp
     # 查找或新建地盘根节点
     floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
-    utils.deleteByName(floorRootObj,name='穿插枋')
+    utils.deleteByName(floorRootObj,name=_('穿插枋'))
     
     # 获取开间、进深数据
     net_x,net_y = getFloorDate(buildingObj)
@@ -512,7 +513,7 @@ def __buildCCFang(buildingObj:bpy.types.Object):
             end_point=pEnd,
             depth=con.CCFANG_Y*dk,  # 高4斗口，厚3.2斗口
             height=con.CCFANG_H*dk,
-            name='穿插枋.'+ccfang,
+            name=_('穿插枋.')+ccfang,
             root_obj=floorRootObj
         )
         # 引入穿插枋资源，与proxy适配
@@ -553,7 +554,7 @@ def __buildJinFang(buildingObj:bpy.types.Object):
     aData:tmpData = bpy.context.scene.ACA_temp
     # 查找或新建地盘根节点
     floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
-    utils.deleteByName(floorRootObj,name='金枋')
+    utils.deleteByName(floorRootObj,name=_('金枋'))
     
     # 获取开间、进深数据
     net_x,net_y = getFloorDate(buildingObj)
@@ -671,7 +672,7 @@ def __buildJinFang(buildingObj:bpy.types.Object):
             end_point=pEnd,
             depth=con.HENGFANG_Y*dk-0.01,
             height=con.HENGFANG_H*dk-0.01,
-            name='金枋.'+jinfang,
+            name=_('金枋.')+jinfang,
             root_obj=floorRootObj
         )
         # 刷漆
@@ -773,7 +774,7 @@ def __buildFang(buildingObj:bpy.types.Object):
                      if "queti" in item.id]
     for i in reversed(queti_indices):
         bData.wall_list.remove(i)
-    utils.deleteByName(buildingObj,name='雀替')
+    utils.deleteByName(buildingObj,name=_('雀替'))
     
     # 根据建筑模板的参数设置分布
     fangID_List = fangNet.split(',')
@@ -831,7 +832,7 @@ def __buildFang(buildingObj:bpy.types.Object):
         bigFangObj = utils.drawHexagon(
             bigFangScale,
             bigFangLoc,
-            name =  "额枋." + fangID,
+            name =  _("额枋.") + fangID,
             parent = floorRootObj,
             )
         bigFangObj.rotation_euler = bigFangRot
@@ -873,7 +874,7 @@ def __buildFang(buildingObj:bpy.types.Object):
                     - con.EFANG_LARGE_H*dk/2 \
                     - con.BOARD_YOUE_H*dk/2))
             dianbanObj = utils.addCube(
-                name="由额垫板." + fangID,
+                name=_("由额垫板.") + fangID,
                 location=dianbanLoc,
                 dimension=dianbanScale,
                 parent=bigFangObj,
@@ -896,7 +897,7 @@ def __buildFang(buildingObj:bpy.types.Object):
             smallFangObj = utils.drawHexagon(
                 smallFangScale,
                 smallFangLoc,
-                name =  "小额枋." + fangID,
+                name =  _("小额枋.") + fangID,
                 parent = bigFangObj,
             )
             smallFangObj.ACA_data['aca_obj'] = True
@@ -917,7 +918,7 @@ def __buildFang(buildingObj:bpy.types.Object):
 
         # 合并大小额枋、由额垫板
         if len(fangPart) > 1:
-            fangJoined = utils.joinObjects(fangPart,newName='额枋.'+ fangID)
+            fangJoined = utils.joinObjects(fangPart,newName=_('额枋.')+ fangID)
             bigFangObj = fangJoined
         
     # # 聚焦到最后添加的大额枋，便于用户可以直接删除
@@ -1059,7 +1060,7 @@ def buildPillars(buildingObj:bpy.types.Object):
     # 解决bug：面阔间数在鼠标拖拽时可能为偶数，出现异常
     if bData.x_rooms % 2 == 0:
         # 不处理偶数面阔间数
-        raise Exception("面阔间数不能为偶数")
+        raise Exception(_("面阔间数不能为偶数"))
     
     # 1、查找或新建地盘根节点
     floorRootObj = utils.getAcaChild(buildingObj,con.ACA_TYPE_FLOOR_ROOT)
@@ -1085,7 +1086,7 @@ def buildPillars(buildingObj:bpy.types.Object):
     # 柱顶石边长（为了防止与方砖缦地交叠，做了1/10000的放大）
     pillarBase_size = con.PILLARBASE_WIDTH*pd * 1.0001
     pillarBottom_basemesh = utils.addCube(
-        name='柱顶石',
+        name=_('柱顶石'),
         location=(0,0,
                     (- pillarBase_h/2
                     +pillarBase_popup)),
@@ -1137,7 +1138,7 @@ def buildPillars(buildingObj:bpy.types.Object):
             # 空柱位上用Empty标识，以便添加踏跺等操作
             if useEmptyPillar:
                 pillarObj = utils.addEmpty(
-                    name = '柱定位点.' + pillarID,
+                    name = _('柱定位点.') + pillarID,
                     type='CONE',
                     radius=pd,
                     location = (net_x[x],net_y[y],0),
@@ -1192,7 +1193,7 @@ def buildPillars(buildingObj:bpy.types.Object):
             # 复制柱子，仅instance，包含modifier
             pillarObj = utils.copySimplyObject(
                 sourceObj = pillar_source,
-                name = '柱子.'+pillarID,
+                name = _('柱子.')+pillarID,
                 location=(net_x[x],net_y[y],pillarZ),
                 parentObj = floorRootObj,
                 singleUser=True # 内外柱不等高，为避免打架，全部
@@ -1419,7 +1420,7 @@ def resizePillar(buildingObj:bpy.types.Object):
         for pillarProxy in floorRootObj.children:
             if pillarProxy.ACA_data['aca_type'] == con.ACA_TYPE_PILLAR:
                 for child in pillarProxy.children:
-                    if '柱子' in child.name:
+                    if _('柱子') in child.name:
                         child.dimensions = (
                             bData.pillar_diameter,
                             bData.pillar_diameter,
@@ -1486,7 +1487,7 @@ def buildFloor(buildingObj:bpy.types.Object,
 
     # 新建还是刷新？
     if buildingObj == None:
-        utils.outputMsg("创建新建筑...")
+        utils.outputMsg(_("创建新建筑..."))
         if templateName == None:
             # 获取panel上选择的模板
             from . import data
@@ -1506,7 +1507,7 @@ def buildFloor(buildingObj:bpy.types.Object,
         # 避免因为手工排除该集合导致后续构建掉落在集合外
         buildingColl = buildingObj.users_collection[0]
         utils.focusCollection(buildingColl.name)
-        utils.outputMsg("更新建筑...")
+        utils.outputMsg(_("更新建筑..."))
         # 简单粗暴的全部删除
         utils.deleteHierarchy(buildingObj)
         if reloadAssets:
@@ -1559,14 +1560,14 @@ def __getComboPillarNet(buildingObj:bpy.types.Object):
     
     # 验证是否为重檐
     if not bData.use_double_eave:
-        utils.outputMsg("穿插枋拼接上檐柱网失败，该建筑没有做重檐")
+        utils.outputMsg(_("穿插枋拼接上檐柱网失败，该建筑没有做重檐"))
         return pillarNet
     
     # 查找上檐
     doubleEaveObj = utils.getComboChild(
         buildingObj,con.COMBO_DOUBLE_EAVE)
     if doubleEaveObj is None:
-        utils.outputMsg("穿插枋拼接上檐柱网失败，未找到上檐柱网")
+        utils.outputMsg(_("穿插枋拼接上檐柱网失败，未找到上檐柱网"))
         return pillarNet
 
     # 处理上檐柱网
@@ -1609,7 +1610,7 @@ def addLoggia(buildingObj:bpy.types.Object,
     from . import build
     build.isFinished = False
     build.progress = 0
-    utils.outputMsg("添加重楼子建筑...")
+    utils.outputMsg(_("添加重楼子建筑..."))
     # 暂时排除目录下的其他建筑，以加快执行速度
     build.__excludeOther(keepObj=buildingObj)
         
@@ -1654,7 +1655,7 @@ def setLoggiaData(bData:acaData,
                      if "queti" in item.id]
     for i in reversed(queti_indices):
         bData.wall_list.remove(i)
-    utils.deleteByName(bData.id_data,name='雀替')
+    utils.deleteByName(bData.id_data,name=_('雀替'))
 
     # 处理周围廊装修
     if (bData.x_rooms == preRooms_x + 2 
@@ -1684,7 +1685,7 @@ def __setLoggiaWidth(bData:acaData,
               width,side='X'): 
     # 验证回廊最小宽度
     if abs(width) < bData.pillar_diameter:
-        raise Exception(f"回廊宽度太小，建议在[{round(bData.DK*12,2)}]~[{round(bData.DK*22,2)}]左右")   
+        raise Exception(_("回廊宽度太小，建议在[%s]~[%s]左右" % (round(bData.DK*12,2), round(bData.DK*22,2))))   
     
     # 验证回廊内收宽度
     xRooms = bData.x_rooms
@@ -1693,19 +1694,19 @@ def __setLoggiaWidth(bData:acaData,
         width_min = width+bData.pillar_diameter
         if xRooms == 3:
             if bData.x_1 < width_min:
-                raise Exception("面阔明间宽度不足以做内收廊间")
+                raise Exception(_("面阔明间宽度不足以做内收廊间"))
         elif xRooms == 5:
             if bData.x_2 < width_min:
-                raise Exception("面阔次间宽度不足以做内收廊间")
+                raise Exception(_("面阔次间宽度不足以做内收廊间"))
         elif xRooms >= 7:
             if bData.x_3 < width_min:
-                raise Exception("面阔梢间宽度不足以做内收廊间")
+                raise Exception(_("面阔梢间宽度不足以做内收廊间"))
         if yRooms in (3,4):
             if bData.y_2 < width_min:
-                raise Exception("进深次间宽度不足以做内收廊间")
+                raise Exception(_("进深次间宽度不足以做内收廊间"))
         elif yRooms >= 5:
             if bData.y_3 < width_min:
-                raise Exception("进深梢间宽度不足以做内收廊间")
+                raise Exception(_("进深梢间宽度不足以做内收廊间"))
             
     # 东西廊间
     if side == 'X':

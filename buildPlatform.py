@@ -2,6 +2,7 @@
 # 所属插件：ACA Builder
 # 功能概述：
 #   台基的营造
+from .locale.i18n import _
 import bpy
 import math
 from mathutils import Vector
@@ -60,7 +61,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         + 0.01 )
     if height > 0 : 
         earthObj = utils.addCube(
-            name = '夯土',
+            name = _('夯土'),
             location=(0,0,z),
             dimension=(width,depth,height),
             parent=baseRootObj
@@ -79,7 +80,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
 
     # 2.1、方砖缦地
     floorInsideObj = utils.addCube(
-        name='方砖缦地',
+        name=_('方砖缦地'),
         location=(
             0,0,
             pHeight-con.STEP_HEIGHT/2
@@ -113,7 +114,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         # 依次做出前后檐阶条石
         for n in range((len(net_x)-1)):
             sidebrickObj = utils.addCube(
-                name='阶条石',
+                name=_('阶条石'),
                 location=(
                     (net_x[n+1]+net_x[n])/2,
                     pDepth/2-stoneWidth/2,
@@ -141,7 +142,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         # 依次做出前后檐阶条石
         for n in range((len(net_y)-1)):
             sidebrickObj = utils.addCube(
-                name='阶条石',
+                name=_('阶条石'),
                 location=(
                     pWidth/2-stoneWidth/2,
                     (net_y[n+1]+net_y[n])/2,
@@ -168,7 +169,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
                 - con.STEP_HEIGHT 
                 - con.GROUND_BORDER) 
         conrnerPillarObj = utils.addCube(
-            name='埋头角柱',
+            name=_('埋头角柱'),
             location=(
                 pWidth/2-stoneWidth/2,
                 pDepth/2-stoneWidth/2,
@@ -197,7 +198,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         # 2.4、陡板
         h = pHeight - con.STEP_HEIGHT - con.GROUND_BORDER
         aroundbrickObj = utils.addCube(
-            name='陡板-前后檐',
+            name=_('陡板-前后檐'),
             location=(
                 0,pDepth/2- con.STEP_HEIGHT/2,
                 (pHeight - con.STEP_HEIGHT - h/2)
@@ -225,7 +226,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
         if stoneWidth == 0.0:
             brickLength -= con.STEP_HEIGHT*2
         aroundbrickObj = utils.addCube(
-            name='陡板-两山',
+            name=_('陡板-两山'),
             location=(
                 pWidth/2- con.STEP_HEIGHT/2,
                 0,
@@ -260,7 +261,7 @@ def __buildTaiming(baseRootObj:bpy.types.Object):
     
     # 合并台基
     taimingJoined = utils.joinObjects(
-        taimingList,newName='台明'
+        taimingList,newName=_('台明')
         )
     # 设置插件属性
     taimingJoined.ACA_data['aca_obj'] = True
@@ -421,7 +422,7 @@ def __addStepProxy(baseRootObj:bpy.types.Object,
         step_dir = 'N'
 
     if step_dir == None:
-        utils.outputMsg('无法生成踏跺，id='+stepID)
+        utils.outputMsg(_('无法生成踏跺，id=')+stepID)
         # 退出
         return
     
@@ -460,7 +461,7 @@ def __addStepProxy(baseRootObj:bpy.types.Object,
         y = (net_y[pTo_y] + net_y[pFrom_y])/2
 
     stepProxy = utils.addCube(
-        name='踏跺proxy',
+        name=_('踏跺proxy'),
         location=(x,y,stepHeight/2),
         dimension=(stepWidth,stepDepth,stepHeight),
         rotation=rot,
@@ -561,7 +562,7 @@ def __drawStep(
 
     # 1、象眼石
     brickObj = utils.addCube(
-        name='象眼石',
+        name=_('象眼石'),
         location=(
             # 对齐柱中
             chuidaiX,
@@ -590,7 +591,7 @@ def __drawStep(
 
     # 2、垂带
     brickObj = utils.addCube(
-        name='垂带',
+        name=_('垂带'),
         location=(
             # 对齐柱中
             chuidaiX,
@@ -656,7 +657,7 @@ def __drawStep(
     stepHeight = (pHeight-con.GROUND_BORDER)/count
     stepDepth = pDepth/count
     brickObj = utils.addCube(
-        name='台阶',
+        name=_('台阶'),
         location=(
             0,
             (-pDepth/2+stepDepth*1.5),
@@ -691,7 +692,7 @@ def __drawStep(
 
     # 合并对象
     stepJoined = utils.joinObjects(
-        taduoObjs,newName='踏跺.'+stepID)
+        taduoObjs,newName=_('踏跺.')+stepID)
     # 识别对象类型
     stepJoined.ACA_data['aca_type'] = con.ACA_TYPE_STEP
     stepJoined.ACA_data['stepID'] = stepID
@@ -730,7 +731,7 @@ def __addPlatformExpand(
 
     # 1、分别定义土衬和散水在扩展时的不同参数设置
     if type == 'tuchen':
-        name = '土衬'
+        name = _('土衬')
         # 拓展尺寸
         pfExpand = con.GROUND_BORDER*2
         # 位置
@@ -740,7 +741,7 @@ def __addPlatformExpand(
         # 材质
         pfeMat = con.M_PLATFORM_ROCK
     if type == 'sanshui':
-        name = '散水' 
+        name = _('散水') 
         # 拓展尺寸
         pfExpand = con.SANSHUI_WIDTH*dk*2
         # 位置
@@ -834,7 +835,7 @@ def addStep(buildingObj:bpy.types.Object,
                 == con.ACA_TYPE_PILLAR:
                 pillarNum += 1
     if pillarNum < 2:
-        utils.popMessageBox("请至少选择2根柱子")
+        utils.popMessageBox(_("请至少选择2根柱子"))
         return
     
     # 构造枋网设置
@@ -861,7 +862,7 @@ def addStep(buildingObj:bpy.types.Object,
         valid = utils.validPillarNext(pFrom,pTo)
         if not valid:
             utils.popMessageBox(
-                f"无法生成踏跺，{pFrom}，{pTo}不是相邻的柱子")
+                _("无法生成踏跺，%s，%s不是相邻的柱子" % (pFrom, pTo)))
             continue
 
         # 验证踏跺是否已经存在
@@ -869,7 +870,7 @@ def addStep(buildingObj:bpy.types.Object,
         stepID_alt = pTo + '#' + pFrom
         for step in bData.step_list:
             if stepID == step.id or stepID_alt==step.id:
-                utils.popMessageBox(f"该位置已经存在踏跺：{stepID}")
+                utils.popMessageBox(_("该位置已经存在踏跺：%s" % (stepID)))
                 return {'CANCELLED'}
 
         # 251011 验证踏跺合法性
@@ -898,12 +899,12 @@ def addStep(buildingObj:bpy.types.Object,
         if pFrom_y == roomEndY and pTo_y == roomEndY:
             step_dir = 'N'
         if step_dir == None:
-            utils.popMessageBox('踏跺位置不合理，id='+stepID)
+            utils.popMessageBox(_('踏跺位置不合理，id=')+stepID)
             # 退出
             return {'CANCELLED'}
         
         # 添加踏跺数据
-        utils.outputMsg("添加踏跺：" + stepID)
+        utils.outputMsg(_("添加踏跺：") + stepID)
         step = bData.step_list.add()
         # step.id = f"{pFrom}#{pTo}"
         step.id = f"{pFrom}#{pTo}"
@@ -924,7 +925,7 @@ def delStep(buildingObj:bpy.types.Object,
     # 250823 删除step数据
     for step in steps:
         if step.ACA_data['aca_type'] != con.ACA_TYPE_STEP:
-            print(f"删除踏跺已跳过{step.id}，aca_type错误:{step.ACA_data['aca_type']}")
+            print(_("删除踏跺已跳过%s，aca_type错误:%s" % (step.id, step.ACA_data['aca_type'])))
             continue
 
         # 删除数据

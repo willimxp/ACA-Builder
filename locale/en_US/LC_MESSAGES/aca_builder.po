@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ACA Builder\n"
-"POT-Creation-Date: 2026-03-10 12:51+0800\n"
-"PO-Revision-Date: 2026-03-11 22:17+0800\n"
+"POT-Creation-Date: 2026-03-12 09:44+0800\n"
+"PO-Revision-Date: 2026-03-12 09:54+0800\n"
 "Last-Translator: Auto Generated <noreply@example.com>\n"
 "Language-Team: English <en@li.org>\n"
 "Language: en_US\n"
@@ -13,6 +13,1374 @@ msgstr ""
 "X-Poedit-KeywordsList: _\n"
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-SearchPath-0: .\n"
+
+#: build.py:47 build.py:304
+msgid "无法创建该类型的建筑："
+msgstr "Cannot create this type of building: "
+
+#: build.py:216
+#, python-format
+msgid "无法创建该类型的建筑,%s"
+msgstr "Cannot create this type of building, %s"
+
+#: build.py:243
+msgid "删除失败，未找到建筑未合并的本体"
+msgstr "Deletion failed, cannot find the original uncombined building"
+
+#: build.py:385
+msgid "合并失败，无法继续做剖视图"
+msgstr "Combine failed, cannot continue with section view"
+
+#: build.py:869
+#, python-format
+msgid "%s没有需要合并的对象，继续..."
+msgstr "%s has no objects to combine, continuing..."
+
+#: build.py:982
+msgid ""
+"盝顶设置异常，斗栱出跳或盝顶檐步架宽太小。请使用有出跳的斗栱，或增加盝顶檐步"
+"架宽。"
+msgstr ""
+"Truncated-Hip Roof setting error, Dougong-projection or Rafter-Span is too "
+"small. Please use Dougong with projection, or increase Rafter-Span."
+
+#: build.py:988
+msgid "无法生成平坐，请启用斗栱，且斗栱应该有足够的出跳。"
+msgstr ""
+"Cannot generate pingzuo, please enable Dougong and ensure Dougong has "
+"sufficient projection."
+
+#: build.py:1013
+msgid "不止两个建筑"
+msgstr "More than two buildings"
+
+#: build.py:1026
+msgid "请选择需要组合的2个建筑"
+msgstr "Please select 2 buildings to combine"
+
+#: build.py:1041 build.py:1069
+msgid "建筑不相交，无法进行组合"
+msgstr "Buildings do not intersect, cannot combine"
+
+#: build.py:1144
+msgid "无法处理的建筑合并"
+msgstr "Unhandled building combine"
+
+#: build.py:1218
+msgid "勾连搭"
+msgstr "Goulianda"
+
+#: build.py:1330
+msgid "平行抱厦-悬山-主建筑"
+msgstr "Parallel Overhanging Main-Building"
+
+#: build.py:1368
+msgid "平行抱厦-悬山-抱厦"
+msgstr "Parallel Overhanging Pavilion"
+
+#: build.py:1404
+msgid "平行抱厦-悬山-柱网"
+msgstr "Parallel Overhanging Pillar"
+
+#: build.py:1457 build.py:1762
+msgid "平行抱厦-悬山-台基"
+msgstr "Parallel Overhanging Platform"
+
+#: build.py:1500 build.py:1805
+msgid "无法找到主建筑瓦面"
+msgstr "Cannot find main building roof tiles"
+
+#: build.py:1574
+msgid "平行抱厦-歇山"
+msgstr "Parallel Hip-and-Gable"
+
+#: build.py:1646
+msgid "平行抱厦-歇山屋顶"
+msgstr "Parallel Hip-and-Gable Roof"
+
+#: build.py:1707
+msgid "平行抱厦-歇山-柱网"
+msgstr "Parallel Hip-and-Gable Pillar"
+
+#: build.py:1880
+msgid "丁字形抱厦"
+msgstr "T-Pavilion"
+
+#: build.py:2011
+#, python-format
+msgid "未找到屋顶相交范围：from=%s,to=%s"
+msgstr "Roof intersection range not found: from=%s, to=%s"
+
+#: build.py:2167
+msgid "丁字抱厦"
+msgstr "T-Pavilion"
+
+#: build.py:2233
+msgid "丁字抱厦-柱网"
+msgstr "T-Pavilion Grid"
+
+#: build.py:2393 build.py:2399
+msgid "只支持2坡顶"
+msgstr "Only 2-slope roof supported"
+
+#: build.py:2613 build.py:2617
+msgid "屋顶相交"
+msgstr "Roof Intersection"
+
+#: build.py:2668
+msgid "无法获取正身坡线"
+msgstr "Cannot get main roof slope line"
+
+#: build.py:2687
+msgid "无法获取屋面"
+msgstr "Cannot get roof surface"
+
+#: build.py:2707
+msgid "建筑没有相交，未做任何裁剪"
+msgstr "Buildings do not intersect, no clipping applied"
+
+#: build.py:2728
+msgid "请选中建筑"
+msgstr "Please select a building"
+
+#: build.py:2744
+msgid "未能合并建筑"
+msgstr "Failed to combine buildings"
+
+#: build.py:2884
+msgid "回廊转角"
+msgstr "Corridor Corner"
+
+#: build.py:2976 buildRooftile.py:1600
+msgid "45度镜像"
+msgstr "45-degree Mirror"
+
+#: build.py:3001
+msgid "转角裁剪"
+msgstr "Corner Clipping"
+
+#: build.py:3051 build.py:3160
+msgid "无法找到转角对象"
+msgstr "Cannot find corner object"
+
+#: build.py:3109 build.py:3154
+msgid "丁字转角"
+msgstr "T-shaped Corner"
+
+#: build.py:3120 build.py:3147
+msgid "丁字裁剪"
+msgstr "T-shaped Clipping"
+
+#: build.py:3346
+msgid "出檐A裁剪"
+msgstr "Eaves A Clipping"
+
+#: build.py:3444
+msgid "出檐B裁剪"
+msgstr "Eaves B Clipping"
+
+#: buildBalcony.py:79 buildBalcony.py:197
+msgid "楼板"
+msgstr "Floor slab"
+
+#: buildBalcony.py:96
+msgid "挂檐板.前后檐"
+msgstr "Eave board (front and back)"
+
+#: buildBalcony.py:118
+msgid "挂檐板.两山"
+msgstr "Eave board (two sides)"
+
+#: buildBalcony.py:154
+msgid "地栿.前后檐"
+msgstr "Difu beam (front and back)"
+
+#: buildBalcony.py:179
+msgid "地栿.两山"
+msgstr "Difu beam (two sides)"
+
+#: buildBalcony.py:321
+#, python-format
+msgid "栏杆.%s"
+msgstr "Railing.%s"
+
+#: buildBalcony.py:381
+#, python-format
+msgid "望柱.%s"
+msgstr "Baluster.%s"
+
+#: buildBalcony.py:410
+#, python-format
+msgid "桪杖扶手.%s"
+msgstr "Handrail.%s"
+
+#: buildBalcony.py:434
+#, python-format
+msgid "折柱.%s.%s"
+msgstr "column.%s.%s"
+
+#: buildBalcony.py:454
+#, python-format
+msgid "净瓶.%s"
+msgstr "Vase.%s"
+
+#: buildBalcony.py:499
+#, python-format
+msgid "地栿.%s"
+msgstr "Difu.%s"
+
+#: buildBalcony.py:527
+#, python-format
+msgid "牙子板.%s.%s"
+msgstr "Yazi.%s.%s"
+
+#: buildBalcony.py:543
+#, python-format
+msgid "下枋.%s"
+msgstr "Lower-fang.%s"
+
+#: buildBalcony.py:571
+#, python-format
+msgid "绦环板.%s.%s"
+msgstr "Taohuan.%s.%s"
+
+#: buildBalcony.py:587
+#, python-format
+msgid "中枋.%s"
+msgstr "Middle-fang.%s"
+
+#: buildBalcony.py:605
+msgid "栏杆"
+msgstr "Railing"
+
+#: buildBalcony.py:630
+msgid "没有斗栱，无法营造平坐"
+msgstr "No Dougong, cannot build balcony"
+
+#: buildBalcony.py:658 buildDoor.py:531 buildDoor.py:578 buildDoor.py:1260
+#: buildDoor.py:1503 buildDoor.py:1569 buildDoor.py:1698 buildFloor.py:364
+msgid "未找到建筑根节点或设计数据"
+msgstr "Building root node or design data not found"
+
+#: buildBalcony.py:670
+#, python-format
+msgid "无法找到railingData:%s"
+msgstr "Cannot find railingData: %s"
+
+#: buildBalcony.py:675
+#, python-format
+msgid "此位置无法做栏杆/坐凳，已跳过%s"
+msgstr "Cannot build railing/bench at this location, skipped %s"
+
+#: buildBalcony.py:688
+msgid "栏杆开口过大，已自动设置到最大值"
+msgstr "Railing gap too large, automatically set to maximum value"
+
+#: buildBalcony.py:754
+msgid "坐凳面"
+msgstr "Bench surface"
+
+#: buildBalcony.py:821
+msgid "牙子仔边"
+msgstr "Yazi edge"
+
+#: buildBalcony.py:884
+msgid "楣子仔边"
+msgstr "Meizi edge"
+
+#: buildBalcony.py:927
+msgid "坐凳"
+msgstr "Bench"
+
+#: buildBeam.py:237
+msgid ""
+"请留意：一般屋顶椽架数量应该为偶数（卷棚为奇数），所以，椽架数量自动减少了一"
+"椽架"
+msgstr ""
+"Note: Generally, Rafter-Count should be even (odd for hip-and-gable), so "
+"Rafter-Count has been automatically reduced by one"
+
+#: buildBeam.py:352
+msgid "挑檐桁"
+msgstr "Eave Purlin"
+
+#: buildBeam.py:410
+msgid "正心桁"
+msgstr "Central Purlin"
+
+#: buildBeam.py:419
+msgid "承椽枋-前后"
+msgstr "Rafter Supporting Fang (Front/Back)"
+
+#: buildBeam.py:437
+msgid "桁-前后"
+msgstr "Purlin (Front/Back)"
+
+#: buildBeam.py:472
+msgid "伏脊木"
+msgstr "Fujimu"
+
+#: buildBeam.py:504
+msgid "桁垫板"
+msgstr "Purlin Plate"
+
+#: buildBeam.py:558 buildBeam.py:736
+msgid "金/脊枋"
+msgstr "Jin Fang/Ji Fang"
+
+#: buildBeam.py:636
+msgid "承椽枋-两山"
+msgstr "Rafter Supporting Fang (Sides)"
+
+#: buildBeam.py:655
+msgid "桁-两山"
+msgstr "Purlin (Sides)"
+
+#: buildBeam.py:704
+msgid "垫板"
+msgstr "Board"
+
+#: buildBeam.py:762
+msgid "桁架"
+msgstr "Truss"
+
+#: buildBeam.py:890 buildBeam.py:1020 buildBeam.py:1066
+msgid "趴梁"
+msgstr "Resting Beam"
+
+#: buildBeam.py:1052 buildBeam.py:1180
+msgid "坨橔"
+msgstr "Hump"
+
+#: buildBeam.py:1071 buildBeam.py:1155 buildBeam.py:1196
+msgid "太平梁"
+msgstr "Safe Beam"
+
+#: buildBeam.py:1266 buildBeam.py:1568
+msgid "梁"
+msgstr "Beam"
+
+#: buildBeam.py:1307
+msgid "踩步金"
+msgstr "Caibu Jin"
+
+#: buildBeam.py:1466
+msgid "蜀柱"
+msgstr "Short Column"
+
+#: buildBeam.py:1534
+msgid "梁架"
+msgstr "Beam Frame"
+
+#: buildBeam.py:1690
+msgid "角背"
+msgstr "Jiaobei"
+
+#: buildBeam.py:1767
+msgid "盖板"
+msgstr "Cover Plate"
+
+#: buildCombo.py:46
+msgid "__addComboLevel失败，已经为组合建筑。"
+msgstr "__addComboLevel failed, already a combo building."
+
+#: buildCombo.py:52 buildCombo.py:1513
+msgid "建筑组合"
+msgstr "Building Combination"
+
+#: buildCombo.py:75
+msgid "添加组合根节点..."
+msgstr "Adding combo root node..."
+
+#: buildCombo.py:85
+msgid "删除组合建筑失败，不是组合建筑。"
+msgstr "Failed to delete combo building, not a combo building."
+
+#: buildCombo.py:90
+msgid "删除组合建筑失败，不止一个建筑存在。"
+msgstr "Failed to delete combo building, more than one building exists."
+
+#: buildCombo.py:140
+msgid "后处理异常：参数中不是期望的两个id"
+msgstr "Post-processing exception: parameters do not contain expected two ids"
+
+#: buildCombo.py:153
+msgid "后处理异常：无法匹配建筑spliceid"
+msgstr "Post-processing exception: unable to match building spliceid"
+
+#: buildCombo.py:162
+msgid "无法识别的后处理类型"
+msgstr "Unrecognized post-processing type"
+
+#: buildCombo.py:171
+msgid "开始更新......"
+msgstr "Starting update......"
+
+#: buildCombo.py:452
+msgid "已经有一个月台，不能再生成新的月台"
+msgstr "There is already a terrace, cannot generate another one"
+
+#: buildCombo.py:457
+msgid ".月台"
+msgstr ".Terrace"
+
+#: buildCombo.py:467
+msgid "添加月台子建筑..."
+msgstr "Adding terrace ..."
+
+#: buildCombo.py:647
+msgid "0-重檐"
+msgstr "0-Double Eave"
+
+#: buildCombo.py:649
+msgid "1-简单重楼"
+msgstr "1-Simple Multi-Floor"
+
+#: buildCombo.py:651
+msgid "2-重楼+平坐"
+msgstr "2-Multi-Floor + Pingzuo"
+
+#: buildCombo.py:653
+msgid "3-重楼+腰檐"
+msgstr "3-Multi-Floor + Mid-Eave"
+
+#: buildCombo.py:655
+msgid "4-重楼+腰檐+平坐(无栏杆)"
+msgstr "4-Multi-Floor + Mid-Eave + Pingzuo (No Railing)"
+
+#: buildCombo.py:657
+msgid "5-重楼+腰檐+平坐(有栏杆)"
+msgstr "5-Multi-Floor + Mid-Eave + Pingzuo (With Railing)"
+
+#: buildCombo.py:659
+msgid "6-重楼+腰檐+回廊"
+msgstr "6-Multi-Floor + Mid-Eave + Loggia"
+
+#: buildCombo.py:661
+msgid "7-下出平坐"
+msgstr "7-Lower Pingzuo"
+
+#: buildCombo.py:760
+msgid "只有主体建筑可以做重楼，月台无法做重楼"
+msgstr "Only main building can have double story, terrace cannot"
+
+#: buildCombo.py:769
+msgid "暂时只用庑殿、歇山屋顶样式支持添加重楼"
+msgstr ""
+"Currently only Hip Roof and Hip-and-Gable Roof styles support adding double "
+"story"
+
+#: buildCombo.py:776
+msgid "当前建筑尚未生成屋顶，请先设置完成屋顶参数"
+msgstr ""
+"Current building has not generated roof yet, please set roof parameters first"
+
+#: buildCombo.py:781
+msgid "无法在平座层上做重檐或披檐，请选择其他楼层"
+msgstr "Cannot add double eave on balcony layer, please select another floor"
+
+#: buildCombo.py:795
+msgid "收分验证失败：斗栱出跳与重檐收分合计至少应3斗口，请更换斗栱，或增加收分"
+msgstr ""
+"Verification failed: Dougong extension and Pavilion Taper should total at "
+"least 3 Doukou, please change Dougong or increase Pavilion Taper"
+
+#: buildCombo.py:805
+#, python-format
+msgid "面阔尽间当前[%s],应大于[%s]"
+msgstr "Very End Bay width is currently [%s], should be greater than [%s]"
+
+#: buildCombo.py:807 buildCombo.py:809 buildCombo.py:811
+#, python-format
+msgid "面阔梢间当前[%s],应大于[%s]"
+msgstr "End Bay width is currently [%s], should be greater than [%s]"
+
+#: buildCombo.py:815
+#, python-format
+msgid "进深梢间当前[%s],应大于[%s]"
+msgstr "End bay depth is currently [%s], should be greater than [%s]"
+
+#: buildCombo.py:817
+#, python-format
+msgid "进深次间当前[%s],应大于[%s]"
+msgstr "Second bay depth is  currently [%s], should be greater than [%s]"
+
+#: buildCombo.py:819 buildCombo.py:821
+#, python-format
+msgid "进深明间当前[%s],应大于[%s]"
+msgstr "Center bay depth is currently [%s], should be greater than [%s]"
+
+#: buildCombo.py:824
+#, python-format
+msgid ""
+"收分验证失败：%s（注意：如果下层已经有回廊，建议不要使用方案“6-重楼+腰檐+回"
+"廊”，可以尝试使用方案“4-重楼+腰檐+平坐(无栏杆)”）"
+msgstr ""
+"Taper verification failed: %s (Note: If lower floor already has corridor, "
+"suggest not using scheme \"6-Double Story+Waist Eave+Corridor\", can try "
+"scheme \"4-Double Story+Waist Eave+Balcony(No Railing)\")"
+
+#: buildCombo.py:832 buildFloor.py:1613
+msgid "添加重楼子建筑..."
+msgstr "Adding double story sub-building..."
+
+#: buildCombo.py:851
+msgid "素平柱础"
+msgstr "Plain Column Base"
+
+#: buildCombo.py:852 buildFloor.py:1089
+msgid "柱顶石"
+msgstr "Column Top Stone"
+
+#: buildCombo.py:997
+msgid ".平坐"
+msgstr ".Balcony"
+
+#: buildCombo.py:1055
+msgid ".重楼"
+msgstr ".Double Story"
+
+#: buildCombo.py:1057
+msgid ".重檐"
+msgstr ".Double Eave"
+
+#: buildCombo.py:1193
+msgid "重新计算楼阁高度..."
+msgstr "Recalculating pavilion height..."
+
+#: buildCombo.py:1389
+#, python-format
+msgid "楼阁收分失败：尽间尺寸请至少加大%s"
+msgstr ""
+"Pavilion Taper failed: End bay width should be increased by at least %s"
+
+#: buildCombo.py:1395
+#, python-format
+msgid "楼阁收分失败：梢间尺寸当前%s，需大于收分%s"
+msgstr ""
+"Pavilion Taper failed: End bay width is currently %s, should be greater than "
+"shrinkage %s"
+
+#: buildCombo.py:1401
+#, python-format
+msgid "楼阁收分失败：次间尺寸当前%s，需大于收分%s"
+msgstr ""
+"Pavilion Taper failed: Second bay width is currently %s, should be greater "
+"than shrinkage %s"
+
+#: buildCombo.py:1407
+#, python-format
+msgid "楼阁收分失败：明间尺寸当前%s，需大于收分%s"
+msgstr ""
+"Pavilion Taper failed: Center bay width is currently %s, should be greater "
+"than shrinkage %s"
+
+#: buildCombo.py:1410 buildCombo.py:1440
+msgid "楼阁收分失败，未知原因"
+msgstr "Pavilion Taper failed, unknown reason"
+
+#: buildCombo.py:1419
+#, python-format
+msgid "楼阁收分失败：进深梢间尺寸当前%s，需大于收分%s"
+msgstr ""
+"Pavilion Taper failed: End bay depth is currently %s, should be greater than "
+"shrinkage %s"
+
+#: buildCombo.py:1425
+#, python-format
+msgid "楼阁收分失败：进深次间应至少增加%s"
+msgstr "Pavilion Taper failed: Second bay depth should increase by at least %s"
+
+#: buildCombo.py:1431
+#, python-format
+msgid "楼阁收分失败：进深明间尺寸应增加%s"
+msgstr "Pavilion Taper failed: Center bay depth should increase by %s"
+
+#: buildCombo.py:1437
+#, python-format
+msgid "楼阁收分失败：进深明间尺寸当前%s，需大于2倍收分%s"
+msgstr ""
+"Pavilion Taper failed: Center bay depth is currently %s, should be greater "
+"than 2x shrinkage %s"
+
+#: buildCombo.py:1503
+msgid "建筑已在同一个集合中，不再做集成"
+msgstr "Building is already in the same collection, no integration needed"
+
+#: buildDoor.py:53 buildDoor.py:1625 buildDoor.py:1773
+msgid "仔边"
+msgstr "Sub-frame"
+
+#: buildDoor.py:158 buildDoor.py:233 buildDoor.py:381
+msgid "抹头"
+msgstr "Top Rail"
+
+#: buildDoor.py:159 buildDoor.py:236 buildDoor.py:376 buildDoor.py:381
+#: buildDoor.py:411
+msgid "绦环"
+msgstr "Decorative Ring"
+
+#: buildDoor.py:160 buildDoor.py:241 buildDoor.py:390
+msgid "扇心"
+msgstr "Window Lattice"
+
+#: buildDoor.py:161 buildDoor.py:245 buildDoor.py:376 buildDoor.py:381
+#: buildDoor.py:413 data.py:1004
+msgid "裙板"
+msgstr "Mat Paint Door"
+
+#: buildDoor.py:269 buildDoor.py:274 buildDoor.py:381
+msgid "边梃"
+msgstr "Side Stile"
+
+#: buildDoor.py:316 buildDoor.py:397 buildDoor.py:1338
+msgid "门轴"
+msgstr "Door Pivot"
+
+#: buildDoor.py:343
+msgid "构建隔扇时无法判断是否使用槛墙"
+msgstr "Cannot determine whether to use sill-wall when building lattice window"
+
+#: buildDoor.py:353 buildDoor.py:1519 buildDoor.py:1585 buildDoor.py:1714
+#, python-format
+msgid "无法找到geshanData:%s"
+msgstr "Cannot find geshangData: %s"
+
+#: buildDoor.py:421 panel.py:944
+msgid "隔扇窗"
+msgstr "Lattice Window"
+
+#: buildDoor.py:423 panel.py:940
+msgid "隔扇门"
+msgstr "Lattice Door"
+
+#: buildDoor.py:470
+msgid "风槛"
+msgstr "Wind Sill"
+
+#: buildDoor.py:489
+msgid "榻板"
+msgstr "Platform Board"
+
+#: buildDoor.py:506 buildDoor.py:518
+msgid "槛墙"
+msgstr "Sill Wall"
+
+#: buildDoor.py:563
+#, python-format
+msgid "无法构建子对象，未知的wallType：%s"
+msgstr "Cannot build sub-object, unknown wallType: %s"
+
+#: buildDoor.py:596
+#, python-format
+msgid "无法找到childData:%s"
+msgstr "Cannot find childData: %s"
+
+#: buildDoor.py:701
+msgid "下槛"
+msgstr "Lower Sill"
+
+#: buildDoor.py:720
+msgid "中槛"
+msgstr "Middle Sill"
+
+#: buildDoor.py:745
+msgid "上槛"
+msgstr "Top Sill"
+
+#: buildDoor.py:771
+msgid "门框"
+msgstr "Door Frame"
+
+#: buildDoor.py:807
+msgid "下抱框"
+msgstr "Bottom Holding Frame"
+
+#: buildDoor.py:847
+msgid "上抱框"
+msgstr "Top Holding Frame"
+
+#: buildDoor.py:888 buildDoor.py:1039
+msgid "余塞板"
+msgstr "Fill Panel"
+
+#: buildDoor.py:925
+msgid "腰枋"
+msgstr "Waist Fang"
+
+#: buildDoor.py:964
+msgid "迎风板"
+msgstr "Windward Panel"
+
+#: buildDoor.py:1005
+msgid "横披间框"
+msgstr "Horizontal Frame"
+
+#: buildDoor.py:1056
+msgid "走马板"
+msgstr "Horse Board"
+
+#: buildDoor.py:1081
+msgid "门枕"
+msgstr "Door Sill Stone"
+
+#: buildDoor.py:1116
+msgid "门楹"
+msgstr "Door Post"
+
+#: buildDoor.py:1145
+msgid "上窗楹"
+msgstr "Upper Window Post"
+
+#: buildDoor.py:1168
+msgid "下窗楹"
+msgstr "Lower Window Post"
+
+#: buildDoor.py:1188 data.py:1243
+msgid "门簪"
+msgstr "Door Zan"
+
+#: buildDoor.py:1218
+msgid "间框"
+msgstr "Section Frame"
+
+#: buildDoor.py:1237
+msgid "槛框"
+msgstr "Sill Frame"
+
+#: buildDoor.py:1276
+#, python-format
+msgid "无法找到maindoorData:%s"
+msgstr "Cannot find maindoorData: %s"
+
+#: buildDoor.py:1310
+msgid "门扇"
+msgstr "Door Leaf"
+
+#: buildDoor.py:1367
+msgid "门边"
+msgstr "Door Edge"
+
+#: buildDoor.py:1383 data.py:1239
+msgid "门钉"
+msgstr "Door Nail"
+
+#: buildDoor.py:1425 data.py:1235
+msgid "铺首"
+msgstr "Door Knocker"
+
+#: buildDoor.py:1470
+msgid "板门门扇"
+msgstr "Board Door Leaf"
+
+#: buildDoor.py:1553
+msgid "隔扇"
+msgstr "Lattice Window"
+
+#: buildDoor.py:1663
+msgid "直棂条"
+msgstr "Vertical Mullion"
+
+#: buildDoor.py:1684 panel.py:931
+msgid "直棂窗"
+msgstr "Bar Window"
+
+#: buildDoor.py:1821 panel.py:957
+msgid "支摘窗"
+msgstr "Flip Window"
+
+#: buildDougong.py:72
+msgid "平板枋"
+msgstr "Flat Board Fang"
+
+#: buildDougong.py:100
+msgid "平板枋.山面"
+msgstr "Flat Board Fang.Side"
+
+#: buildDougong.py:228 buildDougong.py:266
+msgid "挑檐枋"
+msgstr "Eave Fang"
+
+#: buildDougong.py:357 buildDougong.py:718 data.py:972 data.py:976
+msgid "栱垫板"
+msgstr "Mat Paint Dougong Fill S"
+
+#: buildDougong.py:370 data.py:1067
+msgid "柱头斗栱"
+msgstr "Dougong on Pillar"
+
+#: buildDougong.py:466 data.py:1079
+msgid "转角斗栱"
+msgstr "Dougong on Corner"
+
+#: buildDougong.py:522 buildDougong.py:529
+msgid "山墙斗栱裁剪"
+msgstr "Gable Wall Dougong Trim"
+
+#: buildDougong.py:615 buildDougong.py:669 data.py:1071
+msgid "补间斗栱"
+msgstr "Dougong in Gap"
+
+#: buildDougong.py:693
+msgid "排布斗栱异常，输入的不是建筑根节点"
+msgstr "Dougong layout exception, input is not building root node"
+
+#: buildFloor.py:230 data.py:1113
+msgid "霸王拳"
+msgstr "Bawangquan"
+
+#: buildFloor.py:393 buildFloor.py:777 buildFloor.py:1658 data.py:1032
+#: data.py:1119
+msgid "雀替"
+msgstr "Mat Queti"
+
+#: buildFloor.py:427 data.py:1024 data.py:1125
+msgid "穿插枋"
+msgstr "Mat Ccfang"
+
+#: buildFloor.py:516
+msgid "穿插枋."
+msgstr "Chuan Cha Fang."
+
+#: buildFloor.py:557
+msgid "金枋"
+msgstr "Jin Fang (Golden beam)"
+
+#: buildFloor.py:675
+msgid "金枋."
+msgstr "Jin Fang."
+
+#: buildFloor.py:835 buildFloor.py:921
+msgid "额枋."
+msgstr "E Fang."
+
+#: buildFloor.py:877
+msgid "由额垫板."
+msgstr "You E Dian Ban."
+
+#: buildFloor.py:900
+msgid "小额枋."
+msgstr "Xiao E Fang."
+
+#: buildFloor.py:1063
+msgid "面阔间数不能为偶数"
+msgstr "Room number cannot be even"
+
+#: buildFloor.py:1141
+msgid "柱定位点."
+msgstr "Column positioning point."
+
+#: buildFloor.py:1196
+msgid "柱子."
+msgstr "Pillar."
+
+#: buildFloor.py:1423
+msgid "柱子"
+msgstr "Pillar"
+
+#: buildFloor.py:1490
+msgid "创建新建筑..."
+msgstr "Creating new building..."
+
+#: buildFloor.py:1510
+msgid "更新建筑..."
+msgstr "Updating building..."
+
+#: buildFloor.py:1563
+msgid "穿插枋拼接上檐柱网失败，该建筑没有做重檐"
+msgstr ""
+"Failed to connect Chuan Cha Fang to upper eave column network, building does "
+"not have double eaves"
+
+#: buildFloor.py:1570
+msgid "穿插枋拼接上檐柱网失败，未找到上檐柱网"
+msgstr ""
+"Failed to connect Chuan Cha Fang to upper eave column network, upper eave "
+"column network not found"
+
+#: buildFloor.py:1688
+#, python-format
+msgid "回廊宽度太小，建议在[%s]~[%s]左右"
+msgstr "Corridor width is too small, recommended range is [%s]~[%s]"
+
+#: buildFloor.py:1697
+msgid "面阔明间宽度不足以做内收廊间"
+msgstr "Main bay width in width direction is insufficient for inward corridor"
+
+#: buildFloor.py:1700
+msgid "面阔次间宽度不足以做内收廊间"
+msgstr ""
+"Second bay width in width direction is insufficient for inward corridor"
+
+#: buildFloor.py:1703
+msgid "面阔梢间宽度不足以做内收廊间"
+msgstr "Side bay width in width direction is insufficient for inward corridor"
+
+#: buildFloor.py:1706
+msgid "进深次间宽度不足以做内收廊间"
+msgstr ""
+"Second bay width in depth direction is insufficient for inward corridor"
+
+#: buildFloor.py:1709
+msgid "进深梢间宽度不足以做内收廊间"
+msgstr "Side bay width in depth direction is insufficient for inward corridor"
+
+#: buildPlatform.py:64
+msgid "夯土"
+msgstr "Rammed earth"
+
+#: buildPlatform.py:83 data.py:936
+msgid "方砖缦地"
+msgstr "Mat Brick 1"
+
+#: buildPlatform.py:117 buildPlatform.py:145
+msgid "阶条石"
+msgstr "Stepping stone"
+
+#: buildPlatform.py:172
+msgid "埋头角柱"
+msgstr "Buried corner column"
+
+#: buildPlatform.py:201
+msgid "陡板-前后檐"
+msgstr "Vertical slab - front and rear eaves"
+
+#: buildPlatform.py:229
+msgid "陡板-两山"
+msgstr "Vertical slab - two sides"
+
+#: buildPlatform.py:264
+msgid "台明"
+msgstr "Platform base"
+
+#: buildPlatform.py:425
+msgid "无法生成踏跺，id="
+msgstr "Cannot generate steps, id="
+
+#: buildPlatform.py:464
+msgid "踏跺proxy"
+msgstr "Step proxy"
+
+#: buildPlatform.py:565
+msgid "象眼石"
+msgstr "Elephant eye stone"
+
+#: buildPlatform.py:594
+msgid "垂带"
+msgstr "Vertical belt"
+
+#: buildPlatform.py:660
+msgid "台阶"
+msgstr "Steps"
+
+#: buildPlatform.py:695
+msgid "踏跺."
+msgstr "Step."
+
+#: buildPlatform.py:734
+msgid "土衬"
+msgstr "Earth cushion"
+
+#: buildPlatform.py:744
+msgid "散水"
+msgstr "Water drainage apron"
+
+#: buildPlatform.py:838
+msgid "请至少选择2根柱子"
+msgstr "Please select at least 2 pillars"
+
+#: buildPlatform.py:865
+#, python-format
+msgid "无法生成踏跺，%s，%s不是相邻的柱子"
+msgstr "Cannot generate steps, %s, %s are not adjacent pillars"
+
+#: buildPlatform.py:873
+#, python-format
+msgid "该位置已经存在踏跺：%s"
+msgstr "Steps already exist at this location: %s"
+
+#: buildPlatform.py:902
+msgid "踏跺位置不合理，id="
+msgstr "Step location is unreasonable, id="
+
+#: buildPlatform.py:907
+msgid "添加踏跺："
+msgstr "Add Step:"
+
+#: buildPlatform.py:928
+#, python-format
+msgid "删除踏跺已跳过%s，aca_type错误:%s"
+msgstr "Skipped deleting step %s, aca_type error: %s"
+
+#: buildRoof.py:160
+msgid "里口木.前后"
+msgstr "Likoumu (front and rear)"
+
+#: buildRoof.py:167
+msgid "里口木.两山"
+msgstr "Likoumu (two sides)"
+
+#: buildRoof.py:201
+msgid "檐椽"
+msgstr "Eave rafter"
+
+#: buildRoof.py:203
+msgid "脑椽"
+msgstr "Brain rafter"
+
+#: buildRoof.py:205
+msgid "花架椽"
+msgstr "Flower rack rafter"
+
+#: buildRoof.py:207
+msgid "下花架椽"
+msgstr "Lower flower rack rafter"
+
+#: buildRoof.py:208
+msgid "上花架椽"
+msgstr "Upper flower rack rafter"
+
+#: buildRoof.py:210
+msgid "中花架椽"
+msgstr "Middle flower rack rafter"
+
+#: buildRoof.py:250
+#, python-format
+msgid "前后檐.%d-%s"
+msgstr "Front and rear eave.%d-%s"
+
+#: buildRoof.py:276
+msgid "山花补齐檐椽"
+msgstr "Gable filling eave rafter"
+
+#: buildRoof.py:344
+#, python-format
+msgid "檐椽营造失败，屋顶类型无法识别bData.roof_style=%s"
+msgstr ""
+"Failed to build eave rafter, roof type cannot be identified "
+"bData.roof_style=%s"
+
+#: buildRoof.py:431
+msgid "罗锅椽"
+msgstr "Luo Guo rafter (arched rafter)"
+
+#: buildRoof.py:519
+#, python-format
+msgid "两山.%d-%s"
+msgstr "Two sides.%d-%s"
+
+#: buildRoof.py:650 buildRoof.py:866 buildRoof.py:3009
+msgid "望板"
+msgstr "Roof boarding"
+
+#: buildRoof.py:725
+msgid "山花补齐望板"
+msgstr "Gable filling boarding"
+
+#: buildRoof.py:773
+msgid "卷棚望板"
+msgstr "Curved roof boarding"
+
+#: buildRoof.py:794
+msgid "望板-前后檐"
+msgstr "Boarding - front and rear eaves"
+
+#: buildRoof.py:915
+msgid "望板-两山"
+msgstr "Boarding - two sides"
+
+#: buildRoof.py:922
+msgid "飞椽"
+msgstr "Flying rafter"
+
+#: buildRoof.py:1056
+msgid "飞椽.前后"
+msgstr "Flying rafter (front and rear)"
+
+#: buildRoof.py:1060
+msgid "飞椽.两山"
+msgstr "Flying rafter (two sides)"
+
+#: buildRoof.py:1087
+msgid "压飞尾望板.前后"
+msgstr "Flying tail boarding (front and rear)"
+
+#: buildRoof.py:1092
+msgid "压飞尾望板.两山"
+msgstr "Flying tail boarding (two sides)"
+
+#: buildRoof.py:1157
+msgid "大连檐.前后"
+msgstr "Major eave (front and rear)"
+
+#: buildRoof.py:1174
+msgid "大连檐.两山"
+msgstr "Major eave (two sides)"
+
+#: buildRoof.py:1233 buildRoof.py:1512
+msgid "仔角梁"
+msgstr "Zi Jiao Liang (young corner beam)"
+
+#: buildRoof.py:1403
+#, python-format
+msgid "构造老角梁失败，檐步架只有%s"
+msgstr ""
+"Failed to construct Lao Jiao Liang (old corner beam), eave step only has %s"
+
+#: buildRoof.py:1429 data.py:1028 data.py:1107
+msgid "老角梁"
+msgstr "Mat Cornerbeam"
+
+#: buildRoof.py:1444
+msgid "由戗"
+msgstr "You Qiang (secondary corner support)"
+
+#: buildRoof.py:1546
+msgid "小连檐"
+msgstr "Minor eave"
+
+#: buildRoof.py:1715
+msgid "翼角椽定位线"
+msgstr "Wing corner rafter positioning line"
+
+#: buildRoof.py:1788 buildRoof.py:2979
+msgid "翼角椽"
+msgstr "Wing corner rafter"
+
+#: buildRoof.py:2005
+msgid "大连檐.翼角"
+msgstr "Major eave (wing corner)"
+
+#: buildRoof.py:2157
+msgid "翘飞椽定位线"
+msgstr "Curved flying rafter positioning line"
+
+#: buildRoof.py:2676 buildRoof.py:2944
+msgid "翘飞椽"
+msgstr "Curved flying rafter"
+
+#: buildRoof.py:2694 buildRoof.py:2822
+msgid "翘飞椽望板"
+msgstr "Curved flying rafter boarding"
+
+#: buildRoof.py:3158 buildRoof.py:3159 buildRoof.py:3755 data.py:1012
+msgid "山花板"
+msgstr "Mat Paint Shanhua"
+
+#: buildRoof.py:3294 buildRoof.py:3295
+msgid "象眼板"
+msgstr "Elephant eye board"
+
+#: buildRoof.py:3433
+msgid "博缝板曲线"
+msgstr "Bofeng board curve"
+
+#: buildRoof.py:3534
+msgid "雪花钉"
+msgstr "Snowflake nail"
+
+#: buildRoof.py:3586 data.py:1101
+msgid "博缝板"
+msgstr "Bofeng Board"
+
+#: buildRoof.py:3641 buildRoof.py:3773
+msgid "曲线拟合"
+msgstr "Curve fitting"
+
+#: buildRoof.py:3864
+msgid "没有足够空间摆放悬鱼"
+msgstr "Not enough space for Xuan Yu (hanging fish)"
+
+#: buildRoof.py:3881 data.py:1255
+msgid "悬鱼"
+msgstr "Suspended Fish"
+
+#: buildRoof.py:3973 buildRoof.py:3974
+msgid "山墙"
+msgstr "Gable wall"
+
+#: buildRoof.py:4035
+msgid "下碱"
+msgstr "Lower wall base"
+
+#: buildRoof.py:4190
+msgid "进深小于3间，已自动禁止廊间举架"
+msgstr ""
+"Depth less than 3 bays, corridor rafter raising has been automatically "
+"disabled"
+
+#: buildRooftile.py:162
+msgid "前后正身坡线"
+msgstr "Front and rear main slope line"
+
+#: buildRooftile.py:164
+msgid "两山正身坡线"
+msgstr "Two sides main slope line"
+
+#: buildRooftile.py:304
+msgid "前后翼角坡线"
+msgstr "Front and rear wing corner slope line"
+
+#: buildRooftile.py:306
+msgid "两山翼角坡线"
+msgstr "Two sides wing corner slope line"
+
+#: buildRooftile.py:334 buildRooftile.py:438
+msgid "前后檐瓦口线"
+msgstr "Front and rear eave tile line"
+
+#: buildRooftile.py:341 buildRooftile.py:445
+msgid "两山檐瓦口线"
+msgstr "Two sides eave tile line"
+
+#: buildRooftile.py:654
+msgid "前后檐瓦面"
+msgstr "Front and rear eave tile surface"
+
+#: buildRooftile.py:656
+msgid "两山瓦面"
+msgstr "Two sides tile surface"
+
+#: buildRooftile.py:933
+msgid "瓦面碰撞检测失败，001"
+msgstr "Tile surface collision detection failed, 001"
+
+#: buildRooftile.py:1209 data.py:1131
+msgid "板瓦"
+msgstr "Flat Tile"
+
+#: buildRooftile.py:1220 data.py:1135
+msgid "筒瓦"
+msgstr "Circular Tile"
+
+#: buildRooftile.py:1233 data.py:1143
+msgid "滴水"
+msgstr "Drip Tile"
+
+#: buildRooftile.py:1259 data.py:1139
+msgid "瓦当"
+msgstr "Tile End"
+
+#: buildRooftile.py:1269
+msgid "前后檐"
+msgstr "Front and rear eaves"
+
+#: buildRooftile.py:1271
+msgid "两山"
+msgstr "Two sides"
+
+#: buildRooftile.py:1273
+msgid "屋瓦."
+msgstr "Roof tile."
+
+#: buildRooftile.py:1417 data.py:1173
+msgid "宝顶"
+msgstr "Baoding"
+
+#: buildRooftile.py:1432
+msgid "正脊"
+msgstr "Main ridge"
+
+#: buildRooftile.py:1446 buildRooftile.py:1543 buildRooftile.py:1580
+msgid "横向平铺"
+msgstr "Horizontal tiling"
+
+#: buildRooftile.py:1467 data.py:1165
+msgid "螭吻"
+msgstr "Chiwen"
+
+#: buildRooftile.py:1527 buildRooftile.py:1563
+msgid "围脊"
+msgstr "Surrounding ridge"
+
+#: buildRooftile.py:1609 data.py:1169
+msgid "合角吻"
+msgstr "Hejiaowen"
+
+#: buildRooftile.py:1765
+msgid "垂脊线"
+msgstr "Vertical ridge line"
+
+#: buildRooftile.py:1864
+msgid "排山勾滴线"
+msgstr "Paishan gou di line (gable drip line)"
+
+#: buildRooftile.py:1876 buildRooftile.py:2593
+msgid "垂脊"
+msgstr "Vertical ridge"
+
+#: buildRooftile.py:1903 buildRooftile.py:1961 buildRooftile.py:2671
+msgid "曲线平铺"
+msgstr "Curved tiling"
+
+#: buildRooftile.py:1916 buildRooftile.py:1974 buildRooftile.py:2194
+#: buildRooftile.py:2625
+msgid "曲线变形"
+msgstr "Curve deformation"
+
+#: buildRooftile.py:1936
+msgid "排山勾滴"
+msgstr "Paishan gou di (gable drip tiles)"
+
+#: buildRooftile.py:2010 data.py:1181
+msgid "套兽"
+msgstr "Taoshou"
+
+#: buildRooftile.py:2133 data.py:1153
+msgid "垂脊兽后"
+msgstr "Ridge Animal Back"
+
+#: buildRooftile.py:2140 buildRooftile.py:2685 data.py:1177
+msgid "垂兽"
+msgstr "Chuishou"
+
+#: buildRooftile.py:2182 buildRooftile.py:2613 data.py:1161
+msgid "端头盘子"
+msgstr "Ridge End Plate"
+
+#: buildRooftile.py:2207 data.py:1157
+msgid "垂脊兽前"
+msgstr "Ridge Animal Front"
+
+#: buildRooftile.py:2278
+msgid "排山滴水"
+msgstr "Paishan dishui (gable drip)"
+
+#: buildRooftile.py:2285
+msgid "排山勾头"
+msgstr "Paishan goutou (gable end tile)"
+
+#: buildRooftile.py:2290
+msgid "排山勾头坐中"
+msgstr "Paishan goutou centered"
+
+#: buildRooftile.py:2518
+msgid "戗脊线2"
+msgstr "Ridge line 2"
+
+#: buildRooftile.py:2596
+msgid "戗脊"
+msgstr "Ridge beam"
+
+#: buildRooftile.py:2603
+msgid "线"
+msgstr "Line"
+
+#: buildRooftile.py:2639
+msgid "兽前"
+msgstr "Before beast"
+
+#: buildRooftile.py:2659
+msgid "兽后"
+msgstr "After beast"
+
+#: buildRooftile.py:2832
+msgid "博脊线"
+msgstr "B ridge line"
+
+#: buildRooftile.py:2848
+msgid "博脊"
+msgstr "B ridge"
 
 #: data.py:19
 msgid "古建场景属性集"
@@ -304,7 +1672,8 @@ msgstr "Bay Width 1"
 
 #: data.py:449
 msgid "常取7攒斗栱，且一般柱不越间广（柱高小于明间宽度）"
-msgstr "Center bay width, generally use 7 sets of Dougong, greater than pillar height"
+msgstr ""
+"Center bay width, generally use 7 sets of Dougong, greater than pillar height"
 
 #: data.py:452
 msgid "次间宽度"
@@ -372,7 +1741,8 @@ msgstr "Pillar Height"
 
 #: data.py:511
 msgid "有斗拱的取57-60斗口，无斗拱的取面阔的8/10"
-msgstr "Height of Eave Pillar, generally use 57-60 Doukou or 8/10 pillar height"
+msgstr ""
+"Height of Eave Pillar, generally use 57-60 Doukou or 8/10 pillar height"
 
 #: data.py:514
 msgid "檐柱径"
@@ -388,7 +1758,8 @@ msgstr "Double Efang"
 
 #: data.py:526
 msgid "同时使用大额枋、由额垫板、小额枋的三件套连接两根柱"
-msgstr "If use small e’fang,  big e’fang and small e’fang will be employed together"
+msgstr ""
+"If use small e’fang,  big e’fang and small e’fang will be employed together"
 
 #: data.py:529
 msgid "插柱深度"
@@ -496,7 +1867,8 @@ msgstr "Doukou Scale"
 
 #: data.py:613
 msgid "为了模仿唐宋建筑风格，可以放大斗栱"
-msgstr "Scale of Dougong size. To imitate the style of the Tang and Song dynasties"
+msgstr ""
+"Scale of Dougong size. To imitate the style of the Tang and Song dynasties"
 
 #: data.py:621 panel.py:1258
 msgid "斗栱间距"
@@ -647,7 +2019,9 @@ msgid "收山尺寸"
 msgstr "Shoushan Size"
 
 #: data.py:735
-msgid "歇山顶的山花板从檐檩中向内移动的距离(米)，一般为1檩径(4斗口)，最大不超过檐步架"
+msgid ""
+"歇山顶的山花板从檐檩中向内移动的距离(米)，一般为1檩径(4斗口)，最大不超过檐步"
+"架"
 msgstr "Size of Shoushan (0~2)"
 
 #: data.py:738 panel.py:1365
@@ -854,10 +2228,6 @@ msgstr "Mat Gold"
 msgid "漆.绿"
 msgstr "Mat Green"
 
-#: data.py:936
-msgid "方砖缦地"
-msgstr "Mat Brick 1"
-
 #: data.py:940
 msgid "条砖竖铺"
 msgstr "Mat Brick 2"
@@ -890,10 +2260,6 @@ msgstr "Mat Paint Walkdragon"
 msgid "垫板.公母草"
 msgstr "Mat Paint Grasscouple"
 
-#: data.py:972 data.py:976
-msgid "栱垫板"
-msgstr "Mat Paint Dougong Fill S"
-
 #: data.py:980
 msgid "檐椽贴图"
 msgstr "Mat Paint Rafter"
@@ -918,17 +2284,9 @@ msgstr "Mat Paint Tuanend"
 msgid "子角梁"
 msgstr "Mat Paint CCB"
 
-#: data.py:1004
-msgid "裙板"
-msgstr "Mat Paint Door"
-
 #: data.py:1008
 msgid "绦环板"
 msgstr "Mat Paint Doorring"
-
-#: data.py:1012
-msgid "山花板"
-msgstr "Mat Paint Shanhua"
 
 #: data.py:1016
 msgid "三交六椀隔心"
@@ -937,18 +2295,6 @@ msgstr "Mat Paint Geshanxin"
 #: data.py:1020
 msgid "万字锦棂心"
 msgstr "Mat Geshanxin Wan"
-
-#: data.py:1024 data.py:1125
-msgid "穿插枋"
-msgstr "Mat Ccfang"
-
-#: data.py:1028 data.py:1107
-msgid "老角梁"
-msgstr "Mat Cornerbeam"
-
-#: data.py:1032 data.py:1119
-msgid "雀替"
-msgstr "Mat Queti"
 
 #: data.py:1036
 msgid "斗栱"
@@ -974,21 +2320,9 @@ msgstr "Pillar Base Source"
 msgid "棂心"
 msgstr "Lingxin Source"
 
-#: data.py:1067
-msgid "柱头斗栱"
-msgstr "Dougong on Pillar"
-
-#: data.py:1071
-msgid "补间斗栱"
-msgstr "Dougong in Gap"
-
 #: data.py:1075
 msgid "补间斗栱-异色"
 msgstr "Dougong in Gap (Alt Color)"
-
-#: data.py:1079
-msgid "转角斗栱"
-msgstr "Dougong on Corner"
 
 #: data.py:1083
 msgid "平坐柱头斗栱"
@@ -1006,65 +2340,9 @@ msgstr "Balcony Dougong in Gap"
 msgid "平坐补间斗栱-异色"
 msgstr "Balcony Dougong in Gap (Alt Color)"
 
-#: data.py:1101
-msgid "博缝板"
-msgstr "Bofeng Board"
-
-#: data.py:1113
-msgid "霸王拳"
-msgstr "Bawangquan"
-
-#: data.py:1131
-msgid "板瓦"
-msgstr "Flat Tile"
-
-#: data.py:1135
-msgid "筒瓦"
-msgstr "Circular Tile"
-
-#: data.py:1139
-msgid "瓦当"
-msgstr "Tile End"
-
-#: data.py:1143
-msgid "滴水"
-msgstr "Drip Tile"
-
 #: data.py:1149
 msgid "正脊筒"
 msgstr "Main Ridge Tile"
-
-#: data.py:1153
-msgid "垂脊兽后"
-msgstr "Ridge Animal Back"
-
-#: data.py:1157
-msgid "垂脊兽前"
-msgstr "Ridge Animal Front"
-
-#: data.py:1161
-msgid "端头盘子"
-msgstr "Ridge End Plate"
-
-#: data.py:1165
-msgid "螭吻"
-msgstr "Chiwen"
-
-#: data.py:1169
-msgid "合角吻"
-msgstr "Hejiaowen"
-
-#: data.py:1173
-msgid "宝顶"
-msgstr "Baoding"
-
-#: data.py:1177
-msgid "垂兽"
-msgstr "Chuishou"
-
-#: data.py:1181
-msgid "套兽"
-msgstr "Taoshou"
 
 #: data.py:1187
 msgid "仙人"
@@ -1114,18 +2392,6 @@ msgstr "Hangshi"
 msgid "墙檐"
 msgstr "Wall Eave"
 
-#: data.py:1235
-msgid "铺首"
-msgstr "Door Knocker"
-
-#: data.py:1239
-msgid "门钉"
-msgstr "Door Nail"
-
-#: data.py:1243
-msgid "门簪"
-msgstr "Door Zan"
-
 #: data.py:1247
 msgid "栏杆望柱"
 msgstr "Railing Pillar"
@@ -1133,10 +2399,6 @@ msgstr "Railing Pillar"
 #: data.py:1251
 msgid "栏杆净瓶"
 msgstr "Railing Vase"
-
-#: data.py:1255
-msgid "悬鱼"
-msgstr "Suspended Fish"
 
 #: operators.py:23
 msgid "聚焦建筑根节点"
@@ -1311,8 +2573,11 @@ msgid "拼接建筑"
 msgstr "Splice Building"
 
 #: operators.py:1605
-msgid "将多个建筑重叠的瓦面、柱网等进行裁剪拼接，请将抱厦做为活动的选择项(最后选择)"
-msgstr "Clip and splice overlapping tiles/pillars. Select annex last (as active object)"
+msgid ""
+"将多个建筑重叠的瓦面、柱网等进行裁剪拼接，请将抱厦做为活动的选择项(最后选择)"
+msgstr ""
+"Clip and splice overlapping tiles/pillars. Select annex last (as active "
+"object)"
 
 #: operators.py:1666 operators.py:1668
 msgid "回廊延伸"
@@ -1491,25 +2756,9 @@ msgstr "Use Small E’fang"
 msgid "板  门"
 msgstr "Plank Door"
 
-#: panel.py:931
-msgid "直棂窗"
-msgstr "Bar Window"
-
-#: panel.py:940
-msgid "隔扇门"
-msgstr "Lattice Door"
-
-#: panel.py:944
-msgid "隔扇窗"
-msgstr "Lattice Window"
-
 #: panel.py:953
 msgid "墙  体"
 msgstr "Solid Wall"
-
-#: panel.py:957
-msgid "支摘窗"
-msgstr "Flip Window"
 
 #: panel.py:966
 msgid "栏  杆"
@@ -1667,661 +2916,26 @@ msgstr "Archive old logs to prevent large files"
 msgid "日志设置:"
 msgstr "Log Settings:"
 
-#: build.py:47
-msgid "无法创建该类型的建筑："
-msgstr "Cannot create this type of building: "
+#~ msgid "添加踏剁："
+#~ msgstr "Adding steps:"
 
-#: build.py:216
-msgid "无法创建该类型的建筑,%s"
-msgstr "Cannot create this type of building, %s"
+#~ msgid "瓦面"
+#~ msgstr "Tile surface"
 
-#: build.py:243
-msgid "删除失败，未找到建筑未合并的本体"
-msgstr "Deletion failed, cannot find the original uncombined building"
+#~ msgid "正身瓦线"
+#~ msgstr "Main tile line"
 
-#: build.py:385
-msgid "合并失败，无法继续做剖视图"
-msgstr "Combine failed, cannot continue with section view"
+#~ msgid "檐口线"
+#~ msgstr "Eave line"
 
-#: build.py:869
-msgid "%s没有需要合并的对象，继续..."
-msgstr "%s has no objects to combine, continuing..."
+#~ msgid "翼角瓦线"
+#~ msgstr "Wing corner tile line"
 
-#: build.py:982
-msgid "盝顶设置异常，斗栱出跳或盝顶檐步架宽太小。请使用有出跳的斗栱，或增加盝顶檐步架宽。"
-msgstr "Truncated-Hip Roof setting error, Dougong-projection or Rafter-Span is too small. Please use Dougong with projection, or increase Rafter-Span."
+#~ msgid "瓦片列数"
+#~ msgstr "Number of tile columns"
 
-#: build.py:988
-msgid "无法生成平坐，请启用斗栱，且斗栱应该有足够的出跳。"
-msgstr "Cannot generate pingzuo, please enable Dougong and ensure Dougong has sufficient projection."
-
-#: build.py:1013
-msgid "不止两个建筑"
-msgstr "More than two buildings"
-
-#: build.py:1026
-msgid "请选择需要组合的2个建筑"
-msgstr "Please select 2 buildings to combine"
-
-#: build.py:1041
-msgid "建筑不相交，无法进行组合"
-msgstr "Buildings do not intersect, cannot combine"
-
-#: build.py:1144
-msgid "无法处理的建筑合并"
-msgstr "Unhandled building combine"
-
-#: build.py:1218
-msgid "勾连搭"
-msgstr "Goulianda"
-
-#: build.py:1330
-msgid "平行抱厦-悬山-主建筑"
-msgstr "Parallel Overhanging Main-Building"
-
-#: build.py:1368
-msgid "平行抱厦-悬山-抱厦"
-msgstr "Parallel Overhanging Pavilion"
-
-#: build.py:1404
-msgid "平行抱厦-悬山-柱网"
-msgstr "Parallel Overhanging Pillar"
-
-#: build.py:1457
-msgid "平行抱厦-悬山-台基"
-msgstr "Parallel Overhanging Platform"
-
-#: build.py:1500
-msgid "无法找到主建筑瓦面"
-msgstr "Cannot find main building roof tiles"
-
-#: build.py:1574
-msgid "平行抱厦-歇山"
-msgstr "Parallel Hip-and-Gable"
-
-#: build.py:1646
-msgid "平行抱厦-歇山屋顶"
-msgstr "Parallel Hip-and-Gable Roof"
-
-#: build.py:1707
-msgid "平行抱厦-歇山-柱网"
-msgstr "Parallel Hip-and-Gable Pillar"
-
-#: build.py:1880
-msgid "丁字形抱厦"
-msgstr "T-Pavilion"
-
-#: build.py:2011
-msgid "未找到屋顶相交范围：from=%s,to=%s"
-msgstr "Roof intersection range not found: from=%s, to=%s"
-
-#: build.py:2167
-msgid "丁字抱厦"
-msgstr "T-Pavilion"
-
-#: build.py:2233
-msgid "丁字抱厦-柱网"
-msgstr "T-Pavilion Grid"
-
-#: build.py:2393
-msgid "只支持2坡顶"
-msgstr "Only 2-slope roof supported"
-
-#: build.py:2613
-msgid "屋顶相交"
-msgstr "Roof Intersection"
-
-#: build.py:2668
-msgid "无法获取正身坡线"
-msgstr "Cannot get main roof slope line"
-
-#: build.py:2687
-msgid "无法获取屋面"
-msgstr "Cannot get roof surface"
-
-#: build.py:2707
-msgid "建筑没有相交，未做任何裁剪"
-msgstr "Buildings do not intersect, no clipping applied"
-
-#: build.py:2728
-msgid "请选中建筑"
-msgstr "Please select a building"
-
-#: build.py:2744
-msgid "未能合并建筑"
-msgstr "Failed to combine buildings"
-
-#: build.py:2884
-msgid "回廊转角"
-msgstr "Corridor Corner"
-
-#: build.py:2976
-msgid "45度镜像"
-msgstr "45-degree Mirror"
-
-#: build.py:3001
-msgid "转角裁剪"
-msgstr "Corner Clipping"
-
-#: build.py:3051
-msgid "无法找到转角对象"
-msgstr "Cannot find corner object"
-
-#: build.py:3109
-msgid "丁字转角"
-msgstr "T-shaped Corner"
-
-#: build.py:3120
-msgid "丁字裁剪"
-msgstr "T-shaped Clipping"
-
-#: build.py:3346
-msgid "出檐A裁剪"
-msgstr "Eaves A Clipping"
-
-#: build.py:3444
-msgid "出檐B裁剪"
-msgstr "Eaves B Clipping"
-
-#: buildBalcony.py:79
-msgid "楼板"
-msgstr "Floor slab"
-
-#: buildBalcony.py:96
-msgid "挂檐板.前后檐"
-msgstr "Eave board (front and back)"
-
-#: buildBalcony.py:118
-msgid "挂檐板.两山"
-msgstr "Eave board (two sides)"
-
-#: buildBalcony.py:154
-msgid "地栿.前后檐"
-msgstr "Difu beam (front and back)"
-
-#: buildBalcony.py:179
-msgid "地栿.两山"
-msgstr "Difu beam (two sides)"
-
-#: buildBalcony.py:321
-msgid "栏杆.%s"
-msgstr "Railing.%s"
-
-#: buildBalcony.py:381
-msgid "望柱.%s"
-msgstr "Baluster.%s"
-
-#: buildBalcony.py:410
-msgid "桪杖扶手.%s"
-msgstr "Handrail.%s"
-
-#: buildBalcony.py:434
-msgid "折柱.%s.%s"
-msgstr "column.%s.%s"
-
-#: buildBalcony.py:454
-msgid "净瓶.%s"
-msgstr "Vase.%s"
-
-#: buildBalcony.py:499
-msgid "地栿.%s"
-msgstr "Difu.%s"
-
-#: buildBalcony.py:527
-msgid "牙子板.%s.%s"
-msgstr "Yazi.%s.%s"
-
-#: buildBalcony.py:543
-msgid "下枋.%s"
-msgstr "Lower-fang.%s"
-
-#: buildBalcony.py:571
-msgid "绦环板.%s.%s"
-msgstr "Taohuan.%s.%s"
-
-#: buildBalcony.py:587
-msgid "中枋.%s"
-msgstr "Middle-fang.%s"
-
-#: buildBalcony.py:630
-msgid "没有斗栱，无法营造平坐"
-msgstr "No Dougong, cannot build balcony"
-
-#: buildBalcony.py:658
-msgid "未找到建筑根节点或设计数据"
-msgstr "Building root node or design data not found"
-
-#: buildBalcony.py:670
-msgid "无法找到railingData:%s"
-msgstr "Cannot find railingData: %s"
-
-#: buildBalcony.py:675
-msgid "此位置无法做栏杆/坐凳，已跳过%s"
-msgstr "Cannot build railing/bench at this location, skipped %s"
-
-#: buildBalcony.py:688
-msgid "栏杆开口过大，已自动设置到最大值"
-msgstr "Railing gap too large, automatically set to maximum value"
-
-#: buildBalcony.py:754
-msgid "坐凳面"
-msgstr "Bench surface"
-
-#: buildBalcony.py:821
-msgid "牙子仔边"
-msgstr "Yazi edge"
-
-#: buildBalcony.py:884
-msgid "楣子仔边"
-msgstr "Meizi edge"
-
-#: buildBeam.py:237
-msgid "请留意：一般屋顶椽架数量应该为偶数（卷棚为奇数），所以，椽架数量自动减少了一椽架"
-msgstr "Note: Generally, Rafter-Count should be even (odd for hip-and-gable), so Rafter-Count has been automatically reduced by one"
-
-#: buildBeam.py:352
-msgid "挑檐桁"
-msgstr "Eave Purlin"
-
-#: buildBeam.py:410
-msgid "正心桁"
-msgstr "Central Purlin"
-
-#: buildBeam.py:419
-msgid "承椽枋-前后"
-msgstr "Rafter Supporting Fang (Front/Back)"
-
-#: buildBeam.py:437
-msgid "桁-前后"
-msgstr "Purlin (Front/Back)"
-
-#: buildBeam.py:472
-msgid "伏脊木"
-msgstr "Fujimu"
-
-#: buildBeam.py:504
-msgid "桁垫板"
-msgstr "Purlin Plate"
-
-#: buildBeam.py:558
-msgid "金/脊枋"
-msgstr "Jin Fang/Ji Fang"
-
-#: buildBeam.py:636
-msgid "承椽枋-两山"
-msgstr "Rafter Supporting Fang (Sides)"
-
-#: buildBeam.py:655
-msgid "桁-两山"
-msgstr "Purlin (Sides)"
-
-#: buildBeam.py:704
-msgid "垫板"
-msgstr "Board"
-
-#: buildBeam.py:762
-msgid "桁架"
-msgstr "Truss"
-
-#: buildBeam.py:890
-msgid "趴梁"
-msgstr "Resting Beam"
-
-#: buildBeam.py:1052
-msgid "坨橔"
-msgstr "Hump"
-
-#: buildBeam.py:1071
-msgid "太平梁"
-msgstr "Safe Beam"
-
-#: buildBeam.py:1266
-msgid "梁"
-msgstr "Beam"
-
-#: buildBeam.py:1307
-msgid "踩步金"
-msgstr "Caibu Jin"
-
-#: buildBeam.py:1466
-msgid "蜀柱"
-msgstr "Short Column"
-
-#: buildBeam.py:1534
-msgid "梁架"
-msgstr "Beam Frame"
-
-#: buildBeam.py:1690
-msgid "角背"
-msgstr "Jiaobei"
-
-#: buildBeam.py:1767
-msgid "盖板"
-msgstr "Cover Plate"
-
-#: buildCombo.py:46
-msgid "__addComboLevel失败，已经为组合建筑。"
-msgstr "__addComboLevel failed, already a combo building."
-
-#: buildCombo.py:52
-msgid "建筑组合"
-msgstr "Building Combination"
-
-#: buildCombo.py:75
-msgid "添加组合根节点..."
-msgstr "Adding combo root node..."
-
-#: buildCombo.py:85
-msgid "删除组合建筑失败，不是组合建筑。"
-msgstr "Failed to delete combo building, not a combo building."
-
-#: buildCombo.py:90
-msgid "删除组合建筑失败，不止一个建筑存在。"
-msgstr "Failed to delete combo building, more than one building exists."
-
-#: buildCombo.py:140
-msgid "后处理异常：参数中不是期望的两个id"
-msgstr "Post-processing exception: parameters do not contain expected two ids"
-
-#: buildCombo.py:153
-msgid "后处理异常：无法匹配建筑spliceid"
-msgstr "Post-processing exception: unable to match building spliceid"
-
-#: buildCombo.py:162
-msgid "无法识别的后处理类型"
-msgstr "Unrecognized post-processing type"
-
-#: buildCombo.py:171
-msgid "开始更新......"
-msgstr "Starting update......"
-
-#: buildCombo.py:452
-msgid "已经有一个月台，不能再生成新的月台"
-msgstr "There is already a terrace, cannot generate another one"
-
-#: buildCombo.py:457
-msgid ".月台"
-msgstr ".Terrace"
-
-#: buildCombo.py:467
-msgid "添加月台子建筑..."
-msgstr "Adding terrace ..."
-
-#: buildCombo.py:760
-msgid "只有主体建筑可以做重楼，月台无法做重楼"
-msgstr "Only main building can have double story, terrace cannot"
-
-#: buildCombo.py:769
-msgid "暂时只用庑殿、歇山屋顶样式支持添加重楼"
-msgstr "Currently only Hip Roof and Hip-and-Gable Roof styles support adding double story"
-
-#: buildCombo.py:776
-msgid "当前建筑尚未生成屋顶，请先设置完成屋顶参数"
-msgstr "Current building has not generated roof yet, please set roof parameters first"
-
-#: buildCombo.py:781
-msgid "无法在平座层上做重檐或披檐，请选择其他楼层"
-msgstr "Cannot add double eave on balcony layer, please select another floor"
-
-#: buildCombo.py:795
-msgid "收分验证失败：斗栱出跳与重檐收分合计至少应3斗口，请更换斗栱，或增加收分"
-msgstr "Verification failed: Dougong extension and Pavilion Taper should total at least 3 Doukou, please change Dougong or increase Pavilion Taper"
-
-#: buildCombo.py:805
-msgid "面阔尽间当前[%s],应大于[%s]"
-msgstr "Very End Bay width is currently [%s], should be greater than [%s]"
-
-#: buildCombo.py:807
-msgid "面阔梢间当前[%s],应大于[%s]"
-msgstr "End Bay width is currently [%s], should be greater than [%s]"
-
-#: buildCombo.py:815
-msgid "进深梢间当前[%s],应大于[%s]"
-msgstr "End bay depth is currently [%s], should be greater than [%s]"
-
-#: buildCombo.py:817
-msgid "进深次间当前[%s],应大于[%s]"
-msgstr "Second bay depth is  currently [%s], should be greater than [%s]"
-
-#: buildCombo.py:819
-msgid "进深明间当前[%s],应大于[%s]"
-msgstr "Center bay depth is currently [%s], should be greater than [%s]"
-
-#: buildCombo.py:824
-msgid "收分验证失败：%s（注意：如果下层已经有回廊，建议不要使用方案\"6-重楼+腰檐+回廊\"，可以尝试使用方案\"4-重楼+腰檐+平坐(无栏杆)\"）"
-msgstr "Shrinkage verification failed: %s (Note: If lower floor already has corridor, suggest not using scheme \"6-Double Story+Waist Eave+Corridor\", can try scheme \"4-Double Story+Waist Eave+Balcony(No Railing)\")"
-
-#: buildCombo.py:832
-msgid "添加重楼子建筑..."
-msgstr "Adding double story sub-building..."
-
-#: buildCombo.py:851
-msgid "素平柱础"
-msgstr "Plain Column Base"
-
-#: buildCombo.py:852
-msgid "柱顶石"
-msgstr "Column Top Stone"
-
-#: buildCombo.py:997
-msgid ".平坐"
-msgstr ".Balcony"
-
-#: buildCombo.py:1055
-msgid ".重楼"
-msgstr ".Double Story"
-
-#: buildCombo.py:1057
-msgid ".重檐"
-msgstr ".Double Eave"
-
-#: buildCombo.py:1193
-msgid "重新计算楼阁高度..."
-msgstr "Recalculating pavilion height..."
-
-#: buildCombo.py:1389
-msgid "楼阁收分失败：尽间尺寸请至少加大%s"
-msgstr "Pavilion Taper failed: End bay width should be increased by at least %s"
-
-#: buildCombo.py:1395
-msgid "楼阁收分失败：梢间尺寸当前%s，需大于收分%s"
-msgstr "Pavilion Taper failed: End bay width is currently %s, should be greater than shrinkage %s"
-
-#: buildCombo.py:1401
-msgid "楼阁收分失败：次间尺寸当前%s，需大于收分%s"
-msgstr "Pavilion Taper failed: Second bay width is currently %s, should be greater than shrinkage %s"
-
-#: buildCombo.py:1407
-msgid "楼阁收分失败：明间尺寸当前%s，需大于收分%s"
-msgstr "Pavilion Taper failed: Center bay width is currently %s, should be greater than shrinkage %s"
-
-#: buildCombo.py:1410
-msgid "楼阁收分失败，未知原因"
-msgstr "Pavilion Taper failed, unknown reason"
-
-#: buildCombo.py:1419
-msgid "楼阁收分失败：进深梢间尺寸当前%s，需大于收分%s"
-msgstr "Pavilion Taper failed: End bay depth is currently %s, should be greater than shrinkage %s"
-
-#: buildCombo.py:1425
-msgid "楼阁收分失败：进深次间应至少增加%s"
-msgstr "Pavilion Taper failed: Second bay depth should increase by at least %s"
-
-#: buildCombo.py:1431
-msgid "楼阁收分失败：进深明间尺寸应增加%s"
-msgstr "Pavilion Taper failed: Center bay depth should increase by %s"
-
-#: buildCombo.py:1437
-msgid "楼阁收分失败：进深明间尺寸当前%s，需大于2倍收分%s"
-msgstr "Pavilion Taper failed: Center bay depth is currently %s, should be greater than 2x shrinkage %s"
-
-#: buildCombo.py:1503
-msgid "建筑已在同一个集合中，不再做集成"
-msgstr "Building is already in the same collection, no integration needed"
-
-#: buildDoor.py:53
-msgid "仔边"
-msgstr "Sub-frame"
-
-#: buildDoor.py:158
-msgid "抹头"
-msgstr "Top Rail"
-
-#: buildDoor.py:159
-msgid "绦环"
-msgstr "Decorative Ring"
-
-#: buildDoor.py:160
-msgid "扇心"
-msgstr "Window Lattice"
-
-#: buildDoor.py:269
-msgid "边梃"
-msgstr "Side Stile"
-
-#: buildDoor.py:316
-msgid "门轴"
-msgstr "Door Pivot"
-
-#: buildDoor.py:343
-msgid "构建隔扇时无法判断是否使用槛墙"
-msgstr "Cannot determine whether to use sill-wall when building lattice window"
-
-#: buildDoor.py:353
-msgid "无法找到geshanData:%s"
-msgstr "Cannot find geshangData: %s"
-
-#: buildDoor.py:470
-msgid "风槛"
-msgstr "Wind Sill"
-
-#: buildDoor.py:489
-msgid "榻板"
-msgstr "Platform Board"
-
-#: buildDoor.py:506
-msgid "槛墙"
-msgstr "Sill Wall"
-
-#: buildDoor.py:563
-msgid "无法构建子对象，未知的wallType：%s"
-msgstr "Cannot build sub-object, unknown wallType: %s"
-
-#: buildDoor.py:596
-msgid "无法找到childData:%s"
-msgstr "Cannot find childData: %s"
-
-#: buildDoor.py:701
-msgid "下槛"
-msgstr "Lower Sill"
-
-#: buildDoor.py:720
-msgid "中槛"
-msgstr "Middle Sill"
-
-#: buildDoor.py:745
-msgid "上槛"
-msgstr "Top Sill"
-
-#: buildDoor.py:771
-msgid "门框"
-msgstr "Door Frame"
-
-#: buildDoor.py:807
-msgid "下抱框"
-msgstr "Bottom Holding Frame"
-
-#: buildDoor.py:847
-msgid "上抱框"
-msgstr "Top Holding Frame"
-
-#: buildDoor.py:888
-msgid "余塞板"
-msgstr "Fill Panel"
-
-#: buildDoor.py:925
-msgid "腰枋"
-msgstr "Waist Fang"
-
-#: buildDoor.py:964
-msgid "迎风板"
-msgstr "Windward Panel"
-
-#: buildDoor.py:1005
-msgid "横披间框"
-msgstr "Horizontal Frame"
-
-#: buildDoor.py:1056
-msgid "走马板"
-msgstr "Horse Board"
-
-#: buildDoor.py:1081
-msgid "门枕"
-msgstr "Door Sill Stone "
-
-#: buildDoor.py:1116
-msgid "门楹"
-msgstr "Door Post"
-
-#: buildDoor.py:1145
-msgid "上窗楹"
-msgstr "Upper Window Post"
-
-#: buildDoor.py:1168
-msgid "下窗楹"
-msgstr "Lower Window Post"
-
-#: buildDoor.py:1218
-msgid "间框"
-msgstr "Section Frame"
-
-#: buildDoor.py:1237
-msgid "槛框"
-msgstr "Sill Frame"
-
-#: buildDoor.py:1276
-msgid "无法找到maindoorData:%s"
-msgstr "Cannot find maindoorData: %s"
-
-#: buildDoor.py:1310
-msgid "门扇"
-msgstr "Door Leaf"
-
-#: buildDoor.py:1367
-msgid "门边"
-msgstr "Door Edge"
-
-#: buildDoor.py:1470
-msgid "板门门扇"
-msgstr "Board Door Leaf"
-
-#: buildDoor.py:1553
-msgid "隔扇"
-msgstr "Lattice Window"
-
-#: buildDoor.py:1663
-msgid "直棂条"
-msgstr "Vertical Mullion"
-
-#: buildDougong.py:72
-msgid "平板枋"
-msgstr "Flat Board Fang"
-
-#: buildDougong.py:100
-msgid "平板枋.山面"
-msgstr "Flat Board Fang.Side"
-
-#: buildDougong.py:228
-msgid "挑檐枋"
-msgstr "Eave Fang"
-
-#: buildDougong.py:522
-msgid "山墙斗栱裁剪"
-msgstr "Gable Wall Dougong Trim"
-
-#: buildDougong.py:693
-msgid "排布斗栱异常，输入的不是建筑根节点"
-msgstr "Dougong layout exception, input is not building root node"
+#~ msgid "瓦片行数"
+#~ msgstr "Number of tile rows"
 
 #, fuzzy
 #~| msgctxt "*"
@@ -2406,10 +3020,6 @@ msgstr "Dougong layout exception, input is not building root node"
 #~ msgctxt "*"
 #~ msgid "合并整体"
 #~ msgstr "Join Building"
-
-#~ msgctxt "*"
-#~ msgid "坐凳"
-#~ msgstr "Add Bench"
 
 #~ msgctxt "*"
 #~ msgid "墙体"
@@ -2548,10 +3158,6 @@ msgstr "Dougong layout exception, input is not building root node"
 #~ msgstr "Add Main Door"
 
 #~ msgctxt "*"
-#~ msgid "栏杆"
-#~ msgstr "Railing"
-
-#~ msgctxt "*"
 #~ msgid "槛窗"
 #~ msgstr "Add Window"
 
@@ -2565,7 +3171,8 @@ msgstr "Dougong layout exception, input is not building root node"
 
 #~ msgctxt "*"
 #~ msgid "注意：建筑样式保存在模板文件中，删除后无法复原。"
-#~ msgstr "Note: Style is saved in template file, cannot be restored after delete."
+#~ msgstr ""
+#~ "Note: Style is saved in template file, cannot be restored after delete."
 
 #~ msgctxt "*"
 #~ msgid "测试"
@@ -2600,20 +3207,12 @@ msgstr "Dougong layout exception, input is not building root node"
 #~ msgstr "Note: Overwriting template cannot be undone!"
 
 #~ msgctxt "*"
-#~ msgid "请至少选择2根柱子"
-#~ msgstr "Please select at least 2 pillars"
-
-#~ msgctxt "*"
 #~ msgid "请选择需要删除的踏跺"
 #~ msgstr "Please select steps to delete"
 
 #~ msgctxt "*"
 #~ msgid "重新生成屋顶完成！|建筑样式：【%s】 |运行时间：【%.1f秒】"
 #~ msgstr "Roof regenerated!|Style: [%s] |Time: [%.1f s]"
-
-#~ msgctxt "*"
-#~ msgid "面阔间数不能为偶数"
-#~ msgstr "Room number cannot be even"
 
 #~ msgctxt "*"
 #~ msgid "骑凤仙人"
@@ -2646,38 +3245,6 @@ msgstr "Dougong layout exception, input is not building root node"
 #~ msgctxt "assetsIndex"
 #~ msgid "斗口重昂"
 #~ msgstr "Doukou Double Ang"
-
-#~ msgctxt "template"
-#~ msgid "0-重檐"
-#~ msgstr "0-Double Eave"
-
-#~ msgctxt "template"
-#~ msgid "1-简单重楼"
-#~ msgstr "1-Simple Multi-Floor"
-
-#~ msgctxt "template"
-#~ msgid "2-重楼+平坐"
-#~ msgstr "2-Multi-Floor + Pingzuo"
-
-#~ msgctxt "template"
-#~ msgid "3-重楼+腰檐"
-#~ msgstr "3-Multi-Floor + Mid-Eave"
-
-#~ msgctxt "template"
-#~ msgid "4-重楼+腰檐+平坐(无栏杆)"
-#~ msgstr "4-Multi-Floor + Mid-Eave + Pingzuo (No Railing)"
-
-#~ msgctxt "template"
-#~ msgid "5-重楼+腰檐+平坐(有栏杆)"
-#~ msgstr "5-Multi-Floor + Mid-Eave + Pingzuo (With Railing)"
-
-#~ msgctxt "template"
-#~ msgid "6-重楼+腰檐+回廊"
-#~ msgstr "6-Multi-Floor + Mid-Eave + Loggia"
-
-#~ msgctxt "template"
-#~ msgid "7-下出平坐"
-#~ msgstr "7-Lower Pingzuo"
 
 #~ msgctxt "template"
 #~ msgid "一卷"

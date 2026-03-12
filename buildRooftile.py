@@ -2,6 +2,7 @@
 # 所属插件：ACA Builder
 # 功能概述：
 #   屋瓦的营造
+from .locale.i18n import _
 import bpy
 import bmesh
 import math
@@ -158,9 +159,9 @@ def __drawTileCurve(buildingObj:bpy.types.Object,
 
     # 创建瓦垄曲线
     if direction == 'X':
-        tileCurve_name = "前后正身坡线"
+        tileCurve_name = _("前后正身坡线")
     else:
-        tileCurve_name = "两山正身坡线"
+        tileCurve_name = _("两山正身坡线")
     tileCurve = utils.addCurveByPoints(
             CurvePoints=tileCurveVerts,
             name=tileCurve_name,
@@ -300,9 +301,9 @@ def __drawSideCurve(buildingObj:bpy.types.Object,
 
     # 绘制翼角瓦垄线
     if direction == 'X':
-        sideCurve_name = "前后翼角坡线"
+        sideCurve_name = _("前后翼角坡线")
     else:
-        sideCurve_name = "两山翼角坡线"
+        sideCurve_name = _("两山翼角坡线")
     sideCurve = utils.addCurveByPoints(
             CurvePoints=sideCurveVerts,
             name=sideCurve_name,
@@ -330,14 +331,14 @@ def __drawEaveCurve(buildingObj:bpy.types.Object,
     )
     
     if direction == 'X':
-        eaveCurve_name = "前后檐瓦口线"
+        eaveCurve_name = _("前后檐瓦口线")
         if bData.use_flyrafter:
             dly_type = con.ACA_TYPE_RAFTER_DLY_FB
         else:
             dly_type = con.ACA_TYPE_RAFTER_LKM_FB
         proj_v1 = Vector((1,0,0))
     else:
-        eaveCurve_name = "两山檐瓦口线"
+        eaveCurve_name = _("两山檐瓦口线")
         if bData.use_flyrafter:
             dly_type = con.ACA_TYPE_RAFTER_DLY_LR
         else:
@@ -434,14 +435,14 @@ def __drawEaveCurveByCCB(buildingObj:bpy.types.Object,
                                  parentObj=tileRootObj,
                                  singleUser=True)
     if direction == 'X':
-        eaveCurve.name = "前后檐瓦口线"
+        eaveCurve.name = _("前后檐瓦口线")
         eaveCurve.ACA_data['aca_type'] = \
             con.ACA_TYPE_TILE_EAVE_CURVE_FB
         dlyObj:bpy.types.Object = \
         utils.getAcaChild(buildingObj,
                           con.ACA_TYPE_RAFTER_DLY_FB)
     else:
-        eaveCurve.name = "两山檐瓦口线"
+        eaveCurve.name = _("两山檐瓦口线")
         eaveCurve.ACA_data['aca_type'] = \
             con.ACA_TYPE_TILE_EAVE_CURVE_LR
         dlyObj:bpy.types.Object = \
@@ -650,9 +651,9 @@ def __drawTileGrid(
     GridCols = tileCols*2
     
     if direction == 'X':
-        tileGrid_name = "前后檐瓦面"
+        tileGrid_name = _("前后檐瓦面")
     else:
-        tileGrid_name = "两山瓦面"
+        tileGrid_name = _("两山瓦面")
 
     # 1、生成三条辅助线，这是后续所有计算的基础
     # 绘制檐口线
@@ -929,7 +930,7 @@ def __drawTileBoolByGrid(
         buildingObj,con.ACA_TYPE_TILE_ROOT
     )
     if len(intersections) != 1:
-        raise Exception('瓦面碰撞检测失败，001')
+        raise Exception(_('瓦面碰撞检测失败，001'))
     else:
         interface = intersections[0]
         mw = interface.matrix_world.copy()
@@ -1205,7 +1206,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
             and f.index >= GridCols):
             tileObj = __setTile(
                 sourceObj=flatTile,
-                name='板瓦',
+                name=_('板瓦'),
                 Matrix=M,
                 offset=offset_aside.copy(),
                 parent=tileGrid,
@@ -1216,7 +1217,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         if (f.index%GridCols) % 2 == 1 and f.index >= GridCols:
             tileObj = __setTile(
                 sourceObj=circularTile,
-                name='筒瓦',
+                name=_('筒瓦'),
                 Matrix=M,
                 offset=offset_aside.copy(),
                 parent=tileGrid,
@@ -1229,7 +1230,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
             if f.index % 2 == 0:
                 tileObj = __setTile(
                     sourceObj=dripTile,
-                    name='滴水',
+                    name=_('滴水'),
                     Matrix=M,
                     offset=offset_head.copy(),
                     parent=tileGrid,
@@ -1255,7 +1256,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
             if f.index % 2 == 1:
                 tileObj = __setTile(
                     sourceObj=eaveTile,
-                    name='瓦当',
+                    name=_('瓦当'),
                     Matrix=M,
                     offset=offset_head.copy(),
                     parent=tileGrid,
@@ -1265,11 +1266,11 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
     # 合并所有的瓦片对象
     # 可以极大的提高重新生成时的效率（海量对象删除太慢了）
     if direction == 'X':
-        tileSetName = '前后檐'
+        tileSetName = _('前后檐')
     else:
-        tileSetName = '两山'
+        tileSetName = _('两山')
     tileSet = utils.joinObjects(
-        tileList,newName = '屋瓦.' + tileSetName)
+        tileList,newName = _('屋瓦.') + tileSetName)
     # 将屋瓦绑定到根节点
     utils.changeParent(tileSet,tileRootObj)
     # 庑殿、歇山做裁剪
@@ -1413,7 +1414,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         and bData.roof_style==con.ROOF_WUDIAN):
         baodingObj = utils.copyObject(
             sourceObj=aData.baoding_source,
-            name='宝顶',
+            name=_('宝顶'),
             location=(0,0,zhengji_z),
             parentObj=tileRootObj,
             singleUser=True,
@@ -1428,7 +1429,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     # 载入正脊资产对象
     roofRidgeObj = utils.copyObject(
         sourceObj=aData.ridgeTop_source,
-        name="正脊",
+        name=_("正脊"),
         location=(0,0,zhengji_z),
         parentObj=tileRootObj,
         singleUser=True)
@@ -1442,7 +1443,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     
     # 横向平铺
     modArray:bpy.types.ArrayModifier = \
-        roofRidgeObj.modifiers.new('横向平铺','ARRAY')
+        roofRidgeObj.modifiers.new(_('横向平铺'),'ARRAY')
     modArray.use_relative_offset = True
     modArray.relative_offset_displace = (1,0,0)
     modArray.fit_type = 'FIT_LENGTH' 
@@ -1463,7 +1464,7 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     # 摆放螭吻
     chiwenObj = utils.copyObject(
         sourceObj=aData.chiwen_source,
-        name='螭吻',
+        name=_('螭吻'),
         location=(-zhengji_length,0,zhengji_z),
         parentObj=tileRootObj,
         singleUser=True)
@@ -1523,7 +1524,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     # 1、横向围脊
     roofRidgeObj = utils.copyObject(
         sourceObj=aData.ridgeBack_source,
-        name="围脊",
+        name=_("围脊"),
         location=(0,
                   ridgeCross.y,
                   ridgeCross.z),
@@ -1539,7 +1540,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     # 横向平铺
     zhengji_length = ridgeCross.x
     modArray:bpy.types.ArrayModifier = \
-        roofRidgeObj.modifiers.new('横向平铺','ARRAY')
+        roofRidgeObj.modifiers.new(_('横向平铺'),'ARRAY')
     modArray.use_relative_offset = True
     modArray.relative_offset_displace = (1,0,0)
     modArray.fit_type = 'FIT_LENGTH' 
@@ -1559,7 +1560,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     # 2、纵向围脊
     roofRidgeObj = utils.copyObject(
         sourceObj=aData.ridgeBack_source,
-        name="围脊",
+        name=_("围脊"),
         location=(ridgeCross.x,
                   0,
                   ridgeCross.z),
@@ -1576,7 +1577,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     # 横向平铺
     zhengji_length = ridgeCross.y
     modArray:bpy.types.ArrayModifier = \
-        roofRidgeObj.modifiers.new('横向平铺','ARRAY')
+        roofRidgeObj.modifiers.new(_('横向平铺'),'ARRAY')
     modArray.use_relative_offset = True
     modArray.relative_offset_displace = (1,0,0)
     modArray.fit_type = 'FIT_LENGTH' 
@@ -1596,7 +1597,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     # 3、摆放合角吻
     # 45度镜像
     diagnalObj = utils.addEmpty(
-        name = '45度镜像',
+        name = _('45度镜像'),
         parent = tileRootObj,
         location=ridgeCross
     )
@@ -1605,7 +1606,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     # 合角吻对象
     hejiaowenObj = utils.copyObject(
         sourceObj=aData.hejiaowen_source,
-        name='合角吻',
+        name=_('合角吻'),
         location=ridgeCross,
         rotation=(0,0,math.radians(180)),
         parentObj=tileRootObj,
@@ -1761,7 +1762,7 @@ def __drawFrontRidgeCurve(buildingObj:bpy.types.Object,
     # 创建曲线
     ridgeCurve = utils.addCurveByPoints(
             CurvePoints=ridgeCurveVerts,
-            name="垂脊线",
+            name=_("垂脊线"),
             root_obj=tileRootObj,
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
             )
@@ -1860,7 +1861,7 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
     # 创建瓦垄曲线
     ridgeCurve = utils.addCurveByPoints(
             CurvePoints=ridgeCurveVerts,
-            name="排山勾滴线",
+            name=_("排山勾滴线"),
             root_obj=tileRootObj,
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
             )
@@ -1872,7 +1873,7 @@ def __drawSideRidgeCurve(buildingObj:bpy.types.Object,
 def __arrayRidgeByCurve(buildingObj: bpy.types.Object,
                     sourceObj:bpy.types.Object,
                     ridgeCurve:bpy.types.Curve,
-                    ridgeName='垂脊',
+                    ridgeName=_('垂脊'),
                     arrayCount=0,
                     userMerge=True,
                  ):
@@ -1899,7 +1900,7 @@ def __arrayRidgeByCurve(buildingObj: bpy.types.Object,
     
     # 沿垂脊曲线平铺
     modArray:bpy.types.ArrayModifier = \
-        frontRidgeObj.modifiers.new('曲线平铺','ARRAY')
+        frontRidgeObj.modifiers.new(_('曲线平铺'),'ARRAY')
     if arrayCount != 0:
         modArray.fit_type = 'FIXED_COUNT'
         modArray.count = arrayCount
@@ -1912,7 +1913,7 @@ def __arrayRidgeByCurve(buildingObj: bpy.types.Object,
     
     # 沿垂脊曲线变形
     modCurve: bpy.types.CurveModifier = \
-        frontRidgeObj.modifiers.new('曲线变形','CURVE')
+        frontRidgeObj.modifiers.new(_('曲线变形'),'CURVE')
     modCurve.object = ridgeCurve
 
     # 四面镜像
@@ -1932,7 +1933,7 @@ def __arraySideTile(buildingObj: bpy.types.Object,
                     ridgeCurve:bpy.types.Curve,
                     arraySpan:float,
                     arrayCount=0,
-                    tileName='排山勾滴',
+                    tileName=_('排山勾滴'),
                  ):
     # 载入数据
     bData : acaData = buildingObj.ACA_data
@@ -1957,7 +1958,7 @@ def __arraySideTile(buildingObj: bpy.types.Object,
     
     # 沿垂脊曲线平铺
     modArray:bpy.types.ArrayModifier = \
-        tileObj.modifiers.new('曲线平铺','ARRAY')
+        tileObj.modifiers.new(_('曲线平铺'),'ARRAY')
     if arrayCount != 0:
         modArray.fit_type = 'FIXED_COUNT'
         modArray.count = arrayCount
@@ -1970,7 +1971,7 @@ def __arraySideTile(buildingObj: bpy.types.Object,
 
     # 沿垂脊曲线变形
     modCurve: bpy.types.CurveModifier = \
-        tileObj.modifiers.new('曲线变形','CURVE')
+        tileObj.modifiers.new(_('曲线变形'),'CURVE')
     modCurve.object = ridgeCurve
     modCurve.deform_axis = 'NEG_X'
     
@@ -2006,7 +2007,7 @@ def __buildTaoshou(buildingObj: bpy.types.Object):
 
     taoshouObj = utils.copyObject(
         sourceObj=aData.taoshou_source,
-        name='套兽',
+        name=_('套兽'),
         parentObj=tileRootObj,
         location=loc,
         singleUser=True
@@ -2129,14 +2130,14 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         frontRidgeAfterObj = __arrayRidgeByCurve(buildingObj,
                         sourceObj=aData.ridgeBack_source,
                         ridgeCurve=frontRidgeCurve,
-                        ridgeName='垂脊兽后')
+                        ridgeName=_('垂脊兽后'))
         # 获取脊筒长度
         ridgeObj:bpy.types.Object = aData.ridgeBack_source
         ridgeLength = ridgeObj.dimensions.x * tileScale
         # 摆放垂兽
         chuishouObj = utils.copyObject(
             sourceObj=aData.chuishou_source,
-            name='垂兽',
+            name=_('垂兽'),
             parentObj=tileRootObj,
             location=frontRidgeCurve.location,
             singleUser=True)
@@ -2178,7 +2179,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         # 构造端头盘子
         ridgeEndObj = utils.copyObject(
             sourceObj=aData.ridgeEnd_source,
-            name='端头盘子',
+            name=_('端头盘子'),
             location=frontRidgeCurve.location,
             parentObj=tileRootObj,
             singleUser=True)
@@ -2190,7 +2191,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         ridgeEnd_Length = ridgeEndObj.dimensions.x
         # 沿垂脊曲线变形，适配曲线仰角
         modCurve: bpy.types.CurveModifier = \
-            ridgeEndObj.modifiers.new('曲线变形','CURVE')
+            ridgeEndObj.modifiers.new(_('曲线变形'),'CURVE')
         modCurve.object = frontRidgeCurve
         # 四面镜像
         utils.addModifierMirror(
@@ -2203,7 +2204,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         frontRidgeBeforeObj = __arrayRidgeByCurve(buildingObj,
                         sourceObj=aData.ridgeFront_source,
                         ridgeCurve=frontRidgeCurve,
-                        ridgeName='垂脊兽前',
+                        ridgeName=_('垂脊兽前'),
                         arrayCount= bData.paoshou_count)        
         # 垂脊兽前后退一个端头盘子长度
         frontRidgeBeforeObj.location.x += ridgeEnd_Length
@@ -2274,19 +2275,19 @@ def __buildSideTile(buildingObj: bpy.types.Object,
                     sourceObj=aData.dripTile_source,
                     ridgeCurve=sideRidgeCurve,
                     arraySpan=arraySpan,
-                    tileName='排山滴水',)
+                    tileName=_('排山滴水'),)
     
     eaveTileObj = __arraySideTile(buildingObj,
                     sourceObj=aData.eaveTile_source,
                     ridgeCurve=sideRidgeCurve,
                     arraySpan=arraySpan,
                     arrayCount = arrayCount-1,  # 少做一个勾头，手工放置坐中勾头
-                    tileName='排山勾头')
+                    tileName=_('排山勾头'))
     
     # 放置勾头坐中
     eaveTileCenterObj = utils.copyObject(
         sourceObj=aData.eaveTile_source,
-        name='排山勾头坐中',
+        name=_('排山勾头坐中'),
         location=(
                 sideRidgeCurve.location.x,
                 0,
@@ -2514,7 +2515,7 @@ def __buildSideTile(buildingObj: bpy.types.Object,
 # 营造戗脊（庑殿垂脊）曲线重构
 # 采用瓦面碰撞检测，获取相交线
 def __buildCornerRidgeCurve2(buildingObj:bpy.types.Object,
-                             name='戗脊线2'):
+                             name=_('戗脊线2')):
     # 获取前后檐瓦面
     tileGrid_fb = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_TILE_GRID)
@@ -2589,17 +2590,17 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     if bData.roof_style in (
             con.ROOF_WUDIAN,
             con.ROOF_LUDING):
-        cornerRidgeName = '垂脊'
+        cornerRidgeName = _('垂脊')
     if bData.roof_style in (con.ROOF_XIESHAN,
                             con.ROOF_XIESHAN_JUANPENG,):
-        cornerRidgeName = '戗脊'
+        cornerRidgeName = _('戗脊')
     
     # 251110 戗脊线重构
     # # 绘制戗脊曲线
     # cornerRidgeCurve = __buildCornerRidgeCurve(
     #     buildingObj,rafter_pos,cornerRidgeName+'线')
     cornerRidgeCurve = __buildCornerRidgeCurve2(
-        buildingObj,cornerRidgeName+'线')
+        buildingObj,cornerRidgeName+_('线'))
     
     # 251117 歇山戗脊在碰撞算法下变成了曲线，强制“扳直”
     if bData.roof_style in (con.ROOF_XIESHAN,
@@ -2609,7 +2610,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     # 垂脊兽前摆放端头盘子
     ridgeEndObj = utils.copyObject(
             sourceObj=aData.ridgeEnd_source,
-            name='端头盘子',
+            name=_('端头盘子'),
             location=cornerRidgeCurve.location,
             parentObj=tileRootObj,
             singleUser=True)
@@ -2621,7 +2622,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     ridgeEnd_Length = ridgeEndObj.dimensions.x
     # 沿垂脊曲线变形，适配曲线仰角
     modCurve: bpy.types.CurveModifier = \
-        ridgeEndObj.modifiers.new('曲线变形','CURVE')
+        ridgeEndObj.modifiers.new(_('曲线变形'),'CURVE')
     modCurve.object = cornerRidgeCurve
     # 四面镜像
     utils.addModifierMirror(
@@ -2635,7 +2636,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     cornerRidgeBeforeObj = __arrayRidgeByCurve(buildingObj,
                     sourceObj=aData.ridgeFront_source,
                     ridgeCurve=cornerRidgeCurve,
-                    ridgeName=cornerRidgeName+'兽前',
+                    ridgeName=cornerRidgeName+_('兽前'),
                     arrayCount= bData.paoshou_count)
     # 戗脊兽前与端头盘子相接
     cornerRidgeBeforeObj.location.x += \
@@ -2655,7 +2656,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
         cornerRidgeAfterObj = __arrayRidgeByCurve(buildingObj,
                         sourceObj=aData.ridgeBack_source,
                         ridgeCurve=cornerRidgeCurve,
-                        ridgeName=cornerRidgeName+'兽后')
+                        ridgeName=cornerRidgeName+_('兽后'))
         # 留出跑兽的空间
         ridgeUnit: bpy.types.Object= aData.ridgeFront_source
         ridgeUnit_Length = ridgeUnit.dimensions.x * tileScale
@@ -2667,7 +2668,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
         # 不做裁剪，仅修改垂脊长度
         if bData.roof_style == con.ROOF_LUDING:
             modArray:bpy.types.ArrayModifier \
-                  = cornerRidgeAfterObj.modifiers['曲线平铺']
+                  = cornerRidgeAfterObj.modifiers[_('曲线平铺')]
             modArray.fit_type = 'FIT_LENGTH'
             curveLength = cornerRidgeCurve.data.splines[0].calc_length()
             # 251115 盝顶的垂脊没有闭合
@@ -2681,7 +2682,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
         loc = cornerRidgeCurve.location + Vector((paoLength,0,0))
         chuishouObj = utils.copyObject(
             sourceObj=aData.chuishou_source,
-            name='垂兽',
+            name=_('垂兽'),
             parentObj=tileRootObj,
             location=loc,
             singleUser=True)
@@ -2828,7 +2829,7 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
 
     sideRidgeCurve = utils.addCurveByPoints(
         CurvePoints=sideRidgeVerts,
-        name='博脊线',
+        name=_('博脊线'),
         root_obj=tileRootObj,
         resolution=64,
         order_u=2,
@@ -2844,7 +2845,7 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
         buildingObj=buildingObj,
         sourceObj=aData.ridgeFront_source,
         ridgeCurve=sideRidgeCurve,
-        ridgeName='博脊',
+        ridgeName=_('博脊'),
         userMerge=False
     )
 

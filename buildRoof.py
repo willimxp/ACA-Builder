@@ -2,6 +2,7 @@
 # 所属插件：ACA Builder
 # 功能概述：
 #   椽架的营造
+from .locale.i18n import _
 import bpy
 import bmesh
 import math
@@ -156,14 +157,14 @@ def __buildLKM(buildingObj:bpy.types.Object,
 
     # 前后檐、两山的location，rotation不同
     if direction == 'X': 
-        LKM_name = "里口木.前后"
+        LKM_name = _("里口木.前后")
         LKM_loc:Vector = (yanchuan_head_co + offset)*Vector((0,1,1))
         LKM_rotate = (-yanRafterObj.rotation_euler.y,0,0)
         LKM_scale = (jinhengPos.x * 2,con.LIKOUMU_Y*dk,con.LIKOUMU_H*dk)
         LKM_mirrorAxis = (False,True,False) # Y轴镜像
         LKM_type = con.ACA_TYPE_RAFTER_LKM_FB
     else:
-        LKM_name = "里口木.两山"
+        LKM_name = _("里口木.两山")
         LKM_loc:Vector = (yanchuan_head_co + offset)*Vector((1,0,1))
         LKM_rotate = (yanRafterObj.rotation_euler.y,
                     0,math.radians(90))
@@ -197,16 +198,16 @@ def __buildLKM(buildingObj:bpy.types.Object,
 def __getRafterName(count):
     names = []
     if count > 1:
-        names.append('檐椽')
+        names.append(_('檐椽'))
     if count > 2:
-        names.append('脑椽')
+        names.append(_('脑椽'))
     if count > 3:
-        names.insert(1,'花架椽')
+        names.insert(1,_('花架椽'))
     if count > 4:
-        names[1] = '下花架椽'
-        names.insert(2,'上花架椽')
+        names[1] = _('下花架椽')
+        names.insert(2,_('上花架椽'))
     if count > 5:
-        names.insert(2,'中花架椽')
+        names.insert(2,_('中花架椽'))
     return names
 
 # 营造前后檐椽子
@@ -246,7 +247,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             radius = con.YUANCHUAN_D/2*dk,
             start_point = rafter_start,
             end_point = rafter_end,
-            name="前后檐.%d-%s" % (n+1,rafterNames[n]),
+            name=_("前后檐.%d-%s") % (n+1,rafterNames[n]),
             root_obj = rafterRootObj
         )
         
@@ -272,7 +273,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             # 复制檐椽
             tympanumRafter:bpy.types.Object = fbRafterObj.copy()
             tympanumRafter.data = fbRafterObj.data.copy()
-            tympanumRafter.name = '山花补齐檐椽'
+            tympanumRafter.name = _('山花补齐檐椽')
             bpy.context.collection.objects.link(tympanumRafter)
             tympanumRafter.ACA_data['aca_type'] = ''
             # 重设檐椽平铺宽度（避免与博缝板穿模，减半椽）
@@ -340,7 +341,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             rafter_tile_x = (purlin_pos[n+1].x 
                              -con.YUANCHUAN_D*dk/2)
         else:
-            raise Exception(f"檐椽营造失败，屋顶类型无法识别bData.roof_style={bData.roof_style}")
+            raise Exception(_("檐椽营造失败，屋顶类型无法识别bData.roof_style=%s" % (bData.roof_style)))
         # 5.2 计算椽子间距
         # 硬山做到山墙，悬山做到博缝板，依此距离计算
         if bData.roof_style in (
@@ -427,7 +428,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             curveRafter:bpy.types.Object = \
                 utils.addCurveByPoints(
                     CurvePoints=(p1,p2,p3),
-                    name='罗锅椽',
+                    name=_('罗锅椽'),
                     root_obj=rafterRootObj)
             # 椽当坐中
             curveRafter.location.x += con.YUANCHUAN_D*dk
@@ -515,7 +516,7 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
             radius = con.YUANCHUAN_D/2*dk,
             start_point = rafter_start,
             end_point = rafter_end,
-            name="两山.%d-%s" % (n+1,rafterNames[n]),
+            name=_("两山.%d-%s") % (n+1,rafterNames[n]),
             root_obj = rafterRootObj
         )
         
@@ -646,7 +647,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             end_point=pend,
             depth=width*2,
             height=con.WANGBAN_H*dk,
-            name="望板",
+            name=_("望板"),
             root_obj=rafterRootObj,
             origin_at_start=True
         )
@@ -721,7 +722,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
                 end_point=pend,
                 depth=width*2,
                 height=con.WANGBAN_H*dk,
-                name="山花补齐望板",
+                name=_("山花补齐望板"),
                 root_obj=rafterRootObj,
                 origin_at_start=True
             )
@@ -769,7 +770,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             wangbanJuanpeng:bpy.types.Object = \
                 utils.addCurveByPoints(
                     CurvePoints=(p1,p2,p3),
-                    name='卷棚望板',
+                    name=_('卷棚望板'),
                     root_obj=rafterRootObj,
                     height=con.WANGBAN_H*dk,
                     width=purlin_pos[-1].x *2,
@@ -790,7 +791,7 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
             
     # 合并望板
     wangbanSetObj = utils.joinObjects(
-        wangbanObjs,newName='望板-前后檐')
+        wangbanObjs,newName=_('望板-前后檐'))
 
     return wangbanSetObj # EOF：__buildWangban_FB
 
@@ -862,7 +863,7 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
             end_point=pend,
             depth=width*2,
             height=con.WANGBAN_H*dk,
-            name="望板",
+            name=_("望板"),
             root_obj=rafterRootObj,
             origin_at_start=True
         )
@@ -911,14 +912,14 @@ def __buildWangban_LR(buildingObj:bpy.types.Object,purlin_pos):
     
     # 合并望板
     wangbanSetObj = utils.joinObjects(
-        wangbanObjs,newName='望板-两山')
+        wangbanObjs,newName=_('望板-两山'))
 
     return wangbanSetObj # EOF：
 
 # 根据檐椽，绘制对应飞椽
 # 基于“一飞二尾五”的原则计算
 def __drawFlyrafter(yanRafterObj:bpy.types.Object,
-                    flyrafterName='飞椽')->bpy.types.Object:
+                    flyrafterName=_('飞椽'))->bpy.types.Object:
     # 载入数据
     buildingObj = utils.getAcaParent(yanRafterObj,con.ACA_TYPE_BUILDING)
     bData : acaData = buildingObj.ACA_data
@@ -1052,11 +1053,11 @@ def __buildFlyrafter(buildingObj,direction):
 
     # 判断前后檐，还是两山
     if direction == 'X':    # 前后檐
-        flyrafterName = '飞椽.前后'
+        flyrafterName = _('飞椽.前后')
         rafterType = con.ACA_TYPE_RAFTER_FB
         flyrafterType = con.ACA_TYPE_FLYRAFTER_FB
     else:
-        flyrafterName = '飞椽.两山'
+        flyrafterName = _('飞椽.两山')
         rafterType = con.ACA_TYPE_RAFTER_LR
         flyrafterType = con.ACA_TYPE_FLYRAFTER_LR
     yanRafterObj:bpy.types.Object = \
@@ -1083,12 +1084,12 @@ def __buildFlyrafterWangban(buildingObj,purlin_pos,direction):
 
     # 判断前后檐，还是两山
     if direction == 'X':    # 前后檐
-        frwName = "压飞尾望板.前后"
+        frwName = _("压飞尾望板.前后")
         frwWidth = jinhengPos.x * 2    # 宽度取金桁交点
         mirrorAxis = (False,True,False) # Y轴镜像
         flyrafterType = con.ACA_TYPE_FLYRAFTER_FB
     else:
-        frwName = "压飞尾望板.两山"
+        frwName = _("压飞尾望板.两山")
         frwWidth = jinhengPos.y * 2    # 宽度取金桁交点
         mirrorAxis = (True,False,False) # X轴镜像
         flyrafterType = con.ACA_TYPE_FLYRAFTER_LR
@@ -1153,7 +1154,7 @@ def __buildDLY(buildingObj,purlin_pos,direction):
     
     # 前后檐、两山的location，rotation不同
     if direction == 'X': 
-        DLY_name = "大连檐.前后"
+        DLY_name = _("大连檐.前后")
         DLY_rotate = (math.radians(90)-flyrafterObj.rotation_euler.y,0,0)
         DLY_loc:Vector = (flyrafter_head_co + offset)*Vector((0,1,1))
         DLY_scale = (jinhengPos.x * 2,  
@@ -1170,7 +1171,7 @@ def __buildDLY(buildingObj,purlin_pos,direction):
         DLY_mirrorAxis = (False,True,False) # Y轴镜像
         DLY_type = con.ACA_TYPE_RAFTER_DLY_FB
     else:
-        DLY_name = "大连檐.两山"
+        DLY_name = _("大连檐.两山")
         DLY_rotate = (flyrafterObj.rotation_euler.y+math.radians(90),
                       0,math.radians(90))
         DLY_loc:Vector = (flyrafter_head_co + offset)*Vector((1,0,1))
@@ -1229,7 +1230,7 @@ def __buildFlyrafterAll(buildingObj:bpy.types.Object,purlinPos,direction):
 # 基于“冲三翘四”的原则计算
 # 硬山、悬山不涉及
 def __drawCornerBeamChild(cornerBeamObj:bpy.types.Object,
-                          ccbName='仔角梁'):
+                          ccbName=_('仔角梁')):
     # 载入数据
     buildingObj = utils.getAcaParent(
         cornerBeamObj,
@@ -1399,7 +1400,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
     if yanSpan > 14*dk:
         cbKoujin = con.JIAOLIANG_H*dk*con.JIAOLIANG_WEI_KOUJIN
     elif yanSpan < round(3*dk,3):
-        raise Exception(f"构造老角梁失败，檐步架只有{yanSpan}")
+        raise Exception(_("构造老角梁失败，檐步架只有%s" % (yanSpan)))
     else:
         cbKoujin = - con.JIAOLIANG_H*dk*con.JIAOLIANG_WEI_KOUJIN
     
@@ -1425,7 +1426,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                 # 为了能够起翘，转角斗栱上不做压金
                 pStart = Vector(purlin_pos[n]) \
                     + Vector((0,0,con.JIAOLIANG_H*dk))
-            cb_collection.append((pStart,pEnd,'老角梁'))
+            cb_collection.append((pStart,pEnd,_('老角梁')))
         else:
             # 歇山只有老角梁，没有由戗
             if bData.roof_style in (con.ROOF_XIESHAN,
@@ -1440,7 +1441,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                 + Vector((0,0,con.JIAOLIANG_H*dk*con.YOUQIANG_YAJIN))
             pEnd = Vector(purlin_pos[n+1]) \
                 + Vector((0,0,con.JIAOLIANG_H*dk*con.YOUQIANG_YAJIN))
-            cb_collection.append((pStart,pEnd,'由戗'))
+            cb_collection.append((pStart,pEnd,_('由戗')))
     
     # 根据cb集合，放置角梁对象
     for n in range(len(cb_collection)):
@@ -1508,7 +1509,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
             if bData.use_flyrafter:
                 # 绘制子角梁
                 cbcObj:bpy.types.Object = \
-                    __drawCornerBeamChild(CornerBeamObj,'仔角梁')
+                    __drawCornerBeamChild(CornerBeamObj,_('仔角梁'))
                 cbcObj.parent = rafterRootObj
                 cbcObj.ACA_data['aca_obj'] = True
                 cbcObj.ACA_data['aca_type'] = con.ACA_TYPE_CORNER_BEAM_CHILD
@@ -1542,7 +1543,7 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object,
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     
-    name = '小连檐'
+    name = _('小连檐')
     height = con.LIKOUMU_H*dk
     width = con.LIKOUMU_Y*dk
 
@@ -1711,7 +1712,7 @@ def __buildCornerRafterCurve(buildingObj:bpy.types.Object):
     rafterCurve_obj = utils.addBezierByPoints(
             CurvePoints,
             tilt=CurveTilt,
-            name='翼角椽定位线',
+            name=_('翼角椽定位线'),
             resolution = con.CURVE_RESOLUTION,
             root_obj=rafterRootObj
         ) 
@@ -1784,7 +1785,7 @@ def __buildCornerRafter(buildingObj:bpy.types.Object,
             start_point = crEnd, 
             end_point = crHead,   # 在曲线上定位的椽头坐标
             radius=con.YUANCHUAN_D/2*dk,
-            name='翼角椽',
+            name=_('翼角椽'),
             root_obj=rafterRootObj
         )
         # 翼角椽如果按照檐口旋转，可以让翘飞椽随檐口翻转排列
@@ -2001,7 +2002,7 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
     rafterRootObj = utils.getAcaChild(
         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
     
-    name = '大连檐.翼角'
+    name = _('大连檐.翼角')
     height = con.DALIANYAN_H*dk
     width = con.DALIANYAN_Y*dk
     
@@ -2153,7 +2154,7 @@ def __buildCornerFlyrafterCurve(buildingObj:bpy.types.Object):
     flyrafterCurve_obj = utils.addBezierByPoints(
                         CurvePoints=CurvePoints,
                         tilt=CurveTilt,
-                        name='翘飞椽定位线',
+                        name=_('翘飞椽定位线'),
                         root_obj=rafterRootObj,
                     )
     flyrafterCurve_obj.ACA_data['aca_obj'] = True
@@ -2672,7 +2673,7 @@ def __buildCornerFlyrafter(
             cornerFlyrafterHeadPre = cfrHeads[n-1]
                    
         cfr_Obj = __drawCornerFlyrafter(
-            name='翘飞椽',
+            name=_('翘飞椽'),
             root_obj=rafterRootObj,
             cornerRafterObj = cornerRafterColl[n], # 对应的翼角椽对象
             cornerRafterObjPre = cornerRafterObjPre,
@@ -2690,7 +2691,7 @@ def __drawCfrWangban(
         cfrHeads,
         cfrCollection,
         root_obj,
-        name = '翘飞椽望板'):
+        name = _('翘飞椽望板')):
     # 载入数据
     buildingObj = utils.getAcaParent(root_obj,con.ACA_TYPE_BUILDING)
     bData : acaData = buildingObj.ACA_data
@@ -2818,7 +2819,7 @@ def __buildCfrWangban(
         cfrHeads = cfrHeads,
         cfrCollection = cfrCollection,
         root_obj = rafterRootObj,
-        name = '翘飞椽望板'
+        name = _('翘飞椽望板')
     )
     # 裁剪，沿角梁裁剪，以免穿模
     utils.addBisect(
@@ -2940,7 +2941,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
 
             # 合并翘飞椽
             cfrSet = utils.joinObjects(
-                cfrCollection,newName='翘飞椽')
+                cfrCollection,newName=_('翘飞椽'))
             # 绑定材质
             cfrSet = mat.paint(cfrSet,con.M_FLYRAFTER,
                                override=True)
@@ -2975,7 +2976,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             ) 
         # 合并翼角椽
         crSet = utils.joinObjects(
-            cornerRafterColl,newName='翼角椽')
+            cornerRafterColl,newName=_('翼角椽'))
         # 绑定材质
         crSet = mat.paint(crSet,con.M_FLYRAFTER,
                           override=True)
@@ -3005,7 +3006,7 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
     # 合并望板
     if useWangban:
         wangbanSet = utils.joinObjects(
-            wangbanObjs,newName='望板')
+            wangbanObjs,newName=_('望板'))
         
         # 将望板挂接到山花望板层
         boardRootObj = utils.getAcaChild(
@@ -3154,8 +3155,8 @@ def __buildShanhuaBan(buildingObj: bpy.types.Object,
         location=(0,0,0)
     )
     shbObj = bpy.context.object
-    shbObj.name = '山花板'
-    shbObj.data.name = '山花板'
+    shbObj.name = _('山花板')
+    shbObj.data.name = _('山花板')
     shbObj.parent = rafterRootObj
 
     # 创建bmesh
@@ -3290,8 +3291,8 @@ def __buildXiangyanBan(buildingObj: bpy.types.Object,
         location=(0,0,0)
     )
     xybObj = bpy.context.object
-    xybObj.name = '象眼板'
-    xybObj.data.name = '象眼板'
+    xybObj.name = _('象眼板')
+    xybObj.data.name = _('象眼板')
     xybObj.parent = rafterRootObj
 
     # 创建bmesh
@@ -3429,7 +3430,7 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
     # 创建博缝板曲线
     ridgeCurve = utils.addCurveByPoints(
             CurvePoints=ridgeCurveVerts,
-            name="博缝板曲线",
+            name=_("博缝板曲线"),
             root_obj=rafterRootObj,
             order_u=4, # 取4级平滑，让坡面曲线更加流畅
             resolution=16
@@ -3530,7 +3531,7 @@ def __buildBofengNails(
         radius = 0.6*dk
         # 创建
         nailObj = utils.addSphere(
-            name='雪花钉',
+            name=_('雪花钉'),
             radius=radius,
             rotation=(0,math.radians(90),0),
             location= (
@@ -3582,7 +3583,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     # 复制博缝板资产
     bofengObj = utils.copyObject(
         sourceObj=aData.bofeng_source,
-        name="博缝板",
+        name=_("博缝板"),
         parentObj=boardRootObj,
         location=bofengCurve.location,
         singleUser=True
@@ -3637,7 +3638,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         bofengObj.dimensions.z * bofengScale)
     # 添加curve变形
     modCurve : bpy.types.CurveModifier = \
-        bofengObj.modifiers.new('曲线拟合','CURVE')
+        bofengObj.modifiers.new(_('曲线拟合'),'CURVE')
     modCurve.object = bofengCurve
 
     if bData.roof_style in (con.ROOF_XIESHAN,
@@ -3751,7 +3752,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         # 2、复制博缝板资产
         shanhuaObj = utils.copyObject(
             sourceObj=aData.bofeng_source,
-            name="山花板",
+            name=_("山花板"),
             parentObj=boardRootObj,
             location=shanhuaLoc,
             singleUser=True
@@ -3769,7 +3770,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         
         # 4、添加curve变形
         modCurve : bpy.types.CurveModifier = \
-            shanhuaObj.modifiers.new('曲线拟合','CURVE')
+            shanhuaObj.modifiers.new(_('曲线拟合'),'CURVE')
         modCurve.object = bofengCurve
         
         # 5、镜像
@@ -3860,7 +3861,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
                     )
         # 验证悬鱼是否有足够空间
         if xuanyu_h < 0:
-            print("没有足够空间摆放悬鱼")
+            print(_("没有足够空间摆放悬鱼"))
         else: 
             # 悬鱼定位
             xuanyu_loc = rafter_pos[-1] + Vector(
@@ -3877,7 +3878,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
             # 复制悬鱼资产
             xuanyuObj = utils.copyObject(
                 sourceObj=aData.xuanyu_source,
-                name="悬鱼",
+                name=_("悬鱼"),
                 parentObj=boardRootObj,
                 location=xuanyu_loc,
                 rotation=(0,0,math.radians(90)),
@@ -3969,8 +3970,8 @@ def __buildShanWall(
         location=(0,0,0)
     )
     shanWallObj = bpy.context.object
-    shanWallObj.name = '山墙'
-    shanWallObj.data.name = '山墙'
+    shanWallObj.name = _('山墙')
+    shanWallObj.data.name = _('山墙')
     shanWallObj.parent = rafterRootObj
 
     # 创建bmesh
@@ -4031,7 +4032,7 @@ def __buildShanWall(
         + con.WALL_SHRINK*2
     )
     bottomObj = utils.addCube(
-        name='下碱',
+        name=_('下碱'),
         dimension=(bottomWidth,
                bottomLength,
                bottomheight),
@@ -4186,7 +4187,7 @@ def __checkRoofSettings(buildingObj:bpy.types.Object):
             isValid = False
         if not isValid:
             bData['use_hallway'] = False
-            utils.outputMsg("进深小于3间，已自动禁止廊间举架")
+            utils.outputMsg(_("进深小于3间，已自动禁止廊间举架"))
     return
 
 # 营造整个房顶

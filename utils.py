@@ -3,6 +3,7 @@
 # 功能概述：
 #   公共的工具方法
 
+from .locale.i18n import _
 import bpy
 import bmesh
 import math
@@ -705,7 +706,7 @@ def addCubeBy2Points(start_point:Vector,
 
 # 添加球体
 def addSphere(
-        name='球',
+        name='Sphere',
         radius=1,
         segments=10,
         ringCount=10,
@@ -751,7 +752,7 @@ def getMeshDims(object):
 def drawHexagon(dimensions:Vector,
                 location:Vector,
                 half=False,
-                name='六棱柱',
+                name='Hexagon',
                 parent=None,):
     # 创建bmesh
     bm = bmesh.new()
@@ -872,7 +873,7 @@ def fastRun(func):
     try:
         _BPyOpsSubModOp._view_layer_update = dummy_view_layer_update
         result = func()
-        outputMsg(f"{func.func.__name__} 执行成功-------------------------")
+        outputMsg(_("%s 执行成功-------------------------" % (func.func.__name__)))
     except Exception as e:
         # 输出到console
         print(e)
@@ -881,9 +882,9 @@ def fastRun(func):
         logError(e)
 
         # 输入到前端弹窗
-        message = ("插件在运行中发生了一个异常错误：|- “"
+        message = (_("插件在运行中发生了一个异常错误：|- “")
                 + str(e)
-                + "”|请联系开发者，并提供日志文件")
+                + _("”|请联系开发者，并提供日志文件"))
         popMessageBox(message)
 
         # 返回给上层调用
@@ -1130,7 +1131,7 @@ def addModifierBoolean(
         solver=None,    # 'FAST','EXACT','MANIFOLD'
 ):
     if object == boolObj:
-        outputMsg(object.name + "添加boolean失败，不能给自身添加布尔。")
+        outputMsg(object.name + _("添加boolean失败，不能给自身添加布尔。"))
         return
     if solver == None:
         if bpy.app.version >= (4,5,0):
@@ -1147,7 +1148,7 @@ def addModifierBoolean(
     modBool:bpy.types.BooleanModifier = \
             object.modifiers.new(name,'BOOLEAN')
     if modBool is None:
-        raise Exception(f'对象[{object.name}]无法添加修改器,对象类型为：{object.type}')
+        raise Exception(_("对象[%s]无法添加修改器,对象类型为：%s" % (object.name, object.type)))
     modBool.object = boolObj
     modBool.solver = solver
     modBool.operation = operation
@@ -1288,7 +1289,7 @@ def copyModifiers(from_0bj,to_obj):
     bpy.ops.object.select_all(action='DESELECT')
 
 # 在坐标点上摆放一个cube，以便直观看到
-def showPoint(point: Vector,parentObj=None,name="定位点",size=0.3) -> object :
+def showPoint(point: Vector,parentObj=None,name="Point",size=0.3) -> object :
     bpy.ops.mesh.primitive_cube_add(size=size,location=point)
     cube = bpy.context.active_object
     if parentObj != None:
@@ -1300,7 +1301,7 @@ def showPoint(point: Vector,parentObj=None,name="定位点",size=0.3) -> object 
 # 向量的可视化
 def showVector(vector: Vector,
                loc=Vector((0,0,0)),
-               parentObj=None,name="向量") -> object :
+               parentObj=None,name="Vector") -> object :
     empty = bpy.data.objects.new("VectorEmpty", None)
     scene = bpy.context.scene
     scene.collection.objects.link(empty)
@@ -1767,7 +1768,7 @@ def joinObjects(objList:List[bpy.types.Object],
         if ob.data.users > 1:
             ob.data = ob.data.copy()
     if len(bpy.context.selected_objects) ==0:
-        outputMsg("没有可以合并的对象")
+        outputMsg(_("没有可以合并的对象"))
         return None
 
     # 2、设置合并的Origin基准
@@ -1925,7 +1926,7 @@ def resizeObj(object:bpy.types.Object,
 def shaderSmooth(object:bpy.types.Object):
     #251224 如果对象不在view_layer显示，以下操作会报错，所以直接忽略返回
     if object.name not in bpy.context.view_layer.objects:
-        print(object.name+"不在viewLayer中，无法做shaderSmooth")
+        print(object.name+_("不在viewLayer中，无法做shaderSmooth"))
         return 
     
     focusObj(object)
@@ -2384,14 +2385,14 @@ def intersect_line_bezier(
 # 沿着曲线尾部延长，不改变原曲线的形状
 def extend_bezier_curve_endpoint(curve_obj, extension_length):
     if curve_obj.type != 'CURVE':
-        print("所选对象不是曲线。")
+        print(_("所选对象不是曲线。"))
         return
 
     curve = curve_obj.data
     spline = curve.splines[0]
 
     if spline.type != 'BEZIER':
-        print("所选曲线不是贝塞尔曲线。")
+        print(_("所选曲线不是贝塞尔曲线。"))
         return
 
     # 获取曲线的最后一个控制点和其右手柄
@@ -2423,14 +2424,14 @@ def extend_bezier_curve_endpoint(curve_obj, extension_length):
 
 def extend_poly_curve_startpoint(curve_obj, extension_length):
     if curve_obj.type != 'CURVE':
-        print("所选对象不是曲线。")
+        print(_("所选对象不是曲线。"))
         return
 
     curve = curve_obj.data
     spline = curve.splines[0]
 
     if spline.type != 'POLY':
-        print("所选曲线不是POLY曲线。")
+        print(_("所选曲线不是POLY曲线。"))
         return
 
     # 获取曲线的前两个点
@@ -2547,7 +2548,7 @@ def copyAcaData(fromObj,toObj,
                 ):
     if (not hasattr(fromObj, "ACA_data") 
         or not hasattr(toObj, "ACA_data")):
-        print("错误: 对象没有 ACA_data 属性组")
+        print(_("错误: 对象没有 ACA_data 属性组"))
         return False
     
     # 251209 跳过id、spliceid、parent
@@ -2612,7 +2613,7 @@ def copyAcaData(fromObj,toObj,
                         subprop_value = getattr(source_subitem, subprop_name)
                         target_subitem[subprop_name] = subprop_value
         else:
-            print(f"警告: copyAcaData,目标对象没有属性 '{prop_name}'")
+            print(_("警告: copyAcaData,目标对象没有属性 '%s'" % (prop_name)))
     
     return True
 
@@ -2679,7 +2680,7 @@ def applyCollModifier(buildingObj):
             # Blender 4.4，4.5中不存在此问题
             bpy.context.view_layer.objects.active = obj
         else:
-            print(f"applyCollModifier：对象 {obj.name} 不在当前视图，无法执行操作")
+            print(_("applyCollModifier：对象 %s 不在当前视图，无法执行操作" % (obj.name)))
 
     bpy.ops.object.convert(target='MESH')
     return
@@ -2830,7 +2831,7 @@ def getDataChild(contextObj:bpy.types.Object,
     # 载入数据列表
     datalist = getDataList(contextObj,obj_type)
     if datalist is None:
-        raise Exception(f"无法获取{obj_type}列表")
+        raise Exception(_("无法获取%s列表" % (obj_type)))
     
     # 查找子对象
     dataChild = None
@@ -2851,7 +2852,7 @@ def delDataChild(contextObj:bpy.types.Object,
     # 载入数据列表
     datalist = getDataList(contextObj,obj_type)
     if datalist is None:
-        raise Exception(f"无法获取{obj_type}列表")
+        raise Exception(_("无法获取%s列表" % (obj_type)))
     
     # 查找子对象
     for i,child in enumerate(datalist):

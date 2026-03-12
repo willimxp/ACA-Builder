@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ACA Builder\n"
 "POT-Creation-Date: 2026-03-12 09:44+0800\n"
-"PO-Revision-Date: 2026-03-12 20:34+0800\n"
+"PO-Revision-Date: 2026-03-12 20:45+0800\n"
 "Last-Translator: Auto Generated <noreply@example.com>\n"
 "Language-Team: English <en@li.org>\n"
 "Language: en_US\n"
@@ -3493,3 +3493,74 @@ msgstr "Cannot find parent template %s, cannot save child template"
 msgid "展UV异常，该对象不存在几何面"
 msgstr "UV unwrapping exception, the object has no geometric faces"
 
+#: utils.py:709
+msgid "球"
+msgstr "Sphere"
+
+#: utils.py:755
+msgid "六棱柱"
+msgstr "Hexagonal Prism"
+
+#: utils.py:876
+msgid "%s 执行成功-------------------------"
+msgstr "%s executed successfully-------------------------"
+
+#: utils.py:885
+msgid "插件在运行中发生了一个异常错误：|- "
+msgstr "An exception error occurred while the plugin was running: |- "
+
+#: utils.py:887
+msgid "”|请联系开发者，并提供日志文件"
+msgstr "Please contact the developer and provide the log file"
+
+#: utils.py:1134
+msgid "添加boolean失败，不能给自身添加布尔。"
+msgstr "Failed to add boolean, cannot add boolean to itself."
+
+#: utils.py:1151
+msgid "对象[%s]无法添加修改器,对象类型为：%s"
+msgstr "Object [%s] cannot add modifier, object type is: %s"
+
+#: utils.py:1292
+msgid "定位点"
+msgstr "Locator"
+
+#: utils.py:1304
+msgid "向量"
+msgstr "Vector"
+
+#: utils.py:1771
+msgid "没有可以合并的对象"
+msgstr "No objects to join"
+
+#: utils.py:1929
+msgid "不在viewLayer中，无法做shaderSmooth"
+msgstr "Not in viewLayer, cannot perform shaderSmooth"
+
+#: utils.py:2388
+msgid "所选对象不是曲线。"
+msgstr "Selected object is not a curve."
+
+#: utils.py:2395
+msgid "所选曲线不是贝塞尔曲线。"
+msgstr "Selected curve is not a Bezier curve."
+
+#: utils.py:2434
+msgid "所选曲线不是POLY曲线。"
+msgstr "Selected curve is not a POLY curve."
+
+#: utils.py:2551
+msgid "错误: 对象没有 ACA_data 属性组"
+msgstr "Error: Object does not have ACA_data property group"
+
+#: utils.py:2616
+msgid "警告: copyAcaData,目标对象没有属性 '%s'"
+msgstr "Warning: copyAcaData, target object does not have attribute '%s'"
+
+#: utils.py:2683
+msgid "applyCollModifier：对象 %s 不在当前视图，无法执行操作"
+msgstr "applyCollModifier: Object %s is not in current view, cannot perform operation"
+
+#: utils.py:2834
+msgid "无法获取%s列表"
+msgstr "Cannot get %s list"

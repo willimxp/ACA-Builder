@@ -1419,7 +1419,7 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
         intersections,curve = utils.mesh_mesh_intersection(
             fromRoof_copy, toRoof_copy,create_curve=True)
         if intersections == []:
-            utils.popMessageBox(_("未找到屋顶相交范围：from=%s,to=%s" % (fromBuilding.name, toBuilding.name)))
+            utils.popMessageBox(_("未找到屋顶相交范围：from=%s,to=%s") % (fromBuilding.name, toBuilding.name))
             return {'CANCELLED'}
     else:
         # print(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
@@ -1918,7 +1918,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
             fromRoof_copy, toRoof_copyB,create_curve=True)
         intersections = intersectionsA + intersectionsB
         if intersections == []:
-            utils.popMessageBox(_("未找到屋顶相交范围：from=%s,to=%s" % (fromBuilding.name, toBuilding.name)))
+            utils.popMessageBox(_("未找到屋顶相交范围：from=%s,to=%s") % (fromBuilding.name, toBuilding.name))
             return {'CANCELLED'}
     else:
         # print(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")

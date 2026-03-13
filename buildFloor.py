@@ -1685,7 +1685,7 @@ def __setLoggiaWidth(bData:acaData,
               width,side='X'): 
     # 验证回廊最小宽度
     if abs(width) < bData.pillar_diameter:
-        raise Exception(_("回廊宽度太小，建议在[%s]~[%s]左右" % (round(bData.DK*12,2), round(bData.DK*22,2))))   
+        raise Exception(_("回廊宽度太小，建议在[%s]~[%s]左右") % (round(bData.DK*12,2), round(bData.DK*22,2)))
     
     # 验证回廊内收宽度
     xRooms = bData.x_rooms

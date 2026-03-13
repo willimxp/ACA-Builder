@@ -350,7 +350,7 @@ def __buildGeshan(name,wallproxy,scale,location,dir='L'):
         obj_id=geshanID
     )
     if geshanSetting is None:
-        raise Exception(_("无法找到geshanData:%s" % (geshanID)))
+        raise Exception(_("无法找到geshanData:%s") % (geshanID))
 
     # 1、隔扇根对象
     geshan_root = utils.addEmpty(
@@ -560,7 +560,7 @@ def buildDoor(wallProxy:bpy.types.Object):
         # 构建支摘窗
         __addFlipwindow(kankuangObj)
     else:
-        raise Exception(_("无法构建子对象，未知的wallType：%s" % (wallType)))
+        raise Exception(_("无法构建子对象，未知的wallType：%s") % (wallType))
 
     utils.focusObj(kankuangObj)
 
@@ -593,7 +593,7 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
         obj_id=wData['wallID']
     )
     if childData is None:
-        raise Exception(_("无法找到childData:%s" % (wData.wallID)))
+        raise Exception(_("无法找到childData:%s") % (wData.wallID))
     
     doorWidth = ((frame_width
                   - pillarD
@@ -1273,7 +1273,7 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
         obj_id=maindoorID
     )
     if maindoorData is None:
-        raise Exception(_("无法找到maindoorData:%s" % (maindoorID)))
+        raise Exception(_("无法找到maindoorData:%s") % (maindoorID))
     
     # 分解槛框的长、宽、高
     frame_width,frame_depth,frame_height = kankuangObj.dimensions
@@ -1516,7 +1516,7 @@ def __addGeshan(kankuangObj:bpy.types.Object):
         obj_id=geshanID
     )
     if geshanData is None:
-        raise Exception(_("无法找到geshanData:%s" % (geshanID)))
+        raise Exception(_("无法找到geshanData:%s") % (geshanID))
     
     # 分解槛框的长、宽、高
     frame_width,frame_depth,frame_height = kankuangObj.dimensions
@@ -1582,7 +1582,7 @@ def __addBarwindow(kankuangObj:bpy.types.Object):
         obj_id=windowID
     )
     if windowData is None:
-        raise Exception(_("无法找到geshanData:%s" % (windowID)))
+        raise Exception(_("无法找到geshanData:%s") % (windowID))
     
     # 分解槛框的长、宽、高
     frame_width,frame_depth,frame_height = kankuangObj.dimensions
@@ -1711,7 +1711,7 @@ def __addFlipwindow(kankuangObj:bpy.types.Object):
         obj_id=windowID
     )
     if windowData is None:
-        raise Exception(_("无法找到geshanData:%s" % (windowID)))
+        raise Exception(_("无法找到geshanData:%s") % (windowID))
     
     # 分解槛框的长、宽、高
     frame_width,frame_depth,frame_height = kankuangObj.dimensions

@@ -802,26 +802,26 @@ def addMultiFloor(baseFloor:bpy.types.Object,
 
         # 面阔验证
         if bData.x_rooms >= 7 and bData.x_4 < room_min:
-            msg = _("面阔尽间当前[%s],应大于[%s]" % (round(bData.x_4,3), room_min))
+            msg = _("面阔尽间当前[%s],应大于[%s]") % (round(bData.x_4,3), room_min)
         elif bData.x_rooms == 5 and bData.x_3 < room_min:
-            msg = _("面阔梢间当前[%s],应大于[%s]" % (round(bData.x_3,3), room_min))
+            msg = _("面阔梢间当前[%s],应大于[%s]") % (round(bData.x_3,3), room_min)
         elif bData.x_rooms == 3 and bData.x_2 < room_min:
-            msg = _("面阔梢间当前[%s],应大于[%s]" % (round(bData.x_2,3), room_min))
+            msg = _("面阔梢间当前[%s],应大于[%s]") % (round(bData.x_2,3), room_min)
         elif bData.x_rooms == 1 and bData.x_1 < room_min*2:
-            msg = _("面阔梢间当前[%s],应大于[%s]" % (round(bData.x_1,3), room_min*2))
+            msg = _("面阔梢间当前[%s],应大于[%s]") % (round(bData.x_1,3), room_min*2)
 
         # 进深验证
         if bData.y_rooms >= 5 and bData.y_3 < room_min:
-            msg = _("进深梢间当前[%s],应大于[%s]" % (round(bData.y_3,3), room_min))
+            msg = _("进深梢间当前[%s],应大于[%s]") % (round(bData.y_3,3), room_min)
         elif bData.y_rooms in {3,4} and bData.y_2 < room_min: 
-            msg = _("进深次间当前[%s],应大于[%s]" % (round(bData.y_2,3), room_min))
+            msg = _("进深次间当前[%s],应大于[%s]") % (round(bData.y_2,3), room_min)
         elif bData.y_rooms == 2 and bData.y_1 < room_min: 
-            msg = _("进深明间当前[%s],应大于[%s]" % (round(bData.y_1,3), room_min))
+            msg = _("进深明间当前[%s],应大于[%s]") % (round(bData.y_1,3), room_min)
         elif bData.y_rooms == 1 and bData.y_1 < room_min*2: 
-            msg = _("进深明间当前[%s],应大于[%s]" % (round(bData.y_1,3), room_min*2))
+            msg = _("进深明间当前[%s],应大于[%s]") % (round(bData.y_1,3), room_min*2)
         
         if msg != '':
-            utils.popMessageBox(_("收分验证失败：%s（注意：如果下层已经有回廊，建议不要使用方案“6-重楼+腰檐+回廊”，可以尝试使用方案“4-重楼+腰檐+平坐(无栏杆)”）" % (msg)))
+            utils.popMessageBox(_("收分验证失败：%s（注意：如果下层已经有回廊，建议不要使用方案“6-重楼+腰檐+回廊”，可以尝试使用方案“4-重楼+腰檐+平坐(无栏杆)”）") % (msg))
             return {'CANCELLED'}
 
     # 1、数据准备 --------------------
@@ -1386,25 +1386,25 @@ def __setTaperData(mData,taper):
             mData['x_4'] -= xTaper
         else:
             raise Exception(
-                _("楼阁收分失败：尽间尺寸请至少加大%s" % (round(xTaper-mData.x_4,3))))
+                _("楼阁收分失败：尽间尺寸请至少加大%s") % (round(xTaper-mData.x_4,3)))
     elif mData.x_rooms == 5:
         if mData['x_3'] > xTaper:
             mData['x_3'] -= xTaper
         else:
             raise Exception(
-                _("楼阁收分失败：梢间尺寸当前%s，需大于收分%s" % (round(mData.x_3),3, round(xTaper,3))))
+                _("楼阁收分失败：梢间尺寸当前%s，需大于收分%s") % (round(mData.x_3), round(xTaper,3)))
     elif mData.x_rooms == 3:
         if mData['x_2'] > xTaper:
             mData['x_2'] -= xTaper
         else:
             raise Exception(
-                _("楼阁收分失败：次间尺寸当前%s，需大于收分%s" % (round(mData.x_2,3), round(xTaper,3))))
+                _("楼阁收分失败：次间尺寸当前%s，需大于收分%s") % (round(mData.x_2,3), round(xTaper,3)))
     elif mData.x_rooms == 1:
         if mData['x_1']/2 > xTaper:
             mData['x_1'] -= xTaper*2
         else:
             raise Exception(
-                _("楼阁收分失败：明间尺寸当前%s，需大于收分%s" % (round(mData.x_1,3), round(xTaper,3))))
+                _("楼阁收分失败：明间尺寸当前%s，需大于收分%s") % (round(mData.x_1,3), round(xTaper,3)))
     else:
         raise Exception(
                 _("楼阁收分失败，未知原因"))
@@ -1416,25 +1416,25 @@ def __setTaperData(mData,taper):
             mData['y_3'] -= yTaper
         else:
             raise Exception(
-                _("楼阁收分失败：进深梢间尺寸当前%s，需大于收分%s" % (round(mData.y_3,3), round(yTaper,3))))
+                _("楼阁收分失败：进深梢间尺寸当前%s，需大于收分%s") % (round(mData.y_3,3), round(yTaper,3)))
     elif mData.y_rooms in (3,4):
         if mData['y_2'] > yTaper:
             mData['y_2'] -= yTaper
         else:
             raise Exception(
-                _("楼阁收分失败：进深次间应至少增加%s" % (round(yTaper-mData.y_2,3))))
+                _("楼阁收分失败：进深次间应至少增加%s") % (round(yTaper-mData.y_2,3)))
     elif mData.y_rooms == 2:
         if mData['y_1'] > yTaper:
             mData['y_1'] -= yTaper
         else:
             raise Exception(
-                _("楼阁收分失败：进深明间尺寸应增加%s" % (round(yTaper -mData.y_1,3))))
+                _("楼阁收分失败：进深明间尺寸应增加%s") % (round(yTaper -mData.y_1,3)))
     elif mData.y_rooms == 1:
         if mData['y_1'] > yTaper*2:
             mData['y_1'] -= yTaper*2
         else:
             raise Exception(
-                _("楼阁收分失败：进深明间尺寸当前%s，需大于2倍收分%s" % (round(mData.y_1,3), round(yTaper*2,3))))
+                _("楼阁收分失败：进深明间尺寸当前%s，需大于2倍收分%s") % (round(mData.y_1,3), round(yTaper*2,3)))
     else:
         raise Exception(
                 _("楼阁收分失败，未知原因"))

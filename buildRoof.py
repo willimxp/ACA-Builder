@@ -341,7 +341,7 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
             rafter_tile_x = (purlin_pos[n+1].x 
                              -con.YUANCHUAN_D*dk/2)
         else:
-            raise Exception(_("檐椽营造失败，屋顶类型无法识别bData.roof_style=%s" % (bData.roof_style)))
+            raise Exception(_("檐椽营造失败，屋顶类型无法识别bData.roof_style=%s") % (bData.roof_style))
         # 5.2 计算椽子间距
         # 硬山做到山墙，悬山做到博缝板，依此距离计算
         if bData.roof_style in (
@@ -1400,7 +1400,7 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
     if yanSpan > 14*dk:
         cbKoujin = con.JIAOLIANG_H*dk*con.JIAOLIANG_WEI_KOUJIN
     elif yanSpan < round(3*dk,3):
-        raise Exception(_("构造老角梁失败，檐步架只有%s" % (yanSpan)))
+        raise Exception(_("构造老角梁失败，檐步架只有%s") % (yanSpan))
     else:
         cbKoujin = - con.JIAOLIANG_H*dk*con.JIAOLIANG_WEI_KOUJIN
     

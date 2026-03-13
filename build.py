@@ -213,7 +213,7 @@ def updateBuilding(buildingObj:bpy.types.Object,
             buildYardWall.buildYardWall(buildingObj,
                         reloadAssets=reloadAssets)
         else:
-            utils.popMessageBox(_("无法创建该类型的建筑,%s" % (bData.aca_type)))
+            utils.popMessageBox(_("无法创建该类型的建筑,%s") % (bData.aca_type))
         
         # 聚焦台基
         focusObj = utils.getAcaChild(
@@ -866,7 +866,7 @@ def joinBuilding(buildingObj:bpy.types.Object,
         partObjList.clear()
         addChild(layer)
         if len(partObjList) == 0 :
-            print(_("%s没有需要合并的对象，继续..." % (layer.name)))
+            print(_("%s没有需要合并的对象，继续...") % (layer.name))
             continue
         
         # 区分是否分层的不同命名规则
@@ -2008,7 +2008,7 @@ def __unionCrossBaosha(fromBuilding:bpy.types.Object,
         intersections,curve = utils.mesh_mesh_intersection(
             fromRoof_copy, toRoof_copy,create_curve=True)
         if intersections == []:
-            utils.popMessageBox(_("未找到屋顶相交范围：from=%s,to=%s" % (fromBuilding.name, toBuilding.name)))
+            utils.popMessageBox(_("未找到屋顶相交范围：from=%s,to=%s") % (fromBuilding.name, toBuilding.name))
             return {'CANCELLED'}
     else:
         # print(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")

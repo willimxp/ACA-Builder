@@ -34,7 +34,7 @@ python3 "/Volumes/XP.T9/Blender/ACA Builder/.trae/skills/aca_i18n/update_transla
 ### 1. 代码预处理
 1. 扫描Python文件，找到中文文本（跳过注释行中的中文）
 2. 修改代码中的format字符串，改为%s的调用方式
-   - 例如：`print(f"{v1}中文文本{v2}")` 改为 `print(_("%s中文文本%s" % (v1, v2)))`
+   - 例如：`print(f"{v1}中文文本{v2}")` 改为 `print(_("%s中文文本%s") % (v1, v2))`
 3. 根据代码的相对目录结构，确定_()函数的导入方式
    - 根目录下的Python脚本：`from .locale.i18n import _`
    - 子目录下的Python脚本：`from ..locale.i18n import _`

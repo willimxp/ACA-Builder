@@ -72,7 +72,7 @@ def __tempWallproxy(buildingObj:bpy.types.Object,
     elif wallType == con.ACA_WALLTYPE_QUETI:
         wallName = _('雀替')
     else:
-        raise Exception(_("无法生成wallproxy，walltype：%s" % (wallType)))
+        raise Exception(_("无法生成wallproxy，walltype：%s") % (wallType))
     wallName = "%s.%s#%s" % (wallName,setting[1],setting[2])
 
     # 获取实际柱高   
@@ -175,7 +175,7 @@ def __drawWall(wallProxy:bpy.types.Object):
         obj_id=wallID
     )
     if wallData is None:
-        raise Exception(_("无法找到geshanData:%s" % (wallID)))
+        raise Exception(_("无法找到geshanData:%s") % (wallID))
     
     # 预留走马板高度
     if wallData.wall_span > 0:
@@ -343,7 +343,7 @@ def __buildWall(buildingObj:bpy.types.Object,
     elif wallType == con.ACA_WALLTYPE_QUETI:
         wallObj = buildFloor.addQueti(wallproxy)
     else:
-        raise Exception(_("无法生成墙体类型:%s" % (wallType)))
+        raise Exception(_("无法生成墙体类型:%s") % (wallType))
     
     # 250916 可能因为开间太小等原因，没有成功创建装修，则跳过继续
     if wallObj == None:
@@ -427,7 +427,7 @@ def addWall(buildingObj:bpy.types.Object,
             wallID_alt = pTo.ACA_data['pillarID'].split('#')[0] \
                     + '#' + pFrom.ACA_data['pillarID'].split('#')[0] 
             if wallID in wallSetting or wallID_alt in wallSetting:
-                utils.popMessageBox(_("无法添加%s，该位置已经存在装修，wallSetting：%s" % (wallID, wallSetting)))
+                utils.popMessageBox(_("无法添加%s，该位置已经存在装修，wallSetting：%s") % (wallID, wallSetting))
                 continue
 
             # 构造ID
@@ -642,7 +642,7 @@ def __delQuetiFromAdd(wallAdd:bpy.types.Object):
                 bData.wall_list.remove(i)
         
         # 删除实体
-        quetiName = _("雀替.%s" % (quetiID.split('#',1)[1]))
+        quetiName = _("雀替.%s") % (quetiID.split('#',1)[1])
         utils.deleteByName(parent_obj=buildingObj,
                            del_parent=False,
                            name=quetiName)
@@ -696,7 +696,7 @@ def buildWallLayout(buildingObj:bpy.types.Object):
             # 如果栏杆不开口，则不做这个栏杆
             # 开口栏杆不受影响，继续做
             if railing.gap == 0:
-                print(_("%s栏杆添加跳过，该位置已经有踏跺" % (railing.id)))
+                print(_("%s栏杆添加跳过，该位置已经有踏剁") % (railing.id))
                 continue
 
         __buildWall(buildingObj,railing.id)

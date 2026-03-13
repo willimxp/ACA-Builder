@@ -324,7 +324,7 @@ def loadAssets(assetName : str,
         raise Exception(_('无法打开资产库，请确认acaAssets.blend文件已经放入插件目录'))
     # 验证找到的资产是否唯一
     if len(data_to.objects) == 0:
-        raise Exception(_("资产[%s]载入失败，请检查是否关联最新版本的acaAssets.blend资产库。" % (assetName)))
+        raise Exception(_("资产[%s]载入失败，请检查是否关联最新版本的acaAssets.blend资产库。") % (assetName))
     if len(data_to.objects) > 1:
         utils.outputMsg(_("无法定位唯一的资产:") + assetName)
         return 
@@ -545,7 +545,7 @@ def loadTemplate(buildingObj:bpy.types.Object):
             root = templateNode
             templateNodeList = root.findall('template')
         else:
-            raise Exception(_("找不到父模板%s，无法载入子模版" % (parent.name)))
+            raise Exception(_("找不到父模板%s，无法载入子模版") % (parent.name))
     
     # 在根层次中查找对应名称的那个模板
     for template in templateNodeList:
@@ -574,7 +574,7 @@ def saveTemplateWithCombo(buildingObj:bpy.types.Object):
     
     # 验证是否为组合模板
     if bData.aca_type != con.ACA_TYPE_COMBO:
-        raise Exception(_("保存模板失败，未知的建筑类型%s" % (bData.aca_type)))
+        raise Exception(_("保存模板失败，未知的建筑类型%s") % (bData.aca_type))
         return {'CANCELLED'}
     comboObj = buildingObj
     
@@ -663,7 +663,7 @@ def __saveTemplate(buildingObj:bpy.types.Object):
             root = templateNode
             templateNodeList = root.findall('template')
         else:
-            raise Exception(_("找不到父模板%s，无法保存子模版" % (parent.name)))
+            raise Exception(_("找不到父模板%s，无法保存子模版") % (parent.name))
             return
     
     # 遍历查找对应模板

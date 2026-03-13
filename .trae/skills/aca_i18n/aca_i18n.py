@@ -3,6 +3,9 @@
 """
 ACA Builder i18n国际化技能
 自动处理ACA插件的i18n国际化，包括提取中文文本、代码预处理、自动调用_()翻译函数，生成PO文件、编译MO文件等
+
+调用方式：
+python3 "/Volumes/XP.T9/Blender/ACA Builder/.trae/skills/aca_i18n/aca_i18n.py" "/Volumes/XP.T9/Blender/ACA Builder/utils.py"
 """
 
 import os
@@ -298,12 +301,13 @@ class ACAI18nSkill:
         # 构建新的字符串
         new_content = ''.join(parts)
         if variables:
-            new_format = f'"{new_content}" % ({", ".join(variables)})'
+            # 翻译字符串本身，% 格式化操作在 _() 外部
+            new_format = f'_("{new_content}") % ({", ".join(variables)})'
         else:
-            new_format = f'"{new_content}"'
+            new_format = f'_("{new_content}")'
         
-        # 替换原f-string
-        new_line = line.replace(match.group(0), f'_({new_format})')
+        # 替换原 f-string
+        new_line = line.replace(match.group(0), new_format)
         
         # 提取包含占位符的完整中文文本
         if chinese_pattern.search(new_content):
@@ -316,15 +320,22 @@ class ACAI18nSkill:
         chinese_texts = []
 
         # 检查该行是否已经被_()包裹
+        # 需要匹配 _("xxx") 和 _("xxx" % var) 两种形式
         if '_(' in line:
-            # 使用AST或正则检查是否有 _() 包裹的中文文本
-            # 匹配 _() 函数调用
-            wrapped_pattern = re.compile(r'_\(\s*(["\'])(.*?)\1\s*\)')
-            for match in wrapped_pattern.finditer(line):
-                content = match.group(2)
+            # 使用正则匹配完整的 _("xxx") 或 _("xxx" % var) 形式
+            # 匹配 _() 包裹的内容，包括字符串和变量
+            underscore_wrapper_pattern = re.compile(r'_\s*\(\s*(["\'])(.*?)\1(?:\s*%\s*.*?)?\s*\)')
+            
+            for match in underscore_wrapper_pattern.finditer(line):
+                # 提取 _() 内部的字符串内容（不包括变量部分）
+                full_content = match.group(0)
+                string_content = match.group(2)  # 只获取引号内的部分
+                
+                # 检查字符串内容中是否包含中文
                 chinese_pattern = re.compile(r'[\u4e00-\u9fa5]+')
-                if chinese_pattern.search(content):
-                    return []  # 已有_()包裹，不重复处理
+                if chinese_pattern.search(string_content):
+                    # 该行已经有 _() 包裹中文，应该跳过整行
+                    return []
 
         # 检查是否是独立的字符串语句（只有字符串，没有赋值或其他操作）
         # 例如：'''中文''' 或 _("中文") 这种单独一行的语句应该跳过
@@ -349,6 +360,37 @@ class ACAI18nSkill:
                 chinese_texts.append((line_num, content))
 
         return chinese_texts
+    
+    def _find_closing_paren(self, line: str, start: int) -> int:
+        """找到配对的闭合括号位置"""
+        depth = 0
+        in_string = False
+        string_char = None
+        
+        i = start
+        while i < len(line):
+            char = line[i]
+            
+            # 处理字符串
+            if char in ('"', "'") and (i == 0 or line[i-1] != '\\'):
+                if not in_string:
+                    in_string = True
+                    string_char = char
+                elif char == string_char:
+                    in_string = False
+                    string_char = None
+            
+            if not in_string:
+                if char == '(':
+                    depth += 1
+                elif char == ')':
+                    depth -= 1
+                    if depth == 0:
+                        return i
+            
+            i += 1
+        
+        return -1
     
     def _wrap_chinese_with_translate(self, line: str, chinese_texts: List[Tuple[int, str]]) -> str:
         """用_()函数包装中文文本"""
@@ -375,14 +417,29 @@ class ACAI18nSkill:
                 regex = re.compile(pattern)
                 for match in regex.finditer(new_line):
                     full_match = match.group(0)
-                    # 检查是否已经被_()包裹
-                    if not full_match.startswith('_('):
-                        # 检查匹配的内容是否包含目标文本
-                        captured = match.group(1)
-                        if text in captured:
-                            old_str = match.group(0)
-                            new_str = f'_({old_str})'
-                            replacements.append((old_str, new_str))
+                    # 检查是否已经被_()包裹，包括 _("...") 和 _("..." % ...) 形式
+                    # 使用正则匹配完整的 _() 调用
+                    is_wrapped = False
+                    underscore_wrapper_pattern = re.compile(r'_\s*\(\s*(["\'])(.*?)\1(?:\s*%\s*.*?)?\s*\)')
+                    for wrapper_match in underscore_wrapper_pattern.finditer(new_line):
+                        wrapper_start = wrapper_match.start()
+                        wrapper_end = wrapper_match.end()
+                        match_start = match.start()
+                        match_end = match.end()
+                        # 检查当前字符串是否在 _() 内部
+                        if wrapper_start < match_start and wrapper_end > match_end:
+                            is_wrapped = True
+                            break
+                    
+                    if is_wrapped:
+                        continue
+                    
+                    # 检查匹配的内容是否包含目标文本
+                    captured = match.group(1)
+                    if text in captured:
+                        old_str = match.group(0)
+                        new_str = f'_({old_str})'
+                        replacements.append((old_str, new_str))
         
         # 从后往前替换，避免位置偏移
         for old_str, new_str in reversed(replacements):

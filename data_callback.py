@@ -165,7 +165,7 @@ def update_railing(self, context:bpy.types.Context):
         obj_id = railingID,
     )
     if currentRailingData is None:
-        raise Exception(_("无法获取railing_list中的%s数据集" % (railingID)))
+        raise Exception(_("无法获取railing_list中的%s数据集") % (railingID))
     
     # 批量设置所有选中的对象
     for railingSelect in selected_objs:
@@ -182,7 +182,7 @@ def update_railing(self, context:bpy.types.Context):
             obj_id=selectedID,
         )
         if selectedRailingData is None:
-            raise Exception(_("无法获取railing_list中的%s数据集" % (railingID)))
+            raise Exception(_("无法获取railing_list中的%s数据集") % (railingID))
         
         # 设置数据
         selectedRailingData['gap'] = currentRailingData.gap
@@ -556,7 +556,7 @@ def updateSelectedThumb(self,context):
     try:
         scene.image_browser_enum = tName
     except Exception as e:
-        utils.outputMsg(_("无法显示缩略图 %s" % (tName))) 
+        utils.outputMsg(_("无法显示缩略图 %s") % (tName)) 
     return
 
 def updateSelectedTemplate(self, context:bpy.types.Context):
@@ -576,7 +576,7 @@ def updateSelectedPavilionThumb(self,context):
     try:
         scene.pavilion_browser_enum = tName
     except Exception as e:
-        utils.outputMsg(_("无法显示缩略图 %s" % (tName))) 
+        utils.outputMsg(_("无法显示缩略图 %s") % (tName)) 
     
     # 更新默认参数
     from . import buildCombo

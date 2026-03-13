@@ -697,7 +697,7 @@ class ACA_OT_save_template(bpy.types.Operator):
         from . import template
         result = template.saveTemplateWithCombo(buildingObj)
         if 'FINISHED' in result:
-            msg = _("【%s】模板样式保存成功" % (buildingObj.name))
+            msg = _("%s 模板样式保存成功") % (buildingObj.name)
             self.report({'INFO'},msg)
             utils.popMessageBox(msg)
 
@@ -739,7 +739,7 @@ class ACA_OT_save_template(bpy.types.Operator):
         buildingName = buildingObj.name
         row = self.layout.row()
         row.label(
-            text=(_("是否覆盖【%s】？" % (buildingName))),
+            text=(_("是否覆盖【%s】？") % (buildingName)),
             icon='INFO'
             )
         row = self.layout.row()
@@ -785,7 +785,7 @@ class ACA_OT_del_template(bpy.types.Operator):
                 item = scnData.templateItem.add()
                 item.name = templateItemName
 
-            self.report({'INFO'},_("【%s】样式已删除。" % (templateName)))
+            self.report({'INFO'},_("%s 样式已删除。") % (templateName))
 
         return {'FINISHED'}
     
@@ -809,7 +809,7 @@ class ACA_OT_del_template(bpy.types.Operator):
 
         row = self.layout
         row.label(
-            text=(_("确定删除【%s】吗？" % (templateName))),
+            text=(_("确定删除【%s】吗？") % (templateName)),
             icon='QUESTION'
             )
         row.label(
@@ -1176,7 +1176,7 @@ class ACA_OT_LINK_ASSETS(bpy.types.Operator):
             return {'CANCELLED'}
         # 检查文件扩展名是否为 .blend
         if not filepath.lower().endswith('.blend'):
-            utils.popMessageBox(_("选择的文件 %s 不是 .blend 文件" % (filepath)))
+            utils.popMessageBox(_("选择的文件 %s 不是 .blend 文件") % (filepath))
             return {'CANCELLED'}
         # 路径验证通过
         preferences = bpy.context.preferences
@@ -1184,7 +1184,7 @@ class ACA_OT_LINK_ASSETS(bpy.types.Operator):
         addon_prefs = preferences.addons[addon_main_name].preferences
         addon_prefs.filepath = filepath
         utils.popMessageBox(_("素材库路径设置成功"))
-        utils.outputMsg(_("素材库路径已设置为 %s" % (filepath)))
+        utils.outputMsg(_("素材库路径已设置为 %s") % (filepath))
 
         return {'FINISHED'}
     

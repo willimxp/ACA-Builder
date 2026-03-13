@@ -862,7 +862,7 @@ def addStep(buildingObj:bpy.types.Object,
         valid = utils.validPillarNext(pFrom,pTo)
         if not valid:
             utils.popMessageBox(
-                _("无法生成踏跺，%s，%s不是相邻的柱子" % (pFrom, pTo)))
+                _("无法生成踏剁，%s，%s不是相邻的柱子") % (pFrom, pTo))
             continue
 
         # 验证踏跺是否已经存在
@@ -870,7 +870,7 @@ def addStep(buildingObj:bpy.types.Object,
         stepID_alt = pTo + '#' + pFrom
         for step in bData.step_list:
             if stepID == step.id or stepID_alt==step.id:
-                utils.popMessageBox(_("该位置已经存在踏跺：%s" % (stepID)))
+                utils.popMessageBox(_("该位置已经存在踏跺：%s") % (stepID))
                 return {'CANCELLED'}
 
         # 251011 验证踏跺合法性
@@ -925,7 +925,7 @@ def delStep(buildingObj:bpy.types.Object,
     # 250823 删除step数据
     for step in steps:
         if step.ACA_data['aca_type'] != con.ACA_TYPE_STEP:
-            print(_("删除踏跺已跳过%s，aca_type错误:%s" % (step.id, step.ACA_data['aca_type'])))
+            print(_("删除踏跺已跳过%s，aca_type错误:%s") % (step.id, step.ACA_data['aca_type']))
             continue
 
         # 删除数据

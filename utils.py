@@ -706,7 +706,7 @@ def addCubeBy2Points(start_point:Vector,
 
 # 添加球体
 def addSphere(
-        name='Sphere',
+        name=_('球'),
         radius=1,
         segments=10,
         ringCount=10,
@@ -752,7 +752,7 @@ def getMeshDims(object):
 def drawHexagon(dimensions:Vector,
                 location:Vector,
                 half=False,
-                name='Hexagon',
+                name=_('六棱柱'),
                 parent=None,):
     # 创建bmesh
     bm = bmesh.new()
@@ -873,7 +873,7 @@ def fastRun(func):
     try:
         _BPyOpsSubModOp._view_layer_update = dummy_view_layer_update
         result = func()
-        outputMsg(_("%s 执行成功-------------------------" % (func.func.__name__)))
+        outputMsg(_("%s 执行成功-------------------------") % (func.func.__name__))
     except Exception as e:
         # 输出到console
         print(e)
@@ -1148,7 +1148,7 @@ def addModifierBoolean(
     modBool:bpy.types.BooleanModifier = \
             object.modifiers.new(name,'BOOLEAN')
     if modBool is None:
-        raise Exception(_("对象[%s]无法添加修改器,对象类型为：%s" % (object.name, object.type)))
+        raise Exception(_("对象[%s]无法添加修改器,对象类型为：%s") % (object.name, object.type))
     modBool.object = boolObj
     modBool.solver = solver
     modBool.operation = operation
@@ -1289,7 +1289,7 @@ def copyModifiers(from_0bj,to_obj):
     bpy.ops.object.select_all(action='DESELECT')
 
 # 在坐标点上摆放一个cube，以便直观看到
-def showPoint(point: Vector,parentObj=None,name="Point",size=0.3) -> object :
+def showPoint(point: Vector,parentObj=None,name=_("定位点"),size=0.3) -> object :
     bpy.ops.mesh.primitive_cube_add(size=size,location=point)
     cube = bpy.context.active_object
     if parentObj != None:
@@ -1301,7 +1301,7 @@ def showPoint(point: Vector,parentObj=None,name="Point",size=0.3) -> object :
 # 向量的可视化
 def showVector(vector: Vector,
                loc=Vector((0,0,0)),
-               parentObj=None,name="Vector") -> object :
+               parentObj=None,name=_("向量")) -> object :
     empty = bpy.data.objects.new("VectorEmpty", None)
     scene = bpy.context.scene
     scene.collection.objects.link(empty)
@@ -2613,7 +2613,7 @@ def copyAcaData(fromObj,toObj,
                         subprop_value = getattr(source_subitem, subprop_name)
                         target_subitem[subprop_name] = subprop_value
         else:
-            print(_("警告: copyAcaData,目标对象没有属性 '%s'" % (prop_name)))
+            print(_("警告: copyAcaData,目标对象没有属性 '%s'") % (prop_name))
     
     return True
 
@@ -2680,7 +2680,7 @@ def applyCollModifier(buildingObj):
             # Blender 4.4，4.5中不存在此问题
             bpy.context.view_layer.objects.active = obj
         else:
-            print(_("applyCollModifier：对象 %s 不在当前视图，无法执行操作" % (obj.name)))
+            print(_("applyCollModifier：对象 %s 不在当前视图，无法执行操作") % (obj.name))
 
     bpy.ops.object.convert(target='MESH')
     return
@@ -2831,7 +2831,7 @@ def getDataChild(contextObj:bpy.types.Object,
     # 载入数据列表
     datalist = getDataList(contextObj,obj_type)
     if datalist is None:
-        raise Exception(_("无法获取%s列表" % (obj_type)))
+        raise Exception(_("无法获取%s列表") % (obj_type))
     
     # 查找子对象
     dataChild = None
@@ -2852,7 +2852,7 @@ def delDataChild(contextObj:bpy.types.Object,
     # 载入数据列表
     datalist = getDataList(contextObj,obj_type)
     if datalist is None:
-        raise Exception(_("无法获取%s列表" % (obj_type)))
+        raise Exception(_("无法获取%s列表") % (obj_type))
     
     # 查找子对象
     for i,child in enumerate(datalist):

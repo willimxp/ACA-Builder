@@ -318,7 +318,7 @@ def __buildRailing(parentObj:bpy.types.Object,
 
     # 各开间根节点，在两根柱子之间居中
     railingRoot = utils.addEmpty(
-        name=_("栏杆.%s" % (proxy['id'])),
+        name=_("栏杆.%s") % (proxy['id']),
         location=proxy['location'],
         rotation=proxy['rotation'],
         parent=parentObj,
@@ -378,7 +378,7 @@ def __buildRailing(parentObj:bpy.types.Object,
                  0,0)
     pillarObj = utils.copyObject(
         sourceObj=aData.railing_pillar,
-        name=_("望柱.%s" % (proxy['id'])),
+        name=_("望柱.%s") % (proxy['id']),
         dimensions=pillarDim,
         location=pillarLoc,
         parentObj=railingRoot,
@@ -407,7 +407,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     handrailDim = (handrailWidth,handrailDepth,handrailHeight)
     handrailLoc = (proxyX,0,con.HANDRAIL_Z)
     handrailObj = utils.addCube(
-        name=_("桪杖扶手.%s" % (proxy['id'])),
+        name=_("桪杖扶手.%s") % (proxy['id']),
         dimension=handrailDim,
         location=handrailLoc,
         parent=railingRoot
@@ -431,7 +431,7 @@ def __buildRailing(parentObj:bpy.types.Object,
         zzLoc = (zzX,    # 依次排列
                  0,zzHeight/2)
         zzObj = utils.addCube(
-            name=_("折柱.%s.%s" % (proxy['id'], n)),
+            name=_("折柱.%s.%s") % (proxy['id'], n),
             dimension=zzDim,
             location=zzLoc,
             parent=railingRoot
@@ -451,7 +451,7 @@ def __buildRailing(parentObj:bpy.types.Object,
         vaseLoc = (zzX,0,vaseZ)
         vaseObj = utils.copyObject(
                 sourceObj=aData.railing_vase,
-                name=_("净瓶.%s" % (proxy['id'])),
+                name=_("净瓶.%s") % (proxy['id']),
                 location=vaseLoc,
                 parentObj=railingRoot,
                 singleUser=True,
@@ -496,7 +496,7 @@ def __buildRailing(parentObj:bpy.types.Object,
         difuDim = (difuWidth,difuDepth,difuHeight)
         difuLoc = (proxyX,0,difuHeight/2)
         difuObj = utils.addCube(
-            name=_("地栿.%s" % (proxy['id'])),
+            name=_("地栿.%s") % (proxy['id']),
             dimension=difuDim,
             location=difuLoc,
             parent=railingRoot
@@ -524,7 +524,7 @@ def __buildRailing(parentObj:bpy.types.Object,
                    0,
                    sumZ + yaziHeight/2)
         yaziObj = utils.addCube(
-            name=_("牙子板.%s.%s" % (proxy['id'], n)),
+            name=_("牙子板.%s.%s") % (proxy['id'], n),
             dimension=yaziDim,
             location=yaziLoc,
             parent=railingRoot
@@ -540,7 +540,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     downFangDim = (downFangWidth,downFangDepth,downFangHeight)
     downFangLoc = (proxyX,0,sumZ + downFangHeight/2)
     downFangObj = utils.addCube(
-        name=_("下枋.%s" % (proxy['id'])),
+        name=_("下枋.%s") % (proxy['id']),
         dimension=downFangDim,
         location=downFangLoc,
         parent=railingRoot
@@ -568,7 +568,7 @@ def __buildRailing(parentObj:bpy.types.Object,
                    0,
                    sumZ + taohuanHeight/2)
         taohuanObj = utils.addCube(
-            name=_("绦环板.%s.%s" % (proxy['id'], n)),
+            name=_("绦环板.%s.%s") % (proxy['id'], n),
             dimension=taohuanDim,
             location=taohuanLoc,
             parent=railingRoot
@@ -584,7 +584,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     midFangDim = (midFangWidth,midFangDepth,midFangHeight)
     midFangLoc = (proxyX,0,sumZ + midFangHeight/2)
     midFangObj = utils.addCube(
-        name=_("中枋.%s" % (proxy['id'])),
+        name=_("中枋.%s") % (proxy['id']),
         dimension=midFangDim,
         location=midFangLoc,
         parent=railingRoot
@@ -667,12 +667,12 @@ def addRailing(wallProxy:bpy.types.Object):
         obj_id=railingID
     )
     if railingData is None:
-        raise Exception(_("无法找到railingData:%s" % (railingID)))
+        raise Exception(_("无法找到railingData:%s") % (railingID))
     
     # 栏杆长度，只能做在两个柱间
     railingLen = wallProxy.dimensions.x - bData.pillar_diameter
     if railingLen <= 0:
-        utils.outputMsg(_("此位置无法做栏杆/坐凳，已跳过%s" % (wallProxy.name)))
+        utils.outputMsg(_("此位置无法做栏杆/坐凳，已跳过%s") % (wallProxy.name))
         return
     
     # 开口的最大值控制

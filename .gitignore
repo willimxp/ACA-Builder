@@ -1,53 +1,14 @@
-__pycache__/
-*.pyc
-._*
-
-# 隐藏文件和目录 (macOS/Linux)
+# 排除所有.开头的隐藏文件
 .*
-!/.gitignore
-!/.github/
-!/.trae/
-/.trae/documents/
 
-# macOS 系统文件
-.DS_Store
-._.DS_Store
-**/.DS_Store
-**/._.DS_Store
-template/acaAssets.blend1
-template/._acaAssets.blend
-*.blend
-*.blend1
-template/._simplyhouse老版本格式.xml
-template/._simplyhouse 新版本格式化.xml
-template/simplyhouse 新版本格式化.xml
-template/simplyhouse老版本格式.xml
-template/simplyhouse copy.xml
-template/._simplyhouse copy.xml
-template/Fang@2x.png
-template/._simplyhouse copy 2.xml
-template/Fang@2x_B.png
-template/simplyhouse copy 2.xml
-template/._Pillar Head@2x.png
-template/Pillar Head@2x.png
-template/三宝珠草.png
-template/箍头.png
-template/栱垫板背景@2x.png
-template/栱垫板导出@2x.png
-template/._栱垫板背景@2x.png
-template/._栱垫板导出@2x.png
-template/火焰三宝珠@2x.png
-template/._火焰三宝珠@2x.png
-.vscode/settings.json
+# 排除python缓存目录
+__pycache__/
 
-减面.xlsx
-~$减面.xlsx
-buildRoof.py.baiduyun.uploading.cfg
-template/acaAssets.blend@
-template/acaAssets241121.blend.baiduyun.uploading.cfg
-/.VSCodeCounter
-template/simplyhouse.xml
-template/simplyhouse.xml
-template/simplyhouse - 副本.xml
-template/template - 副本.xml
+# 排除文档目录
+doc/
+
+# 排除blender文件
+*.blend*
+
+# 排除日志文件
 aca_log.txt

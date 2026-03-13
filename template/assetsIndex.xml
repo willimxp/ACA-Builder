@@ -34,7 +34,7 @@
     <mat_guayanban type="Object">Paint.FasciaBoard</mat_guayanban>
     <pillar_source type="Object">Pillar.Paint</pillar_source>
     <pillar_lift_source type="Object">Hanging-Pillar</pillar_lift_source>
-    <pillarbase_source type="Object">Plain-PillarBase</pillarbase_source>
+    <pillarbase_source type="Object">PlainColumnBase</pillarbase_source>
     <lingxin_source type="Object">LatticePanel</lingxin_source>
     <dg_pillar_source type="List" key='dg_style'>
         <item type='Object' style='一斗三升'>一斗三升.柱头科</item>

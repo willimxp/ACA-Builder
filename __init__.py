@@ -79,8 +79,8 @@ def register():
             logger.warning(f"Init language failed: {e}")
     
     # 记录类注册信息
-    logger.info(f"成功注册 {len(classes)} 个类")
-    logger.debug("类注册详情：")
+    logger.info(f"Registred: {len(classes)} Classes")
+    logger.debug("Register Detail：")
     logger.debug(auto_register.get_registration_info(classes))
     ##############################################
     # 4、其他初始化

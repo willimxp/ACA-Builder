@@ -367,7 +367,7 @@ def __buildDGFangbyRoom(
     return
 
 # 放置柱头斗栱
-def __buildPillarDG(name = _('柱头斗栱'),
+def __buildPillarDG(name = None,
                     location = (0,0,0),
                     scale = (1,1,1),
                     rotation = (0,0,0),
@@ -375,6 +375,8 @@ def __buildPillarDG(name = _('柱头斗栱'),
                     mirror = (False,False,False),
                     tailExtend = 0
                     ):
+    if name is None:
+        name = _('柱头斗栱')
     # 数据准备
     aData:tmpData = bpy.context.scene.ACA_temp
 

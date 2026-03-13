@@ -887,11 +887,13 @@ def __buildYanHeng(rafterRootObj:bpy.types.Object,
     return yanhengObj
 
 # 绘制趴梁造型
-def __drawGabelBeam(name=_('趴梁'),
+def __drawGabelBeam(name=None,
             location=(0,0,0),
             rotation=(0,0,0),
             dimension=(1,1,1),
             parent=None):
+    if name is None:
+        name = _('趴梁')
     gabelBeam = utils.addCube(
             name=name,
             location=location,
@@ -1068,11 +1070,13 @@ def __addGabelBeam(buildingObj:bpy.types.Object,purlin_pos):
     return gabelBeamJoined
 
 # 绘制太平梁造型
-def __drawSaftBeam(name=_('太平梁'),
+def __drawSaftBeam(name=None,
             location=(0,0,0),
             rotation=(0,0,0),
             dimension=(1,1,1),
             parent=None):
+    if name is None:
+        name = _('太平梁')
     safeBeam = utils.addCube(
             name=name,
             location=location,

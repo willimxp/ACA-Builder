@@ -706,7 +706,7 @@ def addCubeBy2Points(start_point:Vector,
 
 # 添加球体
 def addSphere(
-        name=_('球'),
+        name=None,
         radius=1,
         segments=10,
         ringCount=10,
@@ -714,6 +714,8 @@ def addSphere(
         location=(0,0,0),
         parent=None
         ):
+    if name is None:
+        name = _('球')
     bpy.ops.mesh.primitive_uv_sphere_add(
         radius=radius,
         segments=segments,
@@ -752,8 +754,10 @@ def getMeshDims(object):
 def drawHexagon(dimensions:Vector,
                 location:Vector,
                 half=False,
-                name=_('六棱柱'),
+                name=None,
                 parent=None,):
+    if name is None:
+        name = _('六棱柱')
     # 创建bmesh
     bm = bmesh.new()
     # 各个点的集合
@@ -1289,7 +1293,9 @@ def copyModifiers(from_0bj,to_obj):
     bpy.ops.object.select_all(action='DESELECT')
 
 # 在坐标点上摆放一个cube，以便直观看到
-def showPoint(point: Vector,parentObj=None,name=_("定位点"),size=0.3) -> object :
+def showPoint(point: Vector,parentObj=None,name=None,size=0.3) -> object :
+    if name is None:
+        name = _("定位点")
     bpy.ops.mesh.primitive_cube_add(size=size,location=point)
     cube = bpy.context.active_object
     if parentObj != None:
@@ -1301,7 +1307,9 @@ def showPoint(point: Vector,parentObj=None,name=_("定位点"),size=0.3) -> obje
 # 向量的可视化
 def showVector(vector: Vector,
                loc=Vector((0,0,0)),
-               parentObj=None,name=_("向量")) -> object :
+               parentObj=None,name=None) -> object :
+    if name is None:
+        name = _("向量")
     empty = bpy.data.objects.new("VectorEmpty", None)
     scene = bpy.context.scene
     scene.collection.objects.link(empty)

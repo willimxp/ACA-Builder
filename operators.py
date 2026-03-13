@@ -70,7 +70,7 @@ class ACA_OT_add_building(bpy.types.Operator):
 
             runTime = time.time() - timeStart
             message = _("从模板样式新建完成！|建筑样式：【%s】 |运行时间：【%.1f秒】") \
-                        % (templateName,runTime)
+                        % (_(templateName,'template'),runTime)
         
         if message != '':
             utils.popMessageBox(message)
@@ -785,7 +785,8 @@ class ACA_OT_del_template(bpy.types.Operator):
                 item = scnData.templateItem.add()
                 item.name = templateItemName
 
-            self.report({'INFO'},_("%s 样式已删除。") % (templateName))
+            self.report({'INFO'},_("%s 样式已删除。") 
+                        % (_(templateName,'template')))
 
         return {'FINISHED'}
     
@@ -809,7 +810,8 @@ class ACA_OT_del_template(bpy.types.Operator):
 
         row = self.layout
         row.label(
-            text=(_("确定删除【%s】吗？") % (templateName)),
+            text=(_("确定删除【%s】吗？") 
+                  % (_(templateName,'template'))),
             icon='QUESTION'
             )
         row.label(

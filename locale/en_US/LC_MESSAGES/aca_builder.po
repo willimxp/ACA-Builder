@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ACA Builder\n"
 "POT-Creation-Date: 2026-03-12 20:50+0800\n"
-"PO-Revision-Date: 2026-03-12 20:52+0800\n"
+"PO-Revision-Date: 2026-03-13 17:17+0800\n"
 "Last-Translator: Auto Generated <noreply@example.com>\n"
 "Language-Team: English <en@li.org>\n"
 "Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 "X-Poedit-KeywordsList: _\n"
 "X-Poedit-Basepath: ../../..\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -3605,11 +3605,11 @@ msgstr "%s executed successfully-------------------------"
 
 #: utils.py:885
 msgid "插件在运行中发生了一个异常错误：|- “"
-msgstr "An exception error occurred while the plugin was running: |- "
+msgstr "An exception error occurred while the plugin was running: |-  “"
 
 #: utils.py:887
 msgid "”|请联系开发者，并提供日志文件"
-msgstr "Please contact the developer and provide the log file"
+msgstr "“ |Please contact the developer and provide the log file"
 
 #: utils.py:1134
 msgid "添加boolean失败，不能给自身添加布尔。"

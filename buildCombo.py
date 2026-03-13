@@ -18,14 +18,16 @@ from . import buildRoof
 # 添加combo根节点
 def __addComboRoot(templateName,
                    location=None):
+    # 经过国际化的模板名称
+    templateName_ = _(templateName,"template")
     # 创建或锁定根目录
-    coll = utils.setCollection(templateName)
+    coll = utils.setCollection(templateName_)
     # 创建buildObj根节点
     if location == None:
         # 默认原点摆放在3D Cursor位置
         location =  bpy.context.scene.cursor.location
     comboObj = utils.addEmpty(
-        name=templateName,
+        name=templateName_,
         location=location
     )
     cData:acaData = comboObj.ACA_data

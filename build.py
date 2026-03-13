@@ -44,7 +44,8 @@ def buildSingle(acaType,
             templateName = templateName
         )
     else:
-        utils.popMessageBox(_("无法创建该类型的建筑：") + templateName)
+        utils.popMessageBox(_("无法创建该类型的建筑：") 
+                            + _(templateName,'template'))
     return
 
 # 排除目录下的其他建筑

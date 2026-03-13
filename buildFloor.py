@@ -24,9 +24,11 @@ from . import buildRoof
 # 被ACA_OT_add_newbuilding类调用
 def __addBuildingRoot(templateName,
                       comboObj = None,
-                      ):    
+                      ):
+    # 经过国际化的模板名称
+    templateName_ = _(templateName,"template")
     # 新建建筑目录，强制新建，遇到重名自动添加.001后缀
-    buildingColl = bpy.data.collections.new(templateName)
+    buildingColl = bpy.data.collections.new(templateName_)
     # 建筑目录的父目录
     if comboObj is not None:        
         # 组合建筑，挂接在combo根目录下
@@ -48,7 +50,7 @@ def __addBuildingRoot(templateName,
         buildingLoc = (0,0,0)
     # 创建buildingRoot
     buildingObj = utils.addEmpty(
-        name=templateName,
+        name=templateName_,
         location=buildingLoc
     )
     bData:acaData = buildingObj.ACA_data

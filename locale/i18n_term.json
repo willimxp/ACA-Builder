@@ -63,7 +63,7 @@
     "脊桁": ["Ridge Purlin"],
     "金桁": ["Inter Purlin"],
     "桁垫板": ["Purlin Plate"],
-    "平板枋": ["Pingbanfang", "plank", "flat board"],
+    "平板枋": ["Dougong Plate"],
     "小额枋": ["Minor Architrave"],
     "大额枋": ["Major Architrave"],
     "承椽枋": ["Rafter Plate"],
@@ -244,9 +244,9 @@
     "挂檐板": ["Fascia Board"]
   },
   "楼阁": {
-    "重楼": ["Pavilion"],
+    "重楼": ["Multi Story"],
     "收分": ["Taper"],
-    "重楼收分": ["Pavilion Taper"],
+    "重楼收分": ["Story Taper"],
     "重檐": ["Double Eave"],
     "腰檐": ["Middle Eave"],
     "披檐": ["Pent Eave"],

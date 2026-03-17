@@ -1497,6 +1497,11 @@ def __buildCornerBeam(buildingObj:bpy.types.Object,purlin_pos):
                 )
                 # 传递老角梁属性
                 utils.replaceObject(CornerBeamObj,cbNewObj)
+                # 20260317 应用变换
+                utils.applyTransform(cbNewObj,
+                        use_scale=True,
+                        use_rotation=True,
+                        use_location=True)
                 # 添加镜像
                 utils.addModifierMirror(
                     object=cbNewObj,
@@ -2963,6 +2968,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
                 mirrorObj=rafterRootObj,
                 use_axis=(True,True,False)
             )
+            # 260317 应用修改器
+            utils.applyAllModifer(cfrSet)
 
         # 250718 裁剪翼角椽，逐一裁剪以保证水密
         for cr in cornerRafterColl:
@@ -2998,6 +3005,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
             mirrorObj=rafterRootObj,
             use_axis=(True,True,False)
         )
+        # 260317 应用修改器
+        utils.applyAllModifer(crSet)
 
         # # 平滑
         # utils.shaderSmooth(crSet)
@@ -4238,6 +4247,22 @@ def buildRoof(buildingObj:bpy.types.Object):
         utils.hideLayer(
             buildingObj,con.COLL_NAME_BOARD,
             bData.is_showTiles)
+        
+    # 20260317 应用变换
+    cornerBeamObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_CORNER_BEAM)
+    if cornerBeamObj != None:
+        utils.applyTransform(cornerBeamObj,
+                            use_scale=True,
+                            use_rotation=True,
+                            use_location=True)
+    cbcObj = utils.getAcaChild(
+            buildingObj,con.ACA_TYPE_CORNER_BEAM_CHILD)
+    if cbcObj != None:
+        utils.applyTransform(cbcObj,
+                            use_scale=True,
+                            use_rotation=True,
+                            use_location=True)
     
     utils.focusObj(buildingObj)
     return {'FINISHED'}

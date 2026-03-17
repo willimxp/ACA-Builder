@@ -2016,6 +2016,11 @@ def __buildTaoshou(buildingObj: bpy.types.Object):
     utils.resizeObj(taoshouObj,tileScale)
     # 与子角梁头做相同旋转
     taoshouObj.rotation_euler = ccbObj.rotation_euler
+    # 应用变换
+    utils.applyTransform(taoshouObj,
+                         use_scale=True,
+                         use_rotation=True,
+                         use_location=True)
 
     # 做四面对称
     utils.addModifierMirror(

@@ -1389,12 +1389,37 @@ def redrawViewport():
                     'region': regions[0],
                 })     
                 with bpy.context.temp_override(**context_override):
-                    
+                    # 设置相机角度
+                    view_rotation_euler = Euler(
+                            (math.radians(80),   # 俯仰角（X轴旋转，正数向上仰）
+                             math.radians(0),   # 偏航角（Y轴旋转，正数向右转）
+                             math.radians(45)),   # 翻滚角（Z轴旋转，一般设0）
+                            'XYZ'
+                        )
+                    areas[0].spaces.active.region_3d.view_rotation = view_rotation_euler.to_quaternion()
+
+                    # # 设置为正交视角（正交ORTHO/透视PERSP）
+                    # if areas[0].spaces.active.region_3d.view_perspective != 'ORTHO':
+                    #     areas[0].spaces.active.region_3d.view_perspective = 'ORTHO'
+                    # 设置为透视视角
+                    if areas[0].spaces.active.region_3d.view_perspective != 'PERSP':
+                        areas[0].spaces.active.region_3d.view_perspective = 'PERSP'
+                    if areas[0].spaces.active.lens != 250:
+                        areas[0].spaces.active.lens = 250
+
                     bpy.ops.view3d.view_all()
-                    #bpy.ops.view3d.view_selected()
+                    # bpy.ops.view3d.view_selected()
                     # bpy.ops.view3d.view_axis(type='FRONT')
                     # bpy.ops.view3d.view_orbit(angle=math.radians(45), type='ORBITRIGHT')
                     # bpy.ops.view3d.view_orbit(angle=math.radians(15), type='ORBITUP')
+
+                    # 设置为材质预览模式
+                    if areas[0].spaces.active.shading.type != 'MATERIAL':
+                        areas[0].spaces.active.shading.type = 'MATERIAL'
+
+                    # # 关闭所有叠加显示
+                    # if areas[0].spaces.active.overlay.show_overlays:
+                    #     areas[0].spaces.active.overlay.show_overlays = False
 
     # 窗口刷新显示
     do = bpy.context.scene.ACA_data.is_auto_redraw

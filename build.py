@@ -133,18 +133,19 @@ def __excludeOther(isExclude=True,
     return
 
 # 开始新的营造
-def build():
+def build(templateName=None):
     # 250311 发现在中文版中UV贴图异常
     # 最终发现是该选项会导致生成的'UVMap'变成'UV贴图'
     # 禁用语言-翻译-新建数据
     bpy.context.preferences.view.use_translate_new_dataname = False
-    
-    # 待营造的模板，来自用户界面上的选择
     from . import data
     scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
-    templateList = scnData.templateItem
-    templateIndex = scnData.templateIndex
-    templateName = templateList[templateIndex].name
+
+    if templateName is None:
+        # 待营造的模板，来自用户界面上的选择
+        templateList = scnData.templateItem
+        templateIndex = scnData.templateIndex
+        templateName = templateList[templateIndex].name
 
     # 获取模板类型，建筑或院墙
     acaType = template.getBuildingType(templateName)

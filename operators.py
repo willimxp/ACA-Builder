@@ -52,29 +52,41 @@ class ACA_OT_add_building(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
     bl_description = _('根据选择的样式，自动生成建筑的各个构件')
 
+    # 定义一个属性，用于传入模板名称
+    templateName: bpy.props.StringProperty(
+        name="Template Name",
+        default=''
+    ) # type: ignore
+
     def execute(self, context):  
         timeStart = time.time()
+        # 自动化测试标识
+        autotest = False
 
-        # 创建新建筑
-        funproxy = partial(build.build)
-        result = utils.fastRun(funproxy)
-
-        message=''
-        type = {'INFO'}
-        if 'FINISHED' in result:
+        # 如果没有指定模板，从场景数据中获取用户手工的选择
+        if self.templateName == '':
             from . import data
             scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
             templateList = scnData.templateItem
             templateIndex = scnData.templateIndex
-            templateName = templateList[templateIndex].name
+            self.templateName = templateList[templateIndex].name
+        else:
+            autotest = True
 
+        # 创建新建筑
+        funproxy = partial(build.build,
+                           templateName=self.templateName)
+        result = utils.fastRun(funproxy)
+
+        message=''
+        if 'FINISHED' in result:
             runTime = time.time() - timeStart
             message = _("从模板样式新建完成！|建筑样式：【%s】 |运行时间：【%.1f秒】") \
-                        % (_(templateName,'template'),runTime)
+                        % (_(self.templateName,'template'),runTime)
         
-        if message != '':
+        if message != '' and not autotest:
             utils.popMessageBox(message)
-            self.report(type,message)
+            self.report({'INFO'},message)
         return {'FINISHED'}
 
 # 更新建筑

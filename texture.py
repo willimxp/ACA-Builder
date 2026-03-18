@@ -109,11 +109,12 @@ def UvUnwrap(object:bpy.types.Object,
     utils.applyAllModifer(object)
 
     # 验证对象是否可以展UV，至少应该有一个以上的面
-    bm = bmesh.new()
-    bm.from_mesh(object.data)
-    faceCount= len(bm.faces)
-    bm.free()
-    if faceCount == 0 : 
+    # bm = bmesh.new()
+    # bm.from_mesh(object.data)
+    # faceCount= len(bm.faces)
+    # bm.free()
+    # 260318 直接通过data.polygons更直接更高效
+    if not object.data.polygons : 
         utils.outputMsg(_("展UV异常，该对象不存在几何面"))
         return
 
@@ -1373,9 +1374,13 @@ def setGlazeStyle(paintObj:bpy.types.Object,
                 paintObj,1,tileAltColorIndex*2+1)
             paintObj.active_material_index = tileAltColorIndex*2
 
+    ''' 260318 在Blender5.1中，这里极大的拖累了屋瓦生成速度
+    很奇怪的是在Blender5.0中没有明显的问题，还需后续分析
+    同时，其实在__arrayTileGrid中已经调用了setGlazeUV
+    所以这里也没有必要逐个瓦片重展UV'''
     # 重新展UV，在modifier的基础上平铺
-    if resetUV:
-        setGlazeUV(paintObj)
+    # if resetUV:
+    #     setGlazeUV(paintObj)
     return
 
 # 对琉璃对象重展开UV

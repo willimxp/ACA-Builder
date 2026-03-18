@@ -418,7 +418,11 @@ def getComboChild(obj:bpy.types.Object,
 
 # 应用缩放(有时ops.object会乱跑，这里确保针对台基对象)      
 def applyScale(object:bpy.types.Object):
-    bpy.ops.object.select_all(action='DESELECT')
+    # 260318 避免使用bpy.ops操作，提高效率
+    # bpy.ops.object.select_all(action='DESELECT')
+    objects = bpy.context.scene.objects
+    for obj in objects:
+        obj.select_set(False)
     bpy.context.view_layer.objects.active = object
     object.select_set(True)
     bpy.ops.object.transform_apply(
@@ -493,9 +497,14 @@ def applyTransform(ob,
 def focusObj(object:bpy.types.Object):
     # 先要保证对象可见，否则后续无法选中
     showObj(object)
-    bpy.ops.object.select_all(action='DESELECT')
+    # 260318 避免使用bpy.ops操作，提高效率
+    # bpy.ops.object.select_all(action='DESELECT')
+    objects = bpy.context.scene.objects
+    for obj in objects:
+        obj.select_set(False)
     bpy.context.view_layer.objects.active = object
     object.select_set(True)
+    return
 
 # 删除树状层次下的所有对象
 def deleteHierarchy(parent_obj:bpy.types.Object,del_parent=False):
@@ -503,7 +512,11 @@ def deleteHierarchy(parent_obj:bpy.types.Object,del_parent=False):
     if parent_obj == None:
         # 没有可删除的对象
         return
-    bpy.ops.object.select_all(action='DESELECT')
+    # 260318 避免使用bpy.ops操作，提高效率
+    # bpy.ops.object.select_all(action='DESELECT')
+    objects = bpy.context.scene.objects
+    for obj in objects:
+        obj.select_set(False)
     obj = bpy.data.objects[parent_obj.name]
     obj.animation_data_clear()
     names = set()
@@ -536,7 +549,11 @@ def deleteByName(
     if parent_obj == None:
         # 没有可删除的对象
         return
-    bpy.ops.object.select_all(action='DESELECT')
+    # 260318 避免使用bpy.ops操作，提高效率
+    # bpy.ops.object.select_all(action='DESELECT')
+    objects = bpy.context.scene.objects
+    for obj in objects:
+        obj.select_set(False)
     obj = bpy.data.objects[parent_obj.name]
     obj.animation_data_clear()
     names = set()
@@ -1282,7 +1299,11 @@ def getObjectHeadPoint(object:bpy.types.Object,
 # 复制对象的所有modifier
 def copyModifiers(from_0bj,to_obj):
     # 先取消所有选中，以免进入本函数前有其他选择项的干扰
-    bpy.ops.object.select_all(action='DESELECT')
+    # 260318 避免使用bpy.ops操作，提高效率
+    # bpy.ops.object.select_all(action='DESELECT')
+    objects = bpy.context.scene.objects
+    for obj in objects:
+        obj.select_set(False)
     # 分别选中from，to
     from_0bj.select_set(True)
     bpy.context.view_layer.objects.active = from_0bj
@@ -1290,7 +1311,9 @@ def copyModifiers(from_0bj,to_obj):
     # 复制modifiers
     bpy.ops.object.make_links_data(type='MODIFIERS')
     # 取消选中
-    bpy.ops.object.select_all(action='DESELECT')
+    # bpy.ops.object.select_all(action='DESELECT')
+    from_0bj.select_set(False)
+    to_obj.select_set(False)
 
 # 在坐标点上摆放一个cube，以便直观看到
 def showPoint(point: Vector,parentObj=None,name=None,size=0.3) -> object :
@@ -1784,7 +1807,11 @@ def joinObjects(objList:List[bpy.types.Object],
     # 1、选择可以合并的对象，抛弃None,empty等
     # 与上面的循环要做分开，否则context的选择状态会打架
     # todo：也可以用临时context来解决
-    bpy.ops.object.select_all(action='DESELECT')
+    # 260318 避免使用bpy.ops操作，提高效率
+    # bpy.ops.object.select_all(action='DESELECT')
+    objects = bpy.context.scene.objects
+    for obj in objects:
+        obj.select_set(False)
     for ob in objList:
         # 不能为空对象
         if ob == None: continue
@@ -2704,7 +2731,11 @@ def applyCollModifier(buildingObj):
                 addChild(childObj)
     addChild(buildingObj)
 
-    bpy.ops.object.select_all(action='DESELECT')
+    # 260318 避免使用bpy.ops操作，提高效率
+    # bpy.ops.object.select_all(action='DESELECT')
+    objects = bpy.context.scene.objects
+    for obj in objects:
+        obj.select_set(False)
     for obj in ObjList:
         # 检查对象是否在当前视图层，否则会报错
         if obj.visible_get():
@@ -2737,7 +2768,11 @@ def selectAll(buildingObj:bpy.types.Object):
                 addChild(childObj)
     addChild(buildingObj)
 
-    bpy.ops.object.select_all(action='DESELECT')
+    # 260318 避免使用bpy.ops操作，提高效率
+    # bpy.ops.object.select_all(action='DESELECT')
+    objects = bpy.context.scene.objects
+    for obj in objects:
+        obj.select_set(False)
     for obj in ObjList:
         obj.select_set(True)
     

@@ -123,6 +123,23 @@ def update_language(self, context):
         import traceback
         traceback.print_exc()
         return
+    
+def is_debugging():
+    import sys
+    # 1. 传统的追踪检查 (针对旧版或某些调试器)
+    if sys.gettrace() is not None:
+        return True
+    
+    # 2. 检查调试器注入的环境变量 (VS Code/PyCharm 常用)
+    # 常见的变量名包括 DEBUGPY_RUNNING 或 PYDEVD_LOAD_VALUES_ASYNC
+    if os.environ.get('DEBUGPY_RUNNING') == 'True':
+        return True
+        
+    # 3. 检查调试器核心模块是否已加载
+    if 'pydevd' in sys.modules or 'debugpy' in sys.modules:
+        return True
+        
+    return False
 
 def load_translations():
     """
@@ -138,8 +155,7 @@ def load_translations():
     translations = []
     
     # 判断是否为调试状态
-    import sys
-    is_debug = sys.gettrace() is not None
+    is_debug = is_debugging()
     
     # 需要加载的翻译文件列表
     domains = ['aca_builder', 'aca_xml']

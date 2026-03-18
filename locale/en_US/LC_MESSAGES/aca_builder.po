@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ACA Builder\n"
 "POT-Creation-Date: 2026-03-16 13:16+0800\n"
-"PO-Revision-Date: 2026-03-16 13:19+0800\n"
+"PO-Revision-Date: 2026-03-18 13:08+0800\n"
 "Last-Translator: ACA Builder Team <noreply@example.com>\n"
 "Language-Team: English <en@li.org>\n"
 "Language: en_US\n"
@@ -2203,7 +2203,7 @@ msgstr ""
 
 #: data.py:675 panel.py:1459
 msgid "使用飞椽"
-msgstr "Use Flying Rafter"
+msgstr "Flying Rafter"
 
 #: data.py:677
 msgid "小式的硬山、悬山可以不做飞椽，但四坡面必须使用飞椽做翼角"
@@ -2282,7 +2282,7 @@ msgstr ""
 
 #: data.py:738 panel.py:1365
 msgid "盝顶檐步架宽"
-msgstr "Truncated-Hip Eave Tread Span"
+msgstr "Truncated-Hip Tread"
 
 #: data.py:744
 msgid "盝顶檐步架宽度，用于重檐时，请设置为上下层面阔/进深收分的距离"
@@ -3204,7 +3204,7 @@ msgstr "Loggia added | Runtime [%.1f seconds]"
 
 #: operators.py:1605 panel.py:370
 msgid "拼接建筑"
-msgstr "Splice Building"
+msgstr "Add Splice"
 
 #: operators.py:1607
 msgid ""
@@ -3233,7 +3233,7 @@ msgstr "Building splicing complete | Runtime [%.1f seconds]"
 
 #: operators.py:1700 panel.py:378
 msgid "组合建筑"
-msgstr "Combine Building"
+msgstr "Add Combo"
 
 #: operators.py:1702
 msgid "将多个单体建筑组合，可以保存在一个模板中，并可以一同更新"
@@ -3435,11 +3435,11 @@ msgstr "Corridor Rafter Raising Style"
 
 #: panel.py:1354
 msgid "庑殿推山系数"
-msgstr "Hip Roof Ridge Push Factor"
+msgstr "Hip Roof Ridge Push"
 
 #: panel.py:1358
 msgid "歇山收山尺寸"
-msgstr "Hip-and-Gable Roof Gable Setback"
+msgstr "Hip-and-Gable Setback"
 
 #: panel.py:1411
 msgid "椽架属性"
@@ -3447,11 +3447,11 @@ msgstr "Rafter Properties"
 
 #: panel.py:1437
 msgid "出冲(椽径)"
-msgstr "Eave Projection (Rafter Diameter)"
+msgstr "Eave Projection"
 
 #: panel.py:1441
 msgid "起翘(椽径)"
-msgstr "Eave Lift (Rafter Diameter)"
+msgstr "Eave Lift"
 
 #: panel.py:1445
 msgid "梁头系数"

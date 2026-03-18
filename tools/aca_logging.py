@@ -234,6 +234,6 @@ class LoggerPrefsMixin:
         box = layout.box()
         box.label(text=_("日志设置:"), icon='TEXT')
         row = box.row()
-        row.prop(self, 'log_level')
+        row.prop(self, 'log_level',text=_("日志级别"))
         row = box.row()
-        row.prop(self, 'use_log_rotation')
+        row.prop(self, 'use_log_rotation',text=_("启用日志轮转"))

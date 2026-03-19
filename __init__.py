@@ -70,13 +70,6 @@ def register():
     # 3、初始化多语言
     # 注册多语言
     i18n.register()
-    # 当Blender设为中文，插件设为英文时，静态文字资源无法及时刷新
-    # 重新加载类模块，以便强制刷新类中的静态文字资源
-    if addon_prefs.language == 'en_US':
-        try:
-            i18n.update_language(addon_prefs, bpy.context)
-        except Exception as e:
-            logger.warning(f"Init language failed: {e}")
     
     # 记录类注册信息
     logger.info(f"Registred: {len(classes)} Classes")

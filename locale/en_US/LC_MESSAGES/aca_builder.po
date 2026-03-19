@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ACA Builder\n"
 "POT-Creation-Date: 2026-03-16 13:16+0800\n"
-"PO-Revision-Date: 2026-03-18 13:08+0800\n"
+"PO-Revision-Date: 2026-03-19 10:21+0800\n"
 "Last-Translator: ACA Builder Team <noreply@example.com>\n"
 "Language-Team: English <en@li.org>\n"
 "Language: en_US\n"
@@ -3327,7 +3327,7 @@ msgstr "Unjoin"
 
 #: panel.py:264
 msgid "合并"
-msgstr "Join"
+msgstr " Join "
 
 #: panel.py:303
 msgid "侧剖"
@@ -3577,7 +3577,7 @@ msgstr "UV unwrap error, object has no geometry faces"
 
 #: tools/aca_logging.py:215
 msgid "日志级别"
-msgstr "Log Level"
+msgstr "Log Level "
 
 #: tools/aca_logging.py:216
 msgid "设置日志记录的详细程度，DEBUG级别会记录更多信息但可能影响性能"

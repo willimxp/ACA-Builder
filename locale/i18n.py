@@ -204,6 +204,16 @@ def register():
     # 重新加载翻译
     load_translations()
 
+    # 当Blender设为中文，插件设为英文时，静态文字资源无法及时刷新
+    # 重新加载类模块，以便强制刷新类中的静态文字资源
+    preferences = bpy.context.preferences
+    addon_main_name = __name__.split('.')[0]
+    addon_prefs = preferences.addons[addon_main_name].preferences
+    try:
+        update_language(addon_prefs, bpy.context)
+    except Exception as e:
+        print(f"Init language failed: {e}")
+
 def unregister():
     """从Blender注销翻译数据"""
     pass

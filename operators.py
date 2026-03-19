@@ -946,6 +946,8 @@ class ACA_OT_PROFILE(bpy.types.Operator):
         import cProfile
         import pstats  
         import io 
+        from datetime import datetime
+        from pathlib import Path
 
         # Create a profiler object  
         pr = cProfile.Profile()  
@@ -965,6 +967,21 @@ class ACA_OT_PROFILE(bpy.types.Operator):
 
         # Print the profiling results to the Blender console  
         print(s.getvalue())  
+
+        # 生成测试报告文件
+        test_dir = Path(__file__).parent / "test"
+        test_dir.mkdir(exist_ok=True)
+        
+        timestamp = datetime.now().strftime("%y%m%d%H%M%S")
+        report_file = test_dir / f"cProfile_{timestamp}.md"
+        
+        with open(report_file, 'w', encoding='utf-8') as f:
+            f.write(f"# 性能分析报告\n\n")
+            f.write(f"**生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            f.write(f"## 分析结果\n\n")
+            f.write(f"```\n{s.getvalue()}\n```\n")
+        
+        print(f"\n性能分析报告已保存至: {report_file}")
 
         return {'FINISHED'}
 

@@ -23,6 +23,7 @@ from datetime import datetime
 import threading
 import time
 
+BLENDER_APP_NAME = 'Blender 5.0.1'
 
 class SleepPreventer:
     """
@@ -83,6 +84,52 @@ def format_duration(seconds: float) -> str:
         return f"{minutes}分{secs}秒"
     else:
         return f"{secs}秒"
+
+
+def find_blender_executable() -> str:
+    """
+    查找Blender可执行文件路径
+    支持macOS和Windows
+    """
+    if sys.platform == 'darwin':
+        possible_paths = [
+            f'/Applications/{BLENDER_APP_NAME}.app/Contents/MacOS/Blender',
+            f'/Applications/{BLENDER_APP_NAME}/{BLENDER_APP_NAME.lower()}.app/Contents/MacOS/{BLENDER_APP_NAME.lower()}',
+            f'/Applications/{BLENDER_APP_NAME} Foundation/{BLENDER_APP_NAME}/{BLENDER_APP_NAME}.app/Contents/MacOS/Blender',
+        ]
+        for path in possible_paths:
+            if os.path.exists(path):
+                return path
+        try:
+            result = subprocess.run(
+                ['mdfind', 'kMDItemCFBundleIdentifier == "org.blenderfoundation.blender"'],
+                capture_output=True, text=True
+            )
+            if result.stdout.strip():
+                app_path = result.stdout.strip().split('\n')[0]
+                blender_path = os.path.join(app_path, 'Contents/MacOS/Blender')
+                if os.path.exists(blender_path):
+                    return blender_path
+        except Exception:
+            pass
+    elif sys.platform == 'win32':
+        possible_paths = [
+            rf'C:\Program Files\{BLENDER_APP_NAME} Foundation\{BLENDER_APP_NAME} 4.2\blender.exe',
+            rf'C:\Program Files\{BLENDER_APP_NAME} Foundation\{BLENDER_APP_NAME} 4.1\blender.exe',
+            rf'C:\Program Files\{BLENDER_APP_NAME} Foundation\{BLENDER_APP_NAME} 4.0\blender.exe',
+            rf'C:\Program Files\{BLENDER_APP_NAME} Foundation\{BLENDER_APP_NAME}\blender.exe',
+        ]
+        for path in possible_paths:
+            if os.path.exists(path):
+                return path
+        try:
+            result = subprocess.run(['where', 'blender'], capture_output=True, text=True)
+            if result.stdout.strip():
+                return result.stdout.strip().split('\n')[0]
+        except Exception:
+            pass
+    
+    return 'blender'
 
 
 def get_system_info() -> dict:
@@ -169,6 +216,17 @@ def get_system_info() -> dict:
         info['cpu'] = "未知"
         info['memory'] = "未知"
         info['gpu'] = "未知"
+    
+    try:
+        blender_path = find_blender_executable()
+        result = subprocess.run([blender_path, '--version'], capture_output=True, text=True, timeout=10)
+        if result.returncode == 0:
+            first_line = result.stdout.split('\n')[0]
+            info['blender_version'] = first_line.replace('Blender', '').strip()
+        else:
+            info['blender_version'] = "未知"
+    except Exception:
+        info['blender_version'] = "未知"
     
     return info
 
@@ -295,52 +353,6 @@ def execute_build():
 bpy.app.timers.register(execute_build, first_interval=2.0)
 '''
     return script
-
-
-def find_blender_executable() -> str:
-    """
-    查找Blender可执行文件路径
-    支持macOS和Windows
-    """
-    if sys.platform == 'darwin':
-        possible_paths = [
-            '/Applications/Blender.app/Contents/MacOS/Blender',
-            '/Applications/Blender/blender.app/Contents/MacOS/blender',
-            '/Applications/Blender Foundation/Blender/Blender.app/Contents/MacOS/Blender',
-        ]
-        for path in possible_paths:
-            if os.path.exists(path):
-                return path
-        try:
-            result = subprocess.run(
-                ['mdfind', 'kMDItemCFBundleIdentifier == "org.blenderfoundation.blender"'],
-                capture_output=True, text=True
-            )
-            if result.stdout.strip():
-                app_path = result.stdout.strip().split('\n')[0]
-                blender_path = os.path.join(app_path, 'Contents/MacOS/Blender')
-                if os.path.exists(blender_path):
-                    return blender_path
-        except Exception:
-            pass
-    elif sys.platform == 'win32':
-        possible_paths = [
-            r'C:\Program Files\Blender Foundation\Blender 4.2\blender.exe',
-            r'C:\Program Files\Blender Foundation\Blender 4.1\blender.exe',
-            r'C:\Program Files\Blender Foundation\Blender 4.0\blender.exe',
-            r'C:\Program Files\Blender Foundation\Blender\blender.exe',
-        ]
-        for path in possible_paths:
-            if os.path.exists(path):
-                return path
-        try:
-            result = subprocess.run(['where', 'blender'], capture_output=True, text=True)
-            if result.stdout.strip():
-                return result.stdout.strip().split('\n')[0]
-        except Exception:
-            pass
-    
-    return 'blender'
 
 
 def launch_via_vscode(template_name: str, addon_path: str):
@@ -546,6 +558,7 @@ table {{ white-space: nowrap; width: 100%; }}
 - **测试时间**: {start_time.strftime('%Y-%m-%d %H:%M:%S')} - {end_time.strftime('%Y-%m-%d %H:%M:%S')}
 - **操作系统**: {system_info['os']}
 - **电脑型号**: {system_info['cpu']} / {system_info['memory']} / {system_info['gpu']}
+- **Blender版本**: {system_info['blender_version']}
 - **总耗时**: {format_duration(total_duration)}
 - **测试模板数量**: {len(reports)}
 - **成功**: {success_count}

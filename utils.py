@@ -1184,6 +1184,13 @@ def applyAllModifer(object:bpy.types.Object):
         focusObj(object)
         bpy.ops.object.convert(target='MESH')
 
+        # 260319 尝试使用low level代码提高bpy.ops.object.convert效率，但效果不明显
+        # depsgraph = bpy.context.evaluated_depsgraph_get()
+        # obj_eval = object.evaluated_get(depsgraph)
+        # new_mesh = bpy.data.meshes.new_from_object(obj_eval)
+        # object.data = new_mesh
+        # object.modifiers.clear()
+
 # 翻转对象的normal
 def flipNormal(object:bpy.types.Object):
     bm = bmesh.new()

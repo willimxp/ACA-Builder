@@ -103,10 +103,12 @@ def UvUnwrap(object:bpy.types.Object,
     if object.type not in ('MESH'):
         return
     
-    # 聚焦对象
-    utils.focusObj(object)
-    # 应用modifier
-    utils.applyAllModifer(object)
+    # 260320 applyAllModifier中调用了bpy.ops.object.convert
+    # 极大的拖累了blender 5.1下的性能，已经屏蔽
+    # # 聚焦对象
+    # utils.focusObj(object)
+    # # 应用modifier
+    # utils.applyAllModifer(object)
 
     # 验证对象是否可以展UV，至少应该有一个以上的面
     # bm = bmesh.new()
@@ -130,6 +132,7 @@ def UvUnwrap(object:bpy.types.Object,
         bm.free()
 
     # 进入编辑模式
+    utils.focusObj(object)
     bpy.ops.object.mode_set(mode = 'EDIT') 
     bpy.ops.mesh.select_mode(type = 'FACE')
     if (not remainSelect

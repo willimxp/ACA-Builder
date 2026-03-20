@@ -1601,11 +1601,6 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object,
     bpoints[2].co = endpoint
     bpoints[2].handle_left = endpoint
 
-    # Curve转为mesh
-    utils.applyAllModifer(rafterEaveObj)
-    # 设置UV
-    mat.UvUnwrap(rafterEaveObj,type='cube')
-
     # 相对角梁做45度对称
     # 老角梁
     cornerBeamObj:bpy.types.Object = \
@@ -1622,6 +1617,8 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object,
         mirrorObj=rafterRootObj,
         use_axis=(True,True,False),
     )
+    # 应用modifier
+    utils.applyAllModifer(rafterEaveObj)
     # 设置材质
     mat.paint(rafterEaveObj,con.M_ROOF_PAINT)
     # 合并重合点，已实现水密
@@ -2070,11 +2067,6 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
         clear_outer=True,
     )
     
-    # Curve转为mesh
-    utils.applyAllModifer(flyrafterEaveObj)
-    # 设置UV
-    mat.UvUnwrap(flyrafterEaveObj,type='cube')
-    
     # 相对角梁做45度对称
     # 老角梁
     cornerBeamObj:bpy.types.Object = \
@@ -2091,6 +2083,8 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
         mirrorObj=rafterRootObj,
         use_axis=(True,True,False),
     )
+    # 应用modifier
+    utils.applyAllModifer(flyrafterEaveObj)
     # 设置材质
     mat.paint(flyrafterEaveObj,con.M_ROOF_PAINT)
     # 合并重合点，已实现水密
@@ -3701,6 +3695,10 @@ def __buildBofeng(buildingObj: bpy.types.Object,
         width=con.BEVEL_HIGH,
         clamp=True,
     )
+
+    # 260320 应用modifier,
+    # 已取消UnUvwarp中applyALlModifier，需paint前手工apply
+    utils.applyAllModifer(bofengObj)
 
     # 博缝板硬山做石材色，其他做漆色
     if bData.roof_style in (

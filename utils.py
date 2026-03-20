@@ -1437,6 +1437,10 @@ def redrawViewport():
                     if areas[0].spaces.active.lens != 250:
                         areas[0].spaces.active.lens = 250
 
+                    # 设置clip_start
+                    if areas[0].spaces.active.clip_start != 1:
+                        areas[0].spaces.active.clip_start = 1
+
                     bpy.ops.view3d.view_all()
                     # bpy.ops.view3d.view_selected()
                     # bpy.ops.view3d.view_axis(type='FRONT')

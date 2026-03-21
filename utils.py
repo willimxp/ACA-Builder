@@ -372,22 +372,20 @@ def getAcaSibling(object:bpy.types.Object,
 # 如，根据台基对象，找到对应的柱网对象
 def getAcaChild(object:bpy.types.Object,
                   acaObj_type:str) -> bpy.types.Object:
-    children = object.children
-    child = None
-    for obj in children:
-        if obj.ACA_data.aca_type == acaObj_type:
-            child = obj
-            break # 如果找到，直接停止
-        # 递归，深挖下一级子节点
-        if len(obj.children) > 0:
-            child = getAcaChild(obj,acaObj_type)
-            if child != None: break
-            
-    return child
+    # 260323 用栈stack来代替原来的递归，提高效率
+    stack = list(object.children)
+    while stack:
+        child = stack.pop()
+        child_aca_data = child.ACA_data
+        if child_aca_data.aca_type == acaObj_type:
+            return child
+        stack.extend(child.children)
+    return None
 
 # 递归查找父节点，输入对象类型
 def getAcaParent(object:bpy.types.Object,
                     acaObj_type:str) -> bpy.types.Object:
+    if object == None: return None
     parent = object.parent
     if parent != None:
         if hasattr(parent, 'ACA_data'):
@@ -875,6 +873,11 @@ def drawHexagon(dimensions:Vector,
 # 如果函数不需要参数可不带括号直接传入
 # 如果函数带参数，需要用偏函数或闭包进行封装后传入
 # https://blender.stackexchange.com/questions/7358/python-performance-with-blender-operators
+#########################
+# 260321 在Blender 5.1版本中，这个monkey hack已经基本失效
+# 参考以下文档，bpy.ops.object.select_all已经用C++重写，同时_BPyOpsSubModOp已经被移除
+# https://projects.blender.org/blender/blender/pulls/145344
+# 经过测试，这个写法并不会导致Blender 5.1报错、或性能下降，所以暂不做修改
 def fastRun(func):
     # 清理垃圾数据
     delOrphan()
@@ -885,7 +888,8 @@ def fastRun(func):
     # 经过反复的实验，启用simplify以后可以有效规避此问题，具体原因不详
     bpy.context.scene.render.use_simplify = True
     bpy.context.scene.render.simplify_subdivision = 0
-    
+    # bpy.context.preferences.edit.use_global_undo = False
+
     # 关闭viewlayer的刷新
     from bpy.ops import _BPyOpsSubModOp
     view_layer_update = _BPyOpsSubModOp._view_layer_update
@@ -926,6 +930,7 @@ def fastRun(func):
     # 恢复细分
     bpy.context.scene.render.use_simplify = False
     bpy.context.scene.render.simplify_subdivision = 6
+    # bpy.context.preferences.edit.use_global_undo = True
 
     return result
 
@@ -1099,6 +1104,8 @@ def addModifierMirror(object:bpy.types.Object,
                       use_flip=(False,False,False),
                       use_merge=False,
                       name='Mirror',):
+    if object == None: return
+    if mirrorObj == None: return
     mod:bpy.types.MirrorModifier = \
             object.modifiers.new(name,'MIRROR')
     mod.mirror_object = mirrorObj
@@ -1120,6 +1127,7 @@ def addModifierBevel(object:bpy.types.Object,
                         segments=1,
                         clamp=False
                       ):
+    if object == None: return
     # 是否启用倒角
     preferences = bpy.context.preferences
     addon_main_name = __name__.split('.')[0]
@@ -1178,6 +1186,7 @@ def addModifierBoolean(
 
 # 应用所有修改器
 def applyAllModifer(object:bpy.types.Object):
+    if object == None: return
     # 仅在有修改器，或为curve等非mesh对象上执行，以便提升效率
     if (len(object.modifiers) > 0
         or object.type != 'MESH'):
@@ -1185,11 +1194,17 @@ def applyAllModifer(object:bpy.types.Object):
         bpy.ops.object.convert(target='MESH')
 
         # 260319 尝试使用low level代码提高bpy.ops.object.convert效率，但效果不明显
-        # depsgraph = bpy.context.evaluated_depsgraph_get()
-        # obj_eval = object.evaluated_get(depsgraph)
-        # new_mesh = bpy.data.meshes.new_from_object(obj_eval)
-        # object.data = new_mesh
-        # object.modifiers.clear()
+        # if object.type == 'CURVE':
+        #     bpy.ops.object.convert(target='MESH')
+        # else:
+        #     old_data = object.data
+        #     depsgraph = bpy.context.evaluated_depsgraph_get()
+        #     obj_eval = object.evaluated_get(depsgraph)
+        #     new_mesh = bpy.data.meshes.new_from_object(obj_eval)
+        #     object.data = new_mesh
+        #     object.modifiers.clear()
+        #     if old_data.users == 0:
+        #         bpy.data.meshes.remove(old_data)
 
 # 翻转对象的normal
 def flipNormal(object:bpy.types.Object):
@@ -1815,14 +1830,29 @@ def joinObjects(objList:List[bpy.types.Object],
         newName = objList[0].name
     # timeStart = time.time()
     
-    # 1、选择可以合并的对象，抛弃None,empty等
-    # 与上面的循环要做分开，否则context的选择状态会打架
-    # todo：也可以用临时context来解决
+    # 1、取消所有对象的选择
     # 260318 避免使用bpy.ops操作，提高效率
     # bpy.ops.object.select_all(action='DESELECT')
     objects = bpy.context.scene.objects
     for obj in objects:
         obj.select_set(False)
+
+    # 260320 限制需要convert的场景，非必要不做转换，以提高效率
+    # 2、选择需要转换的曲线或需要应用修改器的对象
+    for ob in objList:
+        if ob == None: continue
+        if ob.type == 'CURVE':
+            ob.select_set(True)
+        if ob.modifiers:
+            ob.select_set(True)
+    # 应用
+    if len(bpy.context.selected_objects) > 0:
+        bpy.ops.object.convert(target='MESH')
+        # 取消选择
+        for obj in objects:
+            obj.select_set(False)
+
+    # 3、选择需要合并的对象，抛弃None,empty等
     for ob in objList:
         # 不能为空对象
         if ob == None: continue
@@ -1842,23 +1872,19 @@ def joinObjects(objList:List[bpy.types.Object],
         outputMsg(_("没有可以合并的对象"))
         return None
 
-    # 2、设置合并的Origin基准
+    # 4、设置合并的Origin基准
     if baseObj == None:
         bpy.context.view_layer.objects.active = objList[0]
     else:
         bpy.context.view_layer.objects.active = baseObj
-
-    # 3、应用了所有的modifier
-    bpy.ops.object.convert(target='MESH')
     
-    # 4、合并对象
+    # 5、合并对象
     bpy.ops.object.join()
     joinedObj = bpy.context.object
-    
     joinedObj.name = newName
     joinedObj.data.name = newName
 
-    # 5、合并顶点
+    # 6、合并顶点
     if cleanup:
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_all(action = 'SELECT')
@@ -3684,3 +3710,10 @@ def getChildrenHierarchy(buildingObj:bpy.types.Object):
 
     addChild(buildingObj)
     return childrenList
+
+# 选择mesh中的所有对象
+# 优化bpy.ops.mesh.select all
+def selectMeshAll(obj: bpy.types.Object):
+    mesh = obj.data
+    for poly in mesh.polygons:
+        poly.select = True

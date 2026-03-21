@@ -25,7 +25,6 @@ def __buildShanxin(
     # parent在横披窗中传入的wallproxy，但在隔扇中传入的geshanroot，所以需要重新定位
     # 载入数据
     buildingObj = utils.getAcaParent(parent,con.ACA_TYPE_BUILDING)
-    wallproxy = utils.getAcaChild(buildingObj,con.ACA_TYPE_WALL)
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     # 模数因子，采用柱径，这里采用的6斗口的理论值，与用户实际设置的柱径无关

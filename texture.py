@@ -120,13 +120,19 @@ def UvUnwrap(object:bpy.types.Object,
         utils.outputMsg(_("展UV异常，该对象不存在几何面"))
         return
 
-    # 仅针对活跃材质active material
-    if onlyActiveMat:
+    # 如果不保留当前选择面展UV
+    if not remainSelect:
         bm = bmesh.new()
         bm.from_mesh(object.data)
         for face in bm.faces:
-            face.select = False
-            if face.material_index == object.active_material_index:
+            # 仅活动面展UV
+            if onlyActiveMat:
+                if face.material_index == object.active_material_index:
+                    face.select = True
+                else:
+                    face.select = False
+            # 所有面展UV
+            else:
                 face.select = True
         bm.to_mesh(object.data)
         bm.free()
@@ -134,10 +140,6 @@ def UvUnwrap(object:bpy.types.Object,
     # 进入编辑模式
     utils.focusObj(object)
     bpy.ops.object.mode_set(mode = 'EDIT') 
-    bpy.ops.mesh.select_mode(type = 'FACE')
-    if (not remainSelect
-        and not onlyActiveMat):
-        bpy.ops.mesh.select_all(action='SELECT')
 
     if type == None:
         # 默认采用smart project

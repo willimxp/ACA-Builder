@@ -1116,29 +1116,33 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
                     parent=wallproxy)
         # 倒角
         utils.addModifierBevel(yinObj,con.BEVEL_LOW)
-        KankuangObjs.append(yinObj)
+        KankuangObjs.append(yinObj)  
     # 隔扇门/隔扇窗做连二楹
     elif wallType in (con.ACA_WALLTYPE_GESHAN,
                       con.ACA_WALLTYPE_WINDOW,):
         geshan_num = childData.door_num
+        if geshan_num == 2:
+            yinPos = [-1,1]
+        elif geshan_num == 4:
+            yinPos = [-1,1]
+        elif geshan_num == 6:
+            yinPos = [-3,-1,1,3]
         dim = Vector((con.MENYIN_WIDTH*pd,
                     con.MENYIN_DEPTH*pd,
                     con.MENYIN_HEIGHT*pd))
-        for n in range(geshan_num):
-            # 仅做奇数，不做偶数
-            if n%2 ==0 : continue
+        for n in range(len(yinPos)):
             # 横坐标，平均分配每扇隔扇的中点
-            x = -doorWidth/2 + n*doorWidth/geshan_num
+            yinX = yinPos[n]*doorWidth/geshan_num
             # 与下槛内皮相平
-            y = con.KAN_DOWN_DEPTH * pd/2
-            z = (midDownZ
+            yinY = con.KAN_DOWN_DEPTH * pd/2
+            yinZ = (midDownZ
                  + con.KAN_MID_HEIGHT*pd
                  - con.MENYIN_HEIGHT*pd/2
                  )
-            loc = Vector((x,y,z))
+            yinloc = Vector((yinX,yinY,yinZ))
             menyinObj = utils.drawHexagon(
                 dim,
-                loc,
+                yinloc,
                 half=True,
                 parent = wallproxy,
                 name = _('上窗楹'),
@@ -1150,18 +1154,18 @@ def __buildKanKuang(wallproxy:bpy.types.Object):
             # 下窗楹定位
             if wallType == con.ACA_WALLTYPE_GESHAN:
                 # 与下槛下皮相平
-                z = (doorBottom 
+                yinZ = (doorBottom 
                     - con.KAN_DOWN_HEIGHT*pd 
                     + con.MENYIN_HEIGHT*pd/2)
             elif wallType == con.ACA_WALLTYPE_WINDOW:
                 # 与风槛下皮相平
-                z = (doorBottom 
+                yinZ = (doorBottom 
                     - con.KAN_WIND_HEIGHT*pd 
                     + con.MENYIN_HEIGHT*pd/2)
-            loc = Vector((x,y,z))        
+            yinloc = Vector((yinX,yinY,yinZ))        
             menyinObj = utils.drawHexagon(
                 dim,
-                loc,
+                yinloc,
                 half=True,
                 parent = wallproxy,
                 name = _('下窗楹'),
@@ -1524,7 +1528,6 @@ def __addGeshan(kankuangObj:bpy.types.Object):
                   - pillarD
                   - con.BAOKUANG_WIDTH*pd*2)
                  *geshanData.doorFrame_width_per)   # 门口宽度
-    geshanParts = []
 
     # 1、构建槛框内的每一扇隔扇
     # 注意：先做隔扇是因为考虑到槛窗模式下，窗台高度依赖于隔扇抹头的计算结果
@@ -1540,21 +1543,47 @@ def __addGeshan(kankuangObj:bpy.types.Object):
                  geshan_height - con.GESHAN_GAP))
     # 隔扇z坐标
     geshanZ = con.KAN_DOWN_HEIGHT*pd + geshan_height/2
-    for n in range(geshan_num):
-        # 位置
-        location = Vector(
-            (geshan_width*(geshan_num/2-n-0.5),   #向右半扇
-             0,geshanZ))
-        # 左开还是右开
-        if n%2 == 0: dir = 'L'
-        else: dir = 'R'
-        geshanObj,windowsillZ = __buildGeshan(
+    # 260324 为了提高隔扇生成效率，采用基于一面隔扇进行复制的方式
+    geshanBaseObj,windowsillZ = __buildGeshan(
             name=_('隔扇'),
             wallproxy=kankuangObj,
             scale=geshanDim,
-            location=location,
-            dir=dir)
-        geshanParts.append(geshanObj)
+            location=Vector((0,0,geshanZ)),
+            dir='L')
+    # 复制并摆放左右隔扇，为了便于阅读，采用2,4,6场景罗列方式
+    # 如果为2扇，对开门
+    if geshan_num >= 2:
+        # 左1
+        geshanL = utils.copySimplyObject(geshanBaseObj)
+        geshanX = -geshan_width + con.MENZHOU_R*pd + con.GESHAN_GAP/2
+        geshanL.location = Vector((geshanX,
+                                   geshanBaseObj.location.y,
+                                   geshanBaseObj.location.z))
+        # 右1
+        geshanR = utils.copySimplyObject(geshanL)
+        geshanR.scale.x = -1
+        geshanR.location = Vector((-geshanX,
+                                   geshanBaseObj.location.y,
+                                   geshanBaseObj.location.z))
+    # 如果为4扇，中间2扇对开，左右两边单开
+    if geshan_num >= 4:
+        # 左2
+        geshanL2 = utils.copySimplyObject(geshanL)
+        geshanL2.location.x += geshan_width *2
+        # 右2
+        geshanR2 = utils.copySimplyObject(geshanR)
+        geshanR2.location.x -= geshan_width *2
+
+    # 如果为6扇，中间2扇对开，左右两边分别对开
+    if geshan_num >= 6:
+        # 左3
+        geshanL3 = utils.copySimplyObject(geshanL)
+        geshanL3.location.x -= geshan_width *2
+        # 右3
+        geshanR3 = utils.copySimplyObject(geshanR)
+        geshanR3.location.x += geshan_width *2
+    
+    utils.delObject(geshanBaseObj)
 
     return
 

@@ -268,6 +268,13 @@ def update_pillar(self, context:bpy.types.Context):
 
 @check_auto_rebuild
 def update_wall(self, context:bpy.types.Context):
+    # 解析wallID
+    doorNum = self.door_num
+    if doorNum % 2 != 0:
+        # 不处理偶数面阔间数
+        utils.popMessageBox(_("隔扇数量必须为偶数"))
+        return
+
     contextObj = context.active_object
     # 暂存，以便批量更新后的恢复选择
     activeObjName = contextObj.name

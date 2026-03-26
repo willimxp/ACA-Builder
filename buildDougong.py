@@ -225,7 +225,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         use_axis=(False,True,False)
     )
     # 设置材质
-    if _('挑檐枋') in fangSourceObj.name:
+    if '挑檐枋' in fangSourceObj.name:
         # 设置工王云
         mat.paint(fangCopy,con.M_FANG_TIAOYAN,
                    override=True)
@@ -263,7 +263,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
             use_axis=(True,False,False)
         )
         # 设置材质
-        if _('挑檐枋') in fangSourceObj.name:
+        if '挑檐枋' in fangSourceObj.name:
             # 设置工王云
             mat.paint(fangCopy,con.M_FANG_TIAOYAN,
                    override=True)
@@ -329,7 +329,7 @@ def __buildDGFangbyRoom(
     
     # 生成所有的连接枋
     for fang in fangList:
-        fangCopy = utils.copyObject(
+        fangCopy = utils.copySimplyObject(
             sourceObj = fangSourceObj,
             location = fang['loc'],
             rotation = fang['rot'],
@@ -341,11 +341,6 @@ def __buildDGFangbyRoom(
         # 拉伸到开间面阔
         fangCopy.dimensions.x = fang['len']
         utils.applyTransform(fangCopy,use_scale=True)
-        # 根据拉伸，更新UV平铺
-        mat.UvUnwrap(fangCopy,mat.uvType.CUBE)
-        # 设置斗栱配色
-        mat.paint(fangCopy,con.M_FANG_DGCONNECT,
-                  override=True)
         # 设置对称
         utils.addModifierMirror(
             object=fangCopy,
@@ -354,7 +349,7 @@ def __buildDGFangbyRoom(
         )
         # 栱垫板材质
         # 务必放在最后操作，该方法会删除原有的垫拱板，替换为新的mesh
-        if _('栱垫板') in fangSourceObj.name:
+        if '栱垫板' in fangSourceObj.name:
             if bData.dg_extend == 0 :
                 # 一斗三升使用小号的栱垫板，只有一层正心瓜栱
                 mat.paint(fangCopy,con.M_BOARD_DG_S,
@@ -363,6 +358,9 @@ def __buildDGFangbyRoom(
                 # 普通的栱垫板有一层正心瓜栱，一层正心厢栱
                 mat.paint(fangCopy,con.M_BOARD_DG,
                         override=True)
+        else:
+            mat.paint(fangCopy,con.M_FANG_DGCONNECT,
+                  override=True)
             
     return
 
@@ -717,7 +715,7 @@ def buildDougong(buildingObj:bpy.types.Object):
 
     # 循环处理各个连接件
     for fangObj in dgSource.children:
-        if _('栱垫板') in fangObj.name:
+        if '栱垫板' in fangObj.name:
             __buildDGFangbyRoom(dgrootObj,fangObj)
         else:
             __buildDGFangbyBuilding(dgrootObj,fangObj)

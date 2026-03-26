@@ -920,7 +920,9 @@ def __buildFang(buildingObj:bpy.types.Object):
 
         # 合并大小额枋、由额垫板
         if len(fangPart) > 1:
-            fangJoined = utils.joinObjects(fangPart,newName=_('额枋.')+ fangID)
+            fangJoined = utils.joinObjects(fangPart,
+                                           newName=_('额枋.')+ fangID,
+                                           baseObj=bigFangObj)
             bigFangObj = fangJoined
         
     # # 聚焦到最后添加的大额枋，便于用户可以直接删除

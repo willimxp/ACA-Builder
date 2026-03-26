@@ -1271,6 +1271,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         tileSetName = _('两山')
     tileSet = utils.joinObjects(
         tileList,newName = _('屋瓦.') + tileSetName)
+    utils.shaderSmooth(tileSet)
     # 将屋瓦绑定到根节点
     utils.changeParent(tileSet,tileRootObj)
     # 庑殿、歇山做裁剪

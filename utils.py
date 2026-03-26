@@ -1822,7 +1822,7 @@ def setGN_Input(mod:bpy.types.NodesModifier,
 # 合并对个对象
 # https://blender.stackexchange.com/questions/13986/how-to-join-objects-with-python
 # https://docs.blender.org/api/current/bpy.ops.html#overriding-context
-def joinObjects(objList:List[bpy.types.Object],
+def joinObjects1(objList:List[bpy.types.Object],
                 newName=None,
                 baseObj=None,
                 cleanup=False):
@@ -1898,6 +1898,290 @@ def joinObjects(objList:List[bpy.types.Object],
     #            % (time.time()-timeStart))
     
     return joinedObj
+
+# 低层次的合并方法
+def joinObjects(objList: List[bpy.types.Object],
+                           newName: str = None,
+                           baseObj: bpy.types.Object = None,
+                           cleanup: bool = False) -> bpy.types.Object:
+    '''
+    低层次的mesh对象合并函数，不使用bpy.ops.object.join()
+    直接操作mesh数据，更高效地实现海量对象的合并
+    支持曲线转换和修改器应用
+    
+    参数:
+        objList: 需要合并的对象列表
+        newName: 合并后对象的名称
+        baseObj: 作为基准的对象（决定origin位置）
+        cleanup: 是否清理重复顶点
+    
+    返回:
+        合并后的对象
+    '''
+
+    # 0、检查输入参数
+    if not objList:
+        return None
+    
+    if newName is None:
+        newName = objList[0].name
+
+    # 如果没有指定基准对象，取第一个对象作为基准对象
+    if baseObj is None:
+        baseObj = objList[0]
+    elif baseObj not in objList:
+        baseObj = objList[0]
+    baseObjParent = baseObj.parent
+
+    # 1、更新视图，合并对象如果是刚刚生成的，就可能未更新
+    updateScene()
+    
+    # 2、对象预处理，曲线转网格、应用修改器
+    processed_objs = []
+    curve_objs = []
+    modifier_objs = []
+    
+    for ob in objList:
+        if ob is None:
+            continue
+        if ob.type not in ('MESH', 'CURVE'):
+            continue
+        if ob.type == 'CURVE':
+            curve_objs.append(ob)
+        elif ob.modifiers:
+            modifier_objs.append(ob)
+        else:
+            if ob.data.users > 1:
+                ob.data = ob.data.copy()
+            processed_objs.append(ob)
+    
+    # 3、曲线转网格
+    for ob in curve_objs:
+        new_obj = curveToMesh_low(ob)
+        if new_obj is None:
+            continue
+        processed_objs.append(new_obj)
+    
+    # 4、应用修改器
+    for ob in modifier_objs:
+        new_obj = applyModifier_low(ob)
+        if new_obj is None:
+            continue
+        processed_objs.append(new_obj)
+    
+    # 如果没有可合并的对象，直接返回
+    if not processed_objs:
+        return None
+    
+    # 5、合并顶点、边、面、环、材质、UV
+    all_verts = []
+    all_edges = []
+    all_loop_verts = []
+    all_loop_edges = []
+    all_face_starts = []
+    all_face_totals = []
+    all_face_mats = []
+    all_face_smooths = []
+    
+    material_index_map = {}
+    material_slots = []
+    
+    uv_layer_data = {}
+    
+    vert_offset = 0
+    loop_offset = 0
+    edge_offset = 0
+    
+    inv_base_matrix = baseObj.matrix_world.inverted()
+    
+    for ob in processed_objs:
+        mesh = ob.data
+        world_matrix = ob.matrix_world
+        
+        if len(mesh.vertices) == 0:
+            continue
+
+        # 计算合并后的矩阵
+        combined_matrix = np.array(inv_base_matrix @ world_matrix, dtype=np.float32)
+        # 转换顶点坐标
+        verts_local = np.empty(len(mesh.vertices) * 3, dtype=np.float32)
+        mesh.vertices.foreach_get('co', verts_local)
+        verts_local = verts_local.reshape(-1, 3)
+        # 转换为齐次坐标
+        ones = np.ones((len(verts_local), 1), dtype=np.float32)
+        verts_homo = np.hstack([verts_local, ones])
+        verts_transformed = (combined_matrix @ verts_homo.T).T[:, :3]
+
+        all_verts.append(verts_transformed)
+        
+        # 转换边坐标        
+        if len(mesh.edges) > 0:
+            edges = np.empty(len(mesh.edges) * 2, dtype=np.int32)
+            mesh.edges.foreach_get('vertices', edges)
+            edges = edges.reshape(-1, 2) + vert_offset
+            all_edges.append(edges)
+        
+        # 转换环坐标
+        if len(mesh.loops) > 0:
+            loop_verts = np.empty(len(mesh.loops), dtype=np.int32)
+            mesh.loops.foreach_get('vertex_index', loop_verts)
+            loop_verts += vert_offset
+            all_loop_verts.append(loop_verts)
+            
+            loop_edges = np.empty(len(mesh.loops), dtype=np.int32)
+            mesh.loops.foreach_get('edge_index', loop_edges)
+            loop_edges += edge_offset
+            all_loop_edges.append(loop_edges)
+        
+        # 转换面坐标
+        if len(mesh.polygons) > 0:
+            face_starts = np.empty(len(mesh.polygons), dtype=np.int32)
+            face_totals = np.empty(len(mesh.polygons), dtype=np.int32)
+            mesh.polygons.foreach_get('loop_start', face_starts)
+            mesh.polygons.foreach_get('loop_total', face_totals)
+            
+            face_starts = face_starts + loop_offset
+            all_face_starts.append(face_starts)
+            all_face_totals.append(face_totals)
+            
+            face_mats = np.empty(len(mesh.polygons), dtype=np.int32)
+            mesh.polygons.foreach_get('material_index', face_mats)
+            
+            for i, mat_idx in enumerate(face_mats):
+                if mat_idx < len(ob.material_slots):
+                    mat = ob.material_slots[mat_idx].material
+                    if mat is not None:
+                        if mat.name not in material_index_map:
+                            material_index_map[mat.name] = len(material_slots)
+                            material_slots.append(mat)
+                        face_mats[i] = material_index_map[mat.name]
+            
+            all_face_mats.append(face_mats)
+            
+            # 收集面的smooth状态
+            face_smooths = np.empty(len(mesh.polygons), dtype=bool)
+            mesh.polygons.foreach_get('use_smooth', face_smooths)
+            all_face_smooths.append(face_smooths)
+        
+        # 收集UV数据
+        # 确保每个对象的每个UV层都有数据，没有的填充默认值
+        if len(mesh.loops) > 0:
+            for uv_layer in mesh.uv_layers:
+                uv_name = uv_layer.name
+                if uv_name not in uv_layer_data:
+                    uv_layer_data[uv_name] = []
+                
+                uv_coords = np.empty(len(mesh.loops) * 2, dtype=np.float32)
+                uv_layer.data.foreach_get('uv', uv_coords)
+                uv_layer_data[uv_name].append(uv_coords)
+            
+            # 记录该对象已有的UV层名称
+            existing_uv_names = set(uv_layer.name for uv_layer in mesh.uv_layers)
+            # 对于该对象没有的UV层，填充默认值
+            for uv_name in list(uv_layer_data.keys()):
+                if uv_name not in existing_uv_names and len(uv_layer_data[uv_name]) > 0:
+                    # 填充默认UV坐标 (0, 0)
+                    default_uv = np.zeros(len(mesh.loops) * 2, dtype=np.float32)
+                    uv_layer_data[uv_name].append(default_uv)
+        
+        # 更新偏移量
+        vert_offset += len(mesh.vertices)
+        loop_offset += len(mesh.loops)
+        edge_offset += len(mesh.edges)
+    
+    if not all_verts:
+        return None
+    
+    # 合并顶点、边、环、面、材质
+    merged_verts = np.vstack(all_verts).flatten()
+    total_verts = len(merged_verts) // 3
+    
+    merged_edges = np.vstack(all_edges).flatten() if all_edges else np.array([], dtype=np.int32)
+    total_edges = len(merged_edges) // 2
+    
+    merged_loop_verts = np.concatenate(all_loop_verts) if all_loop_verts else np.array([], dtype=np.int32)
+    merged_loop_edges = np.concatenate(all_loop_edges) if all_loop_edges else np.array([], dtype=np.int32)
+    total_loops = len(merged_loop_verts)
+    
+    merged_face_starts = np.concatenate(all_face_starts) if all_face_starts else np.array([], dtype=np.int32)
+    merged_face_totals = np.concatenate(all_face_totals) if all_face_totals else np.array([], dtype=np.int32)
+    merged_face_mats = np.concatenate(all_face_mats) if all_face_mats else np.array([], dtype=np.int32)
+    merged_face_smooths = np.concatenate(all_face_smooths) if all_face_smooths else np.array([], dtype=bool)
+    total_faces = len(merged_face_starts)
+    
+    # 创建新网格
+    new_mesh = bpy.data.meshes.new(newName)
+    
+    new_mesh.vertices.add(total_verts)
+    new_mesh.vertices.foreach_set('co', merged_verts)
+    
+    if total_edges > 0:
+        new_mesh.edges.add(total_edges)
+        new_mesh.edges.foreach_set('vertices', merged_edges)
+    
+    if total_loops > 0:
+        new_mesh.loops.add(total_loops)
+        new_mesh.loops.foreach_set('vertex_index', merged_loop_verts)
+        new_mesh.loops.foreach_set('edge_index', merged_loop_edges)
+    
+    if total_faces > 0:
+        new_mesh.polygons.add(total_faces)
+        new_mesh.polygons.foreach_set('loop_start', merged_face_starts)
+        new_mesh.polygons.foreach_set('loop_total', merged_face_totals)
+        new_mesh.polygons.foreach_set('material_index', merged_face_mats)
+        new_mesh.polygons.foreach_set('use_smooth', merged_face_smooths)
+    
+    for mat in material_slots:
+        new_mesh.materials.append(mat)
+    
+    # 设置UV层数据
+    if uv_layer_data and total_loops > 0:
+        for uv_name, uv_arrays in uv_layer_data.items():
+            if uv_arrays:
+                merged_uv = np.concatenate(uv_arrays)
+                expected_size = total_loops * 2
+                if len(merged_uv) == expected_size:
+                    new_uv_layer = new_mesh.uv_layers.new(name=uv_name)
+                    if new_uv_layer:
+                        new_uv_layer.data.foreach_set('uv', merged_uv)
+                else:
+                    print(f"警告: UV层 '{uv_name}' 数据大小不匹配 (期望 {expected_size}, 实际 {len(merged_uv)})，跳过该UV层")
+    
+    new_mesh.update()
+    new_mesh.validate()
+    
+    # 清理网格
+    if cleanup:
+        bm = bmesh.new()
+        bm.from_mesh(new_mesh)
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0001)
+        bm.to_mesh(new_mesh)
+        bm.free()
+        new_mesh.update()
+    
+    # 创建新对象
+    new_obj = bpy.data.objects.new(newName, new_mesh)
+    # 保持原有的parent关系
+    if baseObjParent:
+        new_obj.parent = baseObjParent
+        new_obj.matrix_local = baseObj.matrix_local.copy()
+    else:
+        new_obj.matrix_world = baseObj.matrix_world.copy()
+
+    bpy.context.collection.objects.link(new_obj)
+    focusObj(new_obj)
+    
+    # 复制ACA_data自定义属性
+    if hasattr(baseObj, 'ACA_data'):
+        copyAcaData(baseObj, new_obj)
+    
+    # 删除旧对象
+    if processed_objs:
+        delObjectsFast(processed_objs)
+    
+    delOrphan()
+    
+    return new_obj
 
 # 返回根对象
 def getRoot(object:bpy.types.Object):
@@ -2643,10 +2927,12 @@ def copyAcaData(fromObj,toObj,
                 keys = None,    # 限定的范围
                 skip = None,    # 跳过的范围
                 ):
-    if (not hasattr(fromObj, "ACA_data") 
-        or not hasattr(toObj, "ACA_data")):
-        print(_("错误: 对象没有 ACA_data 属性组"))
+    if not hasattr(fromObj, "ACA_data"):
+        print(_("复制ACA_data错误: 对象没有 ACA_data 属性组"))
         return False
+    
+    if not hasattr(toObj, 'ACA_data'):
+        toObj.ACA_data = bpy.types.ACA_data()
     
     # 251209 跳过id、spliceid、parent
     # 出现因为装修个性化，将建筑信息传递到装修上，导致拼接判断错误
@@ -3717,3 +4003,86 @@ def selectMeshAll(obj: bpy.types.Object):
     mesh = obj.data
     for poly in mesh.polygons:
         poly.select = True
+
+# 低层次转换曲线为网格对象
+def curveToMesh_low(curveObj: bpy.types.Object):
+    try:
+        # 转为网格
+        new_mesh = curveObj.to_mesh()
+        if new_mesh is None:
+            return None
+        # 创建对象
+        new_obj = bpy.data.objects.new(curveObj.name, new_mesh)
+        # 设置矩阵
+        new_obj.matrix_world = curveObj.matrix_world.copy()
+        # 设置材质
+        for mat_slot in curveObj.material_slots:
+            new_obj.data.materials.append(mat_slot.material)
+        # 链接到场景
+        bpy.context.collection.objects.link(new_obj)
+        # 删除原曲线
+        bpy.data.objects.remove(curveObj, do_unlink=True)
+        return new_obj
+    except RuntimeError as e:
+        # 打印输出异常信息
+        print(f"Error converting curve {curveObj.name} to mesh: {e}")
+        return None
+
+# 低层次应用修改器
+def applyModifier_low(ob: bpy.types.Object):
+    try:
+        # 如果对象数据被其他对象引用，先复制
+        if ob.data.users > 1:
+                ob.data = ob.data.copy()
+        
+        # 评估依赖图
+        depsgraph = bpy.context.evaluated_depsgraph_get()
+        ob_eval = ob.evaluated_get(depsgraph)
+
+        # 使用 new_from_object 创建网格，必须传入 depsgraph 参数
+        # 参考: https://docs.blender.org/api/current/bpy.types.BlendDataMeshes.html#bpy.types.BlendDataMeshes.new_from_object
+        # 注意：new_from_object 返回的顶点坐标是在对象的本地坐标系中
+        # mesh_eval = bpy.data.meshes.new_from_object(
+        #     ob_eval,
+        #     preserve_all_data_layers=True,
+        #     depsgraph=depsgraph
+        # )
+        mesh_eval = bpy.data.meshes.new_from_object(ob_eval)
+        if mesh_eval is None:
+            return None
+        
+        # # 验证网格数据，确保顶点/边/面数据有效
+        # mesh_eval.validate()
+        
+        # 原地替换原对象的data，保持原有的 matrix_local 不变
+        old_mesh = ob.data
+        ob.data = mesh_eval
+        # 清理旧网格
+        bpy.data.meshes.remove(old_mesh, do_unlink=True)
+        return ob
+
+    except RuntimeError as e:
+        # 打印输出异常信息
+        print(f"Error applying modifier to {ob.name}: {e}")
+        return None
+
+# 快速删除海量对象
+def delObjectsFast(objList: List[bpy.types.Object]):
+    # 1. 创建一个临时集合
+    temp_coll = bpy.data.collections.new("TempDeleteCollection")
+    bpy.context.scene.collection.children.link(temp_coll)
+
+    # 2. 把所有要删的对象丢进去（超快）
+    for obj in objList:
+        # 从原集合移出
+        if obj.users_collection:
+            for coll in obj.users_collection:
+                coll.objects.unlink(obj)
+        # 加入临时集合
+        temp_coll.objects.link(obj)
+
+    # 3. 直接删除这个临时集合（一键清空所有对象）
+    bpy.data.collections.remove(temp_coll)
+
+    return
+       

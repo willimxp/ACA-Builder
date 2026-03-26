@@ -139,10 +139,11 @@ def UvUnwrap(object:bpy.types.Object,
 
     # 进入编辑模式
     utils.focusObj(object)
-    bpy.ops.object.mode_set(mode = 'EDIT') 
+    
 
     if type == None:
         # 默认采用smart project
+        bpy.ops.object.mode_set(mode = 'EDIT') 
         bpy.ops.uv.smart_project(
             angle_limit=math.radians(66), 
             margin_method='SCALED', 
@@ -151,16 +152,28 @@ def UvUnwrap(object:bpy.types.Object,
             correct_aspect=True, 
             scale_to_bounds=False
         )
+        bpy.ops.object.mode_set(mode = 'OBJECT')
     # 普通材质的cube project，保证贴图缩放的一致性
     elif type == uvType.CUBE:
-        bpy.ops.uv.cube_project(
-            cube_size=cubesize,
-            correct_aspect=correctAspect,
-            scale_to_bounds=scaleToBounds,
-        )
+        # bpy.ops.object.mode_set(mode = 'EDIT') 
+        # bpy.ops.uv.cube_project(
+        #     cube_size=cubesize,
+        #     correct_aspect=correctAspect,
+        #     scale_to_bounds=scaleToBounds,
+        # )
+        # bpy.ops.object.mode_set(mode = 'OBJECT')
+        
+        # 260326 采用低层次的展开算法，提高运行效率
+        utils.cubeProject_low(object,
+                        cube_size=cubesize,
+                        correct_aspect=correctAspect,
+                        scale_to_bounds=scaleToBounds,
+                        )
+
     # 精确适配
     # 先所有面一起做加权分uv，然后针对需要特殊处理的面，进行二次适配
     elif type == uvType.FIT:
+        bpy.ops.object.mode_set(mode = 'EDIT') 
         # 先做一次加权投影
         bpy.ops.uv.cube_project(
             scale_to_bounds=True
@@ -180,17 +193,21 @@ def UvUnwrap(object:bpy.types.Object,
         bpy.ops.uv.cube_project(
             scale_to_bounds=True
         )
+        bpy.ops.object.mode_set(mode = 'OBJECT')
     # 重置UV，让每个面都满铺，但存在rotate的问题，暂未使用
     elif type == uvType.RESET:
+        bpy.ops.object.mode_set(mode = 'EDIT') 
         bpy.ops.uv.reset()
+        bpy.ops.object.mode_set(mode = 'OBJECT')
     # 柱状投影，在柱子上效果很好
     elif type == uvType.CYLINDER:
+        bpy.ops.object.mode_set(mode = 'EDIT') 
         bpy.ops.uv.cylinder_project(
             direction='ALIGN_TO_OBJECT',
             align='POLAR_ZY',
             scale_to_bounds=True
         )
-    bpy.ops.object.mode_set(mode = 'OBJECT')
+        bpy.ops.object.mode_set(mode = 'OBJECT')
 
     # 拉伸UV，参考以下：
     # https://blender.stackexchange.com/questions/75061/scale-uv-map-script

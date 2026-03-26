@@ -4085,4 +4085,153 @@ def delObjectsFast(objList: List[bpy.types.Object]):
     bpy.data.collections.remove(temp_coll)
 
     return
-       
+
+# bpy.ops.uv.cube_project的低层次实现
+def cubeProject_low(obj: bpy.types.Object,
+                    cube_size=1.0, 
+                    correct_aspect=True, 
+                    clip_to_bounds=False, 
+                    scale_to_bounds=False):
+    """
+    将网格的UV顶点投影到立方体的六个面上
+    
+    参数:
+        obj: Blender对象
+        cube_size: 立方体大小，用于缩放UV坐标
+        correct_aspect: 是否考虑图像的宽高比
+        clip_to_bounds: 是否将UV坐标裁剪到[0,1]范围
+        scale_to_bounds: 是否将UV坐标缩放到[0,1]范围
+    """
+    import time
+    timeStart = time.time()
+    if obj is None or obj.type != 'MESH':
+        return
+    
+    mesh = obj.data
+    
+    if len(mesh.vertices) == 0 or len(mesh.polygons) == 0:
+        return
+    
+    uv_layer = mesh.uv_layers.active
+    if uv_layer is None:
+        uv_layer = mesh.uv_layers.new(name="UVMap")
+    
+    if uv_layer is None:
+        return
+    
+    num_verts = len(mesh.vertices)
+    num_polys = len(mesh.polygons)
+    num_loops = len(mesh.loops)
+    
+    verts = np.empty(num_verts * 3, dtype=np.float32)
+    mesh.vertices.foreach_get('co', verts)
+    verts = verts.reshape(-1, 3)
+    
+    world_matrix = obj.matrix_world
+    wm = np.array(world_matrix, dtype=np.float32).reshape(4, 4)
+    
+    verts_h = np.hstack([verts, np.ones((num_verts, 1), dtype=np.float32)])
+    world_verts = (wm @ verts_h.T).T[:, :3]
+    
+    normals = np.empty(num_polys * 3, dtype=np.float32)
+    mesh.polygons.foreach_get('normal', normals)
+    normals = normals.reshape(-1, 3)
+    
+    normals_h = np.hstack([normals, np.zeros((num_polys, 1), dtype=np.float32)])
+    world_normals = (wm @ normals_h.T).T[:, :3]
+    
+    world_normals_norm = world_normals / np.linalg.norm(world_normals, axis=1, keepdims=True)
+    
+    abs_normals = np.abs(world_normals_norm)
+    max_axis = np.argmax(abs_normals, axis=1)
+    
+    loop_vertex_indices = np.empty(num_loops, dtype=np.int32)
+    mesh.loops.foreach_get('vertex_index', loop_vertex_indices)
+    
+    loop_starts = np.empty(num_polys, dtype=np.int32)
+    mesh.polygons.foreach_get('loop_start', loop_starts)
+    loop_totals = np.empty(num_polys, dtype=np.int32)
+    mesh.polygons.foreach_get('loop_total', loop_totals)
+    
+    loop_poly_indices = np.empty(num_loops, dtype=np.int32)
+    for i in range(num_polys):
+        start = loop_starts[i]
+        end = start + loop_totals[i]
+        loop_poly_indices[start:end] = i
+    
+    if correct_aspect:
+        aspect_ratio = _get_material_aspect_ratio(obj)
+    else:
+        aspect_ratio = 1.0
+    
+    u_coords = np.empty(num_loops, dtype=np.float32)
+    v_coords = np.empty(num_loops, dtype=np.float32)
+    
+    for axis in range(3):
+        mask = (max_axis[loop_poly_indices] == axis)
+        if not np.any(mask):
+            continue
+        
+        verts_axis = world_verts[loop_vertex_indices[mask]]
+        normals_axis = world_normals_norm[loop_poly_indices[mask]]
+        
+        if axis == 0:
+            sign = normals_axis[:, 0] >= 0
+            u_temp = np.where(sign, verts_axis[:, 1], -verts_axis[:, 1])
+            v_temp = verts_axis[:, 2]
+        elif axis == 1:
+            sign = normals_axis[:, 1] >= 0
+            u_temp = np.where(sign, verts_axis[:, 0], -verts_axis[:, 0])
+            v_temp = verts_axis[:, 2]
+        else:
+            sign = normals_axis[:, 2] >= 0
+            u_temp = np.where(sign, verts_axis[:, 0], -verts_axis[:, 0])
+            v_temp = verts_axis[:, 1]
+        
+        u_coords[mask] = u_temp
+        v_coords[mask] = v_temp
+    
+    u_coords = u_coords / cube_size
+    v_coords = v_coords / cube_size
+    
+    if aspect_ratio != 1.0:
+        u_coords = u_coords / aspect_ratio
+    
+    if scale_to_bounds:
+        u_min, u_max = np.min(u_coords), np.max(u_coords)
+        v_min, v_max = np.min(v_coords), np.max(v_coords)
+        
+        u_range = u_max - u_min if u_max != u_min else 1.0
+        v_range = v_max - v_min if v_max != v_min else 1.0
+        
+        u_coords = (u_coords - u_min) / u_range
+        v_coords = (v_coords - v_min) / v_range
+    
+    if clip_to_bounds:
+        u_coords = np.clip(u_coords, 0.0, 1.0)
+        v_coords = np.clip(v_coords, 0.0, 1.0)
+    
+    uv_array = np.stack([u_coords, v_coords], axis=1).flatten()
+    uv_layer.data.foreach_set('uv', uv_array)
+    
+    runTime = time.time() - timeStart
+    # print("CubeProjection:obj=%s 运行时间：【%.4f秒】" % (obj.name, runTime))
+
+
+def _get_material_aspect_ratio(obj: bpy.types.Object) -> float:
+    """
+    获取对象材质关联图像的宽高比
+    """
+    aspect_ratio = 1.0
+    
+    if obj.material_slots:
+        for slot in obj.material_slots:
+            if slot.material and slot.material.use_nodes:
+                for node in slot.material.node_tree.nodes:
+                    if node.type == 'TEX_IMAGE' and node.image:
+                        img = node.image
+                        if img.size[0] > 0 and img.size[1] > 0:
+                            aspect_ratio = img.size[0] / img.size[1]
+                            return aspect_ratio
+    
+    return aspect_ratio

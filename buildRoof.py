@@ -3581,6 +3581,7 @@ def __buildBofeng(buildingObj: bpy.types.Object,
     # 新绘制一条垂脊曲线
     bofengCurve = __drawBofengCurve(
         buildingObj,rafter_pos)
+    bofengCurve.parent = boardRootObj
     
     # 1、博缝板 ---------------------------------
     # 复制博缝板资产

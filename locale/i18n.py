@@ -48,7 +48,7 @@ def update_language(self, context):
     """
     import importlib
     import sys
-    from .. import panel, operators, data, const
+    from .. import panel, operators, data
     from ..tools import auto_register
     
     # print(f"ACA Builder: Switching language to {self.language}...")
@@ -79,7 +79,6 @@ def update_language(self, context):
     # 4. 重新加载模块
     # 注意：必须按照依赖顺序重新加载
     try:
-        importlib.reload(const)
         importlib.reload(data)
         importlib.reload(panel)
         # reload(operators) 会导致当前运行的代码上下文失效，但在回调中通常是可以接受的

@@ -10,21 +10,30 @@ class ACA_Consts(object):
     # 继承object类，提供了__setattr__等方法
     # https://www.jb51.net/article/274253.htm
 
-    # 目录名称
-    COLL_NAME_ROOT = _('ACA筑韵古建')
-    COLL_NAME_ROOT_JOINED = _('ACA古建.合并')
-    COLL_NAME_BASE = _('1-台基层')
-    COLL_NAME_PILLAR = _('2-柱网层')
-    COLL_NAME_WALL = _('3-装修层')
-    COLL_NAME_DOUGONG = _('4-斗栱层')
-    COLL_NAME_BEAM = _('5-梁架层')
-    COLL_NAME_RAFTER = _('6-椽架层')
-    COLL_NAME_BOARD = _('7-山花/望板')
-    COLL_NAME_TILE = _('8-瓦作层')
-    COLL_NAME_BALCONY = _('5-平坐层')
+    # 需要动态翻译的属性名列表
+    # 这些属性在访问时会动态调用_()进行翻译
+    _I18N_KEYS = frozenset([
+        'COLL_NAME_ROOT', 'COLL_NAME_ROOT_JOINED', 'COLL_NAME_BASE',
+        'COLL_NAME_PILLAR', 'COLL_NAME_WALL', 'COLL_NAME_DOUGONG',
+        'COLL_NAME_BEAM', 'COLL_NAME_RAFTER', 'COLL_NAME_BOARD',
+        'COLL_NAME_TILE', 'COLL_NAME_BALCONY', 'PLATFORM_NAME',
+    ])
+
+    # 目录名称（原始字符串，在访问时动态翻译）
+    COLL_NAME_ROOT = 'ACA筑韵古建'
+    COLL_NAME_ROOT_JOINED = 'ACA古建.合并'
+    COLL_NAME_BASE = '1-台基层'
+    COLL_NAME_PILLAR = '2-柱网层'
+    COLL_NAME_WALL = '3-装修层'
+    COLL_NAME_DOUGONG = '4-斗栱层'
+    COLL_NAME_BEAM = '5-梁架层'
+    COLL_NAME_RAFTER = '6-椽架层'
+    COLL_NAME_BOARD = '7-山花/望板'
+    COLL_NAME_TILE = '8-瓦作层'
+    COLL_NAME_BALCONY = '5-平坐层'
     
     # 系统参数
-    PLATFORM_NAME = _('台基')                                           # 台基名称
+    PLATFORM_NAME = '台基'                                           # 台基名称
     ACA_TYPE_COMBO = 'combo'                                        # ACA类型：combo根节点
     ACA_TYPE_BUILDING = 'building'                                  # ACA类型：建筑根节点
     ACA_TYPE_BUILDING_JOINED = 'joined'                             # ACA类型：已合并建筑
@@ -366,6 +375,18 @@ class ACA_Consts(object):
     # 后处理类型
     POSTPROC_SPLICE = 'SPLICE'
     BOOL_RESERVE = 0.02     # 裁剪体包裹的出血尺寸
+
+    def __getattribute__(self, name):
+        # 获取 _I18N_KEYS 列表，使用 object.__getattribute__ 避免递归
+        i18n_keys = object.__getattribute__(self, '_I18N_KEYS')
+        
+        # 如果是需要翻译的属性，动态调用 _() 进行翻译
+        if name in i18n_keys:
+            raw_value = object.__getattribute__(self, name)
+            return _(raw_value)
+        
+        # 其他属性直接返回
+        return object.__getattribute__(self, name)
 
     def __setattr__(self, name, value):
         raise AttributeError("Can't modify constant values")

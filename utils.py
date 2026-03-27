@@ -2033,6 +2033,13 @@ def joinObjects(objList: List[bpy.types.Object],
             loop_edges += edge_offset
             all_loop_edges.append(loop_edges)
         
+        # 先收集对象material_slots中的所有材质
+        for slot in ob.material_slots:
+            mat = slot.material
+            if mat is not None and mat.name not in material_index_map:
+                material_index_map[mat.name] = len(material_slots)
+                material_slots.append(mat)
+        
         # 转换面坐标
         if len(mesh.polygons) > 0:
             face_starts = np.empty(len(mesh.polygons), dtype=np.int32)
@@ -2051,9 +2058,6 @@ def joinObjects(objList: List[bpy.types.Object],
                 if mat_idx < len(ob.material_slots):
                     mat = ob.material_slots[mat_idx].material
                     if mat is not None:
-                        if mat.name not in material_index_map:
-                            material_index_map[mat.name] = len(material_slots)
-                            material_slots.append(mat)
                         face_mats[i] = material_index_map[mat.name]
             
             all_face_mats.append(face_mats)

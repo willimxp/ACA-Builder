@@ -760,6 +760,8 @@ def __buildPurlin(buildingObj:bpy.types.Object,purlin_pos):
         mat.paint(obj,con.M_BEAM_NOPAINT)
     # 合并桁对象
     purlinFrameObj = utils.joinObjects(purlinFrameList,_('桁架'))      
+    # 260327 添加平滑处理
+    utils.shaderSmooth(purlinFrameObj)
     return
 
 # 檐桁为了便于彩画贴图，按开间逐一生成

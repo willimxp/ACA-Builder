@@ -168,6 +168,7 @@ def UvUnwrap(object:bpy.types.Object,
                         cube_size=cubesize,
                         correct_aspect=correctAspect,
                         scale_to_bounds=scaleToBounds,
+                        selected_only=remainSelect,
                         )
 
     # 精确适配

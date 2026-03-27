@@ -4095,7 +4095,8 @@ def cubeProject_low(obj: bpy.types.Object,
                     cube_size=1.0, 
                     correct_aspect=True, 
                     clip_to_bounds=False, 
-                    scale_to_bounds=False):
+                    scale_to_bounds=False,
+                    selected_only=False):
     """
     将网格的UV顶点投影到立方体的六个面上
     
@@ -4105,6 +4106,7 @@ def cubeProject_low(obj: bpy.types.Object,
         correct_aspect: 是否考虑图像的宽高比
         clip_to_bounds: 是否将UV坐标裁剪到[0,1]范围
         scale_to_bounds: 是否将UV坐标缩放到[0,1]范围
+        selected_only: 是否只处理选中的面（用于scale_to_bounds时只缩放选中面的UV）
     """
     import time
     timeStart = time.time()
@@ -4163,6 +4165,13 @@ def cubeProject_low(obj: bpy.types.Object,
         end = start + loop_totals[i]
         loop_poly_indices[start:end] = i
     
+    if selected_only:
+        poly_selected = np.empty(num_polys, dtype=np.bool_)
+        mesh.polygons.foreach_get('select', poly_selected)
+        loop_selected = poly_selected[loop_poly_indices]
+    else:
+        loop_selected = np.ones(num_loops, dtype=np.bool_)
+    
     if correct_aspect:
         aspect_ratio = _get_material_aspect_ratio(obj)
     else:
@@ -4202,8 +4211,12 @@ def cubeProject_low(obj: bpy.types.Object,
         u_coords = u_coords / aspect_ratio
     
     if scale_to_bounds:
-        u_min, u_max = np.min(u_coords), np.max(u_coords)
-        v_min, v_max = np.min(v_coords), np.max(v_coords)
+        if selected_only and np.any(loop_selected):
+            u_min, u_max = np.min(u_coords[loop_selected]), np.max(u_coords[loop_selected])
+            v_min, v_max = np.min(v_coords[loop_selected]), np.max(v_coords[loop_selected])
+        else:
+            u_min, u_max = np.min(u_coords), np.max(u_coords)
+            v_min, v_max = np.min(v_coords), np.max(v_coords)
         
         u_range = u_max - u_min if u_max != u_min else 1.0
         v_range = v_max - v_min if v_max != v_min else 1.0

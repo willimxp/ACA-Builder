@@ -4054,6 +4054,8 @@ def __buildShanWall(
     mat.paint(bottomObj,con.M_WALL_BOTTOM)
 
     # 合并山墙和下碱
+    # 保存shanWallObj的location，因为joinObjects会删除原对象
+    shanWallLocation = shanWallObj.location.copy()
     shanwallJoin = utils.joinObjects([shanWallObj,bottomObj])
     
     # 添加镜像
@@ -4071,7 +4073,7 @@ def __buildShanWall(
     shanwallJoin.location = (
         wallrootObj.matrix_local.inverted() 
         @ shanwallJoin.parent.matrix_local
-        @ shanWallObj.location)
+        @ shanWallLocation)
     shanwallJoin.parent = wallrootObj
     # 移动到望板collection
     thisColl = shanwallJoin.users_collection[0]

@@ -4106,10 +4106,12 @@ def cubeProject_low(obj: bpy.types.Object,
         correct_aspect: 是否考虑图像的宽高比
         clip_to_bounds: 是否将UV坐标裁剪到[0,1]范围
         scale_to_bounds: 是否将UV坐标缩放到[0,1]范围
-        selected_only: 是否只处理选中的面（用于scale_to_bounds时只缩放选中面的UV）
+        selected_only: 是否只处理选中的面
     """
     import time
     timeStart = time.time()
+
+    # 基础检查
     if obj is None or obj.type != 'MESH':
         return
     
@@ -4118,137 +4120,166 @@ def cubeProject_low(obj: bpy.types.Object,
     if len(mesh.vertices) == 0 or len(mesh.polygons) == 0:
         return
     
+    # 获取或创建UV层
     uv_layer = mesh.uv_layers.active
     if uv_layer is None:
         uv_layer = mesh.uv_layers.new(name="UVMap")
     
     if uv_layer is None:
         return
+
+    # 防止cube_size为0或过小
+    cube_size_safe = cube_size if abs(cube_size) > 1e-8 else 1.0
+
+    # 编辑模式自动切换到对象模式
+    if obj.mode == 'EDIT':
+        print(f"提示: 对象 '{obj.name}' 处于编辑模式，自动切换到对象模式进行UV投影")
+        bpy.ops.object.mode_set(mode='OBJECT')
     
-    num_verts = len(mesh.vertices)
+    # 获取网格基本数量
     num_polys = len(mesh.polygons)
     num_loops = len(mesh.loops)
     
-    verts = np.empty(num_verts * 3, dtype=np.float32)
-    mesh.vertices.foreach_get('co', verts)
-    verts = verts.reshape(-1, 3)
-    
-    world_matrix = obj.matrix_world
-    wm = np.array(world_matrix, dtype=np.float32).reshape(4, 4)
-    
-    verts_h = np.hstack([verts, np.ones((num_verts, 1), dtype=np.float32)])
-    world_verts = (wm @ verts_h.T).T[:, :3]
-    
-    normals = np.empty(num_polys * 3, dtype=np.float32)
-    mesh.polygons.foreach_get('normal', normals)
-    normals = normals.reshape(-1, 3)
-    
-    normals_h = np.hstack([normals, np.zeros((num_polys, 1), dtype=np.float32)])
-    world_normals = (wm @ normals_h.T).T[:, :3]
-    
-    world_normals_norm = world_normals / np.linalg.norm(world_normals, axis=1, keepdims=True)
-    
-    abs_normals = np.abs(world_normals_norm)
-    max_axis = np.argmax(abs_normals, axis=1)
-    
+    # 获取每个循环对应的顶点索引
     loop_vertex_indices = np.empty(num_loops, dtype=np.int32)
     mesh.loops.foreach_get('vertex_index', loop_vertex_indices)
     
+    # 获取每个面的循环起始索引和循环数量
     loop_starts = np.empty(num_polys, dtype=np.int32)
     mesh.polygons.foreach_get('loop_start', loop_starts)
     loop_totals = np.empty(num_polys, dtype=np.int32)
     mesh.polygons.foreach_get('loop_total', loop_totals)
     
+    # 构建循环到面的映射
     loop_poly_indices = np.empty(num_loops, dtype=np.int32)
     for i in range(num_polys):
         start = loop_starts[i]
         end = start + loop_totals[i]
         loop_poly_indices[start:end] = i
     
+    # 获取面选择状态
     if selected_only:
         poly_selected = np.empty(num_polys, dtype=np.bool_)
         mesh.polygons.foreach_get('select', poly_selected)
-        loop_selected = poly_selected[loop_poly_indices]
     else:
-        loop_selected = np.ones(num_loops, dtype=np.bool_)
+        poly_selected = np.ones(num_polys, dtype=np.bool_)
     
+    if not np.any(poly_selected):
+        return
+    
+    # 将面选择状态映射到循环
+    loop_selected = poly_selected[loop_poly_indices]
+    
+    # 获取材质宽高比
     if correct_aspect:
-        aspect_ratio = _get_material_aspect_ratio(obj)
+        aspect_ratios = _get_material_aspect_ratios(obj)
     else:
-        aspect_ratio = 1.0
+        aspect_ratios = {0: 1.0}
     
-    u_coords = np.empty(num_loops, dtype=np.float32)
-    v_coords = np.empty(num_loops, dtype=np.float32)
+    # 获取每个面的材质索引，并映射到循环
+    poly_material_indices = np.empty(num_polys, dtype=np.int32)
+    mesh.polygons.foreach_get('material_index', poly_material_indices)
+    loop_material_indices = poly_material_indices[loop_poly_indices]
     
+    # 获取现有UV坐标
+    uv_array = np.empty(num_loops * 2, dtype=np.float32)
+    uv_layer.data.foreach_get('uv', uv_array)
+    uv_array = uv_array.reshape(-1, 2)
+    u_coords = uv_array[:, 0].copy()
+    v_coords = uv_array[:, 1].copy()
+    
+    # 获取顶点坐标
+    num_verts = len(mesh.vertices)
+    verts = np.empty(num_verts * 3, dtype=np.float32)
+    mesh.vertices.foreach_get('co', verts)
+    verts = verts.reshape(-1, 3)
+    
+    # 计算选中顶点的包围盒中心作为UV投影中心
+    selected_vertex_indices = loop_vertex_indices[loop_selected]
+    selected_verts = verts[selected_vertex_indices]
+    center = (selected_verts.min(axis=0) + selected_verts.max(axis=0)) * 0.5
+    
+    # 获取面法线并计算主导轴
+    normals = np.empty(num_polys * 3, dtype=np.float32)
+    mesh.polygons.foreach_get('normal', normals)
+    normals = normals.reshape(-1, 3)
+    dominant_axis = np.argmax(np.abs(normals), axis=1)
+    
+    # 按主导轴分别投影UV
     for axis in range(3):
-        mask = (max_axis[loop_poly_indices] == axis)
+        mask = loop_selected & (dominant_axis[loop_poly_indices] == axis)
         if not np.any(mask):
             continue
         
-        verts_axis = world_verts[loop_vertex_indices[mask]]
-        normals_axis = world_normals_norm[loop_poly_indices[mask]]
+        # 获取相对于中心的顶点坐标
+        verts_axis = verts[loop_vertex_indices[mask]] - center
         
+        # 根据主导轴选择UV映射的坐标分量
+        # axis 0 (X轴法线): 使用Y和Z坐标作为UV
+        # axis 1 (Y轴法线): 使用X和Z坐标作为UV
+        # axis 2 (Z轴法线): 使用X和Y坐标作为UV
         if axis == 0:
-            sign = normals_axis[:, 0] >= 0
-            u_temp = np.where(sign, verts_axis[:, 1], -verts_axis[:, 1])
+            u_temp = verts_axis[:, 1]
             v_temp = verts_axis[:, 2]
         elif axis == 1:
-            sign = normals_axis[:, 1] >= 0
-            u_temp = np.where(sign, verts_axis[:, 0], -verts_axis[:, 0])
+            u_temp = verts_axis[:, 0]
             v_temp = verts_axis[:, 2]
         else:
-            sign = normals_axis[:, 2] >= 0
-            u_temp = np.where(sign, verts_axis[:, 0], -verts_axis[:, 0])
+            u_temp = verts_axis[:, 0]
             v_temp = verts_axis[:, 1]
         
-        u_coords[mask] = u_temp
-        v_coords[mask] = v_temp
+        # 计算UV坐标，以0.5为中心
+        u_coords[mask] = 0.5 + u_temp / cube_size_safe
+        v_coords[mask] = 0.5 + v_temp / cube_size_safe
     
-    u_coords = u_coords / cube_size
-    v_coords = v_coords / cube_size
+    # 应用材质宽高比校正
+    if correct_aspect:
+        for mat_idx, aspect_ratio in aspect_ratios.items():
+            if aspect_ratio != 1.0:
+                mat_mask = loop_selected & (loop_material_indices == mat_idx)
+                if np.any(mat_mask):
+                    u_coords[mat_mask] = (u_coords[mat_mask] - 0.5) / aspect_ratio + 0.5
     
-    if aspect_ratio != 1.0:
-        u_coords = u_coords / aspect_ratio
-    
+    # 缩放UV到[0,1]范围
     if scale_to_bounds:
-        if selected_only and np.any(loop_selected):
-            u_min, u_max = np.min(u_coords[loop_selected]), np.max(u_coords[loop_selected])
-            v_min, v_max = np.min(v_coords[loop_selected]), np.max(v_coords[loop_selected])
-        else:
-            u_min, u_max = np.min(u_coords), np.max(u_coords)
-            v_min, v_max = np.min(v_coords), np.max(v_coords)
-        
+        u_min, u_max = np.min(u_coords[loop_selected]), np.max(u_coords[loop_selected])
+        v_min, v_max = np.min(v_coords[loop_selected]), np.max(v_coords[loop_selected])
         u_range = u_max - u_min if u_max != u_min else 1.0
         v_range = v_max - v_min if v_max != v_min else 1.0
         
-        u_coords = (u_coords - u_min) / u_range
-        v_coords = (v_coords - v_min) / v_range
+        u_coords[loop_selected] = (u_coords[loop_selected] - u_min) / u_range
+        v_coords[loop_selected] = (v_coords[loop_selected] - v_min) / v_range
+    # 裁剪UV到[0,1]范围
+    elif clip_to_bounds:
+        u_coords[loop_selected] = np.clip(u_coords[loop_selected], 0.0, 1.0)
+        v_coords[loop_selected] = np.clip(v_coords[loop_selected], 0.0, 1.0)
     
-    if clip_to_bounds:
-        u_coords = np.clip(u_coords, 0.0, 1.0)
-        v_coords = np.clip(v_coords, 0.0, 1.0)
-    
-    uv_array = np.stack([u_coords, v_coords], axis=1).flatten()
-    uv_layer.data.foreach_set('uv', uv_array)
-    
+    # 写回UV坐标
+    uv_array[:, 0] = u_coords
+    uv_array[:, 1] = v_coords
+    uv_layer.data.foreach_set('uv', uv_array.reshape(-1))
+    mesh.update()
+
     runTime = time.time() - timeStart
     # print("CubeProjection:obj=%s 运行时间：【%.4f秒】" % (obj.name, runTime))
 
-
-def _get_material_aspect_ratio(obj: bpy.types.Object) -> float:
+def _get_material_aspect_ratios(obj: bpy.types.Object) -> dict:
     """
-    获取对象材质关联图像的宽高比
+    获取对象所有材质槽对应的图像宽高比
+    返回: {material_index: aspect_ratio} 字典
     """
-    aspect_ratio = 1.0
+    aspect_ratios = {}
     
     if obj.material_slots:
-        for slot in obj.material_slots:
+        for idx, slot in enumerate(obj.material_slots):
+            aspect_ratio = 1.0
             if slot.material and slot.material.use_nodes:
                 for node in slot.material.node_tree.nodes:
                     if node.type == 'TEX_IMAGE' and node.image:
                         img = node.image
                         if img.size[0] > 0 and img.size[1] > 0:
                             aspect_ratio = img.size[0] / img.size[1]
-                            return aspect_ratio
+                            break
+            aspect_ratios[idx] = aspect_ratio
     
-    return aspect_ratio
+    return aspect_ratios

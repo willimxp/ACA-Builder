@@ -2183,6 +2183,9 @@ def joinObjects(objList: List[bpy.types.Object],
     if processed_objs:
         delObjectsFast(processed_objs)
     
+    # 刷新视图
+    updateScene()
+    
     delOrphan()
     
     return new_obj

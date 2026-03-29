@@ -434,7 +434,9 @@ def loadAssetByBuilding(buildingObj:bpy.types.Object):
     # 如，bData.dg_height，bData.dg_extend，bData.dg_scale
     # 250902 在“更新建筑”时，及时更新一次斗栱数据
     # 以便反应平坐斗栱的挑高与柱头斗栱挑高的变化
-    updateDougongData(buildingObj)
+    # 260329 不显示斗栱时，不更新斗栱数据(不添加无用的斗栱层根对象)
+    if bData.is_showDougong:
+        updateDougongData(buildingObj)
     
     return
 

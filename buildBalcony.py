@@ -376,7 +376,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     # 无论是否开口，仅靠左侧柱
     pillarLoc = (-proxy['length']/2 + pillarD/2,
                  0,0)
-    pillarObj = utils.copyObject(
+    pillarObj = utils.copySimplyObject(
         sourceObj=aData.railing_pillar,
         name=_("望柱.%s") % (proxy['id']),
         dimensions=pillarDim,
@@ -449,7 +449,7 @@ def __buildRailing(parentObj:bpy.types.Object,
                  + con.RAILING_FANG_H*dk # 中枋
                  )
         vaseLoc = (zzX,0,vaseZ)
-        vaseObj = utils.copyObject(
+        vaseObj = utils.copySimplyObject(
                 sourceObj=aData.railing_vase,
                 name=_("净瓶.%s") % (proxy['id']),
                 location=vaseLoc,
@@ -480,7 +480,6 @@ def __buildRailing(parentObj:bpy.types.Object,
                 clear_inner=clear_inner,
                 clear_outer=clear_outer,
             )
-            utils.shaderSmooth(vaseObj)
         railingParts.append(vaseObj)
         
     # 从下到上，累计高度
@@ -603,6 +602,7 @@ def __buildRailing(parentObj:bpy.types.Object,
     # 合并对象
     railingObj = utils.joinObjects(
         objList=railingParts,newName=_('栏杆'))
+    utils.shaderSmooth(railingObj)
     
     # 开口栏杆左右镜像
     if useGap:

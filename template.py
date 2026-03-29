@@ -291,9 +291,12 @@ def __updateAssetStyle(buildingObj:bpy.types.Object,
                             utils.deleteHierarchy(aData[assetName],del_parent=True)
                             # del aData[assetName]
                             
-                        # 个性化样式资产，不采用link方式，而是复制到各个建筑内
+                        # # 个性化样式资产，不采用link方式，而是复制到各个建筑内
+                        # aData[assetName] = loadAssets(
+                        #     item.text,link=False,parent=parent)
+                        # 260329 个性化资产也采用link方式，
                         aData[assetName] = loadAssets(
-                            item.text,link=False,parent=parent)
+                            item.text,link=True,parent=parent)
     return
 
 # 载入Blender中的资产

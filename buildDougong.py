@@ -273,7 +273,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
             # 设置斗栱配色
             mat.paint(fangCopy,con.M_FANG_DGCONNECT,
                        override=True)
-    return
+    return fangCopy
 
 # 生成连接枋
 # 为了便于根据每间面阔，精确的匹配攒当宽度的贴图，枋子在每间都生成
@@ -328,6 +328,7 @@ def __buildDGFangbyRoom(
                 })
     
     # 生成所有的连接枋
+    fangObjList = []
     for fang in fangList:
         fangCopy = utils.copySimplyObject(
             sourceObj = fangSourceObj,
@@ -352,17 +353,18 @@ def __buildDGFangbyRoom(
         if '栱垫板' in fangSourceObj.name:
             if bData.dg_extend == 0 :
                 # 一斗三升使用小号的栱垫板，只有一层正心瓜栱
-                mat.paint(fangCopy,con.M_BOARD_DG_S,
+                fangCopy = mat.paint(fangCopy,con.M_BOARD_DG_S,
                         override=True)
             else:
                 # 普通的栱垫板有一层正心瓜栱，一层正心厢栱
-                mat.paint(fangCopy,con.M_BOARD_DG,
+                fangCopy = mat.paint(fangCopy,con.M_BOARD_DG,
                         override=True)
         else:
-            mat.paint(fangCopy,con.M_FANG_DGCONNECT,
+            fangCopy = mat.paint(fangCopy,con.M_FANG_DGCONNECT,
                   override=True)
+        fangObjList.append(fangCopy)
             
-    return
+    return fangObjList
 
 # 放置柱头斗栱
 def __buildPillarDG(name = None,
@@ -714,11 +716,18 @@ def buildDougong(buildingObj:bpy.types.Object):
         dgSource = aData.dg_balcony_pillar_source
 
     # 循环处理各个连接件
+    fangList = []
     for fangObj in dgSource.children:
         if '栱垫板' in fangObj.name:
-            __buildDGFangbyRoom(dgrootObj,fangObj)
+            fangList += __buildDGFangbyRoom(dgrootObj,fangObj)
         else:
-            __buildDGFangbyBuilding(dgrootObj,fangObj)
+            fangList.append(__buildDGFangbyBuilding(dgrootObj,fangObj))
+    
+    # 批量处理连接件
+    if fangList != []:
+        for fang in fangList:
+            # 统一命名
+            fang.name = _('斗栱枋') 
     
     # 重新聚焦在建筑根节点
     utils.focusObj(buildingObj)

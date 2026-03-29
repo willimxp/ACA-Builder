@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ACA Builder\n"
-"POT-Creation-Date: 2026-03-26 12:12+0800\n"
-"PO-Revision-Date: 2026-03-26 12:13+0800\n"
+"POT-Creation-Date: 2026-03-29 11:38+0800\n"
+"PO-Revision-Date: 2026-03-29 11:38+0800\n"
 "Last-Translator: ACA Builder Team <noreply@example.com>\n"
 "Language-Team: English <en@li.org>\n"
 "Language: en_US\n"
@@ -300,11 +300,11 @@ msgstr ""
 "Note: Generally, Rafter Count should be even (odd for Curved Roof), so "
 "Rafter Count has been automatically reduced by one"
 
-#: buildBeam.py:352 texture.py:963
+#: buildBeam.py:352 texture.py:981
 msgid "挑檐桁"
 msgstr "Eave Purlin"
 
-#: buildBeam.py:410 texture.py:964
+#: buildBeam.py:410 texture.py:982
 msgid "正心桁"
 msgstr "Central Purlin"
 
@@ -344,39 +344,39 @@ msgstr "Board"
 msgid "桁架"
 msgstr "Truss Frame"
 
-#: buildBeam.py:896 buildBeam.py:1022 buildBeam.py:1068
+#: buildBeam.py:898 buildBeam.py:1024 buildBeam.py:1070
 msgid "趴梁"
 msgstr "Straddle Beam"
 
-#: buildBeam.py:1054 buildBeam.py:1184
+#: buildBeam.py:1056 buildBeam.py:1186
 msgid "坨橔"
 msgstr "Beam Bolster"
 
-#: buildBeam.py:1079 buildBeam.py:1159 buildBeam.py:1200
+#: buildBeam.py:1081 buildBeam.py:1161 buildBeam.py:1202
 msgid "太平梁"
 msgstr "Peace Beam"
 
-#: buildBeam.py:1270 buildBeam.py:1572
+#: buildBeam.py:1272 buildBeam.py:1574
 msgid "梁"
 msgstr "Beam"
 
-#: buildBeam.py:1311
+#: buildBeam.py:1313
 msgid "踩步金"
 msgstr "Hip Beam"
 
-#: buildBeam.py:1470
+#: buildBeam.py:1472
 msgid "蜀柱"
 msgstr "Short Pillar"
 
-#: buildBeam.py:1538
+#: buildBeam.py:1540
 msgid "梁架"
 msgstr "Beam Frame"
 
-#: buildBeam.py:1694
+#: buildBeam.py:1696
 msgid "角背"
 msgstr "Corner Back"
 
-#: buildBeam.py:1771
+#: buildBeam.py:1773
 msgid "盖板"
 msgstr "Cover Plate"
 
@@ -802,14 +802,6 @@ msgstr "Dougong Plate"
 msgid "平板枋.山面"
 msgstr "Dougong Plate.Gable Side"
 
-#: buildDougong.py:228 buildDougong.py:266
-msgid "挑檐枋"
-msgstr "Eave Purlin"
-
-#: buildDougong.py:357 buildDougong.py:720 data.py:976 data.py:980
-msgid "栱垫板"
-msgstr "栱垫板"
-
 #: buildDougong.py:379 data.py:1071
 msgid "柱头斗栱"
 msgstr "Column Dougong"
@@ -829,6 +821,10 @@ msgstr "Inter Dougong"
 #: buildDougong.py:695
 msgid "排布斗栱异常，输入的不是建筑根节点"
 msgstr "Dougong layout error, input is not building root node"
+
+#: buildDougong.py:730
+msgid "斗栱枋"
+msgstr "Dougong Fang"
 
 #: buildFloor.py:232 data.py:1117
 msgid "霸王拳"
@@ -1167,7 +1163,7 @@ msgstr "Corner Flying Rafter"
 msgid "翘飞椽望板"
 msgstr "Corner Flying Rafter Sheathing"
 
-#: buildRoof.py:3161 buildRoof.py:3162 buildRoof.py:3762 data.py:1016
+#: buildRoof.py:3161 buildRoof.py:3162 buildRoof.py:3763 data.py:1016
 msgid "山花板"
 msgstr "Pediment"
 
@@ -1183,31 +1179,31 @@ msgstr "Bargeboard Curve"
 msgid "雪花钉"
 msgstr "Bargeboard Nail"
 
-#: buildRoof.py:3589 buildYardWall.py:227 data.py:1105
+#: buildRoof.py:3590 buildYardWall.py:227 data.py:1105
 msgid "博缝板"
 msgstr "Bargeboard"
 
-#: buildRoof.py:3644 buildRoof.py:3780
+#: buildRoof.py:3645 buildRoof.py:3781
 msgid "曲线拟合"
 msgstr "Curve Fitting"
 
-#: buildRoof.py:3871
+#: buildRoof.py:3872
 msgid "没有足够空间摆放悬鱼"
 msgstr "Not enough space to place Gable Pendant"
 
-#: buildRoof.py:3888 data.py:1259
+#: buildRoof.py:3889 data.py:1259
 msgid "悬鱼"
 msgstr "Gable Pendant"
 
-#: buildRoof.py:3980 buildRoof.py:3981
+#: buildRoof.py:3981 buildRoof.py:3982
 msgid "山墙"
 msgstr "Gable Wall"
 
-#: buildRoof.py:4042 buildWall.py:196 buildYardWall.py:131
+#: buildRoof.py:4043 buildWall.py:196 buildYardWall.py:131
 msgid "下碱"
 msgstr "Lower Wall"
 
-#: buildRoof.py:4197
+#: buildRoof.py:4200
 msgid "进深小于3间，已自动禁止廊间举架"
 msgstr ""
 "Depth less than 3 bays, corridor rafter raising has been automatically "
@@ -1570,53 +1566,53 @@ msgstr "East Yard Wall"
 msgid "完成墙体构造"
 msgstr "Wall construction completed"
 
-#: const.py:14 panel.py:74 panel.py:86 panel.py:549 panel.py:590 panel.py:715
+#: const.py:38 panel.py:74 panel.py:86 panel.py:549 panel.py:590 panel.py:715
 #: panel.py:852 panel.py:1126 panel.py:1175 panel.py:1276 panel.py:1396
 #: panel.py:1510 panel.py:1568
 msgid "ACA筑韵古建"
 msgstr "ACA筑韵古建"
 
-#: const.py:15
+#: const.py:39
 msgid "ACA古建.合并"
 msgstr "ACA.Combined"
 
-#: const.py:16
+#: const.py:40
 msgid "1-台基层"
 msgstr "1-Platform"
 
-#: const.py:17
+#: const.py:41
 msgid "2-柱网层"
 msgstr "2-Pillars/Fangs"
 
-#: const.py:18
+#: const.py:42
 msgid "3-装修层"
 msgstr "3-Walls/Windows"
 
-#: const.py:19
+#: const.py:43
 msgid "4-斗栱层"
 msgstr "4-Dougong"
 
-#: const.py:20
+#: const.py:44
 msgid "5-梁架层"
 msgstr "5-Beam Frame"
 
-#: const.py:21
+#: const.py:45
 msgid "6-椽架层"
 msgstr "6-Rafter Frame"
 
-#: const.py:22
+#: const.py:46
 msgid "7-山花/望板"
 msgstr "7-Pediment/Sheathing"
 
-#: const.py:23
+#: const.py:47
 msgid "8-瓦作层"
 msgstr "8-Tiles/Ridges"
 
-#: const.py:24
+#: const.py:48
 msgid "5-平坐层"
 msgstr "5-Balcony"
 
-#: const.py:27
+#: const.py:51
 msgid "台基"
 msgstr "Platform"
 
@@ -2522,6 +2518,10 @@ msgstr "Mat Paint Walkdragon"
 #: data.py:972
 msgid "垫板.公母草"
 msgstr "Mat Paint Grasscouple"
+
+#: data.py:976 data.py:980
+msgid "栱垫板"
+msgstr "栱垫板"
 
 #: data.py:984
 msgid "檐椽贴图"
@@ -3525,52 +3525,52 @@ msgstr "Dougong default height not defined"
 msgid "斗栱未定义默认出跳"
 msgstr "Dougong default projection not defined"
 
-#: template.py:317
+#: template.py:320
 msgid "无法打开资产库，请确认已经按照使用手册，关联了acaAssets.blend文件。"
 msgstr ""
 "Cannot open asset library, please confirm that you have linked the "
 "acaAssets.blend file according to the user manual."
 
-#: template.py:324
+#: template.py:327
 msgid "无法打开资产库，请确认acaAssets.blend文件已经放入插件目录"
 msgstr ""
 "Cannot open asset library, please confirm acaAssets.blend file is in the "
 "addon directory"
 
-#: template.py:327
+#: template.py:330
 #, python-format
 msgid "资产[%s]载入失败，请检查是否关联最新版本的acaAssets.blend资产库。"
 msgstr ""
 "Failed to load asset [%s], please check if the latest version of "
 "acaAssets.blend asset library is linked."
 
-#: template.py:329
+#: template.py:332
 msgid "无法定位唯一的资产:"
 msgstr "Cannot locate unique asset:"
 
-#: template.py:402
+#: template.py:405
 msgid "重新载入素材库..."
 msgstr "Reloading asset library..."
 
-#: template.py:527 template.py:589 template.py:645 template.py:766
+#: template.py:530 template.py:592 template.py:648 template.py:769
 msgid "模板解析失败"
 msgstr "Template parsing failed"
 
-#: template.py:548
+#: template.py:551
 #, python-format
 msgid "找不到父模板%s，无法载入子模版"
 msgstr "Parent template %s not found, cannot load child template"
 
-#: template.py:561
+#: template.py:564
 msgid "无法载入模板"
 msgstr "Cannot load template"
 
-#: template.py:577
+#: template.py:580
 #, python-format
 msgid "保存模板失败，未知的建筑类型%s"
 msgstr "Template save failed, unknown building type %s"
 
-#: template.py:666
+#: template.py:669
 #, python-format
 msgid "找不到父模板%s，无法保存子模版"
 msgstr "Parent template %s not found, cannot save child template"
@@ -3675,38 +3675,41 @@ msgstr "Vector"
 msgid "没有可以合并的对象"
 msgstr "No objects to join"
 
-#: utils.py:2310
+#: utils.py:2317
 msgid "不在viewLayer中，无法做shaderSmooth"
 msgstr "Not in viewLayer, cannot perform shaderSmooth"
 
-#: utils.py:2769 utils.py:2808
+#: utils.py:2776 utils.py:2815
 msgid "所选对象不是曲线。"
 msgstr "Selected object is not a curve."
 
-#: utils.py:2776
+#: utils.py:2783
 msgid "所选曲线不是贝塞尔曲线。"
 msgstr "Selected curve is not a Bezier curve."
 
-#: utils.py:2815
+#: utils.py:2822
 msgid "所选曲线不是POLY曲线。"
 msgstr "Selected curve is not a POLY curve."
 
-#: utils.py:2931
+#: utils.py:2938
 msgid "复制ACA_data错误: 对象没有 ACA_data 属性组"
 msgstr "Copy ACA_data Error: Object has no ACA_data property group"
 
-#: utils.py:2999
+#: utils.py:3006
 #, python-format
 msgid "警告: copyAcaData,目标对象没有属性 '%s'"
 msgstr "Warning: copyAcaData, target object has no property '%s'"
 
-#: utils.py:3070
+#: utils.py:3077
 #, python-format
 msgid "applyCollModifier：对象 %s 不在当前视图，无法执行操作"
 msgstr ""
 "applyCollModifier: Object %s is not in current view, cannot perform operation"
 
-#: utils.py:3225 utils.py:3246
+#: utils.py:3232 utils.py:3253
 #, python-format
 msgid "无法获取%s列表"
 msgstr "Cannot get %s list"
+
+#~ msgid "挑檐枋"
+#~ msgstr "Eave Purlin"

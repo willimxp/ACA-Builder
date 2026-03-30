@@ -1931,7 +1931,6 @@ def joinObjects(objList: List[bpy.types.Object],
         baseObj = objList[0]
     elif baseObj not in objList:
         baseObj = objList[0]
-    baseObjParent = baseObj.parent
 
     # 1、更新视图，合并对象如果是刚刚生成的，就可能未更新
     updateScene()
@@ -2163,32 +2162,28 @@ def joinObjects(objList: List[bpy.types.Object],
         bm.free()
         new_mesh.update()
     
-    # 创建新对象
-    new_obj = bpy.data.objects.new(newName, new_mesh)
-    # 保持原有的parent关系
-    if baseObjParent:
-        new_obj.parent = baseObjParent
-        new_obj.matrix_local = baseObj.matrix_local.copy()
-    else:
-        new_obj.matrix_world = baseObj.matrix_world.copy()
-
-    bpy.context.collection.objects.link(new_obj)
-    focusObj(new_obj)
+    # 原地替换baseObj的网格数据
+    old_mesh = baseObj.data
+    baseObj.data = new_mesh
     
-    # 复制ACA_data自定义属性
-    if hasattr(baseObj, 'ACA_data'):
-        copyAcaData(baseObj, new_obj)
+    # 删除旧网格
+    if old_mesh and old_mesh.users == 0:
+        bpy.data.meshes.remove(old_mesh)
     
-    # 删除旧对象
+    focusObj(baseObj)
+    
+    # 删除已处理的对象（排除baseObj）
     if processed_objs:
-        delObjectsFast(processed_objs)
+        objs_to_delete = [ob for ob in processed_objs if ob != baseObj]
+        if objs_to_delete:
+            delObjectsFast(objs_to_delete)
     
     # 刷新视图
     updateScene()
     
     delOrphan()
     
-    return new_obj
+    return baseObj
 
 # 返回根对象
 def getRoot(object:bpy.types.Object):

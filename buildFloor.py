@@ -923,7 +923,7 @@ def __buildFang(buildingObj:bpy.types.Object):
             fangJoined = utils.joinObjects(fangPart,
                                            newName=_('额枋.')+ fangID,
                                            baseObj=bigFangObj)
-            bigFangObj = fangJoined
+            # bigFangObj = fangJoined
         
     # # 聚焦到最后添加的大额枋，便于用户可以直接删除
     # utils.focusObj(bigFangObj)

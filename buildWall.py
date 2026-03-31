@@ -14,6 +14,7 @@ from .data import ACA_data_template as tmpData
 from . import utils
 from . import buildDoor
 from . import buildFloor
+from . import buildBalcony
 from . import texture as mat
 
 # 创建新地盘对象（empty）
@@ -287,6 +288,9 @@ def updateWall(wallObj:bpy.types.Object):
 
     # 集成老的wall名称(避免.001后缀)
     newWallObj.name = wallName
+
+    # 清理栏杆缓存
+    buildBalcony.clearRailingCache()
     return
 
 # 根据传入的wallID，生成对应的墙、板门、隔扇、槛窗等
@@ -712,5 +716,8 @@ def buildWallLayout(buildingObj:bpy.types.Object):
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)
+
+    # 清理栏杆缓存
+    buildBalcony.clearRailingCache()
 
     return {'FINISHED'}

@@ -15,6 +15,15 @@ from .data import ACA_data_template as tmpData
 from . import utils
 from . import buildFloor
 from . import texture as mat
+from . import buildWallCache
+
+def clearRailingCache():
+    """
+    清理栏杆缓存
+    删除所有缓存对象并清空缓存字典
+    """
+    buildWallCache.getRailingCache().clear()
+    buildWallCache.getBenchCache().clear()
 
 # 添加平坐根节点
 def __addBalconyRoot(buildingObj:bpy.types.Object):
@@ -702,18 +711,50 @@ def addRailing(wallProxy:bpy.types.Object):
     # 区分做栏杆还是坐凳
     wallType = railingID.split('#')[0]
 
+    # 获取对应的缓存实例
     if wallType == con.ACA_WALLTYPE_RAILILNG:
-        # 创建栏杆
-        railingObj = __buildRailing(
-            parentObj=wallProxy,
-            proxy=proxy
-        )
+        wallCache = buildWallCache.getRailingCache()
     elif wallType == con.ACA_WALLTYPE_BENCH:
-        # 创建坐凳
-        railingObj = __buildBench(
-            parentObj=wallProxy,
-            proxy=proxy
-        )
+        wallCache = buildWallCache.getBenchCache()
+    else:
+        wallCache = buildWallCache.getRailingCache()
+    
+    # 生成缓存键
+    cacheKey = wallCache.generateKey(
+        values={'length': proxy['length'], 'gap': proxy['gap'], 'type': wallType},
+        precisions={'length': 2, 'gap': 3}
+    )
+
+    # 检查缓存并尝试获取
+    railingObj = wallCache.get(
+        cacheKey=cacheKey,
+        parentObj=wallProxy,
+        newName=_("栏杆.%s") % (railingID) if wallType == con.ACA_WALLTYPE_RAILILNG else _("坐凳.%s") % (railingID),
+        singleUser=False
+    )
+    
+    # 如果缓存未命中，生成新栏杆
+    if railingObj is None:
+        if wallType == con.ACA_WALLTYPE_RAILILNG:
+            # 创建栏杆
+            railingObj = __buildRailing(
+                parentObj=wallProxy,
+                proxy=proxy
+            )
+        elif wallType == con.ACA_WALLTYPE_BENCH:
+            # 创建坐凳
+            railingObj = __buildBench(
+                parentObj=wallProxy,
+                proxy=proxy
+            )
+        
+        # 保存到缓存
+        if railingObj is not None:
+            wallCache.set(
+                cacheKey=cacheKey,
+                sourceObj=railingObj,
+                namePrefix=_("_cache_栏杆.")
+            )
 
     return railingObj
 

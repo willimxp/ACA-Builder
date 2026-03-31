@@ -2430,6 +2430,10 @@ def changeParent(object:bpy.types.Object,
             use_rotation=True,
             use_scale=True,
     )
+    
+    # 260331 转换矩阵前务必获取最新的对象矩阵
+    updateScene()
+    
     # 转换坐标矩阵
     object.matrix_local = (
         newParent.matrix_world.inverted()

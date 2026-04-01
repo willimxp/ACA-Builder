@@ -23,7 +23,7 @@ from datetime import datetime
 import threading
 import time
 
-BLENDER_APP_NAME = 'Blender 5.0.1'
+BLENDER_APP_NAME = 'Blender 5.0'
 
 class SleepPreventer:
     """
@@ -114,10 +114,10 @@ def find_blender_executable() -> str:
             pass
     elif sys.platform == 'win32':
         possible_paths = [
-            rf'C:\Program Files\{BLENDER_APP_NAME} Foundation\{BLENDER_APP_NAME} 4.2\blender.exe',
-            rf'C:\Program Files\{BLENDER_APP_NAME} Foundation\{BLENDER_APP_NAME} 4.1\blender.exe',
-            rf'C:\Program Files\{BLENDER_APP_NAME} Foundation\{BLENDER_APP_NAME} 4.0\blender.exe',
-            rf'C:\Program Files\{BLENDER_APP_NAME} Foundation\{BLENDER_APP_NAME}\blender.exe',
+            rf'C:\Program Files\Blender Foundation\{BLENDER_APP_NAME} 4.2\blender.exe',
+            rf'C:\Program Files\Blender Foundation\{BLENDER_APP_NAME} 4.1\blender.exe',
+            rf'C:\Program Files\Blender Foundation\{BLENDER_APP_NAME} 4.0\blender.exe',
+            rf'C:\Program Files\Blender Foundation\{BLENDER_APP_NAME}\blender.exe',
         ]
         for path in possible_paths:
             if os.path.exists(path):
@@ -345,9 +345,22 @@ def execute_build():
     
     # 延迟退出Blender，确保截图已保存
     def quit_blender():
-        bpy.ops.wm.quit_blender()
+        import sys
+        import platform
+        print("准备退出Blender...")
+        try:
+            bpy.ops.wm.quit_blender()
+        except Exception as e:
+            print(f"常规退出失败: {{e}}")
+            try:
+                if platform.system() == 'Windows':
+                    import ctypes
+                    ctypes.windll.user32.PostQuitMessage(0)
+                sys.exit(0)
+            except:
+                os._exit(0)
     
-    bpy.app.timers.register(quit_blender, first_interval=1.0)
+    bpy.app.timers.register(quit_blender, first_interval=2.0)
 
 # 使用定时器延迟执行，确保Blender完全启动
 bpy.app.timers.register(execute_build, first_interval=2.0)
@@ -383,6 +396,82 @@ def run_with_output_timeout(cmd: list, timeout_seconds: int = 600) -> tuple:
     """
     运行命令并监测输出，如果指定时间内没有新输出则判定超时
     返回: (return_code, stdout, stderr, timed_out)
+    
+    Windows下使用communicate()避免管道死锁
+    macOS/Linux下使用线程实时读取输出
+    """
+    if sys.platform == 'win32':
+        return _run_with_output_timeout_windows(cmd, timeout_seconds)
+    else:
+        return _run_with_output_timeout_unix(cmd, timeout_seconds)
+
+
+def _run_with_output_timeout_windows(cmd: list, timeout_seconds: int) -> tuple:
+    """
+    Windows版本：使用communicate()避免管道死锁
+    缺点：无法实时显示输出，但能保证不会死锁
+    """
+    import queue
+    
+    process = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=False
+    )
+    
+    stdout_queue = queue.Queue()
+    stderr_queue = queue.Queue()
+    timed_out = False
+    
+    def read_all_output():
+        try:
+            stdout_data, stderr_data = process.communicate(timeout=timeout_seconds)
+            stdout_queue.put(stdout_data)
+            stderr_queue.put(stderr_data)
+        except subprocess.TimeoutExpired:
+            stdout_queue.put(b'')
+            stderr_queue.put(b'')
+    
+    reader_thread = threading.Thread(target=read_all_output)
+    reader_thread.daemon = True
+    reader_thread.start()
+    
+    start_time = time.time()
+    while reader_thread.is_alive():
+        elapsed = time.time() - start_time
+        if elapsed > timeout_seconds + 10:
+            print(f"\n检测到超时（{timeout_seconds}秒），正在强制终止进程...")
+            _force_kill_process_windows(process)
+            timed_out = True
+            break
+        time.sleep(0.5)
+    
+    reader_thread.join(timeout=2)
+    
+    try:
+        stdout_bytes = stdout_queue.get_nowait()
+        stderr_bytes = stderr_queue.get_nowait()
+        stdout = stdout_bytes.decode('utf-8', errors='replace')
+        stderr = stderr_bytes.decode('utf-8', errors='replace')
+    except queue.Empty:
+        stdout = ""
+        stderr = ""
+    
+    if stdout:
+        print(stdout, end='')
+    
+    return (
+        process.returncode,
+        stdout,
+        stderr,
+        timed_out
+    )
+
+
+def _run_with_output_timeout_unix(cmd: list, timeout_seconds: int) -> tuple:
+    """
+    Unix版本：使用线程实时读取输出
     """
     process = subprocess.Popen(
         cmd,
@@ -440,6 +529,26 @@ def run_with_output_timeout(cmd: list, timeout_seconds: int = 600) -> tuple:
         ''.join(stderr_lines),
         timed_out
     )
+
+
+def _force_kill_process_windows(process):
+    """
+    在Windows下强制终止进程
+    使用taskkill命令确保GUI程序被终止
+    """
+    try:
+        pid = process.pid
+        subprocess.run(['taskkill', '/F', '/T', '/PID', str(pid)], 
+                      capture_output=True, timeout=10)
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        try:
+            process.kill()
+            process.wait()
+        except:
+            pass
+    except Exception as e:
+        print(f"终止进程时出错: {e}")
 
 
 def launch_single(template_name: str, addon_path: str, output_dir: Path) -> dict:

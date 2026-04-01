@@ -140,9 +140,9 @@ class ACA_PT_basic(bpy.types.Panel):
             text=_('从模板生成新建筑')
             )
         
-        # 性能分析按钮
-        row = layout.row()
-        row.operator("aca.profile",icon='HOME')
+        # # 性能分析按钮
+        # row = layout.row()
+        # row.operator("aca.profile",icon='HOME')
         
         # 2、运行中提示
         if not build.isFinished:

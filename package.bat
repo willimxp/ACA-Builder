@@ -30,7 +30,9 @@ if not exist "!destination!" (
 )
 
 rem 拷贝文件，排除指定目录、所有 .blend 后缀的文件、aca_log.txt、.gitignore 以及 package.bat 文件
-robocopy "!source!" "!destination!" /E /XF *.blend aca_log.txt .gitignore package.bat /XD __pycache__ .vscode .git
+robocopy "!source!" "!destination!" /E ^
+/XF *.blend aca_log.txt .gitignore package.bat ^
+/XD __pycache__ .vscode .git .trae doc test
 if %errorlevel% leq 3 (
     echo 拷贝成功。
 ) else (

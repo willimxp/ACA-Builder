@@ -8,7 +8,7 @@ import os
 import gettext
 
 # 默认语言 FOLLOW/zh_HANS/en_US
-DEFAULT_LANGUAGE = 'en_US'
+DEFAULT_LANGUAGE = 'FOLLOW'
 
 # 英文翻译器
 # 在load_translations()中初始化

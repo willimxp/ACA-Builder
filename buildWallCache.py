@@ -96,7 +96,7 @@ class WallCache:
                 self._invalidate(cacheKey)
                 return None
             
-            resultObj = utils.copySimplyObject(
+            resultObj = utils.copyObject(
                 sourceObj=cachedObj,
                 name=newName if newName else cachedObj.name,
                 parentObj=parentObj,
@@ -130,7 +130,7 @@ class WallCache:
         
         cacheName = f"{namePrefix}{cacheKey[0] if cacheKey else 'unknown'}"
         
-        cachedObj = utils.copySimplyObject(
+        cachedObj = utils.copyObject(
             sourceObj=sourceObj,
             name=cacheName,
             singleUser=False
@@ -156,7 +156,8 @@ class WallCache:
         for cacheKey, cachedObj in list(self._cache.items()):
             try:
                 if cachedObj is not None and cachedObj.name in bpy.data.objects:
-                    bpy.data.objects.remove(cachedObj, do_unlink=True)
+                    utils.deleteHierarchy(cachedObj,
+                                          del_parent=True)
             except ReferenceError:
                 pass
         self._cache.clear()
@@ -312,6 +313,16 @@ def getQuetiCache() -> WallCache:
         雀替缓存实例
     """
     return WallCacheManager.getInstance().getCache('queti', "雀替缓存")
+
+
+def getDoorCache() -> WallCache:
+    """
+    获取门/隔扇缓存实例
+    
+    返回:
+        门/隔扇缓存实例
+    """
+    return WallCacheManager.getInstance().getCache('door', "门/隔扇缓存")
 
 
 def clearAllWallCache():

@@ -12,6 +12,7 @@ from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
 from . import texture as mat
 from . import utils
+from . import buildWallCache
 
 # 构建扇心
 # 包括在槛框中嵌入的横披窗扇心
@@ -1888,3 +1889,64 @@ def __addFlipwindow(kankuangObj:bpy.types.Object):
     flipwinObj_LeftUp.lock_rotation = (False,True,True)
 
     return
+
+
+def buildDoorWithCache(wallProxy:bpy.types.Object):
+    """
+    带缓存的门/隔扇构建函数
+    
+    根据 wallProxy 的长宽高作为缓存键，
+    将槛框和隔扇作为一个整体进行缓存。
+    
+    参数:
+        wallProxy: 墙体代理对象
+        
+    返回:
+        构建完成的门/隔扇对象
+    """
+    wallID = wallProxy.ACA_data['wallID']
+    wallType = wallID.split('#')[0]
+    
+    wallCache = buildWallCache.getDoorCache()
+    
+    wallWidth = round(wallProxy.dimensions.x, 2)
+    wallDepth = round(wallProxy.dimensions.y, 2)
+    wallHeight = round(wallProxy.dimensions.z, 2)
+    
+    cacheKey = wallCache.generateKey(
+        values={
+            'width': wallWidth,
+            'depth': wallDepth,
+            'height': wallHeight,
+            'type': wallType
+        }
+    )
+    
+    doorObj = wallCache.get(
+        cacheKey=cacheKey,
+        parentObj=wallProxy,
+        newName=_("%s.%s") % (
+            _("槛框") if wallType == con.ACA_WALLTYPE_MAINDOOR else _("隔扇"),
+            wallID
+        ),
+        singleUser=False
+    )
+    
+    if doorObj is None:
+        doorObj = buildDoor(wallProxy)
+        
+        if doorObj is not None:
+            wallCache.set(
+                cacheKey=cacheKey,
+                sourceObj=doorObj,
+                namePrefix=_("_cache_门.")
+            )
+    
+    return doorObj
+
+def clearDoorCache():
+    """
+    清理门/隔扇缓存
+    删除所有缓存对象并清空缓存字典
+    """
+    buildWallCache.getDoorCache().clear()

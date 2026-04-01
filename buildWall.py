@@ -291,6 +291,8 @@ def updateWall(wallObj:bpy.types.Object):
 
     # 清理栏杆缓存
     buildBalcony.clearRailingCache()
+    # 清理门/隔扇缓存
+    buildDoor.clearDoorCache()
     return
 
 # 根据传入的wallID，生成对应的墙、板门、隔扇、槛窗等
@@ -337,7 +339,7 @@ def __buildWall(buildingObj:bpy.types.Object,
                       con.ACA_WALLTYPE_WINDOW,
                       con.ACA_WALLTYPE_BARWINDOW,
                       con.ACA_WALLTYPE_FLIPWINDOW,):
-        wallObj = buildDoor.buildDoor(wallproxy)
+        wallObj = buildDoor.buildDoorWithCache(wallproxy)
     # 营造栏杆、坐凳
     elif wallType in (con.ACA_WALLTYPE_RAILILNG,
                       con.ACA_WALLTYPE_BENCH):
@@ -719,5 +721,7 @@ def buildWallLayout(buildingObj:bpy.types.Object):
 
     # 清理栏杆缓存
     buildBalcony.clearRailingCache()
+    # 清理门/隔扇缓存
+    buildDoor.clearDoorCache()
 
     return {'FINISHED'}

@@ -2233,6 +2233,7 @@ def joinObjects(objList: List[bpy.types.Object],
     # 原地替换baseObj的网格数据
     old_mesh = baseObj.data
     baseObj.data = new_mesh
+    baseObj.name = newName
     
     # 删除旧网格
     if old_mesh and old_mesh.users == 0:
@@ -2249,7 +2250,11 @@ def joinObjects(objList: List[bpy.types.Object],
     # 刷新视图
     updateScene()
     
+    # 删除所有孤儿对象
     delOrphan()
+
+    # 260407 合并后的对象自动应用smooth修改器
+    shaderSmooth(baseObj)
     
     return baseObj
 

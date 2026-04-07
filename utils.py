@@ -4065,6 +4065,10 @@ def applyModifier_low(ob: bpy.types.Object):
         ob.data = mesh_eval
         # 清理旧网格
         bpy.data.meshes.remove(old_mesh, do_unlink=True)
+
+        # 260407 清除对象的原始修改器
+        ob.modifiers.clear()
+
         return ob
 
     except RuntimeError as e:

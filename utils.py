@@ -354,6 +354,74 @@ def copyCollection(src_coll_name, new_coll_name):
             new_obj.parent = new_parent
             new_obj.matrix_parent_inverse = src_obj.matrix_parent_inverse.copy()
 
+    # 修正修改器中的对象引用
+    for src_obj, new_obj in obj_map.items():
+        for mod in new_obj.modifiers:
+            # Mirror修改器
+            if mod.type == 'MIRROR':
+                if mod.mirror_object and mod.mirror_object in obj_map:
+                    mod.mirror_object = obj_map[mod.mirror_object]
+            # Curve修改器
+            elif mod.type == 'CURVE':
+                if mod.object and mod.object in obj_map:
+                    mod.object = obj_map[mod.object]
+            # Hook修改器
+            elif mod.type == 'HOOK':
+                if mod.object and mod.object in obj_map:
+                    mod.object = obj_map[mod.object]
+            # Boolean修改器
+            elif mod.type == 'BOOLEAN':
+                if mod.object and mod.object in obj_map:
+                    mod.object = obj_map[mod.object]
+            # Lattice修改器
+            elif mod.type == 'LATTICE':
+                if mod.object and mod.object in obj_map:
+                    mod.object = obj_map[mod.object]
+            # Shrinkwrap修改器
+            elif mod.type == 'SHRINKWRAP':
+                if mod.target and mod.target in obj_map:
+                    mod.target = obj_map[mod.target]
+                if mod.auxiliary_target and mod.auxiliary_target in obj_map:
+                    mod.auxiliary_target = obj_map[mod.auxiliary_target]
+            # Array修改器
+            elif mod.type == 'ARRAY':
+                if mod.curve and mod.curve in obj_map:
+                    mod.curve = obj_map[mod.curve]
+                if mod.offset_object and mod.offset_object in obj_map:
+                    mod.offset_object = obj_map[mod.offset_object]
+            # MeshDeform修改器
+            elif mod.type == 'MESH_DEFORM':
+                if mod.object and mod.object in obj_map:
+                    mod.object = obj_map[mod.object]
+            # Armature修改器
+            elif mod.type == 'ARMATURE':
+                if mod.object and mod.object in obj_map:
+                    mod.object = obj_map[mod.object]
+            # SurfaceDeform修改器
+            elif mod.type == 'SURFACE_DEFORM':
+                if mod.target and mod.target in obj_map:
+                    mod.target = obj_map[mod.target]
+            # Warp修改器
+            elif mod.type == 'WARP':
+                if mod.object_from and mod.object_from in obj_map:
+                    mod.object_from = obj_map[mod.object_from]
+                if mod.object_to and mod.object_to in obj_map:
+                    mod.object_to = obj_map[mod.object_to]
+            # VertexWeightEdit/VertexWeightMix/VertexWeightProximity修改器
+            elif mod.type in ('VERTEX_WEIGHT_EDIT', 'VERTEX_WEIGHT_MIX', 'VERTEX_WEIGHT_PROXIMITY'):
+                if mod.mask_constant and hasattr(mod, 'mask_constant') and mod.mask_constant in obj_map:
+                    mod.mask_constant = obj_map[mod.mask_constant]
+
+    # 修正曲线对象的bevel_object引用
+    for src_obj, new_obj in obj_map.items():
+        if new_obj.type == 'CURVE' and new_obj.data:
+            curve_data = new_obj.data
+            if curve_data.bevel_object and curve_data.bevel_object in obj_map:
+                curve_data.bevel_object = obj_map[curve_data.bevel_object]
+            # 修正taper_object
+            if hasattr(curve_data, 'taper_object') and curve_data.taper_object and curve_data.taper_object in obj_map:
+                curve_data.taper_object = obj_map[curve_data.taper_object]
+
     return new_coll
 
 # 查找当前对象的兄弟节点

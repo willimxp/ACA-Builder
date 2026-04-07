@@ -2406,7 +2406,7 @@ def __unionCrossL(fromBuilding:bpy.types.Object,
     if bData.use_dg:
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2
-    buildingH += 20*dk # 保险高度
+    buildingH += con.SPLICE_HEIGHT_EXT_DK*dk # 保险高度
     buildingEave = 30*dk 
     
     # 获取相交瓦面 ---------------------------------
@@ -2940,7 +2940,7 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
     if bData.use_dg:
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2
-    buildingH += 20*dk # 保险高度
+    buildingH += con.SPLICE_HEIGHT_EXT_DK*dk # 保险高度
     boolCenter = Vector((offset,offset,buildingH/2))
     # 做东南角SE
     if ((isWE and dir == 'NE') # 横版向东北
@@ -3037,7 +3037,7 @@ def __update_loggia_corner(baseLoggia:bpy.types.Object,
     if bData.use_dg:
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2
-    buildingH += 20*dk # 保险高度
+    buildingH += con.SPLICE_HEIGHT_EXT_DK*dk # 保险高度
     buildingEave = 20*dk # 悬山出际
     
     # 转角链接的廊间数量
@@ -3314,7 +3314,7 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
     if bData.use_dg:
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2
-    buildingH += 20*dk # 保险高度
+    buildingH += con.SPLICE_HEIGHT_EXT_DK*dk # 保险高度
     buildingEave = 20*dk # 悬山出际
 
     # 裁剪
@@ -3419,7 +3419,7 @@ def __cut_base_loggia(baseLoggia:bpy.types.Object,
     if bData.use_dg:
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2
-    buildingH += 20*dk # 保险高度
+    buildingH += con.SPLICE_HEIGHT_EXT_DK*dk # 保险高度
     buildingEave = 20*dk # 悬山出际
 
     # 原始廊间是横版，还是竖版？

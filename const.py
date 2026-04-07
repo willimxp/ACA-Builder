@@ -387,6 +387,9 @@ class ACA_Consts(object, metaclass=ACA_ConstsMeta):
     COMBO_LOGGIA = 'combo_loggia'
     COMBO_LOGGIA_CORNER = 'combo_loggia_corner'
 
+    # 建筑拼接
+    SPLICE_HEIGHT_EXT_DK = 100 # 建筑拼接高度扩展(DK)
+
     # 后处理类型
     POSTPROC_SPLICE = 'SPLICE'
     BOOL_RESERVE = 0.02     # 裁剪体包裹的出血尺寸

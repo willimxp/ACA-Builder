@@ -2463,8 +2463,10 @@ def __unionCrossL(fromBuilding:bpy.types.Object,
     
     # 碰撞线二次调整 --------------------
     spline = curve.data.splines[0]
-    pStart = spline.points[0].co
-    pEnd = spline.points[-1].co
+    # 260407 获取碰撞线起始点坐标
+    # 必须通过copy()方法，否则在后续做points.add时会丢失
+    pStart = spline.points[0].co.copy()
+    pEnd = spline.points[-1].co.copy()
     # 以中点与toBuilding的位置关系，决定做哪个象限
     pMid = (pStart + pEnd)/2
     toCenter = toBuilding.location
@@ -3006,7 +3008,7 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
         parent=LoggiaCornerJoined,
     )
     utils.hideObjFace(boolCube)
-    utils.hideObj(boolCube)
+    # utils.hideObj(boolCube)
     for obj in LoggiaCornerJoined.children:
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue
@@ -3451,7 +3453,7 @@ def __cut_base_loggia(baseLoggia:bpy.types.Object,
         parent=LoggiaJoined,
     )
     utils.hideObjFace(boolCube)
-    utils.hideObj(boolCube)
+    # utils.hideObj(boolCube)
     for obj in LoggiaJoined.children:
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue

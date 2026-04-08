@@ -813,11 +813,22 @@ def joinBuilding(buildingObj:bpy.types.Object,
     
     # 2.3、复制原始建筑根节点，做为合并对象的根节点
     # 第一个对象就是建筑根节点，这样判断可能不够安全
-    buildingObjCopy = collCopy.objects[0]    
-    # 复制生成分层合并的父节点
-    joinedRoot = utils.copySimplyObject(buildingObjCopy)
-    # 设置名称
-    joinedRoot.name = buildingObj.name + con.JOIN_SUFFIX
+    buildingObjCopy = collCopy.objects[0]
+    # 计算目标名称
+    joinedRootName = buildingObj.name + con.JOIN_SUFFIX
+    # 先查找是否已存在同名对象，存在则复用
+    joinedRoot = bpy.data.objects.get(joinedRootName)
+    if joinedRoot:
+        # 复用已有对象，如果隐藏则显示（包括子对象）
+        def _showHierarchy(obj:bpy.types.Object):
+            utils.showObj(obj)
+            for child in obj.children:
+                _showHierarchy(child)
+        _showHierarchy(joinedRoot)
+    else:
+        # 不存在则新建
+        joinedRoot = utils.copySimplyObject(buildingObjCopy)
+        joinedRoot.name = joinedRootName
     # 标示为ACA对象
     joinedRoot.ACA_data['aca_obj'] = True
     joinedRoot.ACA_data['aca_type'] = \
@@ -895,9 +906,24 @@ def joinBuilding(buildingObj:bpy.types.Object,
             comboType = partObjList[0].parent.parent.ACA_data.combo_type
         
         # 合并对象
+        # 先在 joinedRoot 下查找是否存在同名对象（忽略.001/.002等后缀）
+        oldJoinedModel = None
+        for child in joinedRoot.children:
+            # 比较时忽略 Blender 自动生成的数字后缀
+            childBaseName = child.name.rsplit('.', 1)[0] if '.' in child.name else child.name
+            if childBaseName == joinedName:
+                oldJoinedModel = child
+                break
+        
         joinedModel = utils.joinObjects(
             objList=partObjList,
             newName=joinedName,)
+        
+        # 如果存在同名旧对象，拷贝其modifier后删除旧对象
+        if oldJoinedModel:
+            if oldJoinedModel.modifiers:
+                utils.copyModifiers(oldJoinedModel, joinedModel)
+            utils.delObject(oldJoinedModel)
         
         # 250929 继承父建筑的combo_type，以便剖视图区分是否为底层建筑还是楼阁
         if isCombo:
@@ -3007,7 +3033,7 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
         parent=LoggiaCornerJoined,
     )
     utils.hideObjFace(boolCube)
-    # utils.hideObj(boolCube)
+    utils.hideObj(boolCube)
     for obj in LoggiaCornerJoined.children:
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue
@@ -3452,7 +3478,7 @@ def __cut_base_loggia(baseLoggia:bpy.types.Object,
         parent=LoggiaJoined,
     )
     utils.hideObjFace(boolCube)
-    # utils.hideObj(boolCube)
+    utils.hideObj(boolCube)
     for obj in LoggiaJoined.children:
         # 跳过bool对象
         if con.BOOL_SUFFIX  in obj.name : continue

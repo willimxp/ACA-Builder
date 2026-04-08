@@ -1061,9 +1061,11 @@ def hideObjFace(object:bpy.types.Object) :
 
 # 隐藏树状层次下的所有对象
 def hideHierarchy(obj:bpy.types.Object):
+    # 跳过布尔裁剪对象
+    if con.BOOL_SUFFIX not in obj.name:
         hideObj(obj)
-        for child in obj.children:
-            hideHierarchy(child)
+    for child in obj.children:
+        hideHierarchy(child)
 
 # 强制显示对象
 def showObj(object:bpy.types.Object) : 
@@ -1071,11 +1073,13 @@ def showObj(object:bpy.types.Object) :
     object.hide_viewport = False    # “屏幕”，含在viewport中
     object.hide_render = False      # “相机”，渲染
 
-# 强制显示对象及其子对象层级
+# 显示树状层次下的所有对象
 def showHierarchy(obj:bpy.types.Object):
+    # 跳过布尔裁剪对象
+    if con.BOOL_SUFFIX not in obj.name:
         showObj(obj)
-        for child in obj.children:
-            showHierarchy(child)
+    for child in obj.children:
+        showHierarchy(child)
             
 # 创建一个基本圆柱体，可用于柱等直立构件
 def addCylinder(radius=0.5,

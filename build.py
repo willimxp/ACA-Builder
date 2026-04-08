@@ -820,11 +820,7 @@ def joinBuilding(buildingObj:bpy.types.Object,
     joinedRoot = bpy.data.objects.get(joinedRootName)
     if joinedRoot:
         # 复用已有对象，如果隐藏则显示（包括子对象）
-        def _showHierarchy(obj:bpy.types.Object):
-            utils.showObj(obj)
-            for child in obj.children:
-                _showHierarchy(child)
-        _showHierarchy(joinedRoot)
+        utils.showHierarchy(joinedRoot)
     else:
         # 不存在则新建
         joinedRoot = utils.copySimplyObject(buildingObjCopy)
@@ -848,7 +844,7 @@ def joinBuilding(buildingObj:bpy.types.Object,
                 useObj = False
             # 251204 判断对象所属的集合是否可见
             parentColl = childObj.users_collection[0]
-            print(f"{parentColl.name}-{parentColl.hide_viewport}-{childObj.name}")
+            # print(f"{parentColl.name}-{parentColl.hide_viewport}-{childObj.name}")
             if parentColl.hide_viewport:
                 useObj = False
             # 记录对象名称

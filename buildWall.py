@@ -300,6 +300,7 @@ def updateWall(wallObj:bpy.types.Object):
 def __buildWall(buildingObj:bpy.types.Object,
                 wallID='',
                 origin_wallObj=None, # 待更新的墙体对象，可保留之前的设置
+                useCache=False, # 是否使用缓存，buildWallLayout时启用
                 ):
     # 0、准备 --------------------
     # 锁定操作目录
@@ -339,7 +340,10 @@ def __buildWall(buildingObj:bpy.types.Object,
                       con.ACA_WALLTYPE_WINDOW,
                       con.ACA_WALLTYPE_BARWINDOW,
                       con.ACA_WALLTYPE_FLIPWINDOW,):
-        wallObj = buildDoor.buildDoorWithCache(wallproxy)
+        if useCache:
+            wallObj = buildDoor.buildDoorWithCache(wallproxy)
+        else:
+            wallObj = buildDoor.buildDoor(wallproxy)
     # 营造栏杆、坐凳
     elif wallType in (con.ACA_WALLTYPE_RAILILNG,
                       con.ACA_WALLTYPE_BENCH):
@@ -688,7 +692,7 @@ def buildWallLayout(buildingObj:bpy.types.Object):
 
     # 一、批量生成wallproxy
     for wall in bData.wall_list:
-        __buildWall(buildingObj,wall.id)
+        __buildWall(buildingObj,wall.id,useCache=True)
     # 栏杆
     for railing in bData.railing_list:
         # 栏杆与踏跺互斥
@@ -705,16 +709,16 @@ def buildWallLayout(buildingObj:bpy.types.Object):
                 print(_("%s栏杆添加跳过，该位置已经有踏剁") % (railing.id))
                 continue
 
-        __buildWall(buildingObj,railing.id)
+        __buildWall(buildingObj,railing.id,useCache=True)
     # 板门
     for maindoor in bData.maindoor_list:
-        __buildWall(buildingObj,maindoor.id)
+        __buildWall(buildingObj,maindoor.id,useCache=True)
     # 直棂窗、支摘窗
     for window in bData.window_list:
-        __buildWall(buildingObj,window.id)
+        __buildWall(buildingObj,window.id,useCache=True)
     # 隔扇门、隔扇窗
     for geshan in bData.geshan_list:
-        __buildWall(buildingObj,geshan.id)
+        __buildWall(buildingObj,geshan.id,useCache=True)
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

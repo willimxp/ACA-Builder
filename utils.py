@@ -1059,6 +1059,14 @@ def hideObjFace(object:bpy.types.Object) :
     object.visible_volume_scatter = False
     object.visible_shadow = False
 
+# 隐藏树状层次下的所有对象
+def hideHierarchy(obj:bpy.types.Object):
+        obj.hide_set(True)
+        obj.hide_viewport = True 
+        obj.hide_render = True
+        for child in obj.children:
+            hideHierarchy(child)
+
 # 强制显示对象
 def showObj(object:bpy.types.Object) : 
     object.hide_set(False)          # “眼睛”

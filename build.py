@@ -958,9 +958,8 @@ def __undoJoin(buildingObj:bpy.types.Object):
     collName = buildingObj.name.removesuffix(con.JOIN_SUFFIX)
     utils.hideCollection(collName,isExclude=False)
 
-    # 彻底删除原来的合并对象
-    utils.deleteHierarchy(buildingObj,
-            del_parent=True)
+    # 260408 隐藏原来的合并对象及其子对象
+    utils.hideHierarchy(buildingObj)
 
     # 选择目录中的所有构件
     src_coll = bpy.data.collections.get(collName)

@@ -348,7 +348,10 @@ def __buildWall(buildingObj:bpy.types.Object,
     elif wallType in (con.ACA_WALLTYPE_RAILILNG,
                       con.ACA_WALLTYPE_BENCH):
         from . import buildBalcony
-        wallObj = buildBalcony.addRailing(wallproxy)
+        if useCache:
+            wallObj = buildBalcony.addRailingWithCache(wallproxy)
+        else:
+            wallObj = buildBalcony.addRailing(wallproxy)
     # 营造雀替
     elif wallType == con.ACA_WALLTYPE_QUETI:
         wallObj = buildFloor.addQueti(wallproxy)

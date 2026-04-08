@@ -711,6 +711,57 @@ def addRailing(wallProxy:bpy.types.Object):
     # 区分做栏杆还是坐凳
     wallType = railingID.split('#')[0]
 
+    # 直接构建栏杆/坐凳（不使用缓存）
+    if wallType == con.ACA_WALLTYPE_RAILILNG:
+        railingObj = __buildRailing(
+            parentObj=wallProxy,
+            proxy=proxy
+        )
+    elif wallType == con.ACA_WALLTYPE_BENCH:
+        railingObj = __buildBench(
+            parentObj=wallProxy,
+            proxy=proxy
+        )
+    else:
+        railingObj = None
+
+    return railingObj
+
+def addRailingWithCache(wallProxy:bpy.types.Object):
+    """
+    带缓存的栏杆/坐凳构建函数
+    
+    根据 wallProxy 的长度和开口比例作为缓存键，
+    将栏杆/坐凳作为一个整体进行缓存。
+    
+    参数:
+        wallProxy: 墙体代理对象
+        
+    返回:
+        构建完成的栏杆/坐凳对象
+    """
+    # 载入设计数据
+    buildingObj,bData,wData = utils.getRoot(wallProxy)
+    if buildingObj == None:
+        raise Exception(
+            _("未找到建筑根节点或设计数据"))
+        return
+    
+    # 提取railingData
+    railingID = wallProxy.ACA_data['wallID']
+    wallType = railingID.split('#')[0]
+    railingData = utils.getDataChild(
+        contextObj=wallProxy,
+        obj_type=con.ACA_WALLTYPE_RAILILNG,
+        obj_id=railingID
+    )
+    if railingData is None:
+        raise Exception(_("无法找到railingData:%s") % (railingID))
+    
+    # 栏杆长度，只能做在两个柱间
+    railingLen = round(wallProxy.dimensions.x - bData.pillar_diameter, 2)
+    railingGap = round(railingData.gap, 3)
+    
     # 获取对应的缓存实例
     if wallType == con.ACA_WALLTYPE_RAILILNG:
         wallCache = buildWallCache.getRailingCache()
@@ -721,7 +772,7 @@ def addRailing(wallProxy:bpy.types.Object):
     
     # 生成缓存键
     cacheKey = wallCache.generateKey(
-        values={'length': proxy['length'], 'gap': proxy['gap'], 'type': wallType},
+        values={'length': railingLen, 'gap': railingGap, 'type': wallType},
         precisions={'length': 2, 'gap': 3}
     )
 
@@ -733,22 +784,10 @@ def addRailing(wallProxy:bpy.types.Object):
         singleUser=False
     )
     
-    # 如果缓存未命中，生成新栏杆
+    # 如果缓存未命中，调用 addRailing 生成
     if railingObj is None:
-        if wallType == con.ACA_WALLTYPE_RAILILNG:
-            # 创建栏杆
-            railingObj = __buildRailing(
-                parentObj=wallProxy,
-                proxy=proxy
-            )
-        elif wallType == con.ACA_WALLTYPE_BENCH:
-            # 创建坐凳
-            railingObj = __buildBench(
-                parentObj=wallProxy,
-                proxy=proxy
-            )
+        railingObj = addRailing(wallProxy)
         
-        # 保存到缓存
         if railingObj is not None:
             wallCache.set(
                 cacheKey=cacheKey,

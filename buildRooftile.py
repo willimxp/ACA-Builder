@@ -1469,6 +1469,8 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
         location=(-zhengji_length,0,zhengji_z),
         parentObj=tileRootObj,
         singleUser=True)
+    # 260408 标识螭吻类型，回廊延伸时控制是否显示
+    chiwenObj.ACA_data['aca_type'] = con.ACA_TYPE_CHIWEN
     # 根据斗口调整尺度
     utils.resizeObj(chiwenObj,tileScale)
     utils.addModifierMirror(

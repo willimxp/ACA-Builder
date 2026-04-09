@@ -1546,8 +1546,9 @@ def buildFloor(buildingObj:bpy.types.Object,
     # 生成屋顶
     buildRoof.buildRoof(buildingObj)
 
+    # 260409 为了加快生成速度，不再全部应用修改器
     # 应用所有子对象的修改器
-    utils.applyCollModifier(buildingObj)
+    # utils.applyCollModifier(buildingObj)
 
     # 重新聚焦回根节点
     utils.focusObj(buildingObj)

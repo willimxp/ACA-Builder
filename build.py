@@ -3,6 +3,7 @@
 # 功能概述：
 #   营造的主入口
 #   判断是建造一个新的单体建筑，还是院墙等附加建筑
+import time
 from .locale.i18n import _
 import bpy
 import math
@@ -765,6 +766,10 @@ def joinBuilding(buildingObj:bpy.types.Object,
                  sectionPlan=None, # 可根据剖视方案自动决定是否分层
                  joinCombo=True, # 是否合并整个combo
                 ):
+    
+    # print开始时间，用于调试
+    # print(time.strftime("%H:%M:%S", time.localtime()),"开始合并建筑")
+
     # 判断组合或解除组合
     buildingObj,bData,objData = utils.getRoot(buildingObj)
     if bData.aca_type == con.ACA_TYPE_BUILDING_JOINED:
@@ -971,6 +976,9 @@ def joinBuilding(buildingObj:bpy.types.Object,
 
     # 5、聚焦根节点
     utils.focusObj(joinedRoot)
+
+    # print结束时间，用于调试
+    # print(time.strftime("%H:%M:%S", time.localtime()),"结束合并建筑")
 
     return joinedRoot
 
@@ -2761,6 +2769,30 @@ def loggia_extend(contextObj:bpy.types.Object,
         Loggia = building
     bData:acaData = Loggia.ACA_data
 
+    # 标识原廊间的相邻廊间，以便panel上禁用不合理的延伸方向
+    # 未合并对象的标注
+    if dir in ('E','W','N','S'):
+        bData.loggia_sign += '/' + dir
+    # 原始廊间是横版，还是竖版？
+    zRot = Loggia.rotation_euler.z
+    if (abs(zRot - math.radians(0)) < 0.001
+        or abs(zRot - math.radians(180)) < 0.001):
+        isWE = True
+    else:
+        isWE = False
+    if isWE:
+        if dir in ('NE','SE'):
+            bData.loggia_sign += '/E' 
+        if dir in ('NW','SW'):
+            bData.loggia_sign += '/W' 
+    else:
+        if dir in ('NE','NW'):
+            bData.loggia_sign += '/N' 
+        if dir in ('SE','SW'):
+            bData.loggia_sign += '/S' 
+    # 控制螭吻显示
+    __setLoggiaChiwen(building,dir)
+
     # 如果未合并，开始合并
     if LoggiaJoined is None:
         LoggiaJoined = joinBuilding(Loggia)
@@ -2825,26 +2857,6 @@ def loggia_extend(contextObj:bpy.types.Object,
             childID.id = LoggiaJoined.ACA_data.aca_id
 
     # 6、标识原廊间的相邻廊间，以便panel上禁用不合理的延伸方向
-    # 未合并对象的标注
-    if dir in ('E','W','N','S'):
-        bData.loggia_sign += '/' + dir
-    # 原始廊间是横版，还是竖版？
-    zRot = Loggia.rotation_euler.z
-    if (abs(zRot - math.radians(0)) < 0.001
-        or abs(zRot - math.radians(180)) < 0.001):
-        isWE = True
-    else:
-        isWE = False
-    if isWE:
-        if dir in ('NE','SE'):
-            bData.loggia_sign += '/E' 
-        if dir in ('NW','SW'):
-            bData.loggia_sign += '/W' 
-    else:
-        if dir in ('NE','NW'):
-            bData.loggia_sign += '/N' 
-        if dir in ('SE','SW'):
-            bData.loggia_sign += '/S' 
     # 已合并对象的标注
     jData:acaData = LoggiaJoined.ACA_data
     jData.loggia_sign = bData.loggia_sign
@@ -3326,6 +3338,9 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
     if dir == 'SW':
         LoggiaNew.location += offset_v * Vector((-1,-1,1))
 
+    # 260408 控制螭吻显示
+    __setLoggiaChiwen(LoggiaNew,dir)
+
     # 6、合并 ------------------------------------
     LoggiaNewJoined = joinBuilding(LoggiaNew)
 
@@ -3773,3 +3788,97 @@ def __connect_open_corner(LoggiaNewJoined:bpy.types.Object,
     LoggiaOpen.ACA_data['loggia_sign'] += '/' + signB
 
     return
+
+# 设置回廊的螭吻显示状态
+def __setLoggiaChiwen(Loggia:bpy.types.Object,dir:str):
+    building,bData,oData = utils.getRoot(Loggia)
+    isUnjoined = False
+
+    # 如果不是庑殿、歇山、硬山、悬山，则不涉及螭吻的设置
+    if bData.roof_style not in (con.ROOF_WUDIAN,
+                         con.ROOF_XIESHAN,
+                         con.ROOF_XUANSHAN,
+                         con.ROOF_YINGSHAN):
+        return
+
+    # 判断回廊是否已经合并
+    if bData.aca_type == con.ACA_TYPE_BUILDING_JOINED:
+        # 临时取消合并
+        Loggia = __undoJoin(building)
+        # 记录取消合并，后续重新合并
+        isUnjoined = True
+    else:
+        Loggia = building
+
+    # 根据回廊可扩展性，觉得螭吻的显示
+    zRot = Loggia.rotation_euler.z
+    if (abs(zRot - math.radians(0)) < 0.001
+        or abs(zRot - math.radians(180)) < 0.001):
+        isWE = True
+    else:
+        isWE = False
+    extSign = Loggia.ACA_data.loggia_sign
+    chiwenPos = ''
+    # 初始未延伸的回廊
+    if extSign == '':
+        if dir=='E':
+            chiwenPos = 'L'
+        # 初始右端
+        elif dir=='W':
+            chiwenPos = 'R'
+    # 已延伸的回廊
+    else:
+        # 东西方向
+        if isWE:
+            # 中段不做螭吻
+            if ('E' in extSign) and ('W' in extSign):
+                chiwenPos = ''
+            # 东端做右螭吻
+            elif 'W' in extSign:
+                chiwenPos = 'R'
+            # 西端做左螭吻
+            elif 'E' in extSign:
+                chiwenPos = 'L'
+        # 南北方向
+        else:
+            # 中段不做螭吻
+            if ('N' in extSign) and ('S' in extSign):
+                chiwenPos = ''
+            # 北端做右螭吻
+            elif 'S' in extSign:
+                chiwenPos = 'R'
+            # 南端做左螭吻
+            elif 'N' in extSign:
+                chiwenPos = 'L'
+    
+    # 获取螭吻
+    chiwenObj = utils.getAcaChild(
+        Loggia,con.ACA_TYPE_CHIWEN
+    )
+    if chiwenObj is None:
+        # 未找到螭吻，退出
+        return
+    
+    # 只做左螭吻，隐藏右螭吻
+    utils.showObj(chiwenObj)
+    if chiwenPos == 'L':
+        modMirror = chiwenObj.modifiers.get('Mirror')
+        if modMirror:
+            chiwenObj.modifiers.remove(modMirror)
+        chiwenObj.location.x = -abs(chiwenObj.location.x)
+        chiwenObj.scale.x = abs(chiwenObj.scale.x)
+    # 只做右螭吻，隐藏左螭吻
+    elif chiwenPos == 'R':
+        modMirror = chiwenObj.modifiers.get('Mirror')
+        if modMirror:
+            chiwenObj.modifiers.remove(modMirror)
+        chiwenObj.location.x = abs(chiwenObj.location.x)
+        chiwenObj.scale.x = - abs(chiwenObj.scale.x)
+    # 不做螭吻
+    else:
+        utils.hideObj(chiwenObj)
+
+    # 重新合并
+    if isUnjoined:
+        Loggia = joinBuilding(Loggia)
+   

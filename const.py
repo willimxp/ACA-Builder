@@ -90,6 +90,7 @@ class ACA_Consts(object, metaclass=ACA_ConstsMeta):
     ACA_TYPE_TILE_GRID ='tile_grid'                                 # ACA类型：前后檐瓦面
     ACA_TYPE_TILE_GRID_LR ='tile_grid_lr'                           # ACA类型：两山瓦面
     ACA_TYPE_YARDWALL = 'yard_wall'                                 # ACA类型：院墙
+    ACA_TYPE_CHIWEN = 'chiwen'                                      # ACA类型：螭吻
     ACA_WALLTYPE_WALL = 'wall'                                      # 隔断属性-墙
     ACA_WALLTYPE_WINDOW = 'window'                                  # 隔断属性-槛窗
     ACA_WALLTYPE_GESHAN = 'geshan'                                  # 隔断属性-隔扇

@@ -3,6 +3,7 @@
 # 功能概述：
 #   公共的工具方法
 
+import time
 from .locale.i18n import _
 import bpy
 import bmesh
@@ -2002,6 +2003,8 @@ def joinObjects(objList: List[bpy.types.Object],
     返回:
         合并后的对象
     '''
+    # print调试时间
+    # print(time.strftime("%H:%M:%S", time.localtime()) + f".{int((time.time() % 1) * 1000):03d}", "开始joinObjects")
 
     # 0、检查输入参数
     if not objList:
@@ -2056,6 +2059,9 @@ def joinObjects(objList: List[bpy.types.Object],
     if not processed_objs:
         return None
     
+    # print调试时间
+    # print(time.strftime("%H:%M:%S", time.localtime()) + f".{int((time.time() % 1) * 1000):03d}", "合并顶点joinObjects")
+
     # 5、合并顶点、边、面、环、材质、UV
     all_verts = []
     all_edges = []
@@ -2271,6 +2277,9 @@ def joinObjects(objList: List[bpy.types.Object],
 
     # 260407 合并后的对象自动应用smooth修改器
     shaderSmooth(baseObj)
+
+    # print调试时间
+    # print(time.strftime("%H:%M:%S", time.localtime()) + f".{int((time.time() % 1) * 1000):03d}","结束joinObjects")
     
     return baseObj
 

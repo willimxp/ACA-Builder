@@ -765,6 +765,7 @@ def joinBuilding(buildingObj:bpy.types.Object,
                  useLayer=False, # 是否分层合并
                  sectionPlan=None, # 可根据剖视方案自动决定是否分层
                  joinCombo=True, # 是否合并整个combo
+                 excludeKeyword='', # 排除合并的对象
                 ):
     
     # print开始时间，用于调试
@@ -776,6 +777,10 @@ def joinBuilding(buildingObj:bpy.types.Object,
         __undoJoin(buildingObj)
         return
     
+    # 260409 如果是回廊，排除踏跺
+    if bData.combo_type == con.COMBO_LOGGIA:
+        excludeKeyword = _('踏跺.')
+
     # 251114 manifold boolean在合并后再做重复材质清理，会导致材质混乱
     # 所以，统一在合并前清理材质
     utils.updateScene()
@@ -838,7 +843,9 @@ def joinBuilding(buildingObj:bpy.types.Object,
     # 3、开始合并对象 -------------------------------------
     # 3.1、选择所有下级层次对象
     partObjList = []    # 在addChild中递归填充
-    def addChild(buildingObjCopy):
+    # 收集合并排除的对象，用于非分层合并时单独处理
+    excludeObjList = []
+    def addChild(buildingObjCopy, excludeKeyword=None):
         for childObj in buildingObjCopy.children:
             childObj: bpy.types.Object
             useObj = True
@@ -852,12 +859,16 @@ def joinBuilding(buildingObj:bpy.types.Object,
             # print(f"{parentColl.name}-{parentColl.hide_viewport}-{childObj.name}")
             if parentColl.hide_viewport:
                 useObj = False
+            # 260409 排除名称包含指定关键字的对象（如踏跺）
+            if excludeKeyword and excludeKeyword in childObj.name:
+                excludeObjList.append(childObj)
+                useObj = False
             # 记录对象名称
             if useObj:
                 partObjList.append(childObj)
             # 次级递归
             if childObj.children:
-                addChild(childObj)
+                addChild(childObj, excludeKeyword)
     
     # 3.2、合并对象
     # 判断是否需要分层合并
@@ -878,7 +889,9 @@ def joinBuilding(buildingObj:bpy.types.Object,
     for layer in layerList:
         # 递归填充待合并对象
         partObjList.clear()
-        addChild(layer)
+        # 260409 合并时可排除制定的关键字对象
+        excludeObjList.clear()
+        addChild(layer, excludeKeyword=excludeKeyword)
         if len(partObjList) == 0 :
             print(_("%s没有需要合并的对象，继续...") % (layer.name))
             continue
@@ -892,15 +905,6 @@ def joinBuilding(buildingObj:bpy.types.Object,
         else:
             # 合并名称直接加'joined'后缀
             joinedName = buildingObj.name + con.JOIN_SUFFIX
-
-        # # 合并前提取第一个子对象的父节点矩阵
-        # # 为后续重新绑定父节点做准备
-        # if isCombo:
-        #     # 组合建筑要分别取两层的转换
-        #     baseMatrix = partObjList[0].parent.parent.matrix_local.copy()
-        # else:
-        #     # 一般可能是台基层，或柱网层根节点
-        #     baseMatrix = partObjList[0].parent.matrix_local.copy()
 
         # 250929 提取combo对象的属性
         if isCombo:
@@ -930,29 +934,6 @@ def joinBuilding(buildingObj:bpy.types.Object,
         if isCombo:
             joinedModel.ACA_data['combo_type'] = comboType
             # print(joinedName + " joinedComboType=" + comboType)
-        
-        # # 区分是否分层的坐标映射
-        # if useLayer:
-        #     if isCombo:
-        #         # 组合建筑要分别取两层的转换
-        #         matrix = (joinedModel.parent.parent.matrix_local 
-        #                   @ joinedModel.parent.matrix_local)
-        #     else:
-        #         # 取各个分层的局部坐标
-        #         matrix = joinedModel.parent.matrix_local  
-        # else:
-        #     # 墙体只有一级层次，不区分是否分层
-        #     if joinedModel.parent.ACA_data.aca_type == \
-        #         con.ACA_TYPE_YARDWALL:
-        #         matrix = joinedModel.matrix_local
-        #     else:                
-        #         # 不分层的建筑体，取合并基准的父节点坐标系
-        #         matrix = baseMatrix
-
-        # # 重新绑定父级对象
-        # joinedModel.parent = joinedRoot
-        # # 重新映射坐标
-        # joinedModel.location = matrix @ joinedModel.location
 
         # 251205 采用更简洁的坐标转换
         mw = joinedModel.matrix_world
@@ -966,6 +947,52 @@ def joinBuilding(buildingObj:bpy.types.Object,
 
         # 2、添加到合并目录
         collJoined.objects.link(joinedModel)
+
+        # 260409 如果有排除的对象，复制对象并挂接到joinedRoot下，避免被意外裁剪
+        if len(excludeObjList) > 0:
+            for excludeObj in excludeObjList:
+                # 查找是否存在同名对象（忽略.001/.002等后缀）
+                isExist = False
+                excludeBaseName = excludeObj.name.rsplit('.', 1)[0] if '.' in excludeObj.name else excludeObj.name
+                for child in joinedRoot.children:
+                    childBaseName = child.name.rsplit('.', 1)[0] if '.' in child.name else child.name
+                    if excludeBaseName == childBaseName:
+                        isExist = True
+                        break
+                
+                if not isExist:
+                    # 复制排除的对象
+                    excludeCopy = utils.copySimplyObject(excludeObj)
+                    # 保持世界坐标转换
+                    mw = excludeCopy.matrix_world
+                    excludeCopy.parent = joinedRoot
+                    excludeCopy.matrix_world = mw
+                    # 应用变换
+                    utils.applyTransform2(excludeCopy,
+                                        use_location=True,
+                                        use_rotation=True,
+                                        use_scale=True)
+                    # 从原集合取消链接
+                    for coll in excludeCopy.users_collection:
+                        coll.objects.unlink(excludeCopy)
+                    # 添加到合并目录
+                    collJoined.objects.link(excludeCopy)
+        
+        # 反查joinedRoot下的排除对象，是否已经被删除，保证原建筑删除踏跺后，同步在合并对象中删除
+        for child in joinedRoot.children:
+            childBaseName = child.name.rsplit('.', 1)[0] if '.' in child.name else child.name
+            if excludeKeyword in childBaseName:
+                if len(excludeObjList) == 0:
+                    utils.delObject(child)
+                else:
+                    isExist = False
+                    for excludeObj in excludeObjList:
+                        excludeBaseName = excludeObj.name.rsplit('.', 1)[0] if '.' in excludeObj.name else excludeObj.name
+                        if excludeBaseName == childBaseName:
+                            isExist = True
+                            break
+                    if not isExist:
+                        utils.delObject(child)
 
     # 3、删除复制的建筑，包括复制的集合
     # 251205 根据joinCombo参数决定是否删除整个集合

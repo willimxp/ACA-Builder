@@ -3346,15 +3346,22 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
 
     # 7、裁剪 ------------------------------------
     dk = bData.DK
+
+    # 裁剪高度
     buildingH = (bData.platform_height+bData.pillar_height)
     if bData.use_dg:
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2
     buildingH += con.SPLICE_HEIGHT_EXT_DK*dk # 保险高度
+
+    # 裁剪宽度
     buildingEave = 20*dk # 悬山出际
 
-    # 裁剪
+    # 裁剪深度
     buildingDepth = bData.y_total + 60*dk # 出檐
+    if bData.use_dg:
+        buildingDepth += bData.dg_extend
+
     # 定位
     offset = buildingEave/2
     # 根据新延伸的回廊的横竖，判断裁剪偏移
@@ -3451,12 +3458,22 @@ def __cut_base_loggia(baseLoggia:bpy.types.Object,
     Loggia = __getJoinedOriginal(LoggiaJoined)
     bData:acaData = Loggia.ACA_data
     dk = bData.DK
+
+    # 裁剪高度
     buildingH = (bData.platform_height+bData.pillar_height)
     if bData.use_dg:
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2
     buildingH += con.SPLICE_HEIGHT_EXT_DK*dk # 保险高度
+
+    # 裁剪宽度
     buildingEave = 20*dk # 悬山出际
+
+    # 裁剪深度
+    # 原廊间可能已经做了一侧的转角裁剪，这里继续做另一侧的转角裁剪
+    buildingDepth = bData.y_total + 60*dk # 出檐
+    if bData.use_dg:
+        buildingDepth += bData.dg_extend
 
     # 原始廊间是横版，还是竖版？
     zRot = Loggia.rotation_euler.z
@@ -3466,8 +3483,6 @@ def __cut_base_loggia(baseLoggia:bpy.types.Object,
     else:
         isWE = False
 
-    # 原廊间可能已经做了一侧的转角裁剪，这里继续做另一侧的转角裁剪
-    buildingDepth = bData.y_total + 60*dk # 出檐
     # 定位
     offset = buildingEave/2
     if isWE:

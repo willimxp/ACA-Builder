@@ -935,9 +935,9 @@ def getThumbEnum(self, context):
             thumb = pcoll.get('nopreview.png')
             iconId = thumb.icon_id if thumb else 0
             
-            displayName = _(thumbName,"template")
+            displayName = _(templateName,"template")
             items.append(_make_item(
-                thumbName, displayName, displayName, 
+                displayName, displayName, displayName, 
                 iconId, thumbIndex))
             thumbIndex += 1
             

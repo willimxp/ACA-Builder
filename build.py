@@ -427,6 +427,8 @@ def addSection(buildingObj:bpy.types.Object,
                 * Vector((1.1,1.1,1.1))
                 )
         sectionLoc = utils.getBoundCenter(sectionObj)
+        # 260409 修复踏跺的正剖裁剪
+        sectionDim += Vector(tuple(map(abs,sectionLoc)))
         # 创建剖视布尔对象
         boolObj = utils.addCube(
             name=boolName,

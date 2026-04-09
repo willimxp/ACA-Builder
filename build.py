@@ -2437,6 +2437,8 @@ def __unionCrossL(fromBuilding:bpy.types.Object,
     buildingH += bData.y_total / 2
     buildingH += con.SPLICE_HEIGHT_EXT_DK*dk # 保险高度
     buildingEave = 30*dk 
+    if bData.use_dg:
+        buildingEave += bData.dg_extend
     
     # 获取相交瓦面 ---------------------------------
     # A建筑瓦面
@@ -2968,6 +2970,8 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
     # 6、屋顶控制 ----------------------------
     # 6.1、裁剪位置
     eaveExt = 30*dk
+    if bData.use_dg:
+        eaveExt += bData.dg_extend
     offset = eaveExt/2
     buildingH = (bData.platform_height+bData.pillar_height)
     if bData.use_dg:
@@ -3008,28 +3012,8 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
         use_bisect=(False,True,False)
         use_flip=(False,True,False)
 
-    # 6.2、45度镜像
-    diagnalObj = utils.addEmpty(
-        name = _('45度镜像') + con.BOOL_SUFFIX,
-        parent = LoggiaCornerJoined,
-        rotation=(0,0,math.radians(45)),
-        location=(0,0,0)
-    )
-    utils.hideObj(diagnalObj)
-    for obj in LoggiaCornerJoined.children:
-        # 跳过bool对象
-        if con.BOOL_SUFFIX  in obj.name : continue
-        utils.addModifierMirror(
-            object= obj,
-            mirrorObj=diagnalObj,
-            use_axis=use_axis,
-            use_bisect=use_bisect,
-            use_flip=use_flip,
-            use_merge=True,
-            name='45-Axis'
-        )
-
-    # 6.3、转角裁剪 --------------------------------------
+    # 6.2、转角裁剪 --------------------------------------
+    # 260409 务必在做45度镜像前做裁剪，以免产生水密问题
     dim = (cornerData.x_total + eaveExt,
             cornerData.y_total + eaveExt,
             buildingH
@@ -3053,6 +3037,27 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
         )
         # 裁剪后柱体normal异常，做平滑
         utils.shaderSmooth(obj)
+
+    # 6.3、45度镜像 ------------------------------------------
+    diagnalObj = utils.addEmpty(
+        name = _('45度镜像') + con.BOOL_SUFFIX,
+        parent = LoggiaCornerJoined,
+        rotation=(0,0,math.radians(45)),
+        location=(0,0,0)
+    )
+    utils.hideObj(diagnalObj)
+    for obj in LoggiaCornerJoined.children:
+        # 跳过bool对象
+        if con.BOOL_SUFFIX  in obj.name : continue
+        utils.addModifierMirror(
+            object= obj,
+            mirrorObj=diagnalObj,
+            use_axis=use_axis,
+            use_bisect=use_bisect,
+            use_flip=use_flip,
+            use_merge=True,
+            name='45-Axis'
+        )
     
     # 关闭进度条
     isFinished = True

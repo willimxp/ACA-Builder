@@ -2117,6 +2117,10 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     eaveTileLength = eaveTile.dimensions.y
     # 瓦片缩放，以斗口缩放为基础，再叠加用户自定义缩放系数
     tileScale = bData.DK / con.DEFAULT_DK  * bData.tile_scale
+
+    # 260409 回廊转角不做垂脊
+    if bData.combo_type == con.COMBO_LOGGIA_CORNER:
+        return
     
     # 绘制垂脊曲线，其中自动判断了垂脊起点：
     # 歇山仅做到正心桁位置

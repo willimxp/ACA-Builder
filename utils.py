@@ -1280,24 +1280,22 @@ def addModifierBoolean(
 # 应用所有修改器
 def applyAllModifer(object:bpy.types.Object):
     if object == None: return
-    # 仅在有修改器，或为curve等非mesh对象上执行，以便提升效率
-    if (len(object.modifiers) > 0
-        or object.type != 'MESH'):
-        focusObj(object)
-        bpy.ops.object.convert(target='MESH')
 
-        # 260319 尝试使用low level代码提高bpy.ops.object.convert效率，但效果不明显
-        # if object.type == 'CURVE':
-        #     bpy.ops.object.convert(target='MESH')
-        # else:
-        #     old_data = object.data
-        #     depsgraph = bpy.context.evaluated_depsgraph_get()
-        #     obj_eval = object.evaluated_get(depsgraph)
-        #     new_mesh = bpy.data.meshes.new_from_object(obj_eval)
-        #     object.data = new_mesh
-        #     object.modifiers.clear()
-        #     if old_data.users == 0:
-        #         bpy.data.meshes.remove(old_data)
+    focusObj(object)
+    
+    # 260410 不再调用bpy.ops，提高效率
+    # 仅在有修改器，或为curve等非mesh对象上执行，以便提升效率
+    # if (len(object.modifiers) > 0
+    #     or object.type != 'MESH'):
+    #     bpy.ops.object.convert(target='MESH')
+
+    if object.type == 'CURVE':
+        bpy.ops.object.convert(target='MESH')
+    elif (object.type == 'MESH' 
+          and len(object.modifiers) > 0):
+        applyModifier_low(object)
+    else:
+        return
 
 # 翻转对象的normal
 def flipNormal(object:bpy.types.Object):

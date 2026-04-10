@@ -848,23 +848,23 @@ def __buildFang(buildingObj:bpy.types.Object):
                                width=con.BEVEL_EXHIGH, 
                                segments=3)
         fangPart.append(bigFangObj)
-        # 241120 添加霸王拳
-        # 仅对四坡顶做霸王拳，硬山、悬山等不做霸王拳
-        if bData.roof_style in (
-            con.ROOF_WUDIAN,
-            con.ROOF_XIESHAN,
-            con.ROOF_XIESHAN_JUANPENG,
-            con.ROOF_LUDING,
-            # 251223 平坐顶也做霸王拳
-            con.ROOF_BALCONY,
-        ):
-            # 重檐的上檐不做霸王拳
-            # if (bData.use_double_eave and
-            #     bData.combo_type != con.COMBO_DOUBLE_EAVE):
-            # 251223 发现之前的判断有误，导致霸王拳丢失
-            if (not bData.use_double_eave and
-                bData.combo_type != con.COMBO_DOUBLE_EAVE):
-                __buildFangBWQ(bigFangObj)
+
+        # 260410 重新梳理霸王拳的判断
+        useBWQ = True
+        # 重檐层、平坐层不做霸王拳，以免与合角吻冲突
+        if bData.combo_type in (con.COMBO_DOUBLE_EAVE,
+                                con.COMBO_PINGZUO):
+            useBWQ = False
+        # 仿宋不做霸王拳
+        elif bData.paint_style in ('1','3'):
+            useBWQ = False
+        # 硬山顶不做霸王拳
+        elif bData.roof_style in (con.ROOF_YINGSHAN,
+                                  con.ROOF_YINGSHAN_JUANPENG):
+            useBWQ = False
+        # 添加霸王拳
+        if useBWQ:
+            __buildFangBWQ(bigFangObj)
 
         # 是否需要做小额枋
         if bData.use_smallfang:

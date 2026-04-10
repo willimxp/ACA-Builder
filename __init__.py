@@ -20,7 +20,7 @@ bl_info = {
     "name" : "ACA Builder",
     "author" : "皮皮 willimxp",
     "description" : "筑韵古建：模板化生成清官式建筑。Generate architecher in chinese style.",
-    "blender" : (4, 2, 0),
+    "blender" : (5, 0, 0),
     "version" : (0, 6, 1),
     "location" : "View3D > Properties > ACA Builder",
     "tracker_url": "https://github.com/willimxp/ACA-Builder/issues",

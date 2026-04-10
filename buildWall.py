@@ -177,6 +177,9 @@ def __drawWall(wallProxy:bpy.types.Object):
     )
     if wallData is None:
         raise Exception(_("无法找到geshanData:%s") % (wallID))
+
+    # 墙体两侧是否做折边，露出柱子
+    bevelSide = wallData.wall_bevel
     
     # 预留走马板高度
     if wallData.wall_span > 0:
@@ -196,25 +199,39 @@ def __drawWall(wallProxy:bpy.types.Object):
     bottomObj = utils.drawHexagon(
         name=_('下碱'),
         dimensions=Vector((wallLength,
-               wallDepth+bodyShrink*2,
-               height)),
+            wallDepth+bodyShrink*2,
+            height)),
         location=Vector((0,0,height/2-heightOffset)),
         parent=wallProxy,
+        bevelSide=bevelSide, # 是否露出柱子
     )
-    # 导角
-    utils.addModifierBevel(bottomObj, width=con.BEVEL_HIGH)
+    # 260410 仅在两侧都做折边时才添加导角，以避免墙缝
+    if bevelSide == 'Y':
+        utils.addModifierBevel(bottomObj, width=con.BEVEL_HIGH)
     # 赋材质
     mat.paint(bottomObj,con.M_WALL_BOTTOM)
 
     # 2、创建上身对象
     extrudeHeight = wallHeight/10
+    # 260410 根据两侧是否折角决定是否内收，避免墙缝
+    bodyWidth = wallLength
+    if bevelSide == 'Y':
+        bodyWidth -= bodyShrink*2
+    elif bevelSide in ('L','R'):
+        bodyWidth -= bodyShrink
+    bodyX = 0
+    if bevelSide == 'L':
+        bodyX += bodyShrink/2
+    elif bevelSide == 'R':
+        bodyX -= bodyShrink/2
     bodyObj = utils.drawHexagon(
         name=_('墙体'),
-        dimensions=Vector((wallLength-bodyShrink*2,
-               wallDepth,
-               wallHeight-extrudeHeight)),
-        location=Vector((0,0,wallHeight/2-extrudeHeight/2)),
+        dimensions=Vector((bodyWidth,
+                           wallDepth,
+                           wallHeight-extrudeHeight)),
+        location=Vector((bodyX,0,wallHeight/2-extrudeHeight/2)),
         parent=wallProxy,
+        bevelSide=bevelSide, # 是否露出柱子
     )
     
     # 2.1 上身顶部做出签尖造型，刘大可p99
@@ -237,8 +254,9 @@ def __drawWall(wallProxy:bpy.types.Object):
 
     # 赋材质
     mat.paint(bodyObj,con.M_WALL)
-    # 导角
-    utils.addModifierBevel(bodyObj, width=con.BEVEL_HIGH)
+    # 260410 仅在两侧都做折边时才添加导角，以避免墙缝
+    if bevelSide == 'Y':
+        utils.addModifierBevel(bodyObj, width=con.BEVEL_HIGH)
     
     # 布尔合并上身和下碱
     utils.addModifierBoolean(
@@ -288,6 +306,8 @@ def updateWall(wallObj:bpy.types.Object):
 
     # 集成老的wall名称(避免.001后缀)
     newWallObj.name = wallName
+
+    utils.focusObj(newWallObj)
 
     # 清理栏杆缓存
     buildBalcony.clearRailingCache()

@@ -835,9 +835,12 @@ def getMeshDims(object):
             ))
 
 # 绘制六边形，用于窗台、槛墙等
+# 260410 添加bevelSide参数，左右是否做折角，用于墙体是否露柱子的控制
+# Y- 左右都做，L-只做左侧，R-只做右侧，N-左右都不做
 def drawHexagon(dimensions:Vector,
                 location:Vector,
-                half=False,
+                half=False, # 只做一半，用于门楹、窗楹等
+                bevelSide = 'Y', # 左右是否做折角，Y/L/R/N
                 name=None,
                 parent=None,):
     if name is None:
@@ -856,47 +859,52 @@ def drawHexagon(dimensions:Vector,
     vectors.append(v1)
     # 左上点
     v2=Vector((
-        -dimensions.x/2+offset,
+        -dimensions.x/2,
         dimensions.y/2,
         -dimensions.z/2))
+    # 左上点做折角
+    if bevelSide in ('Y','L'):
+        v2 += Vector((offset,0,0))
     vectors.append(v2)
     # 右上点
     v3=Vector((
-        dimensions.x/2-offset,
+        dimensions.x/2,
         dimensions.y/2,
         -dimensions.z/2))
+    if bevelSide in ('Y','R'):
+        v3 += Vector((-offset,0,0))
     vectors.append(v3)
     # 右顶点
     v4=Vector((dimensions.x/2,
                0,
                -dimensions.z/2))
     vectors.append(v4)
-    if not half:
-        # 右下点
-        v5=Vector((
-            dimensions.x/2-offset,
-            -dimensions.y/2,
-            -dimensions.z/2))
-        vectors.append(v5)
-        # 左下点
-        v6=Vector((
-            -dimensions.x/2+offset,
-            -dimensions.y/2,
-            -dimensions.z/2))
-        vectors.append(v6)
-    else:
-        # 右下点
-        v5=Vector((
-            dimensions.x/2-offset,
-            0,
-            -dimensions.z/2))
-        vectors.append(v5)
-        # 左下点
-        v6=Vector((
-            -dimensions.x/2+offset,
-            0,
-            -dimensions.z/2))
-        vectors.append(v6)
+
+    # 右下点
+    v5=Vector((
+        dimensions.x/2,
+        -dimensions.y/2,
+        -dimensions.z/2))
+    # 右下点做折角
+    if bevelSide in ('Y','R'):
+        v5 += Vector((-offset,0,0))
+    # 只做一半，用于门楹、窗楹等
+    if half:
+        v5 += Vector((0,dimensions.y/2,0))
+    vectors.append(v5)
+
+    # 左下点
+    v6=Vector((
+        -dimensions.x/2,
+        -dimensions.y/2,
+        -dimensions.z/2))
+    # 左下点做折角
+    if bevelSide in ('Y','L'):
+        v6 += Vector((offset,0,0))
+    # 只做一半，用于门楹、窗楹等
+    if half:
+        v6 =Vector((0,dimensions.y/2,0))
+    vectors.append(v6)
 
     # 摆放点
     vertices=[]

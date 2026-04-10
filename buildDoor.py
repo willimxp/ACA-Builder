@@ -1925,7 +1925,7 @@ def buildDoorWithCache(wallProxy:bpy.types.Object):
     doorObj = wallCache.get(
         cacheKey=cacheKey,
         parentObj=wallProxy,
-        newName=_("%s.%s") % (
+        newName="%s.%s" % (
             _("槛框") if wallType == con.ACA_WALLTYPE_MAINDOOR else _("隔扇"),
             wallID
         ),

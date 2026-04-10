@@ -267,6 +267,14 @@ def update_pillar(self, context:bpy.types.Context):
     return
 
 @check_auto_rebuild
+def update_wall_solid(self, context:bpy.types.Context):
+    # 执行更新
+    from . import buildWall
+    funproxy = partial(buildWall.updateWall,
+                            wallObj=context.object)
+    utils.fastRun(funproxy)
+    
+@check_auto_rebuild
 def update_wall(self, context:bpy.types.Context):
     # 解析wallID
     doorNum = self.door_num

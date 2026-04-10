@@ -223,6 +223,21 @@ class ACA_data_wall_common(bpy.types.PropertyGroup):
             update=dc.update_wall,
         )# type: ignore 
 
+# 槛墙，可设置两侧是否做折边等  
+class ACA_data_wall_solid(ACA_data_wall_common):
+    wall_bevel: bpy.props.EnumProperty(
+        name = _("墙体折角"),
+            # 枚举项仅国际化显示文本，内部值(0~9)保持不变
+            items = [
+                ("Y",_("两侧折角"),""),
+                ("L",_("左侧折角"),""),
+                ("R",_("右侧折角"),""),
+                ("N",_("不做折角"),""),
+            ],
+            update=dc.update_wall_solid,
+            description=_("墙体的两侧是否做折角，以露出柱子"),
+        ) # type: ignore
+
 # 门窗共用属性
 class ACA_data_door_common(ACA_data_wall_common):
     doorFrame_width_per : bpy.props.FloatProperty(
@@ -542,7 +557,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         type=ACA_data_maindoor, name=_("板门列表")
     ) # type: ignore
     wall_list: bpy.props.CollectionProperty(
-        type=ACA_data_wall_common, name=_("墙体列表")
+        type=ACA_data_wall_solid, name=_("墙体列表")
     ) # type: ignore
     window_list: bpy.props.CollectionProperty(
         type=ACA_data_door_common, name=_("窗户列表")

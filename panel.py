@@ -1043,6 +1043,15 @@ class ACA_PT_wall(bpy.types.Panel):
                     text=contextName,
                     icon='KEYTYPE_MOVING_HOLD_VEC')
             
+            # 1.1、槛墙属性
+            if oData.aca_type in (
+                con.ACA_WALLTYPE_WALL,# 墙体
+            ):
+                # 槛墙是否做折边，露出柱子
+                inputWallBevel = toolBar.column(align=True)
+                inputWallBevel.prop(
+                    contextData, "wall_bevel", text='')
+            
             # 2、通用属性：走马板
             if oData.aca_type in (
                 con.ACA_WALLTYPE_WINDOW,    # 槛窗

@@ -39,13 +39,6 @@ def __buildShanxin(
     if lingxinMat == None:
         lingxinMat = con.M_WINDOW_INNER
 
-    # 扇心高度校验，以免出现row=0的异常
-    linxingHeight = scale.z - borderWidth*2
-    unitWidth,unitDepth,unitHeight = utils.getMeshDims(aData.lingxin_source)
-    rows = math.ceil(linxingHeight/unitHeight)+1
-    if rows<=0:
-        return
-
     # 仔边环绕
     # 创建一个平面，转换为curve，设置curve的横截面
     bpy.ops.mesh.primitive_plane_add(size=1,location=location)
@@ -79,37 +72,6 @@ def __buildShanxin(
     # 仔边刷漆
     mat.paint(zibianObj,con.M_WINDOW)
     linxingList.append(bpy.context.object)
-
-    # # 填充棂心
-    # lingxinObj = aData.lingxin_source
-    # if lingxinObj == None: return
-    # # 定位：从左下角排布array
-    # loc = (location.x-scale.x/2+con.ZIBIAN_WIDTH*pd,
-    #         location.y,
-    #         location.z-scale.z/2+con.ZIBIAN_WIDTH*pd)
-    # lingxin = utils.copyObject(
-    #     sourceObj=lingxinObj,
-    #     name='棂心',
-    #     parentObj=parent,
-    #     location=loc,
-    #     singleUser=True)
-    # # 计算平铺的行列数
-    # unitWidth,unitDepth,unitHeight = utils.getMeshDims(lingxin)
-    # lingxingWidth = scale.x- con.ZIBIAN_WIDTH*2*pd
-    # linxingHeight = scale.z- con.ZIBIAN_WIDTH*2*pd
-    # rows = math.ceil(linxingHeight/unitHeight)+1 #加一，尽量让棂心紧凑，避免出现割裂
-    # row_span = linxingHeight/rows
-    # mod_rows = lingxin.modifiers.get('Rows')
-    # mod_rows.count = rows
-    # mod_rows.constant_offset_displace[2] = row_span
-
-    # cols = math.ceil(lingxingWidth/unitWidth)+1#加一，尽量让棂心紧凑，避免出现割裂
-    # col_span = lingxingWidth/cols
-    # mod_cols = lingxin.modifiers.get('Columns')
-    # mod_cols.count = cols
-    # mod_cols.constant_offset_displace[0] = col_span
-    # # 应用array modifier
-    # utils.applyAllModifer(lingxin)
 
     # 添加简化版的棂心（平面贴图方式）
     # 250717 为了实现水密，做成cube

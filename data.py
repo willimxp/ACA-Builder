@@ -1074,13 +1074,6 @@ class ACA_data_template(bpy.types.PropertyGroup):
             type = bpy.types.Object,
         )# type: ignore
     
-    # 棂心对象
-    lingxin_source:bpy.props.PointerProperty(
-            name = _("棂心"),
-            type = bpy.types.Object,
-            update=dc.update_wall
-        )# type: ignore 
-    
     # 斗栱对象
     dg_pillar_source:bpy.props.PointerProperty(
             name = _("柱头斗栱"),

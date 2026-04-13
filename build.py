@@ -236,8 +236,10 @@ def updateBuilding(buildingObj:bpy.types.Object,
 def delBuilding(buildingObj:bpy.types.Object,
                 withCombo = True,
                 ):
+    # 1、删除合并体 ------------------------------------
     # 判断是否为合并建筑
     bData:acaData = buildingObj.ACA_data
+    # 如果为合并体，删除该合并体
     if bData.aca_type == con.ACA_TYPE_BUILDING_JOINED:
         # 找到未合并建筑
         buildingJoined = buildingObj
@@ -246,7 +248,18 @@ def delBuilding(buildingObj:bpy.types.Object,
             raise Exception(_("删除失败，未找到建筑未合并的本体"))
         # 删除合并建筑
         utils.deleteHierarchy(buildingJoined,del_parent=True)
+    # 如果为本体，找到并删除合并体
+    else:
+        # 找到合并目录
+        JoinedColl:bpy.types.Collection = \
+            bpy.context.scene.collection.children[con.COLL_NAME_ROOT_JOINED]
+        # 找到同名的合并对象
+        for obj in JoinedColl.objects:
+            if obj.name == buildingObj.name + con.JOIN_SUFFIX:
+                # 删除树状结构
+                utils.deleteHierarchy(obj,True)
     
+    # 2、删除本体 ------------------------------------
     # 判断是否为组合建筑
     comboObj = utils.getComboRoot(buildingObj)
     # 如果是单体建筑，从根目录删除

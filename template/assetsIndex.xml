@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <assets>
-    <version type="Object">Version260312</version>
+    <version type="Object">Version260412</version>
     <mat_override type="Object">matCube.Stone</mat_override>
     <mat_wood type="Object">matCube.Wood</mat_wood>
     <mat_rock type="Object">matCube.Rock</mat_rock>

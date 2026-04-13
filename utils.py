@@ -2076,7 +2076,8 @@ def joinObjects(objList: List[bpy.types.Object],
     all_face_starts = []
     all_face_totals = []
     all_face_mats = []
-    all_face_smooths = []
+    all_sharp_faces = []
+    all_sharp_edges = []
     
     material_index_map = {}
     material_slots = []
@@ -2115,6 +2116,15 @@ def joinObjects(objList: List[bpy.types.Object],
             mesh.edges.foreach_get('vertices', edges)
             edges = edges.reshape(-1, 2) + vert_offset
             all_edges.append(edges)
+            
+            # 收集sharp_edge属性（Blender 4.1+）
+            sharp_edge_attr = mesh.attributes.get('sharp_edge')
+            if sharp_edge_attr is not None:
+                sharp_edges = np.empty(len(mesh.edges), dtype=bool)
+                sharp_edge_attr.data.foreach_get('value', sharp_edges)
+            else:
+                sharp_edges = np.zeros(len(mesh.edges), dtype=bool)
+            all_sharp_edges.append(sharp_edges)
         
         # 转换环坐标
         if len(mesh.loops) > 0:
@@ -2157,10 +2167,14 @@ def joinObjects(objList: List[bpy.types.Object],
             
             all_face_mats.append(face_mats)
             
-            # 收集面的smooth状态
-            face_smooths = np.empty(len(mesh.polygons), dtype=bool)
-            mesh.polygons.foreach_get('use_smooth', face_smooths)
-            all_face_smooths.append(face_smooths)
+            # 收集sharp_face属性（Blender 4.1+）
+            sharp_face_attr = mesh.attributes.get('sharp_face')
+            if sharp_face_attr is not None:
+                sharp_faces = np.empty(len(mesh.polygons), dtype=bool)
+                sharp_face_attr.data.foreach_get('value', sharp_faces)
+            else:
+                sharp_faces = np.zeros(len(mesh.polygons), dtype=bool)
+            all_sharp_faces.append(sharp_faces)
         
         # 收集UV数据
         # 确保每个对象的每个UV层都有数据，没有的填充默认值
@@ -2205,7 +2219,8 @@ def joinObjects(objList: List[bpy.types.Object],
     merged_face_starts = np.concatenate(all_face_starts) if all_face_starts else np.array([], dtype=np.int32)
     merged_face_totals = np.concatenate(all_face_totals) if all_face_totals else np.array([], dtype=np.int32)
     merged_face_mats = np.concatenate(all_face_mats) if all_face_mats else np.array([], dtype=np.int32)
-    merged_face_smooths = np.concatenate(all_face_smooths) if all_face_smooths else np.array([], dtype=bool)
+    merged_sharp_faces = np.concatenate(all_sharp_faces) if all_sharp_faces else np.array([], dtype=bool)
+    merged_sharp_edges = np.concatenate(all_sharp_edges) if all_sharp_edges else np.array([], dtype=bool)
     total_faces = len(merged_face_starts)
     
     # 创建新网格
@@ -2228,7 +2243,16 @@ def joinObjects(objList: List[bpy.types.Object],
         new_mesh.polygons.foreach_set('loop_start', merged_face_starts)
         new_mesh.polygons.foreach_set('loop_total', merged_face_totals)
         new_mesh.polygons.foreach_set('material_index', merged_face_mats)
-        new_mesh.polygons.foreach_set('use_smooth', merged_face_smooths)
+    
+    # 设置sharp_face属性（Blender 4.1+法线平滑）
+    if total_faces > 0 and np.any(merged_sharp_faces):
+        sharp_face_attr = new_mesh.attributes.new('sharp_face', 'BOOLEAN', 'FACE')
+        sharp_face_attr.data.foreach_set('value', merged_sharp_faces)
+    
+    # 设置sharp_edge属性（Blender 4.1+法线平滑）
+    if total_edges > 0 and np.any(merged_sharp_edges):
+        sharp_edge_attr = new_mesh.attributes.new('sharp_edge', 'BOOLEAN', 'EDGE')
+        sharp_edge_attr.data.foreach_set('value', merged_sharp_edges)
     
     for mat in material_slots:
         new_mesh.materials.append(mat)
@@ -2280,9 +2304,6 @@ def joinObjects(objList: List[bpy.types.Object],
     
     # 删除所有孤儿对象
     delOrphan()
-
-    # 260407 合并后的对象自动应用smooth修改器
-    shaderSmooth(baseObj)
 
     # print调试时间
     # print(time.strftime("%H:%M:%S", time.localtime()) + f".{int((time.time() % 1) * 1000):03d}","结束joinObjects")

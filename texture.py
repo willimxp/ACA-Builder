@@ -91,7 +91,7 @@ def UvUnwrap(object:bpy.types.Object,
              correctAspect = True,
              scaleToBounds = False,
              remainSelect = False,
-             onlyActiveMat = False,
+             matLimitIndex = None,
              ):   
     # 隐藏对象不重新展UV
     if (object.hide_viewport 
@@ -120,26 +120,31 @@ def UvUnwrap(object:bpy.types.Object,
         utils.outputMsg(_("展UV异常，该对象不存在几何面"))
         return
 
-    # 如果不保留当前选择面展UV
-    if not remainSelect:
-        bm = bmesh.new()
-        bm.from_mesh(object.data)
-        for face in bm.faces:
-            # 仅活动面展UV
-            if onlyActiveMat:
-                if face.material_index == object.active_material_index:
+    # 进入编辑模式
+    utils.focusObj(object)
+
+    # 是否需要限制在当前选中的范围？
+    if remainSelect:
+        # 保持现有的选中范围
+        pass
+    else:
+        # 根据是否有材质限制，确定面的选中范围
+        if matLimitIndex is None:
+            # 选中所有面
+            utils.selectMeshAll(object)
+        else:
+            # 仅选中指定材质的面
+            # 260413 为了解决类似瓦当的孤立面问题，必须进入到编辑模式，切换到面选择状态
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_mode(type = 'FACE')
+            bm = bmesh.from_edit_mesh(object.data)
+            for face in bm.faces:
+                if face.material_index == matLimitIndex:
                     face.select = True
                 else:
                     face.select = False
-            # 所有面展UV
-            else:
-                face.select = True
-        bm.to_mesh(object.data)
-        bm.free()
-
-    # 进入编辑模式
-    utils.focusObj(object)
-    
+            bmesh.update_edit_mesh(object.data)
+            bpy.ops.object.mode_set(mode='OBJECT')
 
     if type == None:
         # 默认采用smart project
@@ -1404,15 +1409,4 @@ def setGlazeStyle(paintObj:bpy.types.Object,
     # 重新展UV，在modifier的基础上平铺
     # if resetUV:
     #     setGlazeUV(paintObj)
-    return
-
-# 对琉璃对象重展开UV
-# 在对象应用了modifier的基础上，进行材质的平铺
-def setGlazeUV(paintObj:bpy.types.Object,
-    uvType = uvType.CUBE):
-    UvUnwrap(
-        object=paintObj,
-        type=uvType,
-        cubesize=200,
-        onlyActiveMat=True)
     return

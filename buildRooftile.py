@@ -1307,15 +1307,11 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         use_merge=True, # 合并接缝的点，实现水密
     )
 
-    # 250110 重展UV
-    # 实际在__setTile中已经做了setGlazeStyle，但仅基于单个瓦片
-    # 将active_material落在筒板瓦的瓦面上
-    # 250209 注意，瓦面同时使用琉璃和瓦当两个材质
-    # 所以计算active material时，需要乘2
-    tileSet.active_material_index = int(bData.tile_color)*2
-    # 这里在modifier的平铺范围上做全局的UV平铺
-    # 250209 使用cubeProject时有明显的横纹，改为smartProject
-    mat.setGlazeUV(tileSet,uvType=None)
+    # 260413 针对琉璃材质重展UV，降低贴图重复感
+    mat.UvUnwrap(object=tileSet,
+        type=None, # smartProject
+        matLimitIndex=int(bData.tile_color)*2 # 仅限琉璃材质
+    )
 
     bpy.data.objects.remove(flatTile)
     bpy.data.objects.remove(circularTile)

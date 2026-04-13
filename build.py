@@ -981,20 +981,21 @@ def joinBuilding(buildingObj:bpy.types.Object,
                     collJoined.objects.link(excludeCopy)
         
         # 反查joinedRoot下的排除对象，是否已经被删除，保证原建筑删除踏跺后，同步在合并对象中删除
-        for child in joinedRoot.children:
-            childBaseName = child.name.rsplit('.', 1)[0] if '.' in child.name else child.name
-            if excludeKeyword in childBaseName:
-                if len(excludeObjList) == 0:
-                    utils.delObject(child)
-                else:
-                    isExist = False
-                    for excludeObj in excludeObjList:
-                        excludeBaseName = excludeObj.name.rsplit('.', 1)[0] if '.' in excludeObj.name else excludeObj.name
-                        if excludeBaseName == childBaseName:
-                            isExist = True
-                            break
-                    if not isExist:
+        if excludeKeyword != '':
+            for child in joinedRoot.children:
+                childBaseName = child.name.rsplit('.', 1)[0] if '.' in child.name else child.name
+                if excludeKeyword in childBaseName:
+                    if len(excludeObjList) == 0:
                         utils.delObject(child)
+                    else:
+                        isExist = False
+                        for excludeObj in excludeObjList:
+                            excludeBaseName = excludeObj.name.rsplit('.', 1)[0] if '.' in excludeObj.name else excludeObj.name
+                            if excludeBaseName == childBaseName:
+                                isExist = True
+                                break
+                        if not isExist:
+                            utils.delObject(child)
 
     # 3、删除复制的建筑，包括复制的集合
     # 251205 根据joinCombo参数决定是否删除整个集合

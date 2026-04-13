@@ -1018,7 +1018,9 @@ def joinBuilding(buildingObj:bpy.types.Object,
     utils.hideCollection(collName)
 
     # 5、聚焦根节点
-    utils.focusObj(joinedRoot)
+    # utils.focusObj(joinedRoot)
+    # 260413 改为聚焦所有对象
+    utils.selectAll(joinedRoot)
 
     # print结束时间，用于调试
     # print(time.strftime("%H:%M:%S", time.localtime()),"结束合并建筑")

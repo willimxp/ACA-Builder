@@ -4414,3 +4414,8 @@ def _get_material_aspect_ratios(obj: bpy.types.Object) -> dict:
             aspect_ratios[idx] = aspect_ratio
     
     return aspect_ratios
+
+def getBaseName(name:str):
+    # 去除.001,.002等后缀
+    import re
+    return re.sub(r'\.\d{3}$', '', name)

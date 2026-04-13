@@ -929,9 +929,10 @@ def joinBuilding(buildingObj:bpy.types.Object,
         # 先在 joinedRoot 下查找是否存在同名对象（忽略.001/.002等后缀）
         oldJoinedModel = None
         for child in joinedRoot.children:
-            # 比较时忽略 Blender 自动生成的数字后缀
-            childBaseName = child.name.rsplit('.', 1)[0] if '.' in child.name else child.name
-            if childBaseName == joinedName:
+            # 比较时忽略 Blender 自动生成的数字后缀（如 .001, .002 等）
+            childBaseName = utils.getBaseName(child.name)
+            joinedBaseName = utils.getBaseName(joinedName)
+            if childBaseName == joinedBaseName:
                 oldJoinedModel = child
                 break
         
@@ -968,9 +969,9 @@ def joinBuilding(buildingObj:bpy.types.Object,
             for excludeObj in excludeObjList:
                 # 查找是否存在同名对象（忽略.001/.002等后缀）
                 isExist = False
-                excludeBaseName = excludeObj.name.rsplit('.', 1)[0] if '.' in excludeObj.name else excludeObj.name
+                excludeBaseName = utils.getBaseName(excludeObj.name)
                 for child in joinedRoot.children:
-                    childBaseName = child.name.rsplit('.', 1)[0] if '.' in child.name else child.name
+                    childBaseName = utils.getBaseName(child.name)
                     if excludeBaseName == childBaseName:
                         isExist = True
                         break
@@ -996,14 +997,14 @@ def joinBuilding(buildingObj:bpy.types.Object,
         # 反查joinedRoot下的排除对象，是否已经被删除，保证原建筑删除踏跺后，同步在合并对象中删除
         if excludeKeyword != '':
             for child in joinedRoot.children:
-                childBaseName = child.name.rsplit('.', 1)[0] if '.' in child.name else child.name
+                childBaseName = utils.getBaseName(child.name)
                 if excludeKeyword in childBaseName:
                     if len(excludeObjList) == 0:
                         utils.delObject(child)
                     else:
                         isExist = False
                         for excludeObj in excludeObjList:
-                            excludeBaseName = excludeObj.name.rsplit('.', 1)[0] if '.' in excludeObj.name else excludeObj.name
+                            excludeBaseName = utils.getBaseName(excludeObj.name)
                             if excludeBaseName == childBaseName:
                                 isExist = True
                                 break

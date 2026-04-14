@@ -618,7 +618,7 @@ def __paintMat(object:bpy.types.Object,
 
     # 柱头贴图
     if mat == aData.mat_paint_pillarhead:
-        object = __setPillarHead2(object,mat)
+        object = __setPillarHead(object,mat)
 
     # 栱垫板(小号和普通版)
     if mat in (aData.mat_paint_dgfillboard,
@@ -785,102 +785,10 @@ def __setFlyrafterMat(flyrafter:bpy.types.Object,mat):
 
     return flyrafter
 
-# 计算柱头贴图的高度
-# 依据大额枋、由额垫板、小额枋的高度计算
-def __setPillarHead(pillarObj:bpy.types.Object,
-                    mat:bpy.types.Object):
-    buildingObj = utils.getAcaParent(
-        pillarObj,con.ACA_TYPE_BUILDING)
-    bData:acaData = buildingObj.ACA_data
-    aData:tmpData = bpy.context.scene.ACA_temp
-    dk = bData.DK
-
-    # 为了使用静态的PBR贴图的同时，动态的控制柱头贴图高度    
-    # 将柱子分为上中下分别裁切、拼接    
-    # 柱身对象
-    pillarBodyObj = utils.copySimplyObject(
-        pillarObj,singleUser=True)
-    # 柱头对象
-    pillarHeadObj = utils.copySimplyObject(
-        pillarObj,singleUser=True)
-    # 柱顶对象
-    pillarTopObj = utils.copySimplyObject(
-        pillarObj,singleUser=True)
-    pillarParts=[]
-    pillarParts.append(pillarBodyObj)
-    pillarParts.append(pillarHeadObj)
-    pillarParts.append(pillarTopObj)
-    
-    # 刷新，否则出现柱头计算错误
-    utils.updateScene()
-
-    # 计算柱头高度（大额枋/小额枋下皮）
-    fangHeight = con.EFANG_LARGE_H*dk
-    if bData.use_smallfang:
-        fangHeight += (con.BOARD_YOUE_H*dk
-            + con.EFANG_SMALL_H*dk)
-    # 裁切柱头
-    pCut = pillarObj.matrix_world @ Vector((
-        0,0,pillarObj.dimensions.z-fangHeight))
-    utils.addBisect(
-        object=pillarBodyObj,
-        pCut=pCut,
-        clear_inner=True,
-        direction='V',
-        use_fill=False,
-    )
-    utils.addBisect(
-        object=pillarHeadObj,
-        pCut=pCut,
-        clear_outer=True,
-        direction='V',
-        use_fill=False,
-    )
-
-    # 裁切柱顶（剪掉顶面，只保留圆筒形状，做贴图）
-    pCut = pillarObj.matrix_world @ Vector((
-        0,0,pillarObj.dimensions.z-0.02))
-    utils.addBisect(
-        object=pillarTopObj,
-        pCut=pCut,
-        clear_outer=True,
-        direction='V',
-        use_fill=False,
-    )
-    utils.addBisect(
-        object=pillarHeadObj,
-        pCut=pCut,
-        clear_inner=True,
-        direction='V',
-        use_fill=False,
-    )
-
-    # 绑定柱头材质
-    __copyMaterial(mat,pillarHeadObj)
-    __copyMaterial(aData.mat_oilpaint,pillarBodyObj)
-    __copyMaterial(aData.mat_oilpaint,pillarTopObj)
-    # 重新展UV
-    UvUnwrap(pillarHeadObj,uvType.CYLINDER)
-    UvUnwrap(pillarBodyObj,uvType.CUBE,cubesize=2)
-    UvUnwrap(pillarTopObj,uvType.CUBE,cubesize=2)
-    # 旋转45度，让金龙面对前方
-    pillarHeadObj.rotation_euler.z = math.radians(45)
-
-    # 表面平滑
-    for part in pillarParts:
-        utils.shaderSmooth(part)
-    # 移除原有的柱身，并将柱名称让给新对象
-    pillarName = pillarObj.name
-    bpy.data.objects.remove(pillarObj)
-    # 柱身、柱头合并
-    newPillar = utils.joinObjects(pillarParts,pillarName,cleanup=True)
-    
-    return newPillar
-
 # 重构，不再用bisect拼接的方式，直接控制vertex group
 # 计算柱头贴图的高度
 # 依据大额枋、由额垫板、小额枋的高度计算
-def __setPillarHead2(pillarObj:bpy.types.Object,
+def __setPillarHead(pillarObj:bpy.types.Object,
                     mat:bpy.types.Object):
     buildingObj = utils.getAcaParent(
         pillarObj,con.ACA_TYPE_BUILDING)

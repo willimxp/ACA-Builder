@@ -807,7 +807,7 @@ def joinBuilding(buildingObj:bpy.types.Object,
     # 根据剖视方案决定是否分层
     if sectionPlan != None:
         if sectionPlan in ('X+','X-','Y+','Y-'):
-            useLayer = False
+            useLayer = True
         else:
             useLayer = True
     # 墙体只有一级层次，不区分是否分层
@@ -1037,6 +1037,9 @@ def __undoJoin(buildingObj:bpy.types.Object):
     # 260408 隐藏原来的合并对象及其子对象
     utils.hideHierarchy(buildingObj)
 
+    # 260413 删除剖视布尔对象和修改器
+    __removeSectionObjects(buildingObj)
+
     # 选择目录中的所有构件
     src_coll = bpy.data.collections.get(collName)
     oldbuildingObj = src_coll.objects[0]
@@ -1044,6 +1047,26 @@ def __undoJoin(buildingObj:bpy.types.Object):
     bpy.context.view_layer.objects.active = oldbuildingObj
 
     return oldbuildingObj
+
+# 删除剖视布尔对象和修改器
+def __removeSectionObjects(obj:bpy.types.Object):
+    # 删除名为 'Section' 的布尔修改器
+    mod = obj.modifiers.get('Section')
+    if mod != None:
+        obj.modifiers.remove(mod)
+    
+    # 检查并删除 'b.' 开头的子对象
+    children_to_remove = []
+    for child in obj.children:
+        if child.name.startswith('b.'):
+            children_to_remove.append(child)
+        else:
+            # 递归处理非布尔子对象
+            __removeSectionObjects(child)
+    
+    # 删除布尔子对象
+    for boolObj in children_to_remove:
+        utils.delObject(boolObj)
 
 # 参数合法性验证
 def __validate(buildingObj:bpy.types.Object):

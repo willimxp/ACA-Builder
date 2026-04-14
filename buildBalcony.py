@@ -611,7 +611,6 @@ def __buildRailing(parentObj:bpy.types.Object,
     # 合并对象
     railingObj = utils.joinObjects(
         objList=railingParts,newName=_('栏杆'))
-    utils.shaderSmooth(railingObj)
     
     # 开口栏杆左右镜像
     if useGap:

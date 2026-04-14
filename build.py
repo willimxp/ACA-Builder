@@ -1668,8 +1668,6 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
             boolObj=boolCube,
             operation='INTERSECT',
         )
-        # 裁剪后柱体normal异常，做平滑
-        utils.shaderSmooth(obj)
 
     # 6.3、45度镜像 ------------------------------------------
     diagnalObj = utils.addEmpty(
@@ -2046,8 +2044,6 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
             boolObj=boolCube,
             operation='INTERSECT'
         )
-        # 裁剪后柱体normal异常，做平滑
-        utils.shaderSmooth(obj)
     return LoggiaNewJoined
 
 # 转角处相邻廊间的屋顶裁剪
@@ -2152,8 +2148,6 @@ def __cut_base_loggia(baseLoggia:bpy.types.Object,
             boolObj=boolCube,
             operation='INTERSECT'
         )
-        # 裁剪后柱体normal异常，做平滑
-        utils.shaderSmooth(obj)
     return
 
 # 转角闭合判断，做转角时连接廊间和廊间

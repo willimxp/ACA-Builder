@@ -450,14 +450,11 @@ def __buildRafter_FB(buildingObj:bpy.types.Object,purlin_pos):
                 use_bisect=(False,True,False),
                 use_merge=True,
             )
-            # 平滑
-            utils.shaderSmooth(curveRafter)
             # 转为实体
             utils.applyAllModifer(curveRafter)
             utils.mergeByDistance(curveRafter)
-
-        # 平滑
-        utils.shaderSmooth(fbRafterObj)
+            # 罗锅椽实体做平滑
+            utils.shaderSmooth(curveRafter)
 
     # 构造里口木
     __buildLKM(buildingObj,purlin_pos,'X') 
@@ -572,7 +569,6 @@ def __buildRafter_LR(buildingObj:bpy.types.Object,purlin_pos):
                         Vector((con.JIAOLIANG_Y*dk/2,0,0)),
                     clear_inner=True
             ) 
-            utils.shaderSmooth(lrRafterObj)
         
         # 五、镜像必须放在裁剪之后，才能做上下对称     
         # 檐椽不在此时镜像，延后到整个椽架做完后镜像
@@ -1990,7 +1986,6 @@ def __buildCrWangban(buildingObj:bpy.types.Object,
         mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
-    utils.shaderSmooth(crWangban)
     return crWangban
 
 # 营造翼角大连檐实体（连接翘飞椽）
@@ -2841,8 +2836,6 @@ def __buildCfrWangban(
         mirrorObj=rafterRootObj,
         use_axis=(True,True,False)
     )
-    # 平滑
-    utils.shaderSmooth(cfrWangban)
     return cfrWangban
 
 # 营造椽架（包括檐椽、飞椽、望板等）
@@ -3002,9 +2995,6 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         # 260317 应用修改器
         utils.applyAllModifer(crSet)
 
-        # # 平滑
-        # utils.shaderSmooth(crSet)
-
     # 以下为各类屋顶类型通用的处理  
     # 合并望板
     if useWangban:
@@ -3025,7 +3015,6 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
 
         # 设置材质
         mat.paint(wangbanSet,con.M_WANGBAN)
-        utils.shaderSmooth(wangbanSet)
     
     # 檐椽事后处理(处理UV,添加倒角)
     # 只能放在最后加倒角，因为计算翼角椽时有取檐椽头坐标

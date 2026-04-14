@@ -1271,7 +1271,7 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         tileSetName = _('两山')
     tileSet = utils.joinObjects(
         tileList,newName = _('屋瓦.') + tileSetName)
-    utils.shaderSmooth(tileSet)
+
     # 将屋瓦绑定到根节点
     utils.changeParent(tileSet,tileRootObj)
     # 庑殿、歇山做裁剪
@@ -2239,11 +2239,9 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     # 250110 设置材质，务必放在最后，以免modifier过早被应用，导致错误
     if frontRidgeAfterObj != None:
         mat.setGlazeStyle(frontRidgeAfterObj)
-        utils.shaderSmooth(frontRidgeAfterObj)
         utils.applyTransform(frontRidgeAfterObj,use_location=True)
     if frontRidgeBeforeObj != None:
         mat.setGlazeStyle(frontRidgeBeforeObj)
-        utils.shaderSmooth(frontRidgeBeforeObj)
         utils.applyTransform(frontRidgeBeforeObj,use_location=True)
     if ridgeEndObj != None:
         mat.setGlazeStyle(ridgeEndObj)
@@ -2397,10 +2395,6 @@ def __buildSideTile(buildingObj: bpy.types.Object,
             clear_outer=True,
             direction='V'
         )
-
-    # 平滑处理
-    utils.shaderSmooth(eaveTileObj)
-    utils.shaderSmooth(dripTileObj)
 
     # 250113 设置材质
     mat.setGlazeStyle(eaveTileCenterObj)
@@ -2759,10 +2753,8 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     # 250110 设置材质
     if cornerRidgeBeforeObj != None:
         mat.setGlazeStyle(cornerRidgeBeforeObj)
-        utils.shaderSmooth(cornerRidgeBeforeObj)
     if cornerRidgeAfterObj != None:
         mat.setGlazeStyle(cornerRidgeAfterObj)
-        utils.shaderSmooth(cornerRidgeAfterObj)
     if ridgeEndObj != None:
         mat.setGlazeStyle(ridgeEndObj)
 

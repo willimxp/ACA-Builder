@@ -250,14 +250,16 @@ def delBuilding(buildingObj:bpy.types.Object,
         utils.deleteHierarchy(buildingJoined,del_parent=True)
     # 如果为本体，找到并删除合并体
     else:
-        # 找到合并目录
-        JoinedColl:bpy.types.Collection = \
-            bpy.context.scene.collection.children[con.COLL_NAME_ROOT_JOINED]
-        # 找到同名的合并对象
-        for obj in JoinedColl.objects:
-            if obj.name == buildingObj.name + con.JOIN_SUFFIX:
-                # 删除树状结构
-                utils.deleteHierarchy(obj,True)
+        # 判断集合中是否存在合并目录
+        if con.COLL_NAME_ROOT_JOINED in bpy.context.scene.collection.children:
+            # 找到合并目录
+            JoinedColl:bpy.types.Collection = \
+                bpy.context.scene.collection.children[con.COLL_NAME_ROOT_JOINED]
+            # 找到同名的合并对象
+            for obj in JoinedColl.objects:
+                if obj.name == buildingObj.name + con.JOIN_SUFFIX:
+                    # 删除树状结构
+                    utils.deleteHierarchy(obj,True)
     
     # 2、删除本体 ------------------------------------
     # 判断是否为组合建筑

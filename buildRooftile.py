@@ -702,6 +702,12 @@ def __drawTileGrid(
     utils.setGN_Input(gnMod,"GridRows",tileRows)  
     # 应用GN modifier
     utils.applyAllModifer(tileGrid)      
+
+    # 260414 清理辅助线
+    utils.delObject(EaveCurve)  # 檐口线
+    utils.delObject(SideCurve)  # 侧边线
+    # 260414 正身坡线不做清理，以便splice拼接时复用
+    # utils.delObject(TileCurve)  # 正身线
     
     # 回写准确的瓦垄宽度
     # 后续也用在计算正脊筒宽度，以便对齐当沟
@@ -1271,6 +1277,15 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
         tileSetName = _('两山')
     tileSet = utils.joinObjects(
         tileList,newName = _('屋瓦.') + tileSetName)
+    
+    # 添加镜像
+    utils.addModifierMirror(
+        object=tileSet,
+        mirrorObj=tileRootObj,
+        use_axis=(True,True,False),
+        use_bisect=(True,True,False),
+        use_merge=True, # 合并接缝的点，实现水密
+    )
 
     # 将屋瓦绑定到根节点
     utils.changeParent(tileSet,tileRootObj)
@@ -1295,17 +1310,12 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
             boolObj=tile_bool_obj,
             operation=operation,
         )
-        # 隐藏辅助对象
-        utils.hideObj(tile_bool_obj)
 
-    # 添加镜像
-    utils.addModifierMirror(
-        object=tileSet,
-        mirrorObj=tileRootObj,
-        use_axis=(True,True,False),
-        use_bisect=(True,True,False),
-        use_merge=True, # 合并接缝的点，实现水密
-    )
+        # # 260414 清理辅助bool对象
+        # utils.applyAllModifer(tileSet)
+        # utils.delObject(tile_bool_obj)
+        # 260414 保留bool对象，用于splice的丁字抱厦拼接
+        utils.hideObj(tile_bool_obj)
 
     # 260413 针对琉璃材质重展UV，降低贴图重复感
     mat.UvUnwrap(object=tileSet,
@@ -1485,11 +1495,18 @@ def __buildTopRidge(buildingObj: bpy.types.Object,
     
     # 设置材质
     mat.setGlazeStyle(chiwenObj,resetUV=False)
-    return
+
+    # 应用正脊修改器
+    utils.applyAllModifer(roofRidgeObj)
+
+    return roofRidgeObj
 
 # 营造盝顶的围脊
 def __buildSurroundRidge(buildingObj:bpy.types.Object,
                     rafter_pos):
+    # 收集围脊构件，后续合并
+    surroundRidgeParts = []
+
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
@@ -1529,6 +1546,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
                   ridgeCross.z),
         parentObj=tileRootObj,
         singleUser=True)
+    surroundRidgeParts.append(roofRidgeObj)
     # 根据斗口调整尺度
     utils.resizeObj(roofRidgeObj,tileScale)
     # 与瓦垄宽度匹配
@@ -1566,6 +1584,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
         rotation=(0,0,math.radians(90)),
         parentObj=tileRootObj,
         singleUser=True)
+    surroundRidgeParts.append(roofRidgeObj)
     # 根据斗口调整尺度
     utils.resizeObj(roofRidgeObj,tileScale)
     # 与瓦垄宽度匹配
@@ -1610,6 +1629,7 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
         rotation=(0,0,math.radians(180)),
         parentObj=tileRootObj,
         singleUser=True)
+    surroundRidgeParts.append(hejiaowenObj)
     # 根据斗口调整尺度
     utils.resizeObj(hejiaowenObj,tileScale)
     # 镜像
@@ -1629,7 +1649,12 @@ def __buildSurroundRidge(buildingObj:bpy.types.Object,
     # 设置材质
     mat.setGlazeStyle(hejiaowenObj,resetUV=False)
 
-    return
+    # 合并
+    surroundRidgeJoin = utils.joinObjects(surroundRidgeParts,newName=_('围脊'))
+    # 清理辅助对象
+    utils.delObject(diagnalObj)
+
+    return surroundRidgeJoin
 
 # 查找给定X坐标附近的瓦垄X坐标
 # 250227 修正，强制取X内侧（左侧）的瓦垄，以免意外取到右侧的瓦垄
@@ -2029,7 +2054,7 @@ def __buildTaoshou(buildingObj: bpy.types.Object):
     )
     # 设置材质
     mat.setGlazeStyle(taoshouObj,resetUV=False)
-    return
+    return taoshouObj
 
 # 摆放跑兽
 def __buildPaoshou(buildingObj: bpy.types.Object,
@@ -2066,6 +2091,7 @@ def __buildPaoshou(buildingObj: bpy.types.Object,
     ridgeEndObj:bpy.types.Object = aData.ridgeEnd_source
     ridgeEnd_Length = ridgeEndObj.dimensions.x * tileScale
 
+    shouParts = []
     for n in range(count):
         #跑兽沿垂脊方向间隔一个脊筒，且坐在脊筒中间
         pao_offset = ridgeEnd_Length + ridgeLength*(n-0.5)
@@ -2095,13 +2121,19 @@ def __buildPaoshou(buildingObj: bpy.types.Object,
 
         # 250113 跑兽材质
         mat.setGlazeStyle(shouObj,resetUV=False)
-    return
+        shouParts.append(shouObj)
+    
+    shouJoin = utils.joinObjects(shouParts,newName=_('跑兽'))
+    return shouJoin
 
 # 营造前后檐垂脊
 # 适用于歇山、悬山、硬山
 # 庑殿不涉及（不进入本函数）
 def __buildFrontRidge(buildingObj: bpy.types.Object,
                  rafter_pos):
+    # 收集垂脊构件，最后合并
+    frontRidgeParts = []
+    
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
@@ -2135,10 +2167,14 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
     # 构造垂脊兽后，歇山、悬山、硬山共用
     # 如果不做跑兽，也不做垂兽和垂脊兽后
     if bData.paoshou_count > 0 :
+        # 1、垂脊兽后
         frontRidgeAfterObj = __arrayRidgeByCurve(buildingObj,
                         sourceObj=aData.ridgeBack_source,
                         ridgeCurve=frontRidgeCurve,
                         ridgeName=_('垂脊兽后'))
+        frontRidgeParts.append(frontRidgeAfterObj)
+
+        # 2、垂兽
         # 获取脊筒长度
         ridgeObj:bpy.types.Object = aData.ridgeBack_source
         ridgeLength = ridgeObj.dimensions.x * tileScale
@@ -2149,7 +2185,6 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
             parentObj=tileRootObj,
             location=frontRidgeCurve.location,
             singleUser=True)
-        
         # 根据斗口调整尺度
         utils.resizeObj(chuishouObj,tileScale)
         # 通过曲线变形，获得仰角
@@ -2171,6 +2206,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         else:
             # 歇山垂兽做头，后尾对齐正心桁中线，向檐口位移一脊筒
             chuishouObj.location.x -= ridgeLength
+        frontRidgeParts.append(chuishouObj)
 
     # 硬山、悬山：做垂脊兽前、端头盘子、跑兽
     # 歇山不做脊兽时，做垂脊兽前和端头盘子
@@ -2184,7 +2220,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
                                 con.ROOF_XIESHAN_JUANPENG)
                 and bData.paoshou_count == 0) 
         ):
-        # 构造端头盘子
+        # 3、构造端头盘子
         ridgeEndObj = utils.copyObject(
             sourceObj=aData.ridgeEnd_source,
             name=_('端头盘子'),
@@ -2207,7 +2243,9 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
             mirrorObj=tileRootObj,
             use_axis=(True,True,False),
         )
+        frontRidgeParts.append(ridgeEndObj)
 
+        # 4、垂脊兽前
         # 构造垂脊兽前的脊筒，仅根据需要的跑兽数量排布
         frontRidgeBeforeObj = __arrayRidgeByCurve(buildingObj,
                         sourceObj=aData.ridgeFront_source,
@@ -2216,13 +2254,15 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
                         arrayCount= bData.paoshou_count)        
         # 垂脊兽前后退一个端头盘子长度
         frontRidgeBeforeObj.location.x += ridgeEnd_Length
+        frontRidgeParts.append(frontRidgeBeforeObj)
 
+        # 5、跑兽
         if (bData.paoshou_count > 0 
             and bData.roof_style not in (con.ROOF_XIESHAN,
                                          con.ROOF_XIESHAN_JUANPENG)
             ):
             # 放置跑兽
-            __buildPaoshou(
+            shouJoin = __buildPaoshou(
                 buildingObj=buildingObj,
                 ridgeCurve=frontRidgeCurve,
                 count=bData.paoshou_count
@@ -2235,6 +2275,7 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
                 + ridgeUnit_Length * bData.paoshou_count)
             frontRidgeAfterObj.location.x += paoLength
             chuishouObj.location.x += paoLength
+            frontRidgeParts.append(shouJoin)
     
     # 250110 设置材质，务必放在最后，以免modifier过早被应用，导致错误
     if frontRidgeAfterObj != None:
@@ -2249,11 +2290,18 @@ def __buildFrontRidge(buildingObj: bpy.types.Object,
         mat.setGlazeStyle(chuishouObj)
         utils.applyTransform2(chuishouObj,use_location=True) 
 
-    return {'FINISHED'}
+    # 合并垂脊
+    frontRidgeJoin = utils.joinObjects(frontRidgeParts,newName=_('垂脊'))
+    # 清理垂脊线
+    utils.delObject(frontRidgeCurve)
+
+    return frontRidgeJoin
 
 # 排布排山勾滴
 def __buildSideTile(buildingObj: bpy.types.Object,
                  rafter_pos):
+    sideTileParts = []
+    
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     dk = bData.DK
@@ -2282,6 +2330,7 @@ def __buildSideTile(buildingObj: bpy.types.Object,
                     ridgeCurve=sideRidgeCurve,
                     arraySpan=arraySpan,
                     tileName=_('排山滴水'),)
+    sideTileParts.append(dripTileObj)
     
     eaveTileObj = __arraySideTile(buildingObj,
                     sourceObj=aData.eaveTile_source,
@@ -2289,6 +2338,7 @@ def __buildSideTile(buildingObj: bpy.types.Object,
                     arraySpan=arraySpan,
                     arrayCount = arrayCount-1,  # 少做一个勾头，手工放置坐中勾头
                     tileName=_('排山勾头'))
+    sideTileParts.append(eaveTileObj)
     
     # 放置勾头坐中
     eaveTileCenterObj = utils.copyObject(
@@ -2311,6 +2361,7 @@ def __buildSideTile(buildingObj: bpy.types.Object,
         mirrorObj=tileRootObj,
         use_axis=(True,False,False)
     )
+    sideTileParts.append(eaveTileCenterObj)
 
     # 排山勾头位移
     # 在curve modifier的影响下，X位移实际在Y方向，Z位移实际在X方向
@@ -2401,11 +2452,16 @@ def __buildSideTile(buildingObj: bpy.types.Object,
     mat.setGlazeStyle(eaveTileObj)
     mat.setGlazeStyle(dripTileObj)
 
-    return
+    # 260414 合并和清理
+    sideTileJoin = utils.joinObjects(sideTileParts,newName=_('排山勾滴'))
+    # 清理排山勾滴线
+    utils.delObject(sideRidgeCurve)
 
-# # 营造戗脊（庑殿垂脊）曲线
+    return sideTileJoin
+
+# # 营造排山勾脊（排山脊）曲线
 # def __buildCornerRidgeCurve(buildingObj:bpy.types.Object,
-#                     purlin_pos,name='戗脊线'):
+#                     purlin_pos,name='排山脊线'):
 #     # 载入数据
 #     bData:acaData = buildingObj.ACA_data
 #     dk = bData.DK
@@ -2576,6 +2632,9 @@ def __buildCornerRidgeCurve2(buildingObj:bpy.types.Object,
 # 适用于庑殿、歇山，不涉及硬山、悬山
 def __buildCornerRidge(buildingObj:bpy.types.Object,
                     rafter_pos):
+    # 260414 收集戗脊构件，后续合并
+    cornerRidgeParts = []
+
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
@@ -2616,6 +2675,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
             location=cornerRidgeCurve.location,
             parentObj=tileRootObj,
             singleUser=True)
+    cornerRidgeParts.append(ridgeEndObj)
     # 根据斗口调整尺度
     utils.resizeObj(ridgeEndObj,tileScale)
     # 应用缩放，以便平铺到曲线长度
@@ -2640,6 +2700,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
                     ridgeCurve=cornerRidgeCurve,
                     ridgeName=cornerRidgeName+_('兽前'),
                     arrayCount= bData.paoshou_count)
+    cornerRidgeParts.append(cornerRidgeBeforeObj)
     # 戗脊兽前与端头盘子相接
     cornerRidgeBeforeObj.location.x += \
         ridgeEnd_Length
@@ -2648,17 +2709,20 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
     
     if bData.paoshou_count > 0:
         # 放置跑兽
-        __buildPaoshou(
+        shouJoin = __buildPaoshou(
             buildingObj=buildingObj,
             ridgeCurve=cornerRidgeCurve,
             count=bData.paoshou_count
         )
+        cornerRidgeParts.append(shouJoin)
 
         # 构造垂脊兽后
         cornerRidgeAfterObj = __arrayRidgeByCurve(buildingObj,
                         sourceObj=aData.ridgeBack_source,
                         ridgeCurve=cornerRidgeCurve,
                         ridgeName=cornerRidgeName+_('兽后'))
+        cornerRidgeParts.append(cornerRidgeAfterObj)
+        
         # 留出跑兽的空间
         ridgeUnit: bpy.types.Object= aData.ridgeFront_source
         ridgeUnit_Length = ridgeUnit.dimensions.x * tileScale
@@ -2688,6 +2752,7 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
             parentObj=tileRootObj,
             location=loc,
             singleUser=True)
+        cornerRidgeParts.append(chuishouObj)
         # 根据斗口调整尺度
         utils.resizeObj(chuishouObj,tileScale)
         # 通过曲线变形，获得仰角
@@ -2759,9 +2824,16 @@ def __buildCornerRidge(buildingObj:bpy.types.Object,
         mat.setGlazeStyle(ridgeEndObj)
 
     # 放置套兽
-    __buildTaoshou(buildingObj)
+    taoshouObj = __buildTaoshou(buildingObj)
+    cornerRidgeParts.append(taoshouObj)
 
-    return
+    # 合并垂脊
+    cornerRidgeJoin = utils.joinObjects(
+        cornerRidgeParts,newName=cornerRidgeName)
+    # 清理辅助线
+    utils.delObject(cornerRidgeCurve)
+
+    return cornerRidgeJoin
 
 # 营造歇山的博脊
 def __buildSideRidge(buildingObj:bpy.types.Object,
@@ -2852,11 +2924,19 @@ def __buildSideRidge(buildingObj:bpy.types.Object,
     # 250113 设置琉璃材质
     mat.setGlazeStyle(sideRidgeObj)
 
-    return
+    # 应用修改器
+    utils.applyAllModifer(sideRidgeObj)
+    # 清理辅助线
+    utils.delObject(sideRidgeCurve)
+
+    return sideRidgeObj
 
 # 营造屋脊
 def __buildRidge(buildingObj: bpy.types.Object,
                  rafter_pos):
+    # 收集屋脊构件，后续合并
+    ridgeParts = []
+
     # 载入数据
     bData : acaData = buildingObj.ACA_data
     
@@ -2866,39 +2946,51 @@ def __buildRidge(buildingObj: bpy.types.Object,
         con.ROOF_YINGSHAN_JUANPENG,
         con.ROOF_XIESHAN_JUANPENG,
         con.ROOF_LUDING,):
-        __buildTopRidge(buildingObj,rafter_pos)
+        topRidge = __buildTopRidge(buildingObj,rafter_pos)
+        ridgeParts.append(topRidge)
     
-    # 营造前后垂脊（不涉及庑殿，自动判断硬山/悬山、歇山做法的不同）
+    # 营造前后垂脊（不涉及屋殿，自动判断硬山/悬山、歇山做法的不同）
     if bData.roof_style not in (
             con.ROOF_WUDIAN,
             con.ROOF_LUDING):
         # 排布垂脊兽前、垂脊兽后、跑兽
-        __buildFrontRidge(buildingObj,rafter_pos)
-        # 排布排山勾滴
-        __buildSideTile(buildingObj,rafter_pos)
+        frontRidge = __buildFrontRidge(buildingObj,rafter_pos)
+        ridgeParts.append(frontRidge)
 
-    # 营造歇山戗脊、庑殿垂脊
+        # 排布排山勾滴
+        sideTile = __buildSideTile(buildingObj,rafter_pos)
+        ridgeParts.append(sideTile)
+
+    # 营造歇山戗脊/庑殿垂脊
     if bData.roof_style in (
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
             con.ROOF_XIESHAN_JUANPENG,
             con.ROOF_LUDING):
-        __buildCornerRidge(buildingObj,rafter_pos)
+        cornerRidge = __buildCornerRidge(buildingObj,rafter_pos)
+        ridgeParts.append(cornerRidge)
 
     # 营造歇山的博脊
     if bData.roof_style in (con.ROOF_XIESHAN,
                             con.ROOF_XIESHAN_JUANPENG):
-        __buildSideRidge(buildingObj,rafter_pos)
+        sideRidge = __buildSideRidge(buildingObj,rafter_pos)
+        ridgeParts.append(sideRidge)
 
     # 营造盝顶的围脊
     if bData.roof_style == con.ROOF_LUDING:
-        __buildSurroundRidge(buildingObj,rafter_pos)
+        surroundRidge = __buildSurroundRidge(buildingObj,rafter_pos)
+        ridgeParts.append(surroundRidge)
 
-    return
+    ridgeJoin = utils.joinObjects(ridgeParts,newName=_('屋脊'))
+    
+    return ridgeJoin
 
 # 对外的统一调用接口
 # 一次性重建所有的瓦做
 def buildTile(buildingObj: bpy.types.Object):
+    # 收集瓦面构件，后续合并
+    tileParts = []
+
     # 添加或清空根节点
     __setTileRoot(buildingObj)
 
@@ -2939,8 +3031,9 @@ def buildTile(buildingObj: bpy.types.Object):
         rafter_pos,
         tileGrid,
         direction='X')
+    tileParts.append(tile_fb)
     
-    # 仅庑殿、歇山做两山的瓦面
+    # 仅屋脊、歇山做两山的瓦面
     if bData.roof_style in (
             con.ROOF_WUDIAN,
             con.ROOF_XIESHAN,
@@ -2961,6 +3054,7 @@ def buildTile(buildingObj: bpy.types.Object):
             rafter_pos,
             tileGrid,
             direction='Y')
+        tileParts.append(tile_lr)
         
         # 251117 基于BVH的瓦面裁剪
         if bData.roof_style == con.ROOF_WUDIAN:
@@ -2975,13 +3069,32 @@ def buildTile(buildingObj: bpy.types.Object):
                 boolObj=boolObj,
                 operation='INTERSECT'
             )
-        
+    
+            # 260414 清理bool对象
+            utils.applyAllModifer(tile_fb)
+            utils.applyAllModifer(tile_lr)
+            utils.delObject(boolObj)
+
     # 添加屋脊
     utils.outputMsg("Building Ridge...")
-    __buildRidge(buildingObj,rafter_pos)
+    ridgeJoin = __buildRidge(buildingObj,rafter_pos)
+    tileParts.append(ridgeJoin)
+        
+    # 260414 不做清理，以便splice拼接时使用
+    # # 260414 清理辅助瓦面
+    # tileGrid_fb = utils.getAcaChild(
+    #     buildingObj,con.ACA_TYPE_TILE_GRID)
+    # if tileGrid_fb:
+    #     utils.delObject(tileGrid_fb)
+    # tileGrid_lr = utils.getAcaChild(
+    #     buildingObj,con.ACA_TYPE_TILE_GRID_LR)
+    # if tileGrid_lr:
+    #     utils.delObject(tileGrid_lr)
+
+    tileJoin = utils.joinObjects(tileParts,newName=_('瓦作'))
 
     # 重新聚焦根节点
-    utils.focusObj(buildingObj)
+    utils.focusObj(tileJoin)
 
-    return
+    return tileJoin
     

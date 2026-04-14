@@ -774,7 +774,11 @@ def __buildWangban_FB(buildingObj:bpy.types.Object,
                     )
             # 水密验证：转成mesh，并合并重合点
             utils.focusObj(wangbanJuanpeng)
+            # 260414 清理辅助对象
+            curveBevel = wangbanJuanpeng.data.bevel_object  
             bpy.ops.object.convert(target='MESH')
+            # 260414 清理辅助对象
+            utils.delObject(curveBevel)
             utils.mergeByDistance(wangbanJuanpeng)
             # 四方镜像，Y向裁剪
             utils.addModifierMirror(
@@ -1620,6 +1624,9 @@ def __buildCornerRafterEave(buildingObj:bpy.types.Object,
     # 合并重合点，已实现水密
     utils.mergeByDistance(rafterEaveObj)
 
+    # 260414 清理横截面bevel对象
+    utils.delObject(bevel_object)
+
     return rafterEaveObj
 
 # 营造翼角椽参考线，后续为翼角椽椽头的定位
@@ -2084,6 +2091,9 @@ def __buildCornerFlyrafterEave(buildingObj:bpy.types.Object,
     mat.paint(flyrafterEaveObj,con.M_ROOF_PAINT)
     # 合并重合点，已实现水密
     utils.mergeByDistance(flyrafterEaveObj)
+
+    # 260414 清理横截面Bevel
+    utils.delObject(bevel_object)
 
 # 营造翘飞椽定位线
 # 250316 做为大连檐和翘飞椽共用的定位参考
@@ -3891,7 +3901,10 @@ def __buildBofeng(buildingObj: bpy.types.Object,
             )
             # 上色
             mat.paint(xuanyuObj,con.M_PAINT,override=True)
-            
+    
+    # 260414 清理无用的博缝板曲线
+    utils.delObject(bofengCurve)
+
     return bofengObj
 
 # 营造山墙
@@ -4126,7 +4139,7 @@ def __buildRafterFrame(buildingObj:bpy.types.Object):
     for obj in rafterRootObj.children:
         mat.paint(obj,con.M_ROOF_NOPAINT)
         
-    return
+    return rafterRootObj
 
 def __clearRoof(buildingObj:bpy.types.Object):
     # 斗栱层
@@ -4226,7 +4239,7 @@ def buildRoof(buildingObj:bpy.types.Object):
         # 生成椽望
         if bData.is_showRafter:
             utils.outputMsg("Building Rafters...")
-            __buildRafterFrame(buildingObj)
+            rafterRootObj = __buildRafterFrame(buildingObj)
 
         # 生成瓦作层
         if bData.is_showTiles:
@@ -4253,6 +4266,28 @@ def buildRoof(buildingObj:bpy.types.Object):
                             use_scale=True,
                             use_rotation=True,
                             use_location=True)
+        
+    # 260414 屋顶层清理
+    # 删除参考的角梁
+    cornerBeamObj = utils.getAcaChild(
+        buildingObj,con.ACA_TYPE_CORNER_BEAM)
+    if cornerBeamObj:
+        utils.delObject(cornerBeamObj)
+    # 260414 清理辅助线
+    crCurve = utils.getAcaChild(buildingObj,
+                con.ACA_TYPE_CORNER_RAFTER_CURVE)
+    if crCurve:
+        utils.delObject(crCurve)
+    cfrCurve = utils.getAcaChild(buildingObj,
+                con.ACA_TYPE_CORNER_FLYRAFTER_CURVE)
+    if cfrCurve:
+        utils.delObject(cfrCurve)
+
+    # 椽架层合并
+    if (bData.roof_style != con.ROOF_BALCONY
+        and bData.is_showRafter):
+        rafterFrame = utils.joinObjects(
+            rafterRootObj.children,newName='椽架')
     
     utils.focusObj(buildingObj)
     return {'FINISHED'}

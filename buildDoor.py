@@ -1444,11 +1444,6 @@ def __addMaindoor(kankuangObj:bpy.types.Object):
     doorJoin2.location.x = - doorJoin2.location.x
     doorJoin2.scale.x = -1
     utils.applyTransform2(doorJoin2,use_scale=True)
-    # 修正Normal
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.mesh.flip_normals()
-    bpy.ops.object.mode_set(mode='OBJECT')
 
     # 4扇的板门进行生成
     if maindoorData.door_num == 4:

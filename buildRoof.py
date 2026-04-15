@@ -3443,69 +3443,6 @@ def __drawBofengCurve(buildingObj:bpy.types.Object,
     utils.hideObj(ridgeCurve)
     return ridgeCurve
 
-# 营造博缝板
-# def __buildBofeng(buildingObj: bpy.types.Object,
-#                  rafter_pos):
-#     # 载入数据
-#     bData : acaData = buildingObj.ACA_data
-#     dk = bData.DK
-#     rafterRootObj = utils.getAcaChild(
-#         buildingObj,con.ACA_TYPE_RAFTER_ROOT)
-
-#     # 新绘制一条垂脊曲线
-#     bofengObj = __drawBofengCurve(
-#         buildingObj,rafter_pos)
-#     bofengObj.location.x = rafter_pos[-1].x
-#     bofengObj.name = '博缝板'
-    
-#     # 转成mesh
-#     utils.focusObj(bofengObj)
-#     bpy.ops.object.convert(target='MESH')
-
-#     # 挤压成型
-#     bpy.ops.object.mode_set( mode = 'EDIT' ) 
-#     bm = bmesh.new()
-#     bm = bmesh.from_edit_mesh( bpy.context.object.data )
-
-#     # 曲线向下挤出博缝板高度
-#     bpy.ops.mesh.select_mode( type = 'EDGE' )
-#     bpy.ops.mesh.select_all( action = 'SELECT' ) 
-#     height = (con.HENG_COMMON_D + con.YUANCHUAN_D*4
-#                   + con.WANGBAN_H + con.ROOFMUD_H)*dk
-#     bpy.ops.mesh.extrude_edges_move(
-#         TRANSFORM_OT_translate={'value': (0.0, 0.0, 
-#                     -height)})
-
-#     return_geo = bmesh.ops.extrude_face_region(
-#             bm, geom=bm.faces)
-#     verts = [elem for elem in return_geo['geom'] 
-#              if type(elem) == bmesh.types.BMVert]
-#     bmesh.ops.translate(bm, 
-#             verts=verts, 
-#             vec=(con.BOFENG_WIDTH*dk, 0, 0))
-
-#     # Update & Destroy Bmesh
-#     bmesh.update_edit_mesh(bpy.context.object.data) 
-#     bm.free()  # free and prevent further access
-
-#     # Flip normals
-#     bpy.ops.mesh.select_all( action = 'SELECT' )
-#     bpy.ops.mesh.flip_normals() 
-
-#     # Switch back to Object at end
-#     bpy.ops.object.mode_set( mode = 'OBJECT' )
-
-#     # 应用镜像
-#     utils.addModifierMirror(
-#         object=bofengObj,
-#         mirrorObj=rafterRootObj,
-#         use_axis=(True,True,False),
-#         use_bisect=(False,True,False)
-#     )
-
-#     # 应用裁剪
-#     return
-
 # 营造博缝板的雪花钉
 def __buildBofengNails(
         buildingObj: bpy.types.Object,

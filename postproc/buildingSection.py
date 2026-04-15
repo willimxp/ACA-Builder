@@ -17,34 +17,32 @@ def addSection(buildingObj:bpy.types.Object,
     bData = buildingObj.ACA_data
     # 剖视修改器名称，便于找回
     sectionModName = 'Section'
-    # 当前剖视模式
-    currentPlan = None
-    joinedObj = None
-
-    # 1、验证是否合并？是否剖视？ -----------------------
-    # 1.1、如果还未合并，先做合并
-    if bData.aca_type != con.ACA_TYPE_BUILDING_JOINED:
-        joinedObj = buildingJoin.joinBuilding(buildingObj)
-    # 1.2、如果已经合并，确认是否已经做了剖视
-    else:
-        # 当前剖视模式
-        if 'sectionPlan' in bData:     
-            currentPlan = bData['sectionPlan']
-        # 1.2.1、已合并但未作剖视的新合并对象，无需特殊处理
-        if currentPlan == None:
-            joinedObj = buildingObj
-        # 1.2.2、已合并已剖视的对象，需要重新处理
-        else:
-            delSection(buildingObj)
     
+    joinedObj = None
+    # 1、验证是否合并？是否剖视？ -----------------------
+    if bData.aca_type == con.ACA_TYPE_BUILDING_JOINED:
+        joinedObj = buildingObj
+    # 1.1、如果还未合并，先做合并
+    else:
+        joinedObj = buildingJoin.joinBuilding(buildingObj)
     # 验证是否合并成功
     if joinedObj == None:
         utils.outputMsg(_("合并失败，无法继续做剖视图"))
         return
-    
     # 合并的结果需要进行一次刷新
     # 否则可能出现getBoundCenter时结果错误
     utils.updateScene()
+
+    # 1.2、是否已经做了剖视
+    # 当前剖视模式
+    if 'sectionPlan' in bData:     
+        prePlan = bData['sectionPlan']
+        # 已剖视建筑删除原有剖视
+        if prePlan != None:
+            delSection(buildingObj)
+        # 如果剖视模式相同(同一个剖视按钮弹起)，不再做剖视
+        if prePlan == sectionPlan:
+            return
     
     # 2、开始做剖视 -----------------------
     # 指定在合并目录中操作

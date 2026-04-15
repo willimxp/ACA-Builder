@@ -24,8 +24,7 @@ def addSection(buildingObj:bpy.types.Object,
     # 1、验证是否合并？是否剖视？ -----------------------
     # 1.1、如果还未合并，先做合并
     if bData.aca_type != con.ACA_TYPE_BUILDING_JOINED:
-        joinedObj = buildingJoin.joinBuilding(
-            buildingObj,sectionPlan=sectionPlan)
+        joinedObj = buildingJoin.joinBuilding(buildingObj)
     # 1.2、如果已经合并，确认是否已经做了剖视
     else:
         # 当前剖视模式

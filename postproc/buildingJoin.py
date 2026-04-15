@@ -11,8 +11,7 @@ from ..const import ACA_Consts as con
 # 组合建筑为一个实体
 # 或者解除组合恢复
 def joinBuilding(buildingObj:bpy.types.Object,
-                 useLayer=False, # 是否分层合并
-                 sectionPlan=None, # 可根据剖视方案自动决定是否分层
+                 useLayer=True, # 是否分层合并
                  joinCombo=True, # 是否合并整个combo
                  excludeKeyword='', # 排除合并的对象
                 ):
@@ -38,12 +37,6 @@ def joinBuilding(buildingObj:bpy.types.Object,
     # 1、参数和变量 --------------------------
     collcopySuffix = '.collcopy'
 
-    # 根据剖视方案决定是否分层
-    if sectionPlan != None:
-        if sectionPlan in ('X+','X-','Y+','Y-'):
-            useLayer = True
-        else:
-            useLayer = True
     # 墙体只有一级层次，不区分是否分层
     if bData.aca_type == con.ACA_TYPE_YARDWALL:
         useLayer = False

@@ -269,7 +269,7 @@ class ACA_PT_basic(bpy.types.Panel):
         op = btnJoin.operator("aca.join",icon='PACKAGE',
                          text=btnJoinName,
                          depress=isJoined)
-        op.useLayer = False
+        op.useLayer = True
         
         # # 分层合并
         # btnJoinLayer = toolBar.column(align=True)

@@ -994,7 +994,7 @@ class ACA_OT_JOIN(bpy.types.Operator):
     # 是否分层合并
     useLayer: bpy.props.BoolProperty(
             name=_("是否分层合并"),
-            default=False,
+            default=True,
     )# type: ignore
 
     def execute(self, context):  

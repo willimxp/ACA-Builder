@@ -2099,6 +2099,12 @@ def joinObjects(objList: List[bpy.types.Object],
 
         # 计算合并后的矩阵
         combined_matrix = np.array(inv_base_matrix @ world_matrix, dtype=np.float32)
+        
+        # 检测是否存在负scale（行列式为负表示有镜像变换，会导致法线翻转）
+        # 使用3x3子矩阵计算行列式
+        det = np.linalg.det(combined_matrix[:3, :3])
+        need_flip_normals = det < 0
+        
         # 转换顶点坐标
         verts_local = np.empty(len(mesh.vertices) * 3, dtype=np.float32)
         mesh.vertices.foreach_get('co', verts_local)
@@ -2131,11 +2137,27 @@ def joinObjects(objList: List[bpy.types.Object],
             loop_verts = np.empty(len(mesh.loops), dtype=np.int32)
             mesh.loops.foreach_get('vertex_index', loop_verts)
             loop_verts += vert_offset
-            all_loop_verts.append(loop_verts)
             
             loop_edges = np.empty(len(mesh.loops), dtype=np.int32)
             mesh.loops.foreach_get('edge_index', loop_edges)
             loop_edges += edge_offset
+            
+            # 如果存在负scale，需要翻转每个面的顶点顺序以纠正法线
+            if need_flip_normals and len(mesh.polygons) > 0:
+                face_starts_local = np.empty(len(mesh.polygons), dtype=np.int32)
+                face_totals_local = np.empty(len(mesh.polygons), dtype=np.int32)
+                mesh.polygons.foreach_get('loop_start', face_starts_local)
+                mesh.polygons.foreach_get('loop_total', face_totals_local)
+                
+                # 翻转每个面内的loop顶点顺序
+                for i in range(len(mesh.polygons)):
+                    start = face_starts_local[i]
+                    total = face_totals_local[i]
+                    # 翻转该面范围内的loop_verts（保持第一个顶点，翻转其余）
+                    if total > 2:
+                        loop_verts[start:start+total] = loop_verts[start:start+total][::-1]
+            
+            all_loop_verts.append(loop_verts)
             all_loop_edges.append(loop_edges)
         
         # 先收集对象material_slots中的所有材质

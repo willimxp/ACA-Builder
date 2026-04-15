@@ -140,10 +140,16 @@ def joinBuilding(buildingObj:bpy.types.Object,
         
         # 区分是否分层的不同命名规则
         if useLayer:
-            # 合并名称以层标注
-            joinedName = (buildingObj.name 
-                          + '.' 
-                          + layer.name)
+            # 合并名称以建筑名称为基础
+            joinedName = buildingObj.name
+            # 如果是组合对象，添加个体名称
+            if isCombo:
+                # 层父节点名称，去除001后缀
+                comboChildName = utils.getBaseName(layer.parent.name) 
+                joinedName += '.' + comboChildName
+            # 添加层名称
+            layerName = utils.getBaseName(layer.name) 
+            joinedName += '.' + layerName
         else:
             # 合并名称直接加'joined'后缀
             joinedName = buildingObj.name + con.JOIN_SUFFIX

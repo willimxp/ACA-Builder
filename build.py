@@ -2505,25 +2505,42 @@ def __setLoggiaChiwen(Loggia:bpy.types.Object,dir:str):
     if chiwenObj is None:
         # 未找到螭吻，退出
         return
-    
-    # 只做左螭吻，隐藏右螭吻
-    utils.showObj(chiwenObj)
-    if chiwenPos == 'L':
-        modMirror = chiwenObj.modifiers.get('Mirror')
-        if modMirror:
-            chiwenObj.modifiers.remove(modMirror)
-        chiwenObj.location.x = -abs(chiwenObj.location.x)
-        chiwenObj.scale.x = abs(chiwenObj.scale.x)
-    # 只做右螭吻，隐藏左螭吻
-    elif chiwenPos == 'R':
-        modMirror = chiwenObj.modifiers.get('Mirror')
-        if modMirror:
-            chiwenObj.modifiers.remove(modMirror)
-        chiwenObj.location.x = abs(chiwenObj.location.x)
-        chiwenObj.scale.x = - abs(chiwenObj.scale.x)
-    # 不做螭吻
-    else:
+
+    # 如果无需螭吻
+    if chiwenPos == '':
+        # 仅隐藏，供后续廊间参考
         utils.hideObj(chiwenObj)
+    else:
+        # 替换新螭吻，不管原来螭吻是否做了镜像
+        from .data import ACA_data_template as tmpData
+        aData:tmpData = bpy.context.scene.ACA_temp
+        tileRootObj = utils.getAcaChild(
+            Loggia,con.ACA_TYPE_TILE_ROOT
+        )
+        chiwenNewObj = utils.copyObject(
+            sourceObj=aData.chiwen_source,
+            name=_('螭吻'),
+            location=chiwenObj.location,
+            scale=chiwenObj.scale,
+            rotation=chiwenObj.rotation_euler,
+            parentObj=tileRootObj,
+            singleUser=True)
+        chiwenNewObj.ACA_data['aca_type'] = con.ACA_TYPE_CHIWEN
+        chiwenNewObj.users_collection[0].objects.unlink(chiwenNewObj)
+        chiwenObj.users_collection[0].objects.link(chiwenNewObj)
+        from . import texture as mat
+        mat.setGlazeStyle(chiwenNewObj,resetUV=False)
+
+        if chiwenPos == 'L':
+            # 保持原位
+            pass
+        elif chiwenPos == 'R':
+            # 放到右边
+            chiwenNewObj.location.x = abs(chiwenObj.location.x)
+            chiwenNewObj.scale.x = - abs(chiwenObj.scale.x)
+        
+        # 删除原螭吻
+        utils.delObject(chiwenObj)
 
     # 重新合并
     if isUnjoined:

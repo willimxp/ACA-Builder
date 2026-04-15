@@ -1006,8 +1006,9 @@ class ACA_OT_JOIN(bpy.types.Operator):
             self.report({'INFO'},_('合并失败，请选择一个建筑。'))
             return {'CANCELLED'}
         
+        from .postproc import buildingJoin
         funproxy = partial(
-            build.joinBuilding,
+            buildingJoin.joinBuilding,
             buildingObj=buildingObj,
             useLayer=self.useLayer,)
         result = utils.fastRun(funproxy)
@@ -1348,8 +1349,9 @@ class ACA_OT_SECTION(bpy.types.Operator):
     def execute(self, context): 
         buildingObj,bData,objData = utils.getRoot(context.object)
         # 生成剖视系统，传入剖视方案
+        from .postproc import buildingSection
         funproxy = partial(
-            build.addSection,
+            buildingSection.addSection,
             buildingObj=buildingObj,
             sectionPlan=self.sectionPlan)
         result = utils.fastRun(funproxy)

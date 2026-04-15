@@ -903,7 +903,7 @@ def drawHexagon(dimensions:Vector,
         v6 += Vector((offset,0,0))
     # 只做一半，用于门楹、窗楹等
     if half:
-        v6 =Vector((0,dimensions.y/2,0))
+        v6 += Vector((0,dimensions.y/2,0))
     vectors.append(v6)
 
     # 摆放点

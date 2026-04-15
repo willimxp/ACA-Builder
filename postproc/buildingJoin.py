@@ -266,7 +266,8 @@ def undoJoin(buildingObj:bpy.types.Object):
     utils.hideHierarchy(buildingObj)
 
     # 260413 删除剖视布尔对象和修改器
-    __removeSectionObjects(buildingObj)
+    from . import buildingSection
+    buildingSection.delSection(buildingObj)
 
     # 选择目录中的所有构件
     src_coll = bpy.data.collections.get(collName)
@@ -275,23 +276,3 @@ def undoJoin(buildingObj:bpy.types.Object):
     bpy.context.view_layer.objects.active = oldbuildingObj
 
     return oldbuildingObj
-
-# 删除剖视布尔对象和修改器
-def __removeSectionObjects(obj:bpy.types.Object):
-    # 删除名为 'Section' 的布尔修改器
-    mod = obj.modifiers.get('Section')
-    if mod != None:
-        obj.modifiers.remove(mod)
-    
-    # 检查并删除 'b.' 开头的子对象
-    children_to_remove = []
-    for child in obj.children:
-        if child.name.startswith('b.'):
-            children_to_remove.append(child)
-        else:
-            # 递归处理非布尔子对象
-            __removeSectionObjects(child)
-    
-    # 删除布尔子对象
-    for boolObj in children_to_remove:
-        utils.delObject(boolObj)

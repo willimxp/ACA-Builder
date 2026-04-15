@@ -35,17 +35,7 @@ def addSection(buildingObj:bpy.types.Object,
             joinedObj = buildingObj
         # 1.2.2、已合并已剖视的对象，需要重新处理
         else:
-            # 1.2.2.1、如果剖视方案相同，解除剖视
-            if sectionPlan == currentPlan:
-                # 这里解除合并的同时，就会解除剖视
-                buildingJoin.undoJoin(buildingObj)
-                return
-            # 1.2.2.2、剖视方案不同，重新合并
-            else:
-                # 解除合并
-                buildingObj = buildingJoin.undoJoin(buildingObj)
-                joinedObj = buildingJoin.joinBuilding(
-                    buildingObj,sectionPlan=sectionPlan)
+            delSection(buildingObj)
     
     # 验证是否合并成功
     if joinedObj == None:
@@ -424,3 +414,28 @@ def __getSectionPlan(boolObj:bpy.types.Object,
             boolPlan['mat'] = con.M_STONE
 
     return boolPlan
+
+# 删除剖视图
+def delSection(obj:bpy.types.Object):
+    # 删除名为 'Section' 的布尔修改器
+    mod = obj.modifiers.get('Section')
+    if mod != None:
+        obj.modifiers.remove(mod)
+    
+    # 检查并删除 'b.' 开头的子对象
+    children_to_remove = []
+    for child in obj.children:
+        if child.name.startswith('b.'):
+            children_to_remove.append(child)
+        else:
+            # 递归处理非布尔子对象
+            delSection(child)
+    
+    # 删除布尔子对象
+    for boolObj in children_to_remove:
+        utils.delObject(boolObj)
+
+    # 取消剖视状态
+    bData = obj.ACA_data
+    bData['sectionPlan'] = None
+    return

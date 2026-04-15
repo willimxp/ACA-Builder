@@ -3023,6 +3023,8 @@ def __buildRafterForAll(buildingObj:bpy.types.Object,purlin_pos):
         boardColl = boardRootObj.users_collection[0]
         boardColl.objects.link(wangbanSet)
 
+        # 260415 应用join带来的旋转，导致的cube project异常
+        utils.applyTransform(wangbanSet,use_rotation=True)
         # 设置材质
         mat.paint(wangbanSet,con.M_WANGBAN)
     

@@ -233,9 +233,11 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
 
     # 6、屋顶控制 ----------------------------
     # 6.1、裁剪位置
-    eaveExt = 30*dk
+    eaveExt = con.YANCHUAN_EX*dk + con.FLYRAFTER_EX*dk
     if bData.use_dg:
         eaveExt += bData.dg_extend
+    eaveExt += con.SPLICE_DEPTH_EXT_DK*dk/2
+
     offset = eaveExt/2
     buildingH = (bData.platform_height+bData.pillar_height)
     if bData.use_dg:
@@ -629,9 +631,14 @@ def __add_loggia_extend(baseLoggia:bpy.types.Object,
     buildingEave = 20*dk # 悬山出际
 
     # 裁剪深度
-    buildingDepth = bData.y_total + 60*dk # 出檐
+    buildingDepth = bData.y_total
+    # 加前后出檐
+    buildingDepth += (con.YANCHUAN_EX*dk + con.FLYRAFTER_EX*dk)*2
+    # 加斗栱出檐
     if bData.use_dg:
-        buildingDepth += bData.dg_extend
+        buildingDepth += bData.dg_extend * 2
+    # 加保留宽度(防止裁剪到瓦作)
+    buildingDepth += con.SPLICE_DEPTH_EXT_DK*dk
 
     # 定位
     offset = buildingEave/2
@@ -739,10 +746,14 @@ def __cut_base_loggia(baseLoggia:bpy.types.Object,
     buildingEave = 20*dk # 悬山出际
 
     # 裁剪深度
-    # 原廊间可能已经做了一侧的转角裁剪，这里继续做另一侧的转角裁剪
-    buildingDepth = bData.y_total + 60*dk # 出檐
+    buildingDepth = bData.y_total
+    # 加前后出檐
+    buildingDepth += (con.YANCHUAN_EX*dk + con.FLYRAFTER_EX*dk)*2
+    # 加斗栱出檐
     if bData.use_dg:
-        buildingDepth += bData.dg_extend
+        buildingDepth += bData.dg_extend * 2
+    # 加保留宽度(防止裁剪到瓦作)
+    buildingDepth += con.SPLICE_DEPTH_EXT_DK*dk
 
     # 原始廊间是横版，还是竖版？
     zRot = Loggia.rotation_euler.z

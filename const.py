@@ -390,6 +390,7 @@ class ACA_Consts(object, metaclass=ACA_ConstsMeta):
 
     # 建筑拼接
     SPLICE_HEIGHT_EXT_DK = 100 # 建筑拼接高度扩展(DK)
+    SPLICE_DEPTH_EXT_DK = 30 # 建筑拼接深度扩展(DK)
 
     # 后处理类型
     POSTPROC_SPLICE = 'SPLICE'

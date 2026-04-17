@@ -2456,9 +2456,14 @@ def __unionCrossL(fromBuilding:bpy.types.Object,
         buildingH += bData.dg_height
     buildingH += bData.y_total / 2
     buildingH += con.SPLICE_HEIGHT_EXT_DK*dk # 保险高度
-    buildingEave = 30*dk 
+    # 出檐宽度
+    # 椽飞出檐
+    buildingEave = con.YANCHUAN_EX*dk + con.FLYRAFTER_EX*dk
+    # 斗栱出檐
     if bData.use_dg:
         buildingEave += bData.dg_extend
+    # 保护瓦作不被裁剪
+    buildingEave += con.SPLICE_DEPTH_EXT_DK*dk/2
     
     # 获取相交瓦面 ---------------------------------
     # A建筑瓦面

@@ -282,3 +282,10 @@ def undoJoin(buildingObj:bpy.types.Object):
     bpy.context.view_layer.objects.active = oldbuildingObj
 
     return oldbuildingObj
+
+# 获取合并建筑对应的原建筑
+def getJoinedOriginal(joinedBuilding: bpy.types.Object):
+    collName = joinedBuilding.name.removesuffix(con.JOIN_SUFFIX)
+    src_coll = bpy.data.collections.get(collName)
+    src_building = src_coll.objects[0]
+    return src_building

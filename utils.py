@@ -2019,6 +2019,18 @@ def joinObjects(objList: List[bpy.types.Object],
     if newName is None:
         newName = objList[0].name
 
+    # 清理objList中的None对象
+    for ob in reversed(objList):
+        if ob is None:
+            objList.remove(ob)
+    # 没有对象
+    if len(objList) == 0:
+        return None
+    # 仅剩一个对象
+    elif len(objList) == 1:
+        objList[0].name = newName
+        return objList[0]
+
     # 如果没有指定基准对象，取第一个对象作为基准对象
     if baseObj is None:
         baseObj = objList[0]

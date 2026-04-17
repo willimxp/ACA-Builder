@@ -840,7 +840,7 @@ def getMeshDims(object):
 def drawHexagon(dimensions:Vector,
                 location:Vector,
                 half=False, # 只做一半，用于门楹、窗楹等
-                bevelSide = 'Y', # 左右是否做折角，Y/L/R/N
+                bevelSide = '0', # 左右是否做折角，0-Y/1-L/2-R/3-N
                 name=None,
                 parent=None,):
     if name is None:
@@ -863,7 +863,7 @@ def drawHexagon(dimensions:Vector,
         dimensions.y/2,
         -dimensions.z/2))
     # 左上点做折角
-    if bevelSide in ('Y','L'):
+    if bevelSide in ('0','1'):
         v2 += Vector((offset,0,0))
     vectors.append(v2)
     # 右上点
@@ -871,7 +871,7 @@ def drawHexagon(dimensions:Vector,
         dimensions.x/2,
         dimensions.y/2,
         -dimensions.z/2))
-    if bevelSide in ('Y','R'):
+    if bevelSide in ('0','2'):
         v3 += Vector((-offset,0,0))
     vectors.append(v3)
     # 右顶点
@@ -886,7 +886,7 @@ def drawHexagon(dimensions:Vector,
         -dimensions.y/2,
         -dimensions.z/2))
     # 右下点做折角
-    if bevelSide in ('Y','R'):
+    if bevelSide in ('0','2'):
         v5 += Vector((-offset,0,0))
     # 只做一半，用于门楹、窗楹等
     if half:
@@ -899,7 +899,7 @@ def drawHexagon(dimensions:Vector,
         -dimensions.y/2,
         -dimensions.z/2))
     # 左下点做折角
-    if bevelSide in ('Y','L'):
+    if bevelSide in ('0','1'):
         v6 += Vector((offset,0,0))
     # 只做一半，用于门楹、窗楹等
     if half:

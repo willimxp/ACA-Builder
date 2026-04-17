@@ -206,7 +206,7 @@ def __drawWall(wallProxy:bpy.types.Object):
         bevelSide=bevelSide, # 是否露出柱子
     )
     # 260410 仅在两侧都做折边时才添加导角，以避免墙缝
-    if bevelSide == 'Y':
+    if bevelSide == '0':
         utils.addModifierBevel(bottomObj, width=con.BEVEL_HIGH)
     # 赋材质
     mat.paint(bottomObj,con.M_WALL_BOTTOM)

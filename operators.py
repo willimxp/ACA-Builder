@@ -1709,9 +1709,9 @@ class ACA_OT_LOGGIA_EXTEND(bpy.types.Operator):
     def execute(self, context): 
         timeStart = time.time()
         
-        from . import buildCombo
+        from . import buildLoggia
         funproxy = partial(
-            build.loggia_extend,
+            buildLoggia.loggia_extend,
             contextObj = context.object,
             dir = self.dir,
         )

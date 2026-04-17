@@ -1184,7 +1184,8 @@ def __setLoggiaChiwen(Loggia:bpy.types.Object,dir:str):
 
         if chiwenPos == 'L':
             # 保持原位
-            pass
+            chiwenNewObj.location.x = - abs(chiwenObj.location.x)
+            chiwenNewObj.scale.x = abs(chiwenObj.scale.x)
         elif chiwenPos == 'R':
             # 放到右边
             chiwenNewObj.location.x = abs(chiwenObj.location.x)

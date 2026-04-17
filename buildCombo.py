@@ -156,8 +156,8 @@ def buildCombo(
                 continue
             
             # 执行拼接
-            from . import buildSplice
-            buildSplice.spliceBuilding(
+            from .postproc import buildingSplice
+            buildingSplice.spliceBuilding(
                 fromBuilding=fromBuilding,
                 toBuilding=toBuilding)
         else:
@@ -173,8 +173,8 @@ def updateCombo(buildingObj:bpy.types.Object,
     utils.outputMsg(_("开始更新......"))
 
     # 251217 添加清除拼接
-    from . import buildSplice
-    buildSplice.undoSplice(buildingObj)
+    from .postproc import buildingSplice
+    buildingSplice.undoSplice(buildingObj)
 
     comboObj = utils.getComboRoot(buildingObj)
     bData:acaData = buildingObj.ACA_data

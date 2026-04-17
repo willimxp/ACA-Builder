@@ -219,8 +219,8 @@ def update_platform(self, context:bpy.types.Context):
     refObj = self.id_data
 
     # 251217 添加清除拼接
-    from . import buildSplice
-    buildSplice.undoSplice(buildingObj)
+    from .postproc import buildingSplice
+    buildingSplice.undoSplice(buildingObj)
     
     # 调用台基缩放
     from . import buildPlatform
@@ -461,8 +461,8 @@ def update_rooftile(self, context:bpy.types.Context):
     buildingObj,bData,oData = utils.getRoot(context.object)
     if buildingObj != None:
         # 251217 添加清除拼接
-        from . import buildSplice
-        buildSplice.undoSplice(buildingObj)
+        from .postproc import buildingSplice
+        buildingSplice.undoSplice(buildingObj)
 
         from . import buildRooftile
         # 重新生成屋顶

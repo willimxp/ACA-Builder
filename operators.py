@@ -1675,9 +1675,9 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
             build.isFinished = True
             return {'CANCELLED'}
         
-        from . import buildSplice
+        from .postproc import buildingSplice
         funproxy = partial(
-            buildSplice.spliceBuilding,
+            buildingSplice.spliceBuilding,
             fromBuilding = fromBuilding,
             toBuilding = toBuilding,
         )

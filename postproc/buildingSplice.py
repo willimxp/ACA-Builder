@@ -3,20 +3,14 @@
 # 功能概述：
 #   建筑之间的拼接，包括勾连搭、抱厦、转角等操作
 
-from .locale.i18n import _
+from ..locale.i18n import _
 import bpy
 import math
 import bmesh
-from mathutils import Vector,Euler,Matrix,geometry
-from .const import ACA_Consts as con
-from .data import ACA_data_obj as acaData
-from . import utils
-from . import template
-from . import buildFloor
-from . import buildYardWall
-from . import buildRoof
-from . import texture as mat
-from . import buildCombo
+from mathutils import Vector
+from ..const import ACA_Consts as con
+from ..data import ACA_data_obj as acaData
+from .. import utils
 
 # 建筑拼接
 def spliceBuilding(fromBuilding:bpy.types.Object,
@@ -135,7 +129,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
         return {'CANCELLED'}
     
     # 2、预处理 ------------------------------------
-    from . import buildCombo
+    from .. import buildCombo
     # 建筑集成到一个统一的combo中
     # 以第一个建筑为origin原点(主建筑)
     result,comboObj = buildCombo.addCombo(
@@ -237,6 +231,176 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     utils.focusObj(toBuilding)
 
     return result
+
+# 删除建筑(以及相关的建筑)的拼接操作
+def undoSplice(buildingObj:bpy.types.Object):
+    # 验证buildingObj
+    buildingObj,bData,oData = utils.getRoot(buildingObj)
+    if buildingObj is None:
+        print(_("取消拼接：无法识别的建筑"))
+        return
+    
+    # 找到combo
+    comboObj = utils.getComboRoot(buildingObj)
+    if comboObj is None:
+        print(_("取消拼接：无法找到combo根节点"))
+        return
+    
+    # 找到相关建筑
+    spliceBuildingIDs = []
+    # 提取comboRoot中记录的PostProcess
+    comboData:acaData = comboObj.ACA_data
+    ppList = comboData.postProcess
+    # 分析相关的postProcess记录
+    removeSplice = []
+    for i,pp in enumerate(ppList):
+        isRelated = False
+        if pp.action == con.POSTPROC_SPLICE:
+            ppParaList = pp.parameter.split('#')
+            for para in ppParaList:
+                if para == bData.splice_id:
+                    # 把这一条postProcess记录中的两个建筑ID都存入列表
+                    spliceBuildingIDs += ppParaList
+                    isRelated = True
+                    break
+        if isRelated:
+            removeSplice.append(i)
+    # 验证是否存在需要清除的拼接
+    if spliceBuildingIDs == []:
+        print(_("没有需要清除的拼接操作"))
+        return
+
+    # 删除对应的记录(从后向前删除)
+    for i in reversed(removeSplice):
+        ppList.remove(i)
+
+    # ID转换为building对象
+    spliceBuildingObjs = []
+    for id in spliceBuildingIDs:
+        for obj in comboObj.children:
+            if obj.ACA_data.splice_id == id:
+                if obj not in spliceBuildingObjs: # 去重
+                    spliceBuildingObjs.append(obj)
+
+    # 清除splice信息
+    boolObjs = []
+    for buildingObj in spliceBuildingObjs:
+        # 清除集合颜色标识
+        coll = buildingObj.users_collection[0]
+        coll.color_tag = 'NONE'
+
+        # 清除修改器
+        buildingChildren = utils.getChildrenHierarchy(buildingObj)
+        for obj in buildingChildren:
+            obj:bpy.types.Object
+            # 可能有.001的后缀
+            for mod in obj.modifiers:
+                if mod.name.startswith('SPLICE'):
+                    # 记录涉及的bool对象
+                    if hasattr(mod,'object'):
+                        boolObj = mod.object
+                        if boolObj not in boolObjs:
+                            boolObjs.append(boolObj)
+                    # 删除修改器
+                    obj.modifiers.remove(mod)
+
+    # 清除bool对象
+    for obj in boolObjs:
+        bpy.data.objects.remove(obj)
+
+    return
+
+# 生成拼接编号
+def __setSpliceID(buildingObj:bpy.types.Object):
+    # 拼接编号如果不存在，直接生成新ID
+    bData:acaData = buildingObj.ACA_data
+    if bData.splice_id == '':
+        bData['splice_id'] = utils.generateID()
+    # 拼接编号如果已经存在，可能是通过模板自动初始化的
+    else:
+        hasDuplicate = False
+        # 查询当前项目，是否有重复的拼接编号
+        for obj in bpy.data.objects:
+            # 跳过非ACA对象
+            if not hasattr(obj,'ACA_data'):continue
+            # 跳过自身
+            if obj == buildingObj:continue
+            # 检查重复
+            if obj.ACA_data.splice_id == bData.splice_id:
+                hasDuplicate = True
+                break
+
+        # 如果有重复的，则更新为新的拼接编号
+        if hasDuplicate:
+            bData['splice_id'] = utils.generateID()
+        # 如果没有重复，则保留原编号
+        else:
+            pass
+        
+    return
+
+# 判断屋顶相交点
+def __getRoofCrossPoint(fromBuilding:bpy.types.Object,
+                        toBuilding:bpy.types.Object,):
+    # 主建筑正身坡线
+    tileCurve = utils.getAcaChild(
+        fromBuilding,con.ACA_TYPE_TILE_CURVE_FB)
+    if tileCurve:
+        tileCurve_copy = utils.copySimplyObject(
+            tileCurve,singleUser=True)
+        utils.showObj(tileCurve_copy)
+    else:
+        utils.outputMsg(_("无法获取正身坡线"))
+        return {'CANCELLED'}
+    # 副建筑瓦面
+    tileGrid = utils.getAcaChild(
+        toBuilding,con.ACA_TYPE_TILE_GRID)
+    if tileGrid:
+        tileGrid_copy = utils.copySimplyObject(
+            tileGrid,singleUser=True)
+        utils.showObj(tileGrid_copy)
+        # 镜像
+        utils.addModifierMirror(
+            object=tileGrid_copy,
+            mirrorObj=toBuilding,
+            use_axis=(True,True,False),
+            use_bisect=(True,True,False),
+            use_merge=True
+        )
+        utils.applyAllModifer(tileGrid_copy)
+    else:
+        utils.popMessageBox(_("无法获取屋面"))
+        return {'CANCELLED'}
+
+    # 3、计算交点
+    intersections = utils.intersect_curve_mesh(
+        curve_obj=tileCurve_copy,
+        mesh_obj=tileGrid_copy
+    )
+    if intersections == []:
+        tileCurve_copy.location.y = - tileCurve_copy.location.y
+        tileCurve_copy.scale.y = -1
+        intersections = utils.intersect_curve_mesh(
+            curve_obj=tileCurve_copy,
+            mesh_obj=tileGrid_copy
+        )
+        if intersections == []:
+            # 回收辅助对象
+            utils.delObject(tileCurve_copy)
+            utils.delObject(tileGrid_copy)
+            utils.delOrphan()
+            utils.popMessageBox(_("建筑没有相交，未做任何裁剪"))
+            return {'CANCELLED'}
+    # # 转换到局部坐标
+    # crossPoint = fromBuilding.matrix_world.inverted() @ intersections[0]['location']
+    # 251209 使用全局坐标
+    crossPoint = intersections[0]['location']
+
+    # 4、回收辅助对象
+    utils.delObject(tileCurve_copy)
+    utils.delObject(tileGrid_copy)
+    utils.delOrphan()
+    return crossPoint
 
 # 建筑拼接：勾连搭
 # 适用于主建筑和副建筑平行，且面阔相等
@@ -405,69 +569,6 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
             )
 
     return {'FINISHED'}
-
-# 判断屋顶相交点
-def __getRoofCrossPoint(fromBuilding:bpy.types.Object,
-                        toBuilding:bpy.types.Object,):
-    # 主建筑正身坡线
-    tileCurve = utils.getAcaChild(
-        fromBuilding,con.ACA_TYPE_TILE_CURVE_FB)
-    if tileCurve:
-        tileCurve_copy = utils.copySimplyObject(
-            tileCurve,singleUser=True)
-        utils.showObj(tileCurve_copy)
-    else:
-        utils.outputMsg(_("无法获取正身坡线"))
-        return {'CANCELLED'}
-    # 副建筑瓦面
-    tileGrid = utils.getAcaChild(
-        toBuilding,con.ACA_TYPE_TILE_GRID)
-    if tileGrid:
-        tileGrid_copy = utils.copySimplyObject(
-            tileGrid,singleUser=True)
-        utils.showObj(tileGrid_copy)
-        # 镜像
-        utils.addModifierMirror(
-            object=tileGrid_copy,
-            mirrorObj=toBuilding,
-            use_axis=(True,True,False),
-            use_bisect=(True,True,False),
-            use_merge=True
-        )
-        utils.applyAllModifer(tileGrid_copy)
-    else:
-        utils.popMessageBox(_("无法获取屋面"))
-        return {'CANCELLED'}
-
-    # 3、计算交点
-    intersections = utils.intersect_curve_mesh(
-        curve_obj=tileCurve_copy,
-        mesh_obj=tileGrid_copy
-    )
-    if intersections == []:
-        tileCurve_copy.location.y = - tileCurve_copy.location.y
-        tileCurve_copy.scale.y = -1
-        intersections = utils.intersect_curve_mesh(
-            curve_obj=tileCurve_copy,
-            mesh_obj=tileGrid_copy
-        )
-        if intersections == []:
-            # 回收辅助对象
-            utils.delObject(tileCurve_copy)
-            utils.delObject(tileGrid_copy)
-            utils.delOrphan()
-            utils.popMessageBox(_("建筑没有相交，未做任何裁剪"))
-            return {'CANCELLED'}
-    # # 转换到局部坐标
-    # crossPoint = fromBuilding.matrix_world.inverted() @ intersections[0]['location']
-    # 251209 使用全局坐标
-    crossPoint = intersections[0]['location']
-
-    # 4、回收辅助对象
-    utils.delObject(tileCurve_copy)
-    utils.delObject(tileGrid_copy)
-    utils.delOrphan()
-    return crossPoint
 
 # 建筑拼接：平行抱厦-悬山
 # fromBuilding为面阔较小的抱厦
@@ -1191,35 +1292,6 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
             )
 
     return {'FINISHED'}
-
-# 生成拼接编号
-def __setSpliceID(buildingObj:bpy.types.Object):
-    # 拼接编号如果不存在，直接生成新ID
-    bData:acaData = buildingObj.ACA_data
-    if bData.splice_id == '':
-        bData['splice_id'] = utils.generateID()
-    # 拼接编号如果已经存在，可能是通过模板自动初始化的
-    else:
-        hasDuplicate = False
-        # 查询当前项目，是否有重复的拼接编号
-        for obj in bpy.data.objects:
-            # 跳过非ACA对象
-            if not hasattr(obj,'ACA_data'):continue
-            # 跳过自身
-            if obj == buildingObj:continue
-            # 检查重复
-            if obj.ACA_data.splice_id == bData.splice_id:
-                hasDuplicate = True
-                break
-
-        # 如果有重复的，则更新为新的拼接编号
-        if hasDuplicate:
-            bData['splice_id'] = utils.generateID()
-        # 如果没有重复，则保留原编号
-        else:
-            pass
-        
-    return
 
 # 建筑拼接：丁字形抱厦
 # fromBuilding为进深较小的抱厦
@@ -2266,84 +2338,6 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
 
     return {'FINISHED'}
 
-# 删除建筑(以及相关的建筑)的拼接操作
-def undoSplice(buildingObj:bpy.types.Object):
-    # 验证buildingObj
-    buildingObj,bData,oData = utils.getRoot(buildingObj)
-    if buildingObj is None:
-        print(_("取消拼接：无法识别的建筑"))
-        return
-    
-    # 找到combo
-    comboObj = utils.getComboRoot(buildingObj)
-    if comboObj is None:
-        print(_("取消拼接：无法找到combo根节点"))
-        return
-    
-    # 找到相关建筑
-    spliceBuildingIDs = []
-    # 提取comboRoot中记录的PostProcess
-    comboData:acaData = comboObj.ACA_data
-    ppList = comboData.postProcess
-    # 分析相关的postProcess记录
-    removeSplice = []
-    for i,pp in enumerate(ppList):
-        isRelated = False
-        if pp.action == con.POSTPROC_SPLICE:
-            ppParaList = pp.parameter.split('#')
-            for para in ppParaList:
-                if para == bData.splice_id:
-                    # 把这一条postProcess记录中的两个建筑ID都存入列表
-                    spliceBuildingIDs += ppParaList
-                    isRelated = True
-                    break
-        if isRelated:
-            removeSplice.append(i)
-    # 验证是否存在需要清除的拼接
-    if spliceBuildingIDs == []:
-        print(_("没有需要清除的拼接操作"))
-        return
-
-    # 删除对应的记录(从后向前删除)
-    for i in reversed(removeSplice):
-        ppList.remove(i)
-
-    # ID转换为building对象
-    spliceBuildingObjs = []
-    for id in spliceBuildingIDs:
-        for obj in comboObj.children:
-            if obj.ACA_data.splice_id == id:
-                if obj not in spliceBuildingObjs: # 去重
-                    spliceBuildingObjs.append(obj)
-
-    # 清除splice信息
-    boolObjs = []
-    for buildingObj in spliceBuildingObjs:
-        # 清除集合颜色标识
-        coll = buildingObj.users_collection[0]
-        coll.color_tag = 'NONE'
-
-        # 清除修改器
-        buildingChildren = utils.getChildrenHierarchy(buildingObj)
-        for obj in buildingChildren:
-            obj:bpy.types.Object
-            # 可能有.001的后缀
-            for mod in obj.modifiers:
-                if mod.name.startswith('SPLICE'):
-                    # 记录涉及的bool对象
-                    if hasattr(mod,'object'):
-                        boolObj = mod.object
-                        if boolObj not in boolObjs:
-                            boolObjs.append(boolObj)
-                    # 删除修改器
-                    obj.modifiers.remove(mod)
-
-    # 清除bool对象
-    for obj in boolObjs:
-        bpy.data.objects.remove(obj)
-
-    return
-
 # 将盝顶瓦面的顶部拉伸，以便于抱厦做碰撞裁剪
 def __extrudeLudingTop(ludingRoofGrid: bpy.types.Object,
                        dir, # Y为南北抱厦，X为东西抱厦
@@ -2428,3 +2422,289 @@ def __extrudeLudingTop(ludingRoofGrid: bpy.types.Object,
     bmesh.update_edit_mesh(ludingRoofGrid.data ) 
     bm.free() 
     bpy.ops.object.mode_set( mode = 'OBJECT' )
+
+# 建筑拼接：L相交
+# 暂时只考虑2坡顶
+def __unionCrossL(fromBuilding:bpy.types.Object,
+                     toBuilding:bpy.types.Object,
+                     fromBuildingJoined:bpy.types.Object,
+                     toBuildingJoined:bpy.types.Object,
+                     dir='Y'):
+    # 指定合并目录，以免碰撞体落在原建筑目录中
+    coll:bpy.types.Collection = utils.setCollection(
+                con.COLL_NAME_ROOT_JOINED,isRoot=True,colorTag=3)
+    bData:acaData = fromBuilding.ACA_data
+    mData:acaData = toBuilding.ACA_data
+    dk = bData.DK
+    
+    if bData.roof_style not in (con.ROOF_YINGSHAN,
+                                con.ROOF_YINGSHAN_JUANPENG,
+                                con.ROOF_XUANSHAN,
+                                con.ROOF_XUANSHAN_JUANPENG,):
+        utils.outputMsg(_('只支持2坡顶'))
+        return
+    if mData.roof_style not in (con.ROOF_YINGSHAN,
+                                con.ROOF_YINGSHAN_JUANPENG,
+                                con.ROOF_XUANSHAN,
+                                con.ROOF_XUANSHAN_JUANPENG,):
+        utils.outputMsg(_('只支持2坡顶'))
+        return
+    
+    # 裁剪体高度
+    buildingH = (bData.platform_height+bData.pillar_height)
+    if bData.use_dg:
+        buildingH += bData.dg_height
+    buildingH += bData.y_total / 2
+    buildingH += con.SPLICE_HEIGHT_EXT_DK*dk # 保险高度
+    buildingEave = 30*dk 
+    if bData.use_dg:
+        buildingEave += bData.dg_extend
+    
+    # 获取相交瓦面 ---------------------------------
+    # A建筑瓦面
+    fromRoof = utils.getAcaChild(
+        fromBuilding,con.ACA_TYPE_TILE_GRID)
+    if fromRoof:
+        fromRoof_copy = utils.copySimplyObject(
+            fromRoof,singleUser=True)
+        utils.showObj(fromRoof_copy)
+        # 镜像
+        utils.addModifierMirror(
+            object=fromRoof_copy,
+            mirrorObj=fromBuilding,
+            use_axis=(True,True,False),
+            use_bisect=(True,True,False),
+            use_merge=True
+        )
+        utils.applyAllModifer(fromRoof_copy)
+    # B建筑瓦面
+    toRoof = utils.getAcaChild(
+        toBuilding,con.ACA_TYPE_TILE_GRID)
+    if toRoof:
+        toRoof_copy = utils.copySimplyObject(
+            toRoof,singleUser=True)
+        utils.showObj(toRoof_copy)
+        # 镜像
+        utils.addModifierMirror(
+            object=toRoof_copy,
+            mirrorObj=toBuilding,
+            use_axis=(True,True,False),
+            use_bisect=(True,True,False),
+            use_merge=True
+        )
+        utils.applyAllModifer(toRoof_copy)
+
+    # 基于BVH的碰撞检测 ---------------------------
+    if fromRoof_copy and toRoof_copy: 
+        intersections,curve = utils.mesh_mesh_intersection(
+            fromRoof_copy, 
+            toRoof_copy,
+            create_curve=True,
+            create_mesh=False)
+        if curve is None:
+            # print(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
+            # 回收对象
+            utils.delObject(fromRoof_copy)
+            utils.delObject(toRoof_copy)
+            utils.delOrphan()
+            return {'CANCELLED'}
+    else:
+        # print(f"未找到屋顶相交范围：from={fromBuilding.name},to={toBuilding.name}")
+        return {'CANCELLED'}
+    
+    # 碰撞线二次调整 --------------------
+    spline = curve.data.splines[0]
+    # 260407 获取碰撞线起始点坐标
+    # 必须通过copy()方法，否则在后续做points.add时会丢失
+    pStart = spline.points[0].co.copy()
+    pEnd = spline.points[-1].co.copy()
+    # 以中点与toBuilding的位置关系，决定做哪个象限
+    pMid = (pStart + pEnd)/2
+    toCenter = toBuilding.location
+    # 添加5个包裹点
+    spline.points.add(5)
+    pEndExt = spline.points[-5].co
+    pCornerEnd = spline.points[-4].co
+    pCorner = spline.points[-3].co
+    pCornerStart = spline.points[-2].co
+    pStartExt = spline.points[-1].co
+    
+    # 裁剪西南角
+    isClockWise = True
+    if pMid.x < toCenter.x and pMid.y < toCenter.y:
+        pCorner.x = toBuilding.location.x + bData.y_total/2 + buildingEave
+        pCorner.y = toBuilding.location.y + bData.x_total/2 + buildingEave
+        # 逆时针包裹
+        if pStart.x < pEnd.x:
+            isClockWise = False
+            pEndExt.x = pEnd.x + buildingEave
+            pEndExt.y = pEnd.y - buildingEave
+            pStartExt.x = pStart.x - buildingEave
+            pStartExt.y = pStart.y + buildingEave  
+        # 顺时针包裹
+        else:
+            pEndExt.x = pEnd.x - buildingEave
+            pEndExt.y = pEnd.y + buildingEave
+            pStartExt.x = pStart.x + buildingEave
+            pStartExt.y = pStart.y - buildingEave  
+    
+    # 裁剪西北角
+    if pMid.x < toCenter.x and pMid.y > toCenter.y:
+        pCorner.x = toBuilding.location.x + bData.y_total/2 + buildingEave
+        pCorner.y = toBuilding.location.y - bData.x_total/2 - buildingEave
+        # 逆时针包裹
+        if pStart.x < pEnd.x:
+            isClockWise = False
+            pEndExt.x = pEnd.x + buildingEave
+            pEndExt.y = pEnd.y + buildingEave
+            pStartExt.x = pStart.x - buildingEave
+            pStartExt.y = pStart.y - buildingEave  
+        # 顺时针包裹
+        else:
+            pEndExt.x = pEnd.x - buildingEave
+            pEndExt.y = pEnd.y - buildingEave
+            pStartExt.x = pStart.x + buildingEave
+            pStartExt.y = pStart.y + buildingEave 
+
+    # 裁剪东南角
+    if pMid.x > toCenter.x and pMid.y < toCenter.y:
+        pCorner.x = toBuilding.location.x - bData.y_total/2 - buildingEave
+        pCorner.y = toBuilding.location.y + bData.x_total/2 + buildingEave
+        # 逆时针包裹
+        if pStart.x > pEnd.x:
+            isClockWise = False
+            pEndExt.x = pEnd.x - buildingEave
+            pEndExt.y = pEnd.y - buildingEave
+            pStartExt.x = pStart.x + buildingEave
+            pStartExt.y = pStart.y + buildingEave 
+        # 顺时针包裹
+        else:
+            pEndExt.x = pEnd.x + buildingEave
+            pEndExt.y = pEnd.y + buildingEave
+            pStartExt.x = pStart.x - buildingEave
+            pStartExt.y = pStart.y - buildingEave 
+    
+    # 裁剪东北角
+    if pMid.x > toCenter.x and pMid.y > toCenter.y:
+        pCorner.x = toBuilding.location.x - bData.y_total/2 - buildingEave
+        pCorner.y = toBuilding.location.y - bData.x_total/2 - buildingEave
+        # 逆时针包裹
+        if pStart.x > pEnd.x:
+            isClockWise = False
+            pEndExt.x = pEnd.x - buildingEave
+            pEndExt.y = pEnd.y + buildingEave
+            pStartExt.x = pStart.x + buildingEave
+            pStartExt.y = pStart.y - buildingEave 
+        # 顺时针包裹
+        else:
+            pEndExt.x = pEnd.x + buildingEave
+            pEndExt.y = pEnd.y - buildingEave
+            pStartExt.x = pStart.x - buildingEave
+            pStartExt.y = pStart.y + buildingEave 
+
+    if isClockWise:
+        pCornerEnd.x = pEndExt.x
+        pCornerEnd.y = pCorner.y
+
+        pCornerStart.x = pCorner.x
+        pCornerStart.y = pStartExt.y
+    else:
+        pCornerEnd.x = pCorner.x
+        pCornerEnd.y = pEndExt.y
+
+        pCornerStart.x = pStartExt.x
+        pCornerStart.y = pCorner.y
+
+    # 压缩成一个水平面
+    for p in spline.points:
+        p.co.z = 0
+
+    # 生成几何面 --------------------------
+    # 读取世界坐标的点（之前我们已用世界坐标填入）
+    verts_world = [Vector(p.co[:3]) for p in spline.points]
+    # 创建 bmesh，面位于世界坐标系
+    bm = bmesh.new()
+    bm_verts = []
+    for v_co in verts_world:
+        bm_verts.append(bm.verts.new((v_co.x, v_co.y, v_co.z)))
+    bm.verts.ensure_lookup_table()
+    # 尝试创建面（若非平面则 Blender 会接受为 NGon，但可能被三角化）
+    try:
+        face = bm.faces.new(tuple(bm_verts))
+    except ValueError:
+        # 如果顶点顺序或重复导致错误，先去重再尝试
+        unique_pts = []
+        for v in verts_world:
+            if len(unique_pts) == 0 or (v - unique_pts[-1]).length > 0.01:
+                unique_pts.append(v)
+        if len(unique_pts) >= 3:
+            bm.clear()
+            bm_verts = [bm.verts.new((v.x, v.y, v.z)) for v in unique_pts]
+            bm.faces.new(tuple(bm_verts))
+        else:
+            bm.free()
+            bm = None
+
+    # 生成几何体 -------------------------------
+    # 挤出垂直高度
+    # 选中所有面
+    for face in bm.faces: face.select = True
+    # 沿Z方向挤出
+    extrude_result = bmesh.ops.extrude_face_region(
+        bm, geom=bm.faces)
+    extruded_verts = [v for v in extrude_result['geom'] 
+                      if isinstance(v, bmesh.types.BMVert)]
+    bmesh.ops.translate(
+        bm,
+        vec=Vector((0, 0, buildingH)),  # Y轴方向移动
+        verts=extruded_verts
+    )
+
+    if bm is not None:
+        bm.normal_update()
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        # 写入 mesh 并创建对象
+        intersectionData = bpy.data.meshes.new(
+            _('屋顶相交')+con.BOOL_SUFFIX )
+        bm.to_mesh(intersectionData)
+        bm.free()
+        intersectionObj = bpy.data.objects.new(
+            _('屋顶相交')+con.BOOL_SUFFIX , intersectionData)
+        bpy.context.collection.objects.link(intersectionObj)
+
+    # 251202 添加一次细分，以免柱子和坐凳之间产生异常的破碎面
+    utils.subdivideObject(intersectionObj,level=1)
+    
+    # 绑定在新廊间之下
+    mw = intersectionObj.matrix_world.copy()
+    intersectionObj.parent = toBuildingJoined
+    intersectionObj.matrix_world = mw
+
+    utils.hideObjFace(intersectionObj)
+    utils.hideObj(intersectionObj)
+
+    # 4、回收辅助对象
+    utils.delObject(curve)
+    utils.delObject(fromRoof_copy)
+    utils.delObject(toRoof_copy)
+    utils.delOrphan()
+
+    # 应用裁剪 -------------------------------------------
+    for obj in toBuildingJoined.children:
+        # 跳过bool对象
+        if con.BOOL_SUFFIX  in obj.name : continue
+        utils.addModifierBoolean(
+            object=obj,
+            boolObj=intersectionObj,
+            operation='INTERSECT'
+        )
+    for obj in fromBuildingJoined.children:
+        # 跳过bool对象
+        if con.BOOL_SUFFIX  in obj.name : continue
+        utils.addModifierBoolean(
+            object=obj,
+            boolObj=intersectionObj,
+            operation='DIFFERENCE'
+        )
+
+    return

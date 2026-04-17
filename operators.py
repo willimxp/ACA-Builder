@@ -142,12 +142,20 @@ class ACA_OT_del_building(bpy.types.Operator):
     bl_description = _('删除当前建筑')
 
     def execute(self, context):  
-        buildingObj,bData,objData = utils.getRoot(context.object)
-        if buildingObj == None:
+        # 根据目前选中的所有对象，查找可删除的建筑列表
+        delBuildingList = []
+        for obj in context.selected_objects:
+            buildingObj,bData,objData = utils.getRoot(obj)
+            if buildingObj not in delBuildingList:
+                delBuildingList.append(buildingObj)
+        
+        if len(delBuildingList) == 0:
             utils.popMessageBox(_("此对象并非插件生成，或已经合并，无法操作。"))
             return {'FINISHED'}
-        buildingName = buildingObj.name
-        if buildingObj != None:
+        
+        # 删除建筑
+        for buildingObj in delBuildingList:
+            buildingName = buildingObj.name
             build.delBuilding(buildingObj)
             message = _("%s-建筑已删除！") \
                         % (buildingName)

@@ -1249,13 +1249,24 @@ def __arrayTileGrid(buildingObj:bpy.types.Object,
                             con.ROOF_XUANSHAN_JUANPENG
                         ):
                     if f.index%GridCols == GridCols-1:
-                        utils.addBisect(
-                            object=tileObj,
-                            pStart=tileGrid.matrix_world @ Vector((0,0,0)),
-                            pEnd=tileGrid.matrix_world @ Vector((1,1,0)),
-                            pCut=tileGrid.matrix_world @ f.calc_center_median(),
-                            clear_inner=True
-                        )
+                        # 260417 回廊的最后一片滴水多余了，没有好的删除办法，只能暂时在这里裁掉
+                        # 真的不是个好办法，先这样吧
+                        if bData.combo_type == con.COMBO_LOGGIA:
+                            utils.addBisect(
+                                object=tileObj,
+                                pStart=tileGrid.matrix_world @ Vector((0,0,0)),
+                                pEnd=tileGrid.matrix_world @ Vector((0,1,0)),
+                                pCut=tileGrid.matrix_world @ rafter_pos[0],
+                                clear_inner=True
+                            )
+                        else:
+                            utils.addBisect(
+                                object=tileObj,
+                                pStart=tileGrid.matrix_world @ Vector((0,0,0)),
+                                pEnd=tileGrid.matrix_world @ Vector((1,1,0)),
+                                pCut=tileGrid.matrix_world @ f.calc_center_median(),
+                                clear_inner=True
+                            )
                 tileList.append(tileObj) 
 
             # 排布瓦当

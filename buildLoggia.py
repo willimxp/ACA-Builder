@@ -884,6 +884,10 @@ def __connect_loggia_loggia(LoggiaNewJoined:bpy.types.Object,dir):
     connectOrg = buildingJoin.getJoinedOriginal(connectObj)
     connectOrg.ACA_data['loggia_sign'] += new_sign
 
+    # 重新处理螭吻的显示
+    __setLoggiaChiwen(LoggiaNewJoined,dir)
+    __setLoggiaChiwen(connectObj,dir)
+
     # print("廊间与廊间的闭合")
     return True
 

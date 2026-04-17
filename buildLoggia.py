@@ -375,6 +375,23 @@ def __update_loggia_corner(baseLoggia:bpy.types.Object,
             tdir = 'E'
             tdim = Vector((1,0,0))
             tloc = Vector((1,0,0))
+        
+        # 生成丁字裁剪bool对象       
+        size = (bData.y_total + buildingEave) * 1.414
+        center = size * 1.414/2
+        dim = (size,size,buildingH)
+        locAdj = Vector((-center,-center,0)) * tloc
+        loc = Vector((0,0,buildingH/2)) + locAdj
+        # 添加裁剪
+        boolCube = utils.addCube(
+            name=_('丁字裁剪') + con.BOOL_SUFFIX,
+            location=loc,
+            dimension=dim,
+            parent=LoggiaCornerJoined,
+            rotation=(0,0,math.radians(45))
+        )
+        utils.hideObjFace(boolCube)
+        utils.hideObj(boolCube)
 
         # 逐层处理转角
         for cornerObj in cornerObjs:
@@ -389,7 +406,11 @@ def __update_loggia_corner(baseLoggia:bpy.types.Object,
 
             # 原转角的裁剪 ------------------------------------
             # 默认出檐尺寸
-            eaveExt = 30*dk
+            eaveExt = con.YANCHUAN_EX*dk + con.FLYRAFTER_EX*dk
+            if bData.use_dg:
+                eaveExt += bData.dg_extend
+            eaveExt += con.SPLICE_DEPTH_EXT_DK*dk/2
+
             # 不出檐尺寸
             # 根据丁字头的出檐调整
             dimAdj = Vector((eaveExt,
@@ -416,22 +437,6 @@ def __update_loggia_corner(baseLoggia:bpy.types.Object,
             cornerCopy.name = _('丁字转角')
             # 旋转并交叉
             cornerCopy.rotation_euler.z += math.radians(90)
-            # 在丁字方向进行裁剪        
-            size = (bData.y_total + buildingEave) * 1.414
-            center = size * 1.414/2
-            dim = (size,size,buildingH)
-            locAdj = Vector((-center,-center,0)) * tloc
-            loc = Vector((0,0,buildingH/2)) + locAdj
-            # 添加裁剪
-            boolCube = utils.addCube(
-                name=_('丁字裁剪') + con.BOOL_SUFFIX,
-                location=loc,
-                dimension=dim,
-                parent=LoggiaCornerJoined,
-                rotation=(0,0,math.radians(45))
-            )
-            utils.hideObjFace(boolCube)
-            utils.hideObj(boolCube)
             utils.addModifierBoolean(
                 name='T-Cut',
                 object=cornerCopy,

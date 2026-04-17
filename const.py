@@ -388,6 +388,10 @@ class ACA_Consts(object, metaclass=ACA_ConstsMeta):
     COMBO_LOGGIA = 'combo_loggia'
     COMBO_LOGGIA_CORNER = 'combo_loggia_corner'
 
+    # 回廊处理
+    # 悬山回廊出檐调整
+    LOGGIA_XUANSHAN_ADJUST = 20 # 悬山回廊出檐调整(DK)
+
     # 建筑拼接
     SPLICE_HEIGHT_EXT_DK = 100 # 建筑拼接高度扩展(DK)
     SPLICE_DEPTH_EXT_DK = 30 # 建筑拼接深度扩展(DK)

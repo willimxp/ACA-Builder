@@ -188,7 +188,7 @@ def getPurlinPos(buildingObj:bpy.types.Object):
         purlinWidth += con.YANCHUAN_EX*dk 
         # 251114 为了实现悬山式回廊的转角，特意延长了两山的出檐
         if bData.combo_type == con.COMBO_LOGGIA_CORNER:
-            purlinWidth += 20*dk
+            purlinWidth += con.LOGGIA_XUANSHAN_ADJUST*dk
 
     # 1、构造挑檐桁
     if (bData.use_dg                # 不使用斗栱的不用挑檐桁

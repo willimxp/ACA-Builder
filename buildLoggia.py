@@ -342,16 +342,15 @@ def __update_loggia_corner(baseLoggia:bpy.types.Object,
     
     # 转角链接的廊间数量
     linkCount = len(bData.combo_children)
-    
+
     # 做丁字交叉
     if linkCount == 2:
-        # 找到转角屋
-        cornerObj = None
+        # 找到转角屋的所有子对象(多个分层)
+        cornerObjs = []
         for obj in LoggiaCornerJoined.children:
             if con.BOOL_SUFFIX not in obj.name : 
-                cornerObj = obj
-                break
-        if cornerObj is None:
+                cornerObjs.append(obj)
+        if cornerObjs == []:
             raise Exception(_("无法找到转角对象"))
     
         # 已有的2个廊间，加上将要做的第3的廊间，推断丁字方向
@@ -375,77 +374,80 @@ def __update_loggia_corner(baseLoggia:bpy.types.Object,
             tdim = Vector((1,0,0))
             tloc = Vector((1,0,0))
 
-        # 原廊间的调整 -------------------------------
-        # 禁用45度镜像，以便后续如果做十字交叉时恢复
-        mod = cornerObj.modifiers.get('45-Axis')
-        mod.show_viewport = False
-        mod.show_render = False
-        # 与丁字方向对应
-        if tdir in ('W','E'):
-            cornerObj.rotation_euler.z = math.radians(90)
+        # 逐层处理转角
+        for cornerObj in cornerObjs:
+            # 原转角的调整 -------------------------------
+            # 禁用45度镜像，以便后续如果做十字交叉时恢复
+            mod = cornerObj.modifiers.get('45-Axis')
+            mod.show_viewport = False
+            mod.show_render = False
+            # 与丁字方向对应
+            if tdir in ('W','E'):
+                cornerObj.rotation_euler.z = math.radians(90)
 
-        # 原廊间的裁剪 ------------------------------------
-        # 默认出檐尺寸
-        eaveExt = 30*dk
-        # 不出檐尺寸
-        # 根据丁字头的出檐调整
-        dimAdj = Vector((eaveExt,
-                         eaveExt,
-                         0)) * tdim
-        dim = Vector((bData.x_total,
-                      bData.x_total,
-                      buildingH)) + dimAdj
-        # 根据丁字头的出檐调整
-        locAdj = Vector((eaveExt/2,
-                         eaveExt/2,
-                         0)) * tloc
-        loc = Vector((0,
-                      0,
-                      buildingH/2)) + locAdj
-        mod = cornerObj.modifiers.get('Corner-Cut')
-        cornerBoolCube:bpy.types.Object = mod.object
-        cornerBoolCube.dimensions = dim
-        cornerBoolCube.location = loc
+            # 原转角的裁剪 ------------------------------------
+            # 默认出檐尺寸
+            eaveExt = 30*dk
+            # 不出檐尺寸
+            # 根据丁字头的出檐调整
+            dimAdj = Vector((eaveExt,
+                            eaveExt,
+                            0)) * tdim
+            dim = Vector((bData.x_total,
+                        bData.x_total,
+                        buildingH)) + dimAdj
+            # 根据丁字头的出檐调整
+            locAdj = Vector((eaveExt/2,
+                            eaveExt/2,
+                            0)) * tloc
+            loc = Vector((0,
+                        0,
+                        buildingH/2)) + locAdj
+            mod = cornerObj.modifiers.get('Corner-Cut')
+            cornerBoolCube:bpy.types.Object = mod.object
+            cornerBoolCube.dimensions = dim
+            cornerBoolCube.location = loc
 
-        # 复制转角屋并裁剪 ----------------------------------
-        cornerCopy = utils.copySimplyObject(cornerObj)
-        # 标注名称，便于在十字交叉时删除
-        cornerCopy.name = _('丁字转角')
-        # 旋转并交叉
-        cornerCopy.rotation_euler.z += math.radians(90)
-        # 在丁字方向进行裁剪        
-        size = (bData.y_total + buildingEave) * 1.414
-        center = size * 1.414/2
-        dim = (size,size,buildingH)
-        locAdj = Vector((-center,-center,0)) * tloc
-        loc = Vector((0,0,buildingH/2)) + locAdj
-        # 添加裁剪
-        boolCube = utils.addCube(
-            name=_('丁字裁剪') + con.BOOL_SUFFIX,
-            location=loc,
-            dimension=dim,
-            parent=LoggiaCornerJoined,
-            rotation=(0,0,math.radians(45))
-        )
-        utils.hideObjFace(boolCube)
-        utils.hideObj(boolCube)
-        utils.addModifierBoolean(
-            name='T-Cut',
-            object=cornerCopy,
-            boolObj=boolCube,
-            operation='INTERSECT',
-        )
-        utils.addModifierBoolean(
-            name='T-Cut',
-            object=cornerObj,
-            boolObj=boolCube,
-            operation='DIFFERENCE',
-        )
+            # 复制转角屋并裁剪 ----------------------------------
+            cornerCopy = utils.copySimplyObject(cornerObj)
+            # 标注名称，便于在十字交叉时删除
+            cornerCopy.name = _('丁字转角')
+            # 旋转并交叉
+            cornerCopy.rotation_euler.z += math.radians(90)
+            # 在丁字方向进行裁剪        
+            size = (bData.y_total + buildingEave) * 1.414
+            center = size * 1.414/2
+            dim = (size,size,buildingH)
+            locAdj = Vector((-center,-center,0)) * tloc
+            loc = Vector((0,0,buildingH/2)) + locAdj
+            # 添加裁剪
+            boolCube = utils.addCube(
+                name=_('丁字裁剪') + con.BOOL_SUFFIX,
+                location=loc,
+                dimension=dim,
+                parent=LoggiaCornerJoined,
+                rotation=(0,0,math.radians(45))
+            )
+            utils.hideObjFace(boolCube)
+            utils.hideObj(boolCube)
+            utils.addModifierBoolean(
+                name='T-Cut',
+                object=cornerCopy,
+                boolObj=boolCube,
+                operation='INTERSECT',
+            )
+            utils.addModifierBoolean(
+                name='T-Cut',
+                object=cornerObj,
+                boolObj=boolCube,
+                operation='DIFFERENCE',
+            )
 
     # 做十字交叉
     if linkCount ==3:
-        # 找到转角屋，并删除丁字复制的转角屋
-        cornerObj = None
+        # 找到转角屋的所有子对象(多个分层)
+        cornerObjs = []
+        # 删除丁字复制的转角屋
         for obj in LoggiaCornerJoined.children:
             if con.BOOL_SUFFIX  in obj.name : 
                 if _('丁字裁剪') in obj.name:
@@ -459,33 +461,35 @@ def __update_loggia_corner(baseLoggia:bpy.types.Object,
                 # 删除丁字转角
                 utils.delObject(obj)
             else:
-                cornerObj = obj
-        if cornerObj is None:
+                cornerObjs.append(obj)
+        if cornerObjs == []:
             raise Exception(_("无法找到转角对象"))
-                
-        # 删除丁字裁剪
-        mod = cornerObj.modifiers.get('T-Cut')
-        cornerObj.modifiers.remove(mod)
+        
+        # 逐层处理转角
+        for cornerObj in cornerObjs: 
+            # 删除丁字裁剪
+            mod = cornerObj.modifiers.get('T-Cut')
+            cornerObj.modifiers.remove(mod)
 
-        # 恢复旋转（不同的旋转，45度镜像的效果不同）
-        cornerObj.rotation_euler.z = 0
+            # 恢复旋转（不同的旋转，45度镜像的效果不同）
+            cornerObj.rotation_euler.z = 0
 
-        # 调整转角裁剪
-        dim = Vector((bData.x_total,bData.x_total,buildingH))
-        loc = Vector((0,0,buildingH/2))
-        mod = cornerObj.modifiers.get('Corner-Cut')
-        cornerBoolCube:bpy.types.Object = mod.object
-        cornerBoolCube.dimensions = dim
-        cornerBoolCube.location = loc
+            # 调整转角裁剪
+            dim = Vector((bData.x_total,bData.x_total,buildingH))
+            loc = Vector((0,0,buildingH/2))
+            mod = cornerObj.modifiers.get('Corner-Cut')
+            cornerBoolCube:bpy.types.Object = mod.object
+            cornerBoolCube.dimensions = dim
+            cornerBoolCube.location = loc
 
-        # 重新启用45度对称
-        mod:bpy.types.MirrorModifier = \
-            cornerObj.modifiers.get('45-Axis')
-        mod.show_viewport = True
-        mod.show_render = True
-        mod.use_axis = (True,True,False)
-        mod.use_bisect_axis = (True,True,False)
-        mod.use_bisect_flip_axis = (True,False,False)
+            # 重新启用45度对称
+            mod:bpy.types.MirrorModifier = \
+                cornerObj.modifiers.get('45-Axis')
+            mod.show_viewport = True
+            mod.show_render = True
+            mod.use_axis = (True,True,False)
+            mod.use_bisect_axis = (True,True,False)
+            mod.use_bisect_flip_axis = (True,False,False)
 
     return LoggiaCornerJoined
 

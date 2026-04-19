@@ -432,7 +432,9 @@ def __update_loggia_corner(baseLoggia:bpy.types.Object,
             cornerBoolCube.location = loc
 
             # 复制转角屋并裁剪 ----------------------------------
-            cornerCopy = utils.copySimplyObject(cornerObj)
+            cornerCopy = utils.copySimplyObject(cornerObj,
+                # 260419 复制对象应该做成单用户，否则在应用修改器后会在丁字转角打架
+                singleUser=True)
             # 标注名称，便于在十字交叉时删除
             cornerCopy.name = _('丁字转角')
             # 旋转并交叉

@@ -3481,7 +3481,7 @@
 		<roof_style type="EnumProperty">2</roof_style>
 		<use_double_eave type="BoolProperty">False</use_double_eave>
 		<use_hallway type="BoolProperty">False</use_hallway>
-		<rafter_count type="IntProperty">4</rafter_count>
+		<rafter_count type="IntProperty">8</rafter_count>
 		<use_flyrafter type="BoolProperty">True</use_flyrafter>
 		<use_wangban type="BoolProperty">True</use_wangban>
 		<qiqiao type="FloatProperty">4.0</qiqiao>
@@ -3700,7 +3700,7 @@
 			<roof_style type="EnumProperty">9</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">4</rafter_count>
+			<rafter_count type="IntProperty">8</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>
@@ -3795,7 +3795,7 @@
 			<roof_style type="EnumProperty">9</roof_style>
 			<use_double_eave type="BoolProperty">False</use_double_eave>
 			<use_hallway type="BoolProperty">False</use_hallway>
-			<rafter_count type="IntProperty">4</rafter_count>
+			<rafter_count type="IntProperty">8</rafter_count>
 			<use_flyrafter type="BoolProperty">True</use_flyrafter>
 			<use_wangban type="BoolProperty">True</use_wangban>
 			<qiqiao type="FloatProperty">4.0</qiqiao>

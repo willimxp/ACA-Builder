@@ -2029,6 +2029,10 @@ def joinObjects(objList: List[bpy.types.Object],
     # 仅剩一个对象
     elif len(objList) == 1:
         objList[0].name = newName
+        # 260421 如果组合对象只有1个，也需要对mesh做单独处理
+        # 如，用户发现尽间只有1个栱垫板时报错
+        if objList[0].data.users > 1:
+            objList[0].data = objList[0].data.copy()
         return objList[0]
 
     # 如果没有指定基准对象，取第一个对象作为基准对象

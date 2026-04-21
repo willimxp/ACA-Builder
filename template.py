@@ -467,6 +467,7 @@ def getTemplateChild(templateName):
 def __loadTemplateSingle(
         buildingObj:bpy.types.Object,
         template,
+        isComboNode, # 是否为复合模版
     ):    
     # 载入数据
     bData:acaData = buildingObj.ACA_data
@@ -489,12 +490,20 @@ def __loadTemplateSingle(
         if node.tag == 'template':
             continue
 
-        # 251205 不使用模板中存在的aca_id，维持对象随机生成
-        if node.tag == 'aca_id':continue
-        
         tag = node.tag
         type = node.attrib['type']
         value = node.text
+        
+        # 260421 填充aca_id
+        if tag == 'aca_id':
+            if isComboNode:
+                # 复合模版使用模版中的aca_id，以便获得正确的父子关系
+                # 这样楼阁之类才能进行新增楼阁等二次修改
+                value = node.text
+            else:
+                # 单体模版的aca_id随机生成
+                value = utils.generateID()
+        
         # 读取集合配置
         if type == 'CollectionProperty':
             for subnode in node:
@@ -534,8 +543,8 @@ def loadTemplate(buildingObj:bpy.types.Object):
     
     # 查找是否有子模版
     parent = buildingObj.parent
+    isComboNode = False
     if parent is not None:
-        isComboNode = False
         # 遍历查找对应的combo节点
         for templateNode in templateNodeList:
             nameNode = templateNode.find('template_name')
@@ -559,7 +568,10 @@ def loadTemplate(buildingObj:bpy.types.Object):
         if nameNode != None:
             if nameNode.text == templateName:
                 __loadTemplateSingle(
-                    buildingObj,template)
+                    buildingObj,
+                    template,
+                    isComboNode, # 是否为复合模版
+                )
                 return
                     
     # 经过经过以上循环，没有符合条件的模板，抛出异常

@@ -55,9 +55,11 @@ def __addBuildingRoot(templateName,
     )
     bData:acaData = buildingObj.ACA_data
     bData['aca_obj'] = True
-    bData['aca_id'] = utils.generateID()
     bData['aca_type'] = con.ACA_TYPE_BUILDING
     bData['template_name'] = templateName
+    # 260421 aca_id如果在combo中会从template中继承，否则随机生成
+    if bData.aca_id == '':
+        bData['aca_id'] = utils.generateID()
 
     if comboObj is not None:
         # 绑定Combo对象父子关系

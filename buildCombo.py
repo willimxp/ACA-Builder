@@ -1103,6 +1103,8 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
     if isTop:
         # 屋顶类型从comboRoot同步
         mData['roof_style'] = int(comboRootObj.ACA_data.roof_style)
+        # 260421 步架数可能因为下层腰檐而错误传递，强制改为根节点参数
+        mData['rafter_count'] = comboRootObj.ACA_data.rafter_count
     else:
         mData['roof_style'] = int(con.ROOF_LUDING)
         bData['rafter_count'] = 2

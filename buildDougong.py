@@ -204,7 +204,10 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
                                  -con.BALCONY_EAVE_Y*dk*4)
             else:
                 extendLength += con.HENG_EXTEND*dk
-        
+    
+    # 收集檐面和山面的连接枋
+    fangObjList = []
+
     # 做前后檐连接件
     loc = (0, net_y[0] + yLoc, zLoc)
     fangCopy = utils.copyObject(
@@ -213,6 +216,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
         parentObj = dgrootObj,
         singleUser=True
     )
+    fangObjList.append(fangCopy)
     # 跟随缩放
     fangCopy.scale = bData.dg_scale
     utils.updateScene()
@@ -250,6 +254,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
             parentObj = dgrootObj,
             singleUser=True
         )
+        fangObjList.append(fangCopy)
         # 跟随缩放
         fangCopy.scale = bData.dg_scale
         utils.updateScene()
@@ -273,7 +278,7 @@ def __buildDGFangbyBuilding(dgrootObj:bpy.types.Object,
             # 设置斗栱配色
             mat.paint(fangCopy,con.M_FANG_DGCONNECT,
                        override=True)
-    return fangCopy
+    return fangObjList
 
 # 生成连接枋
 # 为了便于根据每间面阔，精确的匹配攒当宽度的贴图，枋子在每间都生成
@@ -719,9 +724,11 @@ def buildDougong(buildingObj:bpy.types.Object):
     fangList = []
     for fangObj in dgSource.children:
         if '栱垫板' in fangObj.name:
+            # 生成檐面和山面的栱垫板
             fangList += __buildDGFangbyRoom(dgrootObj,fangObj)
         else:
-            fangList.append(__buildDGFangbyBuilding(dgrootObj,fangObj))
+            # 生成檐面和山面的斗栱连接件
+            fangList += __buildDGFangbyBuilding(dgrootObj,fangObj)
     
     # 批量处理连接件
     if fangList != []:

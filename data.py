@@ -840,7 +840,7 @@ class ACA_data_obj(bpy.types.PropertyGroup):
             default=6,
             min=0,
             max=10,
-            update=dc.update_rooftile,
+            update=dc.update_roof,
             description=_("包括骑鸡仙人的数量"),
         )# type: ignore 
     

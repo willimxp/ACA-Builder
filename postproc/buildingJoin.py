@@ -179,6 +179,9 @@ def joinBuilding(buildingObj:bpy.types.Object,
                 utils.copyModifiers(oldJoinedModel, joinedModel)
             utils.delObject(oldJoinedModel)
         
+        # 260423 清除aca_type，以免查找对象时判断错误
+        joinedModel.ACA_data['aca_type'] = ''
+        
         # 250929 继承父建筑的combo_type，以便剖视图区分是否为底层建筑还是楼阁
         if isCombo:
             joinedModel.ACA_data['combo_type'] = comboType

@@ -13,6 +13,7 @@ from .locale import i18n
 from .locale.i18n import _
 from .tools import auto_register
 from .tools import aca_logging
+from .tools import smart_delete
 
 # Blender配置元数据，用户安装插件时的设置项
 # https://developer.blender.org/docs/handbook/addons/addon_meta_info/
@@ -94,9 +95,16 @@ def register():
     # 插件加载完成
     utils.outputMsg("=" * 60)
     
+    ##############################################
+    # 5、注册智能删除模块（包括键位映射）
+    smart_delete.register()
+    
     return
     
 def unregister():
+    # 注销智能删除模块（包括键位映射）
+    smart_delete.unregister()
+    
     # 销毁类
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

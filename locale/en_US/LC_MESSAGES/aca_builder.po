@@ -3754,5 +3754,13 @@ msgstr ""
 msgid "无法获取%s列表"
 msgstr "Cannot get %s list"
 
+#: panel.py:75
+msgid "启用智能删除"
+msgstr "Enable Smart Delete"
+
+#: panel.py:76
+msgid "启用后，按下Delete键将自动识别ACA建筑构件并调用专用删除方法；禁用后将使用Blender默认删除行为"
+msgstr "When enabled, pressing Delete key will automatically identify ACA building components and call specialized delete methods; when disabled, Blender's default delete behavior will be used"
+
 #~ msgid "挑檐枋"
 #~ msgstr "Eave Purlin"

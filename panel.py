@@ -6,6 +6,7 @@
 import bpy
 import math
 import platform
+import sys
 from . import data
 from .data import ACA_data_obj as acaData
 from .const import ACA_Consts as con
@@ -15,13 +16,15 @@ from .locale.i18n import _
 from .locale.i18n import I18nPrefsMixin
 from .tools.aca_logging import LoggerPrefsMixin
 from .template import AssetPrefsMixin
+from .tools.smart_delete import SmartDeleteMixin
 
-# 插件偏好设置，其中的日志、多语言、素材库配置解耦到各自的Mixin类中
+
 class ACA_OT_Preferences(
     bpy.types.AddonPreferences,
     LoggerPrefsMixin,
     I18nPrefsMixin,
     AssetPrefsMixin,
+    SmartDeleteMixin,
 ):
     bl_idname = __name__.split('.')[0]
 
@@ -54,6 +57,9 @@ class ACA_OT_Preferences(
         # 使用倒角
         row = layout.row()
         row.prop(self, 'use_bevel')
+
+        # 启用智能删除
+        self.draw_smart_delete_prefs(layout)
 
         # 260210 Windows CLI中文乱码矫正选项：仅在Windows系统上可用
         row = layout.row()

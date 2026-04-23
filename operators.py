@@ -268,28 +268,29 @@ class ACA_OT_del_pillar(bpy.types.Operator):
         self.report({'INFO'},_("已删除柱子"))
         return {'FINISHED'}
 
-    def invoke(self, context, event):
-        return context.window_manager.invoke_props_dialog(
-            self, 
-            title=_("ACA筑韵古建 addon for Blender"),
-            width = 400,)
+    # 260423 不再做删除柱子的提示，让操作更加流畅
+    # def invoke(self, context, event):
+    #     return context.window_manager.invoke_props_dialog(
+    #         self, 
+    #         title=_("ACA筑韵古建 addon for Blender"),
+    #         width = 400,)
 
-    def draw(self, context):
-        row = self.layout
-        pillars = context.selected_objects
-        pillarsName = ''
-        for pillar in pillars:
-            pillarsName += pillar.name + '，'
-        row.label(
-            text=(_("确定删除【") 
-                  + pillarsName[:-1]
-                  + _("】吗？")),
-            icon='QUESTION'
-            )
-        row.label(
-            text=(_("减柱做为配置参数可以保存在模板样式中")),
-            icon='BLANK1'
-            )
+    # def draw(self, context):
+    #     row = self.layout
+    #     pillars = context.selected_objects
+    #     pillarsName = ''
+    #     for pillar in pillars:
+    #         pillarsName += pillar.name + '，'
+    #     row.label(
+    #         text=(_("确定删除【") 
+    #               + pillarsName[:-1]
+    #               + _("】吗？")),
+    #         icon='QUESTION'
+    #         )
+    #     row.label(
+    #         text=(_("减柱做为配置参数可以保存在模板样式中")),
+    #         icon='BLANK1'
+    #         )
 
 # 添加踏跺
 class ACA_OT_add_step(bpy.types.Operator):

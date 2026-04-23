@@ -1249,7 +1249,9 @@ def buildPillars(buildingObj:bpy.types.Object):
                 pillarbase_basemesh:bpy.types.Object = utils.copySimplyObject(
                     sourceObj=aData.pillarbase_source,
                     location=(0,0,0),
-                    parentObj=pillarObj
+                    parentObj=pillarObj,
+                    # 260423 拼接建筑时，柱础会被裁剪，所以做独立网格
+                    singleUser=True,
                 )
                 pillarbase_basemesh.scale = (
                             pd/pillar_source.dimensions.x,

@@ -733,6 +733,9 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
                 boolObj=boolObj,
                 operation='DIFFERENCE',
             )
+        # 裁剪后柱体normal异常，做平滑
+        if  _('柱子') in obj.name:
+            utils.shaderSmooth(obj)
     fromChildren = utils.getChildrenHierarchy(fromBuilding)
     for obj in fromChildren:
         obj:bpy.types.Object
@@ -749,6 +752,9 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
                 boolObj=boolObj,
                 operation='INTERSECT',
             )
+        if  _('柱子') in obj.name:
+            # 裁剪后柱体normal异常，做平滑
+            utils.shaderSmooth(obj)
     
     # 三、裁剪台基 --------------------------------
     # 从柱做45度斜切
@@ -1087,6 +1093,9 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
                 boolObj=boolObj,
                 operation='DIFFERENCE',
             )
+        # 裁剪后柱体normal异常，做平滑
+        if _('柱子') in obj.name:
+            utils.shaderSmooth(obj)
 
     fromChildren = utils.getChildrenHierarchy(fromBuilding)
     for obj in fromChildren:
@@ -1104,6 +1113,9 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
                 boolObj=boolObj,
                 operation='INTERSECT',
             )
+        # 裁剪后柱体normal异常，做平滑
+        if _('柱子') in obj.name:
+            utils.shaderSmooth(obj)
     
     # 三、裁剪台基 --------------------------------
     # 从柱做45度斜切
@@ -1814,6 +1826,9 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
                 boolObj=boolObj,
                 operation='INTERSECT',
             )
+        # 裁剪后柱体normal异常，做平滑
+        if _('柱子') in obj.name:
+            utils.shaderSmooth(obj)
 
     fromChildren = utils.getChildrenHierarchy(fromBuilding)
     for obj in fromChildren:
@@ -1831,6 +1846,9 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
                 boolObj=boolObj,
                 operation='DIFFERENCE',
             )
+        # 裁剪后柱体normal异常，做平滑
+        if _('柱子') in obj.name:
+            utils.shaderSmooth(obj)
 
     # 回收临时屋面
     utils.delObject(fromRoof_copy)
@@ -2312,6 +2330,9 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
                 boolObj=boolObj,
                 operation='INTERSECT',
             )
+        # 裁剪后柱体normal异常，做平滑
+        if _('柱子') in obj.name:
+            utils.shaderSmooth(obj)
 
     fromChildren = utils.getChildrenHierarchy(fromBuilding)
     for obj in fromChildren:
@@ -2329,6 +2350,9 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
                 boolObj=boolObj,
                 operation='DIFFERENCE',
             )
+        # 裁剪后柱体normal异常，做平滑
+        if _('柱子') in obj.name:
+            utils.shaderSmooth(obj)
 
     # 回收临时屋面
     utils.delObject(fromRoof_copy)

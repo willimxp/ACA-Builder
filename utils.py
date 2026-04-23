@@ -3163,6 +3163,9 @@ def copyAcaData(fromObj,toObj,
                         subprop_name = subprop.identifier
                         subprop_type = subprop.rna_type.identifier
                         subprop_value = getattr(source_subitem, subprop_name)
+                        # 枚举属性需要通过int值传递
+                        if subprop_type == 'EnumProperty':
+                            subprop_value = int(subprop_value)
                         target_subitem[subprop_name] = subprop_value
         else:
             print(_("警告: copyAcaData,目标对象没有属性 '%s'") % (prop_name))

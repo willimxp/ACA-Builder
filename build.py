@@ -13,7 +13,7 @@ from .data import ACA_data_obj as acaData
 from . import utils
 from . import template
 from . import buildFloor
-from . import buildYardWall
+from .buildOther import buildYardWall
 from . import buildRoof
 from . import buildCombo
 from .postproc import buildingJoin

@@ -854,7 +854,7 @@ class ACA_OT_build_yardwall(bpy.types.Operator):
 
         # 添加院墙
         buildingObj,bData,objData = utils.getRoot(context.object)
-        from . import buildYardWall
+        from .buildOther import buildYardWall
         funproxy = partial(
             buildYardWall.buildYardWall,
             buildingObj=buildingObj)

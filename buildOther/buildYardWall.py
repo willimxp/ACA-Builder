@@ -3,17 +3,17 @@
 # 功能概述：
 #   院墙的营造
 
-from .locale.i18n import _
+from ..locale.i18n import _
 import bpy
 from mathutils import Vector
 import math
 
-from .const import ACA_Consts as con
-from .data import ACA_data_obj as acaData
-from .data import ACA_data_template as tmpData
-from . import utils
-from . import template
-from . import texture as mat
+from ..const import ACA_Consts as con
+from ..data import ACA_data_obj as acaData
+from ..data import ACA_data_template as tmpData
+from .. import utils
+from .. import template
+from .. import texture as mat
 
 # 添加建筑empty根节点，并绑定设计模板
 # 返回建筑empty根节点对象
@@ -437,7 +437,7 @@ def buildYardWall(buildingObj:bpy.types.Object,
     
     if templateName == None:
         # 获取panel上选择的模板
-        from . import data
+        from .. import data
         scnData : data.ACA_data_scene = bpy.context.scene.ACA_data
         templateList = scnData.templateItem
         templateIndex = scnData.templateIndex

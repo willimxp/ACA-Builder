@@ -1196,6 +1196,7 @@ def addModifierMirror(object:bpy.types.Object,
                       use_bisect=(False,False,False),
                       use_flip=(False,False,False),
                       use_merge=False,
+                      merge_threshold=0.0001,
                       name='Mirror',):
     if object == None: return
     if mirrorObj == None: return
@@ -1210,7 +1211,7 @@ def addModifierMirror(object:bpy.types.Object,
     # mod.merge_threshold = 0.000001
     # 250814 发现阈值太小会导致部分对象没能水密，如，纵向围脊
     # 修改了阈值，兼顾合角吻和纵向围脊
-    mod.merge_threshold = 0.00001
+    mod.merge_threshold = merge_threshold
 
 # 添加倒角修改器
 def addModifierBevel(object:bpy.types.Object,

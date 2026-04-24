@@ -6,13 +6,13 @@ import bpy
 import math
 from mathutils import Vector
 
-from . import utils
-from .const import ACA_Consts as con
-from .locale.i18n import _
-from .data import ACA_data_obj as acaData
-from . import buildFloor
-from .postproc import buildingJoin
-from .postproc import buildingSplice
+from .. import utils
+from ..const import ACA_Consts as con
+from ..locale.i18n import _
+from ..data import ACA_data_obj as acaData
+from .. import buildFloor
+from ..postproc import buildingJoin
+from ..postproc import buildingSplice
 
 # 回廊延伸
 def loggia_extend(contextObj:bpy.types.Object,
@@ -186,7 +186,7 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
     # 3、创建回廊转角对象 ---------------------
     LoggiaCorner = buildFloor.__addBuildingRoot(_('回廊转角'))
     # 从回廊同步设置
-    from . import buildCombo
+    from .. import buildCombo
     buildCombo.__syncData(
         fromBuilding=Loggia,
         toBuilding=LoggiaCorner,
@@ -1169,7 +1169,7 @@ def __setLoggiaChiwen(Loggia:bpy.types.Object,dir:str):
         utils.hideObj(chiwenObj)
     else:
         # 替换新螭吻，不管原来螭吻是否做了镜像
-        from .data import ACA_data_template as tmpData
+        from ..data import ACA_data_template as tmpData
         aData:tmpData = bpy.context.scene.ACA_temp
         tileRootObj = utils.getAcaChild(
             Loggia,con.ACA_TYPE_TILE_ROOT
@@ -1185,7 +1185,7 @@ def __setLoggiaChiwen(Loggia:bpy.types.Object,dir:str):
         chiwenNewObj.ACA_data['aca_type'] = con.ACA_TYPE_CHIWEN
         chiwenNewObj.users_collection[0].objects.unlink(chiwenNewObj)
         chiwenObj.users_collection[0].objects.link(chiwenNewObj)
-        from . import texture as mat
+        from .. import texture as mat
         mat.setGlazeStyle(chiwenNewObj,resetUV=False)
 
         if chiwenPos == 'L':

@@ -3278,10 +3278,13 @@ def selectAll(buildingObj:bpy.types.Object):
 def getMainBuilding(contextObj:bpy.types.Object):
     # 查找combo根节点
     comboObj = getComboRoot(contextObj)
-    # 不是组合建筑，直接返回当前建筑
+    # 不是组合建筑，验证当前建筑是否是主建筑
     if comboObj is None:
         buildingObj,bData,oData = getRoot(contextObj)
-        return buildingObj
+        if bData.combo_type == con.COMBO_MAIN:
+            return buildingObj
+        else:
+            return None
 
     # 查找主建筑
     for childBuilding in comboObj.children:

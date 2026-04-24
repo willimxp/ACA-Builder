@@ -18,9 +18,10 @@ from .. import buildCombo
 def addTerrace(buildingObj:bpy.types.Object):
     # 0、合法性验证 -----------------------
     # 250828 只要是台基，就允许添加月台
-    # 260424 限制主建筑，以免回廊等对象添加月台
-    # 验证是否为主体建筑
-    if buildingObj.ACA_data.combo_type != con.COMBO_MAIN:
+    # 260424 限制必须存在主建筑，以免回廊等对象添加月台
+    # 验证是否存在主体建筑
+    mainBuilding = utils.getMainBuilding(buildingObj)
+    if mainBuilding is None:
         utils.popMessageBox(_("抱歉，该建筑不支持添加月台"))
         return {'CANCELLED'}
     

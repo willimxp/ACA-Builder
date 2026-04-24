@@ -103,23 +103,40 @@ def __arrayTile(
     return tileObj
 
 def buildSingleWall(
-        wallProxy:bpy.types.Object,
+        buildingObj:bpy.types.Object,
+        wallItem,
         bodyShrink,
         tileAngle,
         use_cut=False,
         ):
     utils.outputMsg(_("开始墙体筑造..."))
+
     # 载入数据
-    buildingObj = wallProxy.parent
     bData:acaData = buildingObj.ACA_data
     aData:tmpData = bpy.context.scene.ACA_temp
     dk = bData.DK
-    
+
     # 如果要四角融合，则适当延长瓦面
     if use_cut:
-        cutExtend = 0.22    # 改变这个值，可以看到转角合并的瓦的变化
-        wallProxy.dimensions.x += cutExtend*2
-        utils.applyTransform(wallProxy,use_scale=True)
+        # 瓦作的出檐
+        cutExtend = 0.44
+        # 延长一个墙体宽度，便于裁剪
+        cutExtend += wallItem['dim'][1]
+        wallDim = (wallItem['dim'][0] + cutExtend, 
+                wallItem['dim'][1], 
+                wallItem['dim'][2])
+    else:
+        wallDim = wallItem['dim']
+
+    # 构造院墙proxy
+    wallProxy = utils.addCube(
+        name=wallItem['name'],
+        dimension=wallDim,
+        location=wallItem['loc'],
+        rotation=wallItem['rot'],
+        parent=buildingObj
+    )
+    
     # 墙体的长宽高，以wallproxy为依据
     (wallLength,wallDepth,wallHeight) = wallProxy.dimensions
 
@@ -334,16 +351,17 @@ def buildSingleWall(
         wallParts,newName=wallProxy.name)
     # 做裁剪
     if use_cut:
-        __wallBoolDiagnal(wallObj,wallProxy)    
+        __wallBoolDiagnal(wallObj,wallItem) 
     # 挂入根节点
     utils.changeParent(wallObj,buildingObj,resetOrigin=False)
-    # 删除wallproxy
-    utils.delObject(wallProxy)
 
     # 8、应用矩阵
     utils.applyTransform(wallObj,
                          use_location=True,
                          use_rotation=True,)
+    
+    # 删除wallproxy
+    utils.delObject(wallProxy)
 
     return wallObj
 
@@ -377,33 +395,37 @@ def __wallCutDiagnal(wallObj:bpy.types.Object,
 
 # 墙体裁剪
 def __wallBoolDiagnal(wallObj:bpy.types.Object,
-                   wallProxy:bpy.types.Object):
-    # 老版本用bisect，新版本用boolean
-    if bpy.app.version < (4,5,0):
-        __wallCutDiagnal(wallObj,wallProxy)
-        return
+                   wallItem):
+    # 裁剪体位置，裁剪偏移，为了保证能包裹到长边和短边
+    # 实际上墙体的横纵坐标位置，体现了相邻的墙体的长度
+    boolOffset = abs(wallItem['loc'][0])+abs(wallItem['loc'][1])
 
-    # 墙体的长宽高，以wallproxy为依据
-    (wallLength,wallDepth,wallHeight) = wallProxy.dimensions
-    cutExtend = 0.22    # 改变这个值，可以看到转角合并的瓦的变化
+    # 对角线长度的一半，裁剪偏移+墙体长度的一半(45度方向)
+    diagnalLength = boolOffset+ wallItem['dim'][0]/2
 
-    x,y,z = wallProxy.location
-    boolOffset = abs(x)+abs(y)
-    boolSize = boolOffset*4/math.sqrt(2)
+    # 裁剪体的边长（对角线取45度斜率）
+    boolSize = diagnalLength/math.sqrt(2)*2
+
+    # 生成裁剪体
     boolCube = utils.addCube(
         name='boolCube',
         location=(0,-boolOffset,0),
         dimension=(boolSize,boolSize,boolSize),
-        parent=wallProxy,
+        parent=wallObj,
         rotation=(0,0,math.radians(45))
     )
+
+    # 布尔
     utils.addModifierBoolean(
         object=wallObj,
         boolObj=boolCube,
         operation='INTERSECT',
     )
+
+    # 应用
     utils.applyAllModifer(wallObj)
     utils.delObject(boolCube)
+    # utils.hideObjFace(boolCube)
 
 def buildYardWall(buildingObj:bpy.types.Object,
                   templateName = None,
@@ -476,7 +498,7 @@ def buildYardWall(buildingObj:bpy.types.Object,
     else:
         # 南墙
         wallItem = {
-            'dim': ((yardWidth+wallDepth,
+            'dim': ((yardWidth,
                     wallDepth,
                     wallHeight)),
             'loc': (0,-yardDepth/2,wallHeight/2),
@@ -486,7 +508,7 @@ def buildYardWall(buildingObj:bpy.types.Object,
         wallGroup.append(wallItem)
         # 北墙
         wallItem = {
-            'dim': ((yardWidth+wallDepth,
+            'dim': ((yardWidth,
                     wallDepth,
                     wallHeight)),
             'loc': (0,yardDepth/2,wallHeight/2),
@@ -496,7 +518,7 @@ def buildYardWall(buildingObj:bpy.types.Object,
         wallGroup.append(wallItem)
         # 西墙
         wallItem = {
-            'dim': ((yardDepth+wallDepth,
+            'dim': ((yardDepth,
                     wallDepth,
                     wallHeight)),
             'loc': (-yardWidth/2,0,wallHeight/2),
@@ -506,7 +528,7 @@ def buildYardWall(buildingObj:bpy.types.Object,
         wallGroup.append(wallItem)
         # 东墙
         wallItem = {
-            'dim': ((yardDepth+wallDepth,
+            'dim': ((yardDepth,
                     wallDepth,
                     wallHeight)),
             'loc': (yardWidth/2,0,wallHeight/2),
@@ -516,23 +538,14 @@ def buildYardWall(buildingObj:bpy.types.Object,
         wallGroup.append(wallItem)
 
     # 依次生成院子四面的院墙
-    for wallItem in wallGroup:        
-        # 构造院墙proxy
-        wallProxy = utils.addCube(
-            name=wallItem['name'],
-            dimension=wallItem['dim'],
-            location=wallItem['loc'],
-            rotation=wallItem['rot'],
-            parent=buildingObj
-        )
-        utils.hideObjFace(wallProxy)
-
+    for wallItem in wallGroup:     
         # 依据proxy生成院墙
         buildSingleWall(
-            wallProxy=wallProxy,
+            buildingObj = buildingObj,
+            wallItem=wallItem,
             bodyShrink=bodyShrink,
             tileAngle=tileAngle,
-            use_cut=use_cut
+            use_cut=use_cut,
             )
 
     utils.focusObj(buildingObj)

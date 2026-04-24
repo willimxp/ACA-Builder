@@ -40,12 +40,12 @@ def __addComboRoot(templateName,
     return comboObj
 
 # 基于单一建筑，添加组合建筑
-def __addComboLevel(buildingObj:bpy.types.Object):
+def addComboLevel(buildingObj:bpy.types.Object):
     # 校验建筑为单一建筑
     buildingObj,bData,objData = utils.getRoot(buildingObj)
     comboObj = utils.getComboRoot(buildingObj)
     if comboObj is not None:
-        raise Exception(_("__addComboLevel失败，已经为组合建筑。"))
+        raise Exception(_("addComboLevel失败，已经为组合建筑。"))
         
     # ACA根目录
     rootColl = utils.setCollection(con.COLL_NAME_ROOT,
@@ -80,7 +80,7 @@ def __addComboLevel(buildingObj:bpy.types.Object):
     return comboObj
 
 # 组合建筑降级为单一建筑
-def __delComboLevel(comboObj:bpy.types.Object,
+def delComboLevel(comboObj:bpy.types.Object,
                     mainBuilding:bpy.types.Object):
     # 输入验证
     comboObj = utils.getComboRoot(comboObj)
@@ -179,6 +179,8 @@ def updateCombo(buildingObj:bpy.types.Object,
     comboObj = utils.getComboRoot(buildingObj)
     bData:acaData = buildingObj.ACA_data
     mainBuilding = utils.getMainBuilding(buildingObj)
+    if mainBuilding is None:
+        utils.popMessageBox(_("找不到主建筑，修改组合建筑失败"))
 
     # 更新的对象范围
     updateBuildingList = []
@@ -210,7 +212,8 @@ def updateCombo(buildingObj:bpy.types.Object,
             __syncMainData(toBuilding=terraceObj,
                         resetFloor=resetFloor)
         # 初始化月台，并重新定位月台位置
-        __setTerraceData(parentObj=mainBuilding,
+        from .buildOther import buildTerrace
+        buildTerrace.setTerraceData(parentObj=mainBuilding,
                          terraceObj=terraceObj,
                         isInit=False
                         )         
@@ -245,7 +248,7 @@ def updateCombo(buildingObj:bpy.types.Object,
     return {'FINISHED'}
 
 # 建筑间的数据同步
-def __syncData(fromBuilding:bpy.types.Object,
+def syncData(fromBuilding:bpy.types.Object,
                toBuilding:bpy.types.Object,
                syncAll = True,  # 默认同步所有，使用defaultSkipKeys
                syncKeys = None, # 同步的字段
@@ -430,216 +433,8 @@ def __downloadCommonData(toBuilding:bpy.types.Object):
 
     return
 
-# 添加月台
-# 传入主建筑，在主建筑上添加月台
-def addTerrace(buildingObj:bpy.types.Object):
-    # 0、合法性验证 -----------------------
-    # # 验证是否为主体建筑
-    # if buildingObj.ACA_data.combo_type != con.COMBO_MAIN:
-    #     utils.popMessageBox("不能添加月台，只有主体建筑可以添加月台")
-    #     return {'CANCELLED'}
-    # 250828 只要是台基，就允许添加月台
-    
-    # 1、构造组合层次结构 ------------------------
-    # 添加combo根节点
-    comboObj = utils.getComboRoot(buildingObj)
-    # 如果不存在combo则新建
-    if comboObj is None:
-        comboObj = __addComboLevel(buildingObj)
 
-    # 验证是否已经有月台
-    terraceRoot = utils.getComboChild(
-        buildingObj,con.COMBO_TERRACE)
-    if terraceRoot is not None:
-        utils.popMessageBox(_("已经有一个月台，不能再生成新的月台"))
-        return {'CANCELLED'}
 
-    # 构建月台子节点
-    terraceRoot = buildFloor.__addBuildingRoot(
-        templateName = buildingObj.ACA_data.template_name + _('.月台'),
-        comboObj = comboObj
-    ) 
-    # 务必及时标注combo_type,后续的数据同步和数据设置时都要判断主建筑
-    terraceRoot.ACA_data['combo_type'] = con.COMBO_TERRACE
-    link_id = buildingObj.ACA_data.aca_id
-    terraceRoot.ACA_data['combo_parent'] = link_id
-    
-    # 2、构造月台数据集 --------------------------
-    # 从Combo根节点继承数据
-    utils.outputMsg(_("添加月台子建筑..."))
-    # __downloadData(toBuilding=terraceRoot)
-    # 设置月台逻辑数据
-    __setTerraceData(parentObj=buildingObj,
-                     terraceObj=terraceRoot,
-                     isInit=True)
-    
-    # 3、开始营造 ------------------------------
-    # 刷新主建筑月台（隐藏前出踏跺）
-    buildPlatform.buildPlatform(buildingObj)
-    
-    # 添加月台，复用的buildPlatform
-    # 但传入terraceRoot，做为组合建筑的子对象
-    buildPlatform.buildPlatform(terraceRoot)
-
-    # 初始化月台根节点
-    bData:acaData = terraceRoot.ACA_data
-    terraceRoot.location = bData.combo_location
-
-    # 重做柱网（显示柱定位标识）
-    buildFloor.buildPillars(terraceRoot)
-
-    # 聚焦新生成的月台
-    terraceObj = utils.getAcaChild(
-        terraceRoot,con.ACA_TYPE_PLATFORM
-    )
-    if terraceObj is not None:
-        utils.focusObj(terraceObj)
-
-    return {'FINISHED'}
-
-# 删除月台
-def delTerrace(terraceObj:bpy.types.Object):
-    # 载入数据
-    bData:acaData = terraceObj.ACA_data
-
-    # 批量还原标识
-    comboObj = utils.getComboRoot(terraceObj)
-    cData:acaData = comboObj.ACA_data
-    cData['use_terrace'] = False
-    for child in comboObj.children:
-        child.ACA_data.use_terrace = False
-
-    # 删除月台
-    if bData.combo_type == con.COMBO_TERRACE:
-        from . import build
-        build.delBuilding(terraceObj,
-            withCombo=False,# 仅删除个体
-        )
-
-    # 预先找到主建筑，否则下一步删除comboRoot以后就找不到了
-    mainBuilding = utils.getMainBuilding(comboObj)
-    # 260424 如果是回廊等建筑的combo_type可能不是combo_main，导致找不到mainBuilding
-    if mainBuilding is None:
-        mainBuilding = comboObj.children[0]
-    if mainBuilding is None:
-        utils.outputMsg(_("删除组合建筑失败，找不到主建筑。"))
-        return 
-
-    # 是否需要组合降级
-    from . import build
-    __delComboLevel(comboObj, mainBuilding)
-
-    # 更新主建筑台基
-    buildPlatform.buildPlatform(mainBuilding)
-    # 聚焦主建筑的台基
-    mainPlatform = utils.getAcaChild(
-        mainBuilding,con.ACA_TYPE_PLATFORM
-    )
-    if mainPlatform is not None:
-        utils.focusObj(mainPlatform)
-
-    return {'FINISHED'}
-
-# 设置月台数据
-def __setTerraceData(parentObj:bpy.types.Object,
-                     terraceObj:bpy.types.Object,
-                     isInit = False, # 初始化标识，区分是新建还是更新
-                     ):
-    # 主建筑数据集
-    mainBuildingObj = parentObj
-    mData:acaData = mainBuildingObj.ACA_data
-    
-    # 初始化数据集
-    # 月台数据集
-    bData:acaData = terraceObj.ACA_data
-
-    # 1、新建时的初始化处理，更新时跳过 -------------
-    if isInit:
-        # 同步基本建筑的柱网等数据
-        __syncData(fromBuilding=parentObj,
-               toBuilding=terraceObj)
-        
-        # 不做踏跺
-        bData.step_list.clear()
-        # 不做墙体
-        bData.wall_list.clear()
-        bData.geshan_list.clear()
-        bData.window_list.clear()
-        bData.railing_list.clear()
-        bData.maindoor_list.clear()
-        
-        # 这里不要上报了，仅仅为了use_terrace
-        # 反而导致roof_style被覆盖
-        # # 数据上报到combo ------------------------
-        # utils.outputMsg("月台数据修改上报...")
-        # __uploadData(fromBuilding=mainBuildingObj)
-
-        # 2、月台开间与主建筑联动 -------------
-        # 月台进深，五间以上减2间
-        yRooms = mData.y_rooms
-        if mData.use_double_eave:
-            # 重檐不考虑廊间
-            yRooms -= 2
-        if yRooms > 2:
-            bData['y_rooms'] = yRooms - 2
-        else:
-            bData['y_rooms'] = yRooms
-
-        # 月台面阔，五间以上做“凸”形月台，减2间
-        xRooms = mData.x_rooms
-        if mData.use_double_eave:
-            # 重檐不考虑廊间
-            xRooms -= 2
-        if xRooms > 5:
-            bData['x_rooms'] = xRooms - 2
-        else:
-            bData['x_rooms'] = xRooms
-
-        # 矫正梢间，不使用主建筑的廊间数据
-        if mData.use_double_eave:
-            if bData.x_rooms >= 7:
-                bData['x_4'] = mData.x_3
-                bData['x_3'] = mData.x_2
-        
-        # 月台高度，比主体低1踏步
-        bData['platform_height'] = (
-            mData.platform_height - con.STEP_HEIGHT)
-        # 月台下出，比主体窄2踏步（未见规则）
-        bData['platform_extend'] = (
-            mData.platform_extend 
-            - con.STEP_HEIGHT*2
-            )
-    
-    # 2、其他数据的设置 --------------------------
-    # 分层显示控制
-    bData['is_showPlatform'] = True
-    bData['is_showPillars'] = True
-    bData['is_showWalls'] = False
-    bData['is_showDougong'] = False
-    bData['is_showBeam'] = False
-    bData['is_showRafter'] = False
-    bData['is_showTiles'] = False
-    bData['is_showBalcony'] = False
-
-    # 基本属性标注
-    bData['use_terrace'] = True
-    mData['use_terrace'] = True
-    # 柱网仅显示定位点
-    bData['pillar_net'] = con.ACA_PILLAR_HIDE
-        
-    # 月台定位 ------------------------
-    # 更新地盘数据，计算当前的y_total
-    buildFloor.getFloorDate(mainBuildingObj)
-    buildFloor.getFloorDate(terraceObj)
-    offsetY = (mData.y_total/2 
-               + mData.platform_extend
-               + bData.y_total/2 
-               + bData.platform_extend
-               )
-    terraceLoc = Vector((0,-offsetY,0))
-    bData['combo_location'] = terraceLoc
-
-    return terraceObj
 
 # 根据楼阁方案，设置楼阁默认参数
 def set_multiFloor_plan(self, context:bpy.types.Context):
@@ -845,7 +640,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
     comboObj = utils.getComboRoot(baseFloor)
     # 如果不存在combo则新建
     if comboObj is None:
-        comboObj = __addComboLevel(baseFloor)
+        comboObj = addComboLevel(baseFloor)
 
     # 2、重楼数据初始化，包括下层、披檐、平坐、重楼等
     # 2.1、下层的处理
@@ -952,7 +747,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
                 )
                 # 是否需要组合降级
                 from . import build
-                __delComboLevel(baseFloor)
+                delComboLevel(baseFloor)
 
             # 关闭进度条
             build.isFinished = True
@@ -1010,7 +805,7 @@ def __addPingzuo(baseFloor:bpy.types.Object,
 
     # 2、平坐数据初始化
     # 从下同步：柱网等信息
-    __syncData(fromBuilding=baseFloor,
+    syncData(fromBuilding=baseFloor,
                toBuilding=pingzuo)
     
     # 3、平坐数据的其他设置
@@ -1081,7 +876,7 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
     
     # 1、基本设置 ------------------
     # 地盘数据从下层同步
-    __syncData(fromBuilding=lowerFloor,
+    syncData(fromBuilding=lowerFloor,
                toBuilding=upperfloor)
     dk = mData.DK
     # 清除踏步
@@ -1096,7 +891,7 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
         )
         # 是否需要组合降级
         from . import build
-        __delComboLevel(comboRootObj)
+        delComboLevel(comboRootObj)
         raise Exception(str(e))
 
     # 1.1 设置屋顶
@@ -1193,7 +988,7 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
             )
             # 是否需要组合降级
             from . import build
-            __delComboLevel(comboRootObj)
+            delComboLevel(comboRootObj)
             raise Exception(str(e))
 
     return upperfloor

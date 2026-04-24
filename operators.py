@@ -1379,9 +1379,9 @@ class ACA_OT_TERRACE_DEL(bpy.types.Operator):
 
         terraceObj,bData,objData = utils.getRoot(context.object)
         
-        from . import buildCombo
+        from .buildOther import buildTerrace
         funproxy = partial(
-            buildCombo.delTerrace,
+            buildTerrace.delTerrace,
             terraceObj=terraceObj,
         )
         result = utils.fastRun(funproxy)
@@ -1406,9 +1406,9 @@ class ACA_OT_TERRACE_ADD(bpy.types.Operator):
 
         buildingObj,bData,objData = utils.getRoot(context.object)
         
-        from . import buildCombo
+        from .buildOther import buildTerrace
         funproxy = partial(
-            buildCombo.addTerrace,
+            buildTerrace.addTerrace,
             buildingObj=buildingObj,
         )
         result = utils.fastRun(funproxy)

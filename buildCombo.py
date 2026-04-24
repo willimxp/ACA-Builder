@@ -80,7 +80,8 @@ def __addComboLevel(buildingObj:bpy.types.Object):
     return comboObj
 
 # 组合建筑降级为单一建筑
-def __delComboLevel(comboObj:bpy.types.Object):
+def __delComboLevel(comboObj:bpy.types.Object,
+                    mainBuilding:bpy.types.Object):
     # 输入验证
     comboObj = utils.getComboRoot(comboObj)
     if comboObj is None:
@@ -93,7 +94,6 @@ def __delComboLevel(comboObj:bpy.types.Object):
         return
     
     # 更改目录级别
-    mainBuilding = utils.getMainBuilding(comboObj)
     buildingColl = mainBuilding.users_collection[0]
     # 关联到根目录
     rootColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
@@ -518,10 +518,16 @@ def delTerrace(terraceObj:bpy.types.Object):
 
     # 预先找到主建筑，否则下一步删除comboRoot以后就找不到了
     mainBuilding = utils.getMainBuilding(comboObj)
+    # 260424 如果是回廊等建筑的combo_type可能不是combo_main，导致找不到mainBuilding
+    if mainBuilding is None:
+        mainBuilding = comboObj.children[0]
+    if mainBuilding is None:
+        utils.outputMsg(_("删除组合建筑失败，找不到主建筑。"))
+        return 
 
     # 是否需要组合降级
     from . import build
-    __delComboLevel(comboObj)
+    __delComboLevel(comboObj, mainBuilding)
 
     # 更新主建筑台基
     buildPlatform.buildPlatform(mainBuilding)

@@ -1403,13 +1403,11 @@ class ACA_OT_TERRACE_ADD(bpy.types.Operator):
 
     def execute(self, context): 
         timeStart = time.time()
-
-        buildingObj,bData,objData = utils.getRoot(context.object)
         
         from .buildOther import buildTerrace
         funproxy = partial(
             buildTerrace.addTerrace,
-            buildingObj=buildingObj,
+            contextObj=context.object,
         )
         result = utils.fastRun(funproxy)
 

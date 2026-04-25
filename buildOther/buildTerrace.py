@@ -15,39 +15,59 @@ from .. import buildCombo
 
 # 添加月台
 # 传入主建筑，在主建筑上添加月台
-def addTerrace(buildingObj:bpy.types.Object):
+def addTerrace(contextObj:bpy.types.Object):
     # 0、合法性验证 -----------------------
-    # 250828 只要是台基，就允许添加月台
+    buildingObj,bData,oData = utils.getRoot(contextObj)
+    if buildingObj == None:
+        utils.popMessageBox(_("请选择一个ACA建筑对象"))
+        return {"CANCELLED"}
+
+    # 260425 目前只支持前出月台，如果是组合建筑，也仅做前殿的月台
+    # 查找前殿
+    terraceParent = None
+    comboObj = utils.getComboRoot(buildingObj)
+    if comboObj is None:
+        # 如果单体建筑为主建筑，则做为月台前殿
+        if bData.combo_type == con.COMBO_MAIN:
+            terraceParent = buildingObj
+    else:
+        # 逐一分析组合对象
+        for child in comboObj.children:
+            # 只分析主建筑
+            if child.ACA_data.combo_type == con.COMBO_MAIN:
+                if terraceParent is None:
+                    terraceParent = child
+                else:
+                    # 找到Y坐标最小的做为前殿
+                    if terraceParent.location.y - child.location.y > 0.01:
+                        terraceParent = child
+    
     # 260424 限制必须存在主建筑，以免回廊等对象添加月台
-    # 验证是否是主建筑
-    bData:acaData = buildingObj.ACA_data
-    if bData.combo_type != con.COMBO_MAIN:
+    if terraceParent is None:
         utils.popMessageBox(_("抱歉，该建筑不支持添加月台"))
         return {'CANCELLED'}
     
-    
     # 1、构造组合层次结构 ------------------------
     # 添加combo根节点
-    comboObj = utils.getComboRoot(buildingObj)
     # 如果不存在combo则新建
     if comboObj is None:
-        comboObj = buildCombo.addComboLevel(buildingObj)
+        comboObj = buildCombo.addComboLevel(terraceParent)
 
     # 验证是否已经有月台
     terraceRoot = utils.getComboChild(
-        buildingObj,con.COMBO_TERRACE)
+        terraceParent,con.COMBO_TERRACE)
     if terraceRoot is not None:
         utils.popMessageBox(_("已经有一个月台，不能再生成新的月台"))
         return {'CANCELLED'}
 
     # 构建月台子节点
     terraceRoot = buildFloor.__addBuildingRoot(
-        templateName = buildingObj.ACA_data.template_name + _('.月台'),
+        templateName = terraceParent.ACA_data.template_name + _('.月台'),
         comboObj = comboObj
     ) 
     # 务必及时标注combo_type,后续的数据同步和数据设置时都要判断主建筑
     terraceRoot.ACA_data['combo_type'] = con.COMBO_TERRACE
-    link_id = buildingObj.ACA_data.aca_id
+    link_id = terraceParent.ACA_data.aca_id
     terraceRoot.ACA_data['combo_parent'] = link_id
     
     # 2、构造月台数据集 --------------------------
@@ -55,13 +75,13 @@ def addTerrace(buildingObj:bpy.types.Object):
     utils.outputMsg(_("添加月台子建筑..."))
     # __downloadData(toBuilding=terraceRoot)
     # 设置月台逻辑数据
-    setTerraceData(parentObj=buildingObj,
+    setTerraceData(parentObj=terraceParent,
                      terraceObj=terraceRoot,
                      isInit=True)
     
     # 3、开始营造 ------------------------------
     # 刷新主建筑月台（隐藏前出踏跺）
-    buildPlatform.buildPlatform(buildingObj)
+    buildPlatform.buildPlatform(terraceParent)
     
     # 添加月台，复用的buildPlatform
     # 但传入terraceRoot，做为组合建筑的子对象

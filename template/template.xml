@@ -12262,7 +12262,7 @@
 			<splice_id type="StringProperty" />
 			<aca_type type="StringProperty">building</aca_type>
 			<template_name type="StringProperty">上檐</template_name>
-			<combo_type type="StringProperty">combo_main</combo_type>
+			<combo_type type="StringProperty">combo_double_eave</combo_type>
 			<combo_parent type="StringProperty">d2fe9476-656a-473f-b720-766201b97cee</combo_parent>
 			<combo_children type="CollectionProperty" />
 			<combo_location type="FloatVectorProperty">0.0,0.0,3.972</combo_location>

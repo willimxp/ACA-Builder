@@ -19,9 +19,9 @@ def addTerrace(buildingObj:bpy.types.Object):
     # 0、合法性验证 -----------------------
     # 250828 只要是台基，就允许添加月台
     # 260424 限制必须存在主建筑，以免回廊等对象添加月台
-    # 验证是否存在主体建筑
-    mainBuilding = utils.getMainBuilding(buildingObj)
-    if mainBuilding is None:
+    # 验证是否是主建筑
+    bData:acaData = buildingObj.ACA_data
+    if bData.combo_type != con.COMBO_MAIN:
         utils.popMessageBox(_("抱歉，该建筑不支持添加月台"))
         return {'CANCELLED'}
     
@@ -88,6 +88,13 @@ def delTerrace(terraceObj:bpy.types.Object):
     # 载入数据
     bData:acaData = terraceObj.ACA_data
 
+    # 预先找到父建筑
+    mainBuildingId = bData.combo_parent
+    mainBuilding = utils.getObjByID(mainBuildingId)
+    if mainBuilding is None:
+        utils.popMessageBox(_("删除月台失败，找不到主建筑。"))
+        return {'CANCELLED'}
+
     # 批量还原标识
     comboObj = utils.getComboRoot(terraceObj)
     cData:acaData = comboObj.ACA_data
@@ -101,15 +108,6 @@ def delTerrace(terraceObj:bpy.types.Object):
         build.delBuilding(terraceObj,
             withCombo=False,# 仅删除个体
         )
-
-    # 预先找到主建筑，否则下一步删除comboRoot以后就找不到了
-    mainBuilding = utils.getMainBuilding(comboObj)
-    # 260424 如果是回廊等建筑的combo_type可能不是combo_main，导致找不到mainBuilding
-    if mainBuilding is None:
-        mainBuilding = comboObj.children[0]
-    if mainBuilding is None:
-        utils.outputMsg(_("删除组合建筑失败，找不到主建筑。"))
-        return 
 
     # 是否需要组合降级
     from .. import build
@@ -223,6 +221,6 @@ def setTerraceData(parentObj:bpy.types.Object,
                + bData.platform_extend
                )
     terraceLoc = Vector((0,-offsetY,0))
-    bData['combo_location'] = terraceLoc
+    bData['combo_location'] = mainBuildingObj.location + terraceLoc
 
     return terraceObj

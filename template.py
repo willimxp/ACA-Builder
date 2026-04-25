@@ -356,11 +356,16 @@ def loadAssets(assetName : str,
         return newobj
 
 # 用const填充XML中未定义的属性
-def __loadDefaultData(buildingObj:bpy.types.Object):
+def loadDefaultData(buildingObj:bpy.types.Object):
     # 载入数据
     bData:acaData = buildingObj.ACA_data
     bData['aca_obj'] = True
     bData['aca_type'] = con.ACA_TYPE_BUILDING
+    bData['combo_type'] = con.COMBO_MAIN
+
+    # 随机生成aca_id
+    if bData.aca_id == '':
+        bData['aca_id'] = utils.generateID()
 
     # 校验DK,PD不能为空
     if bData.DK == 0.0:
@@ -482,7 +487,7 @@ def __loadTemplateSingle(
     if pd != None:
         bData['pillar_diameter'] = round(float(pd.text),3)
     # 刷新bData默认值
-    bData = __loadDefaultData(buildingObj)
+    bData = loadDefaultData(buildingObj)
 
     # 遍历所有子节点，并绑定到对应属性
     for node in template:
@@ -525,11 +530,8 @@ def __loadTemplateSingle(
 # 载入模板
 # 直接将XML填充入bData
 # 注意，所有的属性都为选填，所以要做好空值的检查
-def loadTemplate(buildingObj:bpy.types.Object):
-    # 载入数据
-    bData:acaData = buildingObj.ACA_data
-    templateName = bData.template_name
-    
+def loadTemplate(buildingObj:bpy.types.Object,
+                 templateName:str):    
     # 解析XML配置模板
     path = __getPath(xmlFileName)
     tree = ET.parse(path)
@@ -539,7 +541,6 @@ def loadTemplate(buildingObj:bpy.types.Object):
     templateNodeList = root.findall('template')
     if templateNodeList == None:
         raise Exception(_("模板解析失败"))
-        return
     
     # 查找是否有子模版
     parent = buildingObj.parent

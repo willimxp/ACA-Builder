@@ -342,7 +342,9 @@ class ACA_data_obj(bpy.types.PropertyGroup):
         ) #type: ignore
     combo_type : bpy.props.StringProperty(
             name = _('组合类型'),
-            default = 'combo_main',
+            # 260425 combo_type不要默认为main
+            # 否则bool等对象都会默认取值，导致做月台等判断错误
+            # default = 'combo_main',
         ) # type: ignore
     combo_parent:bpy.props.StringProperty(
             name = _('组合关联对象'),

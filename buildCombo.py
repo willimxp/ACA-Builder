@@ -117,7 +117,7 @@ def buildCombo(
     # 添加combo根节点
     comboObj = __addComboRoot(templateName)
     # 在comboObj上绑定模板bData
-    template.loadTemplate(comboObj)
+    template.loadTemplate(comboObj,templateName)
     
     # 组合建筑
     tempChildren = template.getTemplateChild(templateName)

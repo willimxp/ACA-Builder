@@ -53,13 +53,8 @@ def __addBuildingRoot(templateName,
         name=templateName_,
         location=buildingLoc
     )
-    bData:acaData = buildingObj.ACA_data
-    bData['aca_obj'] = True
-    bData['aca_type'] = con.ACA_TYPE_BUILDING
-    bData['template_name'] = templateName
-    # 260421 aca_id如果在combo中会从template中继承，否则随机生成
-    if bData.aca_id == '':
-        bData['aca_id'] = utils.generateID()
+    # 260425 填充默认参数
+    template.loadDefaultData(buildingObj)
 
     if comboObj is not None:
         # 绑定Combo对象父子关系
@@ -1509,7 +1504,7 @@ def buildFloor(buildingObj:bpy.types.Object,
             comboObj = comboObj
             )
         # 在buldingObj上绑定模板bData和资产库aData
-        template.loadTemplate(buildingObj)
+        template.loadTemplate(buildingObj,templateName)
     else:
         # 聚焦对象集合
         # 避免因为手工排除该集合导致后续构建掉落在集合外

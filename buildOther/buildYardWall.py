@@ -449,7 +449,7 @@ def buildYardWall(buildingObj:bpy.types.Object,
         # 添加建筑根节点，同时载入模板
         buildingObj = __addBuildingRoot(templateName)
         # 在buldingObj上绑定模板bData和资产库aData
-        template.loadTemplate(buildingObj)
+        template.loadTemplate(buildingObj,templateName)
     else:
         utils.outputMsg(_("更新建筑..."))
         # 简单粗暴的全部删除

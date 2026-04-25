@@ -1140,8 +1140,8 @@ def buildPillars(buildingObj:bpy.types.Object):
             if useEmptyPillar:
                 pillarObj = utils.addEmpty(
                     name = _('柱定位点.') + pillarID,
-                    type='CONE',
-                    radius=pd,
+                    type='SPHERE',
+                    radius=pd/2,
                     location = (net_x[x],net_y[y],0),
                     parent = floorRootObj,
                     rotation=(math.radians(90),0,0)

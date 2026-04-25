@@ -3518,6 +3518,10 @@ def clearChildData(bData):
 # 根据id获取对象
 def getObjByID(aca_id, 
                aca_type = con.ACA_TYPE_BUILDING,):
+    # 如果aca_id为空，直接返回
+    if aca_id is None or aca_id=='':
+        return None
+    
     obj = None
     for obj in bpy.data.objects:
         if not hasattr(obj,'ACA_data'):

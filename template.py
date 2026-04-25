@@ -820,7 +820,7 @@ preview_collections = {}
 def loadThumb():
     # 定义缩略图目录
     addonName = "ACA Builder"
-    thumbFolder = 'thumb'
+    thumbFolder = 'resource/templateThumb'
     USER = pathlib.Path(
         bpy.utils.resource_path('USER'))
     thumb_directory = USER / "scripts/addons" / addonName / thumbFolder
@@ -855,7 +855,7 @@ def loadThumb():
 def loadPavilionThumb():
     # 定义缩略图目录
     addonName = "ACA Builder"
-    thumbFolder = 'pavilion'
+    thumbFolder = 'resource/pavilionThumb'
     USER = pathlib.Path(
         bpy.utils.resource_path('USER'))
     thumb_directory = USER / "scripts/addons" / addonName / thumbFolder

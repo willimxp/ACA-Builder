@@ -4,9 +4,6 @@
 # 排除python缓存目录
 __pycache__/
 
-# 排除文档目录
-doc/
-
 # 排除blender文件
 *.blend*
 

@@ -10,7 +10,7 @@ from typing import List
 from . import utils
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
-from . import template
+from .template import template
 from . import buildFloor
 from . import buildPlatform
 from . import buildRoof
@@ -1056,7 +1056,7 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
                 if preData.use_pingbanfang:
                     floorHeight += con.PINGBANFANG_H*dk
                 # 更新斗栱数据
-                from . import template
+                from .template import template
                 template.updateDougongData(preFloor)
                 floorHeight += preData.dg_height
 

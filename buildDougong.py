@@ -435,7 +435,7 @@ def __buildDougong(dgrootObj:bpy.types.Object):
     dk = bData.DK
 
     # 初始化斗栱数据，避免跨建筑时公用的aData干扰
-    from . import template
+    from .template import template
     template.updateDougongData(buildingObj)
 
     # 获取开间、进深数据

@@ -33,7 +33,7 @@ def update_dk(self, context:bpy.types.Context):
     # 确认选中为building节点
     buildingObj,bData,odata = utils.getRoot(context.object)
     if buildingObj != None:
-        from . import template
+        from .template import template
         template.updateDougongData(buildingObj)
         update_building(self,context)
     return
@@ -395,7 +395,7 @@ def update_dougong(self, context:bpy.types.Context):
         # 重檐的问题，晚些再说
         # -------------
         # 初始化斗栱数据，避免跨建筑时公用的aData干扰
-        from . import template
+        from .template import template
         template.updateDougongData(buildingObj)
 
         # 如果有楼阁，更新楼阁层高
@@ -450,7 +450,7 @@ def update_roofstyle(self, context:bpy.types.Context):
         bData['rafter_count'] = 6
 
     # 250907 切换平坐屋顶时，需要更新平坐斗栱
-    from . import template
+    from .template import template
     template.updateDougongData(buildingObj)
 
     return
@@ -543,7 +543,7 @@ def hide_balcony(self, context:bpy.types.Context):
 # misbehave or even crash.
 dougongList = []
 def getDougongList(self, context):
-    from . import template
+    from .template import template
     global dougongList
     dougongList = template.getDougongList()
     return dougongList

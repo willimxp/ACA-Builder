@@ -28,7 +28,7 @@ def initprop():
     )
 
     # 用于模板缩略图控件的载入
-    from . import template
+    from .template import template
     bpy.types.Scene.image_browser_items = bpy.props.CollectionProperty(
         type=TemplateThumbItem)
     bpy.types.Scene.image_browser_enum = bpy.props.EnumProperty(

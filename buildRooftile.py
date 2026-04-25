@@ -10,7 +10,7 @@ from mathutils import Vector,Matrix,Euler
 
 from . import utils
 from . import buildBeam
-from . import template
+from .template import template
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData

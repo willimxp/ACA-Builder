@@ -14,7 +14,7 @@ from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
 from . import utils
-from . import template
+from .template import template
 from . import buildWall
 from . import buildPlatform
 from . import buildRoof
@@ -1176,7 +1176,7 @@ def buildPillars(buildingObj:bpy.types.Object):
                 # 绑定垂花柱资产
                 if aData.pillar_lift_source is None:
                     # 重新载入资产库，以载入垂花柱模板
-                    from . import template
+                    from .template import template
                     template.loadAssetByBuilding(buildingObj)
                 pillar_source = aData.pillar_lift_source
                 # 垂花柱以顶部为原点

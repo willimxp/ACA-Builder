@@ -12,7 +12,7 @@ from ..const import ACA_Consts as con
 from ..data import ACA_data_obj as acaData
 from ..data import ACA_data_template as tmpData
 from .. import utils
-from .. import template
+from ..template import template
 from .. import texture as mat
 
 # 添加建筑empty根节点，并绑定设计模板

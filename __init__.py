@@ -119,7 +119,7 @@ def unregister():
     aca_logging.remove_logger()
 
     # 释放模板缩略图资源
-    from . import template
+    from .template import template
     template.releasePreview()
 
     return

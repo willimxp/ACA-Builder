@@ -715,7 +715,7 @@ class ACA_OT_save_template(bpy.types.Operator):
             # 用combo节点替换buildingObj
             buildingObj = comboObj
         
-        from . import template
+        from .template import template
         result = template.saveTemplateWithCombo(buildingObj)
         if 'FINISHED' in result:
             msg = _("%s 模板样式保存成功") % (buildingObj.name)
@@ -726,7 +726,7 @@ class ACA_OT_save_template(bpy.types.Operator):
     
     def invoke(self, context, event):
         # 查询所有的模板列表
-        from . import template
+        from .template import template
         templateList = template.getTemplateList(onlyname=True)
         # 确认当前建筑名称是否与模板冲突
         buildingObj,bData,objData = utils.getRoot(context.object)
@@ -791,7 +791,7 @@ class ACA_OT_del_template(bpy.types.Operator):
         templateIndex = scnData.templateIndex
         templateName = templateList[templateIndex].name
 
-        from . import template
+        from .template import template
         result = template.delTemplate(templateName)
         if 'FINISHED' in result:
             # 刷新场景中的模板列表数据
@@ -799,7 +799,7 @@ class ACA_OT_del_template(bpy.types.Operator):
             # 清空场景中的模板列表数据
             scnData.templateItem.clear()
             # 查询所有的模板列表
-            from . import template
+            from .template import template
             templateList = template.getTemplateList(onlyname=True)
             # 重新填充场景的模板列表
             for templateItemName in templateList:
@@ -1292,7 +1292,7 @@ class ACA_OT_SELECT_TEMPLATE_DIALOG(bpy.types.Operator):
         # 清空场景中的模板列表数据
         scnData.templateItem.clear()
         # 查询所有的模板列表
-        from . import template
+        from .template import template
         templateList = template.getTemplateList(onlyname=True)
         # 重新填充场景的模板列表
         for templateName in templateList:
@@ -1451,7 +1451,7 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         buildCombo.set_multiFloor_plan(self,context)
 
         # 填充缩略图
-        from . import template
+        from .template import template
         template.loadPavilionThumb()
 
         return context.window_manager.invoke_props_dialog(self,width=450)

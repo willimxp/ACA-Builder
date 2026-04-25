@@ -15,7 +15,7 @@ from . import build
 from .locale.i18n import _
 from .locale.i18n import I18nPrefsMixin
 from .tools.aca_logging import LoggerPrefsMixin
-from .template import AssetPrefsMixin
+from .template.template import AssetPrefsMixin
 from .tools.smart_delete import SmartDeleteMixin
 
 

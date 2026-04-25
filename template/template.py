@@ -6,12 +6,12 @@ import bpy
 import os
 import pathlib
 import xml.etree.ElementTree as ET
-from .const import ACA_Consts as con
-from .data import ACA_data_obj as acaData
-from .data import ACA_data_template as tmpData
-from . import utils
+from ..const import ACA_Consts as con
+from ..data import ACA_data_obj as acaData
+from ..data import ACA_data_template as tmpData
+from .. import utils
 import bpy.utils.previews
-from .locale.i18n import _
+from ..locale.i18n import _
 
 
 class AssetPrefsMixin:

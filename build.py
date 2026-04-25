@@ -11,7 +11,7 @@ from mathutils import Vector
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from . import utils
-from . import template
+from .template import template
 from . import buildFloor
 from .buildOther import buildYardWall
 from . import buildRoof

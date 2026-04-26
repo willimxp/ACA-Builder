@@ -412,7 +412,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
                      toBuilding:bpy.types.Object,
                      comboObj:bpy.types.Object):    
     # 载入数据
-    bData = toBuilding.ACA_data
+    bData:acaData = toBuilding.ACA_data
     dk = bData.DK
 
     # 生成剪切体 ----------------------------------
@@ -425,6 +425,18 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
         eave_extend += bData.dg_extend*bData.dg_scale[0]
     # 出冲
     eave_extend += bData.chong * con.YUANCHUAN_D*dk
+
+    # 260426 如果台基下出大于出檐，则以台基下出为准
+    # 否则会导致台基被意外裁剪
+    toPlatformExtend = toBuilding.ACA_data.platform_extend
+    fromPlatformExtend = fromBuilding.ACA_data.platform_extend
+    if fromPlatformExtend > toPlatformExtend:
+        platformExtend = fromPlatformExtend
+    else:
+        platformExtend = toPlatformExtend
+    if platformExtend > eave_extend:
+        eave_extend = platformExtend
+
     # 保险数
     eave_extend += 20*dk
 

@@ -299,6 +299,10 @@ def undoSplice(buildingObj:bpy.types.Object):
                     # 记录涉及的bool对象
                     if hasattr(mod,'object'):
                         boolObj = mod.object
+                        # 布尔修改器的布尔对象可能已经删除，变成了None
+                        if boolObj is None:
+                            continue
+                        # 找到布尔对象，加入待删除列表
                         if boolObj not in boolObjs:
                             boolObjs.append(boolObj)
                     # 删除修改器

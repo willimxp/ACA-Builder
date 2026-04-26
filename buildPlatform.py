@@ -1070,10 +1070,12 @@ def resizePlatform(buildingObj:bpy.types.Object):
     terraceObj = utils.getComboChild(
         buildingObj,con.COMBO_TERRACE)
     if terraceObj is not None:
-        from .buildOther import buildTerrace
-        buildTerrace.setTerraceData(terraceObj)
-        buildFloor.buildFloor(terraceObj,
-                              comboObj=comboObj)
+        # 验证当前修改的台基是否是月台的父对象
+        if terraceObj.ACA_data.combo_parent == bData.aca_id:
+            from .buildOther import buildTerrace
+            buildTerrace.setTerraceData(terraceObj)
+            buildFloor.buildFloor(terraceObj,
+                                comboObj=comboObj)
     
     # 重新聚焦建筑根节点
     utils.focusObj(buildingObj)

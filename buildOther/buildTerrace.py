@@ -67,6 +67,7 @@ def addTerrace(contextObj:bpy.types.Object):
     ) 
     # 务必及时标注combo_type,后续的数据同步和数据设置时都要判断主建筑
     terraceRoot.ACA_data['combo_type'] = con.COMBO_TERRACE
+    # 建立与父建筑的关联关系
     link_id = terraceParent.ACA_data.aca_id
     terraceRoot.ACA_data['combo_parent'] = link_id
     
@@ -75,8 +76,7 @@ def addTerrace(contextObj:bpy.types.Object):
     utils.outputMsg(_("添加月台子建筑..."))
     # __downloadData(toBuilding=terraceRoot)
     # 设置月台逻辑数据
-    setTerraceData(parentObj=terraceParent,
-                     terraceObj=terraceRoot,
+    setTerraceData(terraceObj=terraceRoot,
                      isInit=True)
     
     # 3、开始营造 ------------------------------
@@ -145,22 +145,26 @@ def delTerrace(terraceObj:bpy.types.Object):
     return {'FINISHED'}
 
 # 设置月台数据
-def setTerraceData(parentObj:bpy.types.Object,
-                     terraceObj:bpy.types.Object,
-                     isInit = False, # 初始化标识，区分是新建还是更新
-                     ):
-    # 主建筑数据集
-    mainBuildingObj = parentObj
-    mData:acaData = mainBuildingObj.ACA_data
-    
+def setTerraceData(terraceObj:bpy.types.Object,
+                   isInit = False, # 初始化标识，区分是新建还是更新
+                   ):
     # 初始化数据集
     # 月台数据集
     bData:acaData = terraceObj.ACA_data
 
+    # 查找月台父建筑
+    terraceParentID = bData.combo_parent
+    terraceParent = utils.getObjByID(terraceParentID)
+    if terraceParent is None:
+        utils.outputMsg(_("月台数据初始化失败，无法找到父建筑"))
+        return
+    # 主建筑数据集
+    mData:acaData = terraceParent.ACA_data
+
     # 1、新建时的初始化处理，更新时跳过 -------------
     if isInit:
         # 同步基本建筑的柱网等数据
-        buildCombo.syncData(fromBuilding=parentObj,
+        buildCombo.syncData(fromBuilding=terraceParent,
                toBuilding=terraceObj)
         
         # 不做踏跺
@@ -233,7 +237,7 @@ def setTerraceData(parentObj:bpy.types.Object,
         
     # 月台定位 ------------------------
     # 更新地盘数据，计算当前的y_total
-    buildFloor.getFloorDate(mainBuildingObj)
+    buildFloor.getFloorDate(terraceParent)
     buildFloor.getFloorDate(terraceObj)
     offsetY = (mData.y_total/2 
                + mData.platform_extend
@@ -241,6 +245,6 @@ def setTerraceData(parentObj:bpy.types.Object,
                + bData.platform_extend
                )
     terraceLoc = Vector((0,-offsetY,0))
-    bData['combo_location'] = mainBuildingObj.location + terraceLoc
+    bData['combo_location'] = terraceParent.location + terraceLoc
 
     return terraceObj

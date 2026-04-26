@@ -178,9 +178,6 @@ def updateCombo(buildingObj:bpy.types.Object,
 
     comboObj = utils.getComboRoot(buildingObj)
     bData:acaData = buildingObj.ACA_data
-    mainBuilding = utils.getMainBuilding(buildingObj)
-    if mainBuilding is None:
-        utils.popMessageBox(_("找不到主建筑，修改组合建筑失败"))
 
     # 更新的对象范围
     updateBuildingList = []
@@ -213,8 +210,7 @@ def updateCombo(buildingObj:bpy.types.Object,
                         resetFloor=resetFloor)
         # 初始化月台，并重新定位月台位置
         from .buildOther import buildTerrace
-        buildTerrace.setTerraceData(parentObj=mainBuilding,
-                         terraceObj=terraceObj,
+        buildTerrace.setTerraceData(terraceObj=terraceObj,
                         isInit=False
                         )         
 

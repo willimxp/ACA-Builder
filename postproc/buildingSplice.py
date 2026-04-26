@@ -13,7 +13,7 @@ from ..data import ACA_data_obj as acaData
 from .. import utils
 
 # 建筑拼接
-def spliceBuilding(fromBuilding:bpy.types.Object,
+def addSplice(fromBuilding:bpy.types.Object,
                    toBuilding:bpy.types.Object,):
     bData:acaData = fromBuilding.ACA_data
     mData:acaData = toBuilding.ACA_data
@@ -233,7 +233,7 @@ def spliceBuilding(fromBuilding:bpy.types.Object,
     return result
 
 # 删除建筑(以及相关的建筑)的拼接操作
-def undoSplice(buildingObj:bpy.types.Object):
+def delSplice(buildingObj:bpy.types.Object):
     # 验证buildingObj
     buildingObj,bData,oData = utils.getRoot(buildingObj)
     if buildingObj is None:

@@ -157,7 +157,7 @@ def buildCombo(
             
             # 执行拼接
             from .postproc import buildingSplice
-            buildingSplice.spliceBuilding(
+            buildingSplice.addSplice(
                 fromBuilding=fromBuilding,
                 toBuilding=toBuilding)
         else:
@@ -174,7 +174,7 @@ def updateCombo(buildingObj:bpy.types.Object,
 
     # 251217 添加清除拼接
     from .postproc import buildingSplice
-    buildingSplice.undoSplice(buildingObj)
+    buildingSplice.delSplice(buildingObj)
 
     comboObj = utils.getComboRoot(buildingObj)
     bData:acaData = buildingObj.ACA_data

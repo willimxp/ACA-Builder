@@ -1684,7 +1684,7 @@ class ACA_OT_SPLICE_BUILDING(bpy.types.Operator):
         
         from .postproc import buildingSplice
         funproxy = partial(
-            buildingSplice.spliceBuilding,
+            buildingSplice.addSplice,
             fromBuilding = fromBuilding,
             toBuilding = toBuilding,
         )

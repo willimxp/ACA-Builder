@@ -220,7 +220,7 @@ def update_platform(self, context:bpy.types.Context):
 
     # 251217 添加清除拼接
     from .postproc import buildingSplice
-    buildingSplice.undoSplice(buildingObj)
+    buildingSplice.delSplice(buildingObj)
     
     # 调用台基缩放
     from . import buildPlatform
@@ -454,26 +454,6 @@ def update_roofstyle(self, context:bpy.types.Context):
     template.updateDougongData(buildingObj)
 
     return
-
-# @check_auto_rebuild
-# def update_rooftile(self, context:bpy.types.Context):
-#     # 确认选中为building节点
-#     buildingObj,bData,oData = utils.getRoot(context.object)
-#     if buildingObj != None:
-#         # 251217 添加清除拼接
-#         from .postproc import buildingSplice
-#         buildingSplice.undoSplice(buildingObj)
-
-#         from . import buildRooftile
-#         # 重新生成屋顶
-#         funproxy = partial(
-#             buildRooftile.buildTile,
-#             buildingObj=buildingObj)
-#         utils.fastRun(funproxy)
-#     else:
-#         utils.outputMsg(
-#             "updated rooftile failed, context.object should be buildingObj")
-#     return
 
 # 显示/隐藏台基层
 def hide_platform(self, context:bpy.types.Context):

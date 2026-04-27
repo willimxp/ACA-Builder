@@ -19,6 +19,118 @@ def addSplice(fromBuilding:bpy.types.Object,
     mData:acaData = toBuilding.ACA_data
 
     # 1、判断拼接方式 -------------------------------
+    spliceType = __getSpliceType(fromBuilding,
+                                 toBuilding)
+    if spliceType == None:
+        utils.popMessageBox(_("无法处理的建筑合并"))
+        return {'CANCELLED'}
+    
+    # 2、预处理 ------------------------------------
+    from .. import buildCombo
+    # 建筑集成到一个统一的combo中
+    # 以第一个建筑为origin原点(主建筑)
+    comboObj = buildCombo.addCombo(
+        [toBuilding,fromBuilding])
+
+    # 聚焦在combo目录中
+    utils.focusCollByObj(comboObj)
+
+    # 3、执行拼接 -------------------------------------
+    if spliceType == 'goulianda':
+        utils.outputMsg(_("拼接建筑：勾连搭..."))
+        result = __unionGoulianda(
+            fromBuilding,
+            toBuilding,
+            comboObj,
+        )
+    if spliceType == 'parallelXuanshan':
+        utils.outputMsg(_("拼接建筑：平行抱厦/悬山..."))
+        result = __unionParallelXuanshan(
+            fromBuilding,
+            toBuilding,
+            comboObj,
+        )
+    if spliceType == 'parallelXieshan':
+        utils.outputMsg(_("拼接建筑：平行抱厦/歇山..."))
+        result = __unionParallelXieshan(
+            fromBuilding,
+            toBuilding,
+            comboObj,
+        )
+    if spliceType == 'T_cross_FB':
+        utils.outputMsg(_("拼接建筑：丁字抱厦/前后檐..."))
+        result = __union_T_Cross(
+            fromBuilding,
+            toBuilding,
+            comboObj,
+            dir='Y'
+        )
+    if spliceType == 'T_cross_LR':
+        utils.outputMsg(_("拼接建筑：丁字抱厦/两山..."))
+        result = __union_T_Cross(
+            fromBuilding,
+            toBuilding,
+            comboObj,
+            dir='X'
+        )
+    if spliceType == 'X_cross':
+        utils.outputMsg(_("拼接建筑：十字相交..."))
+        result = __union_X_Cross(
+            fromBuilding,
+            toBuilding,
+            comboObj,
+        )
+    
+    if 'FINISHED' not in result:
+        utils.outputMsg(_("拼接建筑失败"))
+        # 关闭进度条
+        return result
+    
+    # 4、标注和记录 ——————————————————————————————————
+    # 标注颜色
+    fromColl = fromBuilding.users_collection[0]
+    fromColl.color_tag = 'COLOR_05'
+    toColl = toBuilding.users_collection[0]
+    toColl.color_tag = 'COLOR_05'
+
+    # 给拼接对象编号
+    # 如果没有编号，则自动生成
+    # 如果有编号，是否有其他重复的对象，如果有则重新生成，
+    # 没有没有重复对象，则保留原编号
+    __setSpliceID(fromBuilding)
+    __setSpliceID(toBuilding)
+
+    # 记录操作，判断是否已经存在记录
+    # 如，从模板生成时已经记录过，这里不再重复记录
+    isExsit = False
+    comboData:acaData = comboObj.ACA_data
+    postProcess = comboData.postProcess
+    para = f"{bData.splice_id}#{mData.splice_id}"
+    para_alt = f"{mData.splice_id}#{bData.splice_id}"
+    # 2512220 这里不要做删除，否则buildCombo时postProcess列表不停变化，就无法正确依次执行
+    for i,pp in enumerate(postProcess):
+        if (pp.action == con.POSTPROC_SPLICE
+                and pp.parameter in (para,para_alt)):
+            isExsit = True
+    if not isExsit:
+        # 插入新规则
+        pp = comboData.postProcess.add()
+        pp.action = con.POSTPROC_SPLICE
+        pp.parameter = para
+
+    # 5、聚焦在主建筑
+    utils.focusObj(toBuilding)
+
+    return result
+
+# 判断建筑可能的拼接方式
+# 如，勾连搭、悬山抱厦、歇山抱厦等
+def __getSpliceType(fromBuilding:bpy.types.Object,
+                   toBuilding:bpy.types.Object,):
+    bData:acaData = fromBuilding.ACA_data
+    mData:acaData = toBuilding.ACA_data
+
+    # 拼接方式
     spliceType = None
     # 拼接对象可能为单体与combo的拼接，需要将location转换到全局坐标系
     # 251210 可以用translation直接获取全局坐标
@@ -123,114 +235,7 @@ def addSplice(fromBuilding:bpy.types.Object,
 
         spliceType = 'X_cross'
 
-    # 无法判断拼接方式 ---------------------------------------
-    if spliceType == None:
-        utils.popMessageBox(_("无法处理的建筑合并"))
-        return {'CANCELLED'}
-    
-    # 2、预处理 ------------------------------------
-    from .. import buildCombo
-    # 建筑集成到一个统一的combo中
-    # 以第一个建筑为origin原点(主建筑)
-    result,comboObj = buildCombo.addCombo(
-        [toBuilding,fromBuilding])
-    # 251219 如果已经在一个combo中，更新combo_location
-    if 'CANCELLED' in result:
-        toBuilding.ACA_data['combo_location'] = toBuilding.location
-        toBuilding.ACA_data['combo_rotation'] = toBuilding.rotation_euler
-        fromBuilding.ACA_data['combo_location'] = fromBuilding.location
-        fromBuilding.ACA_data['combo_rotation'] = fromBuilding.rotation_euler
-
-    # 聚焦在combo目录中
-    utils.focusCollByObj(comboObj)
-
-    # 3、执行拼接 -------------------------------------
-    if spliceType == 'goulianda':
-        utils.outputMsg(_("拼接建筑：勾连搭..."))
-        result = __unionGoulianda(
-            fromBuilding,
-            toBuilding,
-            comboObj,
-        )
-    if spliceType == 'parallelXuanshan':
-        utils.outputMsg(_("拼接建筑：平行抱厦/悬山..."))
-        result = __unionParallelXuanshan(
-            fromBuilding,
-            toBuilding,
-            comboObj,
-        )
-    if spliceType == 'parallelXieshan':
-        utils.outputMsg(_("拼接建筑：平行抱厦/歇山..."))
-        result = __unionParallelXieshan(
-            fromBuilding,
-            toBuilding,
-            comboObj,
-        )
-    if spliceType == 'T_cross_FB':
-        utils.outputMsg(_("拼接建筑：丁字抱厦/前后檐..."))
-        result = __union_T_Cross(
-            fromBuilding,
-            toBuilding,
-            comboObj,
-            dir='Y'
-        )
-    if spliceType == 'T_cross_LR':
-        utils.outputMsg(_("拼接建筑：丁字抱厦/两山..."))
-        result = __union_T_Cross(
-            fromBuilding,
-            toBuilding,
-            comboObj,
-            dir='X'
-        )
-    if spliceType == 'X_cross':
-        utils.outputMsg(_("拼接建筑：十字相交..."))
-        result = __union_X_Cross(
-            fromBuilding,
-            toBuilding,
-            comboObj,
-        )
-    
-    if 'FINISHED' not in result:
-        utils.outputMsg(_("拼接建筑失败"))
-        # 关闭进度条
-        return result
-    
-    # 4、标注和记录 ——————————————————————————————————
-    # 标注颜色
-    fromColl = fromBuilding.users_collection[0]
-    fromColl.color_tag = 'COLOR_05'
-    toColl = toBuilding.users_collection[0]
-    toColl.color_tag = 'COLOR_05'
-
-    # 给拼接对象编号
-    # 如果没有编号，则自动生成
-    # 如果有编号，是否有其他重复的对象，如果有则重新生成，
-    # 没有没有重复对象，则保留原编号
-    __setSpliceID(fromBuilding)
-    __setSpliceID(toBuilding)
-
-    # 记录操作，判断是否已经存在记录
-    # 如，从模板生成时已经记录过，这里不再重复记录
-    isExsit = False
-    comboData:acaData = comboObj.ACA_data
-    postProcess = comboData.postProcess
-    para = f"{bData.splice_id}#{mData.splice_id}"
-    para_alt = f"{mData.splice_id}#{bData.splice_id}"
-    # 2512220 这里不要做删除，否则buildCombo时postProcess列表不停变化，就无法正确依次执行
-    for i,pp in enumerate(postProcess):
-        if (pp.action == con.POSTPROC_SPLICE
-                and pp.parameter in (para,para_alt)):
-            isExsit = True
-    if not isExsit:
-        # 插入新规则
-        pp = comboData.postProcess.add()
-        pp.action = con.POSTPROC_SPLICE
-        pp.parameter = para
-
-    # 5、聚焦在主建筑
-    utils.focusObj(toBuilding)
-
-    return result
+    return spliceType
 
 # 删除建筑(以及相关的建筑)的拼接操作
 def delSplice(buildingObj:bpy.types.Object):
@@ -492,8 +497,12 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
             if con.COLL_NAME_BASE in collName : continue
             if con.COLL_NAME_PILLAR in collName : continue
             if con.COLL_NAME_WALL in collName : continue
+            # 布尔修改器标注相关的建筑ID
+            spliceName = f"%s#%s#%s" % (con.POSTPROC_SPLICE,
+                                        fromBuilding.ACA_data.aca_id,
+                                        toBuilding.ACA_data.aca_id)
             utils.addModifierBoolean(
-                name=con.POSTPROC_SPLICE,
+                name=spliceName,
                 object=obj,
                 boolObj=boolObj,
                 operation='INTERSECT',
@@ -509,8 +518,12 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
             if con.COLL_NAME_BASE in collName : continue
             if con.COLL_NAME_PILLAR in collName : continue
             if con.COLL_NAME_WALL in collName : continue
+            # 布尔修改器标注相关的建筑ID
+            spliceName = f"%s#%s#%s" % (con.POSTPROC_SPLICE,
+                                        toBuilding.ACA_data.aca_id,
+                                        fromBuilding.ACA_data.aca_id)
             utils.addModifierBoolean(
-                name=con.POSTPROC_SPLICE,
+                name=spliceName,
                 object=obj,
                 boolObj=boolObj,
                 operation='DIFFERENCE',

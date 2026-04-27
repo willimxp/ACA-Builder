@@ -1283,36 +1283,53 @@ def addCombo(buildingList:List[bpy.types.Object]):
     # 如果是单体与单体集成就不涉及
     # 如果是单体和集合，或集合与集合之间的集成，需要先记录下来，最后清理
     comboList = []
-    isAllComboChild = True
+    
+    # 1、验证是否已经集成 --------------------------------
+    # 即存在一个combo，且所有building都在此combo下
+    isAllComboChild = True  # 是否全为集合子建筑
     for buildingObj in buildingList:
         comboObj = utils.getComboRoot(buildingObj)
         if comboObj is None:
+            # 存在单体建筑
             isAllComboChild = False
         else:
+            # 记录涉及的集合
             if comboObj not in comboList:
                 comboList.append(comboObj)
 
-            # 将集合中的其他建筑也加入集成
+            # 追加集合中的其他建筑
+            # 虽然用户没有选择输入，但实际上是受到影响，需要一同处理
             for building in comboObj.children:
                 if hasattr(building,'ACA_data'):
                     if building.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
                         if building not in buildingList:
                             buildingList.append(building)
 
-    # 验证是否已经集成，不再重复集成
+    # 只有一个combo，且所有building都在此combo下
     if len(comboList) == 1 and isAllComboChild:
         print(_("建筑已在同一个集合中，不再做集成"))
-        return {'CANCELLED'},comboList[0]
+        
+        # 保存子建筑在combo中的位置和旋转
+        comboObj = comboList[0]
+        for child in comboObj.children:
+            if hasattr(child,'ACA_data'):
+                if child.ACA_data.aca_type == con.ACA_TYPE_BUILDING:
+                    child.ACA_data['combo_location'] = child.location
+                    child.ACA_data['combo_rotation'] = child.rotation_euler
+        return comboObj
     
+    # 2、需要创建新的集成
     # 新建一个combo
+    # 可能是单体+单体的集成，或单体+combo的集成，或者combo+combo的集成
     # 锁定在ACA根目录下
     rootColl = utils.setCollection(con.COLL_NAME_ROOT)
-    # 无论是单体和单体的集成，还是单体与combo的集成，或者combo与combo的集成
-    fromBuilding = buildingList[0]
+
+    # 以第一个建筑为主建筑，以确定combo的原点
+    mainBuilding = buildingList[0]
     # 251210 可以用translation直接获取全局坐标
-    fromLoc = fromBuilding.matrix_world.translation
+    mainLoc = mainBuilding.matrix_world.translation
     comboNewObj = __addComboRoot(templateName=_('建筑组合'),
-                                 location=fromLoc)
+                                 location=mainLoc)
     comboNewColl = comboNewObj.users_collection[0]
 
     # 将所有对象迁移到新comboNew中
@@ -1328,8 +1345,9 @@ def addCombo(buildingList:List[bpy.types.Object]):
         bData:acaData = buildingObj.ACA_data
         bData['combo_location'] = buildingObj.location
         bData['combo_rotation'] = buildingObj.rotation_euler
-        # 更新parent id
-        bData['combo_parent'] = comboNewObj.ACA_data.aca_id
+        # 260427 不要更新combo_parent，以免影响月台、楼阁等相对关系
+        # # 更新parent id
+        # bData['combo_parent'] = comboNewObj.ACA_data.aca_id
         # 关联集合目录
         buildingColl = buildingObj.users_collection[0]
         comboNewColl.children.link(buildingColl)
@@ -1373,4 +1391,4 @@ def addCombo(buildingList:List[bpy.types.Object]):
         # 删除combo Coll
         bpy.data.collections.remove(comboColl)  
 
-    return {'FINISHED'},comboNewObj
+    return comboNewObj

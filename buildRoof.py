@@ -4229,6 +4229,8 @@ def buildRoof(buildingObj:bpy.types.Object):
         and bData.is_showRafter):
         rafterFrame = utils.joinObjects(
             rafterRootObj.children,newName='椽架')
+        # 260427 椽架层合并后默认有椽子的旋转，导致计算boundbox时出错，需要应用
+        utils.applyTransform(rafterFrame,use_rotation=True)
     
     utils.focusObj(buildingObj)
     return {'FINISHED'}

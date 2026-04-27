@@ -177,7 +177,7 @@ def build(templateName=None):
 
     return {'FINISHED'}
 
-@buildCombo.update_combo_bound
+@buildCombo.update_boundbox
 def updateBuilding(buildingObj:bpy.types.Object,
                    reloadAssets = False):
     validate =  __validate(buildingObj)

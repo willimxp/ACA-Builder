@@ -4143,7 +4143,7 @@ def __checkRoofSettings(buildingObj:bpy.types.Object):
     return
 
 # 营造整个房顶
-@buildCombo.update_combo_bound
+@buildCombo.update_boundbox
 def buildRoof(buildingObj:bpy.types.Object):
     # 刷新屋顶
     __clearRoof(buildingObj)

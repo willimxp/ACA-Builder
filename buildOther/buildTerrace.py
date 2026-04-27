@@ -11,7 +11,7 @@ from ..locale.i18n import _
 from ..data import ACA_data_obj as acaData
 from .. import buildFloor
 from .. import buildPlatform
-from .. import buildCombo
+from ..postproc import buildingCombo
 
 # 添加月台
 # 传入主建筑，在主建筑上添加月台
@@ -51,7 +51,7 @@ def addTerrace(contextObj:bpy.types.Object):
     # 添加combo根节点
     # 如果不存在combo则新建
     if comboObj is None:
-        comboObj = buildCombo.addComboLevel(terraceParent)
+        comboObj = buildingCombo.addComboLevel(terraceParent)
 
     # 验证是否已经有月台
     terraceRoot = utils.getComboChild(
@@ -131,7 +131,7 @@ def delTerrace(terraceObj:bpy.types.Object):
 
     # 是否需要组合降级
     from .. import build
-    buildCombo.delComboLevel(comboObj, mainBuilding)
+    buildingCombo.delComboLevel(comboObj, mainBuilding)
 
     # 更新主建筑台基
     buildPlatform.buildPlatform(mainBuilding)
@@ -164,7 +164,7 @@ def setTerraceData(terraceObj:bpy.types.Object,
     # 1、新建时的初始化处理，更新时跳过 -------------
     if isInit:
         # 同步基本建筑的柱网等数据
-        buildCombo.syncData(fromBuilding=terraceParent,
+        buildingCombo.syncData(fromBuilding=terraceParent,
                toBuilding=terraceObj)
         
         # 不做踏跺

@@ -15,7 +15,7 @@ from .template import template
 from . import buildFloor
 from .buildOther import buildYardWall
 from . import buildRoof
-from . import buildCombo
+from .postproc import buildingCombo
 from .tools.boundbox import update_boundbox
 from .postproc import buildingJoin
 
@@ -166,7 +166,7 @@ def build(templateName=None):
         )
     else:
         # 组合建筑
-        buildCombo.buildCombo(templateName)
+        buildingCombo.buildCombo(templateName)
     
     # 关闭进度条
     isFinished = True
@@ -203,7 +203,7 @@ def updateBuilding(buildingObj:bpy.types.Object,
     comboObj = utils.getComboRoot(buildingObj)
     # 组合建筑
     if comboObj is not None:
-        buildCombo.updateCombo(buildingObj,
+        buildingCombo.updateCombo(buildingObj,
                     reloadAssets=reloadAssets)
     # 单体建筑
     else:
@@ -312,7 +312,7 @@ def resetFloor(buildingObj:bpy.types.Object):
     # 根据模板类型调用不同的入口
     # 组合建筑
     if comboObj is not None:
-        buildCombo.updateCombo(buildingObj,resetFloor=True)
+        buildingCombo.updateCombo(buildingObj,resetFloor=True)
     else:
         # 载入数据
         bData:acaData = buildingObj.ACA_data
@@ -348,7 +348,7 @@ def resetRoof(buildingObj:bpy.types.Object):
     comboObj = utils.getComboRoot(buildingObj)
     # 组合建筑
     if comboObj is not None:
-        buildCombo.updateCombo(buildingObj,
+        buildingCombo.updateCombo(buildingObj,
                                resetRoof=True)
     # 单体建筑
     else:

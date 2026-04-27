@@ -49,8 +49,8 @@ def update_pillarHeight(self, context:bpy.types.Context):
         build.isFinished = False
         build.progress = 0
 
-        from . import buildCombo
-        buildCombo.__updateFloorLoc(comboRoot)
+        from .postproc import buildingCombo
+        buildingCombo.__updateFloorLoc(comboRoot)
     
     # 重建当前建筑
     update_building(self,context)
@@ -406,8 +406,8 @@ def update_dougong(self, context:bpy.types.Context):
             build.isFinished = False
             build.progress = 0
 
-            from . import buildCombo
-            buildCombo.__updateFloorLoc(comboRoot)
+            from .postproc import buildingCombo
+            buildingCombo.__updateFloorLoc(comboRoot)
         
         # 241125 修改斗栱时，涉及到柱高的变化，最好是全屋更新
         update_building(self,context)
@@ -574,8 +574,8 @@ def updateSelectedPavilionThumb(self,context):
         utils.outputMsg(_("无法显示缩略图 %s") % (tName)) 
     
     # 更新默认参数
-    from . import buildCombo
-    buildCombo.set_multiFloor_plan(self,context)
+    from .postproc import buildingCombo
+    buildingCombo.set_multiFloor_plan(self,context)
     return
 
 def updateSelectedPavilion(self, context:bpy.types.Context):
@@ -587,6 +587,6 @@ def updateSelectedPavilion(self, context:bpy.types.Context):
             scnData['pavilionIndex'] = index
 
     # 更新默认参数
-    from . import buildCombo
-    buildCombo.set_multiFloor_plan(self,context)
+    from .postproc import buildingCombo
+    buildingCombo.set_multiFloor_plan(self,context)
     return

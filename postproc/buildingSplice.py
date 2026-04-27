@@ -26,10 +26,10 @@ def addSplice(fromBuilding:bpy.types.Object,
         return {'CANCELLED'}
     
     # 2、预处理 ------------------------------------
-    from .. import buildCombo
+    from . import buildingCombo
     # 建筑集成到一个统一的combo中
     # 以第一个建筑为origin原点(主建筑)
-    comboObj = buildCombo.addCombo(
+    comboObj = buildingCombo.addCombo(
         [toBuilding,fromBuilding])
 
     # 聚焦在combo目录中

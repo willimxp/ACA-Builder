@@ -18,7 +18,6 @@ from . import buildDougong
 from . import buildBeam
 from . import buildRooftile
 from . import buildBalcony
-from . import buildCombo
 from .tools.boundbox import update_boundbox
 from . import texture as mat
 

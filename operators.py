@@ -1445,8 +1445,8 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         context.window.cursor_warp(w, h)
         
         # 初始化设置列表
-        from . import buildCombo
-        buildCombo.set_multiFloor_plan(self,context)
+        from .postproc import buildingCombo
+        buildingCombo.set_multiFloor_plan(self,context)
 
         # 填充缩略图
         from .template import template
@@ -1533,9 +1533,9 @@ class ACA_OT_MULTI_FLOOR_ADD(bpy.types.Operator):
         scnData = bpy.context.scene.ACA_data
         setting = scnData.pavilionSetting
         
-        from . import buildCombo
+        from .postproc import buildingCombo
         funproxy = partial(
-            buildCombo.addMultiFloor,
+            buildingCombo.addMultiFloor,
             baseFloor=buildingObj,
             setting=setting,
             # taper=setting.taper,
@@ -1619,7 +1619,6 @@ class ACA_OT_ADD_LOGGIA(bpy.types.Operator):
 
         buildingObj,bData,objData = utils.getRoot(context.object)
         
-        from . import buildCombo
         funproxy = partial(
             buildFloor.addLoggia,
             buildingObj=buildingObj,
@@ -1763,9 +1762,9 @@ class ACA_OT_COMBO_BUILDING(bpy.types.Operator):
             print(_("建筑集成失败，未找到多个待集成的建筑"))
             return {'CANCELLED'}
         
-        from . import buildCombo
+        from .postproc import buildingCombo
         funproxy = partial(
-            buildCombo.addCombo,
+            buildingCombo.addCombo,
             buildingList = buildingList,
         )
         comboObj = utils.fastRun(funproxy)

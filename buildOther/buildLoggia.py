@@ -186,8 +186,8 @@ def __add_loggia_corner(baseLoggia:bpy.types.Object,
     # 3、创建回廊转角对象 ---------------------
     LoggiaCorner = buildFloor.__addBuildingRoot(_('回廊转角'))
     # 从回廊同步设置
-    from .. import buildCombo
-    buildCombo.__syncData(
+    from ..postproc import buildingCombo
+    buildingCombo.__syncData(
         fromBuilding=Loggia,
         toBuilding=LoggiaCorner,
     )

@@ -10,7 +10,6 @@ from typing import List
 
 from . import utils
 from . import buildFloor
-from . import buildCombo
 from .tools.boundbox import update_boundbox
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
@@ -1066,8 +1065,8 @@ def resizePlatform(buildingObj:bpy.types.Object):
     # 更新楼阁的相对高度
     comboObj = utils.getComboRoot(buildingObj)
     if comboObj is not None:
-        from . import buildCombo
-        buildCombo.__updateFloorLoc(buildingObj)
+        from .postproc import buildingCombo
+        buildingCombo.__updateFloorLoc(buildingObj)
 
     # 实时更新月台
     terraceObj = utils.getComboChild(

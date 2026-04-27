@@ -2,15 +2,15 @@
 # 所属插件：ACA Builder
 # 功能概述：
 #   组合建筑的营造
-from .locale.i18n import _
+from ..locale.i18n import _
 import bpy
 from mathutils import Vector
 from typing import List
-from .tools.boundbox import update_boundbox, fitBoundBox
-from . import utils
-from .const import ACA_Consts as con
-from .data import ACA_data_obj as acaData
-from .template import template
+from ..tools.boundbox import update_boundbox, fitBoundBox
+from .. import utils
+from ..const import ACA_Consts as con
+from ..data import ACA_data_obj as acaData
+from ..template import template
 
 # 延迟导入的模块（在需要时导入）
 buildFloor = None
@@ -21,9 +21,9 @@ def _ensure_imports():
     """确保模块已导入"""
     global buildFloor, buildPlatform, buildRoof
     if buildFloor is None:
-        from . import buildFloor as _buildFloor
-        from . import buildPlatform as _buildPlatform
-        from . import buildRoof as _buildRoof
+        from .. import buildFloor as _buildFloor
+        from .. import buildPlatform as _buildPlatform
+        from .. import buildRoof as _buildRoof
         buildFloor = _buildFloor
         buildPlatform = _buildPlatform
         buildRoof = _buildRoof
@@ -139,7 +139,7 @@ def buildCombo(
     # 组合建筑
     tempChildren = template.getTemplateChild(templateName)
     for child in tempChildren:
-        from . import build
+        from .. import build
         build.buildSingle(
             acaType = child['acaType'],
             templateName = child['templateName'],
@@ -173,7 +173,7 @@ def buildCombo(
                 continue
             
             # 执行拼接
-            from .postproc import buildingSplice
+            from . import buildingSplice
             buildingSplice.addSplice(
                 fromBuilding=fromBuilding,
                 toBuilding=toBuilding)
@@ -193,7 +193,7 @@ def updateCombo(buildingObj:bpy.types.Object,
     utils.outputMsg(_("开始更新......"))
 
     # 251217 添加清除拼接
-    from .postproc import buildingSplice
+    from . import buildingSplice
     buildingSplice.delSplice(buildingObj)
 
     comboObj = utils.getComboRoot(buildingObj)
@@ -229,7 +229,7 @@ def updateCombo(buildingObj:bpy.types.Object,
             __syncMainData(toBuilding=terraceObj,
                         resetFloor=resetFloor)
         # 初始化月台，并重新定位月台位置
-        from .buildOther import buildTerrace
+        from ..buildOther import buildTerrace
         buildTerrace.setTerraceData(terraceObj=terraceObj,
                         isInit=False
                         )         
@@ -648,7 +648,7 @@ def addMultiFloor(baseFloor:bpy.types.Object,
 
     # 1、数据准备 --------------------
     # 1.1、显示进度条 
-    from . import build
+    from .. import build
     build.isFinished = False
     build.progress = 0
     utils.outputMsg(_("添加重楼子建筑..."))
@@ -760,12 +760,12 @@ def addMultiFloor(baseFloor:bpy.types.Object,
 
             # 异常回滚
             if pingzuo != None:
-                from . import build
+                from .. import build
                 build.delBuilding(pingzuo,
                     withCombo=False,# 仅删除个体
                 )
                 # 是否需要组合降级
-                from . import build
+                from .. import build
                 delComboLevel(baseFloor)
 
             # 关闭进度条
@@ -904,12 +904,12 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
     try:
         __setTaperData(mData,taper)
     except Exception as e:
-        from . import build
+        from .. import build
         build.delBuilding(upperfloor,
             withCombo=False,# 仅删除个体
         )
         # 是否需要组合降级
-        from . import build
+        from .. import build
         delComboLevel(comboRootObj)
         raise Exception(str(e))
 
@@ -972,7 +972,7 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
                     + con.ROOFMUD_H*dk   # 灰泥
                     )
         # 檐椽架加斜
-        from . import buildBeam
+        from .. import buildBeam
         lift_radio = buildBeam.getLiftRatio(lowerFloor)
         # 盝顶步架加斜
         insert_height += bData.luding_rafterspan * lift_radio[0]
@@ -1001,12 +1001,12 @@ def __addUpperFloor(lowerFloor:bpy.types.Object,
                 use_railing=use_railing,
                 )
         except Exception as e:
-            from . import build
+            from .. import build
             build.delBuilding(upperfloor,
                 withCombo=False,# 仅删除个体
             )
             # 是否需要组合降级
-            from . import build
+            from .. import build
             delComboLevel(comboRootObj)
             raise Exception(str(e))
 
@@ -1075,7 +1075,7 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
                 if preData.use_pingbanfang:
                     floorHeight += con.PINGBANFANG_H*dk
                 # 更新斗栱数据
-                from .template import template
+                from ..template import template
                 template.updateDougongData(preFloor)
                 floorHeight += preData.dg_height
 
@@ -1093,7 +1093,7 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
                 floorHeight += con.HENG_COMMON_D*dk/2
                 # 斗栱出跳加斜
                 if preData.use_dg:
-                    from . import buildBeam
+                    from .. import buildBeam
                     lift_radio = buildBeam.getLiftRatio(preFloor)
                     floorHeight += preData.dg_extend * lift_radio[0]
             
@@ -1113,7 +1113,7 @@ def __updateFloorLoc(contextObj:bpy.types.Object):
                 floorHeight += con.HENG_COMMON_D*dk
 
                 # 檐椽架加斜
-                from . import buildBeam
+                from .. import buildBeam
                 lift_radio = buildBeam.getLiftRatio(preFloor)
                 # 盝顶步架加斜
                 floorHeight += preData.luding_rafterspan * lift_radio[0]
@@ -1170,7 +1170,7 @@ def __getPingzuoHeight(buildingObj:bpy.types.Object):
     pillarLift += con.HENG_COMMON_D*dk/2
 
     # 盝顶步架加斜
-    from . import buildBeam
+    from .. import buildBeam
     lift_radio = buildBeam.getLiftRatio(buildingObj)
     pillarLift += bData.luding_rafterspan * lift_radio[0]
 

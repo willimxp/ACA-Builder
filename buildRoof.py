@@ -19,6 +19,7 @@ from . import buildBeam
 from . import buildRooftile
 from . import buildBalcony
 from . import buildCombo
+from .tools.boundbox import update_boundbox
 from . import texture as mat
 
 # 设置“椽架”根节点
@@ -4143,7 +4144,7 @@ def __checkRoofSettings(buildingObj:bpy.types.Object):
     return
 
 # 营造整个房顶
-@buildCombo.update_boundbox
+@update_boundbox
 def buildRoof(buildingObj:bpy.types.Object):
     # 刷新屋顶
     __clearRoof(buildingObj)

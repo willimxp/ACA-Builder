@@ -16,6 +16,7 @@ from . import buildFloor
 from .buildOther import buildYardWall
 from . import buildRoof
 from . import buildCombo
+from .tools.boundbox import update_boundbox
 from .postproc import buildingJoin
 
 # 全局参数 -----------------
@@ -177,7 +178,7 @@ def build(templateName=None):
 
     return {'FINISHED'}
 
-@buildCombo.update_boundbox
+@update_boundbox
 def updateBuilding(buildingObj:bpy.types.Object,
                    reloadAssets = False):
     validate =  __validate(buildingObj)

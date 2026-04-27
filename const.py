@@ -398,7 +398,7 @@ class ACA_Consts(object, metaclass=ACA_ConstsMeta):
 
     # 边界框扩展尺寸（米）
     BOUNDBOX_SPAN_COMBO = 0.5    # combo集合包裹框扩展尺寸
-    BOUNDBOX_SPAN_BUILDING = 0.1  # 单体建筑包裹框扩展尺寸
+    BOUNDBOX_SPAN_BUILDING = 0  # 单体建筑包裹框扩展尺寸
 
     # 后处理类型
     POSTPROC_SPLICE = 'SPLICE'

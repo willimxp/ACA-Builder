@@ -1547,6 +1547,8 @@ def redrawViewport():
                     # 设置clip_start
                     if areas[0].spaces.active.clip_start != 1:
                         areas[0].spaces.active.clip_start = 1
+                    if areas[0].spaces.active.clip_end != 100000:
+                        areas[0].spaces.active.clip_end = 100000
 
                     bpy.ops.view3d.view_all()
                     # bpy.ops.view3d.view_selected()
@@ -1561,6 +1563,10 @@ def redrawViewport():
                     # # 关闭所有叠加显示
                     # if areas[0].spaces.active.overlay.show_overlays:
                     #     areas[0].spaces.active.overlay.show_overlays = False
+
+                    # 设置边框颜色
+                    if areas[0].spaces.active.shading.wireframe_color_type != 'RANDOM':
+                        areas[0].spaces.active.shading.wireframe_color_type = 'RANDOM'
 
     # 窗口刷新显示
     do = bpy.context.scene.ACA_data.is_auto_redraw

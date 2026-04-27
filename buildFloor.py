@@ -19,6 +19,7 @@ from . import buildWall
 from . import buildPlatform
 from . import buildRoof
 from . import buildCombo
+from .tools.boundbox import update_boundbox
 
 # 添加建筑empty根节点，并绑定设计模板
 # 返回建筑empty根节点对象
@@ -52,7 +53,8 @@ def __addBuildingRoot(templateName,
     # 创建buildingRoot
     buildingObj = utils.addCube(
         name=templateName_,
-        location=buildingLoc
+        location=buildingLoc,
+        dimension=(0.001,0.001,0.001)
     )
     utils.hideObjFace(buildingObj)
     # 260425 填充默认参数
@@ -1478,7 +1480,7 @@ def resetFloor(buildingObj:bpy.types.Object,
 
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
-@buildCombo.update_boundbox
+@update_boundbox
 def buildFloor(buildingObj:bpy.types.Object,
                templateName = None,
                reloadAssets = False,

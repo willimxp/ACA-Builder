@@ -118,13 +118,78 @@ def fitComboBound(comboObj:bpy.types.Object):
     local_max = combo_matrix_inv @ max_co
     
     # 扩展边界框尺寸
-    span = con.BOUNDBOX_SPAN
+    span = con.BOUNDBOX_SPAN_COMBO
     local_min = Vector((local_min.x - span, local_min.y - span, local_min.z - span))
     local_max = Vector((local_max.x + span, local_max.y + span, local_max.z + span))
     
     # 直接修改网格顶点，而不是改变dimensions
     # 这样不会影响子对象
     mesh = comboObj.data
+    vertices = [
+        (local_min.x, local_min.y, local_min.z),  # 0
+        (local_min.x, local_min.y, local_max.z),  # 1
+        (local_min.x, local_max.y, local_min.z),  # 2
+        (local_min.x, local_max.y, local_max.z),  # 3
+        (local_max.x, local_min.y, local_min.z),  # 4
+        (local_max.x, local_min.y, local_max.z),  # 5
+        (local_max.x, local_max.y, local_min.z),  # 6
+        (local_max.x, local_max.y, local_max.z),  # 7
+    ]
+    
+    # 更新网格顶点
+    for i, v in enumerate(mesh.vertices):
+        v.co = vertices[i]
+    
+    mesh.update()
+
+def fitBuildingBound(buildingObj:bpy.types.Object):
+    """
+    调整building对象的大小，使其包裹所有子对象，原点不变
+    通过修改网格顶点实现，不影响子对象
+    扩展尺寸为0.1米
+    """
+    # 递归获取所有可见的子对象
+    def get_all_visible_children(obj):
+        children = []
+        for child in obj.children:
+            # 只处理可见对象
+            if not child.hide_get() and not child.hide_viewport:
+                children.append(child)
+                children.extend(get_all_visible_children(child))
+        return children
+    
+    all_children = get_all_visible_children(buildingObj)
+    
+    if not all_children:
+        return
+    
+    # 获取所有子对象的全局边界框
+    min_co = Vector((float('inf'), float('inf'), float('inf')))
+    max_co = Vector((float('-inf'), float('-inf'), float('-inf')))
+    
+    for child in all_children:
+        # 获取对象的全局边界框
+        for corner in child.bound_box:
+            # 转换为全局坐标
+            global_corner = child.matrix_world @ Vector(corner)
+            # 更新最小最大坐标
+            for i in range(3):
+                min_co[i] = min(min_co[i], global_corner[i])
+                max_co[i] = max(max_co[i], global_corner[i])
+    
+    # 计算相对于building原点的局部边界框
+    building_matrix_inv = buildingObj.matrix_world.inverted()
+    local_min = building_matrix_inv @ min_co
+    local_max = building_matrix_inv @ max_co
+    
+    # 扩展边界框尺寸（单体建筑使用较小的扩展尺寸）
+    span = con.BOUNDBOX_SPAN_BUILDING
+    local_min = Vector((local_min.x - span, local_min.y - span, local_min.z - span))
+    local_max = Vector((local_max.x + span, local_max.y + span, local_max.z + span))
+    
+    # 直接修改网格顶点，而不是改变dimensions
+    # 这样不会影响子对象
+    mesh = buildingObj.data
     vertices = [
         (local_min.x, local_min.y, local_min.z),  # 0
         (local_min.x, local_min.y, local_max.z),  # 1

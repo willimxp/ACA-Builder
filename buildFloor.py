@@ -50,10 +50,11 @@ def __addBuildingRoot(templateName,
     else:
         buildingLoc = (0,0,0)
     # 创建buildingRoot
-    buildingObj = utils.addEmpty(
+    buildingObj = utils.addCube(
         name=templateName_,
         location=buildingLoc
     )
+    utils.hideObjFace(buildingObj)
     # 260425 填充默认参数
     template.loadDefaultData(buildingObj)
 
@@ -1551,6 +1552,9 @@ def buildFloor(buildingObj:bpy.types.Object,
     # 260415 为了加快后续的合并、剖视等操作，还是应用所有修改器
     # 应用所有子对象的修改器
     utils.applyCollModifier(buildingObj)
+
+    # 更新buildingObj的boundBox尺寸
+    buildCombo.fitBuildingBound(buildingObj)
 
     # 重新聚焦回根节点
     utils.focusObj(buildingObj)

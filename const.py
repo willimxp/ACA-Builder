@@ -397,7 +397,8 @@ class ACA_Consts(object, metaclass=ACA_ConstsMeta):
     SPLICE_DEPTH_EXT_DK = 30 # 建筑拼接深度扩展(DK)
 
     # 边界框扩展尺寸（米）
-    BOUNDBOX_SPAN = 0.5    # 包裹框扩展尺寸
+    BOUNDBOX_SPAN_COMBO = 0.5    # combo集合包裹框扩展尺寸
+    BOUNDBOX_SPAN_BUILDING = 0.1  # 单体建筑包裹框扩展尺寸
 
     # 后处理类型
     POSTPROC_SPLICE = 'SPLICE'

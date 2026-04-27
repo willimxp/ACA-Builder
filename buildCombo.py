@@ -26,10 +26,11 @@ def __addComboRoot(templateName,
     if location == None:
         # 默认原点摆放在3D Cursor位置
         location =  bpy.context.scene.cursor.location
-    comboObj = utils.addEmpty(
+    comboObj = utils.addCube(
         name=templateName_,
         location=location
     )
+    utils.hideObjFace(comboObj)
     cData:acaData = comboObj.ACA_data
     cData['template_name'] = templateName
     cData['aca_obj'] = True
@@ -1278,6 +1279,7 @@ def __updateMultiFloorParent(parentObj:bpy.types.Object,
     return
 
 # 将选中的对象合并为一个combo
+# 可能是单体+单体的集成，或单体+combo的集成，或者combo+combo的集成
 def addCombo(buildingList:List[bpy.types.Object]):
     # 检验合并涉及的集合，并预先记录
     # 如果是单体与单体集成就不涉及
@@ -1318,8 +1320,7 @@ def addCombo(buildingList:List[bpy.types.Object]):
                     child.ACA_data['combo_rotation'] = child.rotation_euler
         return comboObj
     
-    # 2、需要创建新的集成
-    # 新建一个combo
+    # 2、需要创建新的集合 ------------------------------
     # 可能是单体+单体的集成，或单体+combo的集成，或者combo+combo的集成
     # 锁定在ACA根目录下
     rootColl = utils.setCollection(con.COLL_NAME_ROOT)

@@ -1768,9 +1768,9 @@ class ACA_OT_COMBO_BUILDING(bpy.types.Operator):
             buildCombo.addCombo,
             buildingList = buildingList,
         )
-        result,comboObj = utils.fastRun(funproxy)
+        comboObj = utils.fastRun(funproxy)
 
-        if 'FINISHED' in result:
+        if comboObj is not None:
             runTime = time.time() - timeStart
             msg = _('建筑集成完成 | 运行时间【%.1f秒】') % runTime
             self.report({'INFO'},msg)

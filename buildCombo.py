@@ -6,14 +6,52 @@ from .locale.i18n import _
 import bpy
 from mathutils import Vector
 from typing import List
+from functools import wraps
 
 from . import utils
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .template import template
-from . import buildFloor
-from . import buildPlatform
-from . import buildRoof
+
+def update_combo_bound(func):
+    """
+    装饰器：在函数执行后自动更新combo包裹框尺寸
+    用于所有修改单体建筑的函数
+    注意：使用延迟导入避免循环导入问题
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        # 从参数中获取buildingObj（通常是第一个参数）
+        buildingObj = None
+        if args and hasattr(args[0], 'ACA_data'):
+            buildingObj = args[0]
+        
+        if buildingObj is not None:
+            # 延迟导入避免循环导入
+            from . import utils as utils_local
+            comboObj = utils_local.getComboRoot(buildingObj)
+            if comboObj is not None:
+                fitComboBound(comboObj)
+        
+        return result
+    return wrapper
+
+# 延迟导入的模块（在需要时导入）
+buildFloor = None
+buildPlatform = None
+buildRoof = None
+
+def _ensure_imports():
+    """确保模块已导入"""
+    global buildFloor, buildPlatform, buildRoof
+    if buildFloor is None:
+        from . import buildFloor as _buildFloor
+        from . import buildPlatform as _buildPlatform
+        from . import buildRoof as _buildRoof
+        buildFloor = _buildFloor
+        buildPlatform = _buildPlatform
+        buildRoof = _buildRoof
 
 # 添加combo根节点
 def __addComboRoot(templateName,
@@ -40,7 +78,7 @@ def __addComboRoot(templateName,
 
     return comboObj
 
-def __fitComboBound(comboObj:bpy.types.Object):
+def fitComboBound(comboObj:bpy.types.Object):
     """
     调整combo对象的大小，使其包裹所有子对象，原点不变
     通过修改网格顶点实现，不影响子对象
@@ -143,7 +181,7 @@ def addComboLevel(buildingObj:bpy.types.Object):
     __uploadData(fromBuilding=buildingObj)
 
     # 调整comboObj的大小，包裹所有子对象
-    __fitComboBound(comboObj)
+    fitComboBound(comboObj)
 
     return comboObj
 
@@ -238,6 +276,9 @@ def updateCombo(buildingObj:bpy.types.Object,
                 reloadAssets=False,
                 resetFloor=False,
                 resetRoof=False,):
+    # 确保延迟导入的模块已加载
+    _ensure_imports()
+    
     utils.outputMsg(_("开始更新......"))
 
     # 251217 添加清除拼接
@@ -607,6 +648,9 @@ def addMultiFloor(baseFloor:bpy.types.Object,
                 #   use_loggia=False, # 做回廊
                 #   loggia_width=0.0,# 回廊宽度
                   ):   
+    # 确保延迟导入的模块已加载
+    _ensure_imports()
+    
     # 载入数据
     bData:acaData = baseFloor.ACA_data
     taper=setting.taper # 收分
@@ -1460,6 +1504,6 @@ def addCombo(buildingList:List[bpy.types.Object]):
         bpy.data.collections.remove(comboColl)  
 
     # 调整comboNewObj的大小，包裹所有子对象
-    __fitComboBound(comboNewObj)
+    fitComboBound(comboNewObj)
 
     return comboNewObj

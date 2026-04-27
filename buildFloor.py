@@ -18,6 +18,7 @@ from .template import template
 from . import buildWall
 from . import buildPlatform
 from . import buildRoof
+from . import buildCombo
 
 # 添加建筑empty根节点，并绑定设计模板
 # 返回建筑empty根节点对象
@@ -1476,6 +1477,7 @@ def resetFloor(buildingObj:bpy.types.Object,
 
 # 执行营造整体过程
 # 输入buildingObj，自带设计参数集，且做为其他构件绑定的父节点
+@buildCombo.update_combo_bound
 def buildFloor(buildingObj:bpy.types.Object,
                templateName = None,
                reloadAssets = False,

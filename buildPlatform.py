@@ -10,6 +10,7 @@ from typing import List
 
 from . import utils
 from . import buildFloor
+from . import buildCombo
 from .const import ACA_Consts as con
 from .data import ACA_data_obj as acaData
 from .data import ACA_data_template as tmpData
@@ -944,6 +945,7 @@ def delStep(buildingObj:bpy.types.Object,
     return {'FINISHED'}
 
 # 根据固定模板，创建新的台基
+@buildCombo.update_combo_bound
 def buildPlatform(buildingObj:bpy.types.Object):
     # 0、准备
     # 载入数据

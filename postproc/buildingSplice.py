@@ -101,8 +101,31 @@ def addSplice(fromBuilding:bpy.types.Object,
     __setSpliceID(fromBuilding)
     __setSpliceID(toBuilding)
 
+    # 核对拼接设置是否已经保存
+    # 这里基于fromBuilding和toBuilding的splice_id进行匹配
+    comboData:acaData = comboObj.ACA_data
+    postProcess = comboData.postProcess
+    para = f"{bData.splice_id}#{mData.splice_id}"
+    para_alt = f"{mData.splice_id}#{bData.splice_id}"
+    # 2512220 这里不要做删除，否则buildCombo时postProcess列表不停变化，就无法正确依次执行
+    SPLICE_ID = '' # 找到的设置记录编号
+    for i,pp in enumerate(postProcess):
+        if (pp.action == con.POSTPROC_SPLICE
+                and pp.parameter in (para,para_alt)):
+            # 找到已有的拼接设置，取模板现有的spliceid
+            SPLICE_ID = pp.actionid
+    
+    # 如果没有找到对应的设置，则插入新的拼接设置
+    # 如从模板生成时已经记录过，这里不再重复记录
+    if SPLICE_ID == '':
+        SPLICE_ID = utils.generateID()
+        # 插入新规则
+        pp = comboData.postProcess.add()
+        pp.action = con.POSTPROC_SPLICE
+        pp.actionid = SPLICE_ID
+        pp.parameter = para
+
     # 为所有的SPLICE修改器追加splice_id标识，便于后续的保存、识别、自动生成
-    SPLICE_ID = utils.generateID()
     # 遍历所有的对象
     def renameSpliceModifier(obj):
         for modifier in obj.modifiers:
@@ -115,22 +138,6 @@ def addSplice(fromBuilding:bpy.types.Object,
                 renameSpliceHierarchy(child)
     renameSpliceHierarchy(fromBuilding)
     renameSpliceHierarchy(toBuilding)
-
-    # 记录操作，判断是否已经存在记录
-    # 如，从模板生成时已经记录过，这里不再重复记录
-    comboData:acaData = comboObj.ACA_data
-    postProcess = comboData.postProcess
-    # 2512220 这里不要做删除，否则buildCombo时postProcess列表不停变化，就无法正确依次执行
-    isExsit = False
-    for pp in postProcess:
-        if pp.actionid == SPLICE_ID:
-            isExsit = True
-    if not isExsit:
-        # 插入新规则
-        pp = comboData.postProcess.add()
-        pp.action = con.POSTPROC_SPLICE
-        pp.actionid = SPLICE_ID
-        pp.parameter = f"{bData.splice_id}#{mData.splice_id}"
 
     # 5、聚焦在combo对象
     utils.focusObj(comboObj)
@@ -279,7 +286,7 @@ def delSplice(buildingObj:bpy.types.Object):
         if pp.action == con.POSTPROC_SPLICE:
             ppParaList = pp.parameter.split('#')
             for para in ppParaList:
-                if para == bData.aca_id:
+                if para == bData.splice_id:
                     # 把这一条postProcess记录中的两个建筑ID都存入列表
                     spliceBuildingIDs += ppParaList
                     isRelated = True
@@ -299,7 +306,7 @@ def delSplice(buildingObj:bpy.types.Object):
     spliceBuildingObjs = []
     for id in spliceBuildingIDs:
         for obj in comboObj.children:
-            if obj.ACA_data.aca_id == id:
+            if obj.ACA_data.splice_id == id:
                 if obj not in spliceBuildingObjs: # 去重
                     spliceBuildingObjs.append(obj)
 

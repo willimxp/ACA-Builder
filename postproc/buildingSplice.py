@@ -281,6 +281,8 @@ def delSplice(buildingObj:bpy.types.Object):
     ppList = comboData.postProcess
     # 分析相关的postProcess记录
     removeSplice = []
+    # 保存相关的splice_id
+    spliceidList = []
     for i,pp in enumerate(ppList):
         isRelated = False
         if pp.action == con.POSTPROC_SPLICE:
@@ -293,6 +295,7 @@ def delSplice(buildingObj:bpy.types.Object):
                     break
         if isRelated:
             removeSplice.append(i)
+            spliceidList.append(pp.actionid)
     # 验证是否存在需要清除的拼接
     if spliceBuildingIDs == []:
         print(_("没有需要清除的拼接操作"))
@@ -321,20 +324,22 @@ def delSplice(buildingObj:bpy.types.Object):
         buildingChildren = utils.getChildrenHierarchy(buildingObj)
         for obj in buildingChildren:
             obj:bpy.types.Object
-            # 可能有.001的后缀
-            for mod in obj.modifiers:
-                if mod.name.startswith('SPLICE'):
-                    # 记录涉及的bool对象
-                    if hasattr(mod,'object'):
-                        boolObj = mod.object
-                        # 布尔修改器的布尔对象可能已经删除，变成了None
-                        if boolObj is None:
-                            continue
-                        # 找到布尔对象，加入待删除列表
-                        if boolObj not in boolObjs:
-                            boolObjs.append(boolObj)
-                    # 删除修改器
-                    obj.modifiers.remove(mod)
+            for spliceid in spliceidList:
+                # 可能有.001的后缀
+                modSuffix = con.POSTPROC_SPLICE+'#'+spliceid
+                for mod in obj.modifiers:
+                    if mod.name.startswith(modSuffix):
+                        # 记录涉及的bool对象
+                        if hasattr(mod,'object'):
+                            boolObj = mod.object
+                            # 布尔修改器的布尔对象可能已经删除，变成了None
+                            if boolObj is None:
+                                continue
+                            # 找到布尔对象，加入待删除列表
+                            if boolObj not in boolObjs:
+                                boolObjs.append(boolObj)
+                        # 删除修改器
+                        obj.modifiers.remove(mod)
 
     # 清除bool对象
     for obj in boolObjs:

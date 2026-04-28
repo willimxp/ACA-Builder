@@ -1354,6 +1354,8 @@ def addCombo(buildingList:List[bpy.types.Object]):
     comboNewObj = __addComboRoot(templateName=_('建筑组合'),
                                  location=mainLoc)
     comboNewColl = comboNewObj.users_collection[0]
+    # 刷新视图，以便矩阵生效
+    utils.updateScene()
 
     # 将所有对象迁移到新comboNew中
     for buildingObj in buildingList:

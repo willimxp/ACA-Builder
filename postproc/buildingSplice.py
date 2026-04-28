@@ -132,8 +132,8 @@ def addSplice(fromBuilding:bpy.types.Object,
         pp.actionid = SPLICE_ID
         pp.parameter = f"{bData.aca_id}#{mData.aca_id}"
 
-    # 5、聚焦在主建筑
-    utils.focusObj(toBuilding)
+    # 5、聚焦在combo对象
+    utils.focusObj(comboObj)
 
     return result
 
@@ -169,7 +169,7 @@ def __getSpliceType(fromBuilding:bpy.types.Object,
         roofSpan = ((bData.y_total+mData.y_total)/2+
          (con.YANCHUAN_EX + con.FLYRAFTER_EX)*bData.DK*2)
         if buildingSpan > roofSpan:
-            utils.popMessageBox(_("建筑不相交，无法进行组合"))
+            utils.outputMsg(_("建筑不相交，无法进行组合"))
             return None,None,None
         # 确定勾连搭
         spliceType = 'goulianda'
@@ -185,7 +185,7 @@ def __getSpliceType(fromBuilding:bpy.types.Object,
         buildingSpan = abs(fromLoc.y - toLoc.y)
         roofSpan = (bData.y_total+mData.y_total)/2+21*bData.DK
         if buildingSpan > roofSpan:
-            utils.popMessageBox(_("建筑不相交，无法进行组合"))
+            utils.outputMsg(_("建筑不相交，无法进行组合"))
             return None,None,None
 
         # 设置面阔较小的为fromBuilding(抱厦)

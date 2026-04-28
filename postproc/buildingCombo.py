@@ -1390,6 +1390,9 @@ def addCombo(buildingList:List[bpy.types.Object]):
             oldColl = parentCombo.users_collection[0]
         oldColl.children.unlink(buildingColl)
 
+        # 创建Combo后，隐藏原有的building的boundbox
+        utils.hideObj(buildingObj)
+
     # 清理老combo
     # 如果是单体与集合，或集合与集合的合并，需要清理
     # 如果是单体与单体的组合就不涉及

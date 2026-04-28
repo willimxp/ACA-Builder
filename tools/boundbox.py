@@ -53,8 +53,8 @@ def fitBoundBox(boundObj:bpy.types.Object):
             # 仅加入可见对象
             if not child.hide_get() and not child.hide_viewport:
                 children.append(child)
-                # 树状结构递归
-                children.extend(get_all_visible_children(child))
+            # 树状结构递归
+            children.extend(get_all_visible_children(child))
         return children
     all_children = get_all_visible_children(boundObj)
     if not all_children:

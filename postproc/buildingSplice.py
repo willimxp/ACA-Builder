@@ -153,7 +153,8 @@ def __getSpliceType(fromBuilding:bpy.types.Object,
         ):
         # 是否相交
         buildingSpan = abs(fromLoc.y - toLoc.y)
-        roofSpan = (bData.y_total+mData.y_total)/2+21*bData.DK
+        roofSpan = ((bData.y_total+mData.y_total)/2+
+         (con.YANCHUAN_EX + con.FLYRAFTER_EX)*bData.DK*2)
         if buildingSpan > roofSpan:
             utils.popMessageBox(_("建筑不相交，无法进行组合"))
             return None,None,None

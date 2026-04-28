@@ -94,12 +94,12 @@ def addSplice(fromBuilding:bpy.types.Object,
     toColl = toBuilding.users_collection[0]
     toColl.color_tag = 'COLOR_05'
 
-    # # 给拼接对象编号
-    # # 如果没有编号，则自动生成
-    # # 如果有编号，是否有其他重复的对象，如果有则重新生成，
-    # # 没有没有重复对象，则保留原编号
-    # __setSpliceID(fromBuilding)
-    # __setSpliceID(toBuilding)
+    # 给拼接对象编号
+    # 如果没有编号，则自动生成
+    # 如果有编号，是否有其他重复的对象，如果有则重新生成，
+    # 没有没有重复对象，则保留原编号
+    __setSpliceID(fromBuilding)
+    __setSpliceID(toBuilding)
 
     # 为所有的SPLICE修改器追加splice_id标识，便于后续的保存、识别、自动生成
     SPLICE_ID = utils.generateID()
@@ -130,7 +130,7 @@ def addSplice(fromBuilding:bpy.types.Object,
         pp = comboData.postProcess.add()
         pp.action = con.POSTPROC_SPLICE
         pp.actionid = SPLICE_ID
-        pp.parameter = f"{bData.aca_id}#{mData.aca_id}"
+        pp.parameter = f"{bData.splice_id}#{mData.splice_id}"
 
     # 5、聚焦在combo对象
     utils.focusObj(comboObj)

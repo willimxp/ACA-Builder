@@ -164,12 +164,12 @@ def buildCombo(
             for obj in bpy.data.objects:
                 if not hasattr(obj,'ACA_data'):
                     continue
-                if obj.ACA_data.aca_id == paraList[0]:
+                if obj.ACA_data.splice_id == paraList[0]:
                     fromBuilding = obj
-                if obj.ACA_data.aca_id == paraList[1]:
+                if obj.ACA_data.splice_id == paraList[1]:
                     toBuilding = obj
             if fromBuilding is None or toBuilding is None:
-                utils.outputMsg(_("后处理异常：无法匹配建筑aca_id"))
+                utils.outputMsg(_("后处理异常：无法匹配建筑splice_id"))
                 continue
             
             # 执行拼接

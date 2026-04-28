@@ -19,7 +19,8 @@ def addSplice(fromBuilding:bpy.types.Object,
     mData:acaData = toBuilding.ACA_data
 
     # 1、判断拼接方式 -------------------------------
-    spliceType = __getSpliceType(fromBuilding,
+    # 其中还根据拼接方式，自动判断了fromBuilding和toBuilding
+    spliceType,fromBuilding,toBuilding = __getSpliceType(fromBuilding,
                                  toBuilding)
     if spliceType == None:
         utils.popMessageBox(_("无法处理的建筑合并"))
@@ -125,6 +126,7 @@ def addSplice(fromBuilding:bpy.types.Object,
 
 # 判断建筑可能的拼接方式
 # 如，勾连搭、悬山抱厦、歇山抱厦等
+# 并且自动判断了fromBuilding和toBuilding
 def __getSpliceType(fromBuilding:bpy.types.Object,
                    toBuilding:bpy.types.Object,):
     bData:acaData = fromBuilding.ACA_data
@@ -154,7 +156,7 @@ def __getSpliceType(fromBuilding:bpy.types.Object,
         roofSpan = (bData.y_total+mData.y_total)/2+21*bData.DK
         if buildingSpan > roofSpan:
             utils.popMessageBox(_("建筑不相交，无法进行组合"))
-            return {'CANCELLED'}
+            return None,None,None
         # 确定勾连搭
         spliceType = 'goulianda'
 
@@ -170,7 +172,7 @@ def __getSpliceType(fromBuilding:bpy.types.Object,
         roofSpan = (bData.y_total+mData.y_total)/2+21*bData.DK
         if buildingSpan > roofSpan:
             utils.popMessageBox(_("建筑不相交，无法进行组合"))
-            return {'CANCELLED'}
+            return None,None,None
 
         # 设置面阔较小的为fromBuilding(抱厦)
         if bData.x_total > mData.x_total:
@@ -235,7 +237,7 @@ def __getSpliceType(fromBuilding:bpy.types.Object,
 
         spliceType = 'X_cross'
 
-    return spliceType
+    return spliceType,fromBuilding,toBuilding
 
 # 删除建筑(以及相关的建筑)的拼接操作
 def delSplice(buildingObj:bpy.types.Object):
@@ -474,7 +476,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
         else:
             offset = -boolY/2
         
-        boolLoc = (0,
+        boolLoc = (crossPoint.x,
                 offset+crossPoint.y, # 碰撞点
                 buildingH/2)
         boolObj = utils.addCube(
@@ -548,7 +550,7 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
     else:
         offset = -boolY/2
     
-    boolLoc = (0,
+    boolLoc = (crossPoint.x,
                offset+crossPoint.y, # 碰撞点
                buildingH/2)
     boolObj = utils.addCube(
@@ -648,7 +650,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         offset = boolDepth/2
     else:
         offset = -boolDepth/2
-    boolX = 0
+    boolX = crossPoint.x
     boolY = offset + crossPoint.y # 碰撞点
     boolZ = buildingH/2
 
@@ -690,7 +692,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
         offset = boolDepth/2
     else:
         offset = -boolDepth/2
-    boolX = 0
+    boolX = crossPoint.x
     boolY = offset + crossPoint.y # 碰撞点
     boolZ = buildingH/2
     
@@ -736,7 +738,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     boolZ = boolHeight/2
 
     # 位置按主建筑转换
-    loc = Vector((boolX,boolY,boolZ))
+    loc = Vector((0,boolY,boolZ))
     loc = fromBuilding.matrix_local @ loc
     boolObj = utils.addCube(
         name=_("平行抱厦-悬山-柱网") + con.BOOL_SUFFIX ,
@@ -806,7 +808,7 @@ def __unionParallelXuanshan(fromBuilding:bpy.types.Object,
     boolZ = boolHeight/2 - con.BOOL_RESERVE
 
     # 位置按主建筑转换
-    loc = Vector((boolX,boolY,boolZ))
+    loc = Vector((0,boolY,boolZ))
     loc = fromBuilding.matrix_local @ loc
     boolObj = utils.addCube(
         name=_("平行抱厦-悬山-台基") + con.BOOL_SUFFIX ,
@@ -1023,7 +1025,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         offset = boolDepth/2
     else:
         offset = -boolDepth/2
-    boolX = 0
+    boolX = crossPoint.x
     boolY = offset + crossPoint.y # 碰撞点
     boolZ = buildingH/2
     boolObj = utils.addCube(
@@ -1096,7 +1098,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         boolY *= -1
     boolZ = boolHeight/2
     # 位置按主建筑转换
-    loc = Vector((boolX,boolY,boolZ))
+    loc = Vector((0,boolY,boolZ))
     loc = fromBuilding.matrix_local @ loc
     boolObj = utils.addCube(
         name=_("平行抱厦-歇山-柱网") + con.BOOL_SUFFIX ,
@@ -1166,7 +1168,7 @@ def __unionParallelXieshan(fromBuilding:bpy.types.Object,
         boolY *= -1
     boolZ = boolHeight/2 - con.BOOL_RESERVE
     # 位置按主建筑转换
-    loc = Vector((boolX,boolY,boolZ))
+    loc = Vector((0,boolY,boolZ))
     loc = fromBuilding.matrix_local @ loc
     boolObj = utils.addCube(
         name=_("平行抱厦-歇山-台基") + con.BOOL_SUFFIX ,
@@ -1732,9 +1734,12 @@ def __union_T_Cross(fromBuilding:bpy.types.Object,
     # 251219 以主建筑坐标为依据
     boolY = toBuilding.location.y
     boolZ = boolHeight/2
+    # 位置按主建筑转换
+    loc = Vector((0,boolY,boolZ))
+    loc = fromBuilding.matrix_local @ loc
     boolObj = utils.addCube(
         name=_("丁字抱厦-柱网") + con.BOOL_SUFFIX ,
-        location=(0,boolY,boolZ),
+        location=loc,
         dimension=(boolWidth,boolDepth,boolHeight),
         parent=comboObj,
     )
@@ -2160,7 +2165,7 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
 
     # 4、合并为一个对象
     boolObj = utils.joinObjects(intersections,
-                      newName=_('丁字抱厦') + con.BOOL_SUFFIX ,)
+                      newName=_('十字抱厦') + con.BOOL_SUFFIX ,)
     # 设置origin在几何中心
     utils.focusObj(boolObj)
     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
@@ -2236,9 +2241,12 @@ def __union_X_Cross(fromBuilding:bpy.types.Object,
     # 251219 以主建筑坐标为依据
     boolY = toBuilding.location.y
     boolZ = boolHeight/2
+    # 位置按主建筑转换
+    loc = Vector((0,boolY,boolZ))
+    loc = fromBuilding.matrix_local @ loc
     boolObj = utils.addCube(
-        name=_("丁字抱厦-柱网") + con.BOOL_SUFFIX ,
-        location=(0,boolY,boolZ),
+        name=_("十字抱厦-柱网") + con.BOOL_SUFFIX ,
+        location=loc,
         dimension=(boolWidth,boolDepth,boolHeight),
         parent=comboObj,
     )

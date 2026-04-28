@@ -1371,15 +1371,20 @@ def addCombo(buildingList:List[bpy.types.Object]):
         # 260427 不要更新combo_parent，以免影响月台、楼阁等相对关系
         # # 更新parent id
         # bData['combo_parent'] = comboNewObj.ACA_data.aca_id
+        
         # 关联集合目录
         buildingColl = buildingObj.users_collection[0]
         comboNewColl.children.link(buildingColl)
+        
         # 从原集合目录中移除
-        if parentCombo is None:
-            # 如果单体建筑，从'ACA筑韵古建'目录中移除
+        if (parentCombo is None # 单体建筑
+            or parentCombo == buildingObj # combo根节点
+            ):
+            # 从'ACA筑韵古建'目录中移除
             oldColl = bpy.context.scene.collection.children[con.COLL_NAME_ROOT]
+        # 如果是combo子建筑
         else:
-            # 如果是combo子建筑，从原来的combo中移除
+            # 从原来的combo目录中移除
             oldColl = parentCombo.users_collection[0]
         oldColl.children.unlink(buildingColl)
 

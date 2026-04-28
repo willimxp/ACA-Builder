@@ -309,6 +309,9 @@ class ACA_data_postProcess(bpy.types.PropertyGroup):
     action:bpy.props.StringProperty(
             name = 'Action',
         ) # type: ignore
+    actionid:bpy.props.StringProperty(
+            name = 'ActionID',
+        ) # type: ignore
     # 操作参数：将多个操作参数拼接成字串，如，"from=building1,to=building2"
     parameter:bpy.props.StringProperty(
             name = 'Parameter',

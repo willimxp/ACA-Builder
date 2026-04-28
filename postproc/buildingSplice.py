@@ -94,30 +94,43 @@ def addSplice(fromBuilding:bpy.types.Object,
     toColl = toBuilding.users_collection[0]
     toColl.color_tag = 'COLOR_05'
 
-    # 给拼接对象编号
-    # 如果没有编号，则自动生成
-    # 如果有编号，是否有其他重复的对象，如果有则重新生成，
-    # 没有没有重复对象，则保留原编号
-    __setSpliceID(fromBuilding)
-    __setSpliceID(toBuilding)
+    # # 给拼接对象编号
+    # # 如果没有编号，则自动生成
+    # # 如果有编号，是否有其他重复的对象，如果有则重新生成，
+    # # 没有没有重复对象，则保留原编号
+    # __setSpliceID(fromBuilding)
+    # __setSpliceID(toBuilding)
+
+    # 为所有的SPLICE修改器追加splice_id标识，便于后续的保存、识别、自动生成
+    SPLICE_ID = utils.generateID()
+    # 遍历所有的对象
+    def renameSpliceModifier(obj):
+        for modifier in obj.modifiers:
+            if modifier.name == con.POSTPROC_SPLICE:
+                modifier.name += '#' + SPLICE_ID
+    def renameSpliceHierarchy(obj):
+        for child in obj.children:
+            renameSpliceModifier(child)
+            if child.children:
+                renameSpliceHierarchy(child)
+    renameSpliceHierarchy(fromBuilding)
+    renameSpliceHierarchy(toBuilding)
 
     # 记录操作，判断是否已经存在记录
     # 如，从模板生成时已经记录过，这里不再重复记录
-    isExsit = False
     comboData:acaData = comboObj.ACA_data
     postProcess = comboData.postProcess
-    para = f"{bData.splice_id}#{mData.splice_id}"
-    para_alt = f"{mData.splice_id}#{bData.splice_id}"
     # 2512220 这里不要做删除，否则buildCombo时postProcess列表不停变化，就无法正确依次执行
-    for i,pp in enumerate(postProcess):
-        if (pp.action == con.POSTPROC_SPLICE
-                and pp.parameter in (para,para_alt)):
+    isExsit = False
+    for pp in postProcess:
+        if pp.actionid == SPLICE_ID:
             isExsit = True
     if not isExsit:
         # 插入新规则
         pp = comboData.postProcess.add()
         pp.action = con.POSTPROC_SPLICE
-        pp.parameter = para
+        pp.actionid = SPLICE_ID
+        pp.parameter = f"{bData.aca_id}#{mData.aca_id}"
 
     # 5、聚焦在主建筑
     utils.focusObj(toBuilding)
@@ -266,7 +279,7 @@ def delSplice(buildingObj:bpy.types.Object):
         if pp.action == con.POSTPROC_SPLICE:
             ppParaList = pp.parameter.split('#')
             for para in ppParaList:
-                if para == bData.splice_id:
+                if para == bData.aca_id:
                     # 把这一条postProcess记录中的两个建筑ID都存入列表
                     spliceBuildingIDs += ppParaList
                     isRelated = True
@@ -286,7 +299,7 @@ def delSplice(buildingObj:bpy.types.Object):
     spliceBuildingObjs = []
     for id in spliceBuildingIDs:
         for obj in comboObj.children:
-            if obj.ACA_data.splice_id == id:
+            if obj.ACA_data.aca_id == id:
                 if obj not in spliceBuildingObjs: # 去重
                     spliceBuildingObjs.append(obj)
 
@@ -500,12 +513,8 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
             if con.COLL_NAME_BASE in collName : continue
             if con.COLL_NAME_PILLAR in collName : continue
             if con.COLL_NAME_WALL in collName : continue
-            # 布尔修改器标注相关的建筑ID
-            spliceName = f"%s#%s#%s" % (con.POSTPROC_SPLICE,
-                                        fromBuilding.ACA_data.aca_id,
-                                        toBuilding.ACA_data.aca_id)
             utils.addModifierBoolean(
-                name=spliceName,
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=boolObj,
                 operation='INTERSECT',
@@ -521,12 +530,8 @@ def __unionGoulianda(fromBuilding:bpy.types.Object,
             if con.COLL_NAME_BASE in collName : continue
             if con.COLL_NAME_PILLAR in collName : continue
             if con.COLL_NAME_WALL in collName : continue
-            # 布尔修改器标注相关的建筑ID
-            spliceName = f"%s#%s#%s" % (con.POSTPROC_SPLICE,
-                                        toBuilding.ACA_data.aca_id,
-                                        fromBuilding.ACA_data.aca_id)
             utils.addModifierBoolean(
-                name=spliceName,
+                name=con.POSTPROC_SPLICE,
                 object=obj,
                 boolObj=boolObj,
                 operation='DIFFERENCE',

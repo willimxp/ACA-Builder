@@ -55,6 +55,14 @@ def buildSingle(acaType,
 def __excludeOther(isExclude=True,
                    keepObj:bpy.types.Object=None,
     ):
+    # 260428 强制全部不选中
+    # 在build combo时，防止后续的focus无法准确单选
+    # 仅排除时执行
+    if isExclude:
+        objects = bpy.context.scene.objects
+        for obj in objects:
+            obj.select_set(False)
+
     # 根目录
     rootColl = utils.setCollection(
         con.COLL_NAME_ROOT,isRoot=True)
